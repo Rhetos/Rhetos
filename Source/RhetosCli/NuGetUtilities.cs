@@ -56,7 +56,7 @@ namespace Rhetos
                     //TODO: Add the option name with which the target framework should be pass to  RhetosCli after it is defined
                     throw new FrameworkException("There are multiple targets set. Pass the target version with the command line option.");
                 }
-                if (targets.Count() == 0)
+                if (!targets.Any())
                     throw new FrameworkException("No target framework found for the selected project.");
 
                 return targets.First();

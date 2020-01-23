@@ -19,9 +19,11 @@
 
 namespace Rhetos.Utilities
 {
+    /// <summary>
+    /// Runtime configuration settings.
+    /// </summary>
     public class RhetosAppOptions
     {
-        public string BinFolder { get; set; }
         public bool BuiltinAdminOverride { get; set; } = false;
         public bool SkipRecompute { get; set; } = false;
         public bool EntityFramework__UseDatabaseNullSemantics { get; set; } = false;

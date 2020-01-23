@@ -32,16 +32,16 @@ namespace Rhetos.Dsl
     {
         private readonly ILogger _performanceLogger;
         private readonly DslContainer _dslContainer;
-        private readonly AssetsOptions _assetsOptions;
+        private readonly RhetosAppEnvironment _rhetosAppEnvironment;
 
         public DslModelFile(
             ILogProvider logProvider,
             DslContainer dslContainer,
-            AssetsOptions assetsOptions)
+            RhetosAppEnvironment rhetosAppEnvironment)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
             _dslContainer = dslContainer;
-            _assetsOptions = assetsOptions;
+            _rhetosAppEnvironment = rhetosAppEnvironment;
         }
 
         #region IDslModel implementation
@@ -115,7 +115,7 @@ namespace Rhetos.Dsl
             _performanceLogger.Write(sw, "DslModelFile.SaveConcepts: Write.");
         }
 
-        private string DslModelFilePath => Path.Combine(_assetsOptions.AssetsFolder, DslModelFileName);
+        private string DslModelFilePath => Path.Combine(_rhetosAppEnvironment.AssetsFolder, DslModelFileName);
 
         private IEnumerable<IConceptInfo> LoadConcepts()
         {

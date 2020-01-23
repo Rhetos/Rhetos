@@ -30,9 +30,9 @@ namespace Rhetos.Deployment
         private readonly InstalledPackagesProvider _installedPackagesProvider;
         private readonly InstalledPackages _installedPackages;
 
-        public InstalledPackagesGenerator(InstalledPackages installedPackages, ILogProvider logProvider, AssetsOptions assetsOptions)
+        public InstalledPackagesGenerator(InstalledPackages installedPackages, ILogProvider logProvider, RhetosAppEnvironment rhetosAppEnvironment)
         {
-            _installedPackagesProvider = new InstalledPackagesProvider(logProvider, assetsOptions);
+            _installedPackagesProvider = new InstalledPackagesProvider(logProvider, rhetosAppEnvironment);
             _installedPackages = installedPackages;
         }
 

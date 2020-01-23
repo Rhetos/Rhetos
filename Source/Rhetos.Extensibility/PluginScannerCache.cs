@@ -28,19 +28,20 @@ namespace Rhetos.Extensibility
 {
     public class PluginScannerCache : IGenerator
     {
-        private const string _pluginScannerCacheFilename = "PluginScanner.Cache.json";
+        private const string _pluginScannerBuildCacheFilename = "PluginScanner.BuildCache.json";
+        private const string _pluginScannerRuntimeCacheFilename = "PluginScanner.RuntimeCache.json";
 
         private readonly ILogger _logger;
         private readonly string _buildCacheFilePath;
         private readonly string _runtimeCacheFilePath;
         private readonly FilesUtility _filesUtility;
 
-        public PluginScannerCache(BuildOptions buildOptions, AssetsOptions assetsOptions, ILogProvider logProvider, FilesUtility filesUtility)
+        public PluginScannerCache(BuildOptions buildOptions, RhetosAppEnvironment rhetosAppEnvironment, ILogProvider logProvider, FilesUtility filesUtility)
         {
             _logger = logProvider.GetLogger(GetType().Name);
             if (buildOptions?.CacheFolder != null)
-                _buildCacheFilePath = Path.Combine(buildOptions.CacheFolder, _pluginScannerCacheFilename);
-            _runtimeCacheFilePath = Path.Combine(assetsOptions.AssetsFolder, _pluginScannerCacheFilename);
+                _buildCacheFilePath = Path.Combine(buildOptions.CacheFolder, _pluginScannerBuildCacheFilename);
+            _runtimeCacheFilePath = Path.Combine(rhetosAppEnvironment.AssetsFolder, _pluginScannerRuntimeCacheFilename);
             _filesUtility = filesUtility;
         }
 
@@ -66,7 +67,7 @@ namespace Rhetos.Extensibility
             }
             else
             {
-                _logger.Trace($"Cache file '{_pluginScannerCacheFilename}' not found.");
+                _logger.Trace($"Cache file not found.");
                 return new PluginsCacheData();
             }
         }
@@ -76,14 +77,18 @@ namespace Rhetos.Extensibility
             string cacheFilePath = GetExistingCacheFile() ?? _buildCacheFilePath ?? _runtimeCacheFilePath;
 
             _logger.Trace($"Writing cache to '{cacheFilePath}'.");
+            _filesUtility.SafeCreateDirectory(Path.GetDirectoryName(cacheFilePath)); // Plugin scanner can be executed before other Rhetos components are initialized.
             File.WriteAllText(cacheFilePath, JsonConvert.SerializeObject(cache, Formatting.Indented));
         }
 
         private string GetExistingCacheFile()
         {
-            return File.Exists(_runtimeCacheFilePath) ? _runtimeCacheFilePath
-                : File.Exists(_buildCacheFilePath) ? _buildCacheFilePath
-                : null;
+            if (File.Exists(_runtimeCacheFilePath))
+                return _runtimeCacheFilePath;
+            else if (File.Exists(_buildCacheFilePath))
+                return _buildCacheFilePath;
+            else
+                return null;
         }
     }
 }

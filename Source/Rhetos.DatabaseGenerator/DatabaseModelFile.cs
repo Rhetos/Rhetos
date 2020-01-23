@@ -31,16 +31,16 @@ namespace Rhetos.DatabaseGenerator
         private readonly ILogger _performanceLogger;
 
         private const string DatabaseModelFileName = "DatabaseModel.json";
-        private readonly AssetsOptions _assetsOptions;
+        private readonly RhetosAppEnvironment _rhetosAppEnvironment;
 
-        private string DatabaseModelFilePath => Path.Combine(_assetsOptions.AssetsFolder, DatabaseModelFileName);
+        private string DatabaseModelFilePath => Path.Combine(_rhetosAppEnvironment.AssetsFolder, DatabaseModelFileName);
 
         public DatabaseModelFile(
             ILogProvider logProvider,
-            AssetsOptions assetsOptions)
+            RhetosAppEnvironment rhetosAppEnvironment)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
-            _assetsOptions = assetsOptions;
+            _rhetosAppEnvironment = rhetosAppEnvironment;
         }
 
         public void Save(DatabaseModel databaseModel)

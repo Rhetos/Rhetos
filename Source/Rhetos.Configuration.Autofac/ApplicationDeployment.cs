@@ -39,7 +39,6 @@ namespace Rhetos
         private readonly IConfigurationProvider _configurationProvider;
         private readonly ILogProvider _logProvider;
         private readonly Func<IEnumerable<string>> _pluginAssemblies;
-        private readonly FilesUtility _filesUtility;
 
         /// <param name="pluginAssemblies">List of assemblies (DLL file paths) that will be scanned for plugins.</param>
         public ApplicationDeployment(IConfigurationProvider configurationProvider, ILogProvider logProvider, Func<IEnumerable<string>> pluginAssemblies)
@@ -48,7 +47,6 @@ namespace Rhetos
             _configurationProvider = configurationProvider;
             _logProvider = logProvider;
             _pluginAssemblies = pluginAssemblies;
-            _filesUtility = new FilesUtility(logProvider);
             LegacyUtilities.Initialize(configurationProvider);
         }
 
@@ -66,10 +64,6 @@ namespace Rhetos
 
         public void GenerateApplication(InstalledPackages installedPackages)
         {
-            _filesUtility.EmptyDirectory(_configurationProvider.GetOptions<AssetsOptions>().AssetsFolder);
-            _filesUtility.EmptyDirectory(_configurationProvider.GetOptions<BuildOptions>().GeneratedSourceFolder);
-            _filesUtility.SafeCreateDirectory(_configurationProvider.GetOptions<BuildOptions>().CacheFolder); // Cache should not be deleted between builds.
-
             _logger.Trace("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
 
@@ -80,7 +74,7 @@ namespace Rhetos
                 var performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
                 performanceLogger.Write(stopwatch, "DeployPackages.Program: Modules and plugins registered.");
                 ContainerBuilderPluginRegistration.LogRegistrationStatistics("Generating application", container, _logProvider);
-
+                
                 container.Resolve<ApplicationGenerator>().ExecuteGenerators();
             }
         }

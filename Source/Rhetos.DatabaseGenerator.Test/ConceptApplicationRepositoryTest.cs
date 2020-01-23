@@ -81,7 +81,6 @@ namespace Rhetos.DatabaseGenerator.Test
         public ConceptApplicationRepositoryTest()
         {
             var configurationProvider = new ConfigurationBuilder()
-                .AddRhetosAppConfiguration(AppDomain.CurrentDomain.BaseDirectory)
                 .AddConfigurationManagerConfiguration()
                 .Build();
             LegacyUtilities.Initialize(configurationProvider);

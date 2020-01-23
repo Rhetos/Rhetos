@@ -22,80 +22,49 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace Rhetos.Utilities
 {
-    [Obsolete("Use RhetosAppOptions or BuildOptions instead.")]
+    [Obsolete("Use RhetosAppEnvironment instead.")]
     public static class Paths
     {
-        private static string _rootPath;
-        private static RhetosAppOptions _appOptions;
-        private static AssetsOptions _assetsOptions;
+        private static RhetosAppEnvironment _rhetosAppEnvironment;
 
         /// <summary>
         /// Initialize Paths for the Rhetos server.
         /// </summary>
-        public static void Initialize(string rootPath, RhetosAppOptions appOptions, AssetsOptions assetsOptions)
+        public static void Initialize(RhetosAppEnvironment rhetosAppEnvironment)
         {
-            _rootPath = rootPath;
-            _appOptions = appOptions;
-            _assetsOptions = assetsOptions;
+            _rhetosAppEnvironment = rhetosAppEnvironment;
         }
 
-        public static string RhetosServerRootPath => NonNullRhetosRootPath;
-        public static string ResourcesFolder => Path.Combine(NonNullRhetosRootPath, "Resources");
-        public static string BinFolder => NonNullRhetosAppOptions.BinFolder;
-        public static string GeneratedFolder => NotNullGeneratedFolder;
-        public static string PluginsFolder => Path.Combine(NonNullRhetosRootPath, "bin\\Plugins");
-        public static string GetDomAssemblyFile(DomAssemblies domAssembly) => Path.Combine(NotNullGeneratedFolder, $"ServerDom.{domAssembly}.dll");
+        public static string RhetosServerRootPath => SafeGetAppEnvironment().RootPath
+                ?? throw new FrameworkException($"'{nameof(RhetosAppEnvironment.RootPath)}' is expected to be configured with valid value, but is empty.");
+
+        public static string ResourcesFolder => SafeGetAppEnvironment().LegacyAssetsFolder
+                ?? throw new FrameworkException($"'{nameof(RhetosAppEnvironment.LegacyAssetsFolder)}' is expected to be configured with valid value, but is empty.");
+
+        public static string BinFolder => SafeGetAppEnvironment().BinFolder
+                ?? throw new FrameworkException($"'{nameof(RhetosAppEnvironment.BinFolder)}' is expected to be configured with valid value, but is empty.");
+
+        public static string GeneratedFolder => SafeGetAppEnvironment().AssetsFolder
+                ?? throw new FrameworkException($"'{nameof(RhetosAppEnvironment.AssetsFolder)}' is expected to be configured with valid value, but is empty.");
+
+        public static string PluginsFolder => SafeGetAppEnvironment().LegacyPluginsFolder
+                ?? throw new FrameworkException($"'{nameof(RhetosAppEnvironment.LegacyPluginsFolder)}' is expected to be configured with valid value, but is empty.");
+
+        public static string GetDomAssemblyFile(DomAssemblies domAssembly) => Path.Combine(GeneratedFolder, $"ServerDom.{domAssembly}.dll");
+
         /// <summary>
-        /// List of the generated dll files that make the domain object model (ServerDom.*.dll).
+        /// List of the generated DLL files that make the domain object model (ServerDom.*.dll).
         /// </summary>
         public static IEnumerable<string> DomAssemblyFiles => Enum.GetValues(typeof(DomAssemblies)).Cast<DomAssemblies>().Select(domAssembly => GetDomAssemblyFile(domAssembly));
 
-        private static void AssertRhetosAppOptionsNotNull()
+        private static RhetosAppEnvironment SafeGetAppEnvironment()
         {
-            if (_appOptions == null)
-                throw new FrameworkException($"Rhetos server is not initialized ({nameof(Paths)} class)." +
-                    $" Use {nameof(LegacyUtilities)}.{nameof(LegacyUtilities.Initialize)}() to initialize obsolete static utilities" +
-                    $" or use {nameof(RhetosAppOptions)}.");
-        }
-
-        private static RhetosAppOptions NonNullRhetosAppOptions
-        {
-            get
-            {
-                AssertRhetosAppOptionsNotNull();
-                return _appOptions;
-            }
-        }
-
-        private static string NonNullRhetosRootPath
-        {
-            get
-            {
-                if (_rootPath == null)
-                    throw new FrameworkException($"Rhetos server is not initialized ({nameof(Paths)} class)." +
-                        $" Use {nameof(LegacyUtilities)}.{nameof(LegacyUtilities.Initialize)}() to initialize obsolete static utilities");
-
-                return _rootPath;
-            }
-        }
-
-        private static string NotNullGeneratedFolder
-        {
-            get
-            {
-                if (_assetsOptions == null)
-                    throw new FrameworkException($"Rhetos server is not initialized ({nameof(Paths)} class)." +
-                        $" Use {nameof(LegacyUtilities)}.{nameof(LegacyUtilities.Initialize)}() to initialize obsolete static utilities");
-
-                if (string.IsNullOrEmpty(_assetsOptions.AssetsFolder))
-                    throw new FrameworkException($"{nameof(AssetsOptions.AssetsFolder)} expected to be configured with valid value, but is empty.");
-
-                return _assetsOptions.AssetsFolder;
-            }
+            return _rhetosAppEnvironment
+                ?? throw new FrameworkException($"Rhetos server is not initialized ({nameof(Paths)} class)." +
+                    $" Use {nameof(LegacyUtilities)}.{nameof(LegacyUtilities.Initialize)}() to initialize obsolete static utilities.");
         }
     }
 }

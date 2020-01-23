@@ -17,23 +17,31 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-using System.Diagnostics;
-
-namespace Rhetos.Deployment
+namespace Rhetos.Utilities
 {
-    [DebuggerDisplay("{InPackagePath}")]
-    public class ContentFile
+    /// <summary>
+    /// Basic information about generated Rhetos application.
+    /// Configured and persisted at build-time. Available at run-time.
+    /// </summary>
+    public class RhetosAppEnvironment
     {
         /// <summary>
-        /// File location on disk.
+        /// Rhetos application's base folder.
         /// </summary>
-        public string PhysicalPath { get; set; }
+        public string RootPath { get; set; }
+
+        public string BinFolder { get; set; }
+
+        public string AssetsFolder { get; set; }
 
         /// <summary>
-        /// Relative path where the file should be located in the package.
-        /// This is used for detecting the file's role from subfolder name, and for file sorting.
+        /// This folder can be configured to support legacy plugins.
         /// </summary>
-        public string InPackagePath { get; set; }
+        public string LegacyPluginsFolder { get; set; }
+
+        /// <summary>
+        /// This folder can be configured to support legacy plugins by setting value to "Resources" subfolder inside the <see cref="RootPath"/>.
+        /// </summary>
+        public string LegacyAssetsFolder { get; set; }
     }
 }

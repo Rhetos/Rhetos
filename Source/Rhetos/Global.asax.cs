@@ -46,7 +46,7 @@ namespace Rhetos
                 .AddRhetosAppConfiguration(AppDomain.CurrentDomain.BaseDirectory)
                 .Build();
 
-            var builder = new RhetosContainerBuilder(configurationProvider, new NLogProvider(), LegacyUtilities.GetListAssembliesDelegate());
+            var builder = new RhetosContainerBuilder(configurationProvider, new NLogProvider(), LegacyUtilities.GetListAssembliesDelegate(configurationProvider));
             AddRhetosComponents(builder);
             AutofacServiceHostFactory.Container = builder.Build();
 

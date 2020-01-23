@@ -17,16 +17,28 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Extensibility;
+using Rhetos.Utilities;
+using Rhetos.Utilities.ApplicationConfiguration;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Rhetos.Utilities
+namespace Rhetos.Deployment
 {
-    public class AssetsOptions
+    public class RhetosAppEnvironmentGenerator : IGenerator
     {
-        public string AssetsFolder { get; set; }
+        private readonly RhetosAppEnvironment _rhetosAppEnvironment;
+
+        public RhetosAppEnvironmentGenerator(RhetosAppEnvironment rhetosAppEnvironment)
+        {
+            _rhetosAppEnvironment = rhetosAppEnvironment;
+        }
+
+        public void Generate()
+        {
+            RhetosAppEnvironmentProvider.Save(_rhetosAppEnvironment);
+        }
+
+        public IEnumerable<string> Dependencies => Array.Empty<string>();
     }
 }

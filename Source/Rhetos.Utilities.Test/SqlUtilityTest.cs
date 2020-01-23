@@ -33,7 +33,6 @@ namespace Rhetos.Utilities.Test
         public SqlUtilityTest()
         {
             var configurationProvider = new ConfigurationBuilder()
-                .AddRhetosAppConfiguration(AppDomain.CurrentDomain.BaseDirectory)
                 .AddConfigurationManagerConfiguration()
                 .Build();
 

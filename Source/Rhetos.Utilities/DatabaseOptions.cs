@@ -19,6 +19,9 @@
 
 namespace Rhetos.Utilities
 {
+    /// <summary>
+    /// Runtime options, to be used when connecting to a database.
+    /// </summary>
     public class DatabaseOptions
     {
         public int SqlCommandTimeout { get; set; } = 30;
