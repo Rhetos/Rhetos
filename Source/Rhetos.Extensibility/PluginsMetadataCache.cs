@@ -35,8 +35,7 @@ namespace Rhetos.Extensibility
     /// <typeparam name="TPlugin"></typeparam>
     public class PluginsMetadataCache<TPlugin>
     {
-        private Dictionary<Type, IDictionary<string, object>> _metadataByPluginType;
-        private object _metadataByPluginTypeLock = new object();
+        private Lazy<Dictionary<Type, IDictionary<string, object>>> _metadataByPluginType;
 
         private Dictionary<Type, List<Type>> _sortedImplementations;
         private object _sortedImplementationsLock = new object();
@@ -47,10 +46,9 @@ namespace Rhetos.Extensibility
             Lazy<IEnumerable<Meta<TPlugin>>> pluginsWithMetadata,
             IIndex<Type, IEnumerable<SuppressPlugin>> suppressPlugins)
         {
-            if (_metadataByPluginType == null)
-                lock (_metadataByPluginTypeLock)
-                    if (_metadataByPluginType == null)
-                        _metadataByPluginType = pluginsWithMetadata.Value.ToDictionary(pm => pm.Value.GetType(), pm => pm.Metadata);
+            _metadataByPluginType = new Lazy<Dictionary<Type, IDictionary<string, object>>>(
+                () => pluginsWithMetadata.Value.ToDictionary(pm => pm.Value.GetType(), pm => pm.Metadata),
+                System.Threading.LazyThreadSafetyMode.ExecutionAndPublication);
 
             _sortedImplementations = new Dictionary<Type, List<Type>>();
 
@@ -94,7 +92,7 @@ namespace Rhetos.Extensibility
         public Type GetMetadata(Type pluginType, string metadataKey)
         {
             IDictionary<string, object> metadata;
-            if (!_metadataByPluginType.TryGetValue(pluginType, out metadata))
+            if (!_metadataByPluginType.Value.TryGetValue(pluginType, out metadata))
                 throw new FrameworkException(string.Format(
                     "There is no plugin {0} registered for {1}.",
                     pluginType.FullName, typeof(TPlugin).FullName));
