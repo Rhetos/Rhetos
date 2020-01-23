@@ -42,7 +42,7 @@ namespace DeployPackages.Test
             _configurationProvider = new ConfigurationBuilder()
                 .AddRhetosAppEnvironment(new RhetosAppEnvironment
                 {
-                    RootPath = rhetosAppRootPath,
+                    RootFolder = rhetosAppRootPath,
                     BinFolder = Path.Combine(rhetosAppRootPath, "bin"),
                     AssetsFolder = Path.Combine(rhetosAppRootPath, "bin", "Generated"),
                     LegacyPluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins"),

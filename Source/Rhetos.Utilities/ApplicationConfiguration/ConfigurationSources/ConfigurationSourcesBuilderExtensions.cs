@@ -20,6 +20,7 @@
 using Rhetos.Utilities;
 using Rhetos.Utilities.ApplicationConfiguration;
 using Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
@@ -75,8 +76,27 @@ namespace Rhetos
 
         /// <summary>
         /// Initializes run-time configuration for the Rhetos application.
-        /// Currently, web.config is expected to exist at the path and configuration will be loaded from it.
-        /// This is planned for phasing out in favor of separate config file used only for Rhetos app.
+        /// Searches for Rhetos application root path in the current application's folder (see <see cref="AppDomain.CurrentDomain.BaseDirectory"/>) or any parent folder.
+        /// Loads Rhetos application's configuration files.
+        /// </summary>
+        public static IConfigurationBuilder AddRhetosAppConfiguration(this IConfigurationBuilder builder)
+        {
+            string startingPath = AppDomain.CurrentDomain.BaseDirectory;
+            var rhetosAppFolder = new DirectoryInfo(startingPath);
+
+            while (true)
+            {
+                if (RhetosAppEnvironmentProvider.IsRhetosApplicationRootFolder(rhetosAppFolder.FullName))
+                    return AddRhetosAppConfiguration(builder, rhetosAppFolder.FullName);
+                if (rhetosAppFolder.Parent == null)
+                    throw new FrameworkException($"Cannot locate a valid Rhetos application folder starting in '{startingPath}' or any parent folder.");
+                rhetosAppFolder = rhetosAppFolder.Parent;
+            }
+        }
+
+        /// <summary>
+        /// Initializes run-time configuration for the Rhetos application.
+        /// Loads Rhetos application's configuration files.
         /// </summary>
         public static IConfigurationBuilder AddRhetosAppConfiguration(this IConfigurationBuilder builder, string rhetosAppRootPath)
         {
@@ -89,7 +109,7 @@ namespace Rhetos
         public static IConfigurationBuilder AddRhetosAppEnvironment(this IConfigurationBuilder builder, RhetosAppEnvironment rhetosAppEnvironment)
         {
             return builder
-                .AddKeyValue(nameof(RhetosAppEnvironment.RootPath), rhetosAppEnvironment.RootPath)
+                .AddKeyValue(nameof(RhetosAppEnvironment.RootFolder), rhetosAppEnvironment.RootFolder)
                 .AddKeyValue(nameof(RhetosAppEnvironment.BinFolder), rhetosAppEnvironment.BinFolder)
                 .AddKeyValue(nameof(RhetosAppEnvironment.AssetsFolder), rhetosAppEnvironment.AssetsFolder)
                 .AddKeyValue(nameof(RhetosAppEnvironment.LegacyPluginsFolder), rhetosAppEnvironment.LegacyPluginsFolder)
