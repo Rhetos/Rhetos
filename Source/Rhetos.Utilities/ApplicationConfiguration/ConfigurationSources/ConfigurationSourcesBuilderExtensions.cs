@@ -24,6 +24,8 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Web.Configuration;
 
 namespace Rhetos
@@ -36,10 +38,29 @@ namespace Rhetos
             return builder;
         }
 
+        public static IConfigurationBuilder AddKeyValues(this IConfigurationBuilder builder, IEnumerable<KeyValuePair<string, object>> keyValues)
+        {
+            builder.Add(new KeyValuesSource(keyValues));
+            return builder;
+        }
+
         public static IConfigurationBuilder AddKeyValue(this IConfigurationBuilder builder, string key, object value)
         {
             builder.Add(new KeyValuesSource(new [] { new KeyValuePair<string, object>(key, value) }));
             return builder;
+        }
+
+        public static IConfigurationBuilder AddOptions(this IConfigurationBuilder builder, object options, string configurationPath = "")
+        {
+            var members = options.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public).Select(member => (member.Name, Value: member.GetValue(options)))
+                .Concat(options.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public).Select(member => (member.Name, Value: member.GetValue(options))));
+
+            string keyPrefix = !string.IsNullOrEmpty(configurationPath) ? configurationPath + ConfigurationProvider.ConfigurationPathSeparator : "";
+            var settings = members
+                .Select(member => new KeyValuePair<string, object>(keyPrefix + member.Name, member.Value))
+                .ToList();
+
+            return builder.AddKeyValues(settings);
         }
 
         public static IConfigurationBuilder AddCommandLineArguments(this IConfigurationBuilder builder, string[] args, string argumentPrefix, string configurationPath = "")
@@ -108,12 +129,7 @@ namespace Rhetos
 
         public static IConfigurationBuilder AddRhetosAppEnvironment(this IConfigurationBuilder builder, RhetosAppEnvironment rhetosAppEnvironment)
         {
-            return builder
-                .AddKeyValue(nameof(RhetosAppEnvironment.RootFolder), rhetosAppEnvironment.RootFolder)
-                .AddKeyValue(nameof(RhetosAppEnvironment.BinFolder), rhetosAppEnvironment.BinFolder)
-                .AddKeyValue(nameof(RhetosAppEnvironment.AssetsFolder), rhetosAppEnvironment.AssetsFolder)
-                .AddKeyValue(nameof(RhetosAppEnvironment.LegacyPluginsFolder), rhetosAppEnvironment.LegacyPluginsFolder)
-                .AddKeyValue(nameof(RhetosAppEnvironment.LegacyAssetsFolder), rhetosAppEnvironment.LegacyAssetsFolder);
+            return builder.AddOptions(rhetosAppEnvironment);
         }
 
         /// <summary>
