@@ -77,16 +77,20 @@ namespace Rhetos.Dsl
 
             var listOfMembers = readingAReference ? Members.Where(m => m.IsKey) : Members.Where(m => m.IsParsable);
 
-            // If there are multiple references to base concepts that can be interpreted as recursive parent,
-            // the last one will be used instead of the first one (more common pattern in concept design),
-            // until explicit metadata is added to concept definition for recursive concepts.
-            var lastPossibleRecursiveParent = listOfMembers.LastOrDefault(member =>
-                member.IsConceptInfo && lastConcept != null && member.ValueType.IsInstanceOfType(lastConcept)
+            bool lastConceptUsed2 = lastConceptUsed;
+            var explicitParentNested = listOfMembers.LastOrDefault(member => member.IsParentNested
+                && !lastConceptUsed2 && member.IsConceptInfo && lastConcept != null && member.ValueType.IsInstanceOfType(lastConcept)
+                && member.ValueType.IsAssignableFrom(ConceptInfoType));
+            var parentNested = explicitParentNested ?? listOfMembers.FirstOrDefault(member =>
+                !lastConceptUsed2 && member.IsConceptInfo && lastConcept != null && member.ValueType.IsInstanceOfType(lastConcept)
                 && member.ValueType.IsAssignableFrom(ConceptInfoType));
 
             foreach (ConceptMember member in listOfMembers)
             {
-                var valueOrError = ReadMemberValue(member, tokenReader, lastConcept, firstMember, ref lastPropertyWasInlineParent, ref lastConceptUsed, readingAReference, member == lastPossibleRecursiveParent);
+                var valueOrError =
+                    (explicitParentNested != null && member != explicitParentNested)
+                    ? ReadMemberValue(member, tokenReader, null, firstMember, ref lastPropertyWasInlineParent, ref lastConceptUsed, readingAReference, explicitParentNested)
+                    : ReadMemberValue(member, tokenReader, lastConcept, firstMember, ref lastPropertyWasInlineParent, ref lastConceptUsed, readingAReference, parentNested);
 
                 if (valueOrError.IsError)
                     return ValueOrError<IConceptInfo>.CreateError(string.Format(CultureInfo.InvariantCulture,
@@ -102,7 +106,7 @@ namespace Rhetos.Dsl
 
         private ValueOrError<object> ReadMemberValue(ConceptMember member, ITokenReader tokenReader, IConceptInfo lastConcept,
             bool firstMember, ref bool lastPropertyWasInlineParent, ref bool lastConceptUsed, bool readingAReference,
-            bool possibleRecursiveParent)
+            ConceptMember explicitParentNested)
         {
             try
             {
@@ -127,7 +131,7 @@ namespace Rhetos.Dsl
                     else
                         return ValueOrError<object>.CreateError("Member of type IConceptInfo can only be used as a first member and enclosed within the referenced parent concept.");
 
-                if (possibleRecursiveParent && !lastConceptUsed) // Recursive "parent" property
+                if (member == explicitParentNested && !lastConceptUsed) // Recursive "parent" property
                 {
                     lastConceptUsed = true;
                     return (object)lastConcept;
