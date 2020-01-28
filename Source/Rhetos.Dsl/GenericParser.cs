@@ -76,9 +76,17 @@ namespace Rhetos.Dsl
             bool lastPropertyWasInlineParent = false;
 
             var listOfMembers = readingAReference ? Members.Where(m => m.IsKey) : Members.Where(m => m.IsParsable);
+
+            // If there are multiple references to base concepts that can be interpreted as recursive parent,
+            // the last one will be used instead of the first one (more common pattern in concept design),
+            // until explicit metadata is added to concept definition for recursive concepts.
+            var lastPossibleRecursiveParent = listOfMembers.LastOrDefault(member =>
+                member.IsConceptInfo && lastConcept != null && member.ValueType.IsInstanceOfType(lastConcept)
+                && member.ValueType.IsAssignableFrom(ConceptInfoType));
+
             foreach (ConceptMember member in listOfMembers)
             {
-                var valueOrError = ReadMemberValue(member, tokenReader, lastConcept, firstMember, ref lastPropertyWasInlineParent, ref lastConceptUsed, readingAReference);
+                var valueOrError = ReadMemberValue(member, tokenReader, lastConcept, firstMember, ref lastPropertyWasInlineParent, ref lastConceptUsed, readingAReference, member == lastPossibleRecursiveParent);
 
                 if (valueOrError.IsError)
                     return ValueOrError<IConceptInfo>.CreateError(string.Format(CultureInfo.InvariantCulture,
@@ -93,7 +101,8 @@ namespace Rhetos.Dsl
         }
 
         private ValueOrError<object> ReadMemberValue(ConceptMember member, ITokenReader tokenReader, IConceptInfo lastConcept,
-            bool firstMember, ref bool lastPropertyWasInlineParent, ref bool lastConceptUsed, bool readingAReference)
+            bool firstMember, ref bool lastPropertyWasInlineParent, ref bool lastConceptUsed, bool readingAReference,
+            bool possibleRecursiveParent)
         {
             try
             {
@@ -118,9 +127,7 @@ namespace Rhetos.Dsl
                     else
                         return ValueOrError<object>.CreateError("Member of type IConceptInfo can only be used as a first member and enclosed within the referenced parent concept.");
 
-                if (member.IsConceptInfo && lastConcept != null && member.ValueType.IsInstanceOfType(lastConcept)
-                    && !lastConceptUsed
-                    && member.ValueType.IsAssignableFrom(ConceptInfoType)) // Recursive "parent" property
+                if (possibleRecursiveParent && !lastConceptUsed) // Recursive "parent" property
                 {
                     lastConceptUsed = true;
                     return (object)lastConcept;
