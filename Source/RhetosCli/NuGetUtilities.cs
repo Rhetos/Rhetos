@@ -93,7 +93,7 @@ namespace Rhetos
 
         private IList<LockFileTargetLibrary> GetTargetFrameworkLibraries()
         {
-            return _lockFile.Targets.Single(x => x.TargetFramework == _targetFramework && x.RuntimeIdentifier == null).Libraries;
+            return _lockFile.Targets.Single(x => x.TargetFramework == _targetFramework && x.RuntimeIdentifier == null).Libraries.Where(x => x.Type == "package").ToList();
         }
 
         private List<InstalledPackage> SortInstalledPackagesByDependencies(IList<LockFileTargetLibrary> targetLibraries, List<InstalledPackage> installedPackages)

@@ -18,12 +18,27 @@
       <dependency id="Newtonsoft.Json" version="12.0.2" />
       <dependency id="NLog" version="4.6.7" />
       <dependency id="NuGet.Core" version="2.14.0" />
+      <dependency id="System.CommandLine" version="2.0.0-beta1.20071.2" /> <!-- Ovo dodajemo zbog RhetosCli-a -->
       <dependency id="Oracle.ManagedDataAccess" version="12.1.24160719" />
     </dependencies>
+    <contentFiles>
+		<files include="any/any/rhetos.exe" buildAction="None" copyToOutput="true" />
+        <files include="any/any/rhetos.exe.config" buildAction="None" copyToOutput="true" />
+    </contentFiles>           
   </metadata>
-  <files>
+  <files>  
+    <file src="Source\RhetosCli\bin\Debug\*.dll" target="tools" />
+    <file src="Source\RhetosCli\bin\Debug\*.pdb" target="tools" />
+    <file src="Source\RhetosCli\bin\Debug\rhetos.exe" target="tools" />
+    <file src="Source\RhetosCli\bin\Debug\rhetos.exe.config" target="tools" />    
+
+    <file src="Rhetos.props" target="build" />  
+
     <file src="Source\Rhetos\bin\Rhetos.*.dll" target="lib\net472" />
     <file src="Source\Rhetos\bin\Rhetos.*.pdb" target="lib\net472" />
-	<file src="Source\Rhetos\bin\Rhetos.*.xml" target="lib\net472" />
+	  <file src="Source\Rhetos\bin\Rhetos.*.xml" target="lib\net472" />
+
+    <file src="Source\RhetosCli\bin\Debug\rhetos.exe" target="contentFiles/any/any" />
+    <file src="Source\RhetosCli\bin\Debug\rhetos.exe.config" target="contentFiles/any/any" />
   </files>
 </package>

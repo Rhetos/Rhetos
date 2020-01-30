@@ -1,0 +1,5 @@
+<Project>
+ <PropertyGroup>
+   <RhetosCliExecutablePath>$(MSBuildThisFileDirectory)..\tools\rhetos.exe</RhetosCliExecutablePath>
+ </PropertyGroup>
+</Project>
