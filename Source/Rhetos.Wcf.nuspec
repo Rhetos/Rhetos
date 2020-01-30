@@ -1,0 +1,39 @@
+﻿<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Rhetos.Wcf</id>
+    <version>4.0.0-dev</version>
+    <authors>Omega software</authors>
+    <owners>Omega software</owners>
+    <licenseUrl>http://opensource.org/licenses/AGPL-3.0</licenseUrl>
+    <projectUrl>https://github.com/rhetos/rhetos</projectUrl>
+    <description>Rhetos is a DSL framework that enables you to create your own domain-specific language to build server applications.</description>
+    <copyright>Copyright Omega software 2013</copyright>
+    <tags>Rhetos plugin</tags>
+    <dependencies>
+      <dependency id="Rhetos" version="[4.0.0-dev,4.1.0)" />
+    </dependencies>
+    <contentFiles>
+      <files include="any/any/Default.aspx" buildAction="Content" />
+      <files include="any/any/Default.aspx.cs" />
+      <files include="any/any/Global.asax" buildAction="Content" />
+      <files include="any/any/Global.asax.cs" />
+      <files include="any/any/Rhetos Server SOAP.linq" buildAction="None" />
+      <files include="any/any/Rhetos Server DOM.linq" buildAction="None" />
+      <files include="any/any/RhetosService.svc.cs" />
+      <files include="any/any/RhetosService.svc" buildAction="Content" />
+      <files include="any/any/Template.ConnectionStrings.config" buildAction="None" copyToOutput="true" />
+    </contentFiles>
+  </metadata>
+  <files>
+    <file src="Rhetos\Default.aspx" target="contentFiles/any/any" />
+    <file src="Rhetos\Default.aspx.cs" target="contentFiles/any/any" />
+    <file src="Rhetos\Global.asax" target="contentFiles/any/any" />
+    <file src="Rhetos\Global.asax.cs" target="contentFiles/any/any" />
+    <file src="Rhetos\Rhetos Server SOAP.linq" target="contentFiles/any/any" />
+    <file src="Rhetos\Rhetos Server DOM.linq" target="contentFiles/any/any" />
+    <file src="Rhetos\RhetosService.svc.cs" target="contentFiles/any/any" />
+    <file src="Rhetos\RhetosService.svc" target="contentFiles/any/any" />
+    <file src="Rhetos\Template.ConnectionStrings.config" target="contentFiles/any/any" />
+  </files>
+</package>
