@@ -48,8 +48,13 @@ namespace Rhetos
 
             return () =>
             {
-                // Rhetos framework does not contain plugins exports (only explicit registration), so only plugins and generated files need to be scanned for plugins.
-                string[] pluginsPath = new[] { rhetosAppEnvironment.LegacyPluginsFolder, rhetosAppEnvironment.AssetsFolder };
+                string[] pluginsPath = new[]
+                {
+                    // When using separate LegacyPluginsFolder, there is no need to scan BinFolder, because Rhetos framework binaries do not contain plugins exports (only explicit registrations).
+                    rhetosAppEnvironment.LegacyPluginsFolder ?? rhetosAppEnvironment.BinFolder,
+                    // TODO: Remove AssetsFolder after modifying AssemblyGenerator to not build DLLs.
+                    rhetosAppEnvironment.AssetsFolder
+                };
 
                 List<string> assemblies = new List<string>();
                 foreach (var path in pluginsPath)
