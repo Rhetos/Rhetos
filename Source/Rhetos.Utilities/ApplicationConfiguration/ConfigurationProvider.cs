@@ -22,8 +22,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Rhetos
 {
@@ -68,8 +66,8 @@ namespace Rhetos
             return (T)optionsInstance;
         }
 
-        private static readonly string _memberMappingSeparator = "__";
-        private static readonly string _memberMappingSeparatorDot = ".";
+        private const string _memberMappingSeparator = "__";
+        private const string _memberMappingSeparatorDot = ".";
 
         private bool TryGetConfigurationValueForMemberName(string memberName, out object value, string configurationPath)
         {
@@ -114,7 +112,7 @@ namespace Rhetos
             return Convert<T>(value, configurationKey);
         }
 
-        public string[] AllKeys => _configurationValues.Keys.ToArray();
+        public IEnumerable<string> AllKeys => _configurationValues.Keys;
 
         private void SetMemberValue(object instance, MemberInfo member, object value)
         {

@@ -93,7 +93,7 @@ namespace Rhetos
                 {
                     RootFolder = rhetosAppRootPath,
                     BinFolder = Path.Combine(rhetosAppRootPath, "bin"),
-                    AssetsFolder = Path.Combine(rhetosAppRootPath, "bin"),
+                    AssetsFolder = Path.Combine(rhetosAppRootPath, "bin"), // TODO: Move assets to a separate folder ("RhetosAssets"), after removing DLL compiling from AssemblyGenerator. Current solution might have issues with AssetsFolder cleanup by Rhetos that might unintentionally remove other files from bin folder.
                     LegacyPluginsFolder = Path.Combine(rhetosAppRootPath, "bin"),
                     LegacyAssetsFolder = Path.Combine(rhetosAppRootPath, "Resources"),
                 })

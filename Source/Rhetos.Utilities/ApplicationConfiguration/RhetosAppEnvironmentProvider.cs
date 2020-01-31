@@ -22,6 +22,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace Rhetos.Utilities.ApplicationConfiguration
@@ -30,23 +31,26 @@ namespace Rhetos.Utilities.ApplicationConfiguration
     {
         private const string RhetosAppEnvironmentFileName = "RhetosAppEnvironment.json";
 
+        /// <summary>
+        /// Saving build-time configuration to be used later at run-time.
+        /// </summary>
         public static void Save(RhetosAppEnvironment rhetosAppEnvironment)
         {
-            string saveFolder = rhetosAppEnvironment.RootFolder;
-            var relativePaths = new Dictionary<string, string>
-            {
-                // No need to save RootFolder, the file is in that folder.
-                { nameof(RhetosAppEnvironment.BinFolder), FilesUtility.AbsoluteToRelativePath(saveFolder, rhetosAppEnvironment.BinFolder) },
-                { nameof(RhetosAppEnvironment.AssetsFolder), FilesUtility.AbsoluteToRelativePath(saveFolder, rhetosAppEnvironment.AssetsFolder) },
-                { nameof(RhetosAppEnvironment.LegacyPluginsFolder), FilesUtility.AbsoluteToRelativePath(saveFolder, rhetosAppEnvironment.LegacyPluginsFolder) },
-                { nameof(RhetosAppEnvironment.LegacyAssetsFolder), FilesUtility.AbsoluteToRelativePath(saveFolder, rhetosAppEnvironment.LegacyAssetsFolder) },
-            };
+            var environmentFolders = rhetosAppEnvironment.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                .ToDictionary(property => property.Name, property => (string)property.GetValue(rhetosAppEnvironment));
 
-            string serialized = JsonConvert.SerializeObject(relativePaths, Formatting.Indented);
+            string saveFolder = rhetosAppEnvironment.RootFolder;
+            foreach (var name in environmentFolders.Keys.ToList())
+                environmentFolders[name] = FilesUtility.AbsoluteToRelativePath(saveFolder, environmentFolders[name]);
+
+            string serialized = JsonConvert.SerializeObject(environmentFolders, Formatting.Indented);
             string filePath = Path.Combine(saveFolder, RhetosAppEnvironmentFileName);
             File.WriteAllText(filePath, serialized, Encoding.UTF8);
         }
 
+        /// <summary>
+        /// Loading application environment configuration at run-time.
+        /// </summary>
         public static RhetosAppEnvironment Load(string rhetosAppRootPath)
         {
             rhetosAppRootPath = Path.GetFullPath(rhetosAppRootPath); // For better error reporting.
@@ -57,17 +61,18 @@ namespace Rhetos.Utilities.ApplicationConfiguration
                     $" Please verify that the specified folder contains a valid Rhetos application, and that the build have passed successfully.");
 
             var serialized = File.ReadAllText(filePath, Encoding.UTF8);
-            var relativePaths = JsonConvert.DeserializeObject<Dictionary<string, string>>(serialized);
+            var environmentFolders = JsonConvert.DeserializeObject<Dictionary<string, string>>(serialized);
 
             string saveFolder = Path.GetDirectoryName(filePath);
-            return new RhetosAppEnvironment
-            {
-                RootFolder = rhetosAppRootPath,
-                BinFolder = FilesUtility.RelativeToAbsolutePath(saveFolder, relativePaths[nameof(RhetosAppEnvironment.BinFolder)]),
-                AssetsFolder = FilesUtility.RelativeToAbsolutePath(saveFolder, relativePaths[nameof(RhetosAppEnvironment.AssetsFolder)]),
-                LegacyPluginsFolder = FilesUtility.RelativeToAbsolutePath(saveFolder, relativePaths[nameof(RhetosAppEnvironment.LegacyPluginsFolder)]),
-                LegacyAssetsFolder = FilesUtility.RelativeToAbsolutePath(saveFolder, relativePaths[nameof(RhetosAppEnvironment.LegacyAssetsFolder)]),
-            };
+            foreach (var name in environmentFolders.Keys.ToList())
+                environmentFolders[name] = FilesUtility.RelativeToAbsolutePath(saveFolder, environmentFolders[name]);
+
+            var rhetosAppEnvironment = new RhetosAppEnvironment();
+            foreach (var property in rhetosAppEnvironment.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public))
+                if (environmentFolders.ContainsKey(property.Name))
+                    property.SetValue(rhetosAppEnvironment, environmentFolders[property.Name]);
+
+            return rhetosAppEnvironment;
         }
 
         public static bool IsRhetosApplicationRootFolder(string rhetosAppRootPath)

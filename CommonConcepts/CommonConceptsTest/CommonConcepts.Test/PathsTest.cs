@@ -22,6 +22,7 @@ using Rhetos.Utilities;
 using Rhetos;
 using System.IO;
 using Rhetos.Configuration.Autofac;
+using System;
 
 namespace CommonConcepts.Test
 {
@@ -31,21 +32,28 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void PathsInitializationTest()
         {
-            string defaultRhetosServerRootFolder;
+            string rootPath;
             using (var rhetos = new RhetosTestContainer_Accessor())
-                defaultRhetosServerRootFolder = rhetos.GetDefaultRhetosServerRootFolder();
+                rootPath = rhetos.GetDefaultRhetosServerRootFolder();
+            Console.WriteLine($"rootPath: {rootPath}");
 
-            var rootPath = defaultRhetosServerRootFolder;
             var configurationProvider = new ConfigurationBuilder()
                 .AddRhetosAppConfiguration(rootPath)
                 .Build();
-            Paths.Initialize(configurationProvider.GetOptions<RhetosAppEnvironment>());
 
-            Assert.AreEqual(rootPath, Paths.RhetosServerRootPath);
+            LegacyUtilities.Initialize(configurationProvider);
+            Console.WriteLine($"Paths: {Paths.RhetosServerRootPath}");
+
+            Assert.AreEqual(Normalize(rootPath), Normalize(Paths.RhetosServerRootPath));
             Assert.AreEqual(Path.Combine(rootPath, "bin"), Paths.BinFolder);
             Assert.AreEqual(Path.Combine(rootPath, "bin\\Generated"), Paths.GeneratedFolder);
             Assert.AreEqual(Path.Combine(rootPath, "bin\\Plugins"), Paths.PluginsFolder);
             Assert.AreEqual(Path.Combine(rootPath, "Resources"), Paths.ResourcesFolder);
+        }
+
+        private string Normalize(string path)
+        {
+            return Path.GetFullPath(Path.Combine(path, "."));
         }
 
         private class RhetosTestContainer_Accessor : RhetosTestContainer

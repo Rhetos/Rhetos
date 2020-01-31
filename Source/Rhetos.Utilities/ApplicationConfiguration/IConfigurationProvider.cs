@@ -29,6 +29,6 @@ namespace Rhetos
     {
         T GetValue<T>(string configurationKey, T defaultValue = default(T), string configurationPath = "");
         T GetOptions<T>(string configurationPath = "", bool requireAllMembers = false) where T : class;
-        string[] AllKeys { get; }
+        IEnumerable<string> AllKeys { get; }
     }
 }

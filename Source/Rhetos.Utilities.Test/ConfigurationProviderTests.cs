@@ -586,7 +586,7 @@ namespace Rhetos.Utilities.Test
             // ensure some specific string values are kept as strings and not implicitly parsed by json parser
             Assert.AreEqual("c7653c46-62a2-427b-8841-183bae56d743", provider.GetValue("GuidAsString", ""));
             Assert.AreEqual("2019-12-01T15:34:50.7962010Z", provider.GetValue("DateTimeAsString", ""));
-            Assert.AreEqual(7, provider.AllKeys.Length);
+            Assert.AreEqual(7, provider.AllKeys.Count());
         }
 
         [TestMethod]
@@ -596,6 +596,53 @@ namespace Rhetos.Utilities.Test
 
             TestUtility.ShouldFail(() => buildWithJson("{"), "Error reading JObject from JsonReader");
             TestUtility.ShouldFail<FrameworkException>(() => buildWithJson("{\"array\": [] }"), "Json token type Array is not allowed");
+        }
+
+        private class TestOptions
+        {
+            private string PrivateField;
+            private string PrivateProperty { get; set; }
+            public string PublicField;
+            public string PublicProperty { get; set; }
+            public int PublicPropertyInt { get; set; }
+            public object PublicPropertyNull { get; set; }
+            public string PublicPropertyGetter { get; }
+            public static string StaticField;
+            public static string StaticProperty { get; set; }
+            public TestOptions()
+            {
+                PrivateField = "1";
+                PrivateProperty = "2";
+                PublicField = "3";
+                PublicProperty = "4";
+                PublicPropertyInt = 5;
+                PublicPropertyNull = null;
+                PublicPropertyGetter = "6";
+                StaticField = "7";
+                StaticProperty = "8";
+            }
+        }
+
+        [TestMethod]
+        public void AddOptions()
+        {
+            var options = new TestOptions();
+            var configuration = new ConfigurationBuilder()
+                .AddOptions(options)
+                .Build();
+            Assert.AreEqual("PublicField:3, PublicProperty:4, PublicPropertyGetter:6, PublicPropertyInt:5, PublicPropertyNull:",
+                TestUtility.DumpSorted(configuration.AllKeys.Select(key => $"{key}:{configuration.GetValue<object>(key)}")));
+        }
+
+        [TestMethod]
+        public void AddOptionsWithPrefix()
+        {
+            var options = new TestOptions();
+            var configuration = new ConfigurationBuilder()
+                .AddOptions(options, "p")
+                .Build();
+            Assert.AreEqual("p:PublicField:3, p:PublicProperty:4, p:PublicPropertyGetter:6, p:PublicPropertyInt:5, p:PublicPropertyNull:",
+                TestUtility.DumpSorted(configuration.AllKeys.Select(key => $"{key}:{configuration.GetValue<object>(key)}")));
         }
     }
 }

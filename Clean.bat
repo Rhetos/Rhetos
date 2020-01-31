@@ -24,6 +24,7 @@ REM Delete build logs:
 
 REM Delete build installation resut:
 @RD /S/Q Install
+@MD Install
 
 REM Delete external dependencies cache (downloaded NuGet packages):
 @RD /S/Q packages
