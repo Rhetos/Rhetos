@@ -149,11 +149,11 @@ namespace Rhetos
                 .AddConfigurationManagerConfiguration()
                 .Build();
 
-            string binFolder = configurationProvider.GetOptions<RhetosAppEnvironment>().BinFolder;
-            var assemblyList = Directory.GetFiles(binFolder, "*.dll");
-            AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(assemblyList);
+            var assemblyFiles = LegacyUtilities.GetListAssembliesDelegate(configurationProvider).Invoke(); // Using same assembly locations as the generated application runtime.
 
-            return new ApplicationDeployment(configurationProvider, LogProvider, () => assemblyList);
+            AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(assemblyFiles);
+
+            return new ApplicationDeployment(configurationProvider, LogProvider, () => assemblyFiles);
         }
 
         private ResolveEventHandler GetSearchForAssemblyDelegate(params string[] assemblyList)

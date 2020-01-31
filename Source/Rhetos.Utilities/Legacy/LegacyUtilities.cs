@@ -21,6 +21,7 @@ using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Rhetos
 {
@@ -42,27 +43,26 @@ namespace Rhetos
         /// <summary>
         /// Returns list of assemblies that will be scanned for plugin exports.
         /// </summary>
-        public static Func<List<string>> GetListAssembliesDelegate(IConfigurationProvider configurationProvider)
+        public static Func<string[]> GetListAssembliesDelegate(IConfigurationProvider configurationProvider)
         {
             var rhetosAppEnvironment = configurationProvider.GetOptions<RhetosAppEnvironment>();
 
             return () =>
             {
-                string[] pluginsPath = new[]
+                string[] pluginsPaths = new[]
                 {
-                    // When using separate LegacyPluginsFolder, there is no need to scan BinFolder, because Rhetos framework binaries do not contain plugins exports (only explicit registrations).
-                    rhetosAppEnvironment.LegacyPluginsFolder ?? rhetosAppEnvironment.BinFolder,
-                    // TODO: Remove AssetsFolder after modifying AssemblyGenerator to not build DLLs.
-                    rhetosAppEnvironment.AssetsFolder
+                    rhetosAppEnvironment.LegacyPluginsFolder ?? rhetosAppEnvironment.BinFolder, // When using separate LegacyPluginsFolder, there is no need to scan BinFolder, because Rhetos framework binaries do not contain plugins exports (only explicit registrations).
+                    rhetosAppEnvironment.AssetsFolder // TODO: Remove AssetsFolder after modifying AssemblyGenerator to not build DLLs.
                 };
 
-                List<string> assemblies = new List<string>();
-                foreach (var path in pluginsPath)
-                    if (Directory.Exists(path)) // Some paths don't exist in certain phases of build and deployment.
-                        assemblies.AddRange(Directory.GetFiles(path, "*.dll", SearchOption.TopDirectoryOnly));
+                var assemblyFiles = pluginsPaths
+                    .Where(folder => Directory.Exists(folder)) // Some paths don't exist in certain phases of build and deployment.
+                    .SelectMany(folder => Directory.GetFiles(folder, "*.dll", SearchOption.TopDirectoryOnly))
+                    .Distinct()
+                    .OrderBy(file => file)
+                    .ToArray();
 
-                assemblies.Sort();
-                return assemblies;
+                return assemblyFiles;
             };
         }
 #pragma warning restore CS0618 // Type or member is obsolete
