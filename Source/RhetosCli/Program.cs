@@ -29,44 +29,60 @@ using System.CommandLine.Invocation;
 
 namespace Rhetos
 {
-    public static class Program
+    public class Program
     {
         public static int Main(string[] args)
         {
-            var logProvider = new NLogProvider();
-            var logger = logProvider.GetLogger("DeployPackages");
-            logger.Trace(() => "Logging configured.");
+            return new Program().Run(args);
+        }
 
+        private ILogProvider LogProvider { get; }
+        private ILogger Logger { get; }
+
+        public Program()
+        {
+            LogProvider = new NLogProvider();
+            Logger = LogProvider.GetLogger("DeployPackages");
+        }
+
+        public int Run(string[] args)
+        {
+            Logger.Trace(() => "Logging configured.");
+
+            var rootCommand = new RootCommand();
+            var buildCommand = new Command("build", "Generates the Rhetos application inside the <project-root-folder>. If <project-root-folder> is not set it will use the current working directory.");
+            buildCommand.Add(new Argument<DirectoryInfo>("project-root-folder", () => new DirectoryInfo(Environment.CurrentDirectory)));
+            buildCommand.Add(new Option<string[]>("--assemblies", "List of assemblies outside of referenced NuGet packages that will be used during the build."));
+            buildCommand.Handler = CommandHandler.Create((DirectoryInfo projectRootFolder, string[] assemblies) => ReportError(() => Build(projectRootFolder.FullName, assemblies)));
+            rootCommand.AddCommand(buildCommand);
+
+            var dbUpdateCommand = new Command("dbupdate", "Updates the database based on the generated files from the build process. If <application-root-folder> is not set it will use the current working directory.");
+            dbUpdateCommand.Add(new Argument<DirectoryInfo>("application-root-folder", () => new DirectoryInfo(Environment.CurrentDirectory)));
+            dbUpdateCommand.Handler = CommandHandler.Create((DirectoryInfo applicationRootFolder) => ReportError(() => DbUpdate(applicationRootFolder.FullName)));
+            rootCommand.AddCommand(dbUpdateCommand);
+
+            var appInitializeCommand = new Command("appinitialize", "Initializes the application. If <application-root-folder> is not set it will use the current working directory.");
+            appInitializeCommand.Add(new Argument<DirectoryInfo>("application-root-folder", () => new DirectoryInfo(Environment.CurrentDirectory)));
+            appInitializeCommand.Handler = CommandHandler.Create((DirectoryInfo applicationRootFolder) => ReportError(() => AppInitialize(applicationRootFolder.FullName)));
+            rootCommand.AddCommand(appInitializeCommand);
+
+            return rootCommand.Invoke(args);
+        }
+
+        private int ReportError(Action action)
+        {
             try
             {
-                var rootCommand = new RootCommand();
-                var buildCommand = new Command("build", "Generates the Rhetos application inside the <project-root-folder>. If <project-root-folder> is not set it will use the current working directory.");
-                buildCommand.Add(new Argument<DirectoryInfo>("project-root-folder", () => new DirectoryInfo(Environment.CurrentDirectory)));
-                buildCommand.Add(new Option<string[]>("--assemblies", "List of assemblies outside of referenced NuGet packages that will be used during the build."));
-                buildCommand.Handler = CommandHandler.Create((DirectoryInfo projectRootFolder, string[] assemblies) => Build(projectRootFolder.FullName, assemblies, logProvider));
-                rootCommand.AddCommand(buildCommand);
-
-                var dbUpdateCommand = new Command("dbupdate", "Updates the database based on the generated files from the build process. If <application-root-folder> is not set it will use the current working directory.");
-                dbUpdateCommand.Add(new Argument<DirectoryInfo>("application-root-folder", () => new DirectoryInfo(Environment.CurrentDirectory)));
-                dbUpdateCommand.Handler = CommandHandler.Create((DirectoryInfo applicationRootFolder) => DbUpdate(applicationRootFolder.FullName, logProvider));
-                rootCommand.AddCommand(dbUpdateCommand);
-
-                var appInitializeCommand = new Command("appinitialize", "Initializes the application. If <application-root-folder> is not set it will use the current working directory.");
-                appInitializeCommand.Add(new Argument<DirectoryInfo>("application-root-folder", () => new DirectoryInfo(Environment.CurrentDirectory)));
-                appInitializeCommand.Handler = CommandHandler.Create((DirectoryInfo applicationRootFolder) => AppInitialize(applicationRootFolder.FullName, logProvider));
-                rootCommand.AddCommand(appInitializeCommand);
-
-                rootCommand.Invoke(args);
-
-                logger.Trace("Done.");
+                action.Invoke();
+                Logger.Trace("Done.");
             }
             catch (Exception e)
             {
-                logger.Error(e.ToString());
+                Logger.Error(e.ToString());
 
                 string typeLoadReport = CsUtility.ReportTypeLoadException(e);
                 if (typeLoadReport != null)
-                    logger.Error(typeLoadReport);
+                    Logger.Error(typeLoadReport);
 
                 if (Environment.UserInteractive)
                     ApplicationDeployment.PrintErrorSummary(e);
@@ -77,7 +93,7 @@ namespace Rhetos
             return 0;
         }
 
-        private static void Build(string rhetosAppRootPath, string[] assemblies, NLogProvider logProvider)
+        private void Build(string rhetosAppRootPath, string[] assemblies)
         {
             var configurationProvider = new ConfigurationBuilder()
                 .AddRhetosAppEnvironment(new RhetosAppEnvironment
@@ -94,7 +110,7 @@ namespace Rhetos
                 .AddConfigurationManagerConfiguration()
                 .Build();
 
-            var nuget = new NuGetUtilities(rhetosAppRootPath, logProvider, null);
+            var nuget = new NuGetUtilities(rhetosAppRootPath, LogProvider, null);
             var packagesBuildAssemblies = nuget.GetBuildAssemblies();
 
             var allAssemblies = packagesBuildAssemblies.Select(a => Path.GetFullPath(a)).Union(assemblies.Select(a => Path.GetFullPath(a)));
@@ -102,29 +118,29 @@ namespace Rhetos
             var multipleAssembliesWithsameName = allAssemblies.GroupBy(a => Path.GetFileName(a)).Where(a => a.Count() > 1);
             if (multipleAssembliesWithsameName.Any())
             {
-                logProvider.GetLogger("DeployPackages").Info("Detected multiple assemblies with the same name:" + Environment.NewLine + 
+                Logger.Info("Detected multiple assemblies with the same name:" + Environment.NewLine + 
                     string.Join(Environment.NewLine, multipleAssembliesWithsameName.Select(a => $"{a.Key} on locations {string.Join(", ", a)}")));
             }
 
             AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(allAssemblies.ToArray());
 
-            var deployment = new ApplicationDeployment(configurationProvider, logProvider, () => allAssemblies);
+            var deployment = new ApplicationDeployment(configurationProvider, LogProvider, () => allAssemblies);
             deployment.GenerateApplication(nuget.GetInstalledPackages());
         }
 
-        private static void DbUpdate(string rhetosAppRootPath, NLogProvider logProvider)
+        private void DbUpdate(string rhetosAppRootPath)
         {
-            var deployment = SetupRuntime(rhetosAppRootPath, logProvider);
+            var deployment = SetupRuntime(rhetosAppRootPath);
             deployment.UpdateDatabase();
         }
 
-        private static void AppInitialize(string rhetosAppRootPath, NLogProvider logProvider)
+        private void AppInitialize(string rhetosAppRootPath)
         {
-            var deployment = SetupRuntime(rhetosAppRootPath, logProvider);
+            var deployment = SetupRuntime(rhetosAppRootPath);
             deployment.InitializeGeneratedApplication();
         }
 
-        private static ApplicationDeployment SetupRuntime(string rhetosAppRootPath, NLogProvider logProvider)
+        private ApplicationDeployment SetupRuntime(string rhetosAppRootPath)
         {
             var configurationProvider = new ConfigurationBuilder()
                 .AddRhetosAppConfiguration(rhetosAppRootPath)
@@ -135,10 +151,10 @@ namespace Rhetos
             var assemblyList = Directory.GetFiles(binFolder, "*.dll");
             AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(assemblyList);
 
-            return new ApplicationDeployment(configurationProvider, logProvider, () => assemblyList);
+            return new ApplicationDeployment(configurationProvider, LogProvider, () => assemblyList);
         }
 
-        private static ResolveEventHandler GetSearchForAssemblyDelegate(params string[] assemblyList)
+        private ResolveEventHandler GetSearchForAssemblyDelegate(params string[] assemblyList)
         {
             return new ResolveEventHandler((object sender, ResolveEventArgs args) =>
             {
