@@ -95,7 +95,7 @@ namespace Common.Queryable
     {CommonQueryableMemebersTag}
 }}
 
-namespace Rhetos.Dom.DefaultConcepts
+namespace System.Linq
 {{
     {StandardNamespacesSnippet}
 
