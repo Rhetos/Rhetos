@@ -42,7 +42,7 @@ namespace Rhetos
                 var rootCommand = new RootCommand();
                 var buildCommand = new Command("build", "Generates the Rhetos application inside the <project-root-folder>. If <project-root-folder> is not set it will use the current working directory.");
                 buildCommand.Add(new Argument<DirectoryInfo>("project-root-folder", () => new DirectoryInfo(Environment.CurrentDirectory)));
-                buildCommand.Add(new Option<string[]>("--assemblies", "List of assemblies outside of refrenced nuget packages that will be used during the build."));
+                buildCommand.Add(new Option<string[]>("--assemblies", "List of assemblies outside of referenced NuGet packages that will be used during the build."));
                 buildCommand.Handler = CommandHandler.Create((DirectoryInfo projectRootFolder, string[] assemblies) => Build(projectRootFolder.FullName, assemblies, logProvider));
                 rootCommand.AddCommand(buildCommand);
 
@@ -96,14 +96,14 @@ namespace Rhetos
 
             var nuget = new NuGetUtilities(rhetosAppRootPath, logProvider, null);
             var packagesBuildAssemblies = nuget.GetBuildAssemblies();
-            
-            var allAssemblies = packagesBuildAssemblies.Select(x => Path.GetFullPath(x)).Union(assemblies.Select(x => Path.GetFullPath(x))).Distinct();
 
-            var multipleAssembliesWithsameName = allAssemblies.GroupBy(x => Path.GetFileName(x)).Where(x => x.Count() > 1);
+            var allAssemblies = packagesBuildAssemblies.Select(a => Path.GetFullPath(a)).Union(assemblies.Select(a => Path.GetFullPath(a)));
+
+            var multipleAssembliesWithsameName = allAssemblies.GroupBy(a => Path.GetFileName(a)).Where(a => a.Count() > 1);
             if (multipleAssembliesWithsameName.Any())
             {
                 logProvider.GetLogger("DeployPackages").Info("Detected multiple assemblies with the same name:" + Environment.NewLine + 
-                    string.Join(Environment.NewLine ,multipleAssembliesWithsameName.Select(x => $"{x.Key} on locations {string.Join(", ", x)}")));
+                    string.Join(Environment.NewLine, multipleAssembliesWithsameName.Select(a => $"{a.Key} on locations {string.Join(", ", a)}")));
             }
 
             AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(allAssemblies.ToArray());
