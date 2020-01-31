@@ -52,7 +52,7 @@ namespace Rhetos
             var rootCommand = new RootCommand();
             var buildCommand = new Command("build", "Generates the Rhetos application inside the <project-root-folder>. If <project-root-folder> is not set it will use the current working directory.");
             buildCommand.Add(new Argument<DirectoryInfo>("project-root-folder", () => new DirectoryInfo(Environment.CurrentDirectory)));
-            buildCommand.Add(new Option<string[]>("--assemblies", "List of assemblies outside of referenced NuGet packages that will be used during the build."));
+            buildCommand.Add(new Option<string[]>("--assemblies", Array.Empty<string>(), "List of assemblies outside of referenced NuGet packages that will be used during the build."));
             buildCommand.Handler = CommandHandler.Create((DirectoryInfo projectRootFolder, string[] assemblies) => ReportError(() => Build(projectRootFolder.FullName, assemblies)));
             rootCommand.AddCommand(buildCommand);
 
