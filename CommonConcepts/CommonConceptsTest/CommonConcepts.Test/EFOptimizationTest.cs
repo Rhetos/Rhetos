@@ -388,7 +388,6 @@ namespace CommonConcepts.Test
 
                 var query = repository.TestEntity.BaseEntity.Query()
                     .WhereContains(ids, item => item.ID);
-                    //TODO: THIS OPTION WORKS: .Where(item => ids.Contains(item.ID));
 
                 Console.WriteLine("query:\r\n" + query.ToString());
                 Assert.AreEqual(count, query.ToList().Count);

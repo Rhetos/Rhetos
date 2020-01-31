@@ -79,6 +79,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 var parseContainsIdsQuery = new Regex($@"\(\[{EntityFrameworkMapping.StorageModelNamespace}\]\.\[{EFExpression.ContainsIdsFunction}\]\((?<id>.+?), (?<concatenatedIds>.*?)\)\) (?<test>{testTrue}|{testFalse})", RegexOptions.Singleline);
 
                 var containsIdsQueries = parseContainsIdsQuery.Matches(cmd.CommandText).Cast<Match>();
+                var replacedVariablesIndices = new HashSet<int>();
 
                 foreach (var containsIdsQuery in containsIdsQueries.OrderByDescending(m => m.Index))
                 {
@@ -104,8 +105,11 @@ namespace Rhetos.Dom.DefaultConcepts
                         + containsIdsSql
                         + cmd.CommandText.Substring(containsIdsQuery.Index + containsIdsQuery.Length);
 
-                    cmd.Parameters.RemoveAt(indexOfConcatenatedIdsParameter);
+                    replacedVariablesIndices.Add(indexOfConcatenatedIdsParameter);
                 }
+
+                foreach (var replacedVariableIndex in replacedVariablesIndices)
+                    cmd.Parameters[replacedVariableIndex].Value = "This parameter was replaced in SQL query with list of GUIDs (Rhetos EF optizmization)";
             }
 
             if (cmd.CommandText.Contains(EFExpression.ContainsIdsFunction))
