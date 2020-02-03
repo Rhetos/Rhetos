@@ -236,7 +236,7 @@ namespace Common
 
     public static class Infrastructure
     {{
-        public static readonly RegisteredInterfaceImplementations RegisteredInterfaceImplementationName = new RegisteredInterfaceImplementations
+        public static readonly RegisteredInterfaceImplementations RegisteredInterfaceImplementations = new RegisteredInterfaceImplementations
         {{
             {ModuleCodeGenerator.RegisteredInterfaceImplementationNameTag}
         }};
@@ -336,7 +336,7 @@ namespace Common
                 .As<Rhetos.Persistence.IPersistenceCache>()
                 .InstancePerLifetimeScope();
             builder.RegisterType<ExecutionContext>().InstancePerLifetimeScope();
-            builder.RegisterInstance(Infrastructure.RegisteredInterfaceImplementationName).ExternallyOwned();
+            builder.RegisterInstance(Infrastructure.RegisteredInterfaceImplementations).ExternallyOwned();
             builder.RegisterInstance(Infrastructure.ApplyFiltersOnClientRead).ExternallyOwned();
             {ModuleCodeGenerator.CommonAutofacConfigurationMembersTag}
 

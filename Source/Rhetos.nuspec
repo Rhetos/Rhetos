@@ -27,18 +27,18 @@
     </contentFiles>
   </metadata>
   <files>
-    <file src="Source\RhetosCli\bin\Debug\*.dll" target="tools" />
-    <file src="Source\RhetosCli\bin\Debug\*.pdb" target="tools" />
-    <file src="Source\RhetosCli\bin\Debug\rhetos.exe" target="tools" />
-    <file src="Source\RhetosCli\bin\Debug\rhetos.exe.config" target="tools" />
+    <file src="RhetosCli\bin\Debug\*.dll" target="tools" />
+    <file src="RhetosCli\bin\Debug\*.pdb" target="tools" />
+    <file src="RhetosCli\bin\Debug\rhetos.exe" target="tools" />
+    <file src="RhetosCli\bin\Debug\rhetos.exe.config" target="tools" />
 
-    <file src="Source\MsBuildIntegration\Rhetos.props" target="build" /> <!-- TODO: Delete props files after implementing MSBuild target. -->
+    <file src="MsBuildIntegration\Rhetos.props" target="build" /> <!-- TODO: Delete props files after implementing MSBuild target. -->
 
-    <file src="Source\Rhetos\bin\Rhetos.*.dll" target="lib\net472" />
-    <file src="Source\Rhetos\bin\Rhetos.*.pdb" target="lib\net472" />
-    <file src="Source\Rhetos\bin\Rhetos.*.xml" target="lib\net472" />
+    <file src="Rhetos\bin\Rhetos.*.dll" target="lib\net472" />
+    <file src="Rhetos\bin\Rhetos.*.pdb" target="lib\net472" />
+    <file src="Rhetos\bin\Rhetos.*.xml" target="lib\net472" />
 
-    <file src="Source\RhetosCli\bin\Debug\rhetos.exe" target="contentFiles/any/any" />
-    <file src="Source\RhetosCli\bin\Debug\rhetos.exe.config" target="contentFiles/any/any" />
+    <file src="RhetosCli\bin\Debug\rhetos.exe" target="contentFiles/any/any" />
+    <file src="RhetosCli\bin\Debug\rhetos.exe.config" target="contentFiles/any/any" />
   </files>
 </package>

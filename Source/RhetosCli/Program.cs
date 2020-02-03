@@ -100,7 +100,9 @@ namespace Rhetos
                 {
                     RootFolder = rhetosAppRootPath,
                     BinFolder = Path.Combine(rhetosAppRootPath, "bin"),
-                    AssetsFolder = Path.Combine(rhetosAppRootPath, "bin"), // TODO: Move assets to a separate folder ("RhetosAssets"), after removing DLL compiling from AssemblyGenerator. Current solution might have issues with AssetsFolder cleanup by Rhetos that might unintentionally remove other files from bin folder.
+                    AssetsFolder = Path.Combine(rhetosAppRootPath, "RhetosAssets"),
+                    // TODO: Rhetos CLI should not use LegacyPluginsFolder. Referenced plugins are automatically copied to output bin folder by NuGet. It is used by DeployPackages.exe when downloading packages and in legacy application runtime for assembly resolver and probing paths.
+                    // TODO: Set LegacyPluginsFolder to null after reviewing impact to AspNetFormsAuth CLI utilities and similar packages.
                     LegacyPluginsFolder = Path.Combine(rhetosAppRootPath, "bin"),
                     LegacyAssetsFolder = Path.Combine(rhetosAppRootPath, "Resources"),
                 })
@@ -147,11 +149,11 @@ namespace Rhetos
                 .AddConfigurationManagerConfiguration()
                 .Build();
 
-            string binFolder = configurationProvider.GetOptions<RhetosAppEnvironment>().BinFolder;
-            var assemblyList = Directory.GetFiles(binFolder, "*.dll");
-            AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(assemblyList);
+            var assemblyFiles = LegacyUtilities.GetListAssembliesDelegate(configurationProvider).Invoke(); // Using same assembly locations as the generated application runtime.
 
-            return new ApplicationDeployment(configurationProvider, LogProvider, () => assemblyList);
+            AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(assemblyFiles);
+
+            return new ApplicationDeployment(configurationProvider, LogProvider, () => assemblyFiles);
         }
 
         private ResolveEventHandler GetSearchForAssemblyDelegate(params string[] assemblyList)

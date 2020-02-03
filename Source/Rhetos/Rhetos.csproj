@@ -113,9 +113,6 @@
       <DependentUpon>Default.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Default.aspx.designer.cs">
-      <DependentUpon>Default.aspx</DependentUpon>
-    </Compile>
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -200,9 +197,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="GetServerFiles.bat" />
-    <Content Include="Template.ConnectionStrings.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Content Include="Template.ConnectionStrings.config" />
     <Content Include="SetupRhetosServer.bat" />
     <Content Include="packages.config" />
     <Content Include="Template.RhetosPackages.config" />

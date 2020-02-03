@@ -187,11 +187,15 @@ namespace Rhetos.Utilities
 
         public static string RelativeToAbsolutePath(string baseFolder, string path)
         {
+            if (path == null)
+                return null;
             return Path.GetFullPath(Path.Combine(baseFolder, path));
         }
 
         public static string AbsoluteToRelativePath(string baseFolder, string target)
         {
+            if (target == null)
+                return null;
             var baseParts = Path.GetFullPath(baseFolder).Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
             var targetParts = Path.GetFullPath(target).Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
 

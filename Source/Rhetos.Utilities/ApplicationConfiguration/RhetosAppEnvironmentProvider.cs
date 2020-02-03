@@ -58,7 +58,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration
             var filePath = Path.Combine(rhetosAppRootPath, RhetosAppEnvironmentFileName);
             if (!File.Exists(filePath))
                 throw new FrameworkException($"Missing file '{RhetosAppEnvironmentFileName}' in folder '{rhetosAppRootPath}' or subfolders." +
-                    $" Please verify that the specified folder contains a valid Rhetos application, and that the build have passed successfully.");
+                    $" Please verify that the specified folder contains a valid Rhetos application, and that the Rhetos build have passed successfully.");
 
             var serialized = File.ReadAllText(filePath, Encoding.UTF8);
             var environmentFolders = JsonConvert.DeserializeObject<Dictionary<string, string>>(serialized);

@@ -127,7 +127,7 @@
   <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>IF EXIST "$(ProjectDir)..\Rhetos\bin\ConnectionStrings.config" XCOPY /Y/D/R "$(ProjectDir)..\Rhetos\bin\ConnectionStrings.config" "$(TargetDir)"</PostBuildEvent>
+    <PostBuildEvent>IF EXIST "$(ProjectDir)..\Rhetos\ConnectionStrings.config" XCOPY /Y/D/R "$(ProjectDir)..\Rhetos\ConnectionStrings.config" "$(TargetDir)"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
