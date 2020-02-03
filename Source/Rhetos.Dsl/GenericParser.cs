@@ -55,21 +55,42 @@ namespace Rhetos.Dsl
         public virtual ValueOrError<IConceptInfo> Parse(ITokenReader tokenReader, Stack<IConceptInfo> context)
         {
             if (tokenReader.TryRead(Keyword))
-                return ParseMembers(tokenReader, context.Count > 0 ? context.Peek() : null, false);
+            {
+                var lastConcept = context.Count > 0 ? context.Peek() : null;
+                bool lastConceptUsed = false;
+                var conceptInfo = ParseMembers(tokenReader, lastConcept, false, ref lastConceptUsed);
+                if (!conceptInfo.IsError && !lastConceptUsed && lastConcept != null)
+                    return ValueOrError<IConceptInfo>.CreateError(string.Format(
+                        "This concept cannot be enclosed within {0}. Trying to read {1}.",
+                        lastConcept.GetType().Name, ConceptInfoType.Name));
+                return conceptInfo;
+            }
+
             return ValueOrError<IConceptInfo>.CreateError("");
         }
 
-        private ValueOrError<IConceptInfo> ParseMembers(ITokenReader tokenReader, IConceptInfo lastConcept, bool readingAReference)
+        private ValueOrError<IConceptInfo> ParseMembers(ITokenReader tokenReader, IConceptInfo lastConcept, bool readingAReference, ref bool lastConceptUsed)
         {
             IConceptInfo conceptInfo = (IConceptInfo)Activator.CreateInstance(ConceptInfoType);
             bool firstMember = true;
             bool lastPropertyWasInlineParent = false;
-            bool lastConceptUsed = false;
 
             var listOfMembers = readingAReference ? Members.Where(m => m.IsKey) : Members.Where(m => m.IsParsable);
+
+            bool lastConceptUsed2 = lastConceptUsed;
+            var explicitParentNested = listOfMembers.LastOrDefault(member => member.IsParentNested
+                && !lastConceptUsed2 && member.IsConceptInfo && lastConcept != null && member.ValueType.IsInstanceOfType(lastConcept)
+                && member.ValueType.IsAssignableFrom(ConceptInfoType));
+            var parentNested = explicitParentNested ?? listOfMembers.FirstOrDefault(member =>
+                !lastConceptUsed2 && member.IsConceptInfo && lastConcept != null && member.ValueType.IsInstanceOfType(lastConcept)
+                && member.ValueType.IsAssignableFrom(ConceptInfoType));
+
             foreach (ConceptMember member in listOfMembers)
             {
-                var valueOrError = ReadMemberValue(member, tokenReader, lastConcept, firstMember, ref lastPropertyWasInlineParent, ref lastConceptUsed, readingAReference);
+                var valueOrError =
+                    (explicitParentNested != null && member != explicitParentNested)
+                    ? ReadMemberValue(member, tokenReader, null, firstMember, ref lastPropertyWasInlineParent, ref lastConceptUsed, readingAReference, explicitParentNested)
+                    : ReadMemberValue(member, tokenReader, lastConcept, firstMember, ref lastPropertyWasInlineParent, ref lastConceptUsed, readingAReference, parentNested);
 
                 if (valueOrError.IsError)
                     return ValueOrError<IConceptInfo>.CreateError(string.Format(CultureInfo.InvariantCulture,
@@ -80,16 +101,12 @@ namespace Rhetos.Dsl
                 firstMember = false;
             }
 
-            if (!lastConceptUsed && lastConcept != null)
-                return ValueOrError<IConceptInfo>.CreateError(string.Format(
-                    "This concept cannot be enclosed within {0}. Trying to read {1}.",
-                    lastConcept.GetType().Name, ConceptInfoType.Name));
-
             return ValueOrError<IConceptInfo>.CreateValue(conceptInfo);
         }
 
-        public ValueOrError<object> ReadMemberValue(ConceptMember member, ITokenReader tokenReader, IConceptInfo lastConcept,
-            bool firstMember, ref bool lastPropertyWasInlineParent, ref bool lastConceptUsed, bool readingAReference)
+        private ValueOrError<object> ReadMemberValue(ConceptMember member, ITokenReader tokenReader, IConceptInfo lastConcept,
+            bool firstMember, ref bool lastPropertyWasInlineParent, ref bool lastConceptUsed, bool readingAReference,
+            ConceptMember explicitParentNested)
         {
             try
             {
@@ -114,15 +131,14 @@ namespace Rhetos.Dsl
                     else
                         return ValueOrError<object>.CreateError("Member of type IConceptInfo can only be used as a first member and enclosed within the referenced parent concept.");
 
-                if (member.IsConceptInfo && lastConcept != null && member.ValueType.IsInstanceOfType(lastConcept)
-                         && member.ValueType.IsAssignableFrom(ConceptInfoType)) // Recursive "parent" property
+                if (member == explicitParentNested && !lastConceptUsed) // Recursive "parent" property
                 {
                     lastConceptUsed = true;
                     return (object)lastConcept;
                 }
 
                 if (member.IsConceptInfo && lastConcept != null && member.ValueType.IsInstanceOfType(lastConcept)
-                         && firstMember)
+                    && firstMember)
                 {
                     lastConceptUsed = true;
                     return (object)lastConcept;
@@ -149,15 +165,14 @@ namespace Rhetos.Dsl
                     }
 
                     GenericParser subParser = new GenericParser(member.ValueType, "");
-                    lastConceptUsed = true;
                     lastPropertyWasInlineParent = true;
-                    return subParser.ParseMembers(tokenReader, lastConcept, true).ChangeType<object>();
+                    return subParser.ParseMembers(tokenReader, lastConcept, true, ref lastConceptUsed).ChangeType<object>();
                 }
 
                 if (member.IsConceptInfo)
                 {
                     GenericParser subParser = new GenericParser(member.ValueType, "");
-                    return subParser.ParseMembers(tokenReader, null, true).ChangeType<object>();
+                    return subParser.ParseMembers(tokenReader, null, true, ref lastConceptUsed).ChangeType<object>();
                 }
 
                 return ValueOrError.CreateError(string.Format(
