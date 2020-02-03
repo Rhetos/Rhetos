@@ -55,11 +55,6 @@ namespace Rhetos.Dom.DefaultConcepts
                     string.Format("public System.Data.Entity.DbSet<Common.Queryable.{0}_{1}> {0}_{1} {{ get; set; }}\r\n        ",
                         info.Module.Name, info.Name),
                     DomInitializationCodeGenerator.EntityFrameworkContextMembersTag);
-                codeBuilder.InsertCode(
-                    string.Format("modelBuilder.Ignore<global::{0}.{1}>();\r\n            "
-                        + "modelBuilder.Entity<Common.Queryable.{0}_{1}>().Map(m => {{ m.MapInheritedProperties(); m.ToTable(\"{3}\", \"{2}\"); }});\r\n            ",
-                        info.Module.Name, info.Name, orm.GetOrmSchema(), orm.GetOrmDatabaseObject()),
-                    DomInitializationCodeGenerator.EntityFrameworkOnModelCreatingTag);
             }
         }
 

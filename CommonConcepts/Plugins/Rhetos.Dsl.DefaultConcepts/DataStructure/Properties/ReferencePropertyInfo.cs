@@ -32,14 +32,6 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         public DataStructureInfo Referenced { get; set; }
 
-        public virtual string OrmMappingSnippet()
-        {
-            return $@"modelBuilder.Entity<Common.Queryable.{DataStructure.Module.Name}_{DataStructure.Name}>()
-                .HasOptional(t => t.{Name}).WithMany()
-                .HasForeignKey(t => t.{Name}ID);
-            ";
-        }
-
         public override string GetSimplePropertyName()
         {
             return Name + "ID";
