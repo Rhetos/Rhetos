@@ -47,22 +47,6 @@ namespace Rhetos.Dom.DefaultConcepts
                     additionalSetterCode: null);
             }
 
-            if (info.Extension is IOrmDataStructure && info.Base is IOrmDataStructure)
-                codeBuilder.InsertCode(
-                    string.Format("modelBuilder.Entity<Common.Queryable.{0}_{1}>().HasRequired(t => t.Base).WithOptional(t => t.{2});\r\n            ",
-                        info.Extension.Module.Name, info.Extension.Name, info.ExtensionPropertyName()),
-                    DomInitializationCodeGenerator.EntityFrameworkOnModelCreatingTag);
-            else if (info.Extension is IOrmDataStructure)
-                codeBuilder.InsertCode(
-                    string.Format("modelBuilder.Entity<Common.Queryable.{0}_{1}>().Ignore(t => t.Base);\r\n            ",
-                        info.Extension.Module.Name, info.Extension.Name),
-                    DomInitializationCodeGenerator.EntityFrameworkOnModelCreatingTag);
-            else if (info.Base is IOrmDataStructure)
-                codeBuilder.InsertCode(
-                    string.Format("modelBuilder.Entity<Common.Queryable.{0}_{1}>().Ignore(t => t.{2});\r\n            ",
-                        info.Base.Module.Name, info.Base.Name, info.ExtensionPropertyName()),
-                    DomInitializationCodeGenerator.EntityFrameworkOnModelCreatingTag);
-
             if (UniqueReferenceDatabaseDefinition.IsSupported(info)
                 && info.Extension is IOrmDataStructure
                 && info.Base is IWritableOrmDataStructure)

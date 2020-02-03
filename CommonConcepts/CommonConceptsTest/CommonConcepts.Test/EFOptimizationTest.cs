@@ -369,5 +369,36 @@ namespace CommonConcepts.Test
                 () => Assert.AreEqual(1, items.Count()),
                 "Enumeration should not be evaluated during optimization.");
         }
+
+        [TestMethod]
+        public void WhereContainsWithGroupBy()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+
+                const int count = 3;
+                var items = Enumerable.Range(0, count)
+                    .Select(x => new TestEntity.BaseEntity { Name = x.ToString() })
+                    .ToList();
+
+                repository.TestEntity.BaseEntity.Insert(items);
+
+                var ids = items.Select(item => item.ID).ToList();
+
+                var query = repository.TestEntity.BaseEntity.Query()
+                    .WhereContains(ids, item => item.ID);
+
+                Console.WriteLine("query:\r\n" + query.ToString());
+                Assert.AreEqual(count, query.ToList().Count);
+
+                var query2 = query
+                    .GroupBy(item => item.Name)
+                    .Select(group => group.FirstOrDefault().Name);
+
+                Console.WriteLine("query2:\r\n" + query2.ToString());
+                Assert.AreEqual(count, query2.ToList().Count);
+            }
+        }
     }
 }

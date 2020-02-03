@@ -1,5 +1,5 @@
 @REM Starts Visual Studio Developer Command Prompt.
-@IF DEFINED VisualStudioVersion EXIT /B 0
+WHERE /Q MSBuild.exe && EXIT /B 0
 
 @REM https://developercommunity.visualstudio.com/content/problem/26780/vsdevcmdbat-changes-the-current-working-directory.html
 SET "VSCMD_START_DIR=%CD%"

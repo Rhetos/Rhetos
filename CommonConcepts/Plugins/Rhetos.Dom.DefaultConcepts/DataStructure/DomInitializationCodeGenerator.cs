@@ -36,7 +36,6 @@ namespace Rhetos.Dom.DefaultConcepts
     {
         public static readonly string EntityFrameworkContextMembersTag = "/*EntityFrameworkContextMembers*/";
         public static readonly string EntityFrameworkContextInitializeTag = "/*EntityFrameworkContextInitialize*/";
-        public static readonly string EntityFrameworkOnModelCreatingTag = "/*EntityFrameworkOnModelCreating*/";
         public static readonly string EntityFrameworkConfigurationTag = "/*EntityFrameworkConfiguration*/";
         public static readonly string CommonQueryableMemebersTag = "/*CommonQueryableMemebers*/";
         public static readonly string QueryExtensionsMembersTag = "/*QueryExtensionsMembers*/";
@@ -197,11 +196,6 @@ namespace Common
         {{
             foreach (var item in ChangeTracker.Entries().Select(entry => entry.Entity).OfType<IDetachOverride>())
                 item.Detaching = detaching;
-        }}
-
-        protected override void OnModelCreating(System.Data.Entity.DbModelBuilder modelBuilder)
-        {{
-            {EntityFrameworkOnModelCreatingTag}
         }}
 
         {EntityFrameworkContextMembersTag}

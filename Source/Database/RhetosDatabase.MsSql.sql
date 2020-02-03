@@ -1,5 +1,7 @@
 --=================================================
--- NEVER CHANGE THIS SCRIPT, ONLY APPEND AT THE END.
+-- ANY CHANGES IN THIS SCRIPT MUST ALLOW:
+-- 1. UPGRADE FROM ANY PREVIOUS VERSION OF RHETOS DATABASE (IT IS SAFEST TO ONLY *APPEND* CHANGES AT THE END OF THIS SCRIPT).
+-- 2. DOWNGRADE FROM CURRENT VERSION TO THE PREVIOUS MAJOR VERSION.
 --=================================================
 
 IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'Rhetos')
@@ -57,14 +59,16 @@ CREATE TABLE Rhetos.DataMigrationScript
 IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[Rhetos].[DataMigrationScript]') AND name = 'IX_DataMigrationScript_Tag')
 CREATE UNIQUE INDEX IX_DataMigrationScript_Tag ON Rhetos.DataMigrationScript(Tag);
 
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS c WHERE c.TABLE_SCHEMA = 'Rhetos' AND DATA_TYPE = 'nvarchar' AND CHARACTER_MAXIMUM_LENGTH = 200)
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS c WHERE c.TABLE_SCHEMA = 'Rhetos' AND c.TABLE_NAME = 'DatabaseGeneratorAppliedConcept' AND DATA_TYPE = 'nvarchar' AND CHARACTER_MAXIMUM_LENGTH > 0 AND CHARACTER_MAXIMUM_LENGTH <> 256)
 BEGIN
-
 	ALTER TABLE Rhetos.DatabaseGeneratorAppliedConcept ALTER COLUMN AppliedBy nvarchar(256) NULL;
 	ALTER TABLE Rhetos.DatabaseGeneratorAppliedConcept ALTER COLUMN Client nvarchar(256) NULL;
 	ALTER TABLE Rhetos.DatabaseGeneratorAppliedConcept ALTER COLUMN Server nvarchar(256) NULL;
 	ALTER TABLE Rhetos.DatabaseGeneratorAppliedConcept ALTER COLUMN ConceptImplementationVersion nvarchar(256) NOT NULL;
+END
 
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS c WHERE c.TABLE_SCHEMA = 'Rhetos' AND c.TABLE_NAME = 'DataMigrationScript' AND DATA_TYPE = 'nvarchar' AND CHARACTER_MAXIMUM_LENGTH > 0 AND CHARACTER_MAXIMUM_LENGTH <> 256)
+BEGIN
 	ALTER TABLE Rhetos.DataMigrationScript ALTER COLUMN Tag nvarchar(256) NOT NULL;
 	ALTER TABLE Rhetos.DataMigrationScript ALTER COLUMN Path nvarchar(256) NOT NULL;
 	ALTER TABLE Rhetos.DataMigrationScript ALTER COLUMN ExecutedBy nvarchar(256) NULL;

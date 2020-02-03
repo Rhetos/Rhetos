@@ -49,16 +49,6 @@ namespace Rhetos.Dom.DefaultConcepts
                     propertyType: "Common.Queryable." + info.Referenced.Module.Name + "_" + info.Referenced.Name,
                     additionalSetterCode: info.Name + "ID = value != null ? (Guid?)value.ID : null;");
 
-            if (info.DataStructure is IOrmDataStructure && info.Referenced is IOrmDataStructure)
-                codeBuilder.InsertCode(
-                    info.OrmMappingSnippet(),
-                    DomInitializationCodeGenerator.EntityFrameworkOnModelCreatingTag);
-            else if (info.DataStructure is IOrmDataStructure)
-                codeBuilder.InsertCode(
-                    string.Format("modelBuilder.Entity<Common.Queryable.{0}_{1}>().Ignore(t => t.{2});\r\n            ",
-                        info.DataStructure.Module.Name, info.DataStructure.Name, info.Name),
-                    DomInitializationCodeGenerator.EntityFrameworkOnModelCreatingTag);
-
             if (ReferencePropertyDbConstraintInfo.IsSupported(info)
                 && info.DataStructure is IOrmDataStructure
                 && info.Referenced is IOrmDataStructure)
