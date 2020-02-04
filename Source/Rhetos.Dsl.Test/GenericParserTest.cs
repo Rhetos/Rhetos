@@ -18,6 +18,7 @@
 */
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos.Dsl;
 using Rhetos.TestCommon;
 using System.Collections.Generic;
 
@@ -32,18 +33,13 @@ namespace Rhetos.Dsl.Test
         {
         }
 
-        public TConceptInfo QuickParse(string dsl)
+        public TConceptInfo QuickParse(string dsl, IConceptInfo contextParent = null)
         {
-            return QuickParse(dsl, new Stack<IConceptInfo>());
-        }
+            var context = new Stack<IConceptInfo>();
+            if (contextParent != null)
+                context.Push(contextParent);
 
-        public TConceptInfo QuickParse(string dsl, IConceptInfo contextParent)
-        {
-            Stack<IConceptInfo> context = new Stack<IConceptInfo>();
-            context.Push(contextParent);
-
-            tokenReader = GenericParserTest.TestTokenReader(dsl);
-            return (TConceptInfo)Parse(tokenReader, context).Value;
+            return QuickParse(dsl, context);
         }
 
         public TConceptInfo QuickParse(string dsl, Stack<IConceptInfo> context)
@@ -497,6 +493,140 @@ namespace Rhetos.Dsl.Test
             TestUtility.ShouldFail<FrameworkException>(
                 () => new GenericParserHelper<InterfaceReferenceConceptInfo>("intref").QuickParse(dsl),
                 "Member of type IConceptInfo can only be nested within the referenced parent concept. It must be a first member or marked with ConceptParentAttribute.");
+        }
+
+        //================================================================================
+        // Complex ConceptParent nesting:
+
+        class LikeModule : IConceptInfo
+        {
+            [ConceptKey]
+            public string Name { get; set; }
+        }
+
+        class LikeEntity : IConceptInfo
+        {
+            [ConceptKey]
+            public LikeModule Module { get; set; }
+
+            [ConceptKey]
+            public string Name { get; set; }
+        }
+
+        class ComplexNested : IConceptInfo
+        {
+            [ConceptKey]
+            public LikeEntity Entity1 { get; set; }
+
+            [ConceptParent]
+            [ConceptKey]
+            public LikeEntity Entity2 { get; set; }
+
+            public string Description { get; set; }
+        }
+
+        class ComplexNested2 : IConceptInfo
+        {
+            [ConceptKey]
+            public LikeEntity Entity1 { get; set; }
+
+            [ConceptParent]
+            [ConceptKey]
+            public LikeEntity Entity2 { get; set; }
+
+            [ConceptKey]
+            public string Description { get; set; }
+        }
+
+        [TestMethod]
+        public void ComplexNestedTest()
+        {
+            var parser = new GenericParserHelper<ComplexNested>("ComplexNested");
+            string expectedParsedConcept = "ComplexNested Module1.Entity1.Module2.Entity2";
+
+            // In root:
+            Assert.AreEqual(expectedParsedConcept, parser.QuickParse(
+                dsl: "ComplexNested Module1.Entity1 Module2.Entity2 Description",
+                contextParent: null)
+                .GetUserDescription());
+
+            // Nested in entity:
+            Assert.AreEqual(expectedParsedConcept, parser.QuickParse(
+                dsl: "ComplexNested Module1.Entity1 Description",
+                contextParent: new LikeEntity { Module = new LikeModule { Name = "Module2" }, Name = "Entity2" })
+                .GetUserDescription());
+
+            // Nested in module:
+            Assert.AreEqual(expectedParsedConcept, parser.QuickParse(
+                dsl: "ComplexNested Module1.Entity1 Entity2 Description",
+                contextParent: new LikeModule { Name = "Module2" })
+                .GetUserDescription());
+        }
+
+        [TestMethod]
+        public void ComplexNested2Test()
+        {
+            var parser = new GenericParserHelper<ComplexNested2>("ComplexNested2");
+            string expectedParsedConcept = "ComplexNested2 Module1.Entity1.Module2.Entity2.Description";
+
+            // In root:
+            Assert.AreEqual(expectedParsedConcept, parser.QuickParse(
+                dsl: "ComplexNested2 Module1.Entity1 Module2.Entity2 Description",
+                contextParent: null)
+                .GetUserDescription());
+
+            // Nested in entity:
+            Assert.AreEqual(expectedParsedConcept, parser.QuickParse(
+                dsl: "ComplexNested2 Module1.Entity1 Description",
+                contextParent: new LikeEntity { Module = new LikeModule { Name = "Module2" }, Name = "Entity2" })
+                .GetUserDescription());
+
+            // Nested in module:
+            Assert.AreEqual(expectedParsedConcept, parser.QuickParse(
+                dsl: "ComplexNested2 Module1.Entity1 Entity2 Description",
+                contextParent: new LikeModule { Name = "Module2" })
+                .GetUserDescription());
+        }
+
+        //================================================================================
+        // Dot separator:
+
+        class KeyReferenceReference : IConceptInfo
+        {
+            [ConceptKey]
+            public LikeEntity Entity1 { get; set; }
+
+            [ConceptKey]
+            public LikeEntity Entity2 { get; set; }
+        }
+
+        class KeyReferenceString : IConceptInfo
+        {
+            [ConceptKey]
+            public LikeEntity Entity { get; set; }
+
+            [ConceptKey]
+            public string Name { get; set; }
+        }
+
+        [TestMethod]
+        public void KeyReferenceReferenceSeparator()
+        {
+            var parser = new GenericParserHelper<KeyReferenceReference>("KeyReferenceReference");
+            string expectedParsedConcept = "KeyReferenceReference Module1.Entity1.Module2.Entity2";
+            string dsl = "KeyReferenceReference Module1.Entity1 Module2.Entity2";
+            Assert.AreEqual(expectedParsedConcept, parser.QuickParse(dsl).GetUserDescription());
+        }
+
+        [TestMethod]
+        public void KeyReferenceStringSeparator()
+        {
+            // Currently KeyReferenceString expects '.' separator in DSL script, while KeyReferenceReference does not.
+            // More consistent behavior would be to use dot only for referenced concept keys, and not here before string property.
+            var parser = new GenericParserHelper<KeyReferenceString>("KeyReferenceString");
+            string expectedParsedConcept = "KeyReferenceString Module1.Entity1.Name";
+            string dsl = "KeyReferenceString Module1.Entity1.Name";
+            Assert.AreEqual(expectedParsedConcept, parser.QuickParse(dsl).GetUserDescription());
         }
     }
 }
