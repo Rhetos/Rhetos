@@ -20,6 +20,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Dsl;
 using Rhetos.TestCommon;
+using Rhetos.Utilities;
 using System.Collections.Generic;
 
 namespace Rhetos.Dsl.Test
@@ -45,7 +46,7 @@ namespace Rhetos.Dsl.Test
         public TConceptInfo QuickParse(string dsl, Stack<IConceptInfo> context)
         {
             tokenReader = GenericParserTest.TestTokenReader(dsl);
-            return (TConceptInfo)Parse(tokenReader, context).Value;
+            return (TConceptInfo)Parse(tokenReader, context, out var warnings).Value;
         }
     }
 
@@ -77,7 +78,7 @@ namespace Rhetos.Dsl.Test
         {
             var simpleParser = new GenericParserHelper<SimpleConceptInfo>("abc");
             var tokenReader = TestTokenReader("simple abc def", 1);
-            SimpleConceptInfo ci = (SimpleConceptInfo)simpleParser.Parse(tokenReader, new Stack<IConceptInfo>()).Value;
+            SimpleConceptInfo ci = (SimpleConceptInfo)simpleParser.Parse(tokenReader, new Stack<IConceptInfo>(), out var warnings).Value;
 
             Assert.AreEqual("def", ci.Name);
             TestUtility.AssertContains(tokenReader.ReportPosition(), "column 15,");
@@ -104,7 +105,7 @@ namespace Rhetos.Dsl.Test
         {
             var simpleParser = new GenericParser(typeof(SimpleConceptInfo), "simple");
             var tokenReader = TestTokenReader("simp simple abc");
-            var ciOrError = simpleParser.Parse(tokenReader, new Stack<IConceptInfo>());
+            var ciOrError = simpleParser.Parse(tokenReader, new Stack<IConceptInfo>(), out var warnings);
             Assert.IsTrue(ciOrError.IsError);
             Assert.AreEqual("", ciOrError.Error);
         }
@@ -176,7 +177,7 @@ namespace Rhetos.Dsl.Test
             stack.Push(new SimpleConceptInfo { Name = "a" });
 
             var tokenReader = TestTokenReader("simple a { enclosed b; }", 3);
-            EnclosedConceptInfo ci = (EnclosedConceptInfo)enclosedParser.Parse(tokenReader, stack).Value;
+            EnclosedConceptInfo ci = (EnclosedConceptInfo)enclosedParser.Parse(tokenReader, stack, out var warnings).Value;
             Assert.AreEqual("a", ci.Parent.Name);
             Assert.AreEqual("b", ci.Name);
             TestUtility.AssertContains(tokenReader.ReportPosition(), "before: \";");

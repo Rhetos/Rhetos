@@ -28,6 +28,6 @@ namespace Rhetos.Dsl
         /// If the keyword is not recognized return empty error string.
         /// If the keyword is recognized, but the syntax is wrong, return error description.
         /// </summary>
-        ValueOrError<IConceptInfo> Parse(ITokenReader tokenReader, Stack<IConceptInfo> context);
+        ValueOrError<IConceptInfo> Parse(ITokenReader tokenReader, Stack<IConceptInfo> context, out List<string> warnings);
     }
 }

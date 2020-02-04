@@ -17,15 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Globalization;
-using Rhetos.Utilities;
 
 namespace Rhetos.Dsl
 {
-    public class TokenReader : Rhetos.Dsl.ITokenReader
+    public class TokenReader : ITokenReader
     {
         public int PositionInTokenList { get; private set; }
 

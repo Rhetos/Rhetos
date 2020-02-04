@@ -120,7 +120,7 @@ namespace Rhetos.Dsl
             return newConcepts;
         }
 
-        class Interpretation { public IConceptInfo ConceptInfo; public TokenReader NextPosition; }
+        class Interpretation { public IConceptInfo ConceptInfo; public TokenReader NextPosition; public List<string> Warnings; }
 
         private IConceptInfo ParseNextConcept(TokenReader tokenReader, Stack<IConceptInfo> context, MultiDictionary<string, IConceptParser> conceptParsers)
         {
@@ -135,13 +135,14 @@ namespace Rhetos.Dsl
                 foreach (var conceptParser in conceptParsers.Get(keyword))
                 {
                     TokenReader nextPosition = new TokenReader(tokenReader);
-                    var conceptInfoOrError = conceptParser.Parse(nextPosition, context);
+                    var conceptInfoOrError = conceptParser.Parse(nextPosition, context, out var warnings);
 
                     if (!conceptInfoOrError.IsError)
                         possibleInterpretations.Add(new Interpretation
                         {
                             ConceptInfo = conceptInfoOrError.Value,
-                            NextPosition = nextPosition
+                            NextPosition = nextPosition,
+                            Warnings = warnings
                         });
                     else if (!string.IsNullOrEmpty(conceptInfoOrError.Error)) // Empty error means that this parser is not for this keyword.
                     {
@@ -175,8 +176,14 @@ namespace Rhetos.Dsl
                 throw new DslSyntaxException(string.Join("\r\n", report));
             }
 
-            tokenReader.CopyFrom(possibleInterpretations.Single().NextPosition);
-            return possibleInterpretations.Single().ConceptInfo;
+            var parsedStatement = possibleInterpretations.Single();
+
+            if (parsedStatement.Warnings != null)
+                foreach (string warning in parsedStatement.Warnings)
+                    _logger.Info(warning);
+
+            tokenReader.CopyFrom(parsedStatement.NextPosition);
+            return parsedStatement.ConceptInfo;
         }
 
         private void Disambiguate(List<Interpretation> possibleInterpretations)

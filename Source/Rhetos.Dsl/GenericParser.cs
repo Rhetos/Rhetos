@@ -17,11 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Globalization;
-using Rhetos.Utilities;
+using System.Linq;
 
 namespace Rhetos.Dsl
 {
@@ -42,6 +42,7 @@ namespace Rhetos.Dsl
         private readonly string Keyword;
         private readonly ConceptMember[] Members;
         private readonly Type ConceptInfoType;
+        private List<string> Warnings;
 
         public GenericParser(Type conceptInfoType, string keyword)
         {
@@ -50,16 +51,28 @@ namespace Rhetos.Dsl
             Members = ConceptMembers.Get(conceptInfoType).ToArray();
         }
 
-        public virtual ValueOrError<IConceptInfo> Parse(ITokenReader tokenReader, Stack<IConceptInfo> context)
+        public virtual ValueOrError<IConceptInfo> Parse(ITokenReader tokenReader, Stack<IConceptInfo> context, out List<string> warnings)
         {
+            warnings = null;
+            Warnings = null;
             if (tokenReader.TryRead(Keyword))
             {
                 var lastConcept = context.Count > 0 ? context.Peek() : null;
                 bool parsedFirstReferenceElement = false;
-                return ParseMembers(tokenReader, lastConcept, false, ref parsedFirstReferenceElement);
+                var result = ParseMembers(tokenReader, lastConcept, false, ref parsedFirstReferenceElement);
+                if (!result.IsError)
+                    warnings = Warnings;
+                return result;
             }
             else
                 return ValueOrError<IConceptInfo>.CreateError("");
+        }
+
+        private void AddWarning(string warning)
+        {
+            if (Warnings == null)
+                Warnings = new List<string>(1);
+            Warnings.Add(warning);
         }
 
         private ValueOrError<IConceptInfo> ParseMembers(ITokenReader tokenReader, IConceptInfo useLastConcept, bool readingAReference, ref bool parsedFirstReferenceElement)
@@ -113,6 +126,12 @@ namespace Rhetos.Dsl
                     }
 
                     parsedFirstReferenceElement = true;
+
+                    // Legacy syntax:
+                    if (!readingAReference && member.IsKey && member.IsStringType && !firstMember)
+                        if (tokenReader.TryRead("."))
+                            AddWarning($"Obsolete syntax: Remove '.' from this {Keyword} statement. {((TokenReader)tokenReader).ReportPosition()}.");
+
                     return tokenReader.ReadText().ChangeType<object>();
                 }
 

@@ -73,8 +73,9 @@ namespace Rhetos.Dsl.Test
             {
                 this.Keyword = keyword;
             }
-            public ValueOrError<IConceptInfo> Parse(ITokenReader tokenReader, Stack<IConceptInfo> context)
+            public ValueOrError<IConceptInfo> Parse(ITokenReader tokenReader, Stack<IConceptInfo> context, out List<string> warnings)
             {
+                warnings = null;
                 if (tokenReader.ReadText().Value == Keyword)
                 {
                     if (tokenReader.TryRead("-"))
