@@ -24,6 +24,12 @@ using System.Text;
 
 namespace Rhetos.Dsl
 {
+    /// <summary>
+    /// It is possible to nest a concept within a parent concept ("module x { entity y; }") or to use it explicitly ("entity x.y;").
+    /// Parent reference is defined by a property that references another concept, marked with <see cref="ConceptParentAttribute"/> or the first property by default.
+    /// Derived concept can override parent property with its own property marked with <see cref="ConceptParentAttribute"/>;
+    /// this allows construction of recursive concepts such as menu items.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Property, Inherited = true, AllowMultiple = false)]
     public class ConceptParentAttribute : Attribute
     {

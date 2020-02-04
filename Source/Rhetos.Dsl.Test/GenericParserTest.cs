@@ -17,13 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities;
-using Rhetos.Dsl;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Linq;
-using System.Collections.Generic;
 using Rhetos.TestCommon;
+using System.Collections.Generic;
 
 namespace Rhetos.Dsl.Test
 {
@@ -118,23 +114,15 @@ namespace Rhetos.Dsl.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(FrameworkException))]
         public void ParseNotEnoughParametersInSingleConceptDescription()
         {
-            try
-            {
-                var simpleParser = new GenericParserHelper<SimpleConceptInfo>("module");
-                SimpleConceptInfo ci = simpleParser.QuickParse("module { entiti e }");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                Assert.IsTrue(ex.Message.Contains("SimpleConceptInfo"), "Concept type.");
-                Assert.IsTrue(ex.Message.Contains("Special"), "Unexpected special token while reading text.");
-                Assert.IsTrue(ex.Message.Contains("{"), "Unexpected special token '{' while reading text.");
-                Assert.IsTrue(ex.Message.Contains("quotes"), "Use quotes to specify text (e.g. '{')");
-                throw;
-            }
+            var simpleParser = new GenericParserHelper<SimpleConceptInfo>("module");
+            TestUtility.ShouldFail<FrameworkException>(
+                () => simpleParser.QuickParse("module { entiti e }"),
+                "SimpleConceptInfo",
+                "Special",
+                "{",
+                "quotes");
         }
 
         //===============================================================
@@ -227,41 +215,26 @@ namespace Rhetos.Dsl.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(FrameworkException))]
         public void ParseEnclosedInlineError()
         {
             var dsl = "enclosed abc def";
             var parser = new GenericParserHelper<EnclosedConceptInfo>("enclosed");
-            try
-            {
-                EnclosedConceptInfo ci = parser.QuickParse(dsl);
-            }
-            catch (Exception e)
-            {
-                Assert.IsTrue(e.Message.Contains("\".\""), "Expecting \".\"");
-                var msg = parser.tokenReader.ReportPosition();
-                Assert.IsTrue(msg.Contains("def"), "Report the unexpected text.");
-                throw;
-            }
+            TestUtility.ShouldFail<FrameworkException>(
+                () => parser.QuickParse(dsl),
+                "\".\"");
+            TestUtility.AssertContains(parser.tokenReader.ReportPosition(), "def", "Report the unexpected text.");
         }
 
         [TestMethod]
-        [ExpectedException(typeof(FrameworkException))]
         public void ParseEnclosedInWrongConcept()
         {
             var parser = new GenericParserHelper<EnclosedConceptInfo>("enclosed");
-            try
-            {
-                EnclosedConceptInfo ci = parser.QuickParse(
-                    "enclosed myparent.myname",
-                    new ComplexConceptInfo { Name = "c", SimpleConceptInfo = new SimpleConceptInfo { Name = "s" } });
-            }
-            catch (Exception e)
-            {
-                Assert.IsTrue(e.Message.Contains("EnclosedConceptInfo"), "EnclosedConceptInfo");
-                Assert.IsTrue(e.Message.Contains("ComplexConceptInfo"), "ComplexConceptInfo");
-                throw;
-            }
+                TestUtility.ShouldFail<FrameworkException>(
+                    () => parser.QuickParse(
+                        "enclosed myparent.myname",
+                        new ComplexConceptInfo { Name = "c", SimpleConceptInfo = new SimpleConceptInfo { Name = "s" } }),
+                "EnclosedConceptInfo",
+                "ComplexConceptInfo");
         }
 
         class EnclosedReference : IConceptInfo
@@ -343,7 +316,7 @@ namespace Rhetos.Dsl.Test
                 var context = new Stack<IConceptInfo>(new[] { parent });
                 var parser = new GenericParserHelper<EnclosedSingleProperty2>("enclosed2");
                 TestUtility.ShouldFail(() => parser.QuickParse("enclosed2", context),
-                    "EnclosedSingleProperty2 must be enclosed within the referenced parent concept EnclosedSingleProperty1");
+                    "EnclosedSingleProperty2 must be nested within the referenced parent concept EnclosedSingleProperty1");
             }
 
             {
@@ -351,7 +324,7 @@ namespace Rhetos.Dsl.Test
                 var context = new Stack<IConceptInfo>();
                 var parser = new GenericParserHelper<EnclosedSingleProperty2>("enclosed2");
                 TestUtility.ShouldFail(() => parser.QuickParse("enclosed2 parent", context),
-                    "EnclosedSingleProperty2 must be enclosed within the referenced parent concept EnclosedSingleProperty1");
+                    "EnclosedSingleProperty2 must be nested within the referenced parent concept EnclosedSingleProperty1");
             }
         }
 
@@ -441,6 +414,7 @@ namespace Rhetos.Dsl.Test
         [ConceptKeyword("menu")]
         internal class SubMenuCI : MenuCI
         {
+            [ConceptParent]
             public MenuCI Parent { get; set; }
         }
 
@@ -488,20 +462,12 @@ namespace Rhetos.Dsl.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(FrameworkException))]
         public void Recursive_Root()
         {
-            try
-            {
-                string dsl = "menu a b";
-                LeftRecursiveCI mi = new GenericParserHelper<LeftRecursiveCI>("menu").QuickParse(dsl);
-            }
-            catch (Exception e)
-            {
-                Assert.IsTrue(e.Message.Contains("root"), "Recursive concept cannot be used as a root.");
-                Assert.IsTrue(e.Message.Contains("non-recursive"), "Non-recursive concept should be uses as a root.");
-                throw;
-            }
+            string dsl = "menu a b";
+            TestUtility.ShouldFail<FrameworkException>(
+                () => new GenericParserHelper<LeftRecursiveCI>("menu").QuickParse(dsl),
+                "Recursive concept LeftRecursiveCI cannot be used as a root");
         }
 
         class InterfaceReferenceConceptInfo : IConceptInfo
@@ -525,19 +491,12 @@ namespace Rhetos.Dsl.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(FrameworkException))]
         public void InterfaceReference_ErrorIfNotEnclosed()
         {
-            try
-            {
-                string dsl = "intref parent data";
-                var parsedConcept = new GenericParserHelper<InterfaceReferenceConceptInfo>("intref").QuickParse(dsl);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                throw;
-            }
+            string dsl = "intref parent data";
+            TestUtility.ShouldFail<FrameworkException>(
+                () => new GenericParserHelper<InterfaceReferenceConceptInfo>("intref").QuickParse(dsl),
+                "Member of type IConceptInfo can only be nested within the referenced parent concept. It must be a first member or marked with ConceptParentAttribute.");
         }
     }
 }

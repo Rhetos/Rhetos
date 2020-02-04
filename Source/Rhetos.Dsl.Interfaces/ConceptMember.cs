@@ -39,7 +39,7 @@ namespace Rhetos.Dsl
         public bool IsStringType { get; private set; }
         public bool IsParsable { get; private set; }
 
-        private MemberInfo MemberInfo;
+        private readonly MemberInfo MemberInfo;
 
         public ConceptMember(MemberInfo memberInfo, ISet<string> nonParsableMembers)
         {
@@ -57,6 +57,10 @@ namespace Rhetos.Dsl
             this.IsStringType = ValueType == typeof(string);
 
             this.IsParsable = nonParsableMembers == null || !nonParsableMembers.Contains(memberInfo.Name);
+
+            if (IsParentNested && !IsConceptInfo)
+                throw new FrameworkException($"Incorrect concept property definition at '{memberInfo.DeclaringType.FullName}.{Name}':" +
+                    $" Attribute {nameof(ConceptParentAttribute)} can only be specified on a reference to another concept {nameof(IConceptInfo)}.");
         }
 
         private static int InheritanceDepth(MemberInfo memberInfo)
@@ -69,9 +73,9 @@ namespace Rhetos.Dsl
             {
                 depth++;
                 if (derivedType.BaseType == null)
-                    throw new FrameworkException("Unexpected IConceptInfo property inheritance: Property " + memberInfo.Name
-                        + " is declared in type " + memberInfo.DeclaringType.FullName + " and used in type " + memberInfo.ReflectedType.FullName
-                        + ", but declaring type is not a base type of the other." );
+                    throw new FrameworkException($"Unexpected IConceptInfo property inheritance:" +
+                        $" Property {memberInfo.Name} is declared in type {memberInfo.DeclaringType.FullName} and used" +
+                        $" in type {memberInfo.ReflectedType.FullName}, but declaring type is not a base type of the other.");
                 derivedType = derivedType.BaseType;
             }
             return depth;
