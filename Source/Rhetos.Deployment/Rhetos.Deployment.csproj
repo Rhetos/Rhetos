@@ -112,6 +112,10 @@
       <Project>{BB7E5668-1B43-4FCE-A832-444CC57FEE80}</Project>
       <Name>Rhetos.Logging.Interfaces</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Compiler.Interfaces\Rhetos.Compiler.Interfaces.csproj">
+      <Project>{fcad7f9a-4c31-4d5a-8699-c291ae09d006}</Project>
+      <Name>Rhetos.Compiler.Interfaces</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rhetos.DatabaseGenerator.Interfaces\Rhetos.DatabaseGenerator.Interfaces.csproj">
       <Project>{ca29d948-78b1-42d9-8e24-d2811e355f5a}</Project>
       <Name>Rhetos.DatabaseGenerator.Interfaces</Name>

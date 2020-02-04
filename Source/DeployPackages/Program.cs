@@ -69,7 +69,7 @@ namespace DeployPackages
                         .AddRhetosAppEnvironment(rhetosAppEnvironment)
                         .AddKeyValue(nameof(BuildOptions.ProjectFolder), rhetosAppRootPath)
                         .AddKeyValue(nameof(BuildOptions.CacheFolder), Path.Combine(rhetosAppRootPath, "GeneratedFilesCache"))
-                        .AddKeyValue(nameof(BuildOptions.GeneratedSourceFolder), Path.Combine(rhetosAppRootPath, "bin", "Generated"))
+                        .AddKeyValue(nameof(BuildOptions.GeneratedSourceFolder), null)
                         .AddWebConfiguration(rhetosAppRootPath)
                         .AddConfigurationManagerConfiguration()
                         .AddCommandLineArguments(args, "/")

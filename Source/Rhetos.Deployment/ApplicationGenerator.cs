@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
@@ -35,6 +36,7 @@ namespace Rhetos.Deployment
         private readonly RhetosAppEnvironment _rhetosAppEnvironment;
         private readonly BuildOptions _buildOptions;
         private readonly FilesUtility _filesUtility;
+        private readonly ISourceWriter _sourceWriter;
 
         public ApplicationGenerator(
             ILogProvider logProvider,
@@ -42,7 +44,8 @@ namespace Rhetos.Deployment
             IPluginsContainer<IGenerator> generatorsContainer,
             RhetosAppEnvironment rhetosAppEnvironment,
             BuildOptions buildOptions,
-            FilesUtility filesUtility)
+            FilesUtility filesUtility,
+            ISourceWriter sourceWriter)
         {
             _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
             _dslModel = dslModel;
@@ -50,12 +53,12 @@ namespace Rhetos.Deployment
             _rhetosAppEnvironment = rhetosAppEnvironment;
             _buildOptions = buildOptions;
             _filesUtility = filesUtility;
+            _sourceWriter = sourceWriter;
         }
 
         public void ExecuteGenerators()
         {
             _filesUtility.EmptyDirectory(_rhetosAppEnvironment.AssetsFolder);
-            _filesUtility.EmptyDirectory(_buildOptions.GeneratedSourceFolder);
             _filesUtility.SafeCreateDirectory(_buildOptions.CacheFolder); // Cache is not deleted between builds.
 
             CheckDslModelErrors();
@@ -68,6 +71,12 @@ namespace Rhetos.Deployment
             }
             if (!generators.Any())
                 _deployPackagesLogger.Trace("No additional generators.");
+
+            if(!string.IsNullOrEmpty(_buildOptions.GeneratedSourceFolder))
+            {
+                _filesUtility.SafeCreateDirectory(_buildOptions.GeneratedSourceFolder);
+                _sourceWriter.WriteAllFiles();
+            }
         }
 
         /// <summary>

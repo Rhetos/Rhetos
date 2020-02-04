@@ -97,6 +97,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="SourceWriter.cs" />
     <Compile Include="AssemblyGenerator.cs" />
     <Compile Include="CacheUtility.cs" />
     <Compile Include="CodeBuilder.cs" />

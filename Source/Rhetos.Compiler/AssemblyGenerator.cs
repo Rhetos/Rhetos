@@ -41,21 +41,21 @@ namespace Rhetos.Compiler
         private readonly int _errorReportLimit;
         private readonly BuildOptions _buildOptions;
         private readonly CacheUtility _cacheUtility;
+        private readonly ISourceWriter _sourceWriter;
 
         public AssemblyGenerator(ILogProvider logProvider, IConfigurationProvider configurationProvider,
-            BuildOptions buildOptions, FilesUtility filesUtility)
+            BuildOptions buildOptions, FilesUtility filesUtility, ISourceWriter sourceWriter)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("AssemblyGenerator");
             _errorReportLimit = configurationProvider.GetValue("AssemblyGenerator.ErrorReportLimit", 5);
             _buildOptions = buildOptions;
+            _sourceWriter = sourceWriter;
             _cacheUtility = new CacheUtility(typeof(AssemblyGenerator), buildOptions, filesUtility);
         }
 
         public Assembly Generate(IAssemblySource assemblySource, string outputAssemblyPath, IEnumerable<ManifestResource> manifestResources = null)
         {
-            var stopwatch = Stopwatch.StartNew();
-
             manifestResources = manifestResources ?? Array.Empty<ManifestResource>();
 
             // Save source file and it's hash value:
@@ -65,11 +65,17 @@ namespace Rhetos.Compiler
                 + $"// Debug = \"{_buildOptions.Debug}\"\r\n\r\n"
                 + assemblySource.GeneratedCode;
 
-            string sourcePath = Path.GetFullPath(Path.ChangeExtension(outputAssemblyPath, ".cs"));
-            File.WriteAllText(sourcePath, sourceCode, Encoding.UTF8);
-            _performanceLogger.Write(stopwatch, $@"{nameof(AssemblyGenerator)}: Save source.");
-
-            return CompileAssemblyOrGetFromCache(outputAssemblyPath, sourceCode, sourcePath, assemblySource.RegisteredReferences, manifestResources);
+            if (string.IsNullOrEmpty(_buildOptions.GeneratedSourceFolder))
+            {
+                string sourcePath = Path.GetFullPath(Path.ChangeExtension(outputAssemblyPath, ".cs"));
+                File.WriteAllText(sourcePath, sourceCode, Encoding.UTF8);
+                return CompileAssemblyOrGetFromCache(outputAssemblyPath, sourceCode, sourcePath, assemblySource.RegisteredReferences, manifestResources);
+            }
+            else
+            {
+                _sourceWriter.Add(Path.GetFileNameWithoutExtension(outputAssemblyPath) + ".cs", sourceCode);
+                return null;
+            }
         }
 
         private Assembly CompileAssemblyOrGetFromCache(string outputAssemblyPath, string sourceCode, string sourcePath, IEnumerable<string> registeredReferences, IEnumerable<ManifestResource> manifestResources)
