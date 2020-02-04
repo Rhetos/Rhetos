@@ -21,7 +21,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Globalization;
-using System.Diagnostics.Contracts;
 using Rhetos.Utilities;
 
 namespace Rhetos.Dsl
@@ -29,12 +28,13 @@ namespace Rhetos.Dsl
     /// <summary>
     /// NOTES:
     /// 1. Parsing is done in the order as the properties are declares in the source.
-    /// 2. If the first property implements IConceptInfo, it is possible to embed the concept within that parent concept.
-    /// ("module x { entity y; }") or to use it explicitly ("entity x.y;").
-    /// 3. If the first property type is IConceptInfo interface, not the implementation, it can reference any concept
-    /// but can be used only in the embedded form.
-    /// 4. Recursive "parent" property (referencing the same concept type) does not have to be the first property
-	/// to be used in the embedded form. This allows construction of recursive concepts such as menus.
+    /// 2. It is possible to nest the concept within a parent concept ("module x { entity y; }") or to use it explicitly ("entity x.y;").
+    /// Parent reference is defined by a property that references another concept, marked with <see cref="ConceptParentAttribute"/> or the first property by default.
+    /// This also allows construction of recursive concepts such as menu items.
+    /// 3. If the parent property type is IConceptInfo interface, not the implementation, it can reference any concept
+    /// but can only be used in the nested form.
+    /// 4. Recursive "parent" property (referencing the same concept type), marked with <see cref="ConceptParentAttribute"/>
+    /// does not have to be the first property to be used in the nested form.
     /// </summary>
     public class GenericParser : IConceptParser
     {
@@ -44,11 +44,8 @@ namespace Rhetos.Dsl
 
         public GenericParser(Type conceptInfoType, string keyword)
         {
-            Contract.Requires(conceptInfoType != null);
-            Contract.Requires(keyword != null);
-
-            this.ConceptInfoType = conceptInfoType;
-            this.Keyword = keyword;
+            ConceptInfoType = conceptInfoType;
+            Keyword = keyword;
             Members = ConceptMembers.Get(conceptInfoType).ToArray();
         }
 
@@ -58,11 +55,11 @@ namespace Rhetos.Dsl
             {
                 var lastConcept = context.Count > 0 ? context.Peek() : null;
                 bool lastConceptUsed = false;
+
                 var conceptInfo = ParseMembers(tokenReader, lastConcept, false, ref lastConceptUsed);
+
                 if (!conceptInfo.IsError && !lastConceptUsed && lastConcept != null)
-                    return ValueOrError<IConceptInfo>.CreateError(string.Format(
-                        "This concept cannot be enclosed within {0}. Trying to read {1}.",
-                        lastConcept.GetType().Name, ConceptInfoType.Name));
+                    return ValueOrError<IConceptInfo>.CreateError($"This concept cannot be nested within {lastConcept.GetType().Name}. Trying to read {ConceptInfoType.Name}.");
                 return conceptInfo;
             }
 
@@ -129,7 +126,7 @@ namespace Rhetos.Dsl
                         return (object)lastConcept;
                     }
                     else
-                        return ValueOrError<object>.CreateError("Member of type IConceptInfo can only be used as a first member and enclosed within the referenced parent concept.");
+                        return ValueOrError<object>.CreateError("Member of type IConceptInfo can only be used as a first member and nested within the referenced parent concept.");
 
                 if (member == explicitParentNested && !lastConceptUsed) // Recursive "parent" property
                 {
@@ -151,7 +148,7 @@ namespace Rhetos.Dsl
                             "Recursive concept {0} cannot be used as a root because its parent property ({1}) must reference another concept. Use a non-recursive concept for the root and a derivation of the root concept with additional parent property as a recursive concept.",
                             ConceptInfoHelper.GetKeywordOrTypeName(ConceptInfoType), member.Name));
 
-                    if (!readingAReference && Members.Where(m => m.IsParsable).Count() == 1)
+                    if (!readingAReference && Members.Count(m => m.IsParsable) == 1)
                     {
                         // This validation is not necessary for consistent parsing. It is enforced simply to avoid ambiguity when parsing
                         // similar concepts such as "Logging { AllProperties; }", "History { AllProperties; }" and "Persisted { AllProperties; }".
@@ -159,7 +156,7 @@ namespace Rhetos.Dsl
                         var parentMembers = ConceptMembers.Get(member.ValueType).Where(m => m.IsParsable).ToArray();
                         if (parentMembers.Count() == 1 && parentMembers.Single().IsConceptInfo)
                             return ValueOrError.CreateError(string.Format(
-                                "{0} must be enclosed within the referenced parent concept {1}. A single-reference concept that references another single-reference concept must always be used with embedded syntax to avoid ambiguity.",
+                                "{0} must be nested within the referenced parent concept {1}. A single-reference concept that references another single-reference concept must always be used with nested syntax to avoid ambiguity.",
                                 ConceptInfoHelper.GetKeywordOrTypeName(ConceptInfoType),
                                 ConceptInfoHelper.GetKeywordOrTypeName(member.ValueType)));
                     }
