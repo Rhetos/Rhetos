@@ -55,17 +55,17 @@ namespace Rhetos.Dsl
             if (tokenReader.TryRead(Keyword))
             {
                 var lastConcept = context.Count > 0 ? context.Peek() : null;
-                return ParseMembers(tokenReader, lastConcept, false);
+                bool parsedFirstReferenceElement = false;
+                return ParseMembers(tokenReader, lastConcept, false, ref parsedFirstReferenceElement);
             }
             else
                 return ValueOrError<IConceptInfo>.CreateError("");
         }
 
-        private ValueOrError<IConceptInfo> ParseMembers(ITokenReader tokenReader, IConceptInfo useLastConcept, bool readingAReference)
+        private ValueOrError<IConceptInfo> ParseMembers(ITokenReader tokenReader, IConceptInfo useLastConcept, bool readingAReference, ref bool parsedFirstReferenceElement)
         {
             IConceptInfo conceptInfo = (IConceptInfo)Activator.CreateInstance(ConceptInfoType);
             bool firstMember = true;
-            bool lastPropertyWasInlineParent = false;
 
             var listOfMembers = readingAReference ? Members.Where(m => m.IsKey) : Members.Where(m => m.IsParsable);
 
@@ -77,7 +77,10 @@ namespace Rhetos.Dsl
 
             foreach (ConceptMember member in listOfMembers)
             {
-                var valueOrError = ReadMemberValue(member, tokenReader, member == parentProperty ? useLastConcept : null, firstMember, ref lastPropertyWasInlineParent, readingAReference);
+                if (!readingAReference)
+                    parsedFirstReferenceElement = false; // Reset a reference elements group, that should separated by dot.
+
+                var valueOrError = ReadMemberValue(member, tokenReader, member == parentProperty ? useLastConcept : null, firstMember, ref parsedFirstReferenceElement, readingAReference);
 
                 if (valueOrError.IsError)
                     return ValueOrError<IConceptInfo>.CreateError(string.Format(CultureInfo.InvariantCulture,
@@ -92,25 +95,25 @@ namespace Rhetos.Dsl
         }
 
         private ValueOrError<object> ReadMemberValue(ConceptMember member, ITokenReader tokenReader, IConceptInfo useLastConcept,
-            bool firstMember, ref bool lastPropertyWasInlineParent, bool readingAReference)
+            bool firstMember, ref bool parsedFirstReferenceElement, bool readingAReference)
         {
             try
             {
-                if (lastPropertyWasInlineParent && member.IsKey && !member.IsConceptInfo) // TODO: Removing "IsConceptInfo" from this condition would produce a mismatch. Think of a better solution for parsing the concept key.
-                {
-                    if (!tokenReader.TryRead("."))
-                        return ValueOrError<object>.CreateError(string.Format(
-                            "Parent property and the following key value ({0}) must be separated with a dot. Expected \".\"",
-                            member.Name));
-                }
-                lastPropertyWasInlineParent = false;
-
                 if (member.IsStringType)
                 {
-                    if (useLastConcept == null)
-                        return tokenReader.ReadText().ChangeType<object>();
-                    else
+                    if (useLastConcept != null)
                         return ValueOrError<object>.CreateError($"This concept cannot be nested within {useLastConcept.GetType().Name}. Trying to read {ConceptInfoType.Name}.");
+
+                    if (readingAReference && parsedFirstReferenceElement)
+                    {
+                        if (!tokenReader.TryRead("."))
+                            return ValueOrError<object>.CreateError(string.Format(
+                                "Parent property and the following key value ({0}) must be separated with a dot. Expected \".\"",
+                                member.Name));
+                    }
+
+                    parsedFirstReferenceElement = true;
+                    return tokenReader.ReadText().ChangeType<object>();
                 }
 
                 if (member.ValueType == typeof(IConceptInfo))
@@ -124,8 +127,6 @@ namespace Rhetos.Dsl
 
                 if (useLastConcept != null && member.ValueType.IsInstanceOfType(useLastConcept))
                     return (object)useLastConcept;
-                else if (firstMember)
-                    lastPropertyWasInlineParent = true;
 
                 if (member.IsConceptInfo && firstMember && !readingAReference && Members.Count(m => m.IsParsable) == 1)
                 {
@@ -146,7 +147,7 @@ namespace Rhetos.Dsl
                             ConceptInfoHelper.GetKeywordOrTypeName(ConceptInfoType), member.Name));
 
                     GenericParser subParser = new GenericParser(member.ValueType, "");
-                    return subParser.ParseMembers(tokenReader, useLastConcept, true).ChangeType<object>();
+                    return subParser.ParseMembers(tokenReader, useLastConcept, true, ref parsedFirstReferenceElement).ChangeType<object>();
                 }
 
                 return ValueOrError.CreateError(string.Format(

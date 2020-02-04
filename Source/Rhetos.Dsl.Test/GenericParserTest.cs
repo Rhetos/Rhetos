@@ -186,7 +186,7 @@ namespace Rhetos.Dsl.Test
         public void ParseEnclosedInline()
         {
             var enclosedParser = new GenericParserHelper<EnclosedConceptInfo>("enclosed");
-            EnclosedConceptInfo ci = enclosedParser.QuickParse("enclosed a.b");
+            EnclosedConceptInfo ci = enclosedParser.QuickParse("enclosed a b");
             Assert.AreEqual("a", ci.Parent.Name);
             Assert.AreEqual("b", ci.Name);
         }
@@ -204,7 +204,12 @@ namespace Rhetos.Dsl.Test
         {
             var enclosedParser = new GenericParserHelper<EnclosedConceptInfoLevel2>("enclosedlevel2");
             var root = new SimpleConceptInfo { Name = "a" };
-            EnclosedConceptInfoLevel2 ci = enclosedParser.QuickParse("enclosedlevel2 b.c", root);
+            EnclosedConceptInfoLevel2 ci = enclosedParser.QuickParse("enclosedlevel2 b c", root);
+            Assert.AreEqual("a", ci.Parent.Parent.Name);
+            Assert.AreEqual("b", ci.Parent.Name);
+            Assert.AreEqual("c", ci.Name);
+
+            ci = enclosedParser.QuickParse("enclosedlevel2 a.b c");
             Assert.AreEqual("a", ci.Parent.Parent.Name);
             Assert.AreEqual("b", ci.Parent.Name);
             Assert.AreEqual("c", ci.Name);
@@ -213,12 +218,11 @@ namespace Rhetos.Dsl.Test
         [TestMethod]
         public void ParseEnclosedInlineError()
         {
-            var dsl = "enclosed abc def";
-            var parser = new GenericParserHelper<EnclosedConceptInfo>("enclosed");
+            var enclosedParser = new GenericParserHelper<EnclosedConceptInfoLevel2>("enclosedlevel2");
+            var root = new SimpleConceptInfo { Name = "a" };
             TestUtility.ShouldFail<FrameworkException>(
-                () => parser.QuickParse(dsl),
+                () => enclosedParser.QuickParse("enclosedlevel2 a b c"),
                 "\".\"");
-            TestUtility.AssertContains(parser.tokenReader.ReportPosition(), "def", "Report the unexpected text.");
         }
 
         [TestMethod]
@@ -637,7 +641,7 @@ namespace Rhetos.Dsl.Test
             // More consistent behavior would be to use dot only for referenced concept keys, and not here before string property.
             var parser = new GenericParserHelper<KeyReferenceString>("KeyReferenceString");
             string expectedParsedConcept = "KeyReferenceString Module1.Entity1.Name";
-            string dsl = "KeyReferenceString Module1.Entity1.Name";
+            string dsl = "KeyReferenceString Module1.Entity1 Name";
             Assert.AreEqual(expectedParsedConcept, parser.QuickParse(dsl).GetUserDescription());
         }
     }
