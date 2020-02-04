@@ -371,7 +371,6 @@ namespace Rhetos.Dsl.Test
             Assert.AreEqual(default(string), ci.Reference.Comment);
         }
 
-
         class DerivedWithKey : ConceptWithKey
         {
         }
@@ -393,7 +392,20 @@ namespace Rhetos.Dsl.Test
             Assert.AreEqual(default(string), ci.Parent.Comment);
         }
 
+        [TestMethod]
+        public void RootCannotBeNested()
+        {
+            var parser = new GenericParserHelper<LikeModule>("Module");
+
+            Assert.AreEqual("LikeModule Module1", parser.QuickParse("Module Module1").GetUserDescription());
+
+            TestUtility.ShouldFail<FrameworkException>(
+                () => parser.QuickParse("Module Module1", new LikeModule { Name = "Module0" }),
+                "cannot be nested");
+        }
+
         //===============================================================
+        // Recursive concept:
 
         [ConceptKeyword("menu")]
         internal class MenuCI : IConceptInfo
