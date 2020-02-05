@@ -17,13 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Logging;
-using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Rhetos.Dsl.Test
 {
@@ -32,8 +28,9 @@ namespace Rhetos.Dsl.Test
         public TestDslParser(string dsl, IConceptInfo[] conceptInfoPlugins = null)
             : base (
                 new TestTokenizer(dsl),
-                conceptInfoPlugins ?? new IConceptInfo[] { },
-                new ConsoleLogProvider())
+                conceptInfoPlugins ?? Array.Empty<IConceptInfo>(),
+                new ConsoleLogProvider(),
+                new NullConfiguration())
         {
         }
 

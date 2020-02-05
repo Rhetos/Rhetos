@@ -34,14 +34,23 @@ namespace Rhetos.Dsl
         private readonly ILogger _performanceLogger;
         private readonly ILogger _logger;
         private readonly ILogger _keywordsLogger;
+        private readonly Lazy<LegacySyntax> _legacySyntax;
 
-        public DslParser(Tokenizer tokenizer, IConceptInfo[] conceptInfoPlugins, ILogProvider logProvider)
+        /// <summary>
+        /// Before Rhetos v4.0, dot character was expected before string key parameter of current statement.
+        /// Since Rhetos v4.0, dot should only be used for separating key parameters of referenced concept,
+        /// but legacy syntax is allowed by setting this option to <see cref="Ignore"/> or <see cref="Warning"/>.
+        /// </summary>
+        private enum LegacySyntax { Ignore, Warning, Error };
+
+        public DslParser(Tokenizer tokenizer, IConceptInfo[] conceptInfoPlugins, ILogProvider logProvider, IConfiguration configuration)
         {
             _tokenizer = tokenizer;
             _conceptInfoPlugins = conceptInfoPlugins;
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("DslParser");
             _keywordsLogger = logProvider.GetLogger("DslParser.Keywords");
+            _legacySyntax = configuration.GetEnum("DslParser.LegacySyntax", LegacySyntax.Ignore);
         }
 
         public IEnumerable<IConceptInfo> ParsedConcepts => GetConcepts();
@@ -95,16 +104,21 @@ namespace Rhetos.Dsl
 
             TokenReader tokenReader = new TokenReader(_tokenizer.GetTokens(), 0);
 
-            List<IConceptInfo> newConcepts = new List<IConceptInfo>();
-            Stack<IConceptInfo> context = new Stack<IConceptInfo>();
+            var newConcepts = new List<IConceptInfo>();
+            var context = new Stack<IConceptInfo>();
+            var warnings = new List<string>();
 
             tokenReader.SkipEndOfFile();
             while (!tokenReader.EndOfInput)
             {
-                IConceptInfo conceptInfo = ParseNextConcept(tokenReader, context, conceptParsers);
-                newConcepts.Add(conceptInfo);
+                var parsed = ParseNextConcept(tokenReader, context, conceptParsers);
 
-                UpdateContextForNextConcept(tokenReader, context, conceptInfo);
+                newConcepts.Add(parsed.ConceptInfo);
+
+                if (parsed.Warnings != null)
+                    warnings.AddRange(parsed.Warnings);
+
+                UpdateContextForNextConcept(tokenReader, context, parsed.ConceptInfo);
 
                 if (context.Count == 0)
                     tokenReader.SkipEndOfFile();
@@ -117,12 +131,22 @@ namespace Rhetos.Dsl
                     ReportErrorContext(context.Peek(), tokenReader)
                     + "Expected \"}\" at the end of the script to close concept \"{0}\".", context.Peek()));
 
+            foreach (string warning in warnings)
+            {
+                if (_legacySyntax.Value == LegacySyntax.Ignore)
+                    _logger.Trace(warning);
+                else
+                    _logger.Info(warning);
+            }
+            if (_legacySyntax.Value == LegacySyntax.Error && warnings.Any())
+                throw new DslSyntaxException(warnings.First());
+
             return newConcepts;
         }
 
         class Interpretation { public IConceptInfo ConceptInfo; public TokenReader NextPosition; public List<string> Warnings; }
 
-        private IConceptInfo ParseNextConcept(TokenReader tokenReader, Stack<IConceptInfo> context, MultiDictionary<string, IConceptParser> conceptParsers)
+        private (IConceptInfo ConceptInfo, List<string> Warnings) ParseNextConcept(TokenReader tokenReader, Stack<IConceptInfo> context, MultiDictionary<string, IConceptParser> conceptParsers)
         {
             var errorReports = new List<Func<string>>();
             List<Interpretation> possibleInterpretations = new List<Interpretation>();
@@ -178,12 +202,8 @@ namespace Rhetos.Dsl
 
             var parsedStatement = possibleInterpretations.Single();
 
-            if (parsedStatement.Warnings != null)
-                foreach (string warning in parsedStatement.Warnings)
-                    _logger.Info(warning);
-
             tokenReader.CopyFrom(parsedStatement.NextPosition);
-            return parsedStatement.ConceptInfo;
+            return (parsedStatement.ConceptInfo, parsedStatement.Warnings);
         }
 
         private void Disambiguate(List<Interpretation> possibleInterpretations)

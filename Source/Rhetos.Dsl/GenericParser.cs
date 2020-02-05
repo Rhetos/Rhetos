@@ -130,7 +130,7 @@ namespace Rhetos.Dsl
                     // Legacy syntax:
                     if (!readingAReference && member.IsKey && member.IsStringType && !firstMember)
                         if (tokenReader.TryRead("."))
-                            AddWarning($"Obsolete syntax: Remove '.' from this {Keyword} statement. {((TokenReader)tokenReader).ReportPosition()}.");
+                            AddWarning($"Obsolete syntax: Remove '.' from {Keyword} statement. {((TokenReader)tokenReader).ReportPosition()}.");
 
                     return tokenReader.ReadText().ChangeType<object>();
                 }

@@ -277,7 +277,8 @@ namespace Rhetos.Dsl.Test
             var dslParser = new DslParser(
                 new TestTokenizer(dsl),
                 new IConceptInfo[] { new SimpleConceptInfo() },
-                new ConsoleLogProvider());
+                new ConsoleLogProvider(),
+                new NullConfiguration());
             var parsedConcepts = dslParser.ParsedConcepts;
             Console.WriteLine("Parsed concepts: " + string.Join("\r\n", dslParser.ParsedConcepts));
             return parsedConcepts;
