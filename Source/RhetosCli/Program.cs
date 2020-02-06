@@ -54,7 +54,8 @@ namespace Rhetos
             var buildCommand = new Command("build", "Generates the Rhetos application inside the <project-root-folder>. If <project-root-folder> is not set it will use the current working directory.");
             buildCommand.Add(new Argument<DirectoryInfo>("project-root-folder", () => new DirectoryInfo(Environment.CurrentDirectory)));
             buildCommand.Add(new Option<string[]>("--assemblies", Array.Empty<string>(), "List of assemblies outside of referenced NuGet packages that will be used during the build."));
-            buildCommand.Handler = CommandHandler.Create((DirectoryInfo projectRootFolder, string[] assemblies) => ReportError(() => Build(projectRootFolder.FullName, assemblies)));
+            buildCommand.Add(new Option<string>("--assembly-name", () => null, "The name of the assembly which will contain the generated source files."));
+            buildCommand.Handler = CommandHandler.Create((DirectoryInfo projectRootFolder, string[] assemblies, string assemblyName) => ReportError(() => Build(projectRootFolder.FullName, assemblies, assemblyName)));
             rootCommand.AddCommand(buildCommand);
 
             var dbUpdateCommand = new Command("dbupdate", "Updates the database based on the generated files from the build process. If <application-root-folder> is not set it will use the current working directory.");
@@ -94,17 +95,17 @@ namespace Rhetos
             return 0;
         }
 
-        private void Build(string rhetosAppRootPath, string[] assemblies)
+        private void Build(string rhetosAppRootPath, string[] assemblies, string assemblyName)
         {
             var nuget = new NuGetUtilities(rhetosAppRootPath, LogProvider, null);
-
+            assemblyName = assemblyName ?? nuget.ProjectName;
             var configurationProvider = new ConfigurationBuilder()
                 .AddRhetosAppEnvironment(new RhetosAppEnvironment
                 {
                     RootFolder = rhetosAppRootPath,
                     BinFolder = Path.Combine(rhetosAppRootPath, "bin"),
                     AssetsFolder = Path.Combine(rhetosAppRootPath, "RhetosAssets"),
-                    AssemblyName = nuget.ProjectName, //TODO: We are using the project name as the output assembly name because this is almost always the case. This is only temporarly.
+                    AssemblyName = assemblyName, //TODO: We are using the project name as the output assembly name because this is almost always the case. This is only temporarly.
                     // TODO: Rhetos CLI should not use LegacyPluginsFolder. Referenced plugins are automatically copied to output bin folder by NuGet. It is used by DeployPackages.exe when downloading packages and in legacy application runtime for assembly resolver and probing paths.
                     // TODO: Set LegacyPluginsFolder to null after reviewing impact to AspNetFormsAuth CLI utilities and similar packages.
                     LegacyPluginsFolder = Path.Combine(rhetosAppRootPath, "bin"),
