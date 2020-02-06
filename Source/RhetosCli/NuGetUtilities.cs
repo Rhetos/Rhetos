@@ -34,6 +34,8 @@ namespace Rhetos
         private readonly LockFile _lockFile;
         private readonly NuGetFramework _targetFramework;
 
+        public string ProjectName { get { return _lockFile.PackageSpec.Name; } }
+
         public NuGetUtilities(string projectRootFolder, ILogProvider logProvider, string target)
         {
             var objFolderPath = Path.Combine(projectRootFolder, "obj");
@@ -76,7 +78,7 @@ namespace Rhetos
                 .ToList();
         }
 
-        internal InstalledPackages GetInstalledPackages()
+        internal List<InstalledPackage> GetInstalledPackages()
         {
             var installedPackages = new List<InstalledPackage>();
             var targetLibraries = GetTargetFrameworkLibraries();
@@ -88,7 +90,7 @@ namespace Rhetos
                 installedPackages.Add(new InstalledPackage(library.Name, library.Version.Version.ToString(), null, null, null, null, contentFiles));
             }
 
-            return new InstalledPackages { Packages = SortInstalledPackagesByDependencies(targetLibraries, installedPackages) };
+            return SortInstalledPackagesByDependencies(targetLibraries, installedPackages);
         }
 
         private IList<LockFileTargetLibrary> GetTargetFrameworkLibraries()

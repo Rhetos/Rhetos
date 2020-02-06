@@ -18,11 +18,7 @@
 */
 
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Text;
 
 namespace Rhetos.Utilities.ApplicationConfiguration
@@ -36,14 +32,18 @@ namespace Rhetos.Utilities.ApplicationConfiguration
         /// </summary>
         public static void Save(RhetosAppEnvironment rhetosAppEnvironment)
         {
-            var environmentFolders = rhetosAppEnvironment.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                .ToDictionary(property => property.Name, property => (string)property.GetValue(rhetosAppEnvironment));
-
             string saveFolder = rhetosAppEnvironment.RootFolder;
-            foreach (var name in environmentFolders.Keys.ToList())
-                environmentFolders[name] = FilesUtility.AbsoluteToRelativePath(saveFolder, environmentFolders[name]);
+            var rhetosAppEnvironmentToSave = new RhetosAppEnvironment
+            {
+                RootFolder = FilesUtility.AbsoluteToRelativePath(saveFolder, rhetosAppEnvironment.RootFolder),
+                BinFolder = FilesUtility.AbsoluteToRelativePath(saveFolder, rhetosAppEnvironment.BinFolder),
+                AssetsFolder = FilesUtility.AbsoluteToRelativePath(saveFolder, rhetosAppEnvironment.AssetsFolder),
+                LegacyPluginsFolder = FilesUtility.AbsoluteToRelativePath(saveFolder, rhetosAppEnvironment.LegacyPluginsFolder),
+                LegacyAssetsFolder = FilesUtility.AbsoluteToRelativePath(saveFolder, rhetosAppEnvironment.LegacyAssetsFolder),
+                AssemblyName = rhetosAppEnvironment.AssemblyName
+            };
 
-            string serialized = JsonConvert.SerializeObject(environmentFolders, Formatting.Indented);
+            string serialized = JsonConvert.SerializeObject(rhetosAppEnvironmentToSave, Formatting.Indented);
             string filePath = Path.Combine(saveFolder, RhetosAppEnvironmentFileName);
             File.WriteAllText(filePath, serialized, Encoding.UTF8);
         }
@@ -60,17 +60,15 @@ namespace Rhetos.Utilities.ApplicationConfiguration
                 throw new FrameworkException($"Missing file '{RhetosAppEnvironmentFileName}' in folder '{rhetosAppRootPath}' or subfolders." +
                     $" Please verify that the specified folder contains a valid Rhetos application, and that the Rhetos build have passed successfully.");
 
-            var serialized = File.ReadAllText(filePath, Encoding.UTF8);
-            var environmentFolders = JsonConvert.DeserializeObject<Dictionary<string, string>>(serialized);
-
             string saveFolder = Path.GetDirectoryName(filePath);
-            foreach (var name in environmentFolders.Keys.ToList())
-                environmentFolders[name] = FilesUtility.RelativeToAbsolutePath(saveFolder, environmentFolders[name]);
+            var serialized = File.ReadAllText(filePath, Encoding.UTF8);
+            var rhetosAppEnvironment = JsonConvert.DeserializeObject<RhetosAppEnvironment>(serialized);
 
-            var rhetosAppEnvironment = new RhetosAppEnvironment();
-            foreach (var property in rhetosAppEnvironment.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public))
-                if (environmentFolders.ContainsKey(property.Name))
-                    property.SetValue(rhetosAppEnvironment, environmentFolders[property.Name]);
+            rhetosAppEnvironment.RootFolder = FilesUtility.RelativeToAbsolutePath(saveFolder, rhetosAppEnvironment.RootFolder);
+            rhetosAppEnvironment.BinFolder = FilesUtility.RelativeToAbsolutePath(saveFolder, rhetosAppEnvironment.BinFolder);
+            rhetosAppEnvironment.AssetsFolder = FilesUtility.RelativeToAbsolutePath(saveFolder, rhetosAppEnvironment.AssetsFolder);
+            rhetosAppEnvironment.LegacyPluginsFolder = FilesUtility.RelativeToAbsolutePath(saveFolder, rhetosAppEnvironment.LegacyPluginsFolder);
+            rhetosAppEnvironment.LegacyAssetsFolder = FilesUtility.RelativeToAbsolutePath(saveFolder, rhetosAppEnvironment.LegacyAssetsFolder);
 
             return rhetosAppEnvironment;
         }

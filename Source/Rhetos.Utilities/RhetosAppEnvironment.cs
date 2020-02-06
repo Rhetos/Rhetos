@@ -34,6 +34,8 @@ namespace Rhetos.Utilities
 
         public string AssetsFolder { get; set; }
 
+        public string AssemblyName { get; set; }
+
         /// <summary>
         /// This folder can be configured to support legacy plugins.
         /// </summary>

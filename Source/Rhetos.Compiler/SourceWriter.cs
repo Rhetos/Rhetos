@@ -79,6 +79,7 @@ namespace Rhetos.Compiler
                     using (var sw = new StreamWriter(fs, Encoding.UTF8))
                     {
                         sw.Write(file.Value);
+                        fs.SetLength(fs.Position);
                     }
                 }
             }
