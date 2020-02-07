@@ -17,20 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Emit;
-using Rhetos.Dom;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
-using System.CodeDom.Compiler;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 
 namespace Rhetos.Compiler
@@ -52,6 +44,16 @@ namespace Rhetos.Compiler
         public void Add(string fileName, string content)
         {
             _files.AddOrUpdate(fileName, content, ErrorOnUpdate);
+
+            _logger.Info(() => $"Writing '{fileName}'.");
+
+            using (var fs = new FileStream(Path.Combine(_buildOptions.GeneratedSourceFolder, fileName), FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite))
+            {
+                using (var sw = new StreamWriter(fs, Encoding.UTF8))
+                {
+                    sw.Write(content);
+                }
+            }
         }
 
         private string ErrorOnUpdate(string fileName, string oldValue)
@@ -59,7 +61,7 @@ namespace Rhetos.Compiler
             throw new FrameworkException($"Multiple code generators are writing same generated file '{fileName}'.");
         }
 
-        public void WriteAllFiles()
+        public void CleanUp()
         {
             var deleteFiles = Directory.GetFiles(_buildOptions.GeneratedSourceFolder, "*")
                 .Where(existing => !_files.Keys.Contains(Path.GetFileName(existing)));
@@ -68,19 +70,6 @@ namespace Rhetos.Compiler
             {
                 _logger.Info(() => $"Deleting '{deleteFile}'.");
                 _filesUtility.SafeDeleteFile(deleteFile);
-            }
-
-            foreach (var file in _files)
-            {
-                _logger.Info(() => $"Writing ' {file.Key}'.");
-
-                using (var fs = new FileStream(Path.Combine(_buildOptions.GeneratedSourceFolder, file.Key), FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite))
-                {
-                    using (var sw = new StreamWriter(fs, Encoding.UTF8))
-                    {
-                        sw.Write(file.Value);
-                    }
-                }
             }
         }
     }

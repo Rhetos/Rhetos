@@ -60,6 +60,8 @@ namespace Rhetos.Deployment
         {
             _filesUtility.EmptyDirectory(_rhetosAppEnvironment.AssetsFolder);
             _filesUtility.SafeCreateDirectory(_buildOptions.CacheFolder); // Cache is not deleted between builds.
+            if(!string.IsNullOrEmpty(_buildOptions.GeneratedSourceFolder))
+                _filesUtility.SafeCreateDirectory(_buildOptions.GeneratedSourceFolder); // Obsolete source files will be cleaned later. Keeping the existing files to allowing source change detection in Visual Studio.
 
             CheckDslModelErrors();
 
@@ -73,10 +75,7 @@ namespace Rhetos.Deployment
                 _deployPackagesLogger.Trace("No additional generators.");
 
             if(!string.IsNullOrEmpty(_buildOptions.GeneratedSourceFolder))
-            {
-                _filesUtility.SafeCreateDirectory(_buildOptions.GeneratedSourceFolder);
-                _sourceWriter.WriteAllFiles();
-            }
+                _sourceWriter.CleanUp();
         }
 
         /// <summary>
