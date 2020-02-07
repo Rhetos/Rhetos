@@ -20,25 +20,25 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
 {
     public class JsonFileSource : IConfigurationSource
     {
         private readonly string _filePath;
+        private readonly bool _optional;
 
-        public JsonFileSource(string filePath)
+        public JsonFileSource(string filePath, bool optional = false)
         {
             _filePath = Path.GetFullPath(filePath);
+            _optional = optional;
         }
 
         public IDictionary<string, object> Load()
         {
+            if (_optional && !File.Exists(_filePath))
+                return new Dictionary<string, object>();
+
             var jsonText = File.ReadAllText(_filePath);
 
             try
@@ -48,7 +48,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
             }
             catch (Exception e)
             {
-                throw new FrameworkException($"Error parsing Json contents from '{_filePath}'.", e);
+                throw new FrameworkException($"Error parsing JSON contents from '{_filePath}'.", e);
             }
         }
     }

@@ -231,5 +231,13 @@ namespace Rhetos.Utilities
             else
                 return false;
         }
+
+        public static bool IsSameDirectory(string path1, string path2)
+        {
+            return string.Equals(
+                Path.GetFullPath(Path.Combine(path1, ".")),
+                Path.GetFullPath(Path.Combine(path2, ".")),
+                StringComparison.OrdinalIgnoreCase);
+        }
     }
 }

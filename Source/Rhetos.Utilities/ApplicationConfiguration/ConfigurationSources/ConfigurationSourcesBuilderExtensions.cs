@@ -89,9 +89,9 @@ namespace Rhetos
             return builder;
         }
 
-        public static IConfigurationBuilder AddJsonFile(this IConfigurationBuilder builder, string jsonFilePath)
+        public static IConfigurationBuilder AddJsonFile(this IConfigurationBuilder builder, string jsonFilePath, bool optional = false)
         {
-            builder.Add(new JsonFileSource(jsonFilePath));
+            builder.Add(new JsonFileSource(jsonFilePath, optional));
             return builder;
         }
 

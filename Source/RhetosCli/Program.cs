@@ -95,27 +95,31 @@ namespace Rhetos
             return 0;
         }
 
-        private void Build(string rhetosAppRootPath, string[] assemblies, string assemblyName)
+        private void Build(string projectRootPath, string[] assemblies, string assemblyName)
         {
-            var nuget = new NuGetUtilities(rhetosAppRootPath, LogProvider, null);
-            assemblyName = assemblyName ?? nuget.ProjectName;
+            if (FilesUtility.IsSameDirectory(AppDomain.CurrentDomain.BaseDirectory, Path.Combine(projectRootPath, "bin")))
+                throw new FrameworkException($"Rhetos build command cannot be run from the generated application.");
+
+            var nuget = new NuGetUtilities(projectRootPath, LogProvider, null);
+            assemblyName = assemblyName ?? nuget.ProjectName; // TODO: We are using the project name as the output assembly name because this is almost always the case. This is only temporary.
             var configurationProvider = new ConfigurationBuilder()
                 .AddRhetosAppEnvironment(new RhetosAppEnvironment
                 {
-                    RootFolder = rhetosAppRootPath,
-                    BinFolder = Path.Combine(rhetosAppRootPath, "bin"),
-                    AssetsFolder = Path.Combine(rhetosAppRootPath, "RhetosAssets"),
-                    AssemblyName = assemblyName, //TODO: We are using the project name as the output assembly name because this is almost always the case. This is only temporarly.
+                    RootFolder = projectRootPath,
+                    BinFolder = Path.Combine(projectRootPath, "bin"),
+                    AssetsFolder = Path.Combine(projectRootPath, "RhetosAssets"),
+                    AssemblyName = assemblyName,
                     // TODO: Rhetos CLI should not use LegacyPluginsFolder. Referenced plugins are automatically copied to output bin folder by NuGet. It is used by DeployPackages.exe when downloading packages and in legacy application runtime for assembly resolver and probing paths.
                     // TODO: Set LegacyPluginsFolder to null after reviewing impact to AspNetFormsAuth CLI utilities and similar packages.
-                    LegacyPluginsFolder = Path.Combine(rhetosAppRootPath, "bin"),
-                    LegacyAssetsFolder = Path.Combine(rhetosAppRootPath, "Resources"),
+                    LegacyPluginsFolder = Path.Combine(projectRootPath, "bin"),
+                    LegacyAssetsFolder = Path.Combine(projectRootPath, "Resources"),
                 })
-                .AddKeyValue(nameof(BuildOptions.ProjectFolder), rhetosAppRootPath)
-                .AddKeyValue(nameof(BuildOptions.CacheFolder), Path.Combine(rhetosAppRootPath, "obj\\Rhetos"))
-                .AddKeyValue(nameof(BuildOptions.GeneratedSourceFolder), Path.Combine(rhetosAppRootPath, "RhetosSource"))
-                .AddJsonFile(Path.Combine(rhetosAppRootPath, "rhetos-build.settings.json"))
+                .AddKeyValue(nameof(BuildOptions.ProjectFolder), projectRootPath)
+                .AddKeyValue(nameof(BuildOptions.CacheFolder), Path.Combine(projectRootPath, "obj\\Rhetos"))
+                .AddKeyValue(nameof(BuildOptions.GeneratedSourceFolder), Path.Combine(projectRootPath, "RhetosSource"))
+                .AddKeyValue(nameof(DatabaseOptions.SqlCommandTimeout), 0)
                 .AddConfigurationManagerConfiguration()
+                .AddJsonFile(Path.Combine(projectRootPath, "rhetos-build.settings.json"), optional: true)
                 .Build();
 
             var packagesBuildAssemblies = nuget.GetBuildAssemblies();
@@ -134,9 +138,23 @@ namespace Rhetos
             var deployment = new ApplicationDeployment(configurationProvider, LogProvider, () => allAssemblies);
 
             var installedPackages = nuget.GetInstalledPackages();
-            installedPackages.Add(GetProjectAsInstalledPackage(nuget, rhetosAppRootPath));
+            installedPackages.Add(GetProjectAsInstalledPackage(nuget, projectRootPath));
 
             deployment.GenerateApplication(new InstalledPackages { Packages = installedPackages });
+        }
+
+        private InstalledPackage GetProjectAsInstalledPackage(NuGetUtilities nuGetUtilities, string projectRootPath)
+        {
+            //TODO: We should add the possibility to specify content files as an option
+            //MSBuild knows which files are part of the project that it is building so we should use only those files
+            var contentFiles = Directory.GetFiles(projectRootPath, "*", SearchOption.AllDirectories)
+                .Select(f => new ContentFile { PhysicalPath = f, InPackagePath = FilesUtility.AbsoluteToRelativePath(projectRootPath, f) })
+                .Where(c => (!c.InPackagePath.StartsWith("bin") && !c.InPackagePath.StartsWith("obj")))
+                .ToList();
+            //TODO: We are using the project name as the PackageName for the project.
+            //This could be a problem if we change the project name later during the development because then all the data-migration script will be executed again
+            //It should be revised if this is the desired behavior
+            return new InstalledPackage(nuGetUtilities.ProjectName, "", null, null, null, null, contentFiles);
         }
 
         private void DbUpdate(string rhetosAppRootPath)
@@ -163,20 +181,6 @@ namespace Rhetos
             AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(assemblyFiles);
 
             return new ApplicationDeployment(configurationProvider, LogProvider, () => assemblyFiles);
-        }
-
-        private InstalledPackage GetProjectAsInstalledPackage(NuGetUtilities nuGetUtilities, string rhetosAppRootPath)
-        {
-            //TODO: We should add the posibility to specifiy content files as an option
-            //MSBuild knwos which files are part of the project that it is building so we should use only those files
-            var contentFiles = Directory.GetFiles(rhetosAppRootPath, "*", SearchOption.AllDirectories)
-                .Select(f => new ContentFile { PhysicalPath = f, InPackagePath = FilesUtility.AbsoluteToRelativePath(rhetosAppRootPath, f) })
-                .Where(c => (!c.InPackagePath.StartsWith("bin") && !c.InPackagePath.StartsWith("obj")))
-                .ToList();
-            //TODO: We are using the project name as the PackageName for the project.
-            //This could be a problem if we change the project name later during the development because then all the datamigration script will be executed again
-            //It should be revised if this is the desired behaviour
-            return new InstalledPackage(nuGetUtilities.ProjectName, "", null, null, null, null, contentFiles);
         }
 
         private ResolveEventHandler GetSearchForAssemblyDelegate(params string[] assemblyList)

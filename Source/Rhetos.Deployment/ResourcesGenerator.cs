@@ -36,7 +36,6 @@ namespace Rhetos.Deployment
     {
         private readonly InstalledPackages _installedPackages;
         private readonly ILogProvider _logProvider;
-        private readonly BuildOptions _buildOptions;
         private readonly ILogger _deployPackagesLogger;
         private readonly ILogger _performanceLogger;
 
@@ -44,7 +43,6 @@ namespace Rhetos.Deployment
         {
             _installedPackages = installedPackages;
             _logProvider = logProvider;
-            _buildOptions = buildOptions;
             _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
             _performanceLogger = logProvider.GetLogger("Performance");
         }
@@ -60,7 +58,7 @@ namespace Rhetos.Deployment
             var resourceFiles = _installedPackages.Packages
                 .SelectMany(package => package.ContentFiles
                     .Where(file => file.InPackagePath.StartsWith(ResourcesPathPrefix))
-                    .Where(file => !file.PhysicalPath.StartsWith(_buildOptions.ProjectFolder))
+                    .Where(file => !file.PhysicalPath.StartsWith(Paths.ResourcesFolder)) // Prevent from including the generated output folder as in input.
                     .Select(file => new
                     {
                         Package = package,

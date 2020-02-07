@@ -62,9 +62,9 @@ namespace Rhetos.Dom
         {
             var loaded = new List<Assembly>();
             var sw = Stopwatch.StartNew();
-            //This should be a legacy way to load the DomainObjectModel so it is ok to use the Paths class
             if (string.IsNullOrEmpty(_rhetosAppEnvironment.AssemblyName))
             {
+                //This is a legacy way to load the DomainObjectModel so it is OK to use the Paths class
                 foreach (string name in Paths.DomAssemblyFiles.Select(Path.GetFileNameWithoutExtension))
                 {
                     _logger.Trace("Loading assembly \"" + name + "\".");
@@ -76,7 +76,8 @@ namespace Rhetos.Dom
                 }
                 return loaded;
             }
-            else {
+            else
+            {
                 return new List<Assembly> { Assembly.Load(_rhetosAppEnvironment.AssemblyName) };
             }
         }
