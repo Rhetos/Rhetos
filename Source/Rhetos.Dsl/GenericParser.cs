@@ -59,6 +59,7 @@ namespace Rhetos.Dsl
             return ValueOrError<IConceptInfo>.CreateError("");
         }
 
+        public event DslParser.OnMemberReadEvent OnMemberRead;
         private ValueOrError<IConceptInfo> ParseMembers(ITokenReader tokenReader, IConceptInfo lastConcept, bool readingAReference)
         {
             IConceptInfo conceptInfo = (IConceptInfo)Activator.CreateInstance(ConceptInfoType);
@@ -70,6 +71,7 @@ namespace Rhetos.Dsl
             foreach (ConceptMember member in listOfMembers)
             {
                 var valueOrError = ReadMemberValue(member, tokenReader, lastConcept, firstMember, ref lastPropertyWasInlineParent, ref lastConceptUsed, readingAReference);
+                OnMemberRead?.Invoke(tokenReader, ConceptInfoType, member, valueOrError);
 
                 if (valueOrError.IsError)
                     return ValueOrError<IConceptInfo>.CreateError(string.Format(CultureInfo.InvariantCulture,
@@ -149,6 +151,7 @@ namespace Rhetos.Dsl
                     }
 
                     GenericParser subParser = new GenericParser(member.ValueType, "");
+                    subParser.OnMemberRead += OnMemberRead;
                     lastConceptUsed = true;
                     lastPropertyWasInlineParent = true;
                     return subParser.ParseMembers(tokenReader, lastConcept, true).ChangeType<object>();
@@ -157,6 +160,7 @@ namespace Rhetos.Dsl
                 if (member.IsConceptInfo)
                 {
                     GenericParser subParser = new GenericParser(member.ValueType, "");
+                    subParser.OnMemberRead += OnMemberRead;
                     return subParser.ParseMembers(tokenReader, null, true).ChangeType<object>();
                 }
 

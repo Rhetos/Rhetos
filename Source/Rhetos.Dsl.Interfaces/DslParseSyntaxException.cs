@@ -17,27 +17,26 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Rhetos.Dsl
 {
-    public interface ITokenReader
+    public class DslParseSyntaxException : DslSyntaxException
     {
-        /// <summary>
-        /// Returns error if there are no more tokens or the next token is a special token.
-        /// </summary>
-        ValueOrError<string> ReadText();
+        public readonly string SimpleMessage;
+        public readonly DslScript DslScript;
+        public readonly int Position;
 
-        /// <summary>
-        /// Returns false if next token does not equal "value". Ignores case.
-        /// </summary>
-        bool TryRead(string value);
-
-        /// <summary>
-        /// Returns the position of current token in its script
-        /// </summary>
-        /// <returns></returns>
-        (DslScript dslScript, int position) GetPositionInScript();
+        public DslParseSyntaxException(string formattedMessage, string simpleMessage, DslScript dslScript, int position)
+            : base(formattedMessage)
+        {
+            this.SimpleMessage = simpleMessage;
+            this.DslScript = dslScript;
+            this.Position = position;
+        }
     }
 }

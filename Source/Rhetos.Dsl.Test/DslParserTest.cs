@@ -194,7 +194,7 @@ namespace Rhetos.Dsl.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(DslSyntaxException))]
+        [ExpectedException(typeof(DslParseSyntaxException))]
         public void ParseNextConcept_SameKeyWordDifferentContext_Ambiguous()
         {
             string dsl = "concept simple data; concept ref simple;";
@@ -222,7 +222,7 @@ namespace Rhetos.Dsl.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(DslSyntaxException))]
+        [ExpectedException(typeof(DslParseSyntaxException))]
         public void ParserError_ExpectingErrorHandler()
         {
             string dsl = "concept first second whoami";
