@@ -19,29 +19,29 @@
 
 using Rhetos.Utilities;
 using System;
-using System.Collections.Generic;
 
 namespace Rhetos.Dsl.Test
 {
-    class TestDslParser : DslParser, ITestAccessor
+    internal class NullConfiguration : IConfiguration
     {
-        public TestDslParser(string dsl, IConceptInfo[] conceptInfoPlugins = null)
-            : base (
-                new TestTokenizer(dsl),
-                conceptInfoPlugins ?? Array.Empty<IConceptInfo>(),
-                new ConsoleLogProvider(),
-                new NullConfiguration())
+        public Lazy<bool> GetBool(string key, bool defaultValue)
         {
+            return new Lazy<bool>(() => defaultValue);
         }
 
-        public IEnumerable<IConceptInfo> ExtractConcepts(MultiDictionary<string, IConceptParser> conceptParsers)
+        public Lazy<T> GetEnum<T>(string key, T defaultValue) where T : struct
         {
-            return (IEnumerable<IConceptInfo>)this.Invoke("ExtractConcepts", conceptParsers);
+            return new Lazy<T>(() => defaultValue);
         }
 
-        public IConceptInfo ParseNextConcept(TokenReader tokenReader, Stack<IConceptInfo> context, MultiDictionary<string, IConceptParser> conceptParsers)
+        public Lazy<int> GetInt(string key, int defaultValue)
         {
-            return (IConceptInfo)this.Invoke("ParseNextConcept", tokenReader, context, conceptParsers);
+            return new Lazy<int>(() => defaultValue);
+        }
+
+        public Lazy<string> GetString(string key, string defaultValue)
+        {
+            return new Lazy<string>(() => defaultValue);
         }
     }
 }

@@ -17,17 +17,18 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities;
-using System.Collections.Generic;
+using System;
 
 namespace Rhetos.Dsl
 {
-    public interface IConceptParser
+    /// <summary>
+    /// It is possible to nest a concept within a parent concept ("module x { entity y; }") or to use it explicitly ("entity x.y;").
+    /// Parent reference is defined by a property that references another concept, marked with <see cref="ConceptParentAttribute"/> or the first property by default.
+    /// Derived concept can override parent property with its own property marked with <see cref="ConceptParentAttribute"/>;
+    /// this allows construction of recursive concepts such as menu items.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Property, Inherited = true, AllowMultiple = false)]
+    public class ConceptParentAttribute : Attribute
     {
-        /// <summary>
-        /// If the keyword is not recognized return empty error string.
-        /// If the keyword is recognized, but the syntax is wrong, return error description.
-        /// </summary>
-        ValueOrError<IConceptInfo> Parse(ITokenReader tokenReader, Stack<IConceptInfo> context, out List<string> warnings);
     }
 }

@@ -17,13 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities;
-using Rhetos.Dsl;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Linq;
-using System.Collections.Generic;
+using Rhetos.Dsl;
 using Rhetos.TestCommon;
+using Rhetos.Utilities;
+using System.Collections.Generic;
 
 namespace Rhetos.Dsl.Test
 {
@@ -36,24 +34,19 @@ namespace Rhetos.Dsl.Test
         {
         }
 
-        public TConceptInfo QuickParse(string dsl)
+        public TConceptInfo QuickParse(string dsl, IConceptInfo contextParent = null)
         {
-            return QuickParse(dsl, new Stack<IConceptInfo>());
-        }
+            var context = new Stack<IConceptInfo>();
+            if (contextParent != null)
+                context.Push(contextParent);
 
-        public TConceptInfo QuickParse(string dsl, IConceptInfo contextParent)
-        {
-            Stack<IConceptInfo> context = new Stack<IConceptInfo>();
-            context.Push(contextParent);
-
-            tokenReader = GenericParserTest.TestTokenReader(dsl);
-            return (TConceptInfo)Parse(tokenReader, context).Value;
+            return QuickParse(dsl, context);
         }
 
         public TConceptInfo QuickParse(string dsl, Stack<IConceptInfo> context)
         {
             tokenReader = GenericParserTest.TestTokenReader(dsl);
-            return (TConceptInfo)Parse(tokenReader, context).Value;
+            return (TConceptInfo)Parse(tokenReader, context, out var warnings).Value;
         }
     }
 
@@ -85,7 +78,7 @@ namespace Rhetos.Dsl.Test
         {
             var simpleParser = new GenericParserHelper<SimpleConceptInfo>("abc");
             var tokenReader = TestTokenReader("simple abc def", 1);
-            SimpleConceptInfo ci = (SimpleConceptInfo)simpleParser.Parse(tokenReader, new Stack<IConceptInfo>()).Value;
+            SimpleConceptInfo ci = (SimpleConceptInfo)simpleParser.Parse(tokenReader, new Stack<IConceptInfo>(), out var warnings).Value;
 
             Assert.AreEqual("def", ci.Name);
             TestUtility.AssertContains(tokenReader.ReportPosition(), "column 15,");
@@ -112,29 +105,21 @@ namespace Rhetos.Dsl.Test
         {
             var simpleParser = new GenericParser(typeof(SimpleConceptInfo), "simple");
             var tokenReader = TestTokenReader("simp simple abc");
-            var ciOrError = simpleParser.Parse(tokenReader, new Stack<IConceptInfo>());
+            var ciOrError = simpleParser.Parse(tokenReader, new Stack<IConceptInfo>(), out var warnings);
             Assert.IsTrue(ciOrError.IsError);
             Assert.AreEqual("", ciOrError.Error);
         }
 
         [TestMethod]
-        [ExpectedException(typeof(FrameworkException))]
         public void ParseNotEnoughParametersInSingleConceptDescription()
         {
-            try
-            {
-                var simpleParser = new GenericParserHelper<SimpleConceptInfo>("module");
-                SimpleConceptInfo ci = simpleParser.QuickParse("module { entiti e }");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                Assert.IsTrue(ex.Message.Contains("SimpleConceptInfo"), "Concept type.");
-                Assert.IsTrue(ex.Message.Contains("Special"), "Unexpected special token while reading text.");
-                Assert.IsTrue(ex.Message.Contains("{"), "Unexpected special token '{' while reading text.");
-                Assert.IsTrue(ex.Message.Contains("quotes"), "Use quotes to specify text (e.g. '{')");
-                throw;
-            }
+            var simpleParser = new GenericParserHelper<SimpleConceptInfo>("module");
+            TestUtility.ShouldFail<FrameworkException>(
+                () => simpleParser.QuickParse("module { entiti e }"),
+                "SimpleConceptInfo",
+                "Special",
+                "{",
+                "quotes");
         }
 
         //===============================================================
@@ -192,7 +177,7 @@ namespace Rhetos.Dsl.Test
             stack.Push(new SimpleConceptInfo { Name = "a" });
 
             var tokenReader = TestTokenReader("simple a { enclosed b; }", 3);
-            EnclosedConceptInfo ci = (EnclosedConceptInfo)enclosedParser.Parse(tokenReader, stack).Value;
+            EnclosedConceptInfo ci = (EnclosedConceptInfo)enclosedParser.Parse(tokenReader, stack, out var warnings).Value;
             Assert.AreEqual("a", ci.Parent.Name);
             Assert.AreEqual("b", ci.Name);
             TestUtility.AssertContains(tokenReader.ReportPosition(), "before: \";");
@@ -202,7 +187,7 @@ namespace Rhetos.Dsl.Test
         public void ParseEnclosedInline()
         {
             var enclosedParser = new GenericParserHelper<EnclosedConceptInfo>("enclosed");
-            EnclosedConceptInfo ci = enclosedParser.QuickParse("enclosed a.b");
+            EnclosedConceptInfo ci = enclosedParser.QuickParse("enclosed a b");
             Assert.AreEqual("a", ci.Parent.Name);
             Assert.AreEqual("b", ci.Name);
         }
@@ -220,48 +205,37 @@ namespace Rhetos.Dsl.Test
         {
             var enclosedParser = new GenericParserHelper<EnclosedConceptInfoLevel2>("enclosedlevel2");
             var root = new SimpleConceptInfo { Name = "a" };
-            EnclosedConceptInfoLevel2 ci = enclosedParser.QuickParse("enclosedlevel2 b.c", root);
+            EnclosedConceptInfoLevel2 ci = enclosedParser.QuickParse("enclosedlevel2 b c", root);
+            Assert.AreEqual("a", ci.Parent.Parent.Name);
+            Assert.AreEqual("b", ci.Parent.Name);
+            Assert.AreEqual("c", ci.Name);
+
+            ci = enclosedParser.QuickParse("enclosedlevel2 a.b c");
             Assert.AreEqual("a", ci.Parent.Parent.Name);
             Assert.AreEqual("b", ci.Parent.Name);
             Assert.AreEqual("c", ci.Name);
         }
 
         [TestMethod]
-        [ExpectedException(typeof(FrameworkException))]
         public void ParseEnclosedInlineError()
         {
-            var dsl = "enclosed abc def";
-            var parser = new GenericParserHelper<EnclosedConceptInfo>("enclosed");
-            try
-            {
-                EnclosedConceptInfo ci = parser.QuickParse(dsl);
-            }
-            catch (Exception e)
-            {
-                Assert.IsTrue(e.Message.Contains("\".\""), "Expecting \".\"");
-                var msg = parser.tokenReader.ReportPosition();
-                Assert.IsTrue(msg.Contains("def"), "Report the unexpected text.");
-                throw;
-            }
+            var enclosedParser = new GenericParserHelper<EnclosedConceptInfoLevel2>("enclosedlevel2");
+            var root = new SimpleConceptInfo { Name = "a" };
+            TestUtility.ShouldFail<FrameworkException>(
+                () => enclosedParser.QuickParse("enclosedlevel2 a b c"),
+                "\".\"");
         }
 
         [TestMethod]
-        [ExpectedException(typeof(FrameworkException))]
         public void ParseEnclosedInWrongConcept()
         {
             var parser = new GenericParserHelper<EnclosedConceptInfo>("enclosed");
-            try
-            {
-                EnclosedConceptInfo ci = parser.QuickParse(
-                    "enclosed myparent.myname",
-                    new ComplexConceptInfo { Name = "c", SimpleConceptInfo = new SimpleConceptInfo { Name = "s" } });
-            }
-            catch (Exception e)
-            {
-                Assert.IsTrue(e.Message.Contains("EnclosedConceptInfo"), "EnclosedConceptInfo");
-                Assert.IsTrue(e.Message.Contains("ComplexConceptInfo"), "ComplexConceptInfo");
-                throw;
-            }
+                TestUtility.ShouldFail<FrameworkException>(
+                    () => parser.QuickParse(
+                        "enclosed myparent.myname",
+                        new ComplexConceptInfo { Name = "c", SimpleConceptInfo = new SimpleConceptInfo { Name = "s" } }),
+                "EnclosedConceptInfo",
+                "ComplexConceptInfo");
         }
 
         class EnclosedReference : IConceptInfo
@@ -343,7 +317,7 @@ namespace Rhetos.Dsl.Test
                 var context = new Stack<IConceptInfo>(new[] { parent });
                 var parser = new GenericParserHelper<EnclosedSingleProperty2>("enclosed2");
                 TestUtility.ShouldFail(() => parser.QuickParse("enclosed2", context),
-                    "EnclosedSingleProperty2 must be enclosed within the referenced parent concept EnclosedSingleProperty1");
+                    "EnclosedSingleProperty2 must be nested within the referenced parent concept EnclosedSingleProperty1");
             }
 
             {
@@ -351,7 +325,7 @@ namespace Rhetos.Dsl.Test
                 var context = new Stack<IConceptInfo>();
                 var parser = new GenericParserHelper<EnclosedSingleProperty2>("enclosed2");
                 TestUtility.ShouldFail(() => parser.QuickParse("enclosed2 parent", context),
-                    "EnclosedSingleProperty2 must be enclosed within the referenced parent concept EnclosedSingleProperty1");
+                    "EnclosedSingleProperty2 must be nested within the referenced parent concept EnclosedSingleProperty1");
             }
         }
 
@@ -402,7 +376,6 @@ namespace Rhetos.Dsl.Test
             Assert.AreEqual(default(string), ci.Reference.Comment);
         }
 
-
         class DerivedWithKey : ConceptWithKey
         {
         }
@@ -424,7 +397,20 @@ namespace Rhetos.Dsl.Test
             Assert.AreEqual(default(string), ci.Parent.Comment);
         }
 
+        [TestMethod]
+        public void RootCannotBeNested()
+        {
+            var parser = new GenericParserHelper<LikeModule>("Module");
+
+            Assert.AreEqual("LikeModule Module1", parser.QuickParse("Module Module1").GetUserDescription());
+
+            TestUtility.ShouldFail<FrameworkException>(
+                () => parser.QuickParse("Module Module1", new LikeModule { Name = "Module0" }),
+                "cannot be nested");
+        }
+
         //===============================================================
+        // Recursive concept:
 
         [ConceptKeyword("menu")]
         internal class MenuCI : IConceptInfo
@@ -441,6 +427,7 @@ namespace Rhetos.Dsl.Test
         [ConceptKeyword("menu")]
         internal class SubMenuCI : MenuCI
         {
+            [ConceptParent]
             public MenuCI Parent { get; set; }
         }
 
@@ -488,20 +475,12 @@ namespace Rhetos.Dsl.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(FrameworkException))]
         public void Recursive_Root()
         {
-            try
-            {
-                string dsl = "menu a b";
-                LeftRecursiveCI mi = new GenericParserHelper<LeftRecursiveCI>("menu").QuickParse(dsl);
-            }
-            catch (Exception e)
-            {
-                Assert.IsTrue(e.Message.Contains("root"), "Recursive concept cannot be used as a root.");
-                Assert.IsTrue(e.Message.Contains("non-recursive"), "Non-recursive concept should be uses as a root.");
-                throw;
-            }
+            string dsl = "menu a b";
+            TestUtility.ShouldFail<FrameworkException>(
+                () => new GenericParserHelper<LeftRecursiveCI>("menu").QuickParse(dsl),
+                "Recursive concept LeftRecursiveCI cannot be used as a root");
         }
 
         class InterfaceReferenceConceptInfo : IConceptInfo
@@ -525,19 +504,146 @@ namespace Rhetos.Dsl.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(FrameworkException))]
         public void InterfaceReference_ErrorIfNotEnclosed()
         {
-            try
-            {
-                string dsl = "intref parent data";
-                var parsedConcept = new GenericParserHelper<InterfaceReferenceConceptInfo>("intref").QuickParse(dsl);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                throw;
-            }
+            string dsl = "intref parent data";
+            TestUtility.ShouldFail<FrameworkException>(
+                () => new GenericParserHelper<InterfaceReferenceConceptInfo>("intref").QuickParse(dsl),
+                "Member of type IConceptInfo can only be nested within the referenced parent concept. It must be a first member or marked with ConceptParentAttribute.");
+        }
+
+        //================================================================================
+        // Complex ConceptParent nesting:
+
+        class LikeModule : IConceptInfo
+        {
+            [ConceptKey]
+            public string Name { get; set; }
+        }
+
+        class LikeEntity : IConceptInfo
+        {
+            [ConceptKey]
+            public LikeModule Module { get; set; }
+
+            [ConceptKey]
+            public string Name { get; set; }
+        }
+
+        class ComplexNested : IConceptInfo
+        {
+            [ConceptKey]
+            public LikeEntity Entity1 { get; set; }
+
+            [ConceptParent]
+            [ConceptKey]
+            public LikeEntity Entity2 { get; set; }
+
+            public string Description { get; set; }
+        }
+
+        class ComplexNested2 : IConceptInfo
+        {
+            [ConceptKey]
+            public LikeEntity Entity1 { get; set; }
+
+            [ConceptParent]
+            [ConceptKey]
+            public LikeEntity Entity2 { get; set; }
+
+            [ConceptKey]
+            public string Description { get; set; }
+        }
+
+        [TestMethod]
+        public void ComplexNestedTest()
+        {
+            var parser = new GenericParserHelper<ComplexNested>("ComplexNested");
+            string expectedParsedConcept = "ComplexNested Module1.Entity1.Module2.Entity2";
+
+            // In root:
+            Assert.AreEqual(expectedParsedConcept, parser.QuickParse(
+                dsl: "ComplexNested Module1.Entity1 Module2.Entity2 Description",
+                contextParent: null)
+                .GetUserDescription());
+
+            // Nested in entity:
+            Assert.AreEqual(expectedParsedConcept, parser.QuickParse(
+                dsl: "ComplexNested Module1.Entity1 Description",
+                contextParent: new LikeEntity { Module = new LikeModule { Name = "Module2" }, Name = "Entity2" })
+                .GetUserDescription());
+
+            // Nested in module:
+            Assert.AreEqual(expectedParsedConcept, parser.QuickParse(
+                dsl: "ComplexNested Module1.Entity1 Entity2 Description",
+                contextParent: new LikeModule { Name = "Module2" })
+                .GetUserDescription());
+        }
+
+        [TestMethod]
+        public void ComplexNested2Test()
+        {
+            var parser = new GenericParserHelper<ComplexNested2>("ComplexNested2");
+            string expectedParsedConcept = "ComplexNested2 Module1.Entity1.Module2.Entity2.Description";
+
+            // In root:
+            Assert.AreEqual(expectedParsedConcept, parser.QuickParse(
+                dsl: "ComplexNested2 Module1.Entity1 Module2.Entity2 Description",
+                contextParent: null)
+                .GetUserDescription());
+
+            // Nested in entity:
+            Assert.AreEqual(expectedParsedConcept, parser.QuickParse(
+                dsl: "ComplexNested2 Module1.Entity1 Description",
+                contextParent: new LikeEntity { Module = new LikeModule { Name = "Module2" }, Name = "Entity2" })
+                .GetUserDescription());
+
+            // Nested in module:
+            Assert.AreEqual(expectedParsedConcept, parser.QuickParse(
+                dsl: "ComplexNested2 Module1.Entity1 Entity2 Description",
+                contextParent: new LikeModule { Name = "Module2" })
+                .GetUserDescription());
+        }
+
+        //================================================================================
+        // Dot separator:
+
+        class KeyReferenceReference : IConceptInfo
+        {
+            [ConceptKey]
+            public LikeEntity Entity1 { get; set; }
+
+            [ConceptKey]
+            public LikeEntity Entity2 { get; set; }
+        }
+
+        class KeyReferenceString : IConceptInfo
+        {
+            [ConceptKey]
+            public LikeEntity Entity { get; set; }
+
+            [ConceptKey]
+            public string Name { get; set; }
+        }
+
+        [TestMethod]
+        public void KeyReferenceReferenceSeparator()
+        {
+            var parser = new GenericParserHelper<KeyReferenceReference>("KeyReferenceReference");
+            string expectedParsedConcept = "KeyReferenceReference Module1.Entity1.Module2.Entity2";
+            string dsl = "KeyReferenceReference Module1.Entity1 Module2.Entity2";
+            Assert.AreEqual(expectedParsedConcept, parser.QuickParse(dsl).GetUserDescription());
+        }
+
+        [TestMethod]
+        public void KeyReferenceStringSeparator()
+        {
+            // Currently KeyReferenceString expects '.' separator in DSL script, while KeyReferenceReference does not.
+            // More consistent behavior would be to use dot only for referenced concept keys, and not here before string property.
+            var parser = new GenericParserHelper<KeyReferenceString>("KeyReferenceString");
+            string expectedParsedConcept = "KeyReferenceString Module1.Entity1.Name";
+            string dsl = "KeyReferenceString Module1.Entity1 Name";
+            Assert.AreEqual(expectedParsedConcept, parser.QuickParse(dsl).GetUserDescription());
         }
     }
 }

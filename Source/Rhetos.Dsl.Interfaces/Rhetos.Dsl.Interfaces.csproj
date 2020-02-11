@@ -118,6 +118,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConceptInfoHelper.cs" />
+    <Compile Include="ConceptParentAttribute.cs" />
     <Compile Include="ConceptKeywordAttribute.cs" />
     <Compile Include="ConceptMember.cs" />
     <Compile Include="ConceptMembers.cs" />
