@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
@@ -41,7 +42,7 @@ namespace Rhetos.Dsl.Test
 
         public IConceptInfo ParseNextConcept(TokenReader tokenReader, Stack<IConceptInfo> context, MultiDictionary<string, IConceptParser> conceptParsers)
         {
-            return (IConceptInfo)this.Invoke("ParseNextConcept", tokenReader, context, conceptParsers);
+            return this.Invoke("ParseNextConcept", tokenReader, context, conceptParsers).Item1;
         }
     }
 }
