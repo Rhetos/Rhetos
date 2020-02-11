@@ -65,6 +65,9 @@ namespace Rhetos.Compiler
 
         public Assembly Generate(IAssemblySource assemblySource, string outputAssemblyPath, IEnumerable<ManifestResource> manifestResources = null)
         {
+            // Parameter manifestResources is obsolete parameter for legacy plugins.
+            // If provided, Rhetos CLI build command will not consider generated source as a part of the application's source,
+            // instead it will fall back to legacy behavior (DeployPackages) and will generate source and DLL files as assets files.
             bool isLegecayResourcesLibrary = manifestResources != null;
             manifestResources = manifestResources ?? Array.Empty<ManifestResource>();
 
