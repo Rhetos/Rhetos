@@ -97,7 +97,8 @@ namespace Rhetos
 
         private void Build(string projectRootPath, string[] assemblies, string assemblyName)
         {
-            if (FilesUtility.IsSameDirectory(AppDomain.CurrentDomain.BaseDirectory, Path.Combine(projectRootPath, "bin")))
+            string binFolder = Path.Combine(projectRootPath, "bin");
+            if (FilesUtility.IsSameDirectory(AppDomain.CurrentDomain.BaseDirectory, binFolder))
                 throw new FrameworkException($"Rhetos build command cannot be run from the generated application.");
 
             var nuget = new NuGetUtilities(projectRootPath, LogProvider, null);
@@ -106,7 +107,7 @@ namespace Rhetos
                 .AddRhetosAppEnvironment(new RhetosAppEnvironment
                 {
                     RootFolder = projectRootPath,
-                    BinFolder = Path.Combine(projectRootPath, "bin"),
+                    BinFolder = binFolder,
                     AssetsFolder = Path.Combine(projectRootPath, "RhetosAssets"),
                     AssemblyName = assemblyName,
                     // TODO: Rhetos CLI should not use LegacyPluginsFolder. Referenced plugins are automatically copied to output bin folder by NuGet. It is used by DeployPackages.exe when downloading packages and in legacy application runtime for assembly resolver and probing paths.
@@ -117,7 +118,6 @@ namespace Rhetos
                 .AddKeyValue(nameof(BuildOptions.ProjectFolder), projectRootPath)
                 .AddKeyValue(nameof(BuildOptions.CacheFolder), Path.Combine(projectRootPath, "obj\\Rhetos"))
                 .AddKeyValue(nameof(BuildOptions.GeneratedSourceFolder), Path.Combine(projectRootPath, "RhetosSource"))
-                .AddKeyValue(nameof(DatabaseOptions.SqlCommandTimeout), 0)
                 .AddConfigurationManagerConfiguration()
                 .AddJsonFile(Path.Combine(projectRootPath, "rhetos-build.settings.json"), optional: true)
                 .Build();
@@ -173,6 +173,7 @@ namespace Rhetos
         {
             var configurationProvider = new ConfigurationBuilder()
                 .AddRhetosAppConfiguration(rhetosAppRootPath)
+                .AddKeyValue(nameof(DatabaseOptions.SqlCommandTimeout), 0)
                 .AddConfigurationManagerConfiguration()
                 .Build();
 
