@@ -37,7 +37,6 @@ namespace Rhetos.Dsl
         private readonly ILogger _performanceLogger;
         private readonly ILogger _logger;
         private readonly ILogger _evaluatorsOrderLogger;
-        private readonly ILogger _dslModelConceptsLogger;
         private readonly Lazy<DslContainer> _initializedDslContainer;
         private readonly IIndex<Type, IEnumerable<IConceptMacro>>  _macros;
         private readonly IEnumerable<Type> _macroTypes;
@@ -59,7 +58,6 @@ namespace Rhetos.Dsl
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("DslModel");
             _evaluatorsOrderLogger = logProvider.GetLogger("MacroEvaluatorsOrder");
-            _dslModelConceptsLogger = logProvider.GetLogger("DslModelConcepts");
             _initializedDslContainer = new Lazy<DslContainer>(() => Initialize(dslContainer));
             _macros = macros;
             _macroTypes = macroPrototypes.Select(macro => macro.GetType());
@@ -91,7 +89,6 @@ namespace Rhetos.Dsl
             dslContainer.ReportErrorForUnresolvedConcepts();
             CheckSemantics(dslContainer);
             dslContainer.SortReferencesBeforeUsingConcept();
-            LogDslModel(dslContainer);
             ReportObsoleteConcepts(dslContainer);
             _dslModelFile.SaveConcepts(dslContainer.Concepts);
 
@@ -353,23 +350,6 @@ namespace Rhetos.Dsl
                 _performanceLogger.Write(validationStopwatch.Value, () => "DslModel.CheckSemantics total time for " + validationStopwatch.Key.Name + ".");
 
             _performanceLogger.Write(sw, "DslModel.CheckSemantics");
-        }
-
-        private void LogDslModel(DslContainer dslContainer)
-        {
-            var sw = Stopwatch.StartNew();
-
-            // It is important to avoid generating the log data if the logger is not enabled.
-            var sortedConceptsLog = new Lazy<List<string>>(() => dslContainer.Concepts
-                .Select(c => c.GetFullDescription())
-                .OrderBy(log => log)
-                .ToList());
-
-            const int chunkSize = 10000; // Keeping the message size under NLog memory limit.
-            for (int start = 0; start < dslContainer.Concepts.Count(); start += chunkSize)
-                _dslModelConceptsLogger.Trace(() => string.Join("\r\n", sortedConceptsLog.Value.Skip(start).Take(chunkSize)));
-
-            _performanceLogger.Write(sw, "DslModel.LogDslModel.");
         }
 
         private void ReportObsoleteConcepts(DslContainer dslContainer)
