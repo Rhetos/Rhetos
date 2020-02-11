@@ -22,6 +22,6 @@ namespace Rhetos.Compiler
     public interface ISourceWriter
     {
         void Add(string fileName, string content);
-        void WriteAllFiles();
+        void CleanUp();
     }
 }

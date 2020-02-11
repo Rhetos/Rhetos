@@ -54,8 +54,18 @@ namespace Rhetos.Compiler
             _cacheUtility = new CacheUtility(typeof(AssemblyGenerator), buildOptions, filesUtility);
         }
 
+        [Obsolete("See the description in IAssemblyGenerator.")]
+        public Assembly Generate(IAssemblySource assemblySource, CompilerParameters compilerParameters)
+        {
+            var resources = compilerParameters.EmbeddedResources.Cast<string>()
+                .Select(path => new ManifestResource { Name = Path.GetFileName(path), Path = path, IsPublic = true })
+                .ToList();
+            return Generate(assemblySource, compilerParameters.OutputAssembly, resources);
+        }
+
         public Assembly Generate(IAssemblySource assemblySource, string outputAssemblyPath, IEnumerable<ManifestResource> manifestResources = null)
         {
+            bool isLegecayResourcesLibrary = manifestResources != null;
             manifestResources = manifestResources ?? Array.Empty<ManifestResource>();
 
             // Save source file and it's hash value:
@@ -65,7 +75,7 @@ namespace Rhetos.Compiler
                 + $"// Debug = \"{_buildOptions.Debug}\"\r\n\r\n"
                 + assemblySource.GeneratedCode;
 
-            if (string.IsNullOrEmpty(_buildOptions.GeneratedSourceFolder))
+            if (string.IsNullOrEmpty(_buildOptions.GeneratedSourceFolder) || isLegecayResourcesLibrary)
             {
                 string sourcePath = Path.GetFullPath(Path.ChangeExtension(outputAssemblyPath, ".cs"));
                 File.WriteAllText(sourcePath, sourceCode, Encoding.UTF8);
@@ -287,15 +297,6 @@ namespace Rhetos.Compiler
             _cacheUtility.SaveHash(sourcePath, sourceHash);
             _cacheUtility.CopyToCache(outputAssemblyPath);
             _cacheUtility.CopyToCache(pdbPath);
-        }
-
-        [Obsolete("See the description in IAssemblyGenerator.")]
-        public Assembly Generate(IAssemblySource assemblySource, CompilerParameters compilerParameters)
-        {
-            var resources = compilerParameters.EmbeddedResources.Cast<string>()
-                .Select(path => new ManifestResource { Name = Path.GetFileName(path), Path = path, IsPublic = true })
-                .ToList();
-            return Generate(assemblySource, compilerParameters.OutputAssembly, resources);
         }
     }
 }
