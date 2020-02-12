@@ -35,6 +35,11 @@ namespace Rhetos.Compiler
         void AddReference(string shortName);
         void AddReferencesFromDependency(Type type);
 
+        /// <summary>
+        /// Insert code that is grouped into files.
+        /// <see cref="InsertCode(string)"/> uses empty string for the path.
+        /// </summary>
+        void InsertCodeToFile(string code, string path);
         void InsertCode(string code);
         void InsertCode(string code, string tag);
         void InsertCode(string firstCode, string nextCode, string firstTag, string nextTag);
