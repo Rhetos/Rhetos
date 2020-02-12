@@ -60,7 +60,7 @@ namespace Rhetos.Compiler
             var resources = compilerParameters.EmbeddedResources.Cast<string>()
                 .Select(path => new ManifestResource { Name = Path.GetFileName(path), Path = path, IsPublic = true })
                 .ToList();
-            return Generate(assemblySource, compilerParameters.OutputAssembly, resources);
+            return Generate(assemblySource, compilerParameters.OutputAssembly, resources.Any() ? resources : null);
         }
 
         public Assembly Generate(IAssemblySource assemblySource, string outputAssemblyPath, IEnumerable<ManifestResource> manifestResources = null)
