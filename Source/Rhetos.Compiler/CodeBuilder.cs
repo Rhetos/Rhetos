@@ -25,7 +25,7 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Compiler
 {
-    public class CodeBuilder : ICodeBuilder, IAssemblySource
+    public class CodeBuilder : ICodeBuilder
     {
         private readonly FastReplacer _code;
         private readonly HashSet<string> _references = new HashSet<string>();
