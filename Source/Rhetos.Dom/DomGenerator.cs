@@ -59,12 +59,12 @@ namespace Rhetos.Dom
                 .Select(sourceFile => new
                 {
                     Name = sourceFile.Key,
-                    AssemblyFile = Paths.GetDomAssemblyFile((DomAssemblies)Enum.Parse(typeof(DomAssemblies), sourceFile.Key)),
                     AssemblySource = new AssemblySource
                     {
                         GeneratedCode = sourceFile.Value.GeneratedCode,
                         RegisteredReferences = sourceFile.Value.RegisteredReferences
-                    }
+                    },
+                    AssemblyFile = Paths.GetDomAssemblyFile((DomAssemblies)Enum.Parse(typeof(DomAssemblies), sourceFile.Key)),
                 })
                 .ToList();
 

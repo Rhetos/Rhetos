@@ -36,6 +36,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly CsTag<ModuleInfo> NamespaceMembersTag = "Body";
         public static readonly CsTag<ModuleInfo> RepositoryMembersTag = "RepositoryMembers";
         public static readonly CsTag<ModuleInfo> HelperNamespaceMembersTag = "HelperNamespaceMembers";
+        public static readonly CsTag<ModuleInfo> CommonQueryableMemebersTag = "CommonQueryableMemebers";
 
         private static string ModuleRepositoryInCommonRepositorySnippet(ModuleInfo info)
         {
@@ -51,7 +52,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var info = (ModuleInfo)conceptInfo;
 
-            codeBuilder.InsertCode(
+            codeBuilder.InsertCodeToFile(
 $@"namespace {info.Name}
 {{
     {DomInitializationCodeGenerator.StandardNamespacesSnippet}
@@ -61,9 +62,15 @@ $@"namespace {info.Name}
     {NamespaceMembersTag.Evaluate(info)}
 }}
 
-", DomInitializationCodeGenerator.SimpleClassesTag);
+namespace Common.Queryable
+{{
+    {DomInitializationCodeGenerator.StandardNamespacesSnippet}
 
-            codeBuilder.InsertCode(
+    {CommonQueryableMemebersTag.Evaluate(info)}
+}}
+", $"{DomAssemblies.Model}-{info.Name}");
+
+            codeBuilder.InsertCodeToFile(
 $@"namespace {info.Name}._Helper
 {{
     {DomInitializationCodeGenerator.StandardNamespacesSnippet}
@@ -85,7 +92,7 @@ $@"namespace {info.Name}._Helper
     {HelperNamespaceMembersTag.Evaluate(info)}
 }}
 
-", DomInitializationCodeGenerator.RepositoryClassesTag);
+", $"{DomAssemblies.Repositories}-{info.Name}");
 
             // Default .NET framework assemblies:
             codeBuilder.AddReferencesFromDependency(typeof(int)); // Includes reference to mscorlib.dll

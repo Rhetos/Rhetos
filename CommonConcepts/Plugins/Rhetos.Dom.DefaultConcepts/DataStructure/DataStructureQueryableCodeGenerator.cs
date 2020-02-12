@@ -17,18 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Globalization;
-using System.ComponentModel.Composition;
 using Rhetos.Compiler;
-using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
-using System.Diagnostics.Contracts;
-using Rhetos.Utilities;
+using System;
+using System.ComponentModel.Composition;
+using System.Linq;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -47,9 +42,9 @@ namespace Rhetos.Dom.DefaultConcepts
 
             if (DslUtility.IsQueryable(info))
             {
-                codeBuilder.InsertCode(SnippetQueryableClass(info), DomInitializationCodeGenerator.CommonQueryableMemebersTag);
-                codeBuilder.InsertCode("IDetachOverride", DataStructureQueryableCodeGenerator.InterfaceTag, info);
-                codeBuilder.InsertCode("bool IDetachOverride.Detaching { get; set; }\r\n\r\n        ", DataStructureQueryableCodeGenerator.MembersTag, info);
+                codeBuilder.InsertCode(SnippetQueryableClass(info), ModuleCodeGenerator.CommonQueryableMemebersTag, info.Module);
+                codeBuilder.InsertCode("IDetachOverride", InterfaceTag, info);
+                codeBuilder.InsertCode("bool IDetachOverride.Detaching { get; set; }\r\n\r\n        ", MembersTag, info);
             }
         }
 

@@ -32,10 +32,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly string EntityFrameworkContextMembersTag = "/*EntityFrameworkContextMembers*/";
         public static readonly string EntityFrameworkContextInitializeTag = "/*EntityFrameworkContextInitialize*/";
         public static readonly string EntityFrameworkConfigurationTag = "/*EntityFrameworkConfiguration*/";
-        public static readonly string CommonQueryableMemebersTag = "/*CommonQueryableMemebers*/";
         public static readonly string QueryExtensionsMembersTag = "/*QueryExtensionsMembers*/";
-        public static readonly string SimpleClassesTag = "/*SimpleClasses*/";
-        public static readonly string RepositoryClassesTag = "/*RepositoryClasses*/";
 
         public static readonly string StandardNamespacesSnippet =
 @"using System;
@@ -79,16 +76,7 @@ namespace Rhetos.Dom.DefaultConcepts
         }
 
         private readonly string ModelSnippet =
-$@"{SimpleClassesTag}
-
-namespace Common.Queryable
-{{
-    {StandardNamespacesSnippet}
-
-    {CommonQueryableMemebersTag}
-}}
-
-namespace System.Linq
+$@"namespace System.Linq
 {{
     {StandardNamespacesSnippet}
 
@@ -447,8 +435,6 @@ $@"namespace Common
 
     {ModuleCodeGenerator.CommonNamespaceMembersTag}
 }}
-
-{RepositoryClassesTag}
 ";
     }
 }
