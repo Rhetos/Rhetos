@@ -68,7 +68,7 @@ namespace Common.Queryable
 
     {CommonQueryableMemebersTag.Evaluate(info)}
 }}
-", $"{DomAssemblies.Model}-{info.Name}");
+", $"{DomAssemblies.Model}\\{info.Name}{DomAssemblies.Model}");
 
             codeBuilder.InsertCodeToFile(
 $@"namespace {info.Name}._Helper
@@ -92,7 +92,7 @@ $@"namespace {info.Name}._Helper
     {HelperNamespaceMembersTag.Evaluate(info)}
 }}
 
-", $"{DomAssemblies.Repositories}-{info.Name}");
+", $"{DomAssemblies.Repositories}\\{info.Name}{DomAssemblies.Repositories}");
 
             // Default .NET framework assemblies:
             codeBuilder.AddReferencesFromDependency(typeof(int)); // Includes reference to mscorlib.dll

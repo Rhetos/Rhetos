@@ -24,8 +24,17 @@ using System.Reflection;
 
 namespace Rhetos.Compiler
 {
+    /// <summary>
+    /// This is a legacy utility for building assemblies from the generated C# source.
+    /// Use it for plugins that should work in legacy DeployPackages (build source and DLLs) and Rhetos CLI (build source only).
+    /// Plugins that are designed only for Rhetos CLI, should use ISourceWriter instead.
+    /// </summary>
     public interface IAssemblyGenerator
     {
+        /// <param name="outputAssemblyPath">
+        /// DeployPackages will generate corresponding .cs file and DLL with the provided name.
+        /// Rhetos CLI will generate only the .cs file, ignoring the provided <paramref name="outputAssemblyPath"/> extension and folder.
+        /// </param>
         /// <param name="manifestResources">
         /// Obsolete parameter for legacy plugins.
         /// If provided, Rhetos CLI build command will not consider generated source as a part of the application's source,

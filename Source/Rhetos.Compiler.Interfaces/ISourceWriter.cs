@@ -21,7 +21,10 @@ namespace Rhetos.Compiler
 {
     public interface ISourceWriter
     {
-        void Add(string fileName, string content);
+        /// <param name="relativePath">
+        /// Path should be a file name or a relative path inside the generated source folder.
+        /// </param>
+        void Add(string relativePath, string content);
         void CleanUp();
     }
 }
