@@ -32,7 +32,7 @@ namespace Rhetos.Compiler
         private readonly ILogger _logger;
         private readonly BuildOptions _buildOptions;
         private readonly FilesUtility _filesUtility;
-        private readonly ConcurrentDictionary<string, string> _files = new ConcurrentDictionary<string, string>();
+        private readonly ConcurrentDictionary<string, string> _files = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         public SourceWriter(BuildOptions buildOptions, ILogProvider logProvider, FilesUtility filesUtility)
         {
@@ -44,10 +44,11 @@ namespace Rhetos.Compiler
         public void Add(string relativePath, string content)
         {
             string filePath = Path.GetFullPath(Path.Combine(_buildOptions.GeneratedSourceFolder, relativePath));
+
             if (!filePath.StartsWith(_buildOptions.GeneratedSourceFolder))
                 throw new FrameworkException($"Generated source file '{filePath}' should be inside the folder '{_buildOptions.GeneratedSourceFolder}'." +
                     $" Provide a simple file name or a relative path for {nameof(ISourceWriter)}.{nameof(ISourceWriter.Add)} method.");
-
+            
             _files.AddOrUpdate(filePath, content, ErrorOnUpdate);
 
             if (File.Exists(filePath))
@@ -70,9 +71,14 @@ namespace Rhetos.Compiler
             }
         }
 
-        private string ErrorOnUpdate(string fileName, string oldValue)
+        private string ErrorOnUpdate(string filePath, string oldValue)
         {
-            throw new FrameworkException($"Multiple code generators are writing same generated file '{fileName}'.");
+            var sameFiles = _files.Keys.Where(oldFilePath => string.Equals(filePath, oldFilePath, StringComparison.OrdinalIgnoreCase)); // Robust error reporting, even though only one file is expected.
+            string oldFileInfo = (sameFiles.Count() == 1 && string.Equals(sameFiles.Single(), filePath, StringComparison.Ordinal))
+                ? ""
+                : $" Previously generated file is '{string.Join(", ", sameFiles)}'.";
+
+            throw new FrameworkException($"Multiple code generators are writing the same file '{filePath}'.{oldFileInfo}");
         }
 
         private static void WriteFile(string content, string filePath)
