@@ -22,7 +22,7 @@ REM Delete packages' bineries and their copy in Rhetos folder:
 REM Delete build logs:
 @DEL *.log
 
-REM Delete build installation resut:
+REM Delete build installation result:
 @RD /S/Q Install
 @MD Install
 
