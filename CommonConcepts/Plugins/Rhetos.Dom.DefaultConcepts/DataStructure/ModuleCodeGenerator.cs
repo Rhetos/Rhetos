@@ -41,8 +41,8 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string ModuleRepositoryInCommonRepositorySnippet(ModuleInfo info)
         {
             return string.Format(
-                @"private {0}._Helper._ModuleRepository _{0};
-        public {0}._Helper._ModuleRepository {0} {{ get {{ return _{0} ?? (_{0} = new {0}._Helper._ModuleRepository(_repositories)); }} }}
+                @"private {0}._Helper.ModuleRepository _{0};
+        public {0}._Helper.ModuleRepository {0} {{ get {{ return _{0} ?? (_{0} = new {0}._Helper.ModuleRepository(_repositories)); }} }}
 
         ",
                 info.Name);
@@ -77,11 +77,11 @@ $@"namespace {info.Name}._Helper
 
     {UsingTag.Evaluate(info)}
 
-    public class _ModuleRepository
+    public class ModuleRepository
     {{
         private readonly Rhetos.Extensibility.INamedPlugins<IRepository> _repositories;
 
-        public _ModuleRepository(Rhetos.Extensibility.INamedPlugins<IRepository> repositories)
+        public ModuleRepository(Rhetos.Extensibility.INamedPlugins<IRepository> repositories)
         {{
             _repositories = repositories;
         }}
