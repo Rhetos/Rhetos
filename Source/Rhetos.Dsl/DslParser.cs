@@ -47,7 +47,7 @@ namespace Rhetos.Dsl
         public IEnumerable<IConceptInfo> ParsedConcepts => GetConcepts();
 
         public delegate void OnKeywordEvent(ITokenReader tokenReader, string keyword);
-        public delegate void OnMemberReadEvent(ITokenReader tokenReader, Type conceptInfoType, ConceptMember conceptMember, ValueOrError<object> valueOrError);
+        public delegate void OnMemberReadEvent(ITokenReader tokenReader, IConceptInfo conceptInfo, ConceptMember conceptMember, ValueOrError<object> valueOrError);
         public delegate void OnUpdateContextEvent(ITokenReader tokenReader, Stack<IConceptInfo> context, bool isOpening);
 
         private event OnKeywordEvent _onKeyword;
@@ -136,8 +136,8 @@ namespace Rhetos.Dsl
             {
                 IConceptInfo conceptInfo = ParseNextConcept(tokenReader, context, conceptParsers);
                 newConcepts.Add(conceptInfo);
-                _onKeyword?.Invoke(tokenReader, null);
                 UpdateContextForNextConcept(tokenReader, context, conceptInfo);
+                _onKeyword?.Invoke(tokenReader, null);
 
                 if (context.Count == 0)
                     tokenReader.SkipEndOfFile();
