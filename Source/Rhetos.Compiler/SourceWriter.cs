@@ -55,7 +55,7 @@ namespace Rhetos.Compiler
             {
                 if (File.ReadAllText(filePath, Encoding.UTF8).Equals(content, StringComparison.Ordinal))
                 {
-                    Log("Unchanged", filePath);
+                    Log("Unchanged", filePath, EventType.Trace);
                 }
                 else
                 {

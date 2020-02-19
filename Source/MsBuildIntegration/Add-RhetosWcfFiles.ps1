@@ -6,12 +6,13 @@
 $sourceFolder = "$PSScriptRoot\projectFiles"
 $project = (Get-Project)
 $projectFolder = (Get-Item $project.FullName).DirectoryName
+"Source folder: $sourceFolder"
 
 Copy-Item -Path "$sourceFolder\Web.config" -Destination $projectFolder -Force
 Copy-Item -Path "$sourceFolder\Rhetos Server DOM.linq" -Destination $projectFolder -Force
 Copy-Item -Path "$sourceFolder\Rhetos Server SOAP.linq" -Destination $projectFolder -Force
 Copy-Item -Path "$sourceFolder\Template.ConnectionStrings.config" -Destination $projectFolder -Force
 
-$project.ProjectItems.AddFromFileCopy("$sourceFolder\RhetosService.svc");
-$project.ProjectItems.AddFromFileCopy("$sourceFolder\Global.asax");
-$project.ProjectItems.AddFromFileCopy("$sourceFolder\Default.aspx");
+$project.ProjectItems.AddFromFileCopy("$sourceFolder\RhetosService.svc") > $null
+$project.ProjectItems.AddFromFileCopy("$sourceFolder\Global.asax") > $null
+$project.ProjectItems.AddFromFileCopy("$sourceFolder\Default.aspx") > $null

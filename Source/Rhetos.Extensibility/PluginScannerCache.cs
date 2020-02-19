@@ -53,7 +53,7 @@ namespace Rhetos.Extensibility
             if (File.Exists(_buildCacheFilePath))
             {
                 _logger.Trace($"Copying build cache to runtime cache.");
-                _filesUtility.SafeCopyFile(_buildCacheFilePath, _runtimeCacheFilePath);
+                _filesUtility.SafeCopyFile(_buildCacheFilePath, _runtimeCacheFilePath, overwrite: true); // HACK: To allow parallel background build when VS Code is open.
             }
         }
 

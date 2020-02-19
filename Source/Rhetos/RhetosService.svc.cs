@@ -17,16 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Logging;
+using Rhetos.Processing;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Rhetos.Dom;
-using Rhetos.Processing;
-using Rhetos.Utilities;
-using Rhetos.Extensibility;
-using Rhetos.Logging;
-using Rhetos.Security;
 using System.ServiceModel.Activation;
 
 namespace Rhetos
