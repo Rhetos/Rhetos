@@ -17,12 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Diagnostics;
 using Rhetos.Dsl;
-using System.Diagnostics.Contracts;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 
 namespace Rhetos.Compiler
 {
@@ -41,9 +42,34 @@ namespace Rhetos.Compiler
             _dslModel = dslModel;
         }
 
-
         public IAssemblySource ExecutePlugins<TPlugin>(IPluginsContainer<TPlugin> plugins, string tagOpen, string tagClose, IConceptCodeGenerator initialCodeGenerator)
             where TPlugin : IConceptCodeGenerator
+        {
+            var codeBuilder = BuildCode(plugins, tagOpen, tagClose, initialCodeGenerator);
+
+            return new AssemblySource
+            {
+                GeneratedCode = codeBuilder.GeneratedCode,
+                RegisteredReferences = codeBuilder.RegisteredReferences
+            };
+        }
+
+        public IDictionary<string, IAssemblySource> ExecutePluginsToFiles<TPlugin>(IPluginsContainer<TPlugin> plugins, string tagOpen, string tagClose, IConceptCodeGenerator initialCodeGenerator)
+            where TPlugin : IConceptCodeGenerator
+        {
+            var codeBuilder = BuildCode(plugins, tagOpen, tagClose, initialCodeGenerator);
+
+            return codeBuilder.GeneratedCodeByFile
+                .ToDictionary(
+                    codeFile => codeFile.Key,
+                    codeFile => (IAssemblySource)new AssemblySource
+                    {
+                        GeneratedCode = codeFile.Value,
+                        RegisteredReferences = codeBuilder.RegisteredReferences
+                    });
+        }
+
+        private CodeBuilder BuildCode<TPlugin>(IPluginsContainer<TPlugin> plugins, string tagOpen, string tagClose, IConceptCodeGenerator initialCodeGenerator) where TPlugin : IConceptCodeGenerator
         {
             var stopwatch = Stopwatch.StartNew();
 
@@ -69,7 +95,6 @@ namespace Rhetos.Compiler
                 }
 
             _performanceLogger.Write(stopwatch, "CodeGenerator: Code generated.");
-
             return codeBuilder;
         }
     }

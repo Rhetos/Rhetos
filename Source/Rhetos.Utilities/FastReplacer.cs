@@ -19,6 +19,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Rhetos.Utilities
@@ -51,7 +52,7 @@ namespace Rhetos.Utilities
             OccurrencesOfToken = new Dictionary<string, List<TokenOccurrence>>(stringComparer);
         }
 
-        private readonly FastReplacerSnippet RootSnippet = new FastReplacerSnippet("");
+        private readonly Dictionary<string, FastReplacerSnippet> RootSnippetByFile = new Dictionary<string, FastReplacerSnippet>();
 
         private class TokenOccurrence
         {
@@ -64,8 +65,19 @@ namespace Rhetos.Utilities
 
         public void Append(string text)
         {
+            AppendToFile(text, string.Empty);
+        }
+
+        public void AppendToFile(string text, string path)
+        {
+            if (!RootSnippetByFile.TryGetValue(path, out FastReplacerSnippet rootSnippet))
+            {
+                rootSnippet = new FastReplacerSnippet("");
+                RootSnippetByFile.Add(path, rootSnippet);
+            }
+
             var snippet = new FastReplacerSnippet(text);
-            RootSnippet.Append(snippet);
+            rootSnippet.Append(snippet);
             ExtractTokens(snippet);
         }
 
@@ -185,11 +197,27 @@ namespace Rhetos.Utilities
                 throw new ArgumentException(string.Format("Next token is opened before a previous token was closed in token \"{0}\". Used with text \"{1}\".", token, context));
         }
 
+        public IEnumerable<string> GetPaths()
+        {
+            return RootSnippetByFile.Keys;
+        }
+
+        public string ToString(string path)
+        {
+            return ToString(new[] { RootSnippetByFile[path] });
+        }
+
         public override string ToString()
         {
-            int totalTextLength = RootSnippet.GetLength();
+            return ToString(RootSnippetByFile.Values);
+        }
+
+        private static string ToString(IEnumerable<FastReplacerSnippet> rootSnippets)
+        {
+            int totalTextLength = rootSnippets.Sum(rootSnippet => rootSnippet.GetLength());
             var sb = new StringBuilder(totalTextLength);
-            RootSnippet.ToString(sb);
+            foreach (var rootSnippet in rootSnippets)
+                rootSnippet.ToString(sb);
             if (sb.Length != totalTextLength)
                 throw new InvalidOperationException(string.Format(
                     "Internal error: Calculated total text length ({0}) is different from actual ({1}).",

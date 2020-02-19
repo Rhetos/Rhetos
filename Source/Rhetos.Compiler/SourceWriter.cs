@@ -32,7 +32,7 @@ namespace Rhetos.Compiler
         private readonly ILogger _logger;
         private readonly BuildOptions _buildOptions;
         private readonly FilesUtility _filesUtility;
-        private readonly ConcurrentDictionary<string, string> _files = new ConcurrentDictionary<string, string>();
+        private readonly ConcurrentDictionary<string, string> _files = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         public SourceWriter(BuildOptions buildOptions, ILogProvider logProvider, FilesUtility filesUtility)
         {
@@ -41,13 +41,49 @@ namespace Rhetos.Compiler
             _filesUtility = filesUtility;
         }
 
-        public void Add(string fileName, string content)
+        public void Add(string relativePath, string content)
         {
-            _files.AddOrUpdate(fileName, content, ErrorOnUpdate);
+            string filePath = Path.GetFullPath(Path.Combine(_buildOptions.GeneratedSourceFolder, relativePath));
 
-            _logger.Info(() => $"Writing '{fileName}'.");
+            if (!filePath.StartsWith(_buildOptions.GeneratedSourceFolder))
+                throw new FrameworkException($"Generated source file '{filePath}' should be inside the folder '{_buildOptions.GeneratedSourceFolder}'." +
+                    $" Provide a simple file name or a relative path for {nameof(ISourceWriter)}.{nameof(ISourceWriter.Add)} method.");
+            
+            _files.AddOrUpdate(filePath, content, ErrorOnUpdate);
 
-            using (var fs = new FileStream(Path.Combine(_buildOptions.GeneratedSourceFolder, fileName), FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite))
+            if (File.Exists(filePath))
+            {
+                if (File.ReadAllText(filePath, Encoding.UTF8).Equals(content, StringComparison.Ordinal))
+                {
+                    Log("Unchanged", filePath);
+                }
+                else
+                {
+                    Log("Updating", filePath);
+                    WriteFile(content, filePath);
+                }
+            }
+            else
+            {
+                Log("Creating", filePath);
+                _filesUtility.SafeCreateDirectory(Path.GetDirectoryName(filePath));
+                WriteFile(content, filePath);
+            }
+        }
+
+        private string ErrorOnUpdate(string filePath, string oldValue)
+        {
+            var sameFiles = _files.Keys.Where(oldFilePath => string.Equals(filePath, oldFilePath, StringComparison.OrdinalIgnoreCase)); // Robust error reporting, even though only one file is expected.
+            string oldFileInfo = (sameFiles.Count() == 1 && string.Equals(sameFiles.Single(), filePath, StringComparison.Ordinal))
+                ? ""
+                : $" Previously generated file is '{string.Join(", ", sameFiles)}'.";
+
+            throw new FrameworkException($"Multiple code generators are writing the same file '{filePath}'.{oldFileInfo}");
+        }
+
+        private static void WriteFile(string content, string filePath)
+        {
+            using (var fs = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite))
             {
                 using (var sw = new StreamWriter(fs, Encoding.UTF8))
                 {
@@ -57,21 +93,21 @@ namespace Rhetos.Compiler
             }
         }
 
-        private string ErrorOnUpdate(string fileName, string oldValue)
-        {
-            throw new FrameworkException($"Multiple code generators are writing same generated file '{fileName}'.");
-        }
-
         public void CleanUp()
         {
-            var deleteFiles = Directory.GetFiles(_buildOptions.GeneratedSourceFolder, "*")
-                .Where(existing => !_files.Keys.Contains(Path.GetFileName(existing)));
+            var deleteFiles = Directory.GetFiles(_buildOptions.GeneratedSourceFolder, "*", SearchOption.AllDirectories)
+                .Except(_files.Keys);
 
             foreach (var deleteFile in deleteFiles)
             {
-                _logger.Info(() => $"Deleting '{deleteFile}'.");
+                Log("Deleting", deleteFile);
                 _filesUtility.SafeDeleteFile(deleteFile);
             }
+        }
+
+        private void Log(string title, string filePath, EventType eventType = EventType.Info)
+        {
+            _logger.Write(eventType, () => $"{title} '{FilesUtility.AbsoluteToRelativePath(_buildOptions.GeneratedSourceFolder, filePath)}'.");
         }
     }
 }

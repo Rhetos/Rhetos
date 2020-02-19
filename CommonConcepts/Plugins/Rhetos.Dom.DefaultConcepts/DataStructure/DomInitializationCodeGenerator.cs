@@ -17,16 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Microsoft.CSharp.RuntimeBinder;
 using Rhetos.Compiler;
 using Rhetos.Dsl;
-using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
 using Rhetos.Processing;
-using Rhetos.Utilities;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -37,10 +32,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly string EntityFrameworkContextMembersTag = "/*EntityFrameworkContextMembers*/";
         public static readonly string EntityFrameworkContextInitializeTag = "/*EntityFrameworkContextInitialize*/";
         public static readonly string EntityFrameworkConfigurationTag = "/*EntityFrameworkConfiguration*/";
-        public static readonly string CommonQueryableMemebersTag = "/*CommonQueryableMemebers*/";
         public static readonly string QueryExtensionsMembersTag = "/*QueryExtensionsMembers*/";
-        public static readonly string SimpleClassesTag = "/*SimpleClasses*/";
-        public static readonly string RepositoryClassesTag = "/*RepositoryClasses*/";
 
         public static readonly string StandardNamespacesSnippet =
 @"using System;
@@ -54,7 +46,9 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            codeBuilder.InsertCode(GenerateCommonClassesSnippet());
+            codeBuilder.InsertCodeToFile(ModelSnippet, DomAssemblies.Model.ToString());
+            codeBuilder.InsertCodeToFile(OrmSnippet, DomAssemblies.Orm.ToString());
+            codeBuilder.InsertCodeToFile(RepositoriesSnippet, DomAssemblies.Repositories.ToString());
 
             codeBuilder.InsertCode("this.Configuration.UseDatabaseNullSemantics = _rhetosAppOptions.EntityFramework__UseDatabaseNullSemantics;\r\n            ", EntityFrameworkContextInitializeTag);
 
@@ -81,21 +75,8 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.AddReferencesFromDependency(typeof(ICommandInfo)); // Used from ApplyFiltersOnClientRead.
         }
 
-        private static string GenerateCommonClassesSnippet()
-        {
-            return $@"
-{DomGeneratorOptions.FileSplitterPrefix}{DomAssemblies.Model}{DomGeneratorOptions.FileSplitterSuffix}
-
-{SimpleClassesTag}
-
-namespace Common.Queryable
-{{
-    {StandardNamespacesSnippet}
-
-    {CommonQueryableMemebersTag}
-}}
-
-namespace System.Linq
+        private readonly string ModelSnippet =
+$@"namespace System.Linq
 {{
     {StandardNamespacesSnippet}
 
@@ -141,10 +122,10 @@ namespace System.Linq
         }}
     }}
 }}
+";
 
-{DomGeneratorOptions.FileSplitterPrefix}{DomAssemblies.Orm}{DomGeneratorOptions.FileSplitterSuffix}
-
-namespace Common
+        private readonly string OrmSnippet =
+$@"namespace Common
 {{
     {StandardNamespacesSnippet}
     using Autofac;
@@ -213,10 +194,10 @@ namespace Common
         }}
     }}
 }}
+";
 
-{DomGeneratorOptions.FileSplitterPrefix}{DomAssemblies.Repositories}{DomGeneratorOptions.FileSplitterSuffix}
-
-namespace Common
+        private readonly string RepositoriesSnippet =
+$@"namespace Common
 {{
     {StandardNamespacesSnippet}
     using Autofac;
@@ -454,9 +435,6 @@ namespace Common
 
     {ModuleCodeGenerator.CommonNamespaceMembersTag}
 }}
-
-{RepositoryClassesTag}
 ";
-        }
     }
 }

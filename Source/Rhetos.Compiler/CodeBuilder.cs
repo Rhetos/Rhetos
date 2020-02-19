@@ -25,7 +25,7 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Compiler
 {
-    public class CodeBuilder : ICodeBuilder, IAssemblySource
+    public class CodeBuilder : ICodeBuilder
     {
         private readonly FastReplacer _code;
         private readonly HashSet<string> _references = new HashSet<string>();
@@ -57,6 +57,11 @@ namespace Rhetos.Compiler
                 type = type.BaseType;
                 AddReferenceByLocation(type.Assembly.Location);
             }
+        }
+
+        public void InsertCodeToFile(string code, string path)
+        {
+            _code.AppendToFile(code, path);
         }
 
         public void InsertCode(string code)
@@ -119,17 +124,10 @@ namespace Rhetos.Compiler
             return _code.Contains(tag);
         }
 
-        public string GeneratedCode
-        {
-            get
-            {
-                return _code.ToString();
-            }
-        }
+        public string GeneratedCode => _code.ToString();
 
-        public IEnumerable<string> RegisteredReferences
-        {
-            get { return _references; }
-        }
+        public IDictionary<string, string> GeneratedCodeByFile => _code.GetPaths().ToDictionary(path => path, path => _code.ToString(path));
+
+        public IEnumerable<string> RegisteredReferences => _references;
     }
 }
