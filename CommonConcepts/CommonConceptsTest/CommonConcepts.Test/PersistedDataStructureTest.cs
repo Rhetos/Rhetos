@@ -25,7 +25,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.TestCommon;
-using Test9._Helper;
+using Test9.Repositories;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Utilities;
 using CommonConcepts.Test.Helpers;

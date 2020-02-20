@@ -676,7 +676,7 @@ namespace CommonConcepts.Test
             }
         }
 
-        private void Execute2ParallelInserts(int testCount, Action<int, TestAutoCode._Helper.Simple_Repository> action)
+        private void Execute2ParallelInserts(int testCount, Action<int, TestAutoCode.Repositories.Simple_Repository> action)
         {
             const int threadCount = 2;
 

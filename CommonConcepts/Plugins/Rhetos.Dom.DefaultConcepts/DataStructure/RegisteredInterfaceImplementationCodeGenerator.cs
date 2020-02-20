@@ -46,7 +46,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             // TODO: Remove IQueryableRepository registration.  IQueryableRepository should be cast from repository object in Rhetos.Dom.DefaultConcepts.GenericRepositories class.
             string registerRepository = string.Format(
-                @"builder.RegisterType<{0}._Helper.{1}_Repository>().As<IQueryableRepository<{2}>>().InstancePerLifetimeScope();
+                @"builder.RegisterType<{0}.Repositories.{1}_Repository>().As<IQueryableRepository<{2}>>().InstancePerLifetimeScope();
             ",
                     info.DataStructure.Module.Name,
                     info.DataStructure.Name,

@@ -76,7 +76,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public static string RegisterRepository(ActionInfo info)
         {
-            return string.Format(@"builder.RegisterType<{0}._Helper.{1}_Repository>().Keyed<IActionRepository>(""{0}.{1}"").InstancePerLifetimeScope();
+            return string.Format(@"builder.RegisterType<{0}.Repositories.{1}_Repository>().Keyed<IActionRepository>(""{0}.{1}"").InstancePerLifetimeScope();
             ", info.Module.Name, info.Name);
         }
 

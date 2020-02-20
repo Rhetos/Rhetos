@@ -41,8 +41,8 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string ModuleRepositoryInCommonRepositorySnippet(ModuleInfo info)
         {
             return string.Format(
-                @"private {0}._Helper.ModuleRepository _{0};
-        public {0}._Helper.ModuleRepository {0} {{ get {{ return _{0} ?? (_{0} = new {0}._Helper.ModuleRepository(_repositories)); }} }}
+                @"private {0}.Repositories.ModuleRepository _{0};
+        public {0}.Repositories.ModuleRepository {0} {{ get {{ return _{0} ?? (_{0} = new {0}.Repositories.ModuleRepository(_repositories)); }} }}
 
         ",
                 info.Name);
@@ -71,7 +71,7 @@ namespace Common.Queryable
 ", $"{DomAssemblies.Model}\\{info.Name}{DomAssemblies.Model}");
 
             codeBuilder.InsertCodeToFile(
-$@"namespace {info.Name}._Helper
+$@"namespace {info.Name}.Repositories
 {{
     {DomInitializationCodeGenerator.StandardNamespacesSnippet}
 

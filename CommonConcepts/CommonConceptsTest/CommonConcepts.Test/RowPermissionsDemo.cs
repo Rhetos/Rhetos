@@ -348,7 +348,7 @@ namespace CommonConcepts.Test
                 var repository = context.Repository;
 
                 var query = repository.DemoRowPermissions2.DocumentInfo.Query();
-                string rowPermissionFilter = DemoRowPermissions2._Helper.DocumentInfo_Repository
+                string rowPermissionFilter = DemoRowPermissions2.Repositories.DocumentInfo_Repository
                     .GetRowPermissionsReadExpression(query, repository, context)
                     .ToString();
                 Console.WriteLine("[Row permission filter] " + rowPermissionFilter);
@@ -370,7 +370,7 @@ namespace CommonConcepts.Test
                 var repository = context.Repository;
 
                 var query = repository.DemoRowPermissions2.DocumentInfo2.Query();
-                string rowPermissionFilter = DemoRowPermissions2._Helper.DocumentInfo2_Repository
+                string rowPermissionFilter = DemoRowPermissions2.Repositories.DocumentInfo2_Repository
                     .GetRowPermissionsReadExpression(query, repository, context)
                     .ToString();
                 Console.WriteLine("[Row permission filter] " + rowPermissionFilter);

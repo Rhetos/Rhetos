@@ -574,7 +574,7 @@ namespace CommonConcepts.Test
             }
         }
 
-        private void Execute2ParallelInserts(int testCount, Action<int, TestAutoCodeCached._Helper.Simple_Repository> action)
+        private void Execute2ParallelInserts(int testCount, Action<int, TestAutoCodeCached.Repositories.Simple_Repository> action)
         {
             const int threadCount = 2;
             using (var container = new RhetosTestContainer(true))

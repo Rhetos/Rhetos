@@ -57,7 +57,7 @@ namespace Rhetos.Dom.DefaultConcepts
             $@"{{
                 var sameMembers = new Tuple<string, string>[] {{ {sameMembersTag} }};
                 var parentRepository = executionContext.Repository.{source.Module.Name}.{source.Name};
-                var parentRowPermissionsExpression = {source.Module.Name}._Helper.{source.Name}_Repository.{permissionExpressionName}(parentRepository.Query(), repository, executionContext);
+                var parentRowPermissionsExpression = {source.Module.Name}.Repositories.{source.Name}_Repository.{permissionExpressionName}(parentRepository.Query(), repository, executionContext);
                 var replacedExpression = new ReplaceWithReference<Common.Queryable.{source.Module.Name}_{source.Name}, Common.Queryable.{target.Module.Name}_{target.Name}>(parentRowPermissionsExpression, ""{info.SourceSelector}"" , ""{ParameterName(target)}"", sameMembers {extensionReferenceTag}).NewExpression;
                 filterExpression.Include(replacedExpression);
             }}
