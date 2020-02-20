@@ -1,5 +1,13 @@
 <Project>
- <PropertyGroup>
-   <RhetosCliExecutablePath>$(MSBuildThisFileDirectory)..\tools\rhetos.exe</RhetosCliExecutablePath>
- </PropertyGroup>
+    <ItemGroup>
+        <Compile Include="RhetosSource\**\*.cs" />
+    </ItemGroup>
+    <ItemGroup>
+        <RhetosInput Include="DslScripts\**\*" />
+        <RhetosInput Include="DataMigration\**\*" />
+    </ItemGroup>    
+    <PropertyGroup>
+        <RhetosBuild>True</RhetosBuild>
+        <RhetosDeploy>True</RhetosDeploy>
+    </PropertyGroup>
 </Project>

@@ -32,7 +32,10 @@
     <file src="RhetosCli\bin\Debug\rhetos.exe" target="tools" />
     <file src="RhetosCli\bin\Debug\rhetos.exe.config" target="tools" />
 
-    <file src="MsBuildIntegration\Rhetos.props" target="build" /> <!-- TODO: Delete props files after implementing MSBuild target. -->
+    <file src="MsBuildIntegration\Rhetos.targets" target="build" />
+    <file src="MsBuildIntegration\Rhetos.props" target="build" />
+    <file src="RhetosBuildTask\bin\Debug\*.dll" target="build" />
+    <file src="RhetosBuildTask\bin\Debug\*.pdb" target="build" />
 
     <file src="Rhetos\bin\Rhetos.*.dll" target="lib\net472" />
     <file src="Rhetos\bin\Rhetos.*.pdb" target="lib\net472" />
