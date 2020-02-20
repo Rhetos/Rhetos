@@ -175,7 +175,10 @@ namespace Rhetos.Dsl
                 while (end < script.Length && script[end] != quote)
                     end++;
                 if (end >= script.Length)
-                    throw new DslSyntaxException("Unexpected end of script within quoted string. Missing closing character: " + quote + ". " + dslScript.ReportPosition(begin));
+                {
+                    var errorMessage = $"Unexpected end of script within quoted string. Missing closing character: {quote}.";
+                    throw new DslParseSyntaxException($"{errorMessage} {dslScript.ReportPosition(begin)}", errorMessage, dslScript, begin);
+                }
                 if (end + 1 < script.Length && script[end + 1] == quote)
                 {
                     // Two quote characters make escape sequence for a quote within the string:
@@ -210,10 +213,16 @@ namespace Rhetos.Dsl
                 end++;
 
             if (end >= script.Length)
-                throw new DslSyntaxException("Unexpected end of script within external text reference. Missing closing character: '>'." + dslScript.ReportPosition(end));
+            {
+                var errorMessage = "Unexpected end of script within external text reference. Missing closing character: '>'.";
+                throw new DslParseSyntaxException($"{errorMessage} {dslScript.ReportPosition(end)}", errorMessage, dslScript, end);
+            }
 
             if (script[end] != '>')
-                throw new DslSyntaxException("Invalid filename character within external text reference. " + dslScript.ReportPosition(end));
+            {
+                var errorMessage = "Invalid filename character within external text reference.";
+                throw new DslParseSyntaxException($"{errorMessage} {dslScript.ReportPosition(end)}", errorMessage, dslScript, end);
+            }
 
             end++; // Skip closing character.
 
@@ -232,7 +241,10 @@ namespace Rhetos.Dsl
                 var directory = Path.GetDirectoryName(basicFilePath);
                 var fileName = Path.GetFileNameWithoutExtension(basicFilePath);
                 if (string.IsNullOrWhiteSpace(fileName))
-                    throw new DslSyntaxException("Referenced empty file name (" + basicFilePath + ") in DSL script. " + dslScript.ReportPosition(begin));
+                {
+                    var errorMessage = $"Referenced empty file name ({basicFilePath}) in DSL script.";
+                    throw new DslParseSyntaxException($"{errorMessage} {dslScript.ReportPosition(begin)}", errorMessage, dslScript, begin);
+                }
 
                 // Look for SQL dialect-specific files before the generic SQL file:
                 filePaths.Insert(0, Path.Combine(directory, fileName + "." + SqlUtility.DatabaseLanguage + basicFileExtension));
@@ -243,7 +255,9 @@ namespace Rhetos.Dsl
                 if (File.Exists(filePath))
                     return readAllTextfromFile(filePath);
 
-            throw new DslSyntaxException("Cannot find the extension file referenced in DSL script. " + dslScript.ReportPosition(begin) + "\r\nLooking for files:\r\n" + string.Join("\r\n", filePaths));
+            var notFoundMessage = "Cannot find the extension file referenced in DSL script.";
+            var fileListMessage = "Looking for files:\r\n" + string.Join("\r\n", filePaths);
+            throw new DslParseSyntaxException($"{notFoundMessage} {dslScript.ReportPosition(begin)}\r\n{fileListMessage}", $"{notFoundMessage} {fileListMessage}", dslScript, begin);
         }
     }
 }

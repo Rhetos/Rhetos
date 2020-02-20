@@ -55,7 +55,35 @@ namespace Rhetos.Dsl
 
         public IEnumerable<IConceptInfo> ParsedConcepts => GetConcepts();
 
+        public delegate void OnKeywordEvent(ITokenReader tokenReader, string keyword);
+        public delegate void OnMemberReadEvent(ITokenReader tokenReader, IConceptInfo conceptInfo, ConceptMember conceptMember, ValueOrError<object> valueOrError);
+        public delegate void OnUpdateContextEvent(ITokenReader tokenReader, Stack<IConceptInfo> context, bool isOpening);
+
+        private event OnKeywordEvent _onKeyword;
+        private event OnMemberReadEvent _onMemberRead;
+        private event OnUpdateContextEvent _onUpdateContext;
+
+        public IEnumerable<IConceptInfo> ParseConceptsWithCallbacks(OnKeywordEvent onKeyword,
+            OnMemberReadEvent onMemberRead,
+            OnUpdateContextEvent onUpdateContext)
+        {
+            try
+            {
+                _onKeyword += onKeyword;
+                _onMemberRead += onMemberRead;
+                _onUpdateContext += onUpdateContext;
+                return GetConcepts();
+            }
+            finally
+            {
+                _onKeyword -= onKeyword;
+                _onMemberRead -= onMemberRead;
+                _onUpdateContext -= onUpdateContext;
+            }
+        }
         //=================================================================
+
+        
 
         private List<IConceptInfo> GetConcepts()
         {
@@ -93,7 +121,12 @@ namespace Rhetos.Dsl
 
             _keywordsLogger.Trace(() => string.Join(" ", conceptMetadata.Select(cm => cm.conceptKeyword).OrderBy(keyword => keyword).Distinct()));
 
-            var result = conceptMetadata.ToMultiDictionary(x => x.conceptKeyword, x => (IConceptParser)new GenericParser(x.conceptType, x.conceptKeyword), StringComparer.OrdinalIgnoreCase);
+            var result = conceptMetadata.ToMultiDictionary(x => x.conceptKeyword, x =>
+            {
+                var parser = new GenericParser(x.conceptType, x.conceptKeyword);
+                parser.OnMemberRead += _onMemberRead;
+                return (IConceptParser) parser;
+            }, StringComparer.OrdinalIgnoreCase);
             _performanceLogger.Write(stopwatch, "DslParser.CreateGenericParsers.");
             return result;
         }
@@ -112,13 +145,13 @@ namespace Rhetos.Dsl
             while (!tokenReader.EndOfInput)
             {
                 var parsed = ParseNextConcept(tokenReader, context, conceptParsers);
-
                 newConcepts.Add(parsed.ConceptInfo);
 
                 if (parsed.Warnings != null)
                     warnings.AddRange(parsed.Warnings);
 
                 UpdateContextForNextConcept(tokenReader, context, parsed.ConceptInfo);
+                _onKeyword?.Invoke(tokenReader, null);
 
                 if (context.Count == 0)
                     tokenReader.SkipEndOfFile();
@@ -127,9 +160,11 @@ namespace Rhetos.Dsl
             _performanceLogger.Write(stopwatch, "DslParser.ExtractConcepts (" + newConcepts.Count + " concepts).");
 
             if (context.Count > 0)
-                throw new DslSyntaxException(string.Format(
-                    ReportErrorContext(context.Peek(), tokenReader)
-                    + "Expected \"}\" at the end of the script to close concept \"{0}\".", context.Peek()));
+            {
+                var simpleMessage = $"Expected \"}}\" at the end of the script to close concept \"{context.Peek()}\".";
+                var (dslScript, position) = tokenReader.GetPositionInScript();
+                throw new DslParseSyntaxException(ReportErrorContext(context.Peek(), tokenReader) + simpleMessage, simpleMessage, dslScript, position);
+            }
 
             foreach (string warning in warnings)
             {
@@ -148,12 +183,13 @@ namespace Rhetos.Dsl
 
         private (IConceptInfo ConceptInfo, List<string> Warnings) ParseNextConcept(TokenReader tokenReader, Stack<IConceptInfo> context, MultiDictionary<string, IConceptParser> conceptParsers)
         {
-            var errorReports = new List<Func<string>>();
+            var errorReports = new List<Func<(string formattedError, string simpleError)>>();
             List<Interpretation> possibleInterpretations = new List<Interpretation>();
 
             var keywordReader = new TokenReader(tokenReader).ReadText(); // Peek, without changing the original tokenReader's position.
             var keyword = keywordReader.IsError ? null : keywordReader.Value;
 
+            _onKeyword?.Invoke(tokenReader, keyword);
             if (keyword != null)
             {
                 foreach (var conceptParser in conceptParsers.Get(keyword))
@@ -170,22 +206,34 @@ namespace Rhetos.Dsl
                         });
                     else if (!string.IsNullOrEmpty(conceptInfoOrError.Error)) // Empty error means that this parser is not for this keyword.
                     {
-                        errorReports.Add(() => string.Format("{0}: {1}\r\n{2}", conceptParser.GetType().Name, conceptInfoOrError.Error, tokenReader.ReportPosition()));
+                        errorReports.Add(() =>
+                            (string.Format("{0}: {1}\r\n{2}", conceptParser.GetType().Name, conceptInfoOrError.Error, tokenReader.ReportPosition()), conceptInfoOrError.Error));
                     }
                 }
             }
 
             if (possibleInterpretations.Count == 0)
             {
+                var (dslScript, position) = tokenReader.GetPositionInScript();
                 if (errorReports.Count > 0)
                 {
-                    string errorsReport = string.Join("\r\n", errorReports.Select(x => x.Invoke())).Limit(500, "...");
-                    throw new DslSyntaxException($"Invalid parameters after keyword '{keyword}'. {tokenReader.ReportPosition()}\r\n\r\nPossible causes:\r\n{errorsReport}");
+                    var errorReportValues = errorReports.Select(x => x.Invoke()).ToList();
+                    var errorsReport = string.Join("\r\n", errorReportValues.Select(x => x.formattedError)).Limit(500, "...");
+                    var simpleErrorsReport = string.Join("\n", errorReportValues.Select(x => x.simpleError));
+                    var simpleMessage = $"Invalid parameters after keyword '{keyword}'. Possible causes: {simpleErrorsReport}";
+                    var formattedMessage = $"{simpleMessage} {tokenReader.ReportPosition()}\r\n\r\nPossible causes:\r\n{errorsReport}";
+                    throw new DslParseSyntaxException(formattedMessage, simpleMessage, dslScript, position);
                 }
                 else if (!string.IsNullOrEmpty(keyword))
-                    throw new DslSyntaxException($"Unrecognized concept keyword '{keyword}'. {tokenReader.ReportPosition()}");
+                {
+                    var simpleMessage = $"Unrecognized concept keyword '{keyword}'.";
+                    throw new DslParseSyntaxException($"{simpleMessage} {tokenReader.ReportPosition()}", simpleMessage, dslScript, position);
+                }
                 else
-                    throw new DslSyntaxException($"Invalid DSL script syntax. {tokenReader.ReportPosition()}");
+                {
+                    var simpleMessage = $"Invalid DSL script syntax.";
+                    throw new DslParseSyntaxException($"{simpleMessage} {tokenReader.ReportPosition()}", simpleMessage, dslScript, position);
+            }
             }
 
             Disambiguate(possibleInterpretations);
@@ -194,10 +242,15 @@ namespace Rhetos.Dsl
                 var report = new List<string>();
                 report.Add($"Ambiguous syntax. {tokenReader.ReportPosition()}");
                 report.Add($"There are multiple possible interpretations of keyword '{keyword}':");
-                for (int i = 0; i < possibleInterpretations.Count; i++)
-                    report.Add($"{i + 1}. {possibleInterpretations[i].ConceptInfo.GetType().AssemblyQualifiedName}");
 
-                throw new DslSyntaxException(string.Join("\r\n", report));
+                var interpretations = new List<string>();
+                for (int i = 0; i < possibleInterpretations.Count; i++)
+                    interpretations.Add($"{i + 1}. {possibleInterpretations[i].ConceptInfo.GetType().AssemblyQualifiedName}");
+
+                var simpleMessage = $"Ambiguous syntax. There are multiple possible interpretations of keyword '{keyword}': {string.Join(", ", interpretations)}.";
+                var (dslScript, position) = tokenReader.GetPositionInScript();
+
+                throw new DslParseSyntaxException(string.Join("\r\n", report.Concat(interpretations)), simpleMessage, dslScript, position);
             }
 
             var parsedStatement = possibleInterpretations.Single();
@@ -279,20 +332,31 @@ namespace Rhetos.Dsl
         private void UpdateContextForNextConcept(TokenReader tokenReader, Stack<IConceptInfo> context, IConceptInfo conceptInfo)
         {
             if (tokenReader.TryRead("{"))
+            {
                 context.Push(conceptInfo);
+                _onUpdateContext?.Invoke(tokenReader, context, true);
+            }
             else if (!tokenReader.TryRead(";"))
             {
+                var simpleMessage = "Expected \";\" or \"{\".";
                 var sb = new StringBuilder();
                 sb.Append(ReportErrorContext(conceptInfo, tokenReader));
-                sb.Append("Expected \";\" or \"{\".");
-                throw new DslSyntaxException(sb.ToString());
+                sb.Append(simpleMessage);
+                var (dslScript, position) = tokenReader.GetPositionInScript();
+                throw new DslParseSyntaxException(sb.ToString(), simpleMessage, dslScript, position);
             }
 
             while (tokenReader.TryRead("}"))
             {
                 if (context.Count == 0)
-                    throw new DslSyntaxException(tokenReader.ReportPosition() + "\r\nUnexpected \"}\". ");
+                {
+                    var simpleMessage = "Unexpected \"}\".";
+                    var (dslScript, position) = tokenReader.GetPositionInScript();
+                    throw new DslParseSyntaxException($"{tokenReader.ReportPosition()}\r\n{simpleMessage} ", simpleMessage, dslScript, position);
+
+                }
                 context.Pop();
+                _onUpdateContext?.Invoke(tokenReader, context, false);
             }
         }
 
