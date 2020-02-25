@@ -66,6 +66,7 @@
   cause analysis for type load errors,
   warnings on empty build, ...
 * DSL parser disambiguation for flat syntax over nested syntax (issue #210).
+* Simplified DSL syntax of polymorphic implementation that references a hardcoded entry (see [usage](https://github.com/Rhetos/Rhetos/wiki/simple-read-only-entities-and-codetables#usage-in-polymorphic-implementation)).
 * Runtime performance: Entity Framework query optimizations for better reuse of query cache
   in both EF and database (issues #169 and #167).
 * Runtime performance: Recommended value `EntityFramework.UseDatabaseNullSemantics` set to True for new applications
