@@ -100,7 +100,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Configuration.Autofa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.TestCommon", "Source\Rhetos.TestCommon\Rhetos.TestCommon.csproj", "{43BA178B-7642-473C-A43A-DBF58294635A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.DatabaseGenerator.DefaultConcepts", "CommonConcepts\Plugins\Rhetos.DatabaseGenerator.DefaultConcepts\Rhetos.DatabaseGenerator.DefaultConcepts.csproj", "{507C5738-8738-462A-9BAC-C0C98CE88D93}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.DatabaseGenerator.DefaultConcepts", "CommonConcepts\Plugins\Rhetos.DatabaseGenerator.DefaultConcepts\Rhetos.DatabaseGenerator.DefaultConcepts.csproj", "{507C5738-8738-462A-9BAC-C0C98CE88D93}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Processing.DefaultCommands", "CommonConcepts\Plugins\Rhetos.Processing.DefaultCommands\Rhetos.Processing.DefaultCommands.csproj", "{DE021676-A95F-4F64-9FC3-F23C1BB946B5}"
 EndProject
@@ -163,6 +163,11 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RhetosCli", "Source\RhetosCli\RhetosCli.csproj", "{13864809-505B-4FE3-B04E-31F9735B5FFC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Extensibility.Test", "Source\Rhetos.Extensibility.Test\Rhetos.Extensibility.Test.csproj", "{7F9950B3-CCAE-4886-9303-297D78559F30}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D3CC17A8-D557-44D9-8D3D-3D425ED09838}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -596,11 +601,12 @@ Global
 		{43BA178B-7642-473C-A43A-DBF58294635A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{43BA178B-7642-473C-A43A-DBF58294635A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{43BA178B-7642-473C-A43A-DBF58294635A}.Release|x86.ActiveCfg = Release|Any CPU
-		{507C5738-8738-462A-9BAC-C0C98CE88D93}.CodeAnalysis|Any CPU.ActiveCfg = CodeAnalysis|Any CPU
-		{507C5738-8738-462A-9BAC-C0C98CE88D93}.CodeAnalysis|Any CPU.Build.0 = CodeAnalysis|Any CPU
-		{507C5738-8738-462A-9BAC-C0C98CE88D93}.CodeAnalysis|Mixed Platforms.ActiveCfg = CodeAnalysis|Any CPU
-		{507C5738-8738-462A-9BAC-C0C98CE88D93}.CodeAnalysis|Mixed Platforms.Build.0 = CodeAnalysis|Any CPU
-		{507C5738-8738-462A-9BAC-C0C98CE88D93}.CodeAnalysis|x86.ActiveCfg = CodeAnalysis|Any CPU
+		{507C5738-8738-462A-9BAC-C0C98CE88D93}.CodeAnalysis|Any CPU.ActiveCfg = Release|Any CPU
+		{507C5738-8738-462A-9BAC-C0C98CE88D93}.CodeAnalysis|Any CPU.Build.0 = Release|Any CPU
+		{507C5738-8738-462A-9BAC-C0C98CE88D93}.CodeAnalysis|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{507C5738-8738-462A-9BAC-C0C98CE88D93}.CodeAnalysis|Mixed Platforms.Build.0 = Release|Any CPU
+		{507C5738-8738-462A-9BAC-C0C98CE88D93}.CodeAnalysis|x86.ActiveCfg = Release|Any CPU
+		{507C5738-8738-462A-9BAC-C0C98CE88D93}.CodeAnalysis|x86.Build.0 = Release|Any CPU
 		{507C5738-8738-462A-9BAC-C0C98CE88D93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{507C5738-8738-462A-9BAC-C0C98CE88D93}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{507C5738-8738-462A-9BAC-C0C98CE88D93}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
