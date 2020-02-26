@@ -1,10 +1,10 @@
 <Project>
     <UsingTask AssemblyFile="RhetosBuildTask.dll" TaskName="RhetosBuildTask.RhetosBuild" />
-    <Target Name="RhetosBuild" DependsOnTargets="ResolveProjectReferences" BeforeTargets="CoreCompile" Condition="'$(RhetosBuild)'=='True'" Inputs="@(RhetosInput)" Outputs="RhetosSource\**\*;RhetosAssets\**\*;Resources\**\*">
+    <Target Name="RhetosBuild" DependsOnTargets="ResolveProjectReferences" BeforeTargets="CoreCompile" Condition="'$(RhetosBuild)'=='True'" Inputs="@(RhetosInput)" Outputs="@(RhetosOutput)">
         <FindUnderPath Files="@(Compile)" Path="RhetosSource">
             <Output TaskParameter="InPath" ItemName="OldSourceFiles" />
         </FindUnderPath>
-        <RhetosBuild RhetosBuildExePath="$(MSBuildThisFileDirectory)..\tools\rhetos.exe" ProjectDirectory="$(ProjectDir)." Assemblies="@(_ResolvedProjectReferencePaths)" AssemblyName="$(AssemblyName)" />      
+        <RhetosBuild RhetosBuildExePath="$(RhetosCliExecutablePath)" ProjectDirectory="$(ProjectDir)." Assemblies="@(_ResolvedProjectReferencePaths)" AssemblyName="$(AssemblyName)" />      
         <ItemGroup>
             <Compile Remove="@(OldSourceFiles)" />
             <Compile Include="RhetosSource\**\*.cs" />

@@ -79,9 +79,9 @@ namespace RhetosBuildTask
                     while (process.StandardOutput.Peek() > -1)
                         log = log + Environment.NewLine + process.StandardOutput.ReadLine();
 
-                    if (log.StartsWith("[Error]"))
+                    if (log != null && log.StartsWith("[Error]"))
                         Log.LogError(log);
-                    else
+                    else if(log != null)
                         Log.LogMessage(log);
                 }
 
