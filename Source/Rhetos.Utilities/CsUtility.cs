@@ -114,21 +114,21 @@ namespace Rhetos.Utilities
         public static string GetIdentifierError(string name)
         {
             if (name == null)
-                return "Given name is null.";
+                return "Identifier name is null.";
 
             if (string.IsNullOrEmpty(name))
-                return "Given name is empty.";
+                return "Identifier name is empty.";
 
             {
                 char c = name[0];
                 if ((c < 'a' || c > 'z') && (c < 'A' || c > 'Z') && c != '_')
-                    return "Given name '" + name + "' is not valid. First character is not an English letter or underscore.";
+                    return "Identifier name '" + name + "' is not valid. First character is not an English letter or underscore.";
             }
 
             {
                 foreach (char c in name)
                     if ((c < 'a' || c > 'z') && (c < 'A' || c > 'Z') && c != '_' && (c < '0' || c > '9'))
-                        return "Given name '" + name + "' is not valid. Character '" + c + "' is not an English letter or number or underscore.";
+                        return "Identifier name '" + name + "' is not valid. Character '" + c + "' is not an English letter or number or underscore.";
             }
 
             return null;
