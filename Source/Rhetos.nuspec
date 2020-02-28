@@ -11,15 +11,7 @@
     <copyright>Copyright Omega software 2013</copyright>
     <tags>Rhetos</tags>
     <dependencies>
-      <dependency id="Autofac" version="4.9.4" />
-      <dependency id="Autofac.Wcf" version="4.1.0" />
-      <dependency id="EntityFramework" version="6.1.3" />
-      <dependency id="Microsoft.Web.Xdt" version="2.1.1" />
-      <dependency id="Newtonsoft.Json" version="12.0.2" />
-      <dependency id="NLog" version="4.6.7" />
-      <dependency id="NuGet.Core" version="2.14.0" />
-      <dependency id="System.CommandLine" version="2.0.0-beta1.20071.2" /> <!-- For RhetosCli. -->
-      <dependency id="Oracle.ManagedDataAccess" version="12.1.24160719" />
+      <dependency id="Rhetos.Core" version="[4.0.0-dev,4.1.0)" />
     </dependencies>
     <contentFiles>
       <files include="any/any/rhetos.exe" buildAction="None" copyToOutput="true" />
@@ -36,10 +28,6 @@
     <file src="MsBuildIntegration\Rhetos.props" target="build" />
     <file src="RhetosBuildTask\bin\Debug\*.dll" target="build" />
     <file src="RhetosBuildTask\bin\Debug\*.pdb" target="build" />
-
-    <file src="Rhetos\bin\Rhetos.*.dll" target="lib\net472" />
-    <file src="Rhetos\bin\Rhetos.*.pdb" target="lib\net472" />
-    <file src="Rhetos\bin\Rhetos.*.xml" target="lib\net472" />
 
     <file src="RhetosCli\bin\Debug\rhetos.exe" target="contentFiles/any/any" />
     <file src="RhetosCli\bin\Debug\rhetos.exe.config" target="contentFiles/any/any" />
