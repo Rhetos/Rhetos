@@ -145,7 +145,7 @@ namespace Rhetos.Dsl.Test
         static void CheckAll(string expectedCSV, string dsl)
         {
             List<Token> tokens = TestGetTokens(dsl);
-            string csv = string.Join(",", tokens.Select(t => t.Type + ":" + t.Value + "(" + t.PositionInDslScript + ")"));
+            string csv = string.Join(",", tokens.Select(t => $"{t.Type}:{t.Value}({t.PositionInDslScript},{t.PositionEndInDslScript})"));
             Assert.AreEqual(expectedCSV, csv);
         }
 
@@ -166,13 +166,13 @@ namespace Rhetos.Dsl.Test
         [TestMethod]
         public void GetTokens_Simple()
         {
-            CheckAll("Text:ab(0),Text:cde(3),EndOfFile:(6)", "ab cde");
+            CheckAll("Text:ab(0,1),Text:cde(3,5),EndOfFile:(6,6)", "ab cde");
         }
 
         [TestMethod]
         public void GetTokens_Empty()
         {
-            CheckAll("EndOfFile:(7)", "  \t\r\n  ");
+            CheckAll("EndOfFile:(7,7)", "  \t\r\n  ");
         }
 
         [TestMethod]

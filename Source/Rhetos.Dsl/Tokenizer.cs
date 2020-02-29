@@ -66,12 +66,13 @@ namespace Rhetos.Dsl
                     Token t = TokenizerInternals.GetNextToken_ValueType(dslScript, ref scriptPosition, _filesUtility.ReadAllText);
                     t.DslScript = dslScript;
                     t.PositionInDslScript = startPosition;
+                    t.PositionEndInDslScript = scriptPosition - 1;
 
                     if (t.Type != TokenType.Comment)
                         _tokens.Add(t);
                 }
 
-                _tokens.Add(new Token { DslScript = dslScript, PositionInDslScript = dslScript.Script.Length, Type = TokenType.EndOfFile, Value = "" });
+                _tokens.Add(new Token { DslScript = dslScript, PositionInDslScript = dslScript.Script.Length, PositionEndInDslScript = dslScript.Script.Length, Type = TokenType.EndOfFile, Value = "" });
             }
         }
     }
