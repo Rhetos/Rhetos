@@ -41,7 +41,6 @@ namespace RhetosBuildTask
         public override bool Execute()
         {
             var commandLineArgument = GetCommandLineArguments();
-            Log.LogCommandLine(Path.GetFullPath(RhetosBuildExePath) + " " + commandLineArgument);
             var processExitCode = ExecuteApplication(Path.GetFullPath(RhetosBuildExePath), commandLineArgument);
             return processExitCode == 0;
         }
@@ -61,6 +60,8 @@ namespace RhetosBuildTask
 
         private int ExecuteApplication(string path, string arguments)
         {
+            Log.LogMessage(MessageImportance.High, path + " " + arguments); // Using LogMessage because LogCommandLine does not show in Build Output in Visual Studio.
+
             ProcessStartInfo start = new ProcessStartInfo(path)
             {
                 Arguments = arguments,

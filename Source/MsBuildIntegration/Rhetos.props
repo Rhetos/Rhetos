@@ -10,9 +10,9 @@
         <RhetosOutput Include="RhetosSource\**\*" />
         <RhetosOutput Include="RhetosAssets\**\*" />
         <RhetosOutput Include="Resources\**\*" />
-    </ItemGroup>    
+    </ItemGroup>
     <PropertyGroup>
-        <RhetosCliExecutablePath>$(MSBuildThisFileDirectory)..\tools\rhetos.exe</RhetosCliExecutablePath>    
+        <RhetosCliExecutablePath>$(MSBuildThisFileDirectory)..\tools\rhetos.exe</RhetosCliExecutablePath>
         <RhetosBuild>True</RhetosBuild>
         <RhetosDeploy>True</RhetosDeploy>
     </PropertyGroup>
