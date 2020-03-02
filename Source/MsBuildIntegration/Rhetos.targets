@@ -1,0 +1,22 @@
+<Project>
+    <PropertyGroup>
+        <RhetosBuildCompleteFile>$(BaseIntermediateOutputPath)Rhetos\Rhetos.BuildComplete</RhetosBuildCompleteFile>
+    </PropertyGroup>
+    <UsingTask AssemblyFile="RhetosBuildTask.dll" TaskName="RhetosBuildTask.RhetosBuild" />
+    <Target Name="RhetosBuild" DependsOnTargets="ResolveProjectReferences" BeforeTargets="CoreCompile" Condition="'$(RhetosBuild)'=='True'" Inputs="@(RhetosInput)" Outputs="@(RhetosOutput)">
+        <FindUnderPath Files="@(Compile)" Path="RhetosSource">
+            <Output TaskParameter="InPath" ItemName="OldSourceFiles" />
+        </FindUnderPath>
+        <Delete Files="$(RhetosBuildCompleteFile)" />
+        <RhetosBuild RhetosBuildExePath="$(RhetosCliExecutablePath)" ProjectDirectory="$(ProjectDir)." Assemblies="@(_ResolvedProjectReferencePaths)" AssemblyName="$(AssemblyName)" />
+        <WriteLinesToFile File="$(RhetosBuildCompleteFile)" Lines="" Overwrite="true" />
+        <ItemGroup>
+            <Compile Remove="@(OldSourceFiles)" />
+            <Compile Include="RhetosSource\**\*.cs" />
+        </ItemGroup>
+    </Target>
+    <Target Name="RhetosDeploy" AfterTargets="CopyFilesToOutputDirectory" Condition="'$(RhetosDeploy)'=='True' And Exists('$(RhetosBuildCompleteFile)')">
+        <Exec Command="&quot;$(TargetDir)rhetos.exe&quot; dbupdate &quot;$(ProjectDir).&quot;" CustomErrorRegularExpression="\[Error\]" CustomWarningRegularExpression="\[Warning\]" />
+        <Exec Command="&quot;$(TargetDir)rhetos.exe&quot; appinitialize &quot;$(ProjectDir).&quot;" CustomErrorRegularExpression="\[Error\]" CustomWarningRegularExpression="\[Warning\]" />
+    </Target>
+</Project>
