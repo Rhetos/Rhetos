@@ -17,26 +17,26 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rhetos.Dsl;
 using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("DataStructure")]
-    public class DataStructureInfo : IConceptInfo
+    public class DataStructureInfo : IValidatedConcept
     {
         [ConceptKey]
         public ModuleInfo Module { get; set; }
         [ConceptKey]
         public string Name { get; set; }
 
+        public string FullName => Module.Name + "." + Name;
+
         public override string ToString() => FullName; // For backward compatibility.
 
-        public string FullName => Module.Name + "." + Name;
+        public void CheckSemantics(IDslModel existingConcepts)
+        {
+            DslUtility.ValidateIdentifier(Name, this);
+        }
     }
 }
