@@ -166,7 +166,7 @@ namespace Rhetos.Dsl.Test
         [TestMethod]
         public void GetTokens_Simple()
         {
-            CheckAll("Text:ab(0,1),Text:cde(3,5),EndOfFile:(6,6)", "ab cde");
+            CheckAll("Text:ab(0,2),Text:cde(3,6),EndOfFile:(6,6)", "ab cde");
         }
 
         [TestMethod]

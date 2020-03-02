@@ -66,7 +66,7 @@ namespace Rhetos.Dsl
                     Token t = TokenizerInternals.GetNextToken_ValueType(dslScript, ref scriptPosition, _filesUtility.ReadAllText);
                     t.DslScript = dslScript;
                     t.PositionInDslScript = startPosition;
-                    t.PositionEndInDslScript = scriptPosition - 1;
+                    t.PositionEndInDslScript = scriptPosition;
 
                     if (t.Type != TokenType.Comment)
                         _tokens.Add(t);
