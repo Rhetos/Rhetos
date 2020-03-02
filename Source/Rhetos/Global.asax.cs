@@ -22,6 +22,7 @@ using Autofac.Integration.Wcf;
 using Rhetos.Logging;
 using Rhetos.Security;
 using Rhetos.Utilities;
+using Rhetos.Utilities.ApplicationConfiguration;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -42,8 +43,10 @@ namespace Rhetos
             // Temporary logger used in Application_Error event handler, which can occur during configuration process.
             _logger = new NLogProvider().GetLogger("Configuration");
 
+            var rhetosAppEnvironment = RhetosAppEnvironmentProvider.Load(AppDomain.CurrentDomain.BaseDirectory);
             var configurationProvider = new ConfigurationBuilder()
-                .AddRhetosAppConfiguration(AppDomain.CurrentDomain.BaseDirectory)
+                .AddRhetosAppEnvironment(rhetosAppEnvironment)
+                .AddConfigurationManagerConfiguration()
                 .Build();
 
             var builder = new RhetosContainerBuilder(configurationProvider, new NLogProvider(), LegacyUtilities.GetListAssembliesDelegate(configurationProvider));

@@ -96,7 +96,7 @@ namespace Rhetos
         }
 
         /// <summary>
-        /// Initializes run-time configuration for the Rhetos application.
+        /// Initializes run-time configuration for the Rhetos application, for usage in utility applications that references the Rhetos application's libraries.
         /// Searches for Rhetos application root path in the current application's folder (see <see cref="AppDomain.CurrentDomain.BaseDirectory"/>) or any parent folder.
         /// Loads Rhetos application's configuration files.
         /// </summary>
@@ -116,7 +116,7 @@ namespace Rhetos
         }
 
         /// <summary>
-        /// Initializes run-time configuration for the Rhetos application.
+        /// Initializes run-time configuration for the Rhetos application, for usage in utility applications that references the Rhetos application's libraries.
         /// Loads Rhetos application's configuration files.
         /// </summary>
         public static IConfigurationBuilder AddRhetosAppConfiguration(this IConfigurationBuilder builder, string rhetosAppRootPath)
