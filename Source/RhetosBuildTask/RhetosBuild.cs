@@ -60,7 +60,7 @@ namespace RhetosBuildTask
 
         private int ExecuteApplication(string path, string arguments)
         {
-            Log.LogMessage(MessageImportance.High, path + " " + arguments); // Using LogMessage because LogCommandLine does not show in Build Output in Visual Studio.
+            Log.LogMessage(MessageImportance.High, $"\"{path}\" {arguments}"); // Using LogMessage because LogCommandLine does not show in Build Output in Visual Studio.
 
             ProcessStartInfo start = new ProcessStartInfo(path)
             {
