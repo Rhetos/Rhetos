@@ -2,14 +2,20 @@
     <UsingTask AssemblyFile="RhetosBuildTask.dll" TaskName="RhetosBuildTask.RhetosBuild" />
     <Target Name="RhetosBuild" DependsOnTargets="ResolveProjectReferences" BeforeTargets="CoreCompile" Condition="'$(RhetosBuild)'=='True'" Inputs="@(RhetosInput)" Outputs="@(RhetosOutput)">
         <FindUnderPath Files="@(Compile)" Path="RhetosSource">
-            <Output TaskParameter="InPath" ItemName="OldSourceFiles" />
+            <Output TaskParameter="InPath" ItemName="OldRhetosSourceFiles" />
         </FindUnderPath>
         <Delete Files="$(RhetosBuildCompleteFile)" />
         <RhetosBuild RhetosBuildExePath="$(RhetosCliExecutablePath)" ProjectDirectory="$(ProjectDir)." Assemblies="@(_ResolvedProjectReferencePaths)" AssemblyName="$(AssemblyName)" />
         <WriteLinesToFile File="$(RhetosBuildCompleteFile)" Lines="" Overwrite="true" />
+        <FindUnderPath Files="@(Compile)" Path="RhetosSource">
+            <Output TaskParameter="InPath" ItemName="NewRhetosSourceFiles" />
+        </FindUnderPath>
+        <!-- We cannot Include source files directly (RhetosSource\**\*.cs), because ItemGroup and PropertyGroup is executed
+        even if target is skipped, e.g. when output files are up-to-date with respect to the input files.
+        Now both OldRhetosSourceFiles and NewRhetosSourceFiles are empty in that case, so no changes to Compiled items are made. -->
         <ItemGroup>
-            <Compile Remove="@(OldSourceFiles)" />
-            <Compile Include="RhetosSource\**\*.cs" />
+            <Compile Remove="@(OldRhetosSourceFiles)" />
+            <Compile Include="@(NewRhetosSourceFiles)" />
         </ItemGroup>
     </Target>
     <Target Name="RhetosDeploy" AfterTargets="CopyFilesToOutputDirectory" Condition="'$(RhetosDeploy)'=='True' And Exists('$(RhetosBuildCompleteFile)')">
