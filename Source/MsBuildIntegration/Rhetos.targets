@@ -1,7 +1,4 @@
 <Project>
-    <PropertyGroup>
-        <RhetosBuildCompleteFile>$(BaseIntermediateOutputPath)Rhetos\Rhetos.BuildComplete</RhetosBuildCompleteFile>
-    </PropertyGroup>
     <UsingTask AssemblyFile="RhetosBuildTask.dll" TaskName="RhetosBuildTask.RhetosBuild" />
     <Target Name="RhetosBuild" DependsOnTargets="ResolveProjectReferences" BeforeTargets="CoreCompile" Condition="'$(RhetosBuild)'=='True'" Inputs="@(RhetosInput)" Outputs="@(RhetosOutput)">
         <FindUnderPath Files="@(Compile)" Path="RhetosSource">
