@@ -57,8 +57,9 @@ namespace Rhetos.Utilities.ApplicationConfiguration
 
             var filePath = Path.Combine(rhetosAppRootPath, RhetosAppEnvironmentFileName);
             if (!File.Exists(filePath))
-                throw new FrameworkException($"Missing file '{RhetosAppEnvironmentFileName}' in folder '{rhetosAppRootPath}' or subfolders." +
-                    $" Please verify that the specified folder contains a valid Rhetos application, and that the Rhetos build have passed successfully.");
+                throw new FrameworkException($"Please verify that the Rhetos build have passed successfully," +
+                    $" and that the specified folder contains a valid Rhetos application." +
+                    $" Missing file '{RhetosAppEnvironmentFileName}' in folder '{rhetosAppRootPath}' or subfolders.");
 
             string saveFolder = Path.GetDirectoryName(filePath);
             var serialized = File.ReadAllText(filePath, Encoding.UTF8);

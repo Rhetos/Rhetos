@@ -1,19 +1,21 @@
 <Project>
-    <ItemGroup>
-        <Compile Include="RhetosSource\**\*.cs" />
-    </ItemGroup>
-    <ItemGroup>
-        <RhetosInput Include="DslScripts\**\*" />
-        <RhetosInput Include="DataMigration\**\*" />
-    </ItemGroup>
-    <ItemGroup>
-        <RhetosOutput Include="RhetosSource\**\*" />
-        <RhetosOutput Include="RhetosAssets\**\*" />
-        <RhetosOutput Include="Resources\**\*" />
-    </ItemGroup>
     <PropertyGroup>
         <RhetosCliExecutablePath>$(MSBuildThisFileDirectory)..\tools\rhetos.exe</RhetosCliExecutablePath>
         <RhetosBuild>True</RhetosBuild>
         <RhetosDeploy>True</RhetosDeploy>
+        <RhetosBuildCompleteFile>$(BaseIntermediateOutputPath)Rhetos\Rhetos.BuildComplete</RhetosBuildCompleteFile>
     </PropertyGroup>
+    <ItemGroup>
+        <Compile Include="RhetosSource\**\*.cs" />
+    </ItemGroup>
+    <ItemGroup>
+        <RhetosInput Include="$(BaseIntermediateOutputPath)project.assets.json" />
+        <RhetosInput Include="DslScripts\**\*" />
+        <RhetosInput Include="DataMigration\**\*" />
+    </ItemGroup>
+    <ItemGroup>
+        <!-- RhetosOutput should not include files that are somtimes unchanged on build (because of internal optimizations).
+        This would result with MSBuild running RhetosBuild target every time, even if there is nothing to do. -->
+        <RhetosOutput Include="$(RhetosBuildCompleteFile)" />
+    </ItemGroup>
 </Project>
