@@ -119,7 +119,7 @@ namespace Rhetos.Configuration.Autofac
         {
             return
                 File.Exists(Path.Combine(path, @"web.config"))
-                && File.Exists(Path.Combine(path, @"bin\Rhetos.dll"));
+                && File.Exists(Path.Combine(path, @"bin\Rhetos.Utilities.dll"));
         }
 
         protected string SearchForRhetosServerRootFolder()
