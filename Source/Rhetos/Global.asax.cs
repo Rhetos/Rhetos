@@ -110,7 +110,7 @@ namespace Rhetos
         protected void Application_Error(object sender, EventArgs e)
         {
             var ex = Server.GetLastError();
-            SafeLogger?.Error($"Application error: {ex}");
+            SafeLogger.Error($"Application error: {ex}");
         }
 
         protected void Session_End(object sender, EventArgs e)
@@ -119,25 +119,12 @@ namespace Rhetos
 
         protected void Application_End(object sender, EventArgs e)
         {
-            SafeLogger?.Trace("Shutdown");
+            SafeLogger.Trace("Shutdown");
         }
 
         /// <summary>
         /// If an error occur during the application configuration process, a temporary logger will be uses for error reporting.
         /// </summary>
-        private ILogger SafeLogger
-        {
-            get
-            {
-                try
-                {
-                    return _logger ?? new NLogProvider().GetLogger("Configuration");
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-        }
+        private ILogger SafeLogger => _logger ?? new NLogProvider().GetLogger("Configuration");
     }
 }
