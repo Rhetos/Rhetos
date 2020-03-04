@@ -1,11 +1,16 @@
 <Project>
-    <UsingTask AssemblyFile="RhetosBuildTask.dll" TaskName="RhetosBuildTask.RhetosBuild" />
-    <Target Name="RhetosBuild" DependsOnTargets="ResolveProjectReferences" BeforeTargets="CoreCompile" Condition="'$(RhetosBuild)'=='True'" Inputs="@(RhetosInput)" Outputs="@(RhetosOutput)">
+    <UsingTask AssemblyFile="RhetosVSIntegration.dll" TaskName="RhetosVSIntegration.ResolveRhetosProjectAssets" />
+    <!-- This is used to determine if the Build target is called.
+    We wnat ot execute the RhetosBuild target only on Build target-->
+    <Target Name="ResolveRhetosProjectAssets" DependsOnTargets="ResolveNuGetPackageAssets;ResolveAssemblyReferences" BeforeTargets="CoreCompile">
+        <ResolveRhetosProjectAssets ProjectDirectory="$(ProjectDir)." Assemblies="@(ReferencePath)" AssemblyName="$(AssemblyName)" />      
+    </Target>
+    <Target Name="RhetosBuild" DependsOnTargets="ResolveRhetosProjectAssets;" BeforeTargets="CoreCompile" Condition="'$(RhetosBuild)'=='True' and $(BuildingProject)=='True'" Inputs="@(RhetosInput)" Outputs="@(RhetosOutput)">
         <FindUnderPath Files="@(Compile)" Path="RhetosSource">
             <Output TaskParameter="InPath" ItemName="OldRhetosSourceFiles" />
         </FindUnderPath>
         <Delete Files="$(RhetosBuildCompleteFile)" />
-        <RhetosBuild RhetosBuildExePath="$(RhetosCliExecutablePath)" ProjectDirectory="$(ProjectDir)." Assemblies="@(_ResolvedProjectReferencePaths)" AssemblyName="$(AssemblyName)" />
+        <Exec Command="$(RhetosCliExecutablePath) build &quot;$(ProjectDir).&quot;" CustomErrorRegularExpression="\[Error\]" CustomWarningRegularExpression="\[Warning\]" />
         <WriteLinesToFile File="$(RhetosBuildCompleteFile)" Lines="" Overwrite="true" />
         <FindUnderPath Files="@(Compile)" Path="RhetosSource">
             <Output TaskParameter="InPath" ItemName="NewRhetosSourceFiles" />
@@ -18,7 +23,7 @@
             <Compile Include="@(NewRhetosSourceFiles)" />
         </ItemGroup>
     </Target>
-    <Target Name="RhetosDeploy" AfterTargets="CopyFilesToOutputDirectory" Condition="'$(RhetosDeploy)'=='True' And Exists('$(RhetosBuildCompleteFile)')">
+    <Target Name="RhetosDeploy" DependsOnTargets="RhetosBuild;CopyFilesToOutputDirectory" AfterTargets="Build" Condition="'$(RhetosDeploy)'=='True' And Exists('$(RhetosBuildCompleteFile)')">
         <Exec Command="&quot;$(TargetDir)rhetos.exe&quot; dbupdate &quot;$(ProjectDir).&quot;" CustomErrorRegularExpression="\[Error\]" CustomWarningRegularExpression="\[Warning\]" />
         <Exec Command="&quot;$(TargetDir)rhetos.exe&quot; appinitialize &quot;$(ProjectDir).&quot;" CustomErrorRegularExpression="\[Error\]" CustomWarningRegularExpression="\[Warning\]" />
     </Target>

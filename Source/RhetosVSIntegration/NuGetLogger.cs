@@ -17,39 +17,39 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 using NuGet.Common;
-using Rhetos.Logging;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Rhetos
 {
     internal class NuGetLogger : NuGet.Common.ILogger
     {
-        private readonly Logging.ILogger _rhetosLogger;
+        private readonly TaskLoggingHelper _logger;
 
-        public NuGetLogger(ILogProvider logProvider)
+        public NuGetLogger(TaskLoggingHelper logger)
         {
-            _rhetosLogger = logProvider.GetLogger("NuGet");
+            _logger = logger;
         }
 
-        private static Dictionary<LogLevel, EventType> _levelMapping = new Dictionary<LogLevel, EventType>
+        private static Dictionary<LogLevel, MessageImportance> _levelMapping = new Dictionary<LogLevel, MessageImportance>
         {
-            { LogLevel.Debug, EventType.Trace },
-            { LogLevel.Verbose, EventType.Trace },
-            { LogLevel.Information, EventType.Info },
-            { LogLevel.Minimal, EventType.Info },
-            { LogLevel.Warning, EventType.Info },
-            { LogLevel.Error, EventType.Error },
+            { LogLevel.Debug, MessageImportance.Low },
+            { LogLevel.Verbose, MessageImportance.Low },
+            { LogLevel.Information, MessageImportance.Normal },
+            { LogLevel.Minimal, MessageImportance.Normal },
+            { LogLevel.Warning, MessageImportance.Normal },
+            { LogLevel.Error, MessageImportance.High },
         };
 
-        public void Log(LogLevel level, string data) => _rhetosLogger.Write(_levelMapping[level], () => data);
+        public void Log(LogLevel level, string data) => _logger.LogMessage(_levelMapping[level], data);
 
-        public void Log(ILogMessage message) => _rhetosLogger.Write(_levelMapping[message.Level], () => message.ToString());
+        public void Log(ILogMessage message) => _logger.LogMessage(_levelMapping[message.Level], message.ToString());
 
-        public Task LogAsync(LogLevel level, string data) => new Task(() => Log(level, data));
+        public System.Threading.Tasks.Task LogAsync(LogLevel level, string data) => new System.Threading.Tasks.Task(() => Log(level, data));
 
-        public Task LogAsync(ILogMessage message) => new Task(() => Log(message));
+        public System.Threading.Tasks.Task LogAsync(ILogMessage message) => new System.Threading.Tasks.Task(() => Log(message));
 
         public void LogDebug(string data) => Log(LogLevel.Debug, data);
 

@@ -53,9 +53,7 @@ namespace Rhetos
             var rootCommand = new RootCommand();
             var buildCommand = new Command("build", "Generates the Rhetos application inside the <project-root-folder>. If <project-root-folder> is not set it will use the current working directory.");
             buildCommand.Add(new Argument<DirectoryInfo>("project-root-folder", () => new DirectoryInfo(Environment.CurrentDirectory)));
-            buildCommand.Add(new Option<string[]>("--assemblies", Array.Empty<string>(), "List of assemblies outside of referenced NuGet packages that will be used during the build."));
-            buildCommand.Add(new Option<string>("--assembly-name", () => null, "The name of the assembly which will contain the generated source files."));
-            buildCommand.Handler = CommandHandler.Create((DirectoryInfo projectRootFolder, string[] assemblies, string assemblyName) => ReportError(() => Build(projectRootFolder.FullName, assemblies, assemblyName)));
+            buildCommand.Handler = CommandHandler.Create((DirectoryInfo projectRootFolder) => ReportError(() => Build(projectRootFolder.FullName)));
             rootCommand.AddCommand(buildCommand);
 
             var dbUpdateCommand = new Command("dbupdate", "Updates the database based on the generated files from the build process. If <application-root-folder> is not set it will use the current working directory.");
@@ -95,21 +93,23 @@ namespace Rhetos
             return 0;
         }
 
-        private void Build(string projectRootPath, string[] assemblies, string assemblyName)
+        private void Build(string projectRootPath)
         {
+            var rhetosprojectAssets = new RhetosProjectAssetsFileProvider(projectRootPath).Load();
+            if (rhetosprojectAssets == null)
+                throw new FrameworkException($"Missing file {RhetosProjectAssetsFileProvider.ProjectAssetsFileName} required for build."); //TODO: Add better error message after we decide what steps are necessary to resolve this issue.
+
             string binFolder = Path.Combine(projectRootPath, "bin");
             if (FilesUtility.IsSameDirectory(AppDomain.CurrentDomain.BaseDirectory, binFolder))
                 throw new FrameworkException($"Rhetos build command cannot be run from the generated application.");
 
-            var nuget = new NuGetUtilities(projectRootPath, LogProvider, null);
-            assemblyName = assemblyName ?? nuget.ProjectName; // TODO: We are using the project name as the output assembly name because this is almost always the case. This is only temporary.
             var configurationProvider = new ConfigurationBuilder()
                 .AddRhetosAppEnvironment(new RhetosAppEnvironment
                 {
                     RootFolder = projectRootPath,
                     BinFolder = binFolder,
                     AssetsFolder = Path.Combine(projectRootPath, "RhetosAssets"),
-                    AssemblyName = assemblyName,
+                    AssemblyName = rhetosprojectAssets.OutputAssemblyName,
                     // TODO: Rhetos CLI should not use LegacyPluginsFolder. Referenced plugins are automatically copied to output bin folder by NuGet. It is used by DeployPackages.exe when downloading packages and in legacy application runtime for assembly resolver and probing paths.
                     // TODO: Set LegacyPluginsFolder to null after reviewing impact to AspNetFormsAuth CLI utilities and similar packages.
                     LegacyPluginsFolder = Path.Combine(projectRootPath, "bin"),
@@ -122,39 +122,9 @@ namespace Rhetos
                 .AddJsonFile(Path.Combine(projectRootPath, "rhetos-build.settings.json"), optional: true)
                 .Build();
 
-            var packagesBuildAssemblies = nuget.GetBuildAssemblies();
-
-            var allAssemblies = packagesBuildAssemblies.Select(a => Path.GetFullPath(a)).Union(assemblies.Select(a => Path.GetFullPath(a)));
-
-            var multipleAssembliesWithsameName = allAssemblies.GroupBy(a => Path.GetFileName(a)).Where(a => a.Count() > 1);
-            if (multipleAssembliesWithsameName.Any())
-            {
-                Logger.Info("Detected multiple assemblies with the same name:" + Environment.NewLine +
-                    string.Join(Environment.NewLine, multipleAssembliesWithsameName.Select(a => $"{a.Key} on locations {string.Join(", ", a)}")));
-            }
-
-            AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(allAssemblies.ToArray());
-
-            var deployment = new ApplicationDeployment(configurationProvider, LogProvider, () => allAssemblies);
-
-            var installedPackages = nuget.GetInstalledPackages();
-            installedPackages.Add(GetProjectAsInstalledPackage(nuget, projectRootPath));
-
-            deployment.GenerateApplication(new InstalledPackages { Packages = installedPackages });
-        }
-
-        private InstalledPackage GetProjectAsInstalledPackage(NuGetUtilities nuGetUtilities, string projectRootPath)
-        {
-            //TODO: We should add the possibility to specify content files as an option
-            //MSBuild knows which files are part of the project that it is building so we should use only those files
-            var contentFiles = Directory.GetFiles(projectRootPath, "*", SearchOption.AllDirectories)
-                .Select(f => new ContentFile { PhysicalPath = f, InPackagePath = FilesUtility.AbsoluteToRelativePath(projectRootPath, f) })
-                .Where(c => (!c.InPackagePath.StartsWith("bin") && !c.InPackagePath.StartsWith("obj")))
-                .ToList();
-            //TODO: We are using the project name as the PackageName for the project.
-            //This could be a problem if we change the project name later during the development because then all the data-migration script will be executed again
-            //It should be revised if this is the desired behavior
-            return new InstalledPackage(nuGetUtilities.ProjectName, "", null, null, null, null, contentFiles);
+            AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(rhetosprojectAssets.Assemblies.ToArray());
+            var deployment = new ApplicationDeployment(configurationProvider, LogProvider, () => rhetosprojectAssets.Assemblies);
+            deployment.GenerateApplication(rhetosprojectAssets.InstalledPackages);
         }
 
         private void DbUpdate(string rhetosAppRootPath)

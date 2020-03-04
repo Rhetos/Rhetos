@@ -26,8 +26,8 @@
 
     <file src="MsBuildIntegration\Rhetos.targets" target="build" />
     <file src="MsBuildIntegration\Rhetos.props" target="build" />
-    <file src="RhetosBuildTask\bin\Debug\*.dll" target="build" />
-    <file src="RhetosBuildTask\bin\Debug\*.pdb" target="build" />
+    <file src="RhetosVSIntegration\bin\Debug\*.dll" target="build" />
+    <file src="RhetosVSIntegration\bin\Debug\*.pdb" target="build" />
 
     <file src="RhetosCli\bin\Debug\rhetos.exe" target="contentFiles/any/any" />
     <file src="RhetosCli\bin\Debug\rhetos.exe.config" target="contentFiles/any/any" />
