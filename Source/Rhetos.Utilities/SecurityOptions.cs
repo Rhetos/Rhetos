@@ -29,5 +29,6 @@ namespace Rhetos.Utilities
     {
         public bool Security__LookupClientHostname { get; set; } = false;
         public string Security__AllClaimsForUsers { get; set; } = "";
+        public bool Security__AllClaimsForAnonymous { get; set; } = false;
     }
 }
