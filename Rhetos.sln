@@ -74,7 +74,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Security.Interfaces"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Security", "Source\Rhetos.Security\Rhetos.Security.csproj", "{F3480D1E-1C20-448D-B2F6-133472CEEB93}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Dom.DefaultConcepts", "CommonConcepts\Plugins\Rhetos.Dom.DefaultConcepts\Rhetos.Dom.DefaultConcepts.csproj", "{6FA98D51-A0B6-4E5F-8C78-0D369DDD6DCC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Dom.DefaultConcepts", "CommonConcepts\Plugins\Rhetos.Dom.DefaultConcepts\Rhetos.Dom.DefaultConcepts.csproj", "{6FA98D51-A0B6-4E5F-8C78-0D369DDD6DCC}"
 	ProjectSection(ProjectDependencies) = postProject
 		{91BDF488-0921-4969-8A53-32169338D8DB} = {91BDF488-0921-4969-8A53-32169338D8DB}
 	EndProjectSection
@@ -481,11 +481,12 @@ Global
 		{52B9E0EB-F4D1-4CA5-9239-93917DC76E2B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{52B9E0EB-F4D1-4CA5-9239-93917DC76E2B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{52B9E0EB-F4D1-4CA5-9239-93917DC76E2B}.Release|x86.ActiveCfg = Release|Any CPU
-		{32D57085-6113-43F9-A505-D8B311BD6204}.CodeAnalysis|Any CPU.ActiveCfg = CodeAnalysis|Any CPU
-		{32D57085-6113-43F9-A505-D8B311BD6204}.CodeAnalysis|Any CPU.Build.0 = CodeAnalysis|Any CPU
-		{32D57085-6113-43F9-A505-D8B311BD6204}.CodeAnalysis|Mixed Platforms.ActiveCfg = CodeAnalysis|Any CPU
-		{32D57085-6113-43F9-A505-D8B311BD6204}.CodeAnalysis|Mixed Platforms.Build.0 = CodeAnalysis|Any CPU
-		{32D57085-6113-43F9-A505-D8B311BD6204}.CodeAnalysis|x86.ActiveCfg = CodeAnalysis|Any CPU
+		{32D57085-6113-43F9-A505-D8B311BD6204}.CodeAnalysis|Any CPU.ActiveCfg = Release|Any CPU
+		{32D57085-6113-43F9-A505-D8B311BD6204}.CodeAnalysis|Any CPU.Build.0 = Release|Any CPU
+		{32D57085-6113-43F9-A505-D8B311BD6204}.CodeAnalysis|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{32D57085-6113-43F9-A505-D8B311BD6204}.CodeAnalysis|Mixed Platforms.Build.0 = Release|Any CPU
+		{32D57085-6113-43F9-A505-D8B311BD6204}.CodeAnalysis|x86.ActiveCfg = Release|Any CPU
+		{32D57085-6113-43F9-A505-D8B311BD6204}.CodeAnalysis|x86.Build.0 = Release|Any CPU
 		{32D57085-6113-43F9-A505-D8B311BD6204}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{32D57085-6113-43F9-A505-D8B311BD6204}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{32D57085-6113-43F9-A505-D8B311BD6204}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
