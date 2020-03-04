@@ -117,6 +117,7 @@ namespace Rhetos.Compiler
                 _logger.Trace(() => "Compiling assembly: " + dllName + ".");
 
                 var references = registeredReferences
+                    .Concat(new[] { Assembly.Load("netstandard, Version=2.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51").Location })
                     .Select(reference => MetadataReference.CreateFromFile(reference)).ToList();
 
                 var assemblyName = GetAssemblyName(dllName);
