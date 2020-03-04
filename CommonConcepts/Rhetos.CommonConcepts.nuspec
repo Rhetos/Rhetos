@@ -19,9 +19,9 @@
     <file src="Readme.md" target="" />
     <file src="DataMigration\**\*" target="DataMigration" />
     <file src="DslScripts\**\*" target="DslScripts" />
-    <file src="Plugins\Rhetos.Dsl.DefaultConcepts\bin\Debug\Rhetos.Dsl.DefaultConcepts.dll" target="lib\net472" />
-    <file src="Plugins\Rhetos.Dsl.DefaultConcepts\bin\Debug\Rhetos.Dsl.DefaultConcepts.pdb" target="lib\net472" />
-    <file src="Plugins\Rhetos.Dsl.DefaultConcepts\bin\Debug\Rhetos.Dsl.DefaultConcepts.xml" target="lib\net472" />
+    <file src="Plugins\Rhetos.Dsl.DefaultConcepts\bin\Debug\netstandard2.0\Rhetos.Dsl.DefaultConcepts.dll" target="lib\net472" />
+    <file src="Plugins\Rhetos.Dsl.DefaultConcepts\bin\Debug\netstandard2.0\Rhetos.Dsl.DefaultConcepts.pdb" target="lib\net472" />
+    <file src="Plugins\Rhetos.Dsl.DefaultConcepts\bin\Debug\netstandard2.0\Rhetos.Dsl.DefaultConcepts.xml" target="lib\net472" />
     <file src="Plugins\Rhetos.Dom.DefaultConcepts\bin\Debug\netstandard2.0\Rhetos.Dom.DefaultConcepts.dll" target="lib\net472" />
     <file src="Plugins\Rhetos.Dom.DefaultConcepts\bin\Debug\netstandard2.0\Rhetos.Dom.DefaultConcepts.pdb" target="lib\net472" />
     <file src="Plugins\Rhetos.Dom.DefaultConcepts\bin\Debug\netstandard2.0\Rhetos.Dom.DefaultConcepts.xml" target="lib\net472" />
