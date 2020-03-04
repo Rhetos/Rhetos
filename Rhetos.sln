@@ -60,7 +60,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Dom.DefaultConcepts.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Processing.DefaultCommands.Interfaces", "CommonConcepts\Plugins\Rhetos.Processing.DefaultCommands.Interfaces\Rhetos.Processing.DefaultCommands.Interfaces.csproj", "{98F36936-5842-49CF-BACF-61119AC7BF3E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Dsl.DefaultConcepts", "CommonConcepts\Plugins\Rhetos.Dsl.DefaultConcepts\Rhetos.Dsl.DefaultConcepts.csproj", "{24BC6B74-703A-4AAF-99C3-B5CD760F3D22}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Dsl.DefaultConcepts", "CommonConcepts\Plugins\Rhetos.Dsl.DefaultConcepts\Rhetos.Dsl.DefaultConcepts.csproj", "{24BC6B74-703A-4AAF-99C3-B5CD760F3D22}"
 	ProjectSection(ProjectDependencies) = postProject
 		{91BDF488-0921-4969-8A53-32169338D8DB} = {91BDF488-0921-4969-8A53-32169338D8DB}
 		{FCAD7F9A-4C31-4D5A-8699-C291AE09D006} = {FCAD7F9A-4C31-4D5A-8699-C291AE09D006}
@@ -102,7 +102,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.TestCommon", "Source
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.DatabaseGenerator.DefaultConcepts", "CommonConcepts\Plugins\Rhetos.DatabaseGenerator.DefaultConcepts\Rhetos.DatabaseGenerator.DefaultConcepts.csproj", "{507C5738-8738-462A-9BAC-C0C98CE88D93}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Processing.DefaultCommands", "CommonConcepts\Plugins\Rhetos.Processing.DefaultCommands\Rhetos.Processing.DefaultCommands.csproj", "{DE021676-A95F-4F64-9FC3-F23C1BB946B5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Processing.DefaultCommands", "CommonConcepts\Plugins\Rhetos.Processing.DefaultCommands\Rhetos.Processing.DefaultCommands.csproj", "{DE021676-A95F-4F64-9FC3-F23C1BB946B5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos", "Source\Rhetos\Rhetos.csproj", "{F395C923-6001-478D-9EFF-F28A51F62BE4}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -497,11 +497,12 @@ Global
 		{32D57085-6113-43F9-A505-D8B311BD6204}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{32D57085-6113-43F9-A505-D8B311BD6204}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{32D57085-6113-43F9-A505-D8B311BD6204}.Release|x86.ActiveCfg = Release|Any CPU
-		{98F36936-5842-49CF-BACF-61119AC7BF3E}.CodeAnalysis|Any CPU.ActiveCfg = CodeAnalysis|Any CPU
-		{98F36936-5842-49CF-BACF-61119AC7BF3E}.CodeAnalysis|Any CPU.Build.0 = CodeAnalysis|Any CPU
-		{98F36936-5842-49CF-BACF-61119AC7BF3E}.CodeAnalysis|Mixed Platforms.ActiveCfg = CodeAnalysis|Any CPU
-		{98F36936-5842-49CF-BACF-61119AC7BF3E}.CodeAnalysis|Mixed Platforms.Build.0 = CodeAnalysis|Any CPU
-		{98F36936-5842-49CF-BACF-61119AC7BF3E}.CodeAnalysis|x86.ActiveCfg = CodeAnalysis|Any CPU
+		{98F36936-5842-49CF-BACF-61119AC7BF3E}.CodeAnalysis|Any CPU.ActiveCfg = Release|Any CPU
+		{98F36936-5842-49CF-BACF-61119AC7BF3E}.CodeAnalysis|Any CPU.Build.0 = Release|Any CPU
+		{98F36936-5842-49CF-BACF-61119AC7BF3E}.CodeAnalysis|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{98F36936-5842-49CF-BACF-61119AC7BF3E}.CodeAnalysis|Mixed Platforms.Build.0 = Release|Any CPU
+		{98F36936-5842-49CF-BACF-61119AC7BF3E}.CodeAnalysis|x86.ActiveCfg = Release|Any CPU
+		{98F36936-5842-49CF-BACF-61119AC7BF3E}.CodeAnalysis|x86.Build.0 = Release|Any CPU
 		{98F36936-5842-49CF-BACF-61119AC7BF3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{98F36936-5842-49CF-BACF-61119AC7BF3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{98F36936-5842-49CF-BACF-61119AC7BF3E}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU

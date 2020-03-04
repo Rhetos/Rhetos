@@ -34,8 +34,8 @@
     <file src="Plugins\Rhetos.Processing.DefaultCommands\bin\Debug\netstandard2.0\Rhetos.Processing.DefaultCommands.dll" target="lib\net472" />
     <file src="Plugins\Rhetos.Processing.DefaultCommands\bin\Debug\netstandard2.0\Rhetos.Processing.DefaultCommands.pdb" target="lib\net472" />
     <file src="Plugins\Rhetos.Processing.DefaultCommands\bin\Debug\netstandard2.0\Rhetos.Processing.DefaultCommands.xml" target="lib\net472" />
-    <file src="Plugins\Rhetos.Processing.DefaultCommands.Interfaces\bin\Debug\Rhetos.Processing.DefaultCommands.Interfaces.dll" target="lib\net472" />
-    <file src="Plugins\Rhetos.Processing.DefaultCommands.Interfaces\bin\Debug\Rhetos.Processing.DefaultCommands.Interfaces.pdb" target="lib\net472" />
-    <file src="Plugins\Rhetos.Processing.DefaultCommands.Interfaces\bin\Debug\Rhetos.Processing.DefaultCommands.Interfaces.xml" target="lib\net472" />
+    <file src="Plugins\Rhetos.Processing.DefaultCommands.Interfaces\bin\Debug\netstandard2.0\Rhetos.Processing.DefaultCommands.Interfaces.dll" target="lib\net472" />
+    <file src="Plugins\Rhetos.Processing.DefaultCommands.Interfaces\bin\Debug\netstandard2.0\Rhetos.Processing.DefaultCommands.Interfaces.pdb" target="lib\net472" />
+    <file src="Plugins\Rhetos.Processing.DefaultCommands.Interfaces\bin\Debug\netstandard2.0\Rhetos.Processing.DefaultCommands.Interfaces.xml" target="lib\net472" />
   </files>
 </package>
