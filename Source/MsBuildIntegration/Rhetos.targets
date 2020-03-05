@@ -3,10 +3,10 @@
 
     <Target Name="ResolveRhetosProjectAssets" DependsOnTargets="ResolveNuGetPackageAssets;ResolveAssemblyReferences" BeforeTargets="CoreCompile">
 		<Message Text="ResolveRhetosProjectAssets" />
-        <ResolveRhetosProjectAssets ProjectDirectory="$(ProjectDir)." Assemblies="@(ReferencePath)" AssemblyName="$(AssemblyName)" />      
+        <ResolveRhetosProjectAssets ProjectDirectory="$(ProjectDir)." ProjectContentFiles="@(RhetosBuild)" Assemblies="@(ReferencePath)" AssemblyName="$(AssemblyName)" />      
     </Target>
 
-    <Target Name="BuildRhetosApp" DependsOnTargets="ResolveRhetosProjectAssets;" BeforeTargets="CoreCompile" Condition="'$(RhetosBuild)'=='True' and $(BuildingProject)=='True'" Inputs="@(RhetosInput)" Outputs="@(RhetosOutput)">
+    <Target Name="BuildRhetosApp" DependsOnTargets="ResolveRhetosProjectAssets;" BeforeTargets="CoreCompile" Condition="'$(RhetosBuild)'=='True' and $(BuildingProject)=='True'" Inputs="@(RhetosInput);@(RhetosBuild)" Outputs="@(RhetosOutput)">
 		<Message Text="BuildRhetosApp" />
         <Delete Files="$(RhetosBuildCompleteFile)" />
         <Exec Command="&quot;$(RhetosCliExecutablePath)&quot; build &quot;$(ProjectDir).&quot;" CustomErrorRegularExpression="\[Error\]" CustomWarningRegularExpression="\[Warning\]" />

@@ -36,9 +36,12 @@ namespace RhetosVSIntegration
         [Required]
         public ITaskItem[] Assemblies { get; set; }
 
+        [Required]
+        public ITaskItem[] ProjectContentFiles { get; set; }
+
         public override bool Execute()
         {
-            var nuget = new NuGetUtilities(ProjectDirectory, new NuGetLogger(Log), null);
+            var nuget = new NuGetUtilities(ProjectDirectory, ProjectContentFiles.Select(x => x.ItemSpec), new NuGetLogger(Log), null);
             var rhetosProjectAssets = new RhetosProjectAssets
             {
                 InstalledPackages = new InstalledPackages { Packages = nuget.GetInstalledPackages() },
