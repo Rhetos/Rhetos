@@ -10,7 +10,7 @@
             <Output TaskParameter="InPath" ItemName="OldRhetosSourceFiles" />
         </FindUnderPath>
         <Delete Files="$(RhetosBuildCompleteFile)" />
-        <Exec Command="$(RhetosCliExecutablePath) build &quot;$(ProjectDir).&quot;" CustomErrorRegularExpression="\[Error\]" CustomWarningRegularExpression="\[Warning\]" />
+        <Exec Command="&quot;$(RhetosCliExecutablePath)&quot; build &quot;$(ProjectDir).&quot;" CustomErrorRegularExpression="\[Error\]" CustomWarningRegularExpression="\[Warning\]" />
         <WriteLinesToFile File="$(RhetosBuildCompleteFile)" Lines="" Overwrite="true" />
         <FindUnderPath Files="@(Compile)" Path="RhetosSource">
             <Output TaskParameter="InPath" ItemName="NewRhetosSourceFiles" />
