@@ -35,9 +35,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Processing", "Source
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Processing.Interfaces", "Source\Rhetos.Processing.Interfaces\Rhetos.Processing.Interfaces.csproj", "{4D2FCD7F-D9BB-4E55-B9C6-FDF352F6DCF3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Compiler", "Source\Rhetos.Compiler\Rhetos.Compiler.csproj", "{C0DC3D80-A1FE-46FA-8B97-5B80962687FB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Compiler", "Source\Rhetos.Compiler\Rhetos.Compiler.csproj", "{C0DC3D80-A1FE-46FA-8B97-5B80962687FB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Compiler.Interfaces", "Source\Rhetos.Compiler.Interfaces\Rhetos.Compiler.Interfaces.csproj", "{FCAD7F9A-4C31-4D5A-8699-C291AE09D006}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Compiler.Interfaces", "Source\Rhetos.Compiler.Interfaces\Rhetos.Compiler.Interfaces.csproj", "{FCAD7F9A-4C31-4D5A-8699-C291AE09D006}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Extensibility.Interfaces", "Source\Rhetos.Extensibility.Interfaces\Rhetos.Extensibility.Interfaces.csproj", "{DDC73F5F-BB0E-4944-92CC-4AC937398499}"
 EndProject
@@ -224,10 +224,12 @@ Global
 		{AA08ECFA-2AD6-4B0C-86B9-C5D8754A2073}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{AA08ECFA-2AD6-4B0C-86B9-C5D8754A2073}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{AA08ECFA-2AD6-4B0C-86B9-C5D8754A2073}.Release|x86.ActiveCfg = Release|Any CPU
-		{237EA20F-0BD0-45A7-BE7A-8A43E58306A2}.CodeAnalysis|Any CPU.ActiveCfg = CodeAnalysis|Any CPU
-		{237EA20F-0BD0-45A7-BE7A-8A43E58306A2}.CodeAnalysis|Any CPU.Build.0 = CodeAnalysis|Any CPU
-		{237EA20F-0BD0-45A7-BE7A-8A43E58306A2}.CodeAnalysis|Mixed Platforms.ActiveCfg = CodeAnalysis|Any CPU
-		{237EA20F-0BD0-45A7-BE7A-8A43E58306A2}.CodeAnalysis|x86.ActiveCfg = CodeAnalysis|Any CPU
+		{237EA20F-0BD0-45A7-BE7A-8A43E58306A2}.CodeAnalysis|Any CPU.ActiveCfg = Release|Any CPU
+		{237EA20F-0BD0-45A7-BE7A-8A43E58306A2}.CodeAnalysis|Any CPU.Build.0 = Release|Any CPU
+		{237EA20F-0BD0-45A7-BE7A-8A43E58306A2}.CodeAnalysis|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{237EA20F-0BD0-45A7-BE7A-8A43E58306A2}.CodeAnalysis|Mixed Platforms.Build.0 = Release|Any CPU
+		{237EA20F-0BD0-45A7-BE7A-8A43E58306A2}.CodeAnalysis|x86.ActiveCfg = Release|Any CPU
+		{237EA20F-0BD0-45A7-BE7A-8A43E58306A2}.CodeAnalysis|x86.Build.0 = Release|Any CPU
 		{237EA20F-0BD0-45A7-BE7A-8A43E58306A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{237EA20F-0BD0-45A7-BE7A-8A43E58306A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{237EA20F-0BD0-45A7-BE7A-8A43E58306A2}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -238,10 +240,12 @@ Global
 		{237EA20F-0BD0-45A7-BE7A-8A43E58306A2}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{237EA20F-0BD0-45A7-BE7A-8A43E58306A2}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{237EA20F-0BD0-45A7-BE7A-8A43E58306A2}.Release|x86.ActiveCfg = Release|Any CPU
-		{CA29D948-78B1-42D9-8E24-D2811E355F5A}.CodeAnalysis|Any CPU.ActiveCfg = CodeAnalysis|Any CPU
-		{CA29D948-78B1-42D9-8E24-D2811E355F5A}.CodeAnalysis|Any CPU.Build.0 = CodeAnalysis|Any CPU
-		{CA29D948-78B1-42D9-8E24-D2811E355F5A}.CodeAnalysis|Mixed Platforms.ActiveCfg = CodeAnalysis|Any CPU
-		{CA29D948-78B1-42D9-8E24-D2811E355F5A}.CodeAnalysis|x86.ActiveCfg = CodeAnalysis|Any CPU
+		{CA29D948-78B1-42D9-8E24-D2811E355F5A}.CodeAnalysis|Any CPU.ActiveCfg = Release|Any CPU
+		{CA29D948-78B1-42D9-8E24-D2811E355F5A}.CodeAnalysis|Any CPU.Build.0 = Release|Any CPU
+		{CA29D948-78B1-42D9-8E24-D2811E355F5A}.CodeAnalysis|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{CA29D948-78B1-42D9-8E24-D2811E355F5A}.CodeAnalysis|Mixed Platforms.Build.0 = Release|Any CPU
+		{CA29D948-78B1-42D9-8E24-D2811E355F5A}.CodeAnalysis|x86.ActiveCfg = Release|Any CPU
+		{CA29D948-78B1-42D9-8E24-D2811E355F5A}.CodeAnalysis|x86.Build.0 = Release|Any CPU
 		{CA29D948-78B1-42D9-8E24-D2811E355F5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CA29D948-78B1-42D9-8E24-D2811E355F5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CA29D948-78B1-42D9-8E24-D2811E355F5A}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
