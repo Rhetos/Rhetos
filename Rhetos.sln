@@ -58,7 +58,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Dom.DefaultConcepts.
 		{91BDF488-0921-4969-8A53-32169338D8DB} = {91BDF488-0921-4969-8A53-32169338D8DB}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Processing.DefaultCommands.Interfaces", "CommonConcepts\Plugins\Rhetos.Processing.DefaultCommands.Interfaces\Rhetos.Processing.DefaultCommands.Interfaces.csproj", "{98F36936-5842-49CF-BACF-61119AC7BF3E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Processing.DefaultCommands.Interfaces", "CommonConcepts\Plugins\Rhetos.Processing.DefaultCommands.Interfaces\Rhetos.Processing.DefaultCommands.Interfaces.csproj", "{98F36936-5842-49CF-BACF-61119AC7BF3E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Dsl.DefaultConcepts", "CommonConcepts\Plugins\Rhetos.Dsl.DefaultConcepts\Rhetos.Dsl.DefaultConcepts.csproj", "{24BC6B74-703A-4AAF-99C3-B5CD760F3D22}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -352,7 +352,8 @@ Global
 		{4D2FCD7F-D9BB-4E55-B9C6-FDF352F6DCF3}.Release|x86.ActiveCfg = Release|Any CPU
 		{C0DC3D80-A1FE-46FA-8B97-5B80962687FB}.CodeAnalysis|Any CPU.ActiveCfg = Release|Any CPU
 		{C0DC3D80-A1FE-46FA-8B97-5B80962687FB}.CodeAnalysis|Any CPU.Build.0 = Release|Any CPU
-		{C0DC3D80-A1FE-46FA-8B97-5B80962687FB}.CodeAnalysis|Mixed Platforms.ActiveCfg = CodeAnalysis|Any CPU
+		{C0DC3D80-A1FE-46FA-8B97-5B80962687FB}.CodeAnalysis|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{C0DC3D80-A1FE-46FA-8B97-5B80962687FB}.CodeAnalysis|Mixed Platforms.Build.0 = Debug|Any CPU
 		{C0DC3D80-A1FE-46FA-8B97-5B80962687FB}.CodeAnalysis|x86.ActiveCfg = Release|Any CPU
 		{C0DC3D80-A1FE-46FA-8B97-5B80962687FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C0DC3D80-A1FE-46FA-8B97-5B80962687FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
@@ -366,7 +367,8 @@ Global
 		{C0DC3D80-A1FE-46FA-8B97-5B80962687FB}.Release|x86.ActiveCfg = Release|Any CPU
 		{FCAD7F9A-4C31-4D5A-8699-C291AE09D006}.CodeAnalysis|Any CPU.ActiveCfg = Release|Any CPU
 		{FCAD7F9A-4C31-4D5A-8699-C291AE09D006}.CodeAnalysis|Any CPU.Build.0 = Release|Any CPU
-		{FCAD7F9A-4C31-4D5A-8699-C291AE09D006}.CodeAnalysis|Mixed Platforms.ActiveCfg = CodeAnalysis|Any CPU
+		{FCAD7F9A-4C31-4D5A-8699-C291AE09D006}.CodeAnalysis|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{FCAD7F9A-4C31-4D5A-8699-C291AE09D006}.CodeAnalysis|Mixed Platforms.Build.0 = Debug|Any CPU
 		{FCAD7F9A-4C31-4D5A-8699-C291AE09D006}.CodeAnalysis|x86.ActiveCfg = Release|Any CPU
 		{FCAD7F9A-4C31-4D5A-8699-C291AE09D006}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FCAD7F9A-4C31-4D5A-8699-C291AE09D006}.Debug|Any CPU.Build.0 = Debug|Any CPU

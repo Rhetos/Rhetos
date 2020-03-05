@@ -47,6 +47,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.CodeDom, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.CodeDom.4.7.0\lib\net461\System.CodeDom.dll</HintPath>
+    </Reference>
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -63,6 +66,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Rhetos.Compiler\Rhetos.Compiler.csproj">
+      <Project>{c0dc3d80-a1fe-46fa-8b97-5b80962687fb}</Project>
+      <Name>Rhetos.Compiler</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rhetos.Utilities\Rhetos.Utilities.csproj">
       <Project>{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}</Project>
       <Name>Rhetos.Utilities</Name>
@@ -70,10 +77,6 @@
     <ProjectReference Include="..\Rhetos.Compiler.Interfaces\Rhetos.Compiler.Interfaces.csproj">
       <Project>{FCAD7F9A-4C31-4D5A-8699-C291AE09D006}</Project>
       <Name>Rhetos.Compiler.Interfaces</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rhetos.Compiler\Rhetos.Compiler.csproj">
-      <Project>{C0DC3D80-A1FE-46FA-8B97-5B80962687FB}</Project>
-      <Name>Rhetos.Compiler</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rhetos.Dom.Interfaces\Rhetos.Dom.Interfaces.csproj">
       <Project>{91BDF488-0921-4969-8A53-32169338D8DB}</Project>
@@ -91,6 +94,9 @@
       <Project>{BB7E5668-1B43-4FCE-A832-444CC57FEE80}</Project>
       <Name>Rhetos.Logging.Interfaces</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
