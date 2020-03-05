@@ -18,7 +18,6 @@
 */
 
 using Newtonsoft.Json;
-using Rhetos.Logging;
 using System.IO;
 using System.Text;
 
@@ -26,9 +25,9 @@ namespace Rhetos
 {
     public class RhetosProjectAssetsFileProvider
     {
-        public const string ProjectAssetsFileName = "rhetos-project.assets.json";
+        private const string ProjectAssetsFileName = "rhetos-project.assets.json";
 
-        public string ProjectAssetsFilePath { get; set; }
+        public string ProjectAssetsFilePath { get; }
 
         public RhetosProjectAssetsFileProvider(string projectRootFolder)
         {
@@ -38,7 +37,7 @@ namespace Rhetos
         public RhetosProjectAssets Load()
         {
             if (!File.Exists(ProjectAssetsFilePath))
-                return null;
+                throw new FrameworkException($"Missing file {ProjectAssetsFileName} required for build. The project must include Rhetos NuGet package. If manually running Rhetos build, MSBuild should pass first to create this file.");
 
             string serialized = File.ReadAllText(ProjectAssetsFilePath, Encoding.UTF8);
             return JsonConvert.DeserializeObject<RhetosProjectAssets>(serialized, _serializerSettings);

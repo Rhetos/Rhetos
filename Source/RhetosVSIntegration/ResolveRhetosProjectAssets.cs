@@ -47,8 +47,10 @@ namespace RhetosVSIntegration
             };
 
             var assetsFileHasChanged = new RhetosProjectAssetsFileProvider(ProjectDirectory).Save(rhetosProjectAssets);
-            if (!assetsFileHasChanged)
-                Log.LogMessage(MessageImportance.High, $"Writing to file {RhetosProjectAssetsFileProvider.ProjectAssetsFileName} will be skipped because the file has not been changed.");
+            if (assetsFileHasChanged)
+                Log.LogMessage(MessageImportance.High, $"{nameof(RhetosProjectAssets)} updated.");
+            else
+                Log.LogMessage(MessageImportance.High, $"{nameof(RhetosProjectAssets)} is already up-to-date.");
 
             return true;
         }

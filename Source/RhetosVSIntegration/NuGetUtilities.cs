@@ -125,7 +125,7 @@ namespace Rhetos
             else if(targetLibrary.Type == LibraryType.Project)
                 return GetFolderForProjectLibraray(targetLibrary);
             else
-                throw new NotSupportedException($"The only supported libraray types when parsing project.assets.json are {LibraryType.Package} and {LibraryType.Project}.");
+                throw new NotSupportedException($"The only supported library types when parsing {LockFileFormat.AssetsFileName} are {LibraryType.Package} and {LibraryType.Project}.");
         }
 
         private string GetFolderForPackageLibraray(LockFileTargetLibrary targetLibrary)

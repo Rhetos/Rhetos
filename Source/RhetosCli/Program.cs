@@ -96,8 +96,6 @@ namespace Rhetos
         private void Build(string projectRootPath)
         {
             var rhetosprojectAssets = new RhetosProjectAssetsFileProvider(projectRootPath).Load();
-            if (rhetosprojectAssets == null)
-                throw new FrameworkException($"Missing file {RhetosProjectAssetsFileProvider.ProjectAssetsFileName} required for build."); //TODO: Add better error message after we decide what steps are necessary to resolve this issue.
 
             string binFolder = Path.Combine(projectRootPath, "bin");
             if (FilesUtility.IsSameDirectory(AppDomain.CurrentDomain.BaseDirectory, binFolder))
