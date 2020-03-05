@@ -13,7 +13,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{0124322E-2
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Utilities", "Source\Rhetos.Utilities\Rhetos.Utilities.csproj", "{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Extensibility", "Source\Rhetos.Extensibility\Rhetos.Extensibility.csproj", "{7EAF15BD-39C9-44AB-8834-EC0AE013A8A2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Extensibility", "Source\Rhetos.Extensibility\Rhetos.Extensibility.csproj", "{7EAF15BD-39C9-44AB-8834-EC0AE013A8A2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Dsl", "Source\Rhetos.Dsl\Rhetos.Dsl.csproj", "{AA08ECFA-2AD6-4B0C-86B9-C5D8754A2073}"
 EndProject
@@ -39,7 +39,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Compiler", "Source\R
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Compiler.Interfaces", "Source\Rhetos.Compiler.Interfaces\Rhetos.Compiler.Interfaces.csproj", "{FCAD7F9A-4C31-4D5A-8699-C291AE09D006}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Extensibility.Interfaces", "Source\Rhetos.Extensibility.Interfaces\Rhetos.Extensibility.Interfaces.csproj", "{DDC73F5F-BB0E-4944-92CC-4AC937398499}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Extensibility.Interfaces", "Source\Rhetos.Extensibility.Interfaces\Rhetos.Extensibility.Interfaces.csproj", "{DDC73F5F-BB0E-4944-92CC-4AC937398499}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.XmlSerialization", "Source\Rhetos.XmlSerialization\Rhetos.XmlSerialization.csproj", "{726CA0FB-70E7-44F3-9FCA-E703598BFC7E}"
 EndProject
@@ -47,9 +47,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Dom", "Source\Rhetos
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Dom.Interfaces", "Source\Rhetos.Dom.Interfaces\Rhetos.Dom.Interfaces.csproj", "{91BDF488-0921-4969-8A53-32169338D8DB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Logging.Interfaces", "Source\Rhetos.Logging.Interfaces\Rhetos.Logging.Interfaces.csproj", "{BB7E5668-1B43-4FCE-A832-444CC57FEE80}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Logging.Interfaces", "Source\Rhetos.Logging.Interfaces\Rhetos.Logging.Interfaces.csproj", "{BB7E5668-1B43-4FCE-A832-444CC57FEE80}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Logging", "Source\Rhetos.Logging\Rhetos.Logging.csproj", "{8C9F1C24-2D9C-420B-9787-3FCAD96C5B3E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Logging", "Source\Rhetos.Logging\Rhetos.Logging.csproj", "{8C9F1C24-2D9C-420B-9787-3FCAD96C5B3E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Interfaces", "Source\Rhetos.Interfaces\Rhetos.Interfaces.csproj", "{52B9E0EB-F4D1-4CA5-9239-93917DC76E2B}"
 EndProject
@@ -320,7 +320,8 @@ Global
 		{F54C8A50-8AB5-4F7E-A255-D6645A457E02}.Release|x86.ActiveCfg = Release|Any CPU
 		{5E3BBD83-91CB-4FBA-81B2-79A81EC94D70}.CodeAnalysis|Any CPU.ActiveCfg = Release|Any CPU
 		{5E3BBD83-91CB-4FBA-81B2-79A81EC94D70}.CodeAnalysis|Any CPU.Build.0 = Release|Any CPU
-		{5E3BBD83-91CB-4FBA-81B2-79A81EC94D70}.CodeAnalysis|Mixed Platforms.ActiveCfg = CodeAnalysis|Any CPU
+		{5E3BBD83-91CB-4FBA-81B2-79A81EC94D70}.CodeAnalysis|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{5E3BBD83-91CB-4FBA-81B2-79A81EC94D70}.CodeAnalysis|Mixed Platforms.Build.0 = Debug|Any CPU
 		{5E3BBD83-91CB-4FBA-81B2-79A81EC94D70}.CodeAnalysis|x86.ActiveCfg = Release|Any CPU
 		{5E3BBD83-91CB-4FBA-81B2-79A81EC94D70}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5E3BBD83-91CB-4FBA-81B2-79A81EC94D70}.Debug|Any CPU.Build.0 = Debug|Any CPU
