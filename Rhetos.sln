@@ -15,13 +15,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Utilities", "Source\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Extensibility", "Source\Rhetos.Extensibility\Rhetos.Extensibility.csproj", "{7EAF15BD-39C9-44AB-8834-EC0AE013A8A2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Dsl", "Source\Rhetos.Dsl\Rhetos.Dsl.csproj", "{AA08ECFA-2AD6-4B0C-86B9-C5D8754A2073}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Dsl", "Source\Rhetos.Dsl\Rhetos.Dsl.csproj", "{AA08ECFA-2AD6-4B0C-86B9-C5D8754A2073}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.DatabaseGenerator", "Source\Rhetos.DatabaseGenerator\Rhetos.DatabaseGenerator.csproj", "{237EA20F-0BD0-45A7-BE7A-8A43E58306A2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.DatabaseGenerator.Interfaces", "Source\Rhetos.DatabaseGenerator.Interfaces\Rhetos.DatabaseGenerator.Interfaces.csproj", "{CA29D948-78B1-42D9-8E24-D2811E355F5A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Dsl.Interfaces", "Source\Rhetos.Dsl.Interfaces\Rhetos.Dsl.Interfaces.csproj", "{F4ACD412-2782-4191-8708-C7AE99B0CEE9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Dsl.Interfaces", "Source\Rhetos.Dsl.Interfaces\Rhetos.Dsl.Interfaces.csproj", "{F4ACD412-2782-4191-8708-C7AE99B0CEE9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Utilities.Test", "Source\Rhetos.Utilities.Test\Rhetos.Utilities.Test.csproj", "{48196125-9AE3-40E5-8E0D-431B85083B7D}"
 EndProject
@@ -196,10 +196,12 @@ Global
 		{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}.Release|x86.ActiveCfg = Release|Any CPU
-		{7EAF15BD-39C9-44AB-8834-EC0AE013A8A2}.CodeAnalysis|Any CPU.ActiveCfg = CodeAnalysis|Any CPU
-		{7EAF15BD-39C9-44AB-8834-EC0AE013A8A2}.CodeAnalysis|Any CPU.Build.0 = CodeAnalysis|Any CPU
-		{7EAF15BD-39C9-44AB-8834-EC0AE013A8A2}.CodeAnalysis|Mixed Platforms.ActiveCfg = CodeAnalysis|Any CPU
-		{7EAF15BD-39C9-44AB-8834-EC0AE013A8A2}.CodeAnalysis|x86.ActiveCfg = CodeAnalysis|Any CPU
+		{7EAF15BD-39C9-44AB-8834-EC0AE013A8A2}.CodeAnalysis|Any CPU.ActiveCfg = Release|Any CPU
+		{7EAF15BD-39C9-44AB-8834-EC0AE013A8A2}.CodeAnalysis|Any CPU.Build.0 = Release|Any CPU
+		{7EAF15BD-39C9-44AB-8834-EC0AE013A8A2}.CodeAnalysis|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{7EAF15BD-39C9-44AB-8834-EC0AE013A8A2}.CodeAnalysis|Mixed Platforms.Build.0 = Release|Any CPU
+		{7EAF15BD-39C9-44AB-8834-EC0AE013A8A2}.CodeAnalysis|x86.ActiveCfg = Release|Any CPU
+		{7EAF15BD-39C9-44AB-8834-EC0AE013A8A2}.CodeAnalysis|x86.Build.0 = Release|Any CPU
 		{7EAF15BD-39C9-44AB-8834-EC0AE013A8A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7EAF15BD-39C9-44AB-8834-EC0AE013A8A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7EAF15BD-39C9-44AB-8834-EC0AE013A8A2}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -390,7 +392,8 @@ Global
 		{FCAD7F9A-4C31-4D5A-8699-C291AE09D006}.Release|x86.ActiveCfg = Release|Any CPU
 		{DDC73F5F-BB0E-4944-92CC-4AC937398499}.CodeAnalysis|Any CPU.ActiveCfg = Release|Any CPU
 		{DDC73F5F-BB0E-4944-92CC-4AC937398499}.CodeAnalysis|Any CPU.Build.0 = Release|Any CPU
-		{DDC73F5F-BB0E-4944-92CC-4AC937398499}.CodeAnalysis|Mixed Platforms.ActiveCfg = CodeAnalysis|Any CPU
+		{DDC73F5F-BB0E-4944-92CC-4AC937398499}.CodeAnalysis|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{DDC73F5F-BB0E-4944-92CC-4AC937398499}.CodeAnalysis|Mixed Platforms.Build.0 = Debug|Any CPU
 		{DDC73F5F-BB0E-4944-92CC-4AC937398499}.CodeAnalysis|x86.ActiveCfg = Release|Any CPU
 		{DDC73F5F-BB0E-4944-92CC-4AC937398499}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DDC73F5F-BB0E-4944-92CC-4AC937398499}.Debug|Any CPU.Build.0 = Debug|Any CPU
