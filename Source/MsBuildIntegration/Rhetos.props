@@ -6,9 +6,6 @@
         <RhetosBuildCompleteFile>$(BaseIntermediateOutputPath)Rhetos\Rhetos.BuildComplete</RhetosBuildCompleteFile>
     </PropertyGroup>
     <ItemGroup>
-        <Compile Include="RhetosSource\**\*.cs" />
-    </ItemGroup>
-    <ItemGroup>
         <RhetosInput Include="$(BaseIntermediateOutputPath)project.assets.json" />
         <RhetosInput Include="DslScripts\**\*" />
         <RhetosInput Include="DataMigration\**\*" />

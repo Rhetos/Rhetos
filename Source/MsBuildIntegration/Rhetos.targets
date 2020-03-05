@@ -1,29 +1,26 @@
 <Project>
     <UsingTask AssemblyFile="RhetosVSIntegration.dll" TaskName="RhetosVSIntegration.ResolveRhetosProjectAssets" />
-    <!-- This is used to determine if the Build target is called.
-    We wnat ot execute the RhetosBuild target only on Build target-->
+
     <Target Name="ResolveRhetosProjectAssets" DependsOnTargets="ResolveNuGetPackageAssets;ResolveAssemblyReferences" BeforeTargets="CoreCompile">
         <ResolveRhetosProjectAssets ProjectDirectory="$(ProjectDir)." Assemblies="@(ReferencePath)" AssemblyName="$(AssemblyName)" />      
     </Target>
-    <Target Name="RhetosBuild" DependsOnTargets="ResolveRhetosProjectAssets;" BeforeTargets="CoreCompile" Condition="'$(RhetosBuild)'=='True' and $(BuildingProject)=='True'" Inputs="@(RhetosInput)" Outputs="@(RhetosOutput)">
-        <FindUnderPath Files="@(Compile)" Path="RhetosSource">
-            <Output TaskParameter="InPath" ItemName="OldRhetosSourceFiles" />
-        </FindUnderPath>
+
+    <Target Name="BuildRhetosApp" DependsOnTargets="ResolveRhetosProjectAssets;" BeforeTargets="CoreCompile" Condition="'$(RhetosBuild)'=='True' and $(BuildingProject)=='True'" Inputs="@(RhetosInput)" Outputs="@(RhetosOutput)">
+		<Message Text="BuildRhetosApp" />
         <Delete Files="$(RhetosBuildCompleteFile)" />
         <Exec Command="&quot;$(RhetosCliExecutablePath)&quot; build &quot;$(ProjectDir).&quot;" CustomErrorRegularExpression="\[Error\]" CustomWarningRegularExpression="\[Warning\]" />
         <WriteLinesToFile File="$(RhetosBuildCompleteFile)" Lines="" Overwrite="true" />
-        <FindUnderPath Files="@(Compile)" Path="RhetosSource">
-            <Output TaskParameter="InPath" ItemName="NewRhetosSourceFiles" />
-        </FindUnderPath>
-        <!-- We cannot Include source files directly (RhetosSource\**\*.cs), because ItemGroup and PropertyGroup is executed
-        even if target is skipped, e.g. when output files are up-to-date with respect to the input files.
-        Now both OldRhetosSourceFiles and NewRhetosSourceFiles are empty in that case, so no changes to Compiled items are made. -->
+    </Target>
+
+    <Target Name="AddRhetosSourceFiles" DependsOnTargets="BuildRhetosApp" BeforeTargets="CoreCompile" >
+		<Message Text="AddRhetosSourceFiles" />
         <ItemGroup>
-            <Compile Remove="@(OldRhetosSourceFiles)" />
-            <Compile Include="@(NewRhetosSourceFiles)" />
+            <Compile Include="RhetosSource\**\*.cs" />
         </ItemGroup>
     </Target>
-    <Target Name="RhetosDeploy" DependsOnTargets="RhetosBuild;CopyFilesToOutputDirectory" AfterTargets="Build" Condition="'$(RhetosDeploy)'=='True' And Exists('$(RhetosBuildCompleteFile)')">
+    
+    <Target Name="DeployRhetosApp" DependsOnTargets="BuildRhetosApp;CopyFilesToOutputDirectory" AfterTargets="Build" Condition="'$(RhetosDeploy)'=='True' And Exists('$(RhetosBuildCompleteFile)')">
+		<Message Text="DeployRhetosApp" />
         <Exec Command="&quot;$(TargetDir)rhetos.exe&quot; dbupdate &quot;$(ProjectDir).&quot;" CustomErrorRegularExpression="\[Error\]" CustomWarningRegularExpression="\[Warning\]" />
         <Exec Command="&quot;$(TargetDir)rhetos.exe&quot; appinitialize &quot;$(ProjectDir).&quot;" CustomErrorRegularExpression="\[Error\]" CustomWarningRegularExpression="\[Warning\]" />
     </Target>
