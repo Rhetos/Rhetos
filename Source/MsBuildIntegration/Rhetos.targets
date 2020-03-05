@@ -2,6 +2,7 @@
     <UsingTask AssemblyFile="RhetosVSIntegration.dll" TaskName="RhetosVSIntegration.ResolveRhetosProjectAssets" />
 
     <Target Name="ResolveRhetosProjectAssets" DependsOnTargets="ResolveNuGetPackageAssets;ResolveAssemblyReferences" BeforeTargets="CoreCompile">
+		<Message Text="ResolveRhetosProjectAssets" />
         <ResolveRhetosProjectAssets ProjectDirectory="$(ProjectDir)." Assemblies="@(ReferencePath)" AssemblyName="$(AssemblyName)" />      
     </Target>
 
@@ -19,9 +20,11 @@
         </ItemGroup>
     </Target>
     
-    <Target Name="DeployRhetosApp" DependsOnTargets="BuildRhetosApp;CopyFilesToOutputDirectory" AfterTargets="Build" Condition="'$(RhetosDeploy)'=='True' And Exists('$(RhetosBuildCompleteFile)')">
+    <Target Name="DeployRhetosApp" DependsOnTargets="BuildRhetosApp;CopyFilesToOutputDirectory" AfterTargets="Build" Condition="'$(RhetosDeploy)'=='True' And Exists('$(RhetosBuildCompleteFile)')"
+		Inputs="$(RhetosBuildCompleteFile)" Outputs="$(RhetosDatabaseUpdated)">
 		<Message Text="DeployRhetosApp" />
         <Exec Command="&quot;$(TargetDir)rhetos.exe&quot; dbupdate &quot;$(ProjectDir).&quot;" CustomErrorRegularExpression="\[Error\]" CustomWarningRegularExpression="\[Warning\]" />
         <Exec Command="&quot;$(TargetDir)rhetos.exe&quot; appinitialize &quot;$(ProjectDir).&quot;" CustomErrorRegularExpression="\[Error\]" CustomWarningRegularExpression="\[Warning\]" />
+		<WriteLinesToFile File="$(RhetosDatabaseUpdated)" Lines="" Overwrite="true" />
     </Target>
 </Project>

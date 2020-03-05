@@ -4,6 +4,7 @@
         <RhetosBuild>True</RhetosBuild>
         <RhetosDeploy>True</RhetosDeploy>
         <RhetosBuildCompleteFile>$(BaseIntermediateOutputPath)Rhetos\Rhetos.BuildComplete</RhetosBuildCompleteFile>
+		<RhetosDatabaseUpdated>$(BaseIntermediateOutputPath)Rhetos\Rhetos.DatabaseUpdated</RhetosDatabaseUpdated>
     </PropertyGroup>
     <ItemGroup>
         <RhetosInput Include="$(BaseIntermediateOutputPath)project.assets.json" />
