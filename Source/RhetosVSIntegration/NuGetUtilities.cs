@@ -35,12 +35,14 @@ namespace Rhetos
         private readonly LockFile _lockFile;
         private readonly NuGetFramework _targetFramework;
         private readonly string _projectRootFolder;
+        private readonly IEnumerable<string> _projectContentFiles;
 
         public string ProjectName { get { return _lockFile.PackageSpec.Name; } }
 
-        public NuGetUtilities(string projectRootFolder, NuGetLogger logger, string target)
+        public NuGetUtilities(string projectRootFolder, IEnumerable<string> projectContentFiles, NuGetLogger logger, string target)
         {
             _projectRootFolder = projectRootFolder;
+            _projectContentFiles = projectContentFiles;
             var objFolderPath = Path.Combine(_projectRootFolder, "obj");
             if (!Directory.Exists(objFolderPath))
                 throw new FrameworkException($"Project object files folder '{objFolderPath}' does not exist. Please make sure that a valid project folder is specified, and run NuGet restore before build.");
@@ -92,12 +94,7 @@ namespace Rhetos
 
         private InstalledPackage GetProjectAsInstalledPackage()
         {
-            //TODO: We should add the possibility to specify content files as an option
-            //MSBuild knows which files are part of the project that it is building so we should use only those files
-            var contentFiles = Directory.GetFiles(_projectRootFolder, "*", SearchOption.AllDirectories)
-                .Select(f => new ContentFile { PhysicalPath = f, InPackagePath = FilesUtility.AbsoluteToRelativePath(_projectRootFolder, f) })
-                .Where(c => (!c.InPackagePath.StartsWith("bin") && !c.InPackagePath.StartsWith("obj")))
-                .ToList();
+            var contentFiles = _projectContentFiles.Select(f => new ContentFile { PhysicalPath = f, InPackagePath = FilesUtility.AbsoluteToRelativePath(_projectRootFolder, f) }).ToList();
             var dependencies = _lockFile.PackageSpec.TargetFrameworks.Single(x => x.FrameworkName == _targetFramework).Dependencies.Select(x => new PackageRequest { Id = x.Name, VersionsRange = x.LibraryRange.VersionRange.OriginalString });
             return new InstalledPackage(ProjectName, "", dependencies, _projectRootFolder, null, null, contentFiles);
         }

@@ -8,8 +8,8 @@
     </PropertyGroup>
     <ItemGroup>
         <RhetosInput Include="$(BaseIntermediateOutputPath)project.assets.json" />
-        <RhetosInput Include="DslScripts\**\*" />
-        <RhetosInput Include="DataMigration\**\*" />
+        <RhetosBuild Include="DslScripts\**\*" />
+        <RhetosBuild Include="DataMigration\**\*" />        
     </ItemGroup>
     <ItemGroup>
         <!-- RhetosOutput should not include files that are somtimes unchanged on build (because of internal optimizations).
