@@ -31,9 +31,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Dsl.Test", "Source\R
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Persistence.Interfaces", "Source\Rhetos.Persistence.Interfaces\Rhetos.Persistence.Interfaces.csproj", "{5E3BBD83-91CB-4FBA-81B2-79A81EC94D70}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Processing", "Source\Rhetos.Processing\Rhetos.Processing.csproj", "{EB4237C4-3D83-4632-B8C9-AC08C886720A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Processing", "Source\Rhetos.Processing\Rhetos.Processing.csproj", "{EB4237C4-3D83-4632-B8C9-AC08C886720A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Processing.Interfaces", "Source\Rhetos.Processing.Interfaces\Rhetos.Processing.Interfaces.csproj", "{4D2FCD7F-D9BB-4E55-B9C6-FDF352F6DCF3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Processing.Interfaces", "Source\Rhetos.Processing.Interfaces\Rhetos.Processing.Interfaces.csproj", "{4D2FCD7F-D9BB-4E55-B9C6-FDF352F6DCF3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Compiler", "Source\Rhetos.Compiler\Rhetos.Compiler.csproj", "{C0DC3D80-A1FE-46FA-8B97-5B80962687FB}"
 EndProject
@@ -41,7 +41,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Compiler.Interfaces"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Extensibility.Interfaces", "Source\Rhetos.Extensibility.Interfaces\Rhetos.Extensibility.Interfaces.csproj", "{DDC73F5F-BB0E-4944-92CC-4AC937398499}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.XmlSerialization", "Source\Rhetos.XmlSerialization\Rhetos.XmlSerialization.csproj", "{726CA0FB-70E7-44F3-9FCA-E703598BFC7E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.XmlSerialization", "Source\Rhetos.XmlSerialization\Rhetos.XmlSerialization.csproj", "{726CA0FB-70E7-44F3-9FCA-E703598BFC7E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Dom", "Source\Rhetos.Dom\Rhetos.Dom.csproj", "{69101D48-A062-4AF0-96E1-21F7AF38D2B4}"
 EndProject
@@ -134,7 +134,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos", "Source\Rhetos\Rhe
 		{726CA0FB-70E7-44F3-9FCA-E703598BFC7E} = {726CA0FB-70E7-44F3-9FCA-E703598BFC7E}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Deployment", "Source\Rhetos.Deployment\Rhetos.Deployment.csproj", "{A7328BFA-A009-4F1E-B9A1-B51B2020F45C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Deployment", "Source\Rhetos.Deployment\Rhetos.Deployment.csproj", "{A7328BFA-A009-4F1E-B9A1-B51B2020F45C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanupOldData", "Source\CleanUpOldData\CleanupOldData.csproj", "{4E20890A-3825-45D3-841F-4B6D234845ED}"
 EndProject
@@ -152,7 +152,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.CommonConcepts.Test"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Web", "Source\Rhetos.Web\Rhetos.Web.csproj", "{A334FFFD-0400-4FEC-BC83-C044072C76A8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Deployment.Interfaces", "Source\Rhetos.Deployment.Interfaces\Rhetos.Deployment.Interfaces.csproj", "{945537DC-4AF7-4DEF-B73C-07F19229EFE6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Deployment.Interfaces", "Source\Rhetos.Deployment.Interfaces\Rhetos.Deployment.Interfaces.csproj", "{945537DC-4AF7-4DEF-B73C-07F19229EFE6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Persistence", "Source\Rhetos.Persistence\Rhetos.Persistence.csproj", "{02415B9E-FB00-451D-8B1A-B4A3CE150F2D}"
 EndProject
@@ -410,7 +410,8 @@ Global
 		{DDC73F5F-BB0E-4944-92CC-4AC937398499}.Release|x86.ActiveCfg = Release|Any CPU
 		{726CA0FB-70E7-44F3-9FCA-E703598BFC7E}.CodeAnalysis|Any CPU.ActiveCfg = Release|Any CPU
 		{726CA0FB-70E7-44F3-9FCA-E703598BFC7E}.CodeAnalysis|Any CPU.Build.0 = Release|Any CPU
-		{726CA0FB-70E7-44F3-9FCA-E703598BFC7E}.CodeAnalysis|Mixed Platforms.ActiveCfg = CodeAnalysis|Any CPU
+		{726CA0FB-70E7-44F3-9FCA-E703598BFC7E}.CodeAnalysis|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{726CA0FB-70E7-44F3-9FCA-E703598BFC7E}.CodeAnalysis|Mixed Platforms.Build.0 = Debug|Any CPU
 		{726CA0FB-70E7-44F3-9FCA-E703598BFC7E}.CodeAnalysis|x86.ActiveCfg = Release|Any CPU
 		{726CA0FB-70E7-44F3-9FCA-E703598BFC7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{726CA0FB-70E7-44F3-9FCA-E703598BFC7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
