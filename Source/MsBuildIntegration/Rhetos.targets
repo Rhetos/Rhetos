@@ -16,10 +16,22 @@
     <Target Name="AddRhetosSourceFiles" DependsOnTargets="BuildRhetosApp" BeforeTargets="CoreCompile" >
 		<Message Text="AddRhetosSourceFiles" />
         <ItemGroup>
-            <Compile Include="RhetosSource\**\*.cs" />
+            <RhetosSourceFiles Include="RhetosSource\**\*.cs" />
+            <Compile Include="@(RhetosSourceFiles)" />
         </ItemGroup>
     </Target>
     
+    <Target Name="CopyRhetosSourceFiles" DependsOnTargets="AddRhetosSourceFiles" AfterTargets="CopyFilesToOutputDirectory" >
+		<Message Text="CopyRhetosSourceFiles" />
+        <Copy SourceFiles="@(RhetosSourceFiles)" Retries="$(CopyRetryCount)" RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+            DestinationFiles="@(RhetosSourceFiles->'$(TargetDir)RhetosDebugSource\%(RecursiveDir)%(Filename)%(Extension)')" 
+            SkipUnchangedFiles="True" CopiedFiles="RhetosDebugSourceFiles"/>
+        <ItemGroup>
+            <RhetosDebugSourceFilesToDelete Include="$(TargetDir)RhetosDebugSource\**\*.cs" Exclude="@(RhetosDebugSourceFiles)" />
+        </ItemGroup>
+        <Delete Files="@(RhetosDebugSourceFilesToDelete)" />            
+    </Target>
+
     <Target Name="DeployRhetosApp" DependsOnTargets="BuildRhetosApp;CopyFilesToOutputDirectory" AfterTargets="Build" Condition="'$(RhetosDeploy)'=='True' And Exists('$(RhetosBuildCompleteFile)')"
 		Inputs="$(RhetosBuildCompleteFile)" Outputs="$(RhetosDatabaseUpdated)">
 		<Message Text="DeployRhetosApp" />
