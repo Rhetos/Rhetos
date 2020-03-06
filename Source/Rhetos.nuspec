@@ -15,6 +15,7 @@
     </dependencies>
     <contentFiles>
       <files include="any/any/rhetos.exe" buildAction="None" copyToOutput="true" />
+      <files include="any/any/rhetos.pdb" buildAction="None" copyToOutput="true" />
       <files include="any/any/rhetos.exe.config" buildAction="None" copyToOutput="true" />
     </contentFiles>
   </metadata>
@@ -30,6 +31,7 @@
     <file src="RhetosVSIntegration\bin\Debug\*.pdb" target="build" />
 
     <file src="RhetosCli\bin\Debug\rhetos.exe" target="contentFiles/any/any" />
+    <file src="RhetosCli\bin\Debug\rhetos.pdb" target="contentFiles/any/any" />
     <file src="RhetosCli\bin\Debug\rhetos.exe.config" target="contentFiles/any/any" />
   </files>
 </package>

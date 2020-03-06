@@ -49,7 +49,6 @@ namespace Rhetos.Configuration.Autofac
 
         /// <param name="commitChanges">
         /// Whether database updates (by ORM repositories) will be committed or rollbacked.
-        /// Note: Database updates done by SqlExecuter are always instantly committed.
         /// </param>
         /// <param name="rhetosServerFolder">
         /// If not set, the class will try to automatically locate Rhetos server, looking from current directory.
