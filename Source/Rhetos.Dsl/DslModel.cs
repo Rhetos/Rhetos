@@ -378,7 +378,7 @@ namespace Rhetos.Dsl
                 .ToList();
 
             foreach (var conceptsGroup in obsoleteConceptsByUserReport)
-                _logger.Info(() => string.Format("Obsolete concept {0} ({1} occurrences). {2}",
+                _logger.Warning(() => string.Format("Obsolete concept {0} ({1} occurrences). {2}",
                     conceptsGroup.Concepts.First().GetUserDescription(),
                     conceptsGroup.Concepts.Count(),
                     conceptsGroup.ObsoleteMessage));

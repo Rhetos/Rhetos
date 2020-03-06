@@ -171,7 +171,7 @@ namespace Rhetos.Dsl
                 if (_legacySyntax.Value == LegacySyntax.Ignore)
                     _logger.Trace(warning);
                 else
-                    _logger.Info(warning);
+                    _logger.Warning(warning);
             }
             if (_legacySyntax.Value == LegacySyntax.Error && warnings.Any())
                 throw new DslSyntaxException(warnings.First());

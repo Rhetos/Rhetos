@@ -98,7 +98,7 @@ namespace Rhetos.Extensibility
             foreach (var duplicate in byFilename.Where(dll => dll.paths.Count > 1))
             {
                 var otherPaths = string.Join(", ", duplicate.paths.Skip(1).Select(path => $"'{path}'"));
-                _logger.Info($"Multiple paths for '{duplicate.filename}' found. This causes ambiguous DLL loading and can cause type errors. Loaded: '{duplicate.paths.First()}', ignored: {otherPaths}.");
+                _logger.Warning($"Multiple paths for '{duplicate.filename}' found. This causes ambiguous DLL loading and can cause type errors. Loaded: '{duplicate.paths.First()}', ignored: {otherPaths}.");
             }
 
             var namesToPaths = byFilename.ToDictionary(dll => dll.filename, dll => dll.paths.First(), StringComparer.InvariantCultureIgnoreCase);
@@ -229,7 +229,7 @@ namespace Rhetos.Extensibility
             var actualFile = new FileInfo(actualPath);
 
             if (requestedFile.Length != actualFile.Length || requestedFile.LastWriteTimeUtc != actualFile.LastWriteTimeUtc)
-                _logger.Info($"Assembly at requested path '{requestedPath}' is not the same as loaded assembly at '{actualPath}'. This can cause issues with types.");
+                _logger.Warning($"Assembly at requested path '{requestedPath}' is not the same as loaded assembly at '{actualPath}'. This can cause issues with types.");
             else
                 _logger.Trace($"Same assembly loaded from '{actualPath}' instead of '{requestedPath}'.");
         }

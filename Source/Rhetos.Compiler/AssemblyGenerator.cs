@@ -259,7 +259,7 @@ namespace Rhetos.Compiler
                 .GroupBy(warning => warning.Id + DescriptionIfObsolete(warning))
                 .Select(warningGroup => $"{warningGroup.First()}{MultipleWarningsInfo(warningGroup.Count())}"));
 
-            _logger.Info($"{warnings.Count} warning(s) while compiling {Path.GetFileName(outputAssemblyPath)}:\r\n{warningDetails}");
+            _logger.Warning($"{warnings.Count} warning(s) while compiling {Path.GetFileName(outputAssemblyPath)}:\r\n{warningDetails}");
         }
 
         private string MultipleWarningsInfo(int count)

@@ -175,9 +175,9 @@ namespace Rhetos.Utilities
                     if (newestInGroup.Length != otherFile.Length)
                         _logger.Error("Conflicting source files with different file size: '{0}' and '{1}'.", newestInGroup.FullName, otherFile.FullName);
                     else if (newestInGroup.LastWriteTime != otherFile.LastWriteTime)
-                        _logger.Info("Conflicting source files with different modification time: '{0}' and '{1}'.", newestInGroup.FullName, otherFile.FullName);
+                        _logger.Warning("Conflicting source files with different modification time: '{0}' and '{1}'.", newestInGroup.FullName, otherFile.FullName);
                     else
-                        _logger.Info("Duplicate source files ignored: '{0}' and '{1}'.", newestInGroup.FullName, otherFile.FullName);
+                        _logger.Warning("Duplicate source files ignored: '{0}' and '{1}'.", newestInGroup.FullName, otherFile.FullName);
 
                     if (otherFile.LastWriteTime > newestInGroup.LastWriteTime
                         || otherFile.LastWriteTime == newestInGroup.LastWriteTime && otherFile.Length > newestInGroup.Length)

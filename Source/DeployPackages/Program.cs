@@ -192,7 +192,7 @@ namespace DeployPackages
             foreach (var path in deleteObsoleteFiles)
                 if (File.Exists(path))
                 {
-                    logger.Info($"Deleting obsolete file '{path}'.");
+                    logger.Warning($"Deleting obsolete file '{path}'.");
                     filesUtility.SafeDeleteFile(path);
                 }
         }

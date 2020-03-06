@@ -59,13 +59,13 @@ namespace Rhetos.Compiler
                 }
                 else
                 {
-                    Log("Updating", filePath);
+                    Log("Updating", filePath, EventType.Trace);
                     WriteFile(content, filePath);
                 }
             }
             else
             {
-                Log("Creating", filePath);
+                Log("Creating", filePath, EventType.Info);
                 _filesUtility.SafeCreateDirectory(Path.GetDirectoryName(filePath));
                 WriteFile(content, filePath);
             }
@@ -100,12 +100,12 @@ namespace Rhetos.Compiler
 
             foreach (var deleteFile in deleteFiles)
             {
-                Log("Deleting", deleteFile);
+                Log("Deleting", deleteFile, EventType.Info);
                 _filesUtility.SafeDeleteFile(deleteFile);
             }
         }
 
-        private void Log(string title, string filePath, EventType eventType = EventType.Info)
+        private void Log(string title, string filePath, EventType eventType)
         {
             _logger.Write(eventType, () => $"{title} '{FilesUtility.AbsoluteToRelativePath(_buildOptions.GeneratedSourceFolder, filePath)}'.");
         }

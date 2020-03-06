@@ -105,7 +105,7 @@ namespace Rhetos.Deployment
             Graph.TopologicalSort(generatorNames, dependencies);
 
             foreach (var missingDependency in dependencies.Where(dep => !generatorNames.Contains(dep.Item1)))
-                _deployPackagesLogger.Info($"Missing dependency '{missingDependency.Item1}' for application generator '{missingDependency.Item2}'.");
+                _deployPackagesLogger.Warning($"Missing dependency '{missingDependency.Item1}' for application generator '{missingDependency.Item2}'.");
 
             Graph.SortByGivenOrder(generators, generatorNames, GetGeneratorName);
 

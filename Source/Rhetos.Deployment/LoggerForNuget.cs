@@ -34,11 +34,11 @@ namespace Rhetos.Deployment
             _logger = logProvider.GetLogger("NuGet");
         }
 
-        Dictionary<NuGet.MessageLevel, EventType> logLevels = new Dictionary<NuGet.MessageLevel, EventType>
+        readonly Dictionary<NuGet.MessageLevel, EventType> logLevels = new Dictionary<NuGet.MessageLevel, EventType>
         {
             { NuGet.MessageLevel.Debug, EventType.Trace },
             { NuGet.MessageLevel.Info, EventType.Trace },
-            { NuGet.MessageLevel.Warning, EventType.Info },
+            { NuGet.MessageLevel.Warning, EventType.Warning },
             { NuGet.MessageLevel.Error, EventType.Error },
         };
 

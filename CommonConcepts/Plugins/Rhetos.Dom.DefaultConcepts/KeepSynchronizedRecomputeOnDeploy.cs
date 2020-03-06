@@ -78,19 +78,19 @@ namespace Rhetos.Dom.DefaultConcepts
             {
                 if (skipRecomputeDeployParameter)
                 {
-                    _logger.Info(() => $"Skipped recomputing {compute.Target} from {compute.Source} due to deployment parameter.");
+                    _logger.Warning(() => $"Skipped recomputing {compute.Target} from {compute.Source} due to deployment parameter.");
                 }
                 else if (skipRecomputeDslConcept.Contains(GetComputationKey(compute)))
                 {
-                    _logger.Info(() => $"Skipped recomputing {compute.Target} from {compute.Source} due to DSL concept.");
+                    _logger.Warning(() => $"Skipped recomputing {compute.Target} from {compute.Source} due to DSL concept.");
                 }
                 else if (skipRecomputeDbMetadata.Contains(GetComputationKey(compute)))
                 {
-                    _logger.Info(() => $"Skipped recomputing {compute.Target} from {compute.Source} due to database metadata.");
+                    _logger.Warning(() => $"Skipped recomputing {compute.Target} from {compute.Source} due to database metadata.");
                 }
                 else
                 {
-                    _logger.Info(() => $"Recomputing {compute.Target} from {compute.Source}.");
+                    _logger.Warning(() => $"Recomputing {compute.Target} from {compute.Source}.");
                     _genericRepositories.GetGenericRepository(compute.Target).RecomputeFrom(compute.Source);
                     _performanceLogger.Write(sw, () => $"{nameof(KeepSynchronizedRecomputeOnDeploy)}: {compute.Target} from {compute.Source}.");
                 }

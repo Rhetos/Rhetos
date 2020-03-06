@@ -91,7 +91,7 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
                 if (existingManifestToken.Value == EntityFrameworkMappingGenerator.ProviderManifestTokenPlaceholder)
                     _logger.Trace($@"Setting ProviderManifestToken to {expectedManifestToken}.");
                 else
-                    _logger.Info($@"Changing ProviderManifestToken from {existingManifestToken.Value} to {expectedManifestToken}.");
+                    _logger.Warning($@"Changing ProviderManifestToken from {existingManifestToken.Value} to {expectedManifestToken}.");
 
                 var lines = File.ReadAllLines(ssdlFile, Encoding.UTF8);
                 lines[0] = ssdlFirstLine.Substring(0, existingManifestToken.Index)

@@ -72,7 +72,7 @@ namespace Rhetos.Deployment
                 if (_buildOptions.DataMigration__SkipScriptsWithWrongOrder)
                 {
                     // Ignore skipped scripts for backward compatibility.
-                    LogScripts("Skipped older script", skipped, EventType.Info);
+                    LogScripts("Skipped older script", skipped, EventType.Warning);
                     toExecute = toExecute.Except(skipped).ToList();
                     skippedReport = " " + skipped.Count + " older skipped.";
                 }
@@ -80,7 +80,7 @@ namespace Rhetos.Deployment
                 {
                     // Execute skipped scripts even though this means the scripts will be executed in the incorrect order.
                     // The message is logged as an *error* to increase the chance of being noticed because it is one-off event, even though it is not blocking.
-                    LogScripts("Executing script in an incorrect order", skipped, EventType.Info);
+                    LogScripts("Executing script in an incorrect order", skipped, EventType.Warning);
                 }
             }
 
@@ -111,10 +111,10 @@ namespace Rhetos.Deployment
 
         protected void ApplyToDatabase(List<DataMigrationScript> toRemove, List<DataMigrationScript> toExecute)
         {
-            LogScripts("Remove", toRemove, EventType.Info);
+            LogScripts("Remove", toRemove, EventType.Warning);
             Undo(toRemove.Select(s => s.Tag).ToList());
 
-            LogScripts("Execute", toExecute, EventType.Info);
+            LogScripts("Execute", toExecute, EventType.Warning);
             _sqlTransactionBatches.Execute(toExecute
                 .SelectMany(script => new[]
                 {

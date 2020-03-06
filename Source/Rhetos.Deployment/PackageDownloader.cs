@@ -240,19 +240,19 @@ namespace Rhetos.Deployment
             }
             else if (existingMetadataFiles.Length > 1)
             {
-                _logger.Info(() => "Package " + request.Id + " source folder '" + source.ProvidedLocation + "' contains multiple .nuspec metadata files.");
+                _logger.Warning(() => $"Package {request.Id} source folder '{source.ProvidedLocation}' contains multiple .nuspec metadata files.");
                 return null;
             }
             else if (existingMetadataFiles.Length == 1)
             {
-                _logger.Trace(() => "Reading package " + request.Id + " from unpacked source folder with metadata " + Path.GetFileName(existingMetadataFiles.Single()) + ".");
-                _deployPackagesLogger.Trace(() => "Reading " + request.Id + " from source.");
+                _logger.Trace(() => $"Reading package {request.Id} from unpacked source folder with metadata {Path.GetFileName(existingMetadataFiles.Single())}.");
+                _deployPackagesLogger.Trace(() => $"Reading {request.Id} from source.");
                 return UseFilesFromUnpackedSourceWithMetadata(existingMetadataFiles.Single(), request, binFileSyncer);
             }
             else if (existingSourceSubfolders.Any())
             {
-                _logger.Trace(() => "Reading package " + request.Id + " from unpacked source folder without metadata file.");
-                _deployPackagesLogger.Trace(() => "Reading " + request.Id + " from source without metadata.");
+                _logger.Trace(() => $"Reading package {request.Id} from unpacked source folder without metadata file.");
+                _deployPackagesLogger.Trace(() => $"Reading {request.Id} from source without metadata.");
                 return UseFilesFromUnpackedSourceWithoutMetadata(source.Path, request, binFileSyncer);
             }
             else

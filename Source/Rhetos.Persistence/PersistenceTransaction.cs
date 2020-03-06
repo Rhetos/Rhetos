@@ -73,7 +73,7 @@ namespace Rhetos.Persistence
         public void CommitAndReconnect()
         {
             string callerInfo = GetCaller();
-            _logger.Info(() => "CommitAndReconnect is obsolete. Please upgrade to a latest version of the Rhetos plugin '" + callerInfo + "'.");
+            _logger.Warning(() => "CommitAndReconnect is obsolete. Please upgrade to a latest version of the Rhetos plugin '" + callerInfo + "'.");
 
             if (_disposed)
                 throw new FrameworkException("Trying to commit and reconnect a disposed persistence transaction.");

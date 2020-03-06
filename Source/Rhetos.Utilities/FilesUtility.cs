@@ -175,7 +175,7 @@ namespace Rhetos.Utilities
             {
                 bool tryDefault = !Encoding.Default.Equals(Encoding.UTF8);
 
-                _logger.Info($"WARNING: File '{path}' contains invalid UTF-8 character at line {ScriptPositionReporting.Line(text, invalidCharIndex)}." +
+                _logger.Warning($"Warning: File '{path}' contains invalid UTF-8 character at line {ScriptPositionReporting.Line(text, invalidCharIndex)}." +
                     (tryDefault ? $" Reading with default system encoding instead." : "") +
                     $" Save text file as UTF-8.");
 

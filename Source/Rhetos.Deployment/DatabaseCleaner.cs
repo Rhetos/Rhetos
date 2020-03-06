@@ -42,7 +42,7 @@ namespace Rhetos.Deployment
             if (SqlUtility.DatabaseLanguage != "MsSql")
             {
                 var reportSkip = "Skipped DatabaseCleaner.DeleteAllMigrationData (DatabaseLanguage=" + SqlUtility.DatabaseLanguage + ").";
-                _logger.Info(reportSkip);
+                _logger.Warning(reportSkip);
                 return reportSkip;
             }
 
@@ -50,7 +50,7 @@ namespace Rhetos.Deployment
             var deleteMigrationSchemas = ReadDataMigrationSchemasFromDatabase();
             DeleteDatabaseObjects(new ColumnInfo[] { }, dataMigrationTables, deleteMigrationSchemas);
 
-            var report = "Deleted " + dataMigrationTables.Count() + " tables in data migration schemas.";
+            var report = $"Deleted {dataMigrationTables.Count} tables in data migration schemas.";
             _logger.Info(report);
             return report;
         }
@@ -60,7 +60,7 @@ namespace Rhetos.Deployment
             if (SqlUtility.DatabaseLanguage != "MsSql")
             {
                 var reportSkip = "Skipped DatabaseCleaner.RefreshDataMigrationRows (DatabaseLanguage=" + SqlUtility.DatabaseLanguage + ").";
-                _logger.Info(reportSkip);
+                _logger.Warning(reportSkip);
                 return reportSkip;
             }
 
@@ -72,7 +72,7 @@ namespace Rhetos.Deployment
         {
             if (SqlUtility.DatabaseLanguage != "MsSql")
             {
-                _deployPackagesLogger.Info("Skipped DatabaseCleaner.RemoveRedundantMigrationColumns (DatabaseLanguage=" + SqlUtility.DatabaseLanguage + ").");
+                _deployPackagesLogger.Warning("Skipped DatabaseCleaner.RemoveRedundantMigrationColumns (DatabaseLanguage=" + SqlUtility.DatabaseLanguage + ").");
                 return;
             }
 
