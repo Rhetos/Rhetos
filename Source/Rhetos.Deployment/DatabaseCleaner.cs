@@ -26,14 +26,12 @@ namespace Rhetos.Deployment
 {
     public class DatabaseCleaner
     {
-        private readonly ISqlExecuter _sqlExecuter;
         private readonly ILogger _logger;
-        private readonly ILogger _deployPackagesLogger;
+        private readonly ISqlExecuter _sqlExecuter;
 
         public DatabaseCleaner(ILogProvider logProvider, ISqlExecuter sqlExecuter)
         {
-            _logger = logProvider.GetLogger("DatabaseCleaner");
-            _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
+            _logger = logProvider.GetLogger(GetType().Name);
             _sqlExecuter = sqlExecuter;
         }
 
@@ -41,7 +39,7 @@ namespace Rhetos.Deployment
         {
             if (SqlUtility.DatabaseLanguage != "MsSql")
             {
-                var reportSkip = "Skipped DatabaseCleaner.DeleteAllMigrationData (DatabaseLanguage=" + SqlUtility.DatabaseLanguage + ").";
+                var reportSkip = "Skipped DeleteAllMigrationData (DatabaseLanguage=" + SqlUtility.DatabaseLanguage + ").";
                 _logger.Warning(reportSkip);
                 return reportSkip;
             }
@@ -59,7 +57,7 @@ namespace Rhetos.Deployment
         {
             if (SqlUtility.DatabaseLanguage != "MsSql")
             {
-                var reportSkip = "Skipped DatabaseCleaner.RefreshDataMigrationRows (DatabaseLanguage=" + SqlUtility.DatabaseLanguage + ").";
+                var reportSkip = "Skipped RefreshDataMigrationRows (DatabaseLanguage=" + SqlUtility.DatabaseLanguage + ").";
                 _logger.Warning(reportSkip);
                 return reportSkip;
             }
@@ -72,7 +70,7 @@ namespace Rhetos.Deployment
         {
             if (SqlUtility.DatabaseLanguage != "MsSql")
             {
-                _deployPackagesLogger.Warning("Skipped DatabaseCleaner.RemoveRedundantMigrationColumns (DatabaseLanguage=" + SqlUtility.DatabaseLanguage + ").");
+                _logger.Warning("Skipped RemoveRedundantMigrationColumns (DatabaseLanguage=" + SqlUtility.DatabaseLanguage + ").");
                 return;
             }
 
@@ -102,7 +100,7 @@ namespace Rhetos.Deployment
 
             DeleteDatabaseObjects(deleteMigrationColumnsOptimized, emptyMigrationTables, emptyMigrationSchemas);
 
-            _deployPackagesLogger.Trace(() =>
+            _logger.Info(() =>
                 "Deleted " + deleteMigrationColumns.Count + " columns in data migration schemas, "
                 + remainingMigrationColumns.Count + " remaining.");
         }

@@ -24,9 +24,7 @@ using Rhetos.Persistence;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace Rhetos.Deployment
 {
@@ -58,13 +56,13 @@ namespace Rhetos.Deployment
         }
 
         /// <summary>
-        /// NOTE:
+        /// Note:
         /// This method does not conform to the standard IoC design pattern.
         /// It uses IoC container directly because it needs to handle a special scope control (separate database connections) and error handling.
         /// </summary>
         public static void ExecuteInitializer(IContainer container, Type initializerType)
         {
-            var deployPackagesLogger = container.Resolve<ILogProvider>().GetLogger("DeployPackages");
+            var logger = container.Resolve<ILogProvider>().GetLogger(nameof(ApplicationInitialization));
             
             Exception originalException = null;
             try
@@ -72,7 +70,7 @@ namespace Rhetos.Deployment
                 using (var initializerScope = container.BeginLifetimeScope())
                     try
                     {
-                        deployPackagesLogger.Trace("Initialization " + initializerType.Name + ".");
+                        logger.Info($"Initialization {initializerType.Name}.");
                         var initializers = initializerScope.Resolve<IPluginsContainer<IServerInitializer>>().GetPlugins();
                         IServerInitializer initializer = initializers.Single(i => i.GetType() == initializerType);
                         initializer.Initialize();
@@ -80,7 +78,7 @@ namespace Rhetos.Deployment
                     catch (Exception ex)
                     {
                         // Some exceptions result with invalid SQL transaction state that results with another exception on disposal of this 'using' block.
-                        // The original exception is logged here to make sure that it is not overridden;
+                        // The original exception is logged here to make sure that it is not overridden.
                         originalException = ex;
                         initializerScope.Resolve<IPersistenceTransaction>().DiscardChanges();
                         ExceptionsUtility.Rethrow(ex);
@@ -90,7 +88,7 @@ namespace Rhetos.Deployment
             {
                 if (originalException != null && ex != originalException)
                 {
-                    deployPackagesLogger.Error("Error on cleanup: " + ex.ToString());
+                    logger.Error($"Error on cleanup: {ex}");
                     ExceptionsUtility.Rethrow(originalException);
                 }
                 else

@@ -39,7 +39,6 @@ namespace Rhetos.DatabaseGenerator
 		/// <summary>Special logger for keeping track of inserted/updated/deleted concept applications in database.</summary>
         private readonly ILogger _conceptsLogger;
         private readonly ILogger _modifiedObjectsLogger;
-        private readonly ILogger _deployPackagesLogger;
         private readonly ILogger _performanceLogger;
         private readonly DatabaseGeneratorOptions _options;
         private readonly DatabaseModel _databaseModel;
@@ -56,7 +55,6 @@ namespace Rhetos.DatabaseGenerator
             _logger = logProvider.GetLogger("DatabaseGenerator");
             _conceptsLogger = logProvider.GetLogger("DatabaseGenerator Concepts");
             _modifiedObjectsLogger = logProvider.GetLogger("DatabaseGenerator ModifiedObjects");
-            _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
             _performanceLogger = logProvider.GetLogger("Performance");
             _options = options;
             _databaseModel = databaseModel;
@@ -253,7 +251,7 @@ namespace Rhetos.DatabaseGenerator
             }
 
             var logLevel = removedCACount > 0 ? EventType.Warning : EventType.Info;
-            _deployPackagesLogger.Write(logLevel, "DatabaseGenerator removing " + removedCACount + " concept applications.");
+            _logger.Write(logLevel, "Removing " + removedCACount + " concept applications.");
             return newScripts;
         }
 
@@ -279,7 +277,7 @@ namespace Rhetos.DatabaseGenerator
             }
 
             var logLevel = insertedCACount > 0 ? EventType.Warning : EventType.Info;
-            _deployPackagesLogger.Write(logLevel, "DatabaseGenerator creating " + insertedCACount + " concept applications.");
+            _logger.Write(logLevel, "Creating " + insertedCACount + " concept applications.");
             return newScripts;
         }
 

@@ -43,7 +43,7 @@ namespace Rhetos
         /// <param name="pluginAssemblies">List of assemblies (DLL file paths) that will be scanned for plugins.</param>
         public ApplicationDeployment(IConfigurationProvider configurationProvider, ILogProvider logProvider, Func<IEnumerable<string>> pluginAssemblies)
         {
-            _logger = logProvider.GetLogger("DeployPackages");
+            _logger = logProvider.GetLogger(GetType().Name);
             _configurationProvider = configurationProvider;
             _logProvider = logProvider;
             _pluginAssemblies = pluginAssemblies;
@@ -52,7 +52,7 @@ namespace Rhetos
 
         public InstalledPackages DownloadPackages(bool ignoreDependencies)
         {
-            _logger.Trace("Getting packages.");
+            _logger.Info("Getting packages.");
             var config = new DeploymentConfiguration(_logProvider);
             var packageDownloaderOptions = new PackageDownloaderOptions { IgnorePackageDependencies = ignoreDependencies };
             var packageDownloader = new PackageDownloader(config, _logProvider, packageDownloaderOptions);
@@ -64,7 +64,7 @@ namespace Rhetos
 
         public void GenerateApplication(InstalledPackages installedPackages)
         {
-            _logger.Trace("Loading plugins.");
+            _logger.Info("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
 
             var builder = CreateBuildComponentsContainer(installedPackages);
@@ -95,7 +95,7 @@ namespace Rhetos
 
         public void UpdateDatabase()
         {
-            _logger.Trace("Loading plugins.");
+            _logger.Info("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
 
             var builder = CreateDbUpdateComponentsContainer();
@@ -126,7 +126,7 @@ namespace Rhetos
         {
             // Creating a new container builder instead of using builder.Update(), because of severe performance issues with the Update method.
 
-            _logger.Trace("Loading generated plugins.");
+            _logger.Info("Loading generated plugins.");
             var stopwatch = Stopwatch.StartNew();
 
             var builder = CreateAppInitializationComponentsContainer();
@@ -141,7 +141,7 @@ namespace Rhetos
 
                 if (!initializers.Any())
                 {
-                    _logger.Trace("No server initialization plugins.");
+                    _logger.Info("No server initialization plugins.");
                 }
                 else
                 {
@@ -180,9 +180,9 @@ namespace Rhetos
         {
             var configFile = Path.Combine(Paths.RhetosServerRootPath, "Web.config");
             if (FilesUtility.SafeTouch(configFile))
-                _logger.Trace($"Updated {Path.GetFileName(configFile)} modification date to restart server.");
+                _logger.Info($"Updated {Path.GetFileName(configFile)} modification date to restart server.");
             else
-                _logger.Trace($"Missing {configFile}.");
+                _logger.Info($"Missing {configFile}.");
         }
     }
 }

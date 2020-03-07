@@ -30,7 +30,7 @@ namespace Rhetos.Deployment
 {
     public class ApplicationGenerator
     {
-        private readonly ILogger _deployPackagesLogger;
+        private readonly ILogger _logger;
         private readonly IDslModel _dslModel;
         private readonly IPluginsContainer<IGenerator> _generatorsContainer;
         private readonly RhetosAppEnvironment _rhetosAppEnvironment;
@@ -47,7 +47,7 @@ namespace Rhetos.Deployment
             FilesUtility filesUtility,
             ISourceWriter sourceWriter)
         {
-            _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
+            _logger = logProvider.GetLogger(GetType().Name);
             _dslModel = dslModel;
             _generatorsContainer = generatorsContainer;
             _rhetosAppEnvironment = rhetosAppEnvironment;
@@ -68,11 +68,11 @@ namespace Rhetos.Deployment
             var generators = GetSortedGenerators();
             foreach (var generator in generators)
             {
-                _deployPackagesLogger.Trace("Executing " + generator.GetType().Name + ".");
+                _logger.Info("Executing " + generator.GetType().Name + ".");
                 generator.Generate();
             }
             if (!generators.Any())
-                _deployPackagesLogger.Trace("No additional generators.");
+                _logger.Info("No additional generators.");
 
             if(!string.IsNullOrEmpty(_buildOptions.GeneratedSourceFolder))
                 _sourceWriter.CleanUp();
@@ -84,9 +84,9 @@ namespace Rhetos.Deployment
         /// </summary>
         private void CheckDslModelErrors()
         {
-            _deployPackagesLogger.Trace("Parsing DSL scripts.");
+            _logger.Info("Parsing DSL scripts.");
             int dslModelConceptsCount = _dslModel.Concepts.Count();
-            _deployPackagesLogger.Trace("Application model has " + dslModelConceptsCount + " statements.");
+            _logger.Info("Application model has " + dslModelConceptsCount + " statements.");
         }
 
         private IList<IGenerator> GetSortedGenerators()
@@ -105,7 +105,7 @@ namespace Rhetos.Deployment
             Graph.TopologicalSort(generatorNames, dependencies);
 
             foreach (var missingDependency in dependencies.Where(dep => !generatorNames.Contains(dep.Item1)))
-                _deployPackagesLogger.Warning($"Missing dependency '{missingDependency.Item1}' for application generator '{missingDependency.Item2}'.");
+                _logger.Warning($"Missing dependency '{missingDependency.Item1}' for application generator '{missingDependency.Item2}'.");
 
             Graph.SortByGivenOrder(generators, generatorNames, GetGeneratorName);
 

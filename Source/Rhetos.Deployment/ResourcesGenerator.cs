@@ -36,14 +36,14 @@ namespace Rhetos.Deployment
     {
         private readonly InstalledPackages _installedPackages;
         private readonly ILogProvider _logProvider;
-        private readonly ILogger _deployPackagesLogger;
+        private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
 
         public ResourcesGenerator(InstalledPackages installedPackages, ILogProvider logProvider, BuildOptions buildOptions)
         {
             _installedPackages = installedPackages;
             _logProvider = logProvider;
-            _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
+            _logger = logProvider.GetLogger(GetType().Name);
             _performanceLogger = logProvider.GetLogger("Performance");
         }
 
@@ -78,7 +78,7 @@ namespace Rhetos.Deployment
             foreach (var file in resourceFiles)
                 _fileSyncer.AddFile(file.Source, Paths.ResourcesFolder, file.Target);
 
-            _deployPackagesLogger.Trace($"ResourcesGenerator: Copying {resourceFiles.Count} resource files.");
+            _logger.Info($"Copying {resourceFiles.Count} resource files.");
             _fileSyncer.UpdateDestination();
 
             _performanceLogger.Write(stopwatch, "ResourcesGenerator.");

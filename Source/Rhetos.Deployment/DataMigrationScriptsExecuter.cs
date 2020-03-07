@@ -19,10 +19,8 @@
 
 using Rhetos.Logging;
 using Rhetos.Utilities;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Rhetos.Deployment
@@ -31,7 +29,6 @@ namespace Rhetos.Deployment
     {
         protected readonly ISqlExecuter _sqlExecuter;
         protected readonly ILogger _logger;
-        protected readonly ILogger _deployPackagesLogger;
         protected readonly DataMigrationScripts _dataMigrationScripts;
         protected readonly SqlTransactionBatches _sqlTransactionBatches;
         protected readonly BuildOptions _buildOptions;
@@ -41,7 +38,6 @@ namespace Rhetos.Deployment
         {
             _sqlExecuter = sqlExecuter;
             _logger = logProvider.GetLogger("DataMigration");
-            _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
             _dataMigrationScripts = dataMigrationScripts;
             _sqlTransactionBatches = sqlTransactionBatches;
             _buildOptions = buildOptions;
@@ -86,8 +82,7 @@ namespace Rhetos.Deployment
 
             ApplyToDatabase(toRemove, toExecute);
 
-            string report = string.Format("Executed {0} of {1} scripts.{2}", toExecute.Count, newScripts.Count, skippedReport);
-            _deployPackagesLogger.Trace(report);
+            _logger.Info($"Executed {toExecute.Count} of {newScripts.Count} scripts.{skippedReport}");
 
             return new DataMigrationReport { CreatedTags = toExecute.Select(s => s.Tag).ToList() };
         }
@@ -151,7 +146,7 @@ namespace Rhetos.Deployment
                 if (lastExecuted != null)
                 {
                     var folder = group.Key;
-                    _logger.Trace(() => "Last executed script in '" + folder + "' is '" + lastExecuted.Path + "' of new scripts provided.");
+                    _logger.Trace(() => $"Last executed script in '{folder}' is '{lastExecuted.Path}' of new scripts provided.");
 
                     skipped.AddRange(group.Value
                         .Where(newScriptInGroup => newScriptInGroup.CompareTo(lastExecuted) < 0));
@@ -171,12 +166,7 @@ namespace Rhetos.Deployment
         protected void LogScripts(string msg, IEnumerable<DataMigrationScript> scripts, EventType eventType = EventType.Trace)
         {
             foreach (var script in scripts)
-                LogScript(msg, script, eventType);
-        }
-
-        protected void LogScript(string msg, DataMigrationScript script, EventType eventType = EventType.Trace)
-        {
-            _logger.Write(eventType, () => msg + " " + script.Path + " (tag " + script.Tag + ")");
+                _logger.Write(eventType, () => $"{msg} {script.Path} (tag {script.Tag})");
         }
 
         protected List<DataMigrationScript> LoadScriptsFromDatabase()
