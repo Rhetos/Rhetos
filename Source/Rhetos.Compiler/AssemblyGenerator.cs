@@ -20,7 +20,6 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
-using Rhetos.Dom;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
@@ -102,7 +101,7 @@ namespace Rhetos.Compiler
 
             if (sourceHash.SequenceEqual(_cacheUtility.LoadHash(sourcePath)) && TryRestoreCachedFiles(outputAssemblyPath, pdbPath))
             {
-                _logger.Trace(() => "Restoring assembly from cache: " + dllName + ".");
+                _logger.Info(() => "Restoring assembly from cache: " + dllName + ".");
                 if (!File.Exists(outputAssemblyPath))
                     throw new FrameworkException($"AssemblyGenerator: RestoreCachedFiles failed to create the assembly file ({dllName}).");
 
@@ -114,7 +113,7 @@ namespace Rhetos.Compiler
             }
             else
             {
-                _logger.Trace(() => "Compiling assembly: " + dllName + ".");
+                _logger.Info(() => "Compiling assembly: " + dllName + ".");
 
                 var references = registeredReferences
                     .Select(reference => MetadataReference.CreateFromFile(reference)).ToList();

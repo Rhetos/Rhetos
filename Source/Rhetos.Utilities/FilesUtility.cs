@@ -19,7 +19,6 @@
 
 using Rhetos.Logging;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -50,8 +49,10 @@ namespace Rhetos.Utilities
                     if (tries <= 1)
                         throw;
 
-                    if (tries == maxTries - 1) // Logging the second retry instead of the first one, because first retries are too common.
-                        _logger.Trace(() => "Waiting to " + actionName.Invoke() + ".");
+                    if (tries == maxTries) // First retries are very common on some environments.
+                        _logger.Trace(() => $"Waiting to {actionName.Invoke()}.");
+                    if (tries == maxTries - 1) // Second retry is often result of a locked file.
+                        _logger.Warning(() => $"Waiting to {actionName.Invoke()}.");
 
                     System.Threading.Thread.Sleep(500);
                 }
@@ -68,7 +69,7 @@ namespace Rhetos.Utilities
             }
             catch (Exception ex)
             {
-                throw new FrameworkException(String.Format("Can't create directory '{0}'. Check that it's not locked.", path), ex);
+                throw new FrameworkException($"Can't create directory '{path}'. Check that it's not locked.", ex);
             }
         }
 
@@ -93,7 +94,7 @@ namespace Rhetos.Utilities
             }
             catch (Exception ex)
             {
-                throw new FrameworkException(String.Format("Can't delete directory '{0}'. Check that it's not locked.", path), ex);
+                throw new FrameworkException($"Can't delete directory '{path}'. Check that it's not locked.", ex);
             }
         }
 
@@ -120,7 +121,7 @@ namespace Rhetos.Utilities
             }
             catch (Exception ex)
             {
-                throw new FrameworkException(String.Format("Can't move file '{0}' to '{1}'. Check that destination file or folder is not locked.", source, destination), ex);
+                throw new FrameworkException($"Can't move file '{source}' to '{destination}'. Check that destination file or folder is not locked.", ex);
             }
         }
 
@@ -138,7 +139,7 @@ namespace Rhetos.Utilities
             }
             catch (Exception ex)
             {
-                throw new FrameworkException(String.Format("Can't copy file '{0}' to '{1}'. Check that destination folder is not locked.", sourceFile, destinationFile), ex);
+                throw new FrameworkException($"Can't copy file '{sourceFile}' to '{destinationFile}'. Check that destination folder is not locked.", ex);
             }
         }
 

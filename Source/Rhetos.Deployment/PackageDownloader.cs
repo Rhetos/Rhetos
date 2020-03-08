@@ -39,7 +39,6 @@ namespace Rhetos.Deployment
         private readonly DeploymentConfiguration _deploymentConfiguration;
         private readonly ILogProvider _logProvider;
         private readonly Rhetos.Logging.ILogger _logger;
-        private readonly Rhetos.Logging.ILogger _packagesLogger;
         private readonly Rhetos.Logging.ILogger _performanceLogger;
         private readonly PackageDownloaderOptions _options;
         private readonly FilesUtility _filesUtility;
@@ -52,8 +51,7 @@ namespace Rhetos.Deployment
         {
             _deploymentConfiguration = deploymentConfiguration;
             _logProvider = logProvider;
-            _logger = logProvider.GetLogger(GetType().Name);
-            _packagesLogger = logProvider.GetLogger("Packages");
+            _logger = logProvider.GetLogger("Packages");
             _performanceLogger = logProvider.GetLogger("Performance");
             _options = options;
             _filesUtility = new FilesUtility(logProvider);
@@ -101,9 +99,6 @@ namespace Rhetos.Deployment
             SortByDependencies(installedPackages);
 
             binFileSyncer.UpdateDestination();
-
-            foreach (var package in installedPackages)
-                _packagesLogger.Trace(() => package.Report());
 
             _performanceLogger.Write(sw, "PackageDownloader.GetPackages.");
 

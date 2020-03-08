@@ -37,8 +37,7 @@ namespace Rhetos.DatabaseGenerator
         private readonly IConceptApplicationRepository _conceptApplicationRepository;
         private readonly ILogger _logger;
 		/// <summary>Special logger for keeping track of inserted/updated/deleted concept applications in database.</summary>
-        private readonly ILogger _conceptsLogger;
-        private readonly ILogger _modifiedObjectsLogger;
+        private readonly ILogger _changesLogger;
         private readonly ILogger _performanceLogger;
         private readonly DatabaseGeneratorOptions _options;
         private readonly DatabaseModel _databaseModel;
@@ -52,9 +51,8 @@ namespace Rhetos.DatabaseGenerator
         {
             _sqlTransactionBatches = sqlTransactionBatches;
             _conceptApplicationRepository = conceptApplicationRepository;
-            _logger = logProvider.GetLogger("DatabaseGenerator");
-            _conceptsLogger = logProvider.GetLogger("DatabaseGenerator Concepts");
-            _modifiedObjectsLogger = logProvider.GetLogger("DatabaseGenerator ModifiedObjects");
+            _logger = logProvider.GetLogger(GetType().Name);
+            _changesLogger = logProvider.GetLogger("DatabaseGeneratorChanges");
             _performanceLogger = logProvider.GetLogger("Performance");
             _options = options;
             _databaseModel = databaseModel;
@@ -145,7 +143,7 @@ namespace Rhetos.DatabaseGenerator
                 .ToList();
 
             foreach (string ca in changedApplications)
-                _modifiedObjectsLogger.Trace(() => $"Changed concept application: {ca}\r\n{ReportDiff(oldApplicationsByKey[ca].CreateQuery, newApplicationsByKey[ca].CreateQuery)}");
+                _changesLogger.Trace(() => $"Changed concept application: {ca}\r\n{ReportDiff(oldApplicationsByKey[ca].CreateQuery, newApplicationsByKey[ca].CreateQuery)}");
 
             // Find dependent concepts applications to be regenerated:
 
@@ -330,7 +328,7 @@ namespace Rhetos.DatabaseGenerator
 
         private void LogDatabaseChanges(ConceptApplication conceptApplication, string action, Func<string> additionalInfo = null)
         {
-            _conceptsLogger.Trace("{0} {1}, ID={2}.{3}{4}",
+            _changesLogger.Trace("{0} {1}, ID={2}.{3}{4}",
                 action,
                 conceptApplication.GetConceptApplicationKey(),
                 SqlUtility.GuidToString(conceptApplication.Id),
