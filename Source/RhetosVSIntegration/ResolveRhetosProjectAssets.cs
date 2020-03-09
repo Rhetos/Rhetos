@@ -49,11 +49,7 @@ namespace RhetosVSIntegration
                 OutputAssemblyName = AssemblyName
             };
 
-            var assetsFileHasChanged = new RhetosProjectAssetsFileProvider(ProjectDirectory).Save(rhetosProjectAssets);
-            if (assetsFileHasChanged)
-                Log.LogMessage(MessageImportance.High, $"{nameof(RhetosProjectAssets)} updated.");
-            else
-                Log.LogMessage(MessageImportance.High, $"{nameof(RhetosProjectAssets)} is already up-to-date.");
+            new RhetosProjectAssetsFileProvider(ProjectDirectory, new RhetosLogProvider(Log)).Save(rhetosProjectAssets);
 
             return true;
         }

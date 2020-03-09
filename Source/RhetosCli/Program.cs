@@ -95,7 +95,7 @@ namespace Rhetos
 
         private void Build(string projectRootPath)
         {
-            var rhetosprojectAssets = new RhetosProjectAssetsFileProvider(projectRootPath).Load();
+            var rhetosprojectAssets = new RhetosProjectAssetsFileProvider(projectRootPath, LogProvider).Load();
 
             string binFolder = Path.Combine(projectRootPath, "bin");
             if (FilesUtility.IsSameDirectory(AppDomain.CurrentDomain.BaseDirectory, binFolder))
