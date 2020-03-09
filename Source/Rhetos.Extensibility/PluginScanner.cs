@@ -228,10 +228,23 @@ namespace Rhetos.Extensibility
             var requestedFile = new FileInfo(requestedPath);
             var actualFile = new FileInfo(actualPath);
 
-            if (requestedFile.Length != actualFile.Length || requestedFile.LastWriteTimeUtc != actualFile.LastWriteTimeUtc)
+            if (requestedFile.Length != actualFile.Length || !SameTimeIgnoreTimeZone(requestedFile.LastWriteTimeUtc, actualFile.LastWriteTimeUtc))
                 _logger.Warning($"Assembly at requested path '{requestedPath}' is not the same as loaded assembly at '{actualPath}'. This can cause issues with types.");
             else
                 _logger.Trace($"Same assembly loaded from '{actualPath}' instead of '{requestedPath}'.");
+        }
+
+        /// <summary>
+        /// Simplified heuristics to ignore file timezone errors, because NuGet pack/unpack can shift last modified time: https://github.com/NuGet/Home/issues/7395
+        /// This method does not need to be exact, because it's purpose is only to reduce clutter in log.
+        /// </summary>
+        private bool SameTimeIgnoreTimeZone(DateTime lastWriteTimeUtc1, DateTime lastWriteTimeUtc2)
+        {
+            return
+                lastWriteTimeUtc1.Subtract(lastWriteTimeUtc2).TotalHours <= 14
+                && lastWriteTimeUtc1.Minute == lastWriteTimeUtc2.Minute
+                && lastWriteTimeUtc1.Second == lastWriteTimeUtc2.Second
+                && lastWriteTimeUtc1.Millisecond == lastWriteTimeUtc2.Millisecond;
         }
 
         private static Dictionary<Type, List<PluginInfo>> GetMefExportsForTypes(Type[] types)

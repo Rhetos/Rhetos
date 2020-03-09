@@ -97,7 +97,7 @@ namespace Rhetos
 
             string binFolder = Path.Combine(projectRootPath, "bin");
             if (FilesUtility.IsSameDirectory(AppDomain.CurrentDomain.BaseDirectory, binFolder))
-                throw new FrameworkException($"Rhetos build command cannot be run from the generated application.");
+                throw new FrameworkException($"Rhetos build command cannot be run from the generated application. Visual Studio integration runs it automatically from Rhetos NuGet package tools folder. You can run it manually from Package Manager Console, because it is included in PATH.");
 
             var configurationProvider = new ConfigurationBuilder()
                 .AddRhetosAppEnvironment(new RhetosAppEnvironment

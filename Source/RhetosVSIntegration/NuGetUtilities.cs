@@ -87,7 +87,7 @@ namespace Rhetos
                 installedPackages.Add(new InstalledPackage(library.Name, library.Version.Version.ToString(), dependencies, packageFolder, null, null, contentFiles));
             }
             
-            var sortedPackages =  SortInstalledPackagesByDependencies(targetLibraries, installedPackages);
+            var sortedPackages = SortInstalledPackagesByDependencies(targetLibraries, installedPackages);
             sortedPackages.Add(GetProjectAsInstalledPackage());
             return sortedPackages;
         }
