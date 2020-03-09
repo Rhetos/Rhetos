@@ -106,10 +106,10 @@ namespace Rhetos.Deployment
 
         protected void ApplyToDatabase(List<DataMigrationScript> toRemove, List<DataMigrationScript> toExecute)
         {
-            LogScripts("Remove", toRemove, EventType.Warning);
+            LogScripts("Removing", toRemove, EventType.Info);
             Undo(toRemove.Select(s => s.Tag).ToList());
 
-            LogScripts("Execute", toExecute, EventType.Warning);
+            LogScripts("Executing", toExecute, EventType.Info);
             _sqlTransactionBatches.Execute(toExecute
                 .SelectMany(script => new[]
                 {

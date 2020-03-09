@@ -248,8 +248,7 @@ namespace Rhetos.DatabaseGenerator
                 newScripts.AddRange(MaybeCommitMetadataAfterDdl(removeSqlScripts));
             }
 
-            var logLevel = removedCACount > 0 ? EventType.Warning : EventType.Info;
-            _logger.Write(logLevel, "Removing " + removedCACount + " concept applications.");
+            _logger.Info($"Removing {removedCACount} concept applications.");
             return newScripts;
         }
 
@@ -274,8 +273,7 @@ namespace Rhetos.DatabaseGenerator
                 newScripts.AddRange(MaybeCommitMetadataAfterDdl(createSqlScripts));
             }
 
-            var logLevel = insertedCACount > 0 ? EventType.Warning : EventType.Info;
-            _logger.Write(logLevel, "Creating " + insertedCACount + " concept applications.");
+            _logger.Info($"Creating {insertedCACount} concept applications.");
             return newScripts;
         }
 
