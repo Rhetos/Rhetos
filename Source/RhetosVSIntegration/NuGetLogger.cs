@@ -39,7 +39,7 @@ namespace Rhetos
             { LogLevel.Verbose, MessageImportance.Low },
             { LogLevel.Information, MessageImportance.Normal },
             { LogLevel.Minimal, MessageImportance.Normal },
-            { LogLevel.Warning, MessageImportance.Normal },
+            { LogLevel.Warning, MessageImportance.High },
             { LogLevel.Error, MessageImportance.High },
         };
 
@@ -47,25 +47,24 @@ namespace Rhetos
         {
             if (level == LogLevel.Error)
                 _logger.LogError(data);
+            else if (level == LogLevel.Warning)
+                _logger.LogWarning(data);
             else
                 _logger.LogMessage(_levelMapping[level], data);
         }
 
         public void Log(ILogMessage message)
         {
-            if (message.Level == LogLevel.Error)
-                _logger.LogError(message.ToString());
-            else
-                _logger.LogMessage(_levelMapping[message.Level], message.ToString());
+            Log(message.Level, message.ToString());
         }
 
-    public System.Threading.Tasks.Task LogAsync(LogLevel level, string data) => new System.Threading.Tasks.Task(() => Log(level, data));
+        public System.Threading.Tasks.Task LogAsync(LogLevel level, string data) => new System.Threading.Tasks.Task(() => Log(level, data));
 
         public System.Threading.Tasks.Task LogAsync(ILogMessage message) => new System.Threading.Tasks.Task(() => Log(message));
 
         public void LogDebug(string data) => Log(LogLevel.Debug, data);
 
-        public void LogError(string data) => Log(LogLevel.Error, data);
+        public void LogVerbose(string data) => Log(LogLevel.Verbose, data);
 
         public void LogInformation(string data) => Log(LogLevel.Information, data);
 
@@ -73,8 +72,8 @@ namespace Rhetos
 
         public void LogMinimal(string data) => Log(LogLevel.Minimal, data);
 
-        public void LogVerbose(string data) => Log(LogLevel.Verbose, data);
-
         public void LogWarning(string data) => Log(LogLevel.Warning, data);
+
+        public void LogError(string data) => Log(LogLevel.Error, data);
     }
 }

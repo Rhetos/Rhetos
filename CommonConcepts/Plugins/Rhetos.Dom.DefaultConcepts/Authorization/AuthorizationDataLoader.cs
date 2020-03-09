@@ -87,7 +87,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     {
                         if (ex.Message.StartsWith("Cannot insert duplicate key row in object 'Common.Principal' with unique index 'IX_Principal_Name'"))
                         {
-                            _logger.Info(() => "Ignoring concurrent principal creation: " + ex.GetType().Name + ": " + ex.Message);
+                            _logger.Warning(() => "Ignoring concurrent principal creation: " + ex.GetType().Name + ": " + ex.Message);
                             principal.ID = GetPrincipalID(username);
                             if (principal.ID == default(Guid))
                                 throw new FrameworkException("Cannot create the principal record for '" + username + "'.", ex);
@@ -98,7 +98,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 }
                 else
                 {
-                    _logger.Info($"There is no principal with the username '{username}' in Common.Principal.");
+                    _logger.Warning($"There is no principal with the username '{username}' in Common.Principal.");
                     throw new UserException($"Your account '{username}' is not registered in the system. Please contact the system administrator.");
                 }
             }

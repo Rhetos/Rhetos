@@ -73,7 +73,7 @@ namespace Rhetos.Utilities.Test
             var log = new List<string>();
             LogMonitor logMonitor = (eventType, eventName, message) =>
             {
-                if (eventName == "FilesUtility" && eventType == Logging.EventType.Info)
+                if (eventName == "FilesUtility" && eventType == Logging.EventType.Warning)
                     log.Add($"{message}");
             };
 
@@ -105,7 +105,7 @@ namespace Rhetos.Utilities.Test
             var log = new List<string>();
             LogMonitor logMonitor = (eventType, eventName, message) =>
             {
-                if (eventName == "FilesUtility" && eventType == Logging.EventType.Info)
+                if (eventName == "FilesUtility" && eventType == Logging.EventType.Warning)
                     log.Add($"{message()}");
             };
 

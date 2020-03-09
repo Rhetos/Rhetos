@@ -46,7 +46,7 @@ namespace DeployPackages
             var logger = logProvider.GetLogger("DeployPackages");
             var pauseOnError = false;
 
-            logger.Trace(() => "Logging configured.");
+            logger.Info(() => "Logging configured.");
 
             try
             {
@@ -110,7 +110,7 @@ namespace DeployPackages
                     deployment.RestartWebServer();
                 }
 
-                logger.Trace("Done.");
+                logger.Info("Done.");
             }
             catch (Exception e)
             {
@@ -192,7 +192,7 @@ namespace DeployPackages
             foreach (var path in deleteObsoleteFiles)
                 if (File.Exists(path))
                 {
-                    logger.Info($"Deleting obsolete file '{path}'.");
+                    logger.Warning($"Deleting obsolete file '{path}'.");
                     filesUtility.SafeDeleteFile(path);
                 }
         }

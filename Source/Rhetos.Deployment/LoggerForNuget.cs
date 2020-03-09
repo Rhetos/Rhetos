@@ -18,27 +18,24 @@
 */
 
 using Rhetos.Logging;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Rhetos.Deployment
 {
     public class LoggerForNuget : NuGet.ILogger
     {
-        ILogger _logger;
+        readonly ILogger _logger;
 
         public LoggerForNuget(ILogProvider logProvider)
         {
             _logger = logProvider.GetLogger("NuGet");
         }
 
-        Dictionary<NuGet.MessageLevel, EventType> logLevels = new Dictionary<NuGet.MessageLevel, EventType>
+        readonly Dictionary<NuGet.MessageLevel, EventType> logLevels = new Dictionary<NuGet.MessageLevel, EventType>
         {
             { NuGet.MessageLevel.Debug, EventType.Trace },
-            { NuGet.MessageLevel.Info, EventType.Trace },
-            { NuGet.MessageLevel.Warning, EventType.Info },
+            { NuGet.MessageLevel.Info, EventType.Info },
+            { NuGet.MessageLevel.Warning, EventType.Warning },
             { NuGet.MessageLevel.Error, EventType.Error },
         };
 

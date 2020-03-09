@@ -30,7 +30,7 @@ namespace Rhetos.DatabaseGenerator
 {
     public class ConceptDataMigrationExecuter : IConceptDataMigrationExecuter
     {
-        private readonly ILogger _deployPackagesLogger;
+        private readonly ILogger _logger;
         private readonly SqlTransactionBatches _sqlExecuter;
         private readonly Lazy<GeneratedDataMigrationScripts> _scripts;
         private readonly RhetosAppEnvironment _rhetosAppEnvironment;
@@ -42,7 +42,7 @@ namespace Rhetos.DatabaseGenerator
             SqlTransactionBatches sqlExecuter,
             RhetosAppEnvironment rhetosAppEnvironment)
         {
-            _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
+            _logger = logProvider.GetLogger("ConceptDataMigration");
             _sqlExecuter = sqlExecuter;
             _scripts = new Lazy<GeneratedDataMigrationScripts>(LoadScripts);
             _rhetosAppEnvironment = rhetosAppEnvironment;
@@ -50,7 +50,7 @@ namespace Rhetos.DatabaseGenerator
 
         public void ExecuteBeforeDataMigrationScripts()
         {
-            _deployPackagesLogger.Trace(() => $"Executing {_scripts.Value.BeforeDataMigration.Count()} before data migration scripts.");
+            _logger.Info(() => $"Executing {_scripts.Value.BeforeDataMigration.Count()} before-data-migration scripts.");
             _sqlExecuter.Execute(_scripts.Value.BeforeDataMigration.Select(x => 
                 new SqlTransactionBatches.SqlScript
                 {
@@ -61,7 +61,7 @@ namespace Rhetos.DatabaseGenerator
 
         public void ExecuteAfterDataMigrationScripts()
         {
-            _deployPackagesLogger.Trace(() => $"Executing {_scripts.Value.AfterDataMigration.Count()} after data migration scripts.");
+            _logger.Info(() => $"Executing {_scripts.Value.AfterDataMigration.Count()} after-data-migration scripts.");
             _sqlExecuter.Execute(_scripts.Value.AfterDataMigration.Reverse().Select(x =>
                 new SqlTransactionBatches.SqlScript
                 {

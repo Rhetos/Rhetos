@@ -20,13 +20,11 @@
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
-using System.Collections.Generic;
+using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.CommandLine;
-using System.CommandLine.Invocation;
-using Rhetos.Deployment;
 
 namespace Rhetos
 {
@@ -43,12 +41,12 @@ namespace Rhetos
         public Program()
         {
             LogProvider = new NLogProvider();
-            Logger = LogProvider.GetLogger("DeployPackages");
+            Logger = LogProvider.GetLogger("Rhetos");
         }
 
         public int Run(string[] args)
         {
-            Logger.Trace(() => "Logging configured.");
+            Logger.Info(() => "Logging configured.");
 
             var rootCommand = new RootCommand();
             var buildCommand = new Command("build", "Generates the Rhetos application inside the <project-root-folder>. If <project-root-folder> is not set it will use the current working directory.");
@@ -74,7 +72,7 @@ namespace Rhetos
             try
             {
                 action.Invoke();
-                Logger.Trace("Done.");
+                Logger.Info("Done.");
             }
             catch (Exception e)
             {
@@ -99,7 +97,7 @@ namespace Rhetos
 
             string binFolder = Path.Combine(projectRootPath, "bin");
             if (FilesUtility.IsSameDirectory(AppDomain.CurrentDomain.BaseDirectory, binFolder))
-                throw new FrameworkException($"Rhetos build command cannot be run from the generated application.");
+                throw new FrameworkException($"Rhetos build command cannot be run from the generated application. Visual Studio integration runs it automatically from Rhetos NuGet package tools folder. You can run it manually from Package Manager Console, because it is included in PATH.");
 
             var configurationProvider = new ConfigurationBuilder()
                 .AddRhetosAppEnvironment(new RhetosAppEnvironment

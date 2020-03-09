@@ -18,19 +18,16 @@
 */
 
 using Rhetos.DatabaseGenerator;
-using Rhetos.Dsl;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 namespace Rhetos.Deployment
 {
     public class DatabaseDeployment
     {
-        private readonly ILogger _deployPackagesLogger;
+        private readonly ILogger _logger;
         private readonly ISqlExecuter _sqlExecuter;
         private readonly DatabaseCleaner _databaseCleaner;
         private readonly DataMigrationScriptsExecuter _dataMigrationScriptsExecuter;
@@ -45,7 +42,7 @@ namespace Rhetos.Deployment
             IDatabaseGenerator databaseGenerator,
             IConceptDataMigrationExecuter dataMigrationFromCodeExecuter)
         {
-            _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
+            _logger = logProvider.GetLogger(GetType().Name);
             _sqlExecuter = sqlExecuter;
             _databaseCleaner = databaseCleaner;
             _dataMigrationScriptsExecuter = dataMigrationScriptsExecuter;
@@ -55,24 +52,24 @@ namespace Rhetos.Deployment
 
         public void UpdateDatabase()
         {
-            _deployPackagesLogger.Trace("SQL connection: " + SqlUtility.SqlConnectionInfo(SqlUtility.ConnectionString));
+            _logger.Info("SQL connection: " + SqlUtility.SqlConnectionInfo(SqlUtility.ConnectionString));
             ConnectionStringReport.ValidateDbConnection(_sqlExecuter);
 
-            _deployPackagesLogger.Trace("Preparing Rhetos database.");
+            _logger.Info("Preparing Rhetos database.");
             PrepareRhetosDatabase();
 
-            _deployPackagesLogger.Trace("Cleaning old migration data.");
+            _logger.Info("Cleaning old migration data.");
             _databaseCleaner.RemoveRedundantMigrationColumns();
             _databaseCleaner.RefreshDataMigrationRows();
 
             _dataMigrationFromCodeExecuter.ExecuteBeforeDataMigrationScripts();
 
-            _deployPackagesLogger.Trace("Executing data migration scripts.");
+            _logger.Info("Executing data migration scripts.");
             var dataMigrationReport = _dataMigrationScriptsExecuter.Execute();
 
             _dataMigrationFromCodeExecuter.ExecuteAfterDataMigrationScripts();
 
-            _deployPackagesLogger.Trace("Upgrading database.");
+            _logger.Info("Upgrading database.");
             try
             {
                 _databaseGenerator.UpdateDatabaseStructure();
@@ -85,12 +82,12 @@ namespace Rhetos.Deployment
                 }
                 catch (Exception undoException)
                 {
-                    _deployPackagesLogger.Error(undoException.ToString());
+                    _logger.Info(undoException.ToString());
                 }
                 ExceptionsUtility.Rethrow(ex);
             }
 
-            _deployPackagesLogger.Trace("Deleting redundant migration data.");
+            _logger.Info("Deleting redundant migration data.");
             _databaseCleaner.RemoveRedundantMigrationColumns();
             _databaseCleaner.RefreshDataMigrationRows();
         }

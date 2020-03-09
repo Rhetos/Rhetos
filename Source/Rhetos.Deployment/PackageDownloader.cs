@@ -39,9 +39,7 @@ namespace Rhetos.Deployment
         private readonly DeploymentConfiguration _deploymentConfiguration;
         private readonly ILogProvider _logProvider;
         private readonly Rhetos.Logging.ILogger _logger;
-        private readonly Rhetos.Logging.ILogger _packagesLogger;
         private readonly Rhetos.Logging.ILogger _performanceLogger;
-        private readonly Rhetos.Logging.ILogger _deployPackagesLogger;
         private readonly PackageDownloaderOptions _options;
         private readonly FilesUtility _filesUtility;
         private readonly string _packagesCacheFolder;
@@ -53,10 +51,8 @@ namespace Rhetos.Deployment
         {
             _deploymentConfiguration = deploymentConfiguration;
             _logProvider = logProvider;
-            _logger = logProvider.GetLogger(GetType().Name);
-            _packagesLogger = logProvider.GetLogger("Packages");
+            _logger = logProvider.GetLogger("Packages");
             _performanceLogger = logProvider.GetLogger("Performance");
-            _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
             _options = options;
             _filesUtility = new FilesUtility(logProvider);
             _packagesCacheFolder = Path.Combine(Paths.RhetosServerRootPath, "PackagesCache");
@@ -103,9 +99,6 @@ namespace Rhetos.Deployment
             SortByDependencies(installedPackages);
 
             binFileSyncer.UpdateDestination();
-
-            foreach (var package in installedPackages)
-                _packagesLogger.Trace(() => package.Report());
 
             _performanceLogger.Write(sw, "PackageDownloader.GetPackages.");
 
@@ -240,19 +233,19 @@ namespace Rhetos.Deployment
             }
             else if (existingMetadataFiles.Length > 1)
             {
-                _logger.Info(() => "Package " + request.Id + " source folder '" + source.ProvidedLocation + "' contains multiple .nuspec metadata files.");
+                _logger.Warning(() => $"Package {request.Id} source folder '{source.ProvidedLocation}' contains multiple .nuspec metadata files.");
                 return null;
             }
             else if (existingMetadataFiles.Length == 1)
             {
-                _logger.Trace(() => "Reading package " + request.Id + " from unpacked source folder with metadata " + Path.GetFileName(existingMetadataFiles.Single()) + ".");
-                _deployPackagesLogger.Trace(() => "Reading " + request.Id + " from source.");
+                _logger.Trace(() => $"Reading package {request.Id} from unpacked source folder with metadata {Path.GetFileName(existingMetadataFiles.Single())}.");
+                _logger.Info(() => $"Reading {request.Id} from source.");
                 return UseFilesFromUnpackedSourceWithMetadata(existingMetadataFiles.Single(), request, binFileSyncer);
             }
             else if (existingSourceSubfolders.Any())
             {
-                _logger.Trace(() => "Reading package " + request.Id + " from unpacked source folder without metadata file.");
-                _deployPackagesLogger.Trace(() => "Reading " + request.Id + " from source without metadata.");
+                _logger.Trace(() => $"Reading package {request.Id} from unpacked source folder without metadata file.");
+                _logger.Info(() => $"Reading {request.Id} from source without metadata.");
                 return UseFilesFromUnpackedSourceWithoutMetadata(source.Path, request, binFileSyncer);
             }
             else
@@ -372,7 +365,7 @@ namespace Rhetos.Deployment
             }
 
             _logger.Trace(() => $"Reading package {request.Id} from legacy file {zipPackagePath}.");
-            _deployPackagesLogger.Trace(() => $"Reading {request.Id} from legacy zip file.");
+            _logger.Info(() => $"Reading {request.Id} from legacy zip file.");
 
             string targetFolder = GetTargetFolder(request.Id, zipPackage.Version);
             _filesUtility.EmptyDirectory(targetFolder);
@@ -448,7 +441,7 @@ namespace Rhetos.Deployment
 
             string packageSubfolder = nugetRepository.PathResolver.GetPackageDirectory(request.Id, package.Version);
             _logger.Trace(() => $"Reading package {request.Id} from cache '{packageSubfolder}'.");
-            _deployPackagesLogger.Trace(() => $"Reading {request.Id} from cache.");
+            _logger.Info(() => $"Reading {request.Id} from cache.");
             string targetFolder = Path.Combine(_packagesCacheFolder, packageSubfolder);
 
             foreach (var file in FilterCompatibleLibFiles(package.GetFiles()))

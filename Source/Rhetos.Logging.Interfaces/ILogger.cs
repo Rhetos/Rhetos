@@ -18,10 +18,7 @@
 */
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Globalization;
 
 namespace Rhetos.Logging
@@ -29,13 +26,18 @@ namespace Rhetos.Logging
     public enum EventType
     {
         /// <summary>
-        /// Very detailed logs, which may include high-volume information such as protocol payloads. This log level is typically only enabled during development.
+        /// Very detailed logs, which may include high-volume information such as protocol payloads.
+        /// This log level is typically only enabled for debugging.
         /// </summary>
         Trace,
         /// <summary>
-        /// Information messages and warnings, which are normally enabled in production environment.
+        /// Information messages, which are normally enabled in production environment and kept permanently.
         /// </summary>
         Info,
+        /// <summary>
+        /// Warning messages, which are normally enabled in production environment and kept permanently.
+        /// </summary>
+        Warning,
         /// <summary>
         /// Error messages, which are normally sent to administrator in production environment.
         /// </summary>
@@ -45,6 +47,7 @@ namespace Rhetos.Logging
     public interface ILogger
     {
         void Write(EventType eventType, Func<string> logMessage);
+
         /// <summary>
         /// Returns the logger name that was provided as argument for <see cref="ILogProvider.GetLogger(string)"/>.
         /// </summary>
@@ -66,7 +69,7 @@ namespace Rhetos.Logging
         private static void PerformanceWrite(this ILogger performanceLogger, Stopwatch stopwatch, Func<string> fullMessage)
         {
             if (stopwatch.Elapsed >= SlowEvent)
-                performanceLogger.Info(fullMessage);
+                performanceLogger.Warning(fullMessage);
             else
                 performanceLogger.Trace(fullMessage);
             stopwatch.Restart();
@@ -97,6 +100,14 @@ namespace Rhetos.Logging
         public static void Error(this ILogger log, Func<string> logMessage)
         {
             log.Write(EventType.Error, logMessage);
+        }
+        public static void Warning(this ILogger log, string eventData, params object[] eventDataParams)
+        {
+            log.Write(EventType.Warning, eventData, eventDataParams);
+        }
+        public static void Warning(this ILogger log, Func<string> logMessage)
+        {
+            log.Write(EventType.Warning, logMessage);
         }
         public static void Info(this ILogger log, string eventData, params object[] eventDataParams)
         {
