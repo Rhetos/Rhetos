@@ -17,42 +17,34 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Rhetos.Logging;
 using Rhetos.Utilities;
+using System;
 
 namespace RhetosVSIntegration
 {
-    public class RhetosLogProvider : Rhetos.Logging.ILogProvider
+    public class VSLogProvider : Rhetos.Logging.ILogProvider
     {
         private readonly TaskLoggingHelper _logger;
 
-        public RhetosLogProvider(TaskLoggingHelper logger)
+        public VSLogProvider(TaskLoggingHelper logger)
         {
             _logger = logger;
         }
 
         public Rhetos.Logging.ILogger GetLogger(string eventName)
         {
-            return new RhetosLogger(_logger, eventName);
+            return new VSLogger(_logger, eventName);
         }
     }
 
-    public class RhetosLogger : Rhetos.Logging.ILogger
+    public class VSLogger : Rhetos.Logging.ILogger
     {
-        private static Dictionary<EventType, MessageImportance> _levelMapping = new Dictionary<EventType, MessageImportance>
-        {
-            { EventType.Trace, MessageImportance.Low },
-            { EventType.Info, MessageImportance.Normal },
-            { EventType.Error, MessageImportance.High }
-        };
-
         private readonly TaskLoggingHelper _logger;
 
-        public RhetosLogger(TaskLoggingHelper logger, string eventName = null)
+        public VSLogger(TaskLoggingHelper logger, string eventName = null)
         {
             Name = eventName;
             _logger = logger;
@@ -67,22 +59,29 @@ namespace RhetosVSIntegration
             }
             catch (Exception ex)
             {
-                Write(EventType.Error, GetType().Name, string.Format(
-                    "Error while getting the log message ({0}: {1}). {2}",
-                    eventType, Name, ex.ToString()));
+                Write(EventType.Error, GetType().Name, $"Error while getting the log message ({eventType}: {Name}). {ex}");
             }
         }
 
         private void Write(EventType eventType, string eventName, string message)
         {
-            var fullMessage = "[" + eventType + "] "
-                + (eventName != null ? (eventName + ": ") : "")
-                + message;
+            var fullMessage = (eventName != null ? (eventName + ": ") : "") + message;
 
-            if (eventType == EventType.Error)
-                _logger.LogError(fullMessage);
-            else
-                _logger.LogMessage(_levelMapping[eventType], fullMessage);
+            switch (eventType)
+            {
+                case EventType.Trace:
+                    _logger.LogMessage(MessageImportance.Low, fullMessage);
+                    break;
+                case EventType.Info:
+                    _logger.LogMessage(MessageImportance.Normal, fullMessage);
+                    break;
+                case EventType.Warning:
+                    _logger.LogWarning(fullMessage);
+                    break;
+                default:
+                    _logger.LogError(fullMessage);
+                    break;
+            }
         }
 
         public string Name { get; }

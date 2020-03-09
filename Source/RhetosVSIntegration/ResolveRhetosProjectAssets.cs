@@ -49,7 +49,7 @@ namespace RhetosVSIntegration
                 OutputAssemblyName = AssemblyName
             };
 
-            new RhetosProjectAssetsFileProvider(ProjectDirectory, new RhetosLogProvider(Log)).Save(rhetosProjectAssets);
+            new RhetosProjectAssetsFileProvider(ProjectDirectory, new VSLogProvider(Log)).Save(rhetosProjectAssets);
 
             return true;
         }
