@@ -35,7 +35,7 @@ namespace CleanupOldData
             try
             {
                 var configuration = new ConfigurationBuilder()
-                    .AddRhetosAppConfiguration(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".."))
+                    .AddRhetosAppConfiguration()
                     .AddConfigurationManagerConfiguration()
                     .Build();
 

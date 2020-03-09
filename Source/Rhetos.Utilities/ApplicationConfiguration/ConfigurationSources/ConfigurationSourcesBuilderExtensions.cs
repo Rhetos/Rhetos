@@ -95,12 +95,7 @@ namespace Rhetos
             return builder;
         }
 
-        /// <summary>
-        /// Initializes run-time configuration for the Rhetos application, for usage in utility applications that references the Rhetos application's libraries.
-        /// Searches for Rhetos application root path in the current application's folder (see <see cref="AppDomain.CurrentDomain.BaseDirectory"/>) or any parent folder.
-        /// Loads Rhetos application's configuration files.
-        /// </summary>
-        public static IConfigurationBuilder AddRhetosAppConfiguration(this IConfigurationBuilder builder)
+        private static string SearchForRhetosApp()
         {
             string startingPath = AppDomain.CurrentDomain.BaseDirectory;
             var rhetosAppFolder = new DirectoryInfo(startingPath);
@@ -108,9 +103,9 @@ namespace Rhetos
             while (true)
             {
                 if (RhetosAppEnvironmentProvider.IsRhetosApplicationRootFolder(rhetosAppFolder.FullName))
-                    return AddRhetosAppConfiguration(builder, rhetosAppFolder.FullName);
+                    return rhetosAppFolder.FullName;
                 if (rhetosAppFolder.Parent == null)
-                    throw new FrameworkException($"Cannot locate a valid Rhetos application folder starting in '{startingPath}' or any parent folder.");
+                    throw new FrameworkException($"Cannot locate Rhetos application in '{startingPath}' or any parent folder.");
                 rhetosAppFolder = rhetosAppFolder.Parent;
             }
         }
@@ -118,9 +113,13 @@ namespace Rhetos
         /// <summary>
         /// Initializes run-time configuration for the Rhetos application, for usage in utility applications that references the Rhetos application's libraries.
         /// Loads Rhetos application's configuration files.
+        /// If <paramref name="rhetosAppRootPath"/> is not specified, it searches for Rhetos application root path in the current application's folder (AppDomain.CurrentDomain.BaseDirectory) or any parent folder.
         /// </summary>
-        public static IConfigurationBuilder AddRhetosAppConfiguration(this IConfigurationBuilder builder, string rhetosAppRootPath)
+        public static IConfigurationBuilder AddRhetosAppConfiguration(this IConfigurationBuilder builder, string rhetosAppRootPath = null)
         {
+            if (string.IsNullOrEmpty(rhetosAppRootPath))
+                rhetosAppRootPath = SearchForRhetosApp();
+
             var rhetosAppEnvironment = RhetosAppEnvironmentProvider.Load(rhetosAppRootPath);
             return builder
                 .AddRhetosAppEnvironment(rhetosAppEnvironment)

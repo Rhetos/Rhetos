@@ -86,7 +86,7 @@ namespace Rhetos.Utilities
                 + message);
         }
 
-        public static EventType MinLevel { get; set; } = 0;
+        public static EventType MinLevel { get; set; } = EventType.Info;
 
         public string Name { get; }
     }

@@ -52,18 +52,18 @@ namespace Rhetos
 
             var rootCommand = new RootCommand();
             var buildCommand = new Command("build", "Generates the Rhetos application inside the <project-root-folder>. If <project-root-folder> is not set it will use the current working directory.");
-            buildCommand.Add(new Argument<DirectoryInfo>("project-root-folder", () => new DirectoryInfo(Environment.CurrentDirectory)));
+            buildCommand.Add(new Argument<DirectoryInfo>("project-root-folder", () => new DirectoryInfo(Environment.CurrentDirectory))); // Using CurrentDirectory because rhetos.exe on *build* is expected to be located in NuGet package cache.
             buildCommand.Handler = CommandHandler.Create((DirectoryInfo projectRootFolder) => ReportError(() => Build(projectRootFolder.FullName)));
             rootCommand.AddCommand(buildCommand);
 
-            var dbUpdateCommand = new Command("dbupdate", "Updates the database based on the generated files from the build process. If <application-root-folder> is not set it will use the current working directory.");
-            dbUpdateCommand.Add(new Argument<DirectoryInfo>("application-root-folder", () => new DirectoryInfo(Environment.CurrentDirectory)));
-            dbUpdateCommand.Handler = CommandHandler.Create((DirectoryInfo applicationRootFolder) => ReportError(() => DbUpdate(applicationRootFolder.FullName)));
+            var dbUpdateCommand = new Command("dbupdate", "Updates the database, based on the generated files from the build process. If <application-root-folder> is not set, it will search for the application at its location and parent directories.");
+            dbUpdateCommand.Add(new Argument<DirectoryInfo>("application-root-folder", () => null) { Description = "If not specified, it is assumed that rhetos.exe is located within the application folder." } );
+            dbUpdateCommand.Handler = CommandHandler.Create((DirectoryInfo applicationRootFolder) => ReportError(() => DbUpdate(applicationRootFolder)));
             rootCommand.AddCommand(dbUpdateCommand);
 
-            var appInitializeCommand = new Command("appinitialize", "Initializes the application. If <application-root-folder> is not set it will use the current working directory.");
-            appInitializeCommand.Add(new Argument<DirectoryInfo>("application-root-folder", () => new DirectoryInfo(Environment.CurrentDirectory)));
-            appInitializeCommand.Handler = CommandHandler.Create((DirectoryInfo applicationRootFolder) => ReportError(() => AppInitialize(applicationRootFolder.FullName)));
+            var appInitializeCommand = new Command("appinitialize", "Initializes the application. If <application-root-folder> is not set, it will search for the application at its location and parent directories.");
+            appInitializeCommand.Add(new Argument<DirectoryInfo>("application-root-folder", () => null) { Description = "If not specified, it is assumed that rhetos.exe is located within the application folder." });
+            appInitializeCommand.Handler = CommandHandler.Create((DirectoryInfo applicationRootFolder) => ReportError(() => AppInitialize(applicationRootFolder)));
             rootCommand.AddCommand(appInitializeCommand);
 
             return rootCommand.Invoke(args);
@@ -125,22 +125,22 @@ namespace Rhetos
             deployment.GenerateApplication(rhetosprojectAssets.InstalledPackages);
         }
 
-        private void DbUpdate(string rhetosAppRootPath)
+        private void DbUpdate(DirectoryInfo applicationRootFolder)
         {
-            var deployment = SetupRuntime(rhetosAppRootPath);
+            var deployment = SetupRuntime(applicationRootFolder);
             deployment.UpdateDatabase();
         }
 
-        private void AppInitialize(string rhetosAppRootPath)
+        private void AppInitialize(DirectoryInfo applicationRootFolder)
         {
-            var deployment = SetupRuntime(rhetosAppRootPath);
+            var deployment = SetupRuntime(applicationRootFolder);
             deployment.InitializeGeneratedApplication();
         }
 
-        private ApplicationDeployment SetupRuntime(string rhetosAppRootPath)
+        private ApplicationDeployment SetupRuntime(DirectoryInfo applicationRootFolder)
         {
             var configurationProvider = new ConfigurationBuilder()
-                .AddRhetosAppConfiguration(rhetosAppRootPath)
+                .AddRhetosAppConfiguration(applicationRootFolder?.FullName)
                 .AddKeyValue(nameof(DatabaseOptions.SqlCommandTimeout), 0)
                 .AddConfigurationManagerConfiguration()
                 .Build();
