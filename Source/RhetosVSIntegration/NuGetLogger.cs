@@ -43,11 +43,23 @@ namespace Rhetos
             { LogLevel.Error, MessageImportance.High },
         };
 
-        public void Log(LogLevel level, string data) => _logger.LogMessage(_levelMapping[level], data);
+        public void Log(LogLevel level, string data)
+        {
+            if (level == LogLevel.Error)
+                _logger.LogError(data);
+            else
+                _logger.LogMessage(_levelMapping[level], data);
+        }
 
-        public void Log(ILogMessage message) => _logger.LogMessage(_levelMapping[message.Level], message.ToString());
+        public void Log(ILogMessage message)
+        {
+            if (message.Level == LogLevel.Error)
+                _logger.LogError(message.ToString());
+            else
+                _logger.LogMessage(_levelMapping[message.Level], message.ToString());
+        }
 
-        public System.Threading.Tasks.Task LogAsync(LogLevel level, string data) => new System.Threading.Tasks.Task(() => Log(level, data));
+    public System.Threading.Tasks.Task LogAsync(LogLevel level, string data) => new System.Threading.Tasks.Task(() => Log(level, data));
 
         public System.Threading.Tasks.Task LogAsync(ILogMessage message) => new System.Threading.Tasks.Task(() => Log(message));
 

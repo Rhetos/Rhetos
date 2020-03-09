@@ -18,6 +18,8 @@
 */
 
 using Newtonsoft.Json;
+using Rhetos.Logging;
+using Rhetos.Utilities;
 using System.IO;
 using System.Text;
 
@@ -29,9 +31,14 @@ namespace Rhetos
 
         public string ProjectAssetsFilePath { get; }
 
-        public RhetosProjectAssetsFileProvider(string projectRootFolder)
+        private readonly FilesUtility _filesUtility;
+        private readonly ILogger _logger;
+
+        public RhetosProjectAssetsFileProvider(string projectRootFolder, ILogProvider logProvider)
         {
-            ProjectAssetsFilePath = Path.Combine(projectRootFolder, "obj", ProjectAssetsFileName);
+            ProjectAssetsFilePath = Path.Combine(projectRootFolder, "obj", "Rhetos", ProjectAssetsFileName);
+            _filesUtility = new FilesUtility(logProvider);
+            _logger = logProvider.GetLogger(GetType().ToString());
         }
 
         public RhetosProjectAssets Load()
@@ -43,19 +50,22 @@ namespace Rhetos
             return JsonConvert.DeserializeObject<RhetosProjectAssets>(serialized, _serializerSettings);
         }
 
-        public bool Save(RhetosProjectAssets rhetosProjectAssets)
+        public void Save(RhetosProjectAssets rhetosProjectAssets)
         {
             string serialized = JsonConvert.SerializeObject(rhetosProjectAssets, _serializerSettings);
             string oldSerializedData = File.Exists(ProjectAssetsFilePath) ? File.ReadAllText(ProjectAssetsFilePath, Encoding.UTF8) : "";
 
+            if (!Directory.Exists(Path.GetDirectoryName(ProjectAssetsFilePath)))
+                _filesUtility.SafeCreateDirectory(Path.GetDirectoryName(ProjectAssetsFilePath));
+
             if (oldSerializedData != serialized)
             {
                 File.WriteAllText(ProjectAssetsFilePath, serialized, Encoding.UTF8);
-                return true;
+                _logger.Info($"{nameof(RhetosProjectAssets)} updated.");
             }
             else
             {
-                return false;
+                _logger.Info($"{nameof(RhetosProjectAssets)} is already up-to-date.");
             }
         }
 
