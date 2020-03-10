@@ -42,10 +42,12 @@ namespace RhetosVSIntegration
         public override bool Execute()
         {
             var nuget = new NuGetUtilities(ProjectDirectory, ProjectContentFiles.Select(x => x.ItemSpec), new NuGetLogger(Log), null);
+            var packagesAssemblies = nuget.GetRuntimeAssembliesFromPackages();
+            var assembliesInReferencedProjects = Assemblies.Where(x => !string.IsNullOrEmpty(x.GetMetadata("Project"))).Select(x => x.ItemSpec);
             var rhetosProjectAssets = new RhetosProjectAssets
             {
                 InstalledPackages = new InstalledPackages { Packages = nuget.GetInstalledPackages() },
-                Assemblies = Assemblies.Select(x => x.ItemSpec),
+                Assemblies = packagesAssemblies.Union(assembliesInReferencedProjects),
                 OutputAssemblyName = AssemblyName
             };
 

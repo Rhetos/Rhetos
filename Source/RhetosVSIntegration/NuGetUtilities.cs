@@ -99,6 +99,15 @@ namespace Rhetos
             return new InstalledPackage(ProjectName, "", dependencies, _projectRootFolder, null, null, contentFiles);
         }
 
+        internal List<string> GetRuntimeAssembliesFromPackages()
+        {
+            return GetSupportedTargetFrameworkLibraries().Where(x => x.Type == LibraryType.Package)
+                .Select(targetLibrary => new { PackageFolder = GetFolderForPackageLibraray(targetLibrary), targetLibrary.RuntimeAssemblies })
+                .SelectMany(targetLibrary => targetLibrary.RuntimeAssemblies.Select(libFile => Path.Combine(targetLibrary.PackageFolder, PathUtility.GetPathWithBackSlashes(libFile.Path))))
+                .Where(libFile => Path.GetExtension(libFile) == ".dll")
+                .ToList();
+        }
+
         private IList<LockFileTargetLibrary> GetSupportedTargetFrameworkLibraries()
         {
             return _lockFile.Targets.Single(x => x.TargetFramework == _targetFramework && x.RuntimeIdentifier == null).Libraries
