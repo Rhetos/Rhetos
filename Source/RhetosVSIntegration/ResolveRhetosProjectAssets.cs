@@ -21,6 +21,7 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Rhetos;
 using Rhetos.Deployment;
+using Rhetos.Utilities;
 using System.Linq;
 
 namespace RhetosVSIntegration
@@ -41,13 +42,23 @@ namespace RhetosVSIntegration
 
         public override bool Execute()
         {
-            var nuget = new NuGetUtilities(ProjectDirectory, ProjectContentFiles.Select(x => x.ItemSpec), new NuGetLogger(Log), null);
+            var resolvedProjectContentFiles = ProjectContentFiles.Select(x => new { x.ItemSpec, FullPath = x.GetMetadata("FullPath") });
+            var invalidProjectContentFiles = resolvedProjectContentFiles.Where(x => string.IsNullOrEmpty(x.FullPath));
+            if (invalidProjectContentFiles.Any())
+                throw new FrameworkException("Could not resolve the full path for the Rhetos input files " + string.Join(", ", invalidProjectContentFiles.Select(x => x.ItemSpec)).Limit(1000));
+
+            var assembliesInReferencedProjects = Assemblies.Where(x => !string.IsNullOrEmpty(x.GetMetadata("Project"))).Select(x => new { x.ItemSpec, FullPath = x.GetMetadata("FullPath") });
+            var invalidAssembliesInReferencedProjects = assembliesInReferencedProjects.Where(x => string.IsNullOrEmpty(x.FullPath));
+            if (invalidAssembliesInReferencedProjects.Any())
+                throw new FrameworkException("Could not resolve the full path for the referenced assemblies " + string.Join(", ", invalidAssembliesInReferencedProjects.Select(x => x.ItemSpec)).Limit(1000));
+
+            var nuget = new NuGetUtilities(ProjectDirectory, resolvedProjectContentFiles.Select(x => x.FullPath), new NuGetLogger(Log), null);
             var packagesAssemblies = nuget.GetRuntimeAssembliesFromPackages();
-            var assembliesInReferencedProjects = Assemblies.Where(x => !string.IsNullOrEmpty(x.GetMetadata("Project"))).Select(x => x.ItemSpec);
+
             var rhetosProjectAssets = new RhetosProjectAssets
             {
                 InstalledPackages = new InstalledPackages { Packages = nuget.GetInstalledPackages() },
-                Assemblies = packagesAssemblies.Union(assembliesInReferencedProjects),
+                Assemblies = packagesAssemblies.Union(assembliesInReferencedProjects.Select(x => x.FullPath)),
                 OutputAssemblyName = AssemblyName
             };
 
