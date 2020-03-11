@@ -27,6 +27,9 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
     /// A helper for defining a computation dependency to the detail list, when computing an aggregate.
+    /// If the computation is an aggregation of a detail entity: When a detail record is saved, the related parent's cache record should be recomputed.
+    /// For example, if you are computing additional data about a document and that data depends on a detail entity(for example, the number of items, or the total amount)
+    /// then the parameter "ReferenceProperty" should be the full name of the reference property from the detail entity.
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ChangesOnLinkedItems")]

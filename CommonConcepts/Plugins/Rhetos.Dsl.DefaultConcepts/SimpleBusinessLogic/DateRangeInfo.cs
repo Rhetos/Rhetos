@@ -26,6 +26,9 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Inherits the Range concept and generates a Date property in case it does not exist already.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("DateRange")]
     public class DateRangeInfo : RangeInfo, IAlternativeInitializationConcept

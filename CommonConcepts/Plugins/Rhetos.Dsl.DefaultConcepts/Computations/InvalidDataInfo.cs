@@ -27,7 +27,8 @@ using System.Text;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// Simple data validation with a constant error message.
+    /// Standard data validation. When saving data, if any record matches the given filter,
+    /// the operation will be canceled with and the error message returned to the user.
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("InvalidData")]

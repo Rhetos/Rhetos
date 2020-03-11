@@ -25,6 +25,10 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Direct implementation of row permission filter, without extendable rules such as AllowRead and Deny.
+    /// Alternative to extendable RowPermissions concept.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("RowPermissionsRead")]
     public class RowPermissionsReadInfo : ComposableFilterByInfo, IMacroConcept, IAlternativeInitializationConcept

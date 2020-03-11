@@ -22,6 +22,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Adds the value to the column on Entry inside a Hardcoded concept.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Value")]
     public class EntryValueInfo : IConceptInfo, IAlternativeInitializationConcept

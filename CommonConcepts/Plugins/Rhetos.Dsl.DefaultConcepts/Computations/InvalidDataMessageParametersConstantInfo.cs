@@ -26,7 +26,9 @@ using System.Text;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
+    /// It has subset of the features of MessageParametersItem. It works in a similar way, but it can only provide constant values.
     /// Optimized version of "MessageParameters" concept; no need to query database to retrieve error message parameters.
+    /// 
     /// Example: InvalidData with error message 'Maximum value of property {0} is {1}.'
     /// may contain MessageParametersConstant '"Age", 200'.
     /// By separating the parameters from the error message, only one error message needs to be translated

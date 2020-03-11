@@ -26,6 +26,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Unicode string property, intended for short single-line text. Maximal length 256 characters.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ShortString")]
     public class ShortStringPropertyInfo : PropertyInfo, IConceptInfo

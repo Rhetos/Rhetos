@@ -28,6 +28,9 @@ using Rhetos.Compiler;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Data structure is a subtype (an implementation) of the given polymorphic.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Is")]
     public class IsSubtypeOfDefaultNameInfo : IsSubtypeOfInfo, IAlternativeInitializationConcept

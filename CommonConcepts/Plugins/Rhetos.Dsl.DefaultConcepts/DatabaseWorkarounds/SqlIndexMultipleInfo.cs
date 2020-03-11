@@ -25,6 +25,9 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Index on one on more columns in database.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SqlIndexMultiple")]
     public class SqlIndexMultipleInfo : IValidatedConcept

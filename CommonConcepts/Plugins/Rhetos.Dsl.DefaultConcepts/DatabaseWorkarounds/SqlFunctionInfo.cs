@@ -21,6 +21,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// User-defined function in database (scalar, inline or table function).
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SqlFunction")]
     public class SqlFunctionInfo : IConceptInfo

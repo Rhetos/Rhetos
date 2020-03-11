@@ -28,8 +28,8 @@ using System.ComponentModel.Composition;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// Used for internal optimizations when a property on one data structure returns the same value
-    /// as a property on referenced (base or parent) data structure.
+    /// Optimization of generated row-permissions filter 
+    /// when a property of one data structure returns the same value as a property of referenced (base or parent) data structure.
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SamePropertyValue")]

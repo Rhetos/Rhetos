@@ -27,6 +27,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// It is used to limit the items that will be included in the polymorphic implementation.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Where")]
     public class SubtypeWhereInfo : IConceptInfo, IAlternativeInitializationConcept

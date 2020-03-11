@@ -26,6 +26,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Boolean property
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Bool")]
     public class BoolPropertyInfo : PropertyInfo, IConceptInfo

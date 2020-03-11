@@ -21,6 +21,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// 
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("From")]
     public class BrowseFromPropertyInfo : IValidatedConcept

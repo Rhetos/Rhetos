@@ -21,6 +21,12 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Adds the DLL reference for the generated application. 
+    /// The DLL can be referenced in two ways:
+    ///     1) (Recommended) By C# type which is used (the assembly qualified name). Version, Culture or PublicKeyToken can be removed from the AssemblyQualifiedName for DLLs that are placed in the Rhetos application folder.
+    ///     2) By DLL name(e.g. 'Rhetos.MyFunctions.dll').
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ExternalReference")]
     public class ModuleExternalReferenceInfo : IConceptInfo

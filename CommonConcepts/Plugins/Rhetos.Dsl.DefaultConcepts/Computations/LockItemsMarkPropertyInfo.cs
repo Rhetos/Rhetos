@@ -26,9 +26,8 @@ using System.Text;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// Same business logic as LockItemsInfo.
-    /// The given property is not used in locking, it is just reported to the user
-    /// (the client application should focus the property).
+    /// Deny update and delete of the entity records, for records in a certain state (provided by a filter).
+    /// The given property is not used in locking, it is just reported to the user (the client application) as a reason for the lock.
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Lock")]

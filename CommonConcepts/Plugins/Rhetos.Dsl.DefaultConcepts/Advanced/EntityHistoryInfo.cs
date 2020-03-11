@@ -28,6 +28,10 @@ using System.Globalization;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Enables temporal data management on the entity: Automatically keeps old versions of each records.
+    /// Allows reading record's state at a given point in time. Allow entering data values that were effective from a previous point in time.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("History")]
     public class EntityHistoryInfo : IMacroConcept, IAlternativeInitializationConcept

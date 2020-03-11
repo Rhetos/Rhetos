@@ -27,6 +27,11 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Creates a property on the browse data structure that returns the property value from the base data structure.
+    /// Instead of a simple property, it is possible to specify a path across multiple references, separated by a dot.
+    /// Explicitly set the name of created property.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Take")]
     public class BrowseTakeNamedPropertyInfo : IValidatedConcept

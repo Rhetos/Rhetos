@@ -26,6 +26,9 @@ using System.Threading.Tasks;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Initialize or change the data, before saving it to the database, if previous data state needs to be considered. See related LoadOldItems concept.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("OldDataLoaded")]
     public class OldDataLoadedInfo : IConceptInfo

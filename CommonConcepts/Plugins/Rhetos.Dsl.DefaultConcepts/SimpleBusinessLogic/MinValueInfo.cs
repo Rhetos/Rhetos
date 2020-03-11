@@ -27,6 +27,9 @@ using System.Text.RegularExpressions;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Limits the smallest allowed value of the property.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("MinValue")]
     public class MinValueInfo : IMacroConcept, IValidatedConcept

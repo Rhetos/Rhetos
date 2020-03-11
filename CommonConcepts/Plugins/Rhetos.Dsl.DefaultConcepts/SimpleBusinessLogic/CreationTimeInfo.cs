@@ -25,6 +25,9 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Automatically enters time when the records was created.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("CreationTime")]
     public class CreationTimeInfo : IConceptInfo

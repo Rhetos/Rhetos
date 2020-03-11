@@ -25,6 +25,9 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Automatically updates cache when the source data is changed. This feature requires ChangesOnChangedItems defined on the source.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("KeepSynchronized")]
     public class KeepSynchronizedWithoutFilteredSaveInfo : KeepSynchronizedInfo, IAlternativeInitializationConcept

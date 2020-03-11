@@ -26,6 +26,9 @@ using System.Text;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
+    /// Marks first data structure as an extension of the base data structure (1:1 relationship). Often used to extend entity with additional computed data.
+    /// The extension records have the same primary key value as the base records.
+    /// 
     /// Inherits the 'UniqueReference' concept and additionally allows cascade delete and automatic inheritance of row permissions.
     /// From a business perspective, the main difference between 'Extends' and 'UniqueReference' is that extension is considered a part of the base data structure.
     /// In 1:1 relations, the 'Extends' concept is to 'UniqueReference' as 'Reference { Detail; }' is to 'Reference' in 1:N relations.

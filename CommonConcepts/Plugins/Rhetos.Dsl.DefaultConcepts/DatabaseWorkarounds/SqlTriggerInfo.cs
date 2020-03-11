@@ -21,6 +21,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Trigger in database.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SqlTrigger")]
     public class SqlTriggerInfo : IConceptInfo

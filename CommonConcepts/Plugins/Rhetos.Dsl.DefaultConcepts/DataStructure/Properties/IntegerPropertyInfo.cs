@@ -26,6 +26,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Integer property
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Integer")]
     public class IntegerPropertyInfo : PropertyInfo, IConceptInfo

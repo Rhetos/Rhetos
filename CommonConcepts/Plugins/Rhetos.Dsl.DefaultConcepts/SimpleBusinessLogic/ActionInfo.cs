@@ -25,6 +25,10 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// A custom server action that executes the code in the given lambda expression: (parameter, repository, userInfo) => { C# code }. 
+    /// The properties on the action are available in the lambda expression as the first parameter. The action is available in Web API.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Action")]
     public class ActionInfo : ParameterInfo

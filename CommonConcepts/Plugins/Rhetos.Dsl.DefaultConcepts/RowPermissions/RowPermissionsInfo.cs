@@ -26,6 +26,9 @@ using System.Text.RegularExpressions;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Restricts access for selected users to a subset of the entity's records.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("RowPermissions")]
     public class RowPermissionsInfo : IMacroConcept

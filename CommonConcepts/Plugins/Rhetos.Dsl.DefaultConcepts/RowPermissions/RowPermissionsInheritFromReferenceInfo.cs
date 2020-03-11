@@ -25,6 +25,9 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Inherits row permissions from the referenced "parent" data structure.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("InheritFrom")]
     public class RowPermissionsInheritFromReferenceInfo : IMacroConcept, IValidatedConcept

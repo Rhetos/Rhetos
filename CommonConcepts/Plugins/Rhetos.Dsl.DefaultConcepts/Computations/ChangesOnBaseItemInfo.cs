@@ -25,6 +25,9 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    ///  If the computation is an extension of a base entity: When a base record is saved, the related cache record should be recomputed.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ChangesOnBaseItem")]
     public class ChangesOnBaseItemInfo : IValidatedConcept

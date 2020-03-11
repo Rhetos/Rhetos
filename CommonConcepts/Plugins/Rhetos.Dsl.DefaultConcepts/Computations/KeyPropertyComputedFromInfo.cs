@@ -25,6 +25,9 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Property for matching source and target records. It controls when to update an item or to delete old item and insert a new one.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("KeyProperty")]
     public class KeyPropertyComputedFromInfo : IConceptInfo, IAlternativeInitializationConcept

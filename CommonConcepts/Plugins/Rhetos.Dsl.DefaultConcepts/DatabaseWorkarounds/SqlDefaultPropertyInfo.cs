@@ -23,6 +23,11 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Generates default constraint on the database column. Note: This concept is used only for internal features implemented in SQL procedures and triggers.
+    /// It cannot be used for default field value when writing data to Web API or in object model, 
+    /// because the saved record will always have the property value set to NULL by Entity Framework, even if the value is not provided.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SqlDefault")]
     public class SqlDefaultPropertyInfo : IValidatedConcept

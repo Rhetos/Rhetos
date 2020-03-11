@@ -26,6 +26,7 @@ using System.Text;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
+    /// Extends the validation's error message with custom parameter values.
     /// Use this concept to separate message parameters from the error message, for easier translation to another language.
     /// Example: InvalidData with error message 'Maximum value of property {0} is {1}. Current value ({2}) is {3} characters long.'
     /// may contain MessageParameters 'item => new object[] { item.ID, P0 = "Age", P1 = 200, P2 = item.Age, P3 = item.Age.Length }'.

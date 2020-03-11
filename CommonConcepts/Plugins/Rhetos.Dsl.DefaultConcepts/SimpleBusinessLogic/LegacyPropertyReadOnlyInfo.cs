@@ -25,6 +25,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Mapping a read-only property to a column in source view.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("LegacyPropertyReadOnly")]
     public class LegacyPropertyReadOnlyInfo : LegacyPropertyInfo

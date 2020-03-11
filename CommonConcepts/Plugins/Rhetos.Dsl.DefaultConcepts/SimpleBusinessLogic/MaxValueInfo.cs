@@ -27,6 +27,9 @@ using System.Text.RegularExpressions;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Limits the largest allowed value of the property.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("MaxValue")]
     public class MaxValueInfo : IMacroConcept, IValidatedConcept

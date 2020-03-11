@@ -28,6 +28,9 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// A common interface that can be implemented by multiple entities.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Polymorphic")]
     public class PolymorphicInfo : DataStructureInfo, IOrmDataStructure

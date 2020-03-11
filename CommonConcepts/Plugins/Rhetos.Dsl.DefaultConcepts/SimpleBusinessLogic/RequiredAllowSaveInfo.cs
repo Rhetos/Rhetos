@@ -29,6 +29,9 @@ using Rhetos.Compiler;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Required property, but suppress the validation on save to be verified later.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("RequiredAllowSave")]
     public class RequiredAllowSaveInfo : IMacroConcept

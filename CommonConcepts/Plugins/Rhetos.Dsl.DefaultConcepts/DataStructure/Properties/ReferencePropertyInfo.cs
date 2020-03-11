@@ -26,6 +26,10 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    ///  Lookup field (N:1 relationship). The generated C# property has type of the referenced class.
+    ///  Generates foreign key constraint in database. The database column has "ID" suffix.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Reference")]
     public class ReferencePropertyInfo : PropertyInfo

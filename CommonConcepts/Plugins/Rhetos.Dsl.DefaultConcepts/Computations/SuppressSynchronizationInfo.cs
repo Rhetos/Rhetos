@@ -25,6 +25,9 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Internal concept for turning off automatic recompute of an entity with KeepSynchronized.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SuppressSynchronization")]
     public class SuppressSynchronizationInfo : IConceptInfo

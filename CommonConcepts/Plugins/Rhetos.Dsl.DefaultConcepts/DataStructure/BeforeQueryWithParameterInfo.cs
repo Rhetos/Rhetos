@@ -28,6 +28,9 @@ using System.Globalization;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Low-level concept that adds custom code to be executed before each query.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("BeforeQuery")]
     public class BeforeQueryWithParameterInfo : IConceptInfo

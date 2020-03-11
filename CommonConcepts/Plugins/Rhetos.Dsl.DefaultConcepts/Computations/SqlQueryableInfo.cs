@@ -25,6 +25,10 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// A queryable data structure, implemented with an SQL query. It generates a database view. 
+    /// With this concept, you should always use SqlDependsOn or AutodetectSqlDependencies to make sure that database objects can be created in the correct order.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SqlQueryable")]
     public class SqlQueryableInfo : DataStructureInfo, IOrmDataStructure

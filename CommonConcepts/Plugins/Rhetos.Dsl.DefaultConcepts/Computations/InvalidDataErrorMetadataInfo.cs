@@ -25,6 +25,9 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Adds any custom metadata information to the error response. This metadata may be used in frontend to display the error message in a certain way.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ErrorMetadata")]
     public class InvalidDataErrorMetadataInfo : IConceptInfo

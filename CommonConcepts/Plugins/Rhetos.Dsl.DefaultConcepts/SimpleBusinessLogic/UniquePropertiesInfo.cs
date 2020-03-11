@@ -25,6 +25,9 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// 
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Unique")]
     public class UniquePropertiesInfo : IValidatedConcept

@@ -27,6 +27,9 @@ using System.Text.RegularExpressions;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Use a regular expression to validate the string property value with a default error message.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("RegExMatch")]
     public class RegExMatchDefaultMessageInfo : RegExMatchInfo, IAlternativeInitializationConcept, IMacroConcept

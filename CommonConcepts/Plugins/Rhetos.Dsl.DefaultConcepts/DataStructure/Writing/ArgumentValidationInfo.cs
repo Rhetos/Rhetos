@@ -26,6 +26,9 @@ using System.Threading.Tasks;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    ///  Verify if the parameters could break the rest of the Save method's business logic. Use OnSaveValidate instead for standard data validations.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ArgumentValidation")]
     public class ArgumentValidationInfo : IConceptInfo

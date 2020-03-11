@@ -26,6 +26,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Data structure that represents a simple read-only entity or a code table.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Hardcoded")]
     public class HardcodedEntityInfo : EntityInfo, IMacroConcept

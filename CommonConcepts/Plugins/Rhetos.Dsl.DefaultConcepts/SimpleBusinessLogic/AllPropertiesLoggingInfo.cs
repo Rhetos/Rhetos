@@ -23,6 +23,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    ///  Enables logging on all properties.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("AllProperties")]
     public class AllPropertiesLoggingInfo : IConceptInfo

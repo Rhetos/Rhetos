@@ -25,6 +25,9 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Writes the current user's ID when saving a new record.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("CreatedBy")]
     public class CreatedByInfo : IValidatedConcept

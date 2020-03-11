@@ -25,6 +25,9 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    ///  It allows you to add a code snippet that will be executed before the Action.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("BeforeAction")]
     public class BeforeActionInfo : IValidatedConcept
