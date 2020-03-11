@@ -18,20 +18,18 @@
 */
 
 using Autofac.Features.Indexed;
-using Autofac.Features.Metadata;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Rhetos.Extensibility
 {
     public class PluginsContainer<TPlugin> : IPluginsContainer<TPlugin>
     {
-        private Lazy<IEnumerable<TPlugin>> _sortedPlugins;
-        private Lazy<IIndex<Type, IEnumerable<TPlugin>>> _pluginsByImplementation;
-        private PluginsMetadataCache<TPlugin> _cache;
+        private readonly Lazy<IEnumerable<TPlugin>> _sortedPlugins;
+        private readonly Lazy<IIndex<Type, IEnumerable<TPlugin>>> _pluginsByImplementation;
+        private readonly PluginsMetadataCache<TPlugin> _cache;
 
         public PluginsContainer(
             Lazy<IEnumerable<TPlugin>> plugins,
