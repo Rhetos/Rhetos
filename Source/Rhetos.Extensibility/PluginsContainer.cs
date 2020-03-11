@@ -36,9 +36,19 @@ namespace Rhetos.Extensibility
             Lazy<IIndex<Type, IEnumerable<TPlugin>>> pluginsByImplementation,
             PluginsMetadataCache<TPlugin> cache)
         {
-            _sortedPlugins = new Lazy<IEnumerable<TPlugin>>(() => _cache.SortedByMetadataDependsOnAndRemoveSuppressed(typeof(object), plugins.Value));
+            _sortedPlugins = new Lazy<IEnumerable<TPlugin>>(() => _cache.SortedByMetadataDependsOnAndRemoveSuppressed(typeof(object), PreSort(plugins.Value)));
             _pluginsByImplementation = pluginsByImplementation;
             _cache = cache;
+        }
+
+        /// <summary>
+        /// Plugins are pre-sorted before sorting by dependencies, to reduce volatility of generated code where dependencies are not specified.
+        /// </summary>
+        private IEnumerable<TPlugin> PreSort(IEnumerable<TPlugin> plugins)
+        {
+            return plugins
+                .OrderBy(plugin => plugin.GetType().Name) // First sort by short name will allow changing namespace without affecting resulting order (and generated code).
+                .ThenBy(plugin => plugin.GetType().AssemblyQualifiedName);
         }
 
         #region IPluginsContainer implementations
@@ -63,7 +73,7 @@ namespace Rhetos.Extensibility
         public IEnumerable<TPlugin> GetImplementations(Type implements)
         {
             var typeHierarchy = CsUtility.GetClassHierarchy(implements);
-            var allImplementations = typeHierarchy.SelectMany(type => _pluginsByImplementation.Value[type]);
+            var allImplementations = typeHierarchy.SelectMany(type => PreSort(_pluginsByImplementation.Value[type]));
 
             return _cache.SortedByMetadataDependsOnAndRemoveSuppressed(implements, allImplementations);
         }
