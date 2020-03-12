@@ -162,7 +162,7 @@ namespace CommonConcepts.Test
                     var error = TestUtility.ShouldFail<Rhetos.UserException>(
                         () => simple2.Insert(newItem),
                         test.Item2);
-                    Console.WriteLine("ErrorMessage: " + ExceptionsUtility.SafeFormatUserMessage(error));
+                    Console.WriteLine("ErrorMessage: " + ExceptionsUtility.MessageForLog(error));
                     Console.WriteLine("Exception: " + error.ToString());
                 }
             }
