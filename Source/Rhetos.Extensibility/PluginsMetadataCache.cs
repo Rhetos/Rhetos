@@ -21,9 +21,9 @@ using Autofac.Features.Indexed;
 using Autofac.Features.Metadata;
 using Rhetos.Utilities;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Rhetos.Extensibility
 {
@@ -35,12 +35,9 @@ namespace Rhetos.Extensibility
     /// <typeparam name="TPlugin"></typeparam>
     public class PluginsMetadataCache<TPlugin>
     {
-        private Lazy<Dictionary<Type, IDictionary<string, object>>> _metadataByPluginType;
-
-        private Dictionary<Type, List<Type>> _sortedImplementations;
-        private object _sortedImplementationsLock = new object();
-
-        private HashSet<Type> _suppressedPlugins;
+        private readonly Lazy<Dictionary<Type, IDictionary<string, object>>> _metadataByPluginType;
+        private readonly ConcurrentDictionary<Type, List<Type>> _sortedImplementations = new ConcurrentDictionary<Type, List<Type>>();
+        private readonly HashSet<Type> _suppressedPlugins;
 
         public PluginsMetadataCache(
             Lazy<IEnumerable<Meta<TPlugin>>> pluginsWithMetadata,
@@ -50,35 +47,32 @@ namespace Rhetos.Extensibility
                 () => pluginsWithMetadata.Value.ToDictionary(pm => pm.Value.GetType(), pm => pm.Metadata),
                 System.Threading.LazyThreadSafetyMode.ExecutionAndPublication);
 
-            _sortedImplementations = new Dictionary<Type, List<Type>>();
-
             _suppressedPlugins = new HashSet<Type>(suppressPlugins[typeof(TPlugin)].Select(sp => sp.PluginType));
         }
 
-        public IEnumerable<TPlugin> SortedByMetadataDependsOnAndRemoveSuppressed(Type key, IEnumerable<TPlugin> plugins)
+        public IEnumerable<TPlugin> SortedByMetadataDependsOnAndRemoveSuppressed(Type cacheKey, IEnumerable<TPlugin> plugins)
         {
-            var sortPlugins = plugins.ToArray();
+            var sortedPlugins = plugins.ToArray();
+
+            List<Type> pluginTypesSorted = _sortedImplementations.GetOrAdd(cacheKey, k => GetSortedPluginTypesByDependency(sortedPlugins));
+            Graph.SortByGivenOrder(sortedPlugins, pluginTypesSorted, plugin => plugin.GetType());
+
+            return RemoveSuppressedPlugins(sortedPlugins);
+        }
+
+        private List<Type> GetSortedPluginTypesByDependency(TPlugin[] plugins)
+        {
             List<Type> pluginTypesSorted;
+            var dependencies = plugins
+                .Select(plugin => Tuple.Create(GetMetadata(plugin.GetType(), MefProvider.DependsOn), plugin.GetType()))
+                .Where(dependency => dependency.Item1 != null)
+                .ToArray();
 
-            lock (_sortedImplementationsLock)
-            {
-                if (!_sortedImplementations.TryGetValue(key, out pluginTypesSorted))
-                {
-                    var dependencies = sortPlugins
-                        .Select(plugin => Tuple.Create(GetMetadata(plugin.GetType(), MefProvider.DependsOn), plugin.GetType()))
-                        .Where(dependency => dependency.Item1 != null)
-                        .ToArray();
+            List<Type> pluginTypesSortedList = plugins.Select(plugin => plugin.GetType()).ToList();
+            Graph.TopologicalSort(pluginTypesSortedList, dependencies);
 
-                    List<Type> pluginTypesSortedList = sortPlugins.Select(plugin => plugin.GetType()).ToList();
-                    Graph.TopologicalSort(pluginTypesSortedList, dependencies);
-
-                    pluginTypesSorted = pluginTypesSortedList;
-                    _sortedImplementations.Add(key, pluginTypesSorted);
-                }
-            }
-
-            Graph.SortByGivenOrder(sortPlugins, pluginTypesSorted, plugin => plugin.GetType());
-            return RemoveSuppressedPlugins(sortPlugins);
+            pluginTypesSorted = pluginTypesSortedList;
+            return pluginTypesSorted;
         }
 
         public IEnumerable<TPlugin> RemoveSuppressedPlugins(IEnumerable<TPlugin> plugins)

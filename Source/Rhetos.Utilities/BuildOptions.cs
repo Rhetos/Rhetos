@@ -31,5 +31,13 @@ namespace Rhetos.Utilities
         public bool DataMigration__SkipScriptsWithWrongOrder { get; set; } = true;
         public bool CommonConcepts__Legacy__AutoGeneratePolymorphicProperty { get; set; } = true;
         public bool CommonConcepts__Legacy__CascadeDeleteInDatabase { get; set; } = true;
+        public InitialConceptsSort CommonConcepts__Debug__SortConcepts { get; set; } = InitialConceptsSort.Key; // TODO: Rename property to Dsl__InitialConceptsSort. This feature is part of Rhetos framework, not CommonConcepts.
     }
+
+    /// <summary>
+    /// Initial sorting will reduce variations in the generated application source
+    /// that are created by different macro evaluation order on each deployment.
+    /// Changing the sort method can be used to test if correct dependencies are specified for code generators or for database objects.
+    /// </summary>
+    public enum InitialConceptsSort { None, Key, KeyDescending };
 }
