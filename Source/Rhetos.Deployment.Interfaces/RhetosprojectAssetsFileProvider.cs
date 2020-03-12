@@ -21,6 +21,7 @@ using Newtonsoft.Json;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace Rhetos
@@ -33,18 +34,28 @@ namespace Rhetos
 
         private readonly FilesUtility _filesUtility;
         private readonly ILogger _logger;
+        private readonly string _projectRootFolder;
 
         public RhetosProjectAssetsFileProvider(string projectRootFolder, ILogProvider logProvider)
         {
             ProjectAssetsFilePath = Path.Combine(projectRootFolder, "obj", "Rhetos", ProjectAssetsFileName);
             _filesUtility = new FilesUtility(logProvider);
             _logger = logProvider.GetLogger(GetType().ToString());
+            _projectRootFolder = projectRootFolder;
         }
 
         public RhetosProjectAssets Load()
         {
             if (!File.Exists(ProjectAssetsFilePath))
-                throw new FrameworkException($"Missing file {ProjectAssetsFileName} required for build. The project must include Rhetos NuGet package. If manually running Rhetos build, MSBuild should pass first to create this file.");
+            {
+                if (Directory.Exists(_projectRootFolder) && Directory.EnumerateFiles(_projectRootFolder, "*.csproj").Any())
+                    throw new FrameworkException($"Missing file '{ProjectAssetsFileName}' required for build." +
+                        $" The project must include Rhetos NuGet package." +
+                        $" If manually running Rhetos build, MSBuild should pass first to create this file.");
+                else
+                    throw new FrameworkException($"Missing file '{ProjectAssetsFilePath}' required for build." +
+                        $" Make sure to specify a valid project folder ({_projectRootFolder}).");
+            }
 
             string serialized = File.ReadAllText(ProjectAssetsFilePath, Encoding.UTF8);
             return JsonConvert.DeserializeObject<RhetosProjectAssets>(serialized, _serializerSettings);
