@@ -40,12 +40,14 @@ namespace Rhetos.Extensibility
         private readonly ILogger _performanceLogger;
         private readonly PluginScannerCache _pluginScannerCache;
         private static readonly object _pluginsCacheLock = new object();
+        private readonly HashSet<string> _ignoreAssemblyFiles;
+        private readonly string[] _ignoreAssemblyPrefixes;
 
         /// <summary>
         /// It searches for type implementations in the provided list of assemblies.
         /// </summary>
-        /// <param name="findAssemblies">The findAssemblies function should return a list of DLL file paths that will be searched for plugins when invoking the method <see cref="PluginScanner.FindPlugins"/></param>
-        public PluginScanner(Func<IEnumerable<string>> findAssemblies, BuildOptions buildOptions, RhetosAppEnvironment rhetosAppEnvironment, ILogProvider logProvider)
+        /// <param name="findAssemblies">The findAssemblies function should return a list of DLL file paths that will be searched for plugins when invoking the method <see cref="FindPlugins"/></param>
+        public PluginScanner(Func<IEnumerable<string>> findAssemblies, BuildOptions buildOptions, RhetosAppEnvironment rhetosAppEnvironment, ILogProvider logProvider, PluginScannerOptions pluginScannerOptions)
         {
             _pluginsByExport = new Lazy<MultiDictionary<string, PluginInfo>>(
                 () => GetPluginsByExport(findAssemblies),
@@ -53,6 +55,10 @@ namespace Rhetos.Extensibility
             _pluginScannerCache = new PluginScannerCache(buildOptions, rhetosAppEnvironment, logProvider, new FilesUtility(logProvider));
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger(GetType().Name);
+
+            var ignoreList = pluginScannerOptions.PredefinedIgnoreAssemblyFiles.Concat(pluginScannerOptions.IgnoreAssemblyFiles ?? Array.Empty<string>()).Distinct().ToList();
+            _ignoreAssemblyFiles = new HashSet<string>(ignoreList.Where(name => !name.EndsWith("*")), StringComparer.OrdinalIgnoreCase);
+            _ignoreAssemblyPrefixes = ignoreList.Where(name => name.EndsWith("*")).Select(name => name.Trim('*')).ToArray();
         }
 
         /// <summary>
@@ -102,12 +108,11 @@ namespace Rhetos.Extensibility
             }
 
             var namesToPaths = byFilename.ToDictionary(dll => dll.filename, dll => dll.paths.First(), StringComparer.InvariantCultureIgnoreCase);
-            ResolveEventHandler resolver = (sender, args) => LoadAssemblyFromSpecifiedPaths(sender, args, namesToPaths);
 
-            return resolver;
+            return (sender, args) => LoadAssemblyFromSpecifiedPaths(args, namesToPaths);
         }
 
-        private Assembly LoadAssemblyFromSpecifiedPaths(object sender, ResolveEventArgs args, Dictionary<string, string> namesToPaths)
+        private Assembly LoadAssemblyFromSpecifiedPaths(ResolveEventArgs args, Dictionary<string, string> namesToPaths)
         {
             var filename = $"{new AssemblyName(args.Name).Name}.dll";
             if (namesToPaths.TryGetValue(filename, out var path))
@@ -123,7 +128,11 @@ namespace Rhetos.Extensibility
         {
             var stopwatch = Stopwatch.StartNew();
 
-            var assemblies = findAssemblies().Select(path => Path.GetFullPath(path)).Distinct().ToList();
+            var assemblies = findAssemblies()
+                .Select(path => (Path: path, Name: Path.GetFileName(path)))
+                .Where(file => !_ignoreAssemblyFiles.Contains(file.Name) && !_ignoreAssemblyPrefixes.Any(prefix => file.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
+                .Select(file => Path.GetFullPath(file.Path))
+                .Distinct().ToList();
 
             foreach (var assembly in assemblies)
                 if (!File.Exists(assembly))
@@ -228,23 +237,10 @@ namespace Rhetos.Extensibility
             var requestedFile = new FileInfo(requestedPath);
             var actualFile = new FileInfo(actualPath);
 
-            if (requestedFile.Length != actualFile.Length || !SameTimeIgnoreTimeZone(requestedFile.LastWriteTimeUtc, actualFile.LastWriteTimeUtc))
+            if (requestedFile.Length != actualFile.Length || !requestedFile.LastWriteTimeUtc.Equals(actualFile.LastWriteTimeUtc))
                 _logger.Warning($"Assembly at requested path '{requestedPath}' is not the same as loaded assembly at '{actualPath}'. This can cause issues with types.");
             else
                 _logger.Trace($"Same assembly loaded from '{actualPath}' instead of '{requestedPath}'.");
-        }
-
-        /// <summary>
-        /// Simplified heuristics to ignore file timezone errors, because NuGet pack/unpack can shift last modified time: https://github.com/NuGet/Home/issues/7395
-        /// This method does not need to be exact, because it's purpose is only to reduce clutter in log.
-        /// </summary>
-        private bool SameTimeIgnoreTimeZone(DateTime lastWriteTimeUtc1, DateTime lastWriteTimeUtc2)
-        {
-            return
-                lastWriteTimeUtc1.Subtract(lastWriteTimeUtc2).TotalHours <= 14
-                && lastWriteTimeUtc1.Minute == lastWriteTimeUtc2.Minute
-                && lastWriteTimeUtc1.Second == lastWriteTimeUtc2.Second
-                && lastWriteTimeUtc1.Millisecond == lastWriteTimeUtc2.Millisecond;
         }
 
         private static Dictionary<Type, List<PluginInfo>> GetMefExportsForTypes(Type[] types)

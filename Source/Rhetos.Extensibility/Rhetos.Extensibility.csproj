@@ -131,6 +131,7 @@
     <Compile Include="IPluginScanner.cs" />
     <Compile Include="PluginInfo.cs" />
     <Compile Include="NamedPlugins.cs" />
+    <Compile Include="PluginScannerOptions.cs" />
     <Compile Include="PluginsContainer.cs" />
     <Compile Include="PluginsMetadataCache.cs" />
     <Compile Include="ContainerBuilderPluginRegistration.cs" />
