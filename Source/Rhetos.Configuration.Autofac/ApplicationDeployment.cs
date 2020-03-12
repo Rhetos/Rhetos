@@ -21,6 +21,7 @@ using Autofac;
 using Autofac.Core;
 using Rhetos.Configuration.Autofac.Modules;
 using Rhetos.Deployment;
+using Rhetos.Dsl;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Security;
@@ -30,6 +31,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace Rhetos
 {
@@ -170,10 +172,21 @@ namespace Rhetos
 
             Console.WriteLine();
             Console.WriteLine("=============== ERROR SUMMARY ===============");
-            Console.WriteLine(ex.GetType().Name + ": " + ExceptionsUtility.SafeFormatUserMessage(ex));
+            Console.WriteLine(ex.GetType().Name + ": " + ExceptionsUtility.MessageForLog(ex));
             Console.WriteLine("=============================================");
             Console.WriteLine();
             Console.WriteLine("See DeployPackages.log for more information on error. Enable TraceLog in DeployPackages.exe.config for even more details.");
+        }
+
+        public static void PrintCanonicalError(DslSyntaxException dslException)
+        {
+            string origin = dslException.FilePosition?.CanonicalOrigin ?? "Rhetos DSL";
+            string canonicalError = $"{origin}: error {dslException.ErrorCode ?? "RH0000"}: {dslException.Message.Replace('\r', ' ').Replace('\n', ' ')}";
+
+            var oldColor = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(canonicalError);
+            Console.ForegroundColor = oldColor;
         }
 
         public void RestartWebServer()

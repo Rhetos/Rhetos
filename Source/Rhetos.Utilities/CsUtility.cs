@@ -76,6 +76,11 @@ namespace Rhetos.Utilities
             return value;
         }
 
+        public static string Indent(string lines, int indentation)
+        {
+            return string.Join("\r\n", lines.Replace("\r\n", "\n").Replace("\r", "\n").Split('\n').Select(line => new string(' ', indentation) + line));
+        }
+
         /// <summary>
         /// Reads a value from the dictionary, with extended error handling.
         /// Parameter exceptionMessage can contain format tag {0} that will be replaced by missing key.

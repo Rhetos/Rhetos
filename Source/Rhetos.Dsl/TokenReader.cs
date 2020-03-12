@@ -66,14 +66,6 @@ namespace Rhetos.Dsl
 
         public bool EndOfInput { get { return PositionInTokenList >= _tokenList.Count; } }
 
-        private static void ThrowReadException(string value, string reason)
-        {
-            throw new DslSyntaxException(string.Format(CultureInfo.InvariantCulture,
-                "{0}Expected \"{1}\". ",
-                    string.IsNullOrEmpty(reason) ? "" : (reason + " "),
-                    value));
-        }
-
         public bool TryRead(string value)
         {
             if (PositionInTokenList >= _tokenList.Count || CurrentToken.Type == TokenType.EndOfFile)

@@ -51,7 +51,7 @@ namespace Rhetos.TestCommon
 
             Assert.IsNotNull(exception, "Expected exception did not happen.");
 
-            string message = exception.GetType().Name + ": " + ExceptionsUtility.SafeFormatUserMessage(exception);
+            string message = exception.GetType().Name + ": " + ExceptionsUtility.MessageForLog(exception);
             if (exception is UserException && ((UserException)exception).SystemMessage != null)
                 message += "\r\n  SystemMessage: " + ((UserException)exception).SystemMessage;
             Console.WriteLine("[ShouldFail] " + message);

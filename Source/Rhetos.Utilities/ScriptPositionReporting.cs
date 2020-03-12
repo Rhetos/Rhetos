@@ -83,11 +83,17 @@ namespace Rhetos.Utilities
             return text;
         }
 
-        public static string ReportPosition(string text, int position, string filePath = null)
+        public static (int Line, int Column) GetLineColumn(string text, int position)
         {
             position = PositionWithinRange(text, position);
+            return (Line(text, position), Column(text, position));
+        }
+
+        public static string ReportPosition(string text, int position, string filePath = null)
+        {
+            var location = GetLineColumn(text, position);
             string fileInfo = filePath != null ? " file '" + filePath + "'," : "";
-            string fileAndPositionInfo = $"At line {Line(text, position)}, column {Column(text, position)},{fileInfo}\r\n";
+            string fileAndPositionInfo = $"At line {location.Line}, column {location.Column},{fileInfo}\r\n";
             return $"{fileAndPositionInfo}{ReportPreviousAndFollowingText(text, position)}";
         }
 
@@ -96,6 +102,13 @@ namespace Rhetos.Utilities
             position = PositionWithinRange(text, position);
             return $" after: \"{PreviousText(text, position, 70)}\",\r\n before: \"{FollowingText(text, position, 70)}\".";
         }
+
+        public static string ReportPreviousAndFollowingTextInline(string text, int position)
+        {
+            position = PositionWithinRange(text, position);
+            return $"{PreviousText(text, position, 70)} >>>{FollowingText(text, position, 70)}";
+        }
+
         private static int PositionWithinRange(string text, int position)
         {
             if (position > text.Length)

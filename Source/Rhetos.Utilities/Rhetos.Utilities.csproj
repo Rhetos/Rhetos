@@ -152,6 +152,7 @@
     <Compile Include="ApplicationConfiguration\ConfigurationSources\KeyValuesSource.cs" />
     <Compile Include="ApplicationConfiguration\RhetosAppEnvironmentProvider.cs" />
     <Compile Include="BuildOptions.cs" />
+    <Compile Include="FilePosition.cs" />
     <Compile Include="Legacy\LegacyUtilities.cs" />
     <Compile Include="Legacy\Configuration.cs" />
     <Compile Include="Legacy\ConfigUtility.cs" />

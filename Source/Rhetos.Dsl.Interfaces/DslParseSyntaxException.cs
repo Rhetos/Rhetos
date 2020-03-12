@@ -25,18 +25,21 @@ using System.Threading.Tasks;
 
 namespace Rhetos.Dsl
 {
+    [Obsolete("Use DslSyntaxException instead.")]
     public class DslParseSyntaxException : DslSyntaxException
     {
         public readonly string SimpleMessage;
-        public readonly DslScript DslScript;
-        public readonly int Position;
 
         public DslParseSyntaxException(string formattedMessage, string simpleMessage, DslScript dslScript, int position)
-            : base(formattedMessage)
+            : base(formattedMessage, null, dslScript, position, 0, null)
         {
             this.SimpleMessage = simpleMessage;
-            this.DslScript = dslScript;
-            this.Position = position;
+        }
+
+        public DslParseSyntaxException(string message, string errorCode, DslScript dslScript, int positionBegin, int positionEnd, string details)
+            : base(message, errorCode, dslScript, positionBegin, positionEnd, details)
+        {
+            this.SimpleMessage = message;
         }
     }
 }

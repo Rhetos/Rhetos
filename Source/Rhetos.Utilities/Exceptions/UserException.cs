@@ -26,7 +26,7 @@ namespace Rhetos
     /// These errors result from end user's incorrect usage of the application.
     /// Web response HTTP status code on this exception is 400.
     /// </summary>
-    [global::System.Serializable]
+    [Serializable]
     public class UserException : RhetosException
     {
         public string SystemMessage; // TODO: Remove this property and switch to RhetosException.Info property for error metadata.
@@ -68,6 +68,33 @@ namespace Rhetos
             return base.ToString()
                 + "\r\nMessageParameters: " + (MessageParameters != null ? string.Join(", ", MessageParameters) : "null")
                 + "\r\nSystemMessage: " + SystemMessage;
+        }
+
+        /// <summary>
+        /// Evaluates the message parameters with string.Format, without localization.
+        /// Use this method in error logging to make sure every error is logged even if it's message format is not valid.
+        /// </summary>
+        public override string MessageForLog()
+        {
+            try
+            {
+                return string.Format(Message, MessageParameters ?? new object[] { });
+            }
+            catch (Exception e)
+            {
+
+                string parametersReport;
+                if (MessageParameters == null)
+                    parametersReport = "null";
+                else if (MessageParameters.Length == 0)
+                    parametersReport = "no parameters";
+                else
+                    parametersReport = "\"" + string.Join(", ", MessageParameters) + "\"";
+
+                return $"Invalid error message format. Message: \"{Message ?? "null"}\"," +
+                    $" Parameters: {parametersReport}," +
+                    $" {e.GetType().Name}: {e.Message}";
+            }
         }
     }
 }

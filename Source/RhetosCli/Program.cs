@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Dsl;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
@@ -51,7 +52,8 @@ namespace Rhetos
             var rootCommand = new RootCommand();
             var buildCommand = new Command("build", "Generates the Rhetos application inside the <project-root-folder>. If <project-root-folder> is not set it will use the current working directory.");
             buildCommand.Add(new Argument<DirectoryInfo>("project-root-folder", () => new DirectoryInfo(Environment.CurrentDirectory))); // Using CurrentDirectory because rhetos.exe on *build* is expected to be located in NuGet package cache.
-            buildCommand.Handler = CommandHandler.Create((DirectoryInfo projectRootFolder) => ReportError(() => Build(projectRootFolder.FullName)));
+            buildCommand.Add(new Option<bool>("--msbuild-format", false, "Adjust error output format for MSBuild integration."));
+            buildCommand.Handler = CommandHandler.Create((DirectoryInfo projectRootFolder, bool msbuildFormat) => ReportError(() => Build(projectRootFolder.FullName), msbuildFormat));
             rootCommand.AddCommand(buildCommand);
 
             var dbUpdateCommand = new Command("dbupdate", "Updates the database, based on the generated files from the build process. If <application-root-folder> is not set, it will search for the application at its location and parent directories.");
@@ -67,12 +69,21 @@ namespace Rhetos
             return rootCommand.Invoke(args);
         }
 
-        private int ReportError(Action action)
+        private int ReportError(Action action, bool msBuildErrorFormat = false)
         {
             try
             {
                 action.Invoke();
                 Logger.Info("Done.");
+            }
+            catch (DslSyntaxException dslException) when (msBuildErrorFormat)
+            {
+                ApplicationDeployment.PrintCanonicalError(dslException);
+
+                // Detailed exception info is logged as additional information, not as an error, to avoid duplicate error reporting.
+                Logger.Info(dslException.ToString());
+
+                return 1;
             }
             catch (Exception e)
             {

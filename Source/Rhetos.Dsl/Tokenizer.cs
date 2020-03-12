@@ -31,7 +31,7 @@ namespace Rhetos.Dsl
         private readonly IDslScriptsProvider _dslScriptsProvider;
         private readonly FilesUtility _filesUtility;
         List<Token> _tokens = null;
-        object _tokensLock = new object();
+        readonly object _tokensLock = new object();
 
         public Tokenizer(IDslScriptsProvider dslScriptsProvider, FilesUtility filesUtility)
         {
@@ -202,7 +202,7 @@ namespace Rhetos.Dsl
             return c == '<';
         }
 
-        private static HashSet<char> invalidPathChars = new HashSet<char>(Path.GetInvalidPathChars());
+        private static readonly HashSet<char> invalidPathChars = new HashSet<char>(Path.GetInvalidPathChars());
 
         private static string ReadExternalText(DslScript dslScript, ref int end, Func<string, string> readAllTextfromFile)
         {

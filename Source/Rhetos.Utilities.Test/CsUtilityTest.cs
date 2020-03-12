@@ -304,5 +304,15 @@ Dictionary`2<List`1<InnerClass[]>, InnerClass>";
         }
 
         class InnerClass { };
+
+        [TestMethod]
+        public void Indent()
+        {
+            Assert.AreEqual("", CsUtility.Indent("", 0));
+            Assert.AreEqual(" a", CsUtility.Indent("a", 1));
+            Assert.AreEqual("  a", CsUtility.Indent("a", 2));
+            Assert.AreEqual("  a\r\n  b", CsUtility.Indent("a\r\nb", 2));
+            Assert.AreEqual("  a\r\n  b", CsUtility.Indent("a\nb", 2));
+        }
     }
 }

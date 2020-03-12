@@ -161,9 +161,9 @@ namespace Rhetos.Dsl
 
             if (context.Count > 0)
             {
-                var simpleMessage = $"Expected \"}}\" at the end of the script to close concept \"{context.Peek()}\".";
                 var (dslScript, position) = tokenReader.GetPositionInScript();
-                throw new DslParseSyntaxException(ReportErrorContext(context.Peek(), tokenReader) + simpleMessage, simpleMessage, dslScript, position);
+                throw new DslParseSyntaxException($"Expected \"}}\" to close concept \"{context.Peek()}\".",
+                    "RH0002", dslScript, position, 0, ReportErrorContext(context.Peek(), tokenReader));
             }
 
             foreach (string warning in warnings)
@@ -314,7 +314,11 @@ namespace Rhetos.Dsl
         private string ReportErrorContext(IConceptInfo conceptInfo, TokenReader tokenReader)
         {
             var sb = new StringBuilder();
-            sb.AppendLine(tokenReader.ReportPosition());
+
+            var (dslScript, position) = tokenReader.GetPositionInScript();
+            if (!string.IsNullOrEmpty(dslScript.Script))
+                sb.AppendLine($"Syntax error at \"{ScriptPositionReporting.ReportPreviousAndFollowingTextInline(dslScript.Script, position)}\"");
+
             if (conceptInfo != null)
             {
                 sb.AppendFormat("Previous concept: {0}", conceptInfo.GetUserDescription()).AppendLine();
@@ -338,12 +342,9 @@ namespace Rhetos.Dsl
             }
             else if (!tokenReader.TryRead(";"))
             {
-                var simpleMessage = "Expected \";\" or \"{\".";
-                var sb = new StringBuilder();
-                sb.Append(ReportErrorContext(conceptInfo, tokenReader));
-                sb.Append(simpleMessage);
                 var (dslScript, position) = tokenReader.GetPositionInScript();
-                throw new DslParseSyntaxException(sb.ToString(), simpleMessage, dslScript, position);
+                throw new DslParseSyntaxException("Expected \";\" or \"{\".",
+                    "RH0001", dslScript, position, 0, ReportErrorContext(conceptInfo, tokenReader));
             }
 
             while (tokenReader.TryRead("}"))
