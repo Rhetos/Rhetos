@@ -28,7 +28,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
     /// Registers the data structure (and it's repository) as the *default* implementation of the given interface. 
-    /// This allows easy access the data structure's repository by using GenericRepository<ThisInterface> from dependency injection.
+    /// This allows easy access the data structure's repository by using GenericRepository&lt;ThisInterface&gt; from dependency injection.
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("RegisteredImplementation")]

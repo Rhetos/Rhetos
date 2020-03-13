@@ -22,7 +22,8 @@ using System.ComponentModel.Composition;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// 
+    /// Select data for Browse property.
+    /// Consider using Take concept instead.
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("From")]

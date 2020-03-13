@@ -27,7 +27,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
     /// A read method that returns a filtered query for the given source query and the parameter value. 
-    /// The lambda expression returns a subset of a given query: (IQueryable<DataStructure> query, repository, parameter) => filtered IQueryable<DataStructure>. 
+    /// The lambda expression returns a subset of a given query: (IQueryable&lt;DataStructure&gt; query, repository, parameter) => filtered IQueryable&lt;DataStructure&gt;. 
     /// The parameter type also represents the filter name.
     /// </summary>
     [Export(typeof(IConceptInfo))]

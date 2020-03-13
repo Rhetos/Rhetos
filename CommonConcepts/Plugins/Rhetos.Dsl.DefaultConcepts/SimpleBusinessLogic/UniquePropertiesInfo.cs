@@ -26,7 +26,7 @@ using System.Text;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// 
+    /// A unique constraint over two properties: Two records cannot have same combination of values.
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Unique")]

@@ -29,7 +29,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// <summary>
     /// Copies a FilterBy filter implementation from the parent data structure to the detail. 
     /// The lambda expression can contain additional data processing of the filtered items:
-    /// IEnumerable<Detail> => .. additional filter or sort from group with the same parent.
+    /// IEnumerable&lt;Detail%gt; => .. additional filter or sort from group with the same parent.
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("FilterByReferenced")]

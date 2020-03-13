@@ -29,8 +29,8 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
     /// Adds a self-reference property (for example, a superior in the employee hierarchy), but with additionally cached full path for each record.
-    /// *  Generates a cached index for optimized recursive queries(for example, find all direct and indirect subordinates) in the extension<EntityName><HierarchyName>Hierarchy.
-    /// *  Generates ComposableFilters <HierarchyName>HierarchyDescendants and <HierarchyName>HierarchyAncestors for quick access of all direct and indirect child records or parents.
+    /// *  Generates a cached index for optimized recursive queries(for example, find all direct and indirect subordinates) in the extension &lt;EntityName&gt;&lt;HierarchyName&gt;Hierarchy.
+    /// *  Generates ComposableFilters &lt;HierarchyName&gt;HierarchyDescendants and &lt;HierarchyName&gt;HierarchyAncestors for quick access of all direct and indirect child records or parents.
     /// *  Generates validations to deny entering data with circular dependencies.
     /// </summary>
     [Export(typeof(IConceptInfo))]

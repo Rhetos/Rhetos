@@ -27,7 +27,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
     /// Automatically updates cache when the source data is changed. This feature requires ChangesOnChangedItems defined on the source.
-    /// The "save filter" is a lambda expression (IEnumerable<Entity> items, repository) => IEnumerable<Entity>, 
+    /// The "save filter" is a lambda expression (IEnumerable&lt;Entity&gt; items, repository) => IEnumerable&lt;Entity&gt;, 
     /// that returns subset of items which are allowed to be updated by the KeepSynchronized mechanism.
     /// </summary>
     [Export(typeof(IConceptInfo))]

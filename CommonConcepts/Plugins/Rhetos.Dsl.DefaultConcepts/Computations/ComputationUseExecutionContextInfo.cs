@@ -27,10 +27,10 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
     /// Adds an additional input parameter "ExecutionContext" to the Computed or QueryableExtension lambda expression. 
-    /// This concept is obsolete, repository member _executionContext should be used instead
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("UseExecutionContext")]
+    [Obsolete("Use repository member _executionContext instead.")]
     public class ComputationUseExecutionContextInfo : IConceptInfo
     {
         [ConceptKey]
