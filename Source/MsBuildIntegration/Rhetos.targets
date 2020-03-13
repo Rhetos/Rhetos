@@ -25,7 +25,9 @@
 		<Message Text="CopyRhetosSourceFiles" />
         <Copy SourceFiles="@(RhetosSourceFiles)" Retries="$(CopyRetryCount)" RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
             DestinationFiles="@(RhetosSourceFiles->'$(TargetDir)RhetosDebugSource\%(RecursiveDir)%(Filename)%(Extension)')" 
-            SkipUnchangedFiles="True" CopiedFiles="RhetosDebugSourceFiles"/>
+            SkipUnchangedFiles="True">
+            <Output TaskParameter="CopiedFiles" ItemName="RhetosDebugSourceFiles" />
+        </Copy>
         <ItemGroup>
             <RhetosDebugSourceFilesToDelete Include="$(TargetDir)RhetosDebugSource\**\*.cs" Exclude="@(RhetosDebugSourceFiles)" />
         </ItemGroup>
