@@ -163,7 +163,7 @@ namespace Rhetos.Dsl
             {
                 var (dslScript, position) = tokenReader.GetPositionInScript();
                 throw new DslParseSyntaxException($"Expected \"}}\" to close concept \"{context.Peek()}\".",
-                    "RH0002", dslScript, position, 0, ReportErrorContext(context.Peek(), tokenReader));
+                    "RH0002", dslScript, position, 0, ReportPreviousConcept(context.Peek()));
             }
 
             foreach (string warning in warnings)
@@ -311,13 +311,9 @@ namespace Rhetos.Dsl
             return options;
         }
 
-        private string ReportErrorContext(IConceptInfo conceptInfo, TokenReader tokenReader)
+        private string ReportPreviousConcept(IConceptInfo conceptInfo)
         {
             var sb = new StringBuilder();
-
-            var (dslScript, position) = tokenReader.GetPositionInScript();
-            if (!string.IsNullOrEmpty(dslScript.Script))
-                sb.AppendLine($"Syntax error at \"{ScriptPositionReporting.ReportPreviousAndFollowingTextInline(dslScript.Script, position)}\"");
 
             if (conceptInfo != null)
             {
@@ -344,7 +340,7 @@ namespace Rhetos.Dsl
             {
                 var (dslScript, position) = tokenReader.GetPositionInScript();
                 throw new DslParseSyntaxException("Expected \";\" or \"{\".",
-                    "RH0001", dslScript, position, 0, ReportErrorContext(conceptInfo, tokenReader));
+                    "RH0001", dslScript, position, 0, ReportPreviousConcept(conceptInfo));
             }
 
             while (tokenReader.TryRead("}"))

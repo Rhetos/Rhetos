@@ -19,6 +19,7 @@
 
 using Rhetos.Utilities;
 using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace Rhetos.Dsl
@@ -48,17 +49,22 @@ namespace Rhetos.Dsl
           System.Runtime.Serialization.StreamingContext context)
             : base(info, context) { }
 
-        public DslSyntaxException(string message, string errorCode, DslScript dslScript, int positionBegin = 0, int positionEnd = 0, string details = null)
+        public DslSyntaxException(string message, string errorCode, DslScript dslScript, int positionBegin = 0, int positionEnd = 0, string additionalDetails = null)
             : base(message)
         {
             ErrorCode = errorCode;
             DslScript = dslScript;
             Position = positionBegin;
 
-            if (!string.IsNullOrEmpty(dslScript.Path))
+            if (!string.IsNullOrEmpty(dslScript?.Path))
                 FilePosition = new FilePosition(dslScript.Path, dslScript.Script, positionBegin, positionEnd);
 
-            Details = details;
+            var detailsList = new List<string>();
+            if (!string.IsNullOrEmpty(dslScript?.Script))
+                detailsList.Add($"Syntax error at \"{ScriptPositionReporting.ReportPreviousAndFollowingTextInline(dslScript.Script, positionBegin)}\"");
+            if (!string.IsNullOrEmpty(additionalDetails))
+                detailsList.Add(additionalDetails);
+            Details = string.Join("\r\n", detailsList);
         }
 
         public override string ToString() => ReportWithFilePositionAndDetails(base.ToString());
