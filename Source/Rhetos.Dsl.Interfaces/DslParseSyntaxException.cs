@@ -18,10 +18,6 @@
 */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Rhetos.Dsl
 {
@@ -29,12 +25,6 @@ namespace Rhetos.Dsl
     public class DslParseSyntaxException : DslSyntaxException
     {
         public readonly string SimpleMessage;
-
-        public DslParseSyntaxException(string formattedMessage, string simpleMessage, DslScript dslScript, int position)
-            : base(formattedMessage, null, dslScript, position, 0, null)
-        {
-            this.SimpleMessage = simpleMessage;
-        }
 
         public DslParseSyntaxException(string message, string errorCode, DslScript dslScript, int positionBegin, int positionEnd, string details)
             : base(message, errorCode, dslScript, positionBegin, positionEnd, details)

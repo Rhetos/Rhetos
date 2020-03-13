@@ -17,12 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
-using Rhetos.Utilities;
+using System.Linq;
 
 namespace Rhetos.Dsl
 {
@@ -178,7 +177,7 @@ namespace Rhetos.Dsl
                 if (end >= script.Length)
                 {
                     var errorMessage = $"Unexpected end of script within quoted string. Missing closing character: {quote}.";
-                    throw new DslParseSyntaxException($"{errorMessage} {dslScript.ReportPosition(begin)}", errorMessage, dslScript, begin);
+                    throw new DslParseSyntaxException(errorMessage, "RH0008", dslScript, begin, 0, null);
                 }
                 if (end + 1 < script.Length && script[end + 1] == quote)
                 {
@@ -216,13 +215,13 @@ namespace Rhetos.Dsl
             if (end >= script.Length)
             {
                 var errorMessage = "Unexpected end of script within external text reference. Missing closing character: '>'.";
-                throw new DslParseSyntaxException($"{errorMessage} {dslScript.ReportPosition(end)}", errorMessage, dslScript, end);
+                throw new DslParseSyntaxException(errorMessage, "RH0009", dslScript, begin, 0, null);
             }
 
             if (script[end] != '>')
             {
                 var errorMessage = "Invalid filename character within external text reference.";
-                throw new DslParseSyntaxException($"{errorMessage} {dslScript.ReportPosition(end)}", errorMessage, dslScript, end);
+                throw new DslParseSyntaxException(errorMessage, "RH0010", dslScript, end, 0, null);
             }
 
             end++; // Skip closing character.
@@ -244,7 +243,7 @@ namespace Rhetos.Dsl
                 if (string.IsNullOrWhiteSpace(fileName))
                 {
                     var errorMessage = $"Referenced empty file name ({basicFilePath}) in DSL script.";
-                    throw new DslParseSyntaxException($"{errorMessage} {dslScript.ReportPosition(begin)}", errorMessage, dslScript, begin);
+                    throw new DslParseSyntaxException(errorMessage, "RH0011", dslScript, begin, 0, null);
                 }
 
                 // Look for SQL dialect-specific files before the generic SQL file:
@@ -258,7 +257,7 @@ namespace Rhetos.Dsl
 
             var notFoundMessage = "Cannot find the extension file referenced in DSL script.";
             var fileListMessage = "Looking for files:\r\n" + string.Join("\r\n", filePaths);
-            throw new DslParseSyntaxException($"{notFoundMessage} {dslScript.ReportPosition(begin)}\r\n{fileListMessage}", $"{notFoundMessage} {fileListMessage}", dslScript, begin);
+            throw new DslParseSyntaxException($"{notFoundMessage} {fileListMessage}", "RH0012", dslScript, begin, 0, null);
         }
     }
 }

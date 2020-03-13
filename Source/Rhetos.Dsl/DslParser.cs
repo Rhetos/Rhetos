@@ -221,28 +221,24 @@ namespace Rhetos.Dsl
                     var errorsReport = string.Join("\r\n", errorReportValues.Select(x => x.formattedError)).Limit(500, "...");
                     var simpleErrorsReport = string.Join("\n", errorReportValues.Select(x => x.simpleError));
                     var simpleMessage = $"Invalid parameters after keyword '{keyword}'. Possible causes: {simpleErrorsReport}";
-                    var formattedMessage = $"{simpleMessage} {tokenReader.ReportPosition()}\r\n\r\nPossible causes:\r\n{errorsReport}";
-                    throw new DslParseSyntaxException(formattedMessage, simpleMessage, dslScript, position);
+                    var possibleCauses = $"Possible causes:\r\n{errorsReport}";
+                    throw new DslParseSyntaxException(simpleMessage, "RH0003", dslScript, position, 0, possibleCauses);
                 }
                 else if (!string.IsNullOrEmpty(keyword))
                 {
                     var simpleMessage = $"Unrecognized concept keyword '{keyword}'.";
-                    throw new DslParseSyntaxException($"{simpleMessage} {tokenReader.ReportPosition()}", simpleMessage, dslScript, position);
+                    throw new DslParseSyntaxException(simpleMessage, "RH0004", dslScript, position, 0, null);
                 }
                 else
                 {
                     var simpleMessage = $"Invalid DSL script syntax.";
-                    throw new DslParseSyntaxException($"{simpleMessage} {tokenReader.ReportPosition()}", simpleMessage, dslScript, position);
+                    throw new DslParseSyntaxException(simpleMessage, "RH0005", dslScript, position, 0, null);
             }
             }
 
             Disambiguate(possibleInterpretations);
             if (possibleInterpretations.Count > 1)
             {
-                var report = new List<string>();
-                report.Add($"Ambiguous syntax. {tokenReader.ReportPosition()}");
-                report.Add($"There are multiple possible interpretations of keyword '{keyword}':");
-
                 var interpretations = new List<string>();
                 for (int i = 0; i < possibleInterpretations.Count; i++)
                     interpretations.Add($"{i + 1}. {possibleInterpretations[i].ConceptInfo.GetType().AssemblyQualifiedName}");
@@ -250,7 +246,7 @@ namespace Rhetos.Dsl
                 var simpleMessage = $"Ambiguous syntax. There are multiple possible interpretations of keyword '{keyword}': {string.Join(", ", interpretations)}.";
                 var (dslScript, position) = tokenReader.GetPositionInScript();
 
-                throw new DslParseSyntaxException(string.Join("\r\n", report.Concat(interpretations)), simpleMessage, dslScript, position);
+                throw new DslParseSyntaxException(simpleMessage, "RH0006", dslScript, position, 0, null);
             }
 
             var parsedStatement = possibleInterpretations.Single();
@@ -349,7 +345,7 @@ namespace Rhetos.Dsl
                 {
                     var simpleMessage = "Unexpected \"}\".";
                     var (dslScript, position) = tokenReader.GetPositionInScript();
-                    throw new DslParseSyntaxException($"{tokenReader.ReportPosition()}\r\n{simpleMessage} ", simpleMessage, dslScript, position);
+                    throw new DslParseSyntaxException(simpleMessage, "RH0007", dslScript, position, 0, null);
 
                 }
                 context.Pop();
