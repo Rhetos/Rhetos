@@ -25,6 +25,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Data structure's queryable class implements the given C# interface.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ImplementsQueryable")]
     public class ImplementsQueryableInterfaceInfo : IValidatedConcept

@@ -25,6 +25,10 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// (Set by default) ID property will be used for matching source and target records. 
+    /// It controls when to update an item or to delete old item and insert a new one.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("KeyPropertyID")]
     public class KeyPropertyIDComputedFromInfo : IConceptInfo, IAlternativeInitializationConcept

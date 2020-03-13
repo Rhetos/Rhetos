@@ -25,6 +25,9 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Deny update (except for properties from the provided list) and delete of the entity records, for records in a certain state.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("LockExcept")]
     public class LockItemsExceptPropertiesInfo : IValidatedConcept

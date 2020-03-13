@@ -21,7 +21,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
-
+    /// <summary>
+    /// GUID property
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Guid")]
     public class GuidPropertyInfo : PropertyInfo

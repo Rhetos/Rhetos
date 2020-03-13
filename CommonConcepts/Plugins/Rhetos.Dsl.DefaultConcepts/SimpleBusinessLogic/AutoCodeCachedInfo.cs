@@ -24,6 +24,11 @@ using System.Reflection;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// An optimized version of AutoCode for large tables.
+    /// It stores the latest used code, so it does not need to read the existing records when generating a new code,
+    /// but it requires manual initialization the persisted data at initial deployment or import database records.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("AutoCodeCached")]
     public class AutoCodeCachedInfo : IMacroConcept

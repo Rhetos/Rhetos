@@ -26,6 +26,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// View in database.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SqlView")]
     public class SqlViewInfo : IConceptInfo

@@ -27,6 +27,12 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Adds a self-reference property (for example, a superior in the employee hierarchy).
+    /// *  Generates a cached index for optimized recursive queries(for example, find all direct and indirect subordinates) in the extension &lt;EntityName&gt;&lt;HierarchyName&gt;Hierarchy.
+    /// *  Generates ComposableFilters &lt;HierarchyName&gt;HierarchyDescendants and &lt;HierarchyName&gt;HierarchyAncestors for quick access of all direct and indirect child records or parents.
+    /// *  Generates validations to deny entering data with circular dependencies.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Hierarchy")]
     public class HierarchyInfo : ReferencePropertyInfo, IAlternativeInitializationConcept

@@ -25,6 +25,9 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Marks the index as clustered.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Clustered")]
     public class SqlIndexClusteredInfo : IConceptInfo

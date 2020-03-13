@@ -26,6 +26,9 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Copies all properties from source data structure to the cache entity, along with the associated Required, SqlIndex, Extends and CascadeDelete concepts.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("AllProperties")]
     public class PersistedAllPropertiesInfo : IMacroConcept

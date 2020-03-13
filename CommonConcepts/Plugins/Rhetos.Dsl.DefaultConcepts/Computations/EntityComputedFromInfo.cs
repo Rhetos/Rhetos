@@ -25,6 +25,11 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// A more flexible version of Persisted.
+    /// It allows a property-level recomputing instead of entity-level. 
+    /// It is intended to be used as an internal concept for building simpler macro concepts.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ComputedFrom")]
     public class EntityComputedFromInfo : IConceptInfo

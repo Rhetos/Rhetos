@@ -27,6 +27,9 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Automatically updates cache when a base record is inserted for items that pass the given filter.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ComputeForNewBaseItems")]
     public class PersistedComputeForNewBaseItemsWithFilterInfo : IMacroConcept, IValidatedConcept

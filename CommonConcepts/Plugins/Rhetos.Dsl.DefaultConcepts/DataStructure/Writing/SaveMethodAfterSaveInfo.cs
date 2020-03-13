@@ -26,6 +26,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// The inserted code will be executed after validations.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("AfterSave")]
     public class SaveMethodAfterSaveInfo : IConceptInfo

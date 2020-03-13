@@ -26,6 +26,9 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Inherits the Range concept and generates the Integer properties in case they don't exist already.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("IntegerRange")]
     public class IntegerRangeInfo : RangeInfo, IAlternativeInitializationConcept

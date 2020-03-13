@@ -21,6 +21,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Allows tracking of active and deactivated records. Generates property Bool Active.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Deactivatable")]
     public class DeactivatableInfo : IConceptInfo, IMacroConcept

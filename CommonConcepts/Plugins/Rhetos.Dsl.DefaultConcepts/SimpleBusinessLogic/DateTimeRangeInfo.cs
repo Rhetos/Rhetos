@@ -26,6 +26,9 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    ///  Inherits the Range concept and generates the DateTime properties in case they don't exist already.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("DateTimeRange")]
     public class DateTimeRangeInfo : RangeInfo, IAlternativeInitializationConcept

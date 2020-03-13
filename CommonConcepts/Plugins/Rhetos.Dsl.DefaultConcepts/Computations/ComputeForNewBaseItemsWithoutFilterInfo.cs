@@ -27,6 +27,10 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Automatically updates cache properties when a record is inserted into the cache entity.
+    /// This feature is intended for "hybrid" entities that have some computed properties, but also allow direct data entry.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ComputeForNewBaseItems")]
     public class ComputeForNewBaseItemsWithoutFilterInfo : ComputeForNewBaseItemsInfo, IAlternativeInitializationConcept

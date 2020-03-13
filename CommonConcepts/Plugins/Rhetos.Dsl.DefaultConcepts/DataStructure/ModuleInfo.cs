@@ -21,6 +21,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Generates a C# namespace and a database schema
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Module")]
     public class ModuleInfo : IValidatedConcept

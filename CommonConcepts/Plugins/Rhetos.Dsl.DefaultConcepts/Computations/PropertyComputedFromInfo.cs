@@ -25,6 +25,9 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Mapping for a target property to the source property. Not needed if using AllProperties.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ComputedFrom")]
     public class PropertyComputedFromInfo : IValidatedConcept, IAlternativeInitializationConcept

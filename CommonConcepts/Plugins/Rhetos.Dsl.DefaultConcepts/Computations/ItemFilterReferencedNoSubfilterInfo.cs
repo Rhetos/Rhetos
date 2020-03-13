@@ -26,6 +26,9 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// For inheriting filters from referenced data structure.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ItemFilterReferenced")]
     public class ItemFilterReferencedNoSubfilterInfo : ItemFilterReferencedInfo, IAlternativeInitializationConcept

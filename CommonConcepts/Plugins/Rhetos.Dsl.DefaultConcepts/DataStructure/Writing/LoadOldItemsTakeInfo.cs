@@ -26,6 +26,10 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Explicitily selecting properties for LoadOldItems concept.
+    /// Read old value of the selected property. Path over references can be used here to select a property from a referenced entity.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Take")]
     public class LoadOldItemsTakeInfo : IValidatedConcept

@@ -23,6 +23,8 @@ using System.Collections.Generic;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
+    /// Enables implementation of a custom Log archive.
+    /// The archive can be integrated into the existing auditing features by extending LogReader and LogRelatedItemReader.
     /// A low-level concept that inserts the SQL code snippet to the log reader SqlQueryable at the place of the given tag (an SQL comment).
     /// </summary>
     [Export(typeof(IConceptInfo))]

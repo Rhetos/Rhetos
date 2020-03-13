@@ -26,6 +26,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Create a custom database object that is not supported by other SQL concepts, for example a full-text search catalog.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SqlObject")]
     public class SqlObjectInfo : IConceptInfo

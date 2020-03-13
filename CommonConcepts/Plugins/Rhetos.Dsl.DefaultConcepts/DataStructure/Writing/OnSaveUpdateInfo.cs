@@ -26,6 +26,10 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    ///  Modify data in other dependent entities that needs to be updated (recomputed) after the current Save operation.
+    ///  If possible, use ComputedFrom instead.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("OnSaveUpdate")]
     public class OnSaveUpdateInfo : IConceptInfo

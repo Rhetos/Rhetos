@@ -22,6 +22,11 @@ using System.Collections.Generic;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Connect log records between two entities. 
+    /// This concept is used automatically to include details and extension log records.
+    /// Read the connected log records with SqlQueryable Common.RelatedEventsSource.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("RelatedItem")]
     public class LoggingRelatedItemInfo : IValidatedConcept

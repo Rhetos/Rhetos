@@ -27,6 +27,9 @@ using Rhetos.Compiler;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Manually creates a materialized table, when there are no references or extensions to the polymorphic
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Materialized")]
     public class PolymorphicMaterializedInfo : IConceptInfo, IMacroConcept

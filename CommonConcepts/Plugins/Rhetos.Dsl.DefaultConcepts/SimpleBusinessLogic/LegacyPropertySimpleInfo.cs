@@ -25,6 +25,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Mapping a writable property to a column in source view. It also extends the generated triggers, making the view writable.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("LegacyProperty")]
     public class LegacyPropertySimpleInfo : LegacyPropertyInfo

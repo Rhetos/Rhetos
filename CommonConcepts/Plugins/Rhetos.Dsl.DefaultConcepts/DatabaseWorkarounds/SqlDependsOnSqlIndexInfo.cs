@@ -25,6 +25,9 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// This object should be created in database after the given SqlIndex is created.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SqlDependsOnIndex")]
     public class SqlDependsOnSqlIndexInfo : IConceptInfo

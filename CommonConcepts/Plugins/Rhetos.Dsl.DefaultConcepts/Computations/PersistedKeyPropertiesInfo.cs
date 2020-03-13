@@ -26,6 +26,9 @@ using Rhetos.Dsl.DefaultConcepts;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// List of properties for matching source and target records. It controls when to update an item or to delete old item and insert a new one.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("KeyProperties")]
     public class PersistedKeyPropertiesInfo : IMacroConcept

@@ -25,6 +25,10 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Allows full control over validation's error message and metadata.
+    /// It is implemented as a lambda expression the returns the error message and metadata for a given list of invalid record IDs.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("MessageFunction")]
     public class InvalidDataMessageFunctionInfo : InvalidDataMessageInfo

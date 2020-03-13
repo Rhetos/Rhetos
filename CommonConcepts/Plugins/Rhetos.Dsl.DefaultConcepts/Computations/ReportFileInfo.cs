@@ -25,6 +25,11 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// The lambda expression returns an arbitrary generated file (file name and contents as byte array), based on the report data collected by DataSources.
+    /// The lambda expression returns the file: 
+    /// (object[][] reportData, string convertFormat, executionContext) => new Rhetos.Dom.DefaultConcepts.ReportFile {string Name, byte[] Content}
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ReportFile")]
     public class ReportFileInfo : ReportDataInfo

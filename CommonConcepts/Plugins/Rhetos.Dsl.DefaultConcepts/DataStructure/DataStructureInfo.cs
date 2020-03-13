@@ -21,6 +21,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Basic concept for any data structure (e.g. Entity, Browse, Computed, ...) which may contain properties. It is usually not directly used in DSL scripts.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("DataStructure")]
     public class DataStructureInfo : IValidatedConcept

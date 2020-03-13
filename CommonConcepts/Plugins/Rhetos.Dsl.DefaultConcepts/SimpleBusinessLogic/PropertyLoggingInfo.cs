@@ -25,6 +25,9 @@ using System.Linq;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Sets properties which changes are tracked.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Log")]
     public class PropertyLoggingInfo : IValidatedConcept

@@ -25,6 +25,9 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// 
+    /// </summary>
     [Obsolete("Use InvalidData instead.")]
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("DenySave")]

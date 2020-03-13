@@ -26,6 +26,9 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Value of the first property has to be less or equal to the second property (properties have to be of the same type).
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Range")]
     public class RangeInfo : IMacroConcept, IValidatedConcept

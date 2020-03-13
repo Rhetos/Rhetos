@@ -23,6 +23,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Automatically generate numeric codes. The codes can have a given string prefix and a fixed number of digits. It generates Unique constraint on the property.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("AutoCode")]
     public class AutoCodePropertyInfo : IMacroConcept, IValidatedConcept

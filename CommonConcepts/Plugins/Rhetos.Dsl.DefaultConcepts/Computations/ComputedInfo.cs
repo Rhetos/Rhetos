@@ -26,6 +26,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// A readably data structure, implemented with a C# code (the lambda expression) that returns an array of the records: repository => array of records.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Computed")]
     public class ComputedInfo : DataStructureInfo

@@ -26,6 +26,9 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Copies a FilterBy filter from base data structure.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("FilterByBase")]
     public class FilterByBaseInfo : IValidatedConcept

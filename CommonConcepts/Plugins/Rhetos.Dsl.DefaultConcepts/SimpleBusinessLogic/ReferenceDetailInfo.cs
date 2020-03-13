@@ -22,6 +22,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Marks entity as detail of the referenced entity. Generates Required, SqlIndex and CascadeDelete.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Detail")]
     public class ReferenceDetailInfo : IMacroConcept

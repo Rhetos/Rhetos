@@ -27,6 +27,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Implement a property by a hardcoded entity entry
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Implements")]
     public class SubtypeImplementsReferenceToHardcodedEntityInfo : IMacroConcept

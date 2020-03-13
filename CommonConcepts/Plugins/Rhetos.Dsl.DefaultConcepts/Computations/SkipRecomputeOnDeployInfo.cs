@@ -26,6 +26,9 @@ using System.Threading.Tasks;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Used for disabling recompute-on-deploy for a specific entity in the DSL script (issue #105).
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SkipRecomputeOnDeploy")]
     public class SkipRecomputeOnDeployInfo : IConceptInfo

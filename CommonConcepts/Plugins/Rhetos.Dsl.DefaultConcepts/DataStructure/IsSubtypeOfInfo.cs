@@ -29,6 +29,9 @@ using Rhetos.Dom.DefaultConcepts;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Data structure is a subtype (an implementation) of the given polymorphic.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Is")]
     public class IsSubtypeOfInfo : IValidatedConcept

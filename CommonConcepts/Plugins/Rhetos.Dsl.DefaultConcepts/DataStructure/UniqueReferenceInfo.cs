@@ -26,7 +26,10 @@ using System.Text;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
+    /// Same as reference but with one-to-one relationship. Use instead of Extends when the extended entity should not be a part of the base entity.
+    /// Generates foreign key constraint in database. The database column has "ID" suffix.
     /// The extension data structure has the same ID as the base data structure.
+    /// 
     /// Database:
     /// The extension's table has a foreign key constraint on its ID column, referencing the base entity's ID column.
     /// C# object model:

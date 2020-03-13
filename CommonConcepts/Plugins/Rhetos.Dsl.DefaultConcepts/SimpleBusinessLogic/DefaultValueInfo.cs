@@ -21,6 +21,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Used for setting the default property values when inserting a new record.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("DefaultValue")]
     public class DefaultValueInfo : IConceptInfo

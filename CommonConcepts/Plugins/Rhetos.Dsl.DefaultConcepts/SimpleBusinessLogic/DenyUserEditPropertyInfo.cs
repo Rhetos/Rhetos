@@ -26,6 +26,9 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Client application is not allowed to directly insert or update the property.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("DenyUserEdit")]
     public class DenyUserEditPropertyInfo : IValidatedConcept

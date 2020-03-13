@@ -26,6 +26,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Limits insert to only one root record.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SingleRoot")]
     public class HierarchySingleRootInfo : IMacroConcept
