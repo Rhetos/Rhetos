@@ -223,7 +223,6 @@ namespace Rhetos.Dsl.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(DslParseSyntaxException))]
         public void ParserError_ExpectingErrorHandler()
         {
             string dsl = "concept first second whoami";
@@ -234,20 +233,13 @@ namespace Rhetos.Dsl.Test
             var conceptParsers = new MultiDictionary<string, IConceptParser>();
             conceptParsers.Add("concept", conceptParsersList);
 
-            try
+            var e = TestUtility.ShouldFail<DslSyntaxException>(() => new TestDslParser(dsl).ExtractConcepts(conceptParsers));
+            TestUtility.AssertContains(e.Message, "Expected \";\" or \"{\"");
+            TestUtility.AssertContains(e.Details, "concept");
+            foreach (var prop in typeof(SimpleConceptInfo).GetProperties())
             {
-                new TestDslParser(dsl).ExtractConcepts(conceptParsers);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-                Assert.IsTrue(e.Message.Contains("concept"));
-                foreach (var prop in typeof(SimpleConceptInfo).GetProperties())
-                {
-                    Assert.IsTrue(e.Message.Contains(prop.Name));
-                    Assert.IsTrue(e.Message.Contains(prop.PropertyType.Name));
-                }
-                throw;
+                TestUtility.AssertContains(e.Details, prop.Name);
+                TestUtility.AssertContains(e.Details, prop.PropertyType.Name);
             }
         }
 
@@ -260,16 +252,16 @@ namespace Rhetos.Dsl.Test
             DslParserParse("simple a b;");
 
             TestUtility.ShouldFail(() => DslParserParse("simple a"), // missing second parameter
-                "simple", "end of the DSL script", MockDslScript.TestScriptName, "line 1", "column 1", "Cannot read the value of Data");
+                "simple", "end of the DSL script", MockDslScript.TestScriptName, "TestDslScript(1,1)", "Cannot read the value of Data");
 
             TestUtility.ShouldFail(() => DslParserParse("simple a;"), // missing second parameter
-                "simple", "unexpected", "';'", MockDslScript.TestScriptName, "line 1", "column 1", "Cannot read the value of Data");
+                "simple", "unexpected", "';'", MockDslScript.TestScriptName, "TestDslScript(1,1)", "Cannot read the value of Data");
 
             TestUtility.ShouldFail(() => DslParserParse("{"), // invalid syntax
-                MockDslScript.TestScriptName, "line 1", "column 1");
+                MockDslScript.TestScriptName, "TestDslScript(1,1)");
 
             TestUtility.ShouldFail(() => DslParserParse("simple a b"), // missing semicolon
-                "simple", "Expected \";\" or \"{\"", MockDslScript.TestScriptName, "line 1", "column 11");
+                "simple", "Expected \";\" or \"{\"", MockDslScript.TestScriptName, "TestDslScript(1,11)");
         }
         
         private static IEnumerable<IConceptInfo> DslParserParse(params string[] dsl)
