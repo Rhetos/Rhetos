@@ -5,17 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Rhetos.Utilities\Rhetos.Utilities.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="RhetosProjectAssets.cs" />
-    <Compile Include="RhetosProjectAssetsFileProvider.cs" />
     <ProjectReference Include="..\Rhetos.Logging.Interfaces\Rhetos.Logging.Interfaces.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json">
-      <Version>12.0.2</Version>
-    </PackageReference>
   </ItemGroup>
 
 </Project>
