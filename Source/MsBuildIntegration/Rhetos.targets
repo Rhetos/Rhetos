@@ -19,6 +19,7 @@
             <RhetosSourceFiles Include="RhetosSource\**\*.cs" />
             <Compile Include="@(RhetosSourceFiles)" />
         </ItemGroup>
+        <WriteLinesToFile Lines="@(RhetosSourceFiles -> '%(FullPath)')" Overwrite="True" WriteOnlyWhenDifferent="True" File="$(BaseIntermediateOutputPath)Rhetos\RhetosGeneratedSourceFiles.txt"/>
     </Target>
     
     <Target Name="CopyRhetosSourceFiles" DependsOnTargets="AddRhetosSourceFiles" AfterTargets="CopyFilesToOutputDirectory" >
@@ -31,7 +32,10 @@
         <ItemGroup>
             <RhetosDebugSourceFilesToDelete Include="$(TargetDir)RhetosDebugSource\**\*.cs" Exclude="@(RhetosDebugSourceFiles)" />
         </ItemGroup>
-        <Delete Files="@(RhetosDebugSourceFilesToDelete)" />            
+        <Delete Files="@(RhetosDebugSourceFilesToDelete)" />
+        <ItemGroup>
+            <FileWrites Include="@(RhetosDebugSourceFiles)" />
+        </ItemGroup>             
     </Target>
 
     <Target Name="DeployRhetosApp" DependsOnTargets="BuildRhetosApp;CopyFilesToOutputDirectory" AfterTargets="Build" Condition="'$(RhetosDeploy)'=='True' And Exists('$(RhetosBuildCompleteFile)')"
