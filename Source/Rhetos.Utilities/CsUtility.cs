@@ -200,6 +200,8 @@ namespace Rhetos.Utilities
                 loaderExceptions = typeLoadException.LoaderExceptions.GroupBy(exception => exception.Message).Select(group => group.First()).ToList();
             else if (ex is FileLoadException)
                 loaderExceptions = new List<Exception> { ex };
+            else if (ex is FileNotFoundException fileNotFoundException && fileNotFoundException.FusionLog != null)
+                loaderExceptions = new List<Exception> { ex };
             else
                 return null;
 
@@ -208,7 +210,8 @@ namespace Rhetos.Utilities
                 (string.IsNullOrEmpty(errorContext) ? errorContext + " " : "")
                 + "Please check if the assembly is missing or has a different version.");
             report.AddRange(ReportLoaderExceptions(loaderExceptions));
-            report.AddRange(ReportAssemblyLoadErrors(referencedAssembliesPaths));
+            if (referencedAssembliesPaths != null)
+                report.AddRange(ReportAssemblyLoadErrors(referencedAssembliesPaths));
 
             return string.Join("\r\n", report);
         }
