@@ -4,10 +4,6 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>$(BaseIntermediateOutputPath)$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
-  </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Rhetos.Compiler.Interfaces\Rhetos.Compiler.Interfaces.csproj" />
     <ProjectReference Include="..\Rhetos.Compiler\Rhetos.Compiler.csproj" />

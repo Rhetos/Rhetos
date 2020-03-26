@@ -7,5 +7,6 @@
     <FileVersion>4.0.0</FileVersion>
     <InformationalVersion>4.0.0-dev</InformationalVersion>
     <NoWarn>1701,1702,1591,1573</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 </Project>
