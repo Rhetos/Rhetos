@@ -28,15 +28,17 @@ namespace Rhetos.Deployment
     public class RhetosAppEnvironmentGenerator : IGenerator
     {
         private readonly RhetosAppEnvironment _rhetosAppEnvironment;
+        private readonly BuildOptions _buildOptions;
 
-        public RhetosAppEnvironmentGenerator(RhetosAppEnvironment rhetosAppEnvironment)
+        public RhetosAppEnvironmentGenerator(RhetosAppEnvironment rhetosAppEnvironment, BuildOptions buildOptions)
         {
             _rhetosAppEnvironment = rhetosAppEnvironment;
+            _buildOptions = buildOptions;
         }
 
         public void Generate()
         {
-            RhetosAppEnvironmentProvider.Save(_rhetosAppEnvironment);
+            RhetosAppEnvironmentProvider.SaveForRuntime(_rhetosAppEnvironment, _buildOptions.AssetsFolderDestination);
         }
 
         public IEnumerable<string> Dependencies => Array.Empty<string>();

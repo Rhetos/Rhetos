@@ -1,8 +1,8 @@
 <Project>
     <PropertyGroup>
         <RhetosCliExecutablePath>$(MSBuildThisFileDirectory)..\tools\rhetos.exe</RhetosCliExecutablePath>
-        <RhetosBuild>True</RhetosBuild>
-        <RhetosDeploy>True</RhetosDeploy>
+        <RhetosBuild Condition=" '$(RhetosBuild)'=='' ">True</RhetosBuild>
+        <RhetosDeploy Condition=" '$(RhetosDeploy)'=='' ">True</RhetosDeploy>
         <RhetosBuildCompleteFile>$(BaseIntermediateOutputPath)Rhetos\Rhetos.BuildComplete</RhetosBuildCompleteFile>
 		<RhetosDatabaseUpdated>$(BaseIntermediateOutputPath)Rhetos\Rhetos.DatabaseUpdated</RhetosDatabaseUpdated>
     </PropertyGroup>
