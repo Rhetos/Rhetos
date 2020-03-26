@@ -26,6 +26,7 @@
   <Namespace>System.Text</Namespace>
   <Namespace>System.Xml</Namespace>
   <Namespace>System.Xml.Serialization</Namespace>
+  <Namespace>Rhetos.Dom.DefaultConcepts</Namespace>
 </Query>
 
 void Main()
@@ -57,8 +58,20 @@ void Main()
         DataToInsert = new[] { newPrincipal }
 	});
 	Short(serverResponse).Dump();
-    
-    // DELETE A PRINCIPAL:
+
+	// READ THE CREATED (OR EXISTING) PRINCIPAL:
+
+	Console.WriteLine("READ Common.Principal:");
+	serverResponse = server.Execute(new ReadCommandInfo
+	{
+		DataSource = "Common.Principal",
+		Filters = new [] { new FilterCriteria("Name", "equals", "TempLinqPadTest") },
+		ReadRecords = true
+	});
+	Short(serverResponse).Dump();
+	newPrincipal = (Common.Principal)ParseResponse<ReadCommandResult>(serverResponse).Records.FirstOrDefault();
+
+	// DELETE A PRINCIPAL:
     
 	Console.WriteLine("DELETE A Common.Principal:");
 	serverResponse = server.Execute(new SaveEntityCommandInfo()
