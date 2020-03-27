@@ -38,7 +38,7 @@ namespace Rhetos.Deployment
 
         public void Generate()
         {
-            RhetosAppEnvironmentProvider.SaveForRuntime(_rhetosAppEnvironment, _buildOptions.AssetsFolderDestination);
+            RhetosAppEnvironmentProvider.SaveForRuntime(_rhetosAppEnvironment, _buildOptions.GeneratedAssetsFolder);
         }
 
         public IEnumerable<string> Dependencies => Array.Empty<string>();

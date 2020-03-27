@@ -2,19 +2,19 @@
     <UsingTask AssemblyFile="RhetosVSIntegration.dll" TaskName="RhetosVSIntegration.ResolveRhetosProjectAssets" />
 
     <Target Name="ResolveRhetosProjectAssets" DependsOnTargets="ResolveNuGetPackageAssets;ResolveAssemblyReferences" BeforeTargets="CoreCompile">
-		<Message Text="ResolveRhetosProjectAssets" />
+        <Message Text="ResolveRhetosProjectAssets" />
         <ResolveRhetosProjectAssets ProjectDirectory="$(ProjectDir)." ProjectContentFiles="@(RhetosBuild)" Assemblies="@(ReferencePath)" AssemblyName="$(AssemblyName)" />      
     </Target>
 
     <Target Name="BuildRhetosApp" DependsOnTargets="ResolveRhetosProjectAssets;" BeforeTargets="CoreCompile" Condition="'$(RhetosBuild)'=='True' and $(BuildingProject)=='True'" Inputs="@(RhetosInput);@(RhetosBuild)" Outputs="@(RhetosOutput)">
-		<Message Text="BuildRhetosApp" />
+        <Message Text="BuildRhetosApp" />
         <Delete Files="$(RhetosBuildCompleteFile)" />
         <Exec Command="&quot;$(RhetosCliExecutablePath)&quot; build --msbuild-format &quot;$(ProjectDir).&quot;" CustomErrorRegularExpression="\[Error\]" CustomWarningRegularExpression="\[Warn\]" />
         <WriteLinesToFile File="$(RhetosBuildCompleteFile)" Lines="" Overwrite="true" />
     </Target>
 
     <Target Name="AddRhetosSourceFiles" DependsOnTargets="BuildRhetosApp" BeforeTargets="CoreCompile" >
-		<Message Text="AddRhetosSourceFiles" />
+        <Message Text="AddRhetosSourceFiles" />
         <ItemGroup>
             <RhetosSourceFiles Include="obj\Rhetos\RhetosSource\**\*.cs" />
             <Compile Include="@(RhetosSourceFiles)" />
@@ -23,7 +23,7 @@
     </Target>
     
     <Target Name="CopyRhetosFilesToOutput" DependsOnTargets="AddRhetosSourceFiles" AfterTargets="CopyFilesToOutputDirectory" >
-		<Message Text="CopyRhetosFilesToOutput" />
+        <Message Text="CopyRhetosFilesToOutput" />
 
         <!--Generated sources-->
         <Copy SourceFiles="@(RhetosSourceFiles)" Retries="$(CopyRetryCount)" RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
@@ -58,10 +58,10 @@
     </Target>
 
     <Target Name="DeployRhetosApp" DependsOnTargets="BuildRhetosApp;CopyFilesToOutputDirectory" AfterTargets="Build" Condition="'$(RhetosDeploy)'=='True' And Exists('$(RhetosBuildCompleteFile)')"
-		Inputs="$(RhetosBuildCompleteFile)" Outputs="$(RhetosDatabaseUpdated)">
-		<Message Text="DeployRhetosApp" />
+        Inputs="$(RhetosBuildCompleteFile)" Outputs="$(RhetosDatabaseUpdated)">
+        <Message Text="DeployRhetosApp" />
         <Exec Command="&quot;$(TargetDir)rhetos.exe&quot; dbupdate &quot;$(ProjectDir).&quot;" CustomErrorRegularExpression="\[Error\]" CustomWarningRegularExpression="\[Warn\]" />
         <Exec Command="&quot;$(TargetDir)rhetos.exe&quot; appinitialize &quot;$(ProjectDir).&quot;" CustomErrorRegularExpression="\[Error\]" CustomWarningRegularExpression="\[Warn\]" />
-		<WriteLinesToFile File="$(RhetosDatabaseUpdated)" Lines="" Overwrite="true" />
+        <WriteLinesToFile File="$(RhetosDatabaseUpdated)" Lines="" Overwrite="true" />
     </Target>
 </Project>

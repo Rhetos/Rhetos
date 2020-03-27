@@ -125,7 +125,7 @@ namespace Rhetos
                     LegacyAssetsFolder = Path.Combine(projectRootPath, "Resources"),
                 })
                 .AddKeyValue(nameof(BuildOptions.ProjectFolder), projectRootPath)
-                .AddKeyValue(nameof(BuildOptions.AssetsFolderDestination), Path.Combine(projectRootPath, "bin", "RhetosAssets"))
+                .AddKeyValue(nameof(BuildOptions.GeneratedAssetsFolder), Path.Combine(projectRootPath, "bin", "RhetosAssets"))
                 .AddKeyValue(nameof(BuildOptions.CacheFolder), Path.Combine(projectRootPath, "obj\\Rhetos"))
                 .AddKeyValue(nameof(BuildOptions.GeneratedSourceFolder), Path.Combine(projectRootPath, "obj", "Rhetos", "RhetosSource"))
                 .AddConfigurationManagerConfiguration()
