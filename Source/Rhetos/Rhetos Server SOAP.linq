@@ -1,11 +1,11 @@
 <Query Kind="Program">
-  <Reference Relative="bin\Plugins\Rhetos.AspNetFormsAuth.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Plugins\Rhetos.AspNetFormsAuth.dll</Reference>
-  <Reference Relative="bin\Plugins\Rhetos.Dom.DefaultConcepts.Interfaces.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Plugins\Rhetos.Dom.DefaultConcepts.Interfaces.dll</Reference>
-  <Reference Relative="bin\Rhetos.Interfaces.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Rhetos.Interfaces.dll</Reference>
-  <Reference Relative="bin\Plugins\Rhetos.Processing.DefaultCommands.Interfaces.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Plugins\Rhetos.Processing.DefaultCommands.Interfaces.dll</Reference>
-  <Reference Relative="bin\Rhetos.Processing.Interfaces.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Rhetos.Processing.Interfaces.dll</Reference>
-  <Reference Relative="bin\Rhetos.Security.Interfaces.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Rhetos.Security.Interfaces.dll</Reference>
-  <Reference Relative="bin\Generated\ServerDom.Model.dll">C:\My Projects\Rhetos\Source\Rhetos\bin\Generated\ServerDom.Model.dll</Reference>
+  <Reference Relative="bin\Plugins\Rhetos.AspNetFormsAuth.dll">bin\Plugins\Rhetos.AspNetFormsAuth.dll</Reference>
+  <Reference Relative="bin\Plugins\Rhetos.Dom.DefaultConcepts.Interfaces.dll">bin\Plugins\Rhetos.Dom.DefaultConcepts.Interfaces.dll</Reference>
+  <Reference Relative="bin\Rhetos.Interfaces.dll">bin\Rhetos.Interfaces.dll</Reference>
+  <Reference Relative="bin\Plugins\Rhetos.Processing.DefaultCommands.Interfaces.dll">bin\Plugins\Rhetos.Processing.DefaultCommands.Interfaces.dll</Reference>
+  <Reference Relative="bin\Rhetos.Processing.Interfaces.dll">bin\Rhetos.Processing.Interfaces.dll</Reference>
+  <Reference Relative="bin\Rhetos.Security.Interfaces.dll">bin\Rhetos.Security.Interfaces.dll</Reference>
+  <Reference Relative="bin\Generated\ServerDom.Model.dll">bin\Generated\ServerDom.Model.dll</Reference>
   <Reference>&lt;RuntimeDirectory&gt;\System.DirectoryServices.AccountManagement.dll</Reference>
   <Reference>&lt;RuntimeDirectory&gt;\System.DirectoryServices.dll</Reference>
   <Reference>&lt;RuntimeDirectory&gt;\System.Runtime.Serialization.dll</Reference>
