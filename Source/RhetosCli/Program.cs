@@ -117,7 +117,7 @@ namespace Rhetos
                 {
                     RootFolder = projectRootPath,
                     BinFolder = binFolder,
-                    AssetsFolder = Path.Combine(projectRootPath, "RhetosAssets"),
+                    AssetsFolder = Path.Combine(projectRootPath, "obj", "Rhetos", "RhetosAssets"),
                     AssemblyName = rhetosprojectAssets.OutputAssemblyName,
                     // TODO: Rhetos CLI should not use LegacyPluginsFolder. Referenced plugins are automatically copied to output bin folder by NuGet. It is used by DeployPackages.exe when downloading packages and in legacy application runtime for assembly resolver and probing paths.
                     // TODO: Set LegacyPluginsFolder to null after reviewing impact to AspNetFormsAuth CLI utilities and similar packages.
@@ -125,8 +125,9 @@ namespace Rhetos
                     LegacyAssetsFolder = Path.Combine(projectRootPath, "Resources"),
                 })
                 .AddKeyValue(nameof(BuildOptions.ProjectFolder), projectRootPath)
+                .AddKeyValue(nameof(BuildOptions.GeneratedAssetsFolder), Path.Combine(projectRootPath, "bin", "RhetosAssets"))
                 .AddKeyValue(nameof(BuildOptions.CacheFolder), Path.Combine(projectRootPath, "obj\\Rhetos"))
-                .AddKeyValue(nameof(BuildOptions.GeneratedSourceFolder), Path.Combine(projectRootPath, "RhetosSource"))
+                .AddKeyValue(nameof(BuildOptions.GeneratedSourceFolder), Path.Combine(projectRootPath, "obj", "Rhetos", "RhetosSource"))
                 .AddConfigurationManagerConfiguration()
                 .AddJsonFile(Path.Combine(projectRootPath, "rhetos-build.settings.json"), optional: true)
                 .Build();

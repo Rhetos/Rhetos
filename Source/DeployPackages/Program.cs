@@ -68,6 +68,7 @@ namespace DeployPackages
                     var configurationProvider = new ConfigurationBuilder()
                         .AddRhetosAppEnvironment(rhetosAppEnvironment)
                         .AddKeyValue(nameof(BuildOptions.ProjectFolder), rhetosAppRootPath)
+                        .AddKeyValue(nameof(BuildOptions.GeneratedAssetsFolder), rhetosAppEnvironment.AssetsFolder)
                         .AddKeyValue(nameof(BuildOptions.CacheFolder), Path.Combine(rhetosAppRootPath, "GeneratedFilesCache"))
                         .AddKeyValue(nameof(BuildOptions.GeneratedSourceFolder), null)
                         .AddWebConfiguration(rhetosAppRootPath)

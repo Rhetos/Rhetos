@@ -30,14 +30,14 @@ namespace Rhetos.Utilities.ApplicationConfiguration
         /// <summary>
         /// Saving build-time configuration to be used later at run-time.
         /// </summary>
-        public static void Save(RhetosAppEnvironment rhetosAppEnvironment)
+        public static void SaveForRuntime(RhetosAppEnvironment rhetosAppEnvironment, string assetsFolderDestination)
         {
             string saveFolder = rhetosAppEnvironment.RootFolder;
             var rhetosAppEnvironmentToSave = new RhetosAppEnvironment
             {
                 RootFolder = FilesUtility.AbsoluteToRelativePath(saveFolder, rhetosAppEnvironment.RootFolder),
                 BinFolder = FilesUtility.AbsoluteToRelativePath(saveFolder, rhetosAppEnvironment.BinFolder),
-                AssetsFolder = FilesUtility.AbsoluteToRelativePath(saveFolder, rhetosAppEnvironment.AssetsFolder),
+                AssetsFolder = FilesUtility.AbsoluteToRelativePath(saveFolder, assetsFolderDestination),
                 LegacyPluginsFolder = FilesUtility.AbsoluteToRelativePath(saveFolder, rhetosAppEnvironment.LegacyPluginsFolder),
                 LegacyAssetsFolder = FilesUtility.AbsoluteToRelativePath(saveFolder, rhetosAppEnvironment.LegacyAssetsFolder),
                 AssemblyName = rhetosAppEnvironment.AssemblyName

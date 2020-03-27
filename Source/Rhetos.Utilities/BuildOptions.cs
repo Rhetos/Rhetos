@@ -25,6 +25,7 @@ namespace Rhetos.Utilities
         public string ProjectFolder { get; set; }
         public string GeneratedSourceFolder { get; set; }
         public string CacheFolder { get; set; }
+        public string GeneratedAssetsFolder { get; set; }
         public string DatabaseLanguage { get; set; } = "MsSql";
         public bool Debug { get; set; }
         public bool ShortTransactions { get; set; }
