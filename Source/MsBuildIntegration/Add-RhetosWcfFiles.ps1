@@ -16,3 +16,6 @@ Copy-Item -Path "$sourceFolder\Template.ConnectionStrings.config" -Destination $
 $project.ProjectItems.AddFromFileCopy("$sourceFolder\RhetosService.svc") > $null
 $project.ProjectItems.AddFromFileCopy("$sourceFolder\Global.asax") > $null
 $project.ProjectItems.AddFromFileCopy("$sourceFolder\Default.aspx") > $null
+
+$assemblyName = $project.Properties["AssemblyName"].Value
+(Get-Content -Path "$projectFolder\RhetosService.svc" -Raw) -Replace ", Rhetos",", $assemblyName" | Set-Content -Path "$projectFolder\RhetosService.svc" -NoNewline
