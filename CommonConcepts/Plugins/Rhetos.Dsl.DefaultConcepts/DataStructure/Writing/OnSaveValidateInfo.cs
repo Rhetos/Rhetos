@@ -26,6 +26,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Implement a custom data validation. If possible, use InvalidData instead, for standard data validations, or RowPermissions for user permissions.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("OnSaveValidate")]
     public class OnSaveValidateInfo : IConceptInfo

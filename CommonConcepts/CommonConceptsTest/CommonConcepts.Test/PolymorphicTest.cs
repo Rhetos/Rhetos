@@ -143,7 +143,7 @@ namespace CommonConcepts.Test
             foreach (bool useDatabaseNullSemantics in new[] { false, true })
                 using (var container = new RhetosTestContainer())
                 {
-                    container.OverrideConfiguration(("EntityFramework.UseDatabaseNullSemantics", useDatabaseNullSemantics));
+                    container.SetUseDatabaseNullSemantics(useDatabaseNullSemantics);
 
                     var repository = container.Resolve<Common.DomRepository>();
 
@@ -370,7 +370,7 @@ namespace CommonConcepts.Test
             foreach (bool useDatabaseNullSemantics in new[] { false, true })
                 using (var container = new RhetosTestContainer())
                 {
-                    container.OverrideConfiguration(("EntityFramework.UseDatabaseNullSemantics", useDatabaseNullSemantics));
+                    container.SetUseDatabaseNullSemantics(useDatabaseNullSemantics);
                     var repository = container.Resolve<Common.DomRepository>();
 
                     repository.TestPolymorphic.Disjunctive1.Delete(repository.TestPolymorphic.Disjunctive1.Load());
@@ -404,7 +404,7 @@ namespace CommonConcepts.Test
             foreach (bool useDatabaseNullSemantics in new[] { false, true })
                 using (var container = new RhetosTestContainer())
                 {
-                    container.OverrideConfiguration(("EntityFramework.UseDatabaseNullSemantics", useDatabaseNullSemantics));
+                    container.SetUseDatabaseNullSemantics(useDatabaseNullSemantics);
                     var repository = container.Resolve<Common.DomRepository>();
 
                     // Initialize data:

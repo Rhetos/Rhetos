@@ -23,6 +23,9 @@ using System.Linq;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    ///  Enables automatic verification of explicit client locks when saving a record. Generates server actions SetLock and ReleaseLock.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("PessimisticLocking")]
     public class PessimisticLockingInfo : IConceptInfo

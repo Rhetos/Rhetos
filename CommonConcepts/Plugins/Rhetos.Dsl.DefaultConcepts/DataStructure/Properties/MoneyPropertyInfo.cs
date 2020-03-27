@@ -26,6 +26,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Currency value property, limited to 2 decimals in database.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Money")]
     public class MoneyPropertyInfo : PropertyInfo, IConceptInfo

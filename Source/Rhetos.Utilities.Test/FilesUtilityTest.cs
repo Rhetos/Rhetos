@@ -73,7 +73,7 @@ namespace Rhetos.Utilities.Test
             var log = new List<string>();
             LogMonitor logMonitor = (eventType, eventName, message) =>
             {
-                if (eventName == "FilesUtility" && eventType == Logging.EventType.Info)
+                if (eventName == "FilesUtility" && eventType == Logging.EventType.Warning)
                     log.Add($"{message}");
             };
 
@@ -105,7 +105,7 @@ namespace Rhetos.Utilities.Test
             var log = new List<string>();
             LogMonitor logMonitor = (eventType, eventName, message) =>
             {
-                if (eventName == "FilesUtility" && eventType == Logging.EventType.Info)
+                if (eventName == "FilesUtility" && eventType == Logging.EventType.Warning)
                     log.Add($"{message()}");
             };
 
@@ -128,6 +128,35 @@ namespace Rhetos.Utilities.Test
             TestUtility.AssertContains(
                 TestUtility.Dump(log),
                 new[] { "invalid UTF-8 character at line 2", "Reading with default system encoding" });
+        }
+
+        [TestMethod]
+        public void IsSameDirectory()
+        {
+            var groups = new[]
+            {
+                new[] { @"C:\", @"C:\.", @"C:\temp\..", @"C:\temp\..\" },
+                new[] { @"C:\1", @"C:\1\", @"C:\1\.", @"C:\1\2\..", @"C:\1\2\..\.\", @"C:\2\..\1\" },
+                new[] { @"C:\a", @"C:\A", @"c:\a\" },
+                new[] { @"", @".", Environment.CurrentDirectory },
+                new[] { @"1", @"1\", Path.Combine(Environment.CurrentDirectory, "1") },
+            };
+
+            // Test if same within a group:
+
+            foreach (var group in groups)
+                for (int p1 = 0; p1 < group.Length; p1++)
+                    for (int p2 = p1; p2 < group.Length; p2++)
+                        Assert.IsTrue(FilesUtility.IsSameDirectory(group[p1], group[p2]), $"Paths should be same: '{group[p1]}' and '{group[p2]}'.");
+
+
+            // Test if different between groups:
+
+            for (int g1 = 0; g1 < groups.Length; g1++)
+                for (int g2 = g1 + 1; g2 < groups.Length; g2++)
+                    foreach (string path1 in groups[g1])
+                        foreach (string path2 in groups[g2])
+                            Assert.IsFalse(FilesUtility.IsSameDirectory(path1, path2), $"Paths should be different: '{path1}' and '{path2}'.");
         }
     }
 }

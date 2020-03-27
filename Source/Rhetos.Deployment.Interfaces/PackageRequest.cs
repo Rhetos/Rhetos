@@ -21,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 
@@ -49,6 +50,22 @@ namespace Rhetos.Deployment
         public string ReportIdVersionsRange()
         {
             return Id + (VersionsRange != null ? " " + VersionsRange : " (version not specified)");
+        }
+
+        /// <summary>
+        /// Compatible with <see cref="InstalledPackage.ReportIdVersionRequestSource"/>.
+        /// </summary>
+        public string ReportIdVersionRequestSource()
+        {
+            var report = new StringBuilder(300);
+
+            report.Append(Id);
+            report.Append(", version ").Append(VersionsRange ?? "not specified");
+            report.Append(", requested by ").Append(RequestedBy);
+            if (!string.IsNullOrEmpty(Source))
+                report.Append(", source \"").Append(Source).Append("\"");
+
+            return report.ToString();
         }
     }
 }

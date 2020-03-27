@@ -26,6 +26,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Byte array property
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Binary")]
     public class BinaryPropertyInfo : PropertyInfo, IConceptInfo

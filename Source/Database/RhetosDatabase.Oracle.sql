@@ -140,4 +140,9 @@ BEGIN
     EXECUTE IMMEDIATE 'CREATE UNIQUE INDEX IX_DataMigrationScript_Tag_CI ON DataMigrationScript (NLSSORT(Tag, ''NLS_SORT=GENERIC_M_CI''))';
   END IF;
 
+  SELECT COUNT(*) INTO cnt FROM user_tables WHERE table_name = upper('DslScript');
+  IF cnt=1 THEN EXECUTE IMMEDIATE
+    'DROP TABLE DslScript CASCADE CONSTRAINTS';
+  END IF;
+
 END;

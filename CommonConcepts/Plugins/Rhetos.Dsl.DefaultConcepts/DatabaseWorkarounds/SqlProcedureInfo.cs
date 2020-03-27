@@ -21,6 +21,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Stored procedure in database.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SqlProcedure")]
     public class SqlProcedureInfo : IConceptInfo

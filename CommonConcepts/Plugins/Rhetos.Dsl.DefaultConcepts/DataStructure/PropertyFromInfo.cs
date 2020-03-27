@@ -24,6 +24,9 @@ using System.Linq;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Copies property from another data structure, along with the associated Required and SqlIndex concepts.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("PropertyFrom")]
     public class PropertyFromInfo : IConceptInfo

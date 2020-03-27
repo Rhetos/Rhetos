@@ -23,6 +23,10 @@ using System.Linq;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    ///  Lock on parent automatically locks all detail records.
+    ///  Use this concept to include additional detail entities that have a reference to the parent entity, but is not marked as Detail.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("PessimisticLockingParent")]
     public class PessimisticLockingParentInfo : IValidatedConcept

@@ -25,8 +25,12 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Adds an additional input parameter "ExecutionContext" to the filter's lambda expression.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("UseExecutionContext")]
+    [Obsolete("Use repository member _executionContext instead.")]
     public class ComposableFilterUseExecutionContextInfo : IConceptInfo
     {
         [ConceptKey]

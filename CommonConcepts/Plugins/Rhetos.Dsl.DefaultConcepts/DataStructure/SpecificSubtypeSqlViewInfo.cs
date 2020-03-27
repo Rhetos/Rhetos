@@ -29,6 +29,10 @@ using Rhetos.Dom.DefaultConcepts;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    ///  Instead of using property implementations (Implements keyword), a specific SQL query may be provided 
+    ///  to implement the mapping between the subtype and the polymorphic entity.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SqlImplementation")]
     public class SpecificSubtypeSqlViewInfo : SqlViewInfo, IAlternativeInitializationConcept

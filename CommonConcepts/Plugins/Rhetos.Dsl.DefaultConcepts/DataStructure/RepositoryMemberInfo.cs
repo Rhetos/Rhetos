@@ -21,6 +21,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Adds an arbitrary code to the repository class body. This can simplify code reuse between multiple filters, actions and other features.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("RepositoryMember")]
     public class RepositoryMemberInfo : IValidatedConcept

@@ -17,16 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Microsoft.CSharp.RuntimeBinder;
 using Rhetos.Compiler;
 using Rhetos.Dsl;
-using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
 using Rhetos.Processing;
 using Rhetos.Utilities;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -37,10 +33,14 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly string EntityFrameworkContextMembersTag = "/*EntityFrameworkContextMembers*/";
         public static readonly string EntityFrameworkContextInitializeTag = "/*EntityFrameworkContextInitialize*/";
         public static readonly string EntityFrameworkConfigurationTag = "/*EntityFrameworkConfiguration*/";
-        public static readonly string CommonQueryableMemebersTag = "/*CommonQueryableMemebers*/";
         public static readonly string QueryExtensionsMembersTag = "/*QueryExtensionsMembers*/";
-        public static readonly string SimpleClassesTag = "/*SimpleClasses*/";
-        public static readonly string RepositoryClassesTag = "/*RepositoryClasses*/";
+
+        private readonly BuildOptions _buildOptions;
+
+        public DomInitializationCodeGenerator(BuildOptions buildOptions)
+        {
+            _buildOptions = buildOptions;
+        }
 
         public static readonly string StandardNamespacesSnippet =
 @"using System;
@@ -52,20 +52,13 @@ namespace Rhetos.Dom.DefaultConcepts
     using Rhetos.Dom.DefaultConcepts;
     using Rhetos.Utilities;";
 
-        private readonly IConfiguration _configuration;
-
-        public DomInitializationCodeGenerator(IConfiguration configuration)
-        {
-            _configuration = configuration;
-        }
-
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (InitializationConcept)conceptInfo;
+            codeBuilder.InsertCodeToFile(ModelSnippet, $"{DomAssemblies.Model}\\QueryExtensions");
+            codeBuilder.InsertCodeToFile(OrmSnippet, string.IsNullOrEmpty(_buildOptions.GeneratedSourceFolder) ? DomAssemblies.Orm.ToString() : "EntityFrameworkContext");
+            codeBuilder.InsertCodeToFile(RepositoriesSnippet, DomAssemblies.Repositories.ToString());
 
-            codeBuilder.InsertCode(GenerateCommonClassesSnippet());
-
-            codeBuilder.InsertCode("this.Configuration.UseDatabaseNullSemantics = _configuration.GetBool(\"EntityFramework.UseDatabaseNullSemantics\", false).Value;\r\n            ", EntityFrameworkContextInitializeTag);
+            codeBuilder.InsertCode("this.Configuration.UseDatabaseNullSemantics = _rhetosAppOptions.EntityFramework__UseDatabaseNullSemantics;\r\n            ", EntityFrameworkContextInitializeTag);
 
             // Types used in the preceding code snippet:
             codeBuilder.AddReferencesFromDependency(typeof(Autofac.Module)); // Includes a reference to Autofac.dll.
@@ -90,21 +83,8 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.AddReferencesFromDependency(typeof(ICommandInfo)); // Used from ApplyFiltersOnClientRead.
         }
 
-        private static string GenerateCommonClassesSnippet()
-        {
-            return $@"
-{DomGeneratorOptions.FileSplitterPrefix}{DomAssemblies.Model}{DomGeneratorOptions.FileSplitterSuffix}
-
-{SimpleClassesTag}
-
-namespace Common.Queryable
-{{
-    {StandardNamespacesSnippet}
-
-    {CommonQueryableMemebersTag}
-}}
-
-namespace Rhetos.Dom.DefaultConcepts
+        private readonly string ModelSnippet =
+$@"namespace System.Linq
 {{
     {StandardNamespacesSnippet}
 
@@ -150,10 +130,10 @@ namespace Rhetos.Dom.DefaultConcepts
         }}
     }}
 }}
+";
 
-{DomGeneratorOptions.FileSplitterPrefix}{DomAssemblies.Orm}{DomGeneratorOptions.FileSplitterSuffix}
-
-namespace Common
+        private readonly string OrmSnippet =
+$@"namespace Common
 {{
     {StandardNamespacesSnippet}
     using Autofac;
@@ -161,16 +141,16 @@ namespace Common
 
     public class EntityFrameworkContext : System.Data.Entity.DbContext, Rhetos.Persistence.IPersistenceCache
     {{
-        private readonly Rhetos.Utilities.IConfiguration _configuration;
+        private readonly Rhetos.Utilities.RhetosAppOptions _rhetosAppOptions;
 
         public EntityFrameworkContext(
             Rhetos.Persistence.IPersistenceTransaction persistenceTransaction,
             Rhetos.Dom.DefaultConcepts.Persistence.EntityFrameworkMetadata metadata,
             EntityFrameworkConfiguration entityFrameworkConfiguration, // EntityFrameworkConfiguration is provided as an IoC dependency for EntityFrameworkContext in order to initialize the global DbConfiguration before using DbContext.
-            Rhetos.Utilities.IConfiguration configuration)
+            Rhetos.Utilities.RhetosAppOptions rhetosAppOptions)
             : base(new System.Data.Entity.Core.EntityClient.EntityConnection(metadata.MetadataWorkspace, persistenceTransaction.Connection), false)
         {{
-            _configuration = configuration;
+            _rhetosAppOptions = rhetosAppOptions; 
             Initialize();
             Database.UseTransaction(persistenceTransaction.Transaction);
         }}
@@ -222,10 +202,10 @@ namespace Common
         }}
     }}
 }}
+";
 
-{DomGeneratorOptions.FileSplitterPrefix}{DomAssemblies.Repositories}{DomGeneratorOptions.FileSplitterSuffix}
-
-namespace Common
+        private readonly string RepositoriesSnippet =
+$@"namespace Common
 {{
     {StandardNamespacesSnippet}
     using Autofac;
@@ -245,7 +225,7 @@ namespace Common
 
     public static class Infrastructure
     {{
-        public static readonly RegisteredInterfaceImplementations RegisteredInterfaceImplementationName = new RegisteredInterfaceImplementations
+        public static readonly RegisteredInterfaceImplementations RegisteredInterfaceImplementations = new RegisteredInterfaceImplementations
         {{
             {ModuleCodeGenerator.RegisteredInterfaceImplementationNameTag}
         }};
@@ -345,7 +325,7 @@ namespace Common
                 .As<Rhetos.Persistence.IPersistenceCache>()
                 .InstancePerLifetimeScope();
             builder.RegisterType<ExecutionContext>().InstancePerLifetimeScope();
-            builder.RegisterInstance(Infrastructure.RegisteredInterfaceImplementationName).ExternallyOwned();
+            builder.RegisterInstance(Infrastructure.RegisteredInterfaceImplementations).ExternallyOwned();
             builder.RegisterInstance(Infrastructure.ApplyFiltersOnClientRead).ExternallyOwned();
             {ModuleCodeGenerator.CommonAutofacConfigurationMembersTag}
 
@@ -463,9 +443,6 @@ namespace Common
 
     {ModuleCodeGenerator.CommonNamespaceMembersTag}
 }}
-
-{RepositoryClassesTag}
 ";
-        }
     }
 }

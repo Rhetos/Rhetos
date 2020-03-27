@@ -28,6 +28,9 @@ using System.Globalization;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Adds a custom Save method to data structure that is not writable by default.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Write")]
     public class WriteInfo : IConceptInfo

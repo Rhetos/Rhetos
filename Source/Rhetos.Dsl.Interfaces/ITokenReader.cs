@@ -33,5 +33,11 @@ namespace Rhetos.Dsl
         /// Returns false if next token does not equal "value". Ignores case.
         /// </summary>
         bool TryRead(string value);
+
+        /// <summary>
+        /// Returns the position of current token in its script
+        /// </summary>
+        /// <returns></returns>
+        (DslScript dslScript, int position) GetPositionInScript();
     }
 }

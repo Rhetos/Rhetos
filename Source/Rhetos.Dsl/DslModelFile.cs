@@ -32,14 +32,16 @@ namespace Rhetos.Dsl
     {
         private readonly ILogger _performanceLogger;
         private readonly DslContainer _dslContainer;
+        private readonly RhetosAppEnvironment _rhetosAppEnvironment;
 
         public DslModelFile(
             ILogProvider logProvider,
             DslContainer dslContainer,
-            ISqlExecuter sqlExecuter)
+            RhetosAppEnvironment rhetosAppEnvironment)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
             _dslContainer = dslContainer;
+            _rhetosAppEnvironment = rhetosAppEnvironment;
         }
 
         #region IDslModel implementation
@@ -109,17 +111,17 @@ namespace Rhetos.Dsl
             string serializedConcepts = JsonConvert.SerializeObject(concepts, serializerSettings);
             _performanceLogger.Write(sw, "DslModelFile.SaveConcepts: Serialize.");
 
-            string path = Path.Combine(Paths.GeneratedFolder, DslModelFileName);
-            File.WriteAllText(path, serializedConcepts, Encoding.UTF8);
+            File.WriteAllText(DslModelFilePath, serializedConcepts, Encoding.UTF8);
             _performanceLogger.Write(sw, "DslModelFile.SaveConcepts: Write.");
         }
+
+        private string DslModelFilePath => Path.Combine(_rhetosAppEnvironment.AssetsFolder, DslModelFileName);
 
         private IEnumerable<IConceptInfo> LoadConcepts()
         {
             var sw = Stopwatch.StartNew();
 
-            string path = Path.Combine(Paths.GeneratedFolder, DslModelFileName);
-            string serializedConcepts = File.ReadAllText(path, Encoding.UTF8);
+            string serializedConcepts = File.ReadAllText(DslModelFilePath, Encoding.UTF8);
 
             var serializerSettings = new JsonSerializerSettings
             {

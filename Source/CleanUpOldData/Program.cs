@@ -34,7 +34,12 @@ namespace CleanupOldData
         {
             try
             {
-                Paths.InitializeRhetosServerRootPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".."));
+                var configuration = new ConfigurationBuilder()
+                    .AddRhetosAppConfiguration()
+                    .AddConfigurationManagerConfiguration()
+                    .Build();
+
+                LegacyUtilities.Initialize(configuration);
 
                 string connectionString = SqlUtility.ConnectionString;
                 Console.WriteLine("SQL connection: " + SqlUtility.SqlConnectionInfo(connectionString));

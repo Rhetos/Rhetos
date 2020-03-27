@@ -23,7 +23,6 @@ using System.Linq;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Utilities;
-using Rhetos.Deployment;
 using System.Data;
 using System.Text.RegularExpressions;
 using Rhetos.TestCommon;
@@ -33,6 +32,15 @@ namespace Rhetos.Deployment.Test
     [TestClass]
     public class DatabaseCleanerTest
     {
+        public DatabaseCleanerTest()
+        {
+            var configurationProvider = new ConfigurationBuilder()
+                .AddConfigurationManagerConfiguration()
+                .Build();
+
+            LegacyUtilities.Initialize(configurationProvider);
+        }
+
         private class MockSqlExecuter : ISqlExecuter
         {
             DataTable Columns;
@@ -75,9 +83,11 @@ namespace Rhetos.Deployment.Test
 
                 var dataTable = options.First(o => command.Contains(o.Key)).Value;
 
-                var reader = new DataTableReader(dataTable);
-                while (reader.Read())
-                    action(reader);
+                using (var reader = new DataTableReader(dataTable))
+                {
+                    while (reader.Read())
+                        action(reader);
+                }
             }
 
             Regex DropColumn = new Regex(@"^ALTER TABLE \[(\w+)\].\[(\w+)\] DROP COLUMN \[(\w+)\]$");

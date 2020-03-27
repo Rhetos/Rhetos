@@ -28,6 +28,7 @@ using Rhetos.Extensibility;
 using Rhetos.Dsl;
 using Rhetos.Compiler;
 using Rhetos.Persistence;
+using Rhetos.Utilities;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -43,12 +44,18 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly XmlTag<DataStructureInfo> StorageModelEntityTypePropertyTag = "StorageModelEntityTypeProperty";
 
         public static readonly XmlTag<DataStructureInfo> StorageModelCustomannotationIndexForIDTag = "StorageModelCustomannotationIndexForID";
+        private readonly RhetosAppEnvironment _rhetosAppEnvironment;
+
+        public DataStructureEdmxCodeGenerator(RhetosAppEnvironment rhetosAppEnvironment)
+        {
+            _rhetosAppEnvironment = rhetosAppEnvironment;
+        }
 
         public override void GenerateCode(DataStructureInfo dataStructureInfo, ICodeBuilder codeBuilder)
         {
             if (dataStructureInfo is IOrmDataStructure)
             {
-                codeBuilder.InsertCode(GetEntityTypeNodeForConceptualModel(dataStructureInfo), EntityFrameworkMapping.ConceptualModelTag);
+                codeBuilder.InsertCode(GetEntityTypeNodeForConceptualModel(dataStructureInfo, _rhetosAppEnvironment), EntityFrameworkMapping.ConceptualModelTag);
                 codeBuilder.InsertCode(GetEntitySetNodeForConceptualModel(dataStructureInfo), EntityFrameworkMapping.ConceptualModelEntityContainerTag);
 
                 codeBuilder.InsertCode(GetEntitySetMappingForMapping(dataStructureInfo), EntityFrameworkMapping.MappingEntityContainerTag);
@@ -81,10 +88,11 @@ namespace Rhetos.Dom.DefaultConcepts
   </EntityType>";
         }
 
-        private static string GetEntityTypeNodeForConceptualModel(DataStructureInfo dataStructureInfo)
+        private static string GetEntityTypeNodeForConceptualModel(DataStructureInfo dataStructureInfo, RhetosAppEnvironment rhetosAppEnvironment)
         {
+            var assemblyName = string.IsNullOrEmpty(rhetosAppEnvironment.AssemblyName) ? "ServerDom.Model, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" : rhetosAppEnvironment.AssemblyName;
             return $@"
-  <EntityType Name=""{GetName(dataStructureInfo)}"" customannotation:ClrType=""Common.Queryable.{GetName(dataStructureInfo)}, ServerDom.Model, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null"">
+  <EntityType Name=""{GetName(dataStructureInfo)}"" customannotation:ClrType=""Common.Queryable.{GetName(dataStructureInfo)}, {assemblyName}"">
     <Key>
       <PropertyRef Name=""ID"" />
     </Key>

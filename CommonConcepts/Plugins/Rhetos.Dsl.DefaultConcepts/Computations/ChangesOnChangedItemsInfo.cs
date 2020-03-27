@@ -25,6 +25,11 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Programmable concept for defining dependency for computed items.
+    /// *  The "filter snippet" is a lambda expression that for an array modified dependent items returns filter parameter "what cached items need to be recomputed": DependentEntity[] changedItems => filter parameter.
+    /// *  The filter has to be applicable to both source and cache data structure.FilterAll, System.Guid[] and FilterCriteria are commonly used filters, supported by all entities.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ChangesOnChangedItems")]
     public class ChangesOnChangedItemsInfo : IValidatedConcept

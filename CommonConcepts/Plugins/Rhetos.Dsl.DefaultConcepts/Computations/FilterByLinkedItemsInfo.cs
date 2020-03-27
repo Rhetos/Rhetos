@@ -26,6 +26,9 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    ///  Copies a FilterBy filter from a detail data structure to the parent.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("FilterByLinkedItems")]
     public class FilterByLinkedItemsInfo : IMacroConcept, IValidatedConcept

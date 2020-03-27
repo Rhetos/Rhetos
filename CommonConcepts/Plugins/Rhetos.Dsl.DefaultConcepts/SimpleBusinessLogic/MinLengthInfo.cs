@@ -26,6 +26,9 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Limits the lowest string length in ShortString or LongString property.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("MinLength")]
     public class MinLengthInfo : IMacroConcept, IValidatedConcept

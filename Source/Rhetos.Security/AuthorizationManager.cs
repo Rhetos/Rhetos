@@ -36,37 +36,39 @@ namespace Rhetos.Security
         private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
         private readonly bool _allowBuiltinAdminOverride;
-        private readonly HashSet<string> _allClaimsForUsers; // Case-insensitive hashset.
+        /// <summary>
+        /// Case-insensitive HashSet.
+        /// </summary>
+        private readonly HashSet<string> _allClaimsForUsers;
         private readonly IAuthorizationProvider _authorizationProvider;
         private readonly ILocalizer _localizer;
-        private readonly IConfiguration _configuration;
+        private readonly SecurityOptions _securityOptions;
 
         public AuthorizationManager(
-            IConfiguration configuration,
+            RhetosAppOptions rhetosAppOptions,
             IPluginsContainer<IClaimProvider> claimProviders,
             IUserInfo userInfo,
             ILogProvider logProvider,
             IAuthorizationProvider authorizationProvider,
-            IWindowsSecurity windowsSecurity,
+            SecurityOptions securityOptions,
             ILocalizer localizer)
         {
-            _configuration = configuration;
+            _securityOptions = securityOptions;
             _userInfo = userInfo;
             _claimProviders = claimProviders;
             _authorizationProvider = authorizationProvider;
             _logger = logProvider.GetLogger(GetType().Name);
             _performanceLogger = logProvider.GetLogger("Performance");
-            _allowBuiltinAdminOverride = _configuration.GetBool("BuiltinAdminOverride", false).Value;
+            _allowBuiltinAdminOverride = rhetosAppOptions.BuiltinAdminOverride;
             _allClaimsForUsers = FromConfigAllClaimsForUsers();
             _localizer = localizer;
         }
 
         private HashSet<string> FromConfigAllClaimsForUsers()
         {
-            const string settingsKey = "Security.AllClaimsForUsers";
             try
             {
-                string setting = _configuration.GetString(settingsKey, "").Value;
+                var setting = _securityOptions.Security__AllClaimsForUsers;
                 var users = setting.Split(',').Select(u => u.Trim()).Where(u => !string.IsNullOrEmpty(u))
                     .Select(u => u.Split('@'))
                     .Select(u => new { UserName = u[0], HostName = u[1] })
@@ -80,7 +82,7 @@ namespace Rhetos.Security
             }
             catch (Exception ex)
             {
-                throw new FrameworkException($"Invalid '{settingsKey}' parameter format in web.config. Expected comma-separated list of entries formatted as username@servername.", ex);
+                throw new FrameworkException($"Invalid '{nameof(SecurityOptions.Security__AllClaimsForUsers)}' parameter format in web.config. Expected comma-separated list of entries formatted as username@servername.", ex);
             }
         }
 
@@ -101,6 +103,10 @@ namespace Rhetos.Security
 
         private bool AssumeAllClaims()
         {
+            if (_securityOptions.Security__AllClaimsForAnonymous && _userInfo.IsUserRecognized)
+                throw new FrameworkException($"Invalid security configuration settings. Both anonymous access and user-level security should not be active at the same time." +
+                    $" Disable '{nameof(SecurityOptions.Security__AllClaimsForAnonymous).Replace("__", ".")}' option.");
+
             return _userInfo.IsUserRecognized
                 &&
                 (
@@ -109,7 +115,8 @@ namespace Rhetos.Security
                     _allowBuiltinAdminOverride
                         && _userInfo is IUserInfoAdmin
                         && ((IUserInfoAdmin)_userInfo).IsBuiltInAdministrator
-                );
+                )
+                || _securityOptions.Security__AllClaimsForAnonymous;
         }
 
         public string Authorize(IList<ICommandInfo> commandInfos)

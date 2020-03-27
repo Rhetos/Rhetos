@@ -17,18 +17,26 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Globalization;
-using System.Diagnostics.Contracts;
 
 namespace Rhetos.Dsl
 {
-    [global::System.Serializable]
-    public class DslSyntaxException : FrameworkException
+    [Serializable]
+    public class DslSyntaxException : RhetosException
     {
+        [Obsolete("Use FilePosition instead.")]
+        public readonly DslScript DslScript;
+
+        [Obsolete("Use FilePosition instead.")]
+        public readonly int Position;
+
+        public readonly string ErrorCode;
+        public readonly FilePosition FilePosition;
+        public readonly string Details;
+
         public DslSyntaxException() { }
         public DslSyntaxException(string message) : base(message) { }
         public DslSyntaxException(string message, Exception inner) : base(message, inner) { }
@@ -40,5 +48,41 @@ namespace Rhetos.Dsl
           System.Runtime.Serialization.SerializationInfo info,
           System.Runtime.Serialization.StreamingContext context)
             : base(info, context) { }
+
+        public DslSyntaxException(string message, string errorCode, DslScript dslScript, int positionBegin = 0, int positionEnd = 0, string additionalDetails = null)
+            : base(message)
+        {
+            ErrorCode = errorCode;
+            DslScript = dslScript;
+            Position = positionBegin;
+
+            if (!string.IsNullOrEmpty(dslScript?.Path))
+                FilePosition = new FilePosition(dslScript.Path, dslScript.Script, positionBegin, positionEnd);
+
+            var detailsList = new List<string>();
+            if (!string.IsNullOrEmpty(dslScript?.Script))
+                detailsList.Add($"Syntax error at \"{ScriptPositionReporting.ReportPreviousAndFollowingTextInline(dslScript.Script, positionBegin)}\"");
+            if (!string.IsNullOrEmpty(additionalDetails))
+                detailsList.Add(additionalDetails);
+            Details = string.Join("\r\n", detailsList);
+        }
+
+        public override string ToString() => ReportWithFilePositionAndDetails(base.ToString());
+
+        public override string MessageForLog() => ReportWithFilePositionAndDetails(Message);
+
+        private string ReportWithFilePositionAndDetails(string message)
+        {
+            var report = new StringBuilder();
+            report.Append(message);
+
+            if (!string.IsNullOrEmpty(FilePosition?.Path))
+                report.AppendLine().Append(FilePosition.CanonicalOrigin);
+
+            if (!string.IsNullOrEmpty(Details))
+                report.AppendLine().AppendLine("Details:").Append(CsUtility.Indent(Details, 3));
+
+            return report.ToString();
+        }
     }
 }

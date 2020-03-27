@@ -25,6 +25,9 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Definition of a single data source for the report. Use the DataSources concept instead, it automatically generates the DataSource statements.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("DataSource")]
     public class ReportDataSourceInfo : IConceptInfo

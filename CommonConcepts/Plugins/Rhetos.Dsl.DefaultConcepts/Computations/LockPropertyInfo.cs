@@ -25,6 +25,9 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Deny update of a property, for records in a certain state.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("LockProperty")]
     public class LockPropertyInfo : IConceptInfo

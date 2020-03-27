@@ -27,6 +27,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Implement a property by a specific SQL expression.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Implements")]
     public class SubtypeImplementsPropertyInfo : IAlternativeInitializationConcept, IValidatedConcept

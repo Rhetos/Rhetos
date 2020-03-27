@@ -46,7 +46,7 @@ namespace Rhetos.Utilities.Test
             foreach (var test in tests)
             {
                 Console.WriteLine("Test: " + test.Item1.ToString());
-                string result = ExceptionsUtility.SafeFormatUserMessage(test.Item1);
+                string result = ExceptionsUtility.MessageForLog(test.Item1);
                 Assert.AreEqual(test.Item2, result);
             }
         }

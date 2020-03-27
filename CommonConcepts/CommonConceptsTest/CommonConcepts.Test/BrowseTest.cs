@@ -259,7 +259,7 @@ namespace CommonConcepts.Test.OldConcepts
             foreach (bool useDatabaseNullSemantics in new[] { false, true })
                 using (var container = new RhetosTestContainer())
                 {
-                    container.OverrideConfiguration(("EntityFramework.UseDatabaseNullSemantics", useDatabaseNullSemantics));
+                    container.SetUseDatabaseNullSemantics(useDatabaseNullSemantics);
                     var repository = container.Resolve<Common.DomRepository>();
 
                     var p1 = new TestBrowse.ParentBase { Name = "p1" };

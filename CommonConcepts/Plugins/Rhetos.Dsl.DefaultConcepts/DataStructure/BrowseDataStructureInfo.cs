@@ -26,6 +26,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Data structure used for simple data queries, when we only need to select some properties from an entity and other referenced data structures.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Browse")]
     public class BrowseDataStructureInfo : DataStructureInfo, IValidatedConcept, IMacroConcept

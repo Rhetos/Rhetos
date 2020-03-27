@@ -17,11 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rhetos.Dsl;
 using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
@@ -30,7 +25,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// Property is an abstract concept: there is no ConceptKeyword.
     /// </summary>
     [Export(typeof(IConceptInfo))]
-    public class PropertyInfo : IConceptInfo
+    public class PropertyInfo : IValidatedConcept
     {
         [ConceptKey]
         public DataStructureInfo DataStructure { get; set; }
@@ -45,8 +40,13 @@ namespace Rhetos.Dsl.DefaultConcepts
         /// </summary>
         public virtual string GetSimplePropertyName() => Name;
 
+        public string FullName => DataStructure.FullName + "." + Name;
+
         public override string ToString() => FullName; // For backward compatibility.
 
-        public string FullName => DataStructure.FullName + "." + Name;
+        public void CheckSemantics(IDslModel existingConcepts)
+        {
+            DslUtility.ValidateIdentifier(Name, this);
+        }
     }
 }

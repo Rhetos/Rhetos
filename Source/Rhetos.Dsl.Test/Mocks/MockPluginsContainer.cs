@@ -20,14 +20,12 @@
 using Rhetos.Extensibility;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Rhetos.Dsl.Test
 {
     public class MockPluginsContainer<T> : IPluginsContainer<T>
     {
-        IEnumerable<T> _plugins;
+        readonly IEnumerable<T> _plugins;
 
         public MockPluginsContainer(params T[] plugins)
         {

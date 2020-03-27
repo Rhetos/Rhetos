@@ -22,6 +22,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Automatically enters time when some given property was last updated.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ModificationTimeOf")]
     public class ModificationTimeOfInfo : IValidatedConcept, IAlternativeInitializationConcept

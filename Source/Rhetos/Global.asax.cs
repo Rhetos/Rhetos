@@ -20,9 +20,11 @@
 using Autofac;
 using Autofac.Integration.Wcf;
 using Rhetos.Logging;
+using Rhetos.Security;
 using Rhetos.Utilities;
+using Rhetos.Utilities.ApplicationConfiguration;
+using Rhetos.Web;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace Rhetos
@@ -30,101 +32,99 @@ namespace Rhetos
     public class Global : System.Web.HttpApplication
     {
         private static ILogger _logger;
-        private static ILogger _performanceLogger;
-        private static IEnumerable<IService> _pluginServices;
+        private static WebServices _webServices;
 
         // Called only once.
         protected void Application_Start(object sender, EventArgs e)
         {
+            ConfigureApplication();
+            _webServices.Initialize();
+        }
+
+        private static void ConfigureApplication()
+        {
             var stopwatch = Stopwatch.StartNew();
 
-            Paths.InitializeRhetosServer();
-
-            var builder = new ContainerBuilder();
-            builder.RegisterModule<Rhetos.DefaultAutofacConfiguration>();
+            var configuration = LoadConfiguration();
+            var builder = new RhetosContainerBuilder(configuration, new NLogProvider(), LegacyUtilities.GetListAssembliesDelegate(configuration));
+            AddRhetosComponents(builder);
             AutofacServiceHostFactory.Container = builder.Build();
 
             var logProvider = AutofacServiceHostFactory.Container.Resolve<ILogProvider>();
             _logger = logProvider.GetLogger("Global");
             _logger.Trace("Startup");
-            _performanceLogger = logProvider.GetLogger("Performance");
-            _pluginServices = AutofacServiceHostFactory.Container.Resolve<IEnumerable<IService>>();
 
-            _performanceLogger.Write(stopwatch, "Autofac initialized.");
+            _webServices = AutofacServiceHostFactory.Container.Resolve<WebServices>();
 
-            foreach (var service in _pluginServices)
-            {
-                try
-                {
-                    service.Initialize();
-                    _performanceLogger.Write(stopwatch, "Service " + service.GetType().FullName + ".Initialize");
-                }
-                catch (Exception ex)
-                {
-                    if (_logger != null)
-                        _logger.Error(ex.ToString());
-                    throw;
-                }
-            }
+            var _performanceLogger = logProvider.GetLogger("Performance");
+            _performanceLogger.Write(stopwatch, "Application configured.");
+        }
 
-            _performanceLogger.Write(stopwatch, "All services initialized.");
+        private static IConfigurationProvider LoadConfiguration()
+        {
+            var rhetosAppEnvironment = RhetosAppEnvironmentProvider.Load(AppDomain.CurrentDomain.BaseDirectory);
+            var configurationProvider = new ConfigurationBuilder()
+                .AddRhetosAppEnvironment(rhetosAppEnvironment)
+                .AddConfigurationManagerConfiguration()
+                .Build();
+            return configurationProvider;
+        }
+
+        internal static void AddRhetosComponents(RhetosContainerBuilder builder)
+        {
+            // General registrations
+            builder.AddRhetosRuntime();
+
+            // Specific registrations
+            builder.RegisterType<WcfWindowsUserInfo>().As<IUserInfo>().InstancePerLifetimeScope();
+            builder.RegisterType<RhetosService>().As<RhetosService>().As<IServerApplication>();
+            builder.RegisterType<Rhetos.Web.GlobalErrorHandler>();
+            builder.RegisterType<WebServices>();
+            builder.GetPluginRegistration().FindAndRegisterPlugins<IService>();
+            builder.GetPluginRegistration().FindAndRegisterPlugins<IHomePageSnippet>();
+
+            // Plugin modules
+            builder.AddPluginModules();
         }
 
         // Called once for each application instance.
         public override void Init()
         {
             base.Init();
-
             _logger.Trace("New application instance");
-
-            if (_pluginServices != null)
-                foreach (var service in _pluginServices)
-                {
-                    try
-                    {
-                        var stopwatch = Stopwatch.StartNew();
-                        service.InitializeApplicationInstance(this);
-                        _performanceLogger.Write(stopwatch, "Service " + service.GetType().FullName + ".InitializeApplicationInstance");
-                    }
-                    catch (Exception ex)
-                    {
-                        if (_logger != null)
-                            _logger.Error(ex.ToString());
-                        throw;
-                    }
-                }
+            _webServices.InitializeApplicationInstance(this);
         }
 
         protected void Session_Start(object sender, EventArgs e)
         {
-
         }
 
         protected void Application_BeginRequest(object sender, EventArgs e)
         {
-
         }
 
         protected void Application_AuthenticateRequest(object sender, EventArgs e)
         {
-
         }
 
         protected void Application_Error(object sender, EventArgs e)
         {
             var ex = Server.GetLastError();
-            if (_logger != null)
-                _logger.Error("Application error: " + ex.ToString());
+            SafeLogger.Error($"Application error: {ex}");
         }
 
         protected void Session_End(object sender, EventArgs e)
         {
-
         }
 
         protected void Application_End(object sender, EventArgs e)
         {
-            _logger.Trace("Shutdown");
+            SafeLogger.Trace("Shutdown");
         }
+
+        /// <summary>
+        /// If an error occur during the application configuration process, a temporary logger will be uses for error reporting.
+        /// </summary>
+        private ILogger SafeLogger => _logger ?? new NLogProvider().GetLogger("Configuration");
     }
 }

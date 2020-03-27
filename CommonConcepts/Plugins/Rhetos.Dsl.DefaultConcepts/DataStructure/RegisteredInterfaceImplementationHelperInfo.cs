@@ -27,9 +27,8 @@ using System.ComponentModel.Composition;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// Registers the data structure (and it's repository) as the main implementation of the given interface.
-    /// This allows for type-safe code in external business layer class library to have simple access to
-    /// the generated data structure's class and the repository using predefined interfaces.
+    /// Registers the data structure (and it's repository) as the *default* implementation of the given interface. 
+    /// This allows easy access the data structure's repository by using GenericRepository&lt;ThisInterface&gt; from dependency injection.
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("RegisteredImplementation")]

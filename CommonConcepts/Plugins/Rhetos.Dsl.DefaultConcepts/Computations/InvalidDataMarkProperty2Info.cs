@@ -25,6 +25,9 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// If the error is related to the single property, use this to add that information to the validation
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("MarkProperty")]
     public class InvalidDataMarkProperty2Info : InvalidDataErrorMetadataInfo, IValidatedConcept, IAlternativeInitializationConcept

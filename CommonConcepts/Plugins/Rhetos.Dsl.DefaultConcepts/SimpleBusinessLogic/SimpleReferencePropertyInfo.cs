@@ -25,6 +25,11 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    ///  Lookup field (N:1 relationship). The generated C# property has type of the referenced class. 
+    ///  Generates foreign key constraint in database. The database column has "ID" suffix.
+    ///  Simplified syntax in case when the property name is same as the name of the referenced entity.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Reference")]
     public class SimpleReferencePropertyInfo : ReferencePropertyInfo, IAlternativeInitializationConcept

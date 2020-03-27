@@ -62,7 +62,7 @@ namespace Rhetos.Deployment
             if (requests.Any(r => string.IsNullOrEmpty(r.Id)))
                 throw new UserException($"Invalid configuration file format '{PackagesConfigurationFileName}'. Missing attribute 'id'.");
             if (requests.Count == 0)
-                _logger.Info($"Warning: No packages specified in '{PackagesConfigurationFileName}'. {configFileUsage}");
+                _logger.Warning($"Warning: No packages specified in '{PackagesConfigurationFileName}'. {configFileUsage}");
             Version dummy;
             // Simple version format in config file will be converted to a specific version "[ver,ver]", instead of being used as a minimal version (as in NuGet dependencies) in order to conform to NuGet packages.config convention.
             foreach (var request in requests)
@@ -77,11 +77,11 @@ namespace Rhetos.Deployment
             string xml = ReadConfigFile(SourcesConfigurationFileName, SourcesConfigurationTemplateFileName, configFileUsage);
             var xdoc = XDocument.Parse(xml);
             var sources = xdoc.Root.Elements()
-                .Select(sourceXml => new PackageSource(sourceXml.Attribute("location").Value))
+                .Select(sourceXml => new PackageSource(Paths.RhetosServerRootPath, sourceXml.Attribute("location").Value))
                 .ToList();
 
             if (sources.Count == 0)
-                _logger.Info("No sources defined in '" + SourcesConfigurationFileName + "'. " + configFileUsage);
+                _logger.Warning("No sources defined in '" + SourcesConfigurationFileName + "'. " + configFileUsage);
             return sources;
         }
 
@@ -93,15 +93,9 @@ namespace Rhetos.Deployment
         public const string SourcesConfigurationFileName = "RhetosPackageSources.config";
         private const string SourcesConfigurationTemplateFileName = "Template.RhetosPackageSources.config";
 
-        /// <summary>Folder where the config files are placed.</summary>
-        public static string GetConfigurationFolder()
-        {
-            return Paths.RhetosServerRootPath;
-        }
-
         private string ReadConfigFile(string configFileName, string templateFileName, string configFileUsage)
         {
-            string configFilePath = Path.Combine(GetConfigurationFolder(), configFileName);
+            string configFilePath = Path.Combine(Paths.RhetosServerRootPath, configFileName);
 
             if (File.Exists(configFilePath))
                 return File.ReadAllText(configFilePath, Encoding.UTF8);

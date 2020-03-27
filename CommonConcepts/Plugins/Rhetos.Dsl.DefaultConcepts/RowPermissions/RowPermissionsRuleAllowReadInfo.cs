@@ -26,6 +26,9 @@ using System.Text.RegularExpressions;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Allow read access to selected records.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("AllowRead")]
     public class RowPermissionsRuleAllowReadInfo : RowPermissionsSingleFunctionRuleInfo

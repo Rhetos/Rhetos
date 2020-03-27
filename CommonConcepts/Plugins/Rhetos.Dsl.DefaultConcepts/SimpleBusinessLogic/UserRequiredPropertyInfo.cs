@@ -26,7 +26,7 @@ using System.ComponentModel.Composition;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// The property value must be provided by the client application.
+    /// Subvariant of Required. User (or client applications) needs to provide the property value.
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("UserRequired")]

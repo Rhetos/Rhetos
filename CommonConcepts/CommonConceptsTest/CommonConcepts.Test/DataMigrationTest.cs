@@ -35,32 +35,24 @@ namespace CommonConcepts.Test
     [TestClass]
     public class DataMigrationTest
     {
-        class SimpleScriptsProvider : IDataMigrationScriptsProvider
+        private DataMigrationScripts DataMigrationScriptsFromScriptsDescription(string scriptsDescription)
         {
-            readonly List<DataMigrationScript> _scripts;
-
-            public SimpleScriptsProvider(string scriptsDescription)
-            {
-                _scripts = scriptsDescription.Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s))
-                    .Select(s =>
-                    {
+            var scripts = scriptsDescription.Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s))
+                .Select(s =>
+                {
                         // Tag is same as Path is not provided otherwise.
                         var tagPath = s.Contains(":") ? s.Split(':') : new[] { s, s };
 
-                        return new DataMigrationScript
-                        {
-                            Tag = tagPath[0],
-                            Path = tagPath[1] + ".sql",
-                            Content = "/*" + tagPath[0] + "*/\r\nPRINT " + SqlUtility.QuoteText(tagPath[1])
-                        };
-                    })
-                    .ToList();
-            }
+                    return new DataMigrationScript
+                    {
+                        Tag = tagPath[0],
+                        Path = tagPath[1] + ".sql",
+                        Content = "/*" + tagPath[0] + "*/\r\nPRINT " + SqlUtility.QuoteText(tagPath[1])
+                    };
+                })
+                .ToList();
 
-            public List<DataMigrationScript> Load()
-            {
-                return _scripts;
-            }
+            return new DataMigrationScripts { Scripts = scripts };
         }
 
         private List<string> TestExecuteDataMigrationScripts(string[] scriptsDescriptions, string expectedResult, bool skipScriptsWithWrongOrder = false)
@@ -77,12 +69,8 @@ namespace CommonConcepts.Test
 
                 foreach (string scriptsDescription in scriptsDescriptions)
                 {
-                    var scriptsProvider = new SimpleScriptsProvider(scriptsDescription);
-                    var configuration = new MockConfiguration
-                    {
-                        { "DataMigration.SkipScriptsWithWrongOrder", skipScriptsWithWrongOrder }
-                    };
-                    var dataMigration = new DataMigrationScripts(sqlExecuter, container.Resolve<ILogProvider>(), scriptsProvider, configuration, sqlBatches);
+                    var buildOptions = new BuildOptions() { DataMigration__SkipScriptsWithWrongOrder = skipScriptsWithWrongOrder };
+                    var dataMigration = new DataMigrationScriptsExecuter(sqlExecuter, container.Resolve<ILogProvider>(), DataMigrationScriptsFromScriptsDescription(scriptsDescription), buildOptions, sqlBatches);
                     dataMigration.Execute();
                 }
 
@@ -149,10 +137,11 @@ namespace CommonConcepts.Test
                 [Trace] DataMigration: Script on disk p1\s3.sql (tag p1\s3)
                 [Trace] DataMigration: Script on disk p2\ss1.sql (tag p2\ss1)
                 [Trace] DataMigration: Script on disk p2\ss3.sql (tag p2\ss3)
-                [Info] DataMigration: Execute p1\s1.sql (tag p1\s1)
-                [Info] DataMigration: Execute p1\s3.sql (tag p1\s3)
-                [Info] DataMigration: Execute p2\ss1.sql (tag p2\ss1)
-                [Info] DataMigration: Execute p2\ss3.sql (tag p2\ss3)
+                [Info] DataMigration: Executing p1\s1.sql (tag p1\s1)
+                [Info] DataMigration: Executing p1\s3.sql (tag p1\s3)
+                [Info] DataMigration: Executing p2\ss1.sql (tag p2\ss1)
+                [Info] DataMigration: Executing p2\ss3.sql (tag p2\ss3)
+                [Info] DataMigration: Executed 4 of 4 scripts.
                 [Trace] DataMigration: Script on disk p1\s1.sql (tag p1\s1)
                 [Trace] DataMigration: Script on disk p1\s2.sql (tag p1\s2)
                 [Trace] DataMigration: Script on disk p1\s3.sql (tag p1\s3)
@@ -167,12 +156,13 @@ namespace CommonConcepts.Test
                 [Trace] DataMigration: Script in database p2\ss3.sql (tag p2\ss3)
                 [Trace] DataMigration: Last executed script in 'p1' is 'p1\s3.sql' of new scripts provided.
                 [Trace] DataMigration: Last executed script in 'p2' is 'p2\ss3.sql' of new scripts provided.
-                [Info] DataMigration: Executing script in an incorrect order p1\s2.sql (tag p1\s2)
-                [Info] DataMigration: Executing script in an incorrect order p2\ss2.sql (tag p2\ss2)
-                [Info] DataMigration: Execute p1\s2.sql (tag p1\s2)
-                [Info] DataMigration: Execute p1\s4.sql (tag p1\s4)
-                [Info] DataMigration: Execute p2\ss2.sql (tag p2\ss2)
-                [Info] DataMigration: Execute p2\ss4.sql (tag p2\ss4)";
+                [Warning] DataMigration: Executing script in an incorrect order p1\s2.sql (tag p1\s2)
+                [Warning] DataMigration: Executing script in an incorrect order p2\ss2.sql (tag p2\ss2)
+                [Info] DataMigration: Executing p1\s2.sql (tag p1\s2)
+                [Info] DataMigration: Executing p1\s4.sql (tag p1\s4)
+                [Info] DataMigration: Executing p2\ss2.sql (tag p2\ss2)
+                [Info] DataMigration: Executing p2\ss4.sql (tag p2\ss4)
+                [Info] DataMigration: Executed 4 of 8 scripts.";
 
             Assert.AreEqual(expectedLog, string.Concat(log
                 .Where(l => l.Contains("] DataMigration:"))
@@ -192,11 +182,13 @@ namespace CommonConcepts.Test
 
             var expectedLog = @"
                 [Trace] DataMigration: Script on disk p1\s3.sql (tag p1\s3)
-                [Info] DataMigration: Execute p1\s3.sql (tag p1\s3)
+                [Info] DataMigration: Executing p1\s3.sql (tag p1\s3)
+                [Info] DataMigration: Executed 1 of 1 scripts.
                 [Trace] DataMigration: Script on disk p1\s1.sql (tag p1\s1)
                 [Trace] DataMigration: Script in database p1\s3.sql (tag p1\s3)
-                [Info] DataMigration: Remove p1\s3.sql (tag p1\s3)
-                [Info] DataMigration: Execute p1\s1.sql (tag p1\s1)";
+                [Info] DataMigration: Removing p1\s3.sql (tag p1\s3)
+                [Info] DataMigration: Executing p1\s1.sql (tag p1\s1)
+                [Info] DataMigration: Executed 1 of 1 scripts.";
 
             Assert.AreEqual(expectedLog, string.Concat(log
                 .Where(l => l.Contains("] DataMigration:"))
@@ -220,10 +212,11 @@ namespace CommonConcepts.Test
                 [Trace] DataMigration: Script on disk p1\s3.sql (tag p1\s3)
                 [Trace] DataMigration: Script on disk p2\ss1.sql (tag p2\ss1)
                 [Trace] DataMigration: Script on disk p2\ss3.sql (tag p2\ss3)
-                [Info] DataMigration: Execute p1\s1.sql (tag p1\s1)
-                [Info] DataMigration: Execute p1\s3.sql (tag p1\s3)
-                [Info] DataMigration: Execute p2\ss1.sql (tag p2\ss1)
-                [Info] DataMigration: Execute p2\ss3.sql (tag p2\ss3)
+                [Info] DataMigration: Executing p1\s1.sql (tag p1\s1)
+                [Info] DataMigration: Executing p1\s3.sql (tag p1\s3)
+                [Info] DataMigration: Executing p2\ss1.sql (tag p2\ss1)
+                [Info] DataMigration: Executing p2\ss3.sql (tag p2\ss3)
+                [Info] DataMigration: Executed 4 of 4 scripts.
                 [Trace] DataMigration: Script on disk p1\s1.sql (tag p1\s1)
                 [Trace] DataMigration: Script on disk p1\s2.sql (tag p1\s2)
                 [Trace] DataMigration: Script on disk p1\s3.sql (tag p1\s3)
@@ -238,10 +231,11 @@ namespace CommonConcepts.Test
                 [Trace] DataMigration: Script in database p2\ss3.sql (tag p2\ss3)
                 [Trace] DataMigration: Last executed script in 'p1' is 'p1\s3.sql' of new scripts provided.
                 [Trace] DataMigration: Last executed script in 'p2' is 'p2\ss3.sql' of new scripts provided.
-                [Info] DataMigration: Skipped older script p1\s2.sql (tag p1\s2)
-                [Info] DataMigration: Skipped older script p2\ss2.sql (tag p2\ss2)
-                [Info] DataMigration: Execute p1\s4.sql (tag p1\s4)
-                [Info] DataMigration: Execute p2\ss4.sql (tag p2\ss4)";
+                [Warning] DataMigration: Skipped older script p1\s2.sql (tag p1\s2)
+                [Warning] DataMigration: Skipped older script p2\ss2.sql (tag p2\ss2)
+                [Info] DataMigration: Executing p1\s4.sql (tag p1\s4)
+                [Info] DataMigration: Executing p2\ss4.sql (tag p2\ss4)
+                [Info] DataMigration: Executed 2 of 8 scripts. 2 older skipped.";
 
             Assert.AreEqual(expectedLog, string.Concat(log
                 .Where(l => l.Contains("] DataMigration:"))

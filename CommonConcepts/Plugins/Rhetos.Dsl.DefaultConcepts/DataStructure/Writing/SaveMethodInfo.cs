@@ -27,7 +27,8 @@ using System.ComponentModel.Composition;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// Represents the Save() method of the entity's repository in the generated business layer object model (ServerDom.*.dll).
+    /// Allows developers to extend entity's Save method, by injecting a custom C# code that will be executed when saving the records (inserting, updating and deleting).
+    /// There are different extension points at different positions in the Save method, that are intended for inserting a code with different purpose
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SaveMethod")]

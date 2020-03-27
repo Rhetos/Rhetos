@@ -26,6 +26,9 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Client application is not allowed to directly insert, update or delete the entity records (no condition).
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("DenyUserEdit")]
     public class DenyUserEditDataStructureInfo : IValidatedConcept

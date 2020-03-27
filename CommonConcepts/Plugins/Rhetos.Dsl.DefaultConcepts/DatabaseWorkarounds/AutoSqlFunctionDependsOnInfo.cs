@@ -25,6 +25,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    ///  Automatically detects and generates dependencies (SqlDependsOn) for the given database object, by analyzing its SQL script.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("AutodetectSqlDependencies")]
     public class AutoSqlFunctionDependsOnInfo : IConceptInfo

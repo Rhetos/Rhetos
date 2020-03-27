@@ -17,150 +17,76 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.DatabaseGenerator;
-using Rhetos.Dom;
+using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace Rhetos.Deployment
 {
     public class ApplicationGenerator
     {
-        private readonly ILogger _deployPackagesLogger;
-        private readonly ILogger _performanceLogger;
-        private readonly ISqlExecuter _sqlExecuter;
+        private readonly ILogger _logger;
         private readonly IDslModel _dslModel;
-        private readonly IDomainObjectModel _domGenerator;
         private readonly IPluginsContainer<IGenerator> _generatorsContainer;
-        private readonly DatabaseCleaner _databaseCleaner;
-        private readonly DataMigrationScripts _dataMigration;
-        private readonly IDatabaseGenerator _databaseGenerator;
-        private readonly IDslScriptsProvider _dslScriptsLoader;
-        private readonly IConceptDataMigrationExecuter _dataMigrationFromCodeExecuter;
+        private readonly RhetosAppEnvironment _rhetosAppEnvironment;
+        private readonly BuildOptions _buildOptions;
+        private readonly FilesUtility _filesUtility;
+        private readonly ISourceWriter _sourceWriter;
 
         public ApplicationGenerator(
             ILogProvider logProvider,
-            ISqlExecuter sqlExecuter,
             IDslModel dslModel,
-            IDomainObjectModel domGenerator,
             IPluginsContainer<IGenerator> generatorsContainer,
-            DatabaseCleaner databaseCleaner,
-            DataMigrationScripts dataMigration,
-            IDatabaseGenerator databaseGenerator,
-            IDslScriptsProvider dslScriptsLoader,
-            IConceptDataMigrationExecuter dataMigrationFromCodeExecuter)
+            RhetosAppEnvironment rhetosAppEnvironment,
+            BuildOptions buildOptions,
+            FilesUtility filesUtility,
+            ISourceWriter sourceWriter)
         {
-            _deployPackagesLogger = logProvider.GetLogger("DeployPackages");
-            _performanceLogger = logProvider.GetLogger("Performance");
-            _sqlExecuter = sqlExecuter;
+            _logger = logProvider.GetLogger(GetType().Name);
             _dslModel = dslModel;
-            _domGenerator = domGenerator;
             _generatorsContainer = generatorsContainer;
-            _databaseCleaner = databaseCleaner;
-            _dataMigration = dataMigration;
-            _databaseGenerator = databaseGenerator;
-            _dslScriptsLoader = dslScriptsLoader;
-            _dataMigrationFromCodeExecuter = dataMigrationFromCodeExecuter;
+            _rhetosAppEnvironment = rhetosAppEnvironment;
+            _buildOptions = buildOptions;
+            _filesUtility = filesUtility;
+            _sourceWriter = sourceWriter;
         }
 
-        public void ExecuteGenerators(bool deployDatabaseOnly)
+        public void ExecuteGenerators()
         {
-            _deployPackagesLogger.Trace("SQL connection: " + SqlUtility.SqlConnectionInfo(SqlUtility.ConnectionString));
-            ValidateDbConnection();
+            _filesUtility.EmptyDirectory(_rhetosAppEnvironment.AssetsFolder);
+            _filesUtility.SafeCreateDirectory(_buildOptions.CacheFolder); // Cache is not deleted between builds.
+            if(!string.IsNullOrEmpty(_buildOptions.GeneratedSourceFolder))
+                _filesUtility.SafeCreateDirectory(_buildOptions.GeneratedSourceFolder); // Obsolete source files will be cleaned later. Keeping the existing files to allowing source change detection in Visual Studio.
 
-            _deployPackagesLogger.Trace("Preparing Rhetos database.");
-            PrepareRhetosDatabase();
+            CheckDslModelErrors();
 
-            _deployPackagesLogger.Trace("Parsing DSL scripts.");
+            var generators = GetSortedGenerators();
+            foreach (var generator in generators)
+            {
+                _logger.Info("Executing " + generator.GetType().Name + ".");
+                generator.Generate();
+            }
+            if (!generators.Any())
+                _logger.Info("No additional generators.");
+
+            if(!string.IsNullOrEmpty(_buildOptions.GeneratedSourceFolder))
+                _sourceWriter.CleanUp();
+        }
+
+        /// <summary>
+        /// Creating the DSL model instance *before* executing code generators, to proved better error reporting
+        /// and make it clear that a code generator did not cause a parser error.
+        /// </summary>
+        private void CheckDslModelErrors()
+        {
+            _logger.Info("Parsing DSL scripts.");
             int dslModelConceptsCount = _dslModel.Concepts.Count();
-            _deployPackagesLogger.Trace("Application model has " + dslModelConceptsCount + " statements.");
-
-            if (deployDatabaseOnly)
-                _deployPackagesLogger.Info("Skipped code generators (DeployDatabaseOnly).");
-            else
-            {
-                _deployPackagesLogger.Trace("Compiling DOM assembly.");
-                int generatedTypesCount = _domGenerator.GetTypes().Count();
-                if (generatedTypesCount == 0)
-                {
-                    _deployPackagesLogger.Info("Warning: Empty assembly is generated.");
-                }
-                else
-                    _deployPackagesLogger.Trace("Generated " + generatedTypesCount + " types.");
-
-                var generators = GetSortedGenerators();
-                foreach (var generator in generators)
-                {
-                    _deployPackagesLogger.Trace("Executing " + generator.GetType().Name + ".");
-                    generator.Generate();
-                }
-                if (!generators.Any())
-                    _deployPackagesLogger.Trace("No additional generators.");
-            }
-
-            _deployPackagesLogger.Trace("Cleaning old migration data.");
-            _databaseCleaner.RemoveRedundantMigrationColumns();
-            _databaseCleaner.RefreshDataMigrationRows();
-
-            _dataMigrationFromCodeExecuter.ExecuteBeforeDataMigrationScripts();
-
-            _deployPackagesLogger.Trace("Executing data migration scripts.");
-            var dataMigrationReport = _dataMigration.Execute();
-
-            _dataMigrationFromCodeExecuter.ExecuteAfterDataMigrationScripts();
-
-            _deployPackagesLogger.Trace("Upgrading database.");
-            try
-            {
-                _databaseGenerator.UpdateDatabaseStructure();
-            }
-            catch (Exception ex)
-            {
-                try
-                {
-                    _dataMigration.Undo(dataMigrationReport.CreatedTags);
-                }
-                catch (Exception undoException)
-                {
-                    _deployPackagesLogger.Error(undoException.ToString());
-                }
-                ExceptionsUtility.Rethrow(ex);
-            }
-
-            _deployPackagesLogger.Trace("Deleting redundant migration data.");
-            _databaseCleaner.RemoveRedundantMigrationColumns();
-            _databaseCleaner.RefreshDataMigrationRows();
-
-            _deployPackagesLogger.Trace("Uploading DSL scripts.");
-            UploadDslScriptsToServer();
-        }
-
-        private void ValidateDbConnection()
-        {
-            var connectionReport = new ConnectionStringReport(_sqlExecuter);
-            if (!connectionReport.connectivity)
-                throw (connectionReport.exceptionRaised);
-            else if (!connectionReport.isDbo)
-                throw (new FrameworkException("Current user does not have db_owner role for the database."));
-        }
-
-        private void PrepareRhetosDatabase()
-        {
-            string rhetosDatabaseScriptResourceName = "Rhetos.Deployment.RhetosDatabase." + SqlUtility.DatabaseLanguage + ".sql";
-            var resourceStream = GetType().Assembly.GetManifestResourceStream(rhetosDatabaseScriptResourceName);
-            if (resourceStream == null)
-                throw new FrameworkException("Cannot find resource '" + rhetosDatabaseScriptResourceName + "'.");
-            var sql = new StreamReader(resourceStream).ReadToEnd();
-
-            var sqlScripts = SqlUtility.SplitBatches(sql);
-            _sqlExecuter.ExecuteSql(sqlScripts);
+            _logger.Info("Application model has " + dslModelConceptsCount + " statements.");
         }
 
         private IList<IGenerator> GetSortedGenerators()
@@ -170,37 +96,42 @@ namespace Rhetos.Deployment
 
             // Additional sorting by loosely-typed dependencies from the Dependencies property:
             var generatorNames = generators.Select(GetGeneratorName).ToList();
+
+            MoveToFront(generatorNames, new[] { "Rhetos.Dom.DomGenerator", "Rhetos.Deployment.ResourcesGenerator" } );
+
             var dependencies = generators.Where(gen => gen.Dependencies != null)
                 .SelectMany(gen => gen.Dependencies.Select(dependsOn => Tuple.Create(dependsOn, GetGeneratorName(gen))))
                 .ToList();
             Graph.TopologicalSort(generatorNames, dependencies);
 
             foreach (var missingDependency in dependencies.Where(dep => !generatorNames.Contains(dep.Item1)))
-                _deployPackagesLogger.Info($"Missing dependency '{missingDependency.Item1}' for application generator '{missingDependency.Item2}'.");
+                _logger.Warning($"Missing dependency '{missingDependency.Item1}' for application generator '{missingDependency.Item2}'.");
 
             Graph.SortByGivenOrder(generators, generatorNames, GetGeneratorName);
+
             return generators;
+        }
+
+        /// <summary>
+        /// For backward compatibility, some generators are manually placed at the beginning,
+        /// because before Rhetos v4.0 those generators where executed explicitly before IGenerator plugins,
+        /// and other plugins did not need to specify dependency to them.
+        /// </summary>
+        private static void MoveToFront(List<string> generatorNames, string[] priorityGenerators)
+        {
+            foreach (string generator in priorityGenerators)
+            {
+                var indexofDomgenerator = generatorNames.IndexOf(generator);
+                if (indexofDomgenerator == -1)
+                    throw new FrameworkException($@"Could not find Generator of type {generator}");
+                generatorNames.RemoveAt(indexofDomgenerator);
+                generatorNames.Insert(0, generator);
+            }
         }
 
         private static string GetGeneratorName(IGenerator gen)
         {
             return gen.GetType().FullName;
-        }
-
-        private void UploadDslScriptsToServer()
-        {
-            List<string> sql = new List<string>();
-
-            sql.Add(Sql.Get("DslScriptManager_Delete"));
-
-            sql.AddRange(_dslScriptsLoader.DslScripts.Select(dslScript => Sql.Format(
-                "DslScriptManager_Insert",
-                SqlUtility.QuoteText(dslScript.Name),
-                SqlUtility.QuoteText(dslScript.Script))));
-
-            _sqlExecuter.ExecuteSql(sql);
-
-            _deployPackagesLogger.Trace("Uploaded " + _dslScriptsLoader.DslScripts.Count() + " DSL scripts to database.");
         }
     }
 }

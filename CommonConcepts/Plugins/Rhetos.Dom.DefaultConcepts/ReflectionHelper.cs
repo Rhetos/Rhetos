@@ -579,7 +579,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             if (_loadSimpleObjectsMethod == null)
             {
-                Type queryExtensions = _domainObjectModel.GetType("Rhetos.Dom.DefaultConcepts.QueryExtensions");
+                Type queryExtensions = _domainObjectModel.GetType("System.Linq.QueryExtensions");
                 _loadSimpleObjectsMethod = queryExtensions.GetMethod("LoadSimpleObjects").MakeGenericMethod(EntityType);
             }
 

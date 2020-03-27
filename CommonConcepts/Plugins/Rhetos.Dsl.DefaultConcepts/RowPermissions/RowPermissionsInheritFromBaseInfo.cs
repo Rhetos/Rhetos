@@ -25,6 +25,9 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    ///  Inherits row permissions from base data structure. Can be used on Browse or any entity with Extends.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("InheritFromBase")]
     public class RowPermissionsInheritFromBaseInfo : IValidatedConcept

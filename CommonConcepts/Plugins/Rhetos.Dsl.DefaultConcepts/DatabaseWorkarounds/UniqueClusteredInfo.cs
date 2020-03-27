@@ -22,6 +22,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Marks the index as clustered.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Clustered")]
     public class UniqueClusteredInfo : IConceptInfo

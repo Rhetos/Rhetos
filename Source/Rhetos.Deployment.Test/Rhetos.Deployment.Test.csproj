@@ -105,6 +105,10 @@
       <Project>{43BA178B-7642-473C-A43A-DBF58294635A}</Project>
       <Name>Rhetos.TestCommon</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Configuration.Autofac\Rhetos.Configuration.Autofac.csproj">
+      <Project>{759CEA3C-1CD0-449C-977E-102CE308F4DE}</Project>
+      <Name>Rhetos.Configuration.Autofac</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rhetos.Deployment.Interfaces\Rhetos.Deployment.Interfaces.csproj">
       <Project>{945537dc-4af7-4def-b73c-07f19229efe6}</Project>
       <Name>Rhetos.Deployment.Interfaces</Name>

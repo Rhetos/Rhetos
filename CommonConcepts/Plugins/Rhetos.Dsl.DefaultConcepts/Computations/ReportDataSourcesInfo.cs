@@ -25,6 +25,12 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// List of readable data structures that provide the data for the report. The module name is optional.
+    ///Each provided data source should have a FilterBy implementation with the filter parameter name same as the report name.
+    ///It is recommended to use FilterByBase, FilterByReferenced and FilterByLinkedItems,
+    ///to avoid writing redundant filters on related structures(e.g.report may filtered documents and the related detail items).
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("DataSources")]
     public class ReportDataSourcesInfo : IMacroConcept

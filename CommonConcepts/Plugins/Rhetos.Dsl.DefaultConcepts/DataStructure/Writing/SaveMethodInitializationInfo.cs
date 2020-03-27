@@ -26,6 +26,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Initialize or change the data, before saving it to the database. If possible, use DefaultValue instead.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Initialization")]
     public class SaveMethodInitializationInfo : IConceptInfo

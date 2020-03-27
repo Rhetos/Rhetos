@@ -26,6 +26,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Decimal property
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Decimal")]
     public class DecimalPropertyInfo : PropertyInfo, IConceptInfo

@@ -28,19 +28,22 @@ using System.Text;
 
 namespace Rhetos.Dsl
 {
+    /// <summary>
+    /// Builds DslModel from DSL scripts.
+    /// </summary>
     public class DslModel : IDslModel
     {
         private readonly IDslParser _dslParser;
         private readonly ILogger _performanceLogger;
         private readonly ILogger _logger;
         private readonly ILogger _evaluatorsOrderLogger;
-        private readonly ILogger _dslModelConceptsLogger;
         private readonly Lazy<DslContainer> _initializedDslContainer;
         private readonly IIndex<Type, IEnumerable<IConceptMacro>>  _macros;
         private readonly IEnumerable<Type> _macroTypes;
         private readonly IEnumerable<Type> _conceptTypes;
         private readonly IMacroOrderRepository _macroOrderRepository;
         private readonly IDslModelFile _dslModelFile;
+        private readonly BuildOptions _buildOptions;
 
         public DslModel(
             IDslParser dslParser,
@@ -50,19 +53,20 @@ namespace Rhetos.Dsl
             IEnumerable<IConceptMacro> macroPrototypes,
             IEnumerable<IConceptInfo> conceptPrototypes,
             IMacroOrderRepository macroOrderRepository,
-            IDslModelFile dslModelFile)
+            IDslModelFile dslModelFile,
+            BuildOptions buildOptions)
         {
             _dslParser = dslParser;
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("DslModel");
             _evaluatorsOrderLogger = logProvider.GetLogger("MacroEvaluatorsOrder");
-            _dslModelConceptsLogger = logProvider.GetLogger("DslModelConcepts");
             _initializedDslContainer = new Lazy<DslContainer>(() => Initialize(dslContainer));
             _macros = macros;
             _macroTypes = macroPrototypes.Select(macro => macro.GetType());
             _conceptTypes = conceptPrototypes.Select(conceptInfo => conceptInfo.GetType());
             _macroOrderRepository = macroOrderRepository;
             _dslModelFile = dslModelFile;
+            _buildOptions = buildOptions;
         }
 
         #region IDslModel implementation
@@ -87,8 +91,7 @@ namespace Rhetos.Dsl
             ExpandMacroConcepts(dslContainer);
             dslContainer.ReportErrorForUnresolvedConcepts();
             CheckSemantics(dslContainer);
-            dslContainer.SortReferencesBeforeUsingConcept();
-            LogDslModel(dslContainer);
+            dslContainer.SortReferencesBeforeUsingConcept(_buildOptions.CommonConcepts__Debug__SortConcepts);
             ReportObsoleteConcepts(dslContainer);
             _dslModelFile.SaveConcepts(dslContainer.Concepts);
 
@@ -352,23 +355,6 @@ namespace Rhetos.Dsl
             _performanceLogger.Write(sw, "DslModel.CheckSemantics");
         }
 
-        private void LogDslModel(DslContainer dslContainer)
-        {
-            var sw = Stopwatch.StartNew();
-
-            // It is important to avoid generating the log data if the logger is not enabled.
-            var sortedConceptsLog = new Lazy<List<string>>(() => dslContainer.Concepts
-                .Select(c => c.GetFullDescription())
-                .OrderBy(log => log)
-                .ToList());
-
-            const int chunkSize = 10000; // Keeping the message size under NLog memory limit.
-            for (int start = 0; start < dslContainer.Concepts.Count(); start += chunkSize)
-                _dslModelConceptsLogger.Trace(() => string.Join("\r\n", sortedConceptsLog.Value.Skip(start).Take(chunkSize)));
-
-            _performanceLogger.Write(sw, "DslModel.LogDslModel.");
-        }
-
         private void ReportObsoleteConcepts(DslContainer dslContainer)
         {
             var obsoleteConceptsByType = dslContainer.Concepts
@@ -395,7 +381,7 @@ namespace Rhetos.Dsl
                 .ToList();
 
             foreach (var conceptsGroup in obsoleteConceptsByUserReport)
-                _logger.Info(() => string.Format("Obsolete concept {0} ({1} occurrences). {2}",
+                _logger.Warning(() => string.Format("Obsolete concept {0} ({1} occurrences). {2}",
                     conceptsGroup.Concepts.First().GetUserDescription(),
                     conceptsGroup.Concepts.Count(),
                     conceptsGroup.ObsoleteMessage));

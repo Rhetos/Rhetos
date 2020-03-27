@@ -46,8 +46,18 @@ namespace Rhetos
 
         public override string ToString()
         {
-            return base.ToString()
-                + "\r\nInfo: " + (Info != null ? string.Join(", ", Info.Select(info => info.Key.ToString() + "=" + info.Value.ToString())) : "null");
+            string infoReport;
+            if (Info?.Any() == true)
+                infoReport = "\r\nInfo: " + string.Join(", ", Info.Select(info => $"{info.Key}={info.Value}"));
+            else
+                infoReport = "";
+
+            return base.ToString() + infoReport;
+        }
+
+        public virtual string MessageForLog()
+        {
+            return Message;
         }
     }
 }

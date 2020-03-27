@@ -25,6 +25,9 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// This object should be created in database after the given SqlObject is created.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SqlDependsOnSqlObject")]
     public class SqlDependsOnSqlObjectInfo : IConceptInfo

@@ -24,6 +24,9 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Creates a database trigger that monitors all inserts, updates and deletes, and writes them to Common.Log table.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Logging")]
     public class EntityLoggingInfo : IConceptInfo

@@ -22,10 +22,13 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
-    /// <summary>
+    /// <remark>
     /// This is a generic version of the Clustered concept syntax, that helps with DSL parser disambiguation.
     /// This concept will be used if the Clustered keyword is placed flat in the Entity.
     /// Other concepts with Clustered keyword will be used if the Clustered keyword is nested in a specific indexing concept.
+    /// </remark>
+    /// <summary>
+    /// Marks the index as clustered.
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Clustered")]

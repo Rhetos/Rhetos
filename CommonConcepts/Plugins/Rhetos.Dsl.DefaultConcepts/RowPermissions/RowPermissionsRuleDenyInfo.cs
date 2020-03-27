@@ -26,6 +26,9 @@ using System.Text.RegularExpressions;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Deny read and write access to selected records.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Deny")]
     public class RowPermissionsRuleDenyInfo : RowPermissionsSingleFunctionRuleInfo

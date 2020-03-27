@@ -24,6 +24,9 @@ using System.Linq;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Creates a row in the database for every entry inside a Hardcoded concept.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Entry")]
     public class EntryInfo : IMacroConcept, IValidatedConcept

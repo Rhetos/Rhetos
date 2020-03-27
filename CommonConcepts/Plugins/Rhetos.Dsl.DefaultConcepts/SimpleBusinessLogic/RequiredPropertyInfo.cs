@@ -25,6 +25,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// The property value must be entered when saving a record.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Required")]
     public class RequiredPropertyInfo : IConceptInfo

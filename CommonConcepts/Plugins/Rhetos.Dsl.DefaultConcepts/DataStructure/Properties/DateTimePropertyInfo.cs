@@ -26,6 +26,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// DateTime property
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("DateTime")]
     public class DateTimePropertyInfo : PropertyInfo, IConceptInfo

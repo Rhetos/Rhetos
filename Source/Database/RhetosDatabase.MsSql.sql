@@ -7,18 +7,6 @@
 IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'Rhetos')
 	EXEC ('CREATE SCHEMA Rhetos AUTHORIZATION dbo');
 
-IF OBJECT_ID(N'[Rhetos].[DslScript]') IS NULL
-CREATE TABLE Rhetos.DslScript
-(
-	ID uniqueidentifier NOT NULL CONSTRAINT PK_DslScript PRIMARY KEY CLUSTERED, -- Later changes to nonclustered.
-	Name nvarchar(100) NOT NULL,
-	Dsl nvarchar(max) NOT NULL,
-	LastModified datetime NOT NULL,
-	AppliedBy nvarchar(100) NOT NULL,
-	Client nvarchar(100) NOT NULL,
-	Server nvarchar(100) NOT NULL
-);
-
 IF OBJECT_ID(N'[Rhetos].[DatabaseGeneratorAppliedConcept]') IS NULL AND OBJECT_ID(N'[Rhetos].[AppliedConcept]') IS NULL
 CREATE TABLE Rhetos.DatabaseGeneratorAppliedConcept
 (
@@ -36,21 +24,6 @@ CREATE TABLE Rhetos.DatabaseGeneratorAppliedConcept
 	ConceptImplementationVersion nvarchar(200) NOT NULL
 );
 
-IF OBJECT_ID(N'[Rhetos].[DF_DslScript_ID]') IS NULL
-ALTER TABLE Rhetos.DslScript ADD CONSTRAINT DF_DslScript_ID DEFAULT (newid()) FOR ID;
-
-IF OBJECT_ID(N'[Rhetos].[DF_DslScript_LastModified]') IS NULL
-ALTER TABLE Rhetos.DslScript ADD CONSTRAINT DF_DslScript_LastModified DEFAULT (getdate()) FOR LastModified;
-
-IF OBJECT_ID(N'[Rhetos].[DF_DslScript_AppliedBy]') IS NULL
-ALTER TABLE Rhetos.DslScript ADD CONSTRAINT DF_DslScript_AppliedBy DEFAULT (upper(isnull(suser_sname(),user_name()))) FOR AppliedBy;
-
-IF OBJECT_ID(N'[Rhetos].[DF_DslScript_Client]') IS NULL
-ALTER TABLE Rhetos.DslScript ADD CONSTRAINT DF_DslScript_Client DEFAULT (upper(host_name())) FOR Client;
-
-IF OBJECT_ID(N'[Rhetos].[DF_DslScript_Server]') IS NULL
-ALTER TABLE Rhetos.DslScript ADD CONSTRAINT DF_DslScript_Server DEFAULT (upper(@@servername)) FOR Server;
-
 IF OBJECT_ID(N'[Rhetos].[DF_DatabaseGeneratorAppliedConcept_LastModified]') IS NULL AND OBJECT_ID(N'[Rhetos].[AppliedConcept]') IS NULL
 ALTER TABLE Rhetos.DatabaseGeneratorAppliedConcept ADD CONSTRAINT DF_DatabaseGeneratorAppliedConcept_LastModified DEFAULT (getdate()) FOR LastModified;
 
@@ -62,12 +35,6 @@ ALTER TABLE Rhetos.DatabaseGeneratorAppliedConcept ADD CONSTRAINT DF_DatabaseGen
 
 IF OBJECT_ID(N'[Rhetos].[DF_DatabaseGeneratorAppliedConcept_Server]') IS NULL AND OBJECT_ID(N'[Rhetos].[AppliedConcept]') IS NULL
 ALTER TABLE Rhetos.DatabaseGeneratorAppliedConcept ADD CONSTRAINT DF_DatabaseGeneratorAppliedConcept_Server DEFAULT (upper(@@servername)) FOR Server;
-
-IF INDEXPROPERTY(OBJECT_ID(N'[Rhetos].[DslScript]'), 'PK_DslScript','IsClustered') = 1
-BEGIN
-	ALTER TABLE Rhetos.DslScript DROP CONSTRAINT PK_DslScript;
-	ALTER TABLE Rhetos.DslScript ADD CONSTRAINT PK_DslScript PRIMARY KEY NONCLUSTERED (ID);
-END
 
 IF INDEXPROPERTY(OBJECT_ID(N'[Rhetos].[DatabaseGeneratorAppliedConcept]'), 'PK_DatabaseGeneratorAppliedConcept','IsClustered') = 1 AND OBJECT_ID(N'[Rhetos].[AppliedConcept]') IS NULL
 BEGIN
@@ -91,14 +58,6 @@ CREATE TABLE Rhetos.DataMigrationScript
 
 IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[Rhetos].[DataMigrationScript]') AND name = 'IX_DataMigrationScript_Tag')
 CREATE UNIQUE INDEX IX_DataMigrationScript_Tag ON Rhetos.DataMigrationScript(Tag);
-
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS c WHERE c.TABLE_SCHEMA = 'Rhetos' AND c.TABLE_NAME = 'DslScript' AND DATA_TYPE = 'nvarchar' AND CHARACTER_MAXIMUM_LENGTH > 0 AND CHARACTER_MAXIMUM_LENGTH <> 256)
-BEGIN
-	ALTER TABLE Rhetos.DslScript ALTER COLUMN Name nvarchar(256) NOT NULL;
-	ALTER TABLE Rhetos.DslScript ALTER COLUMN AppliedBy nvarchar(256) NOT NULL;
-	ALTER TABLE Rhetos.DslScript ALTER COLUMN Client nvarchar(256) NOT NULL;
-	ALTER TABLE Rhetos.DslScript ALTER COLUMN Server nvarchar(256) NOT NULL;
-END
 
 IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS c WHERE c.TABLE_SCHEMA = 'Rhetos' AND c.TABLE_NAME = 'DatabaseGeneratorAppliedConcept' AND DATA_TYPE = 'nvarchar' AND CHARACTER_MAXIMUM_LENGTH > 0 AND CHARACTER_MAXIMUM_LENGTH <> 256)
 BEGIN
@@ -716,3 +675,21 @@ BEGIN
     ALTER TABLE Rhetos.DataMigrationScript
         DROP CONSTRAINT DF_DataMigrationScript_Active;
 END
+GO
+
+-- Keeping the old columns for now, to avoid errors in existing applications' data-migration scripts.
+
+ALTER TABLE Rhetos.AppliedConcept ALTER COLUMN SerializedInfo nvarchar(max) NULL;
+ALTER TABLE Rhetos.AppliedConcept ALTER COLUMN ConceptImplementationVersion nvarchar(256) NULL;
+
+UPDATE
+	Rhetos.AppliedConcept
+SET
+	SerializedInfo = NULL,
+	ConceptImplementationVersion = NULL
+WHERE
+	SerializedInfo IS NOT NULL
+	OR ConceptImplementationVersion IS NOT NULL;
+
+IF OBJECT_ID(N'Rhetos.DslScript') IS NOT NULL
+	DROP TABLE Rhetos.DslScript;

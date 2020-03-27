@@ -18,8 +18,6 @@
 */
 
 using Autofac;
-using Rhetos.Configuration.Autofac;
-using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Persistence;
 using Rhetos.Security;
@@ -37,6 +35,7 @@ namespace Rhetos.Configuration.Autofac
     /// </summary>
     public class RhetosTestContainer : IDisposable
     {
+
         // Global:
         private static IContainer _iocContainer;
         private static object _containerInitializationLock = new object();
@@ -50,7 +49,6 @@ namespace Rhetos.Configuration.Autofac
 
         /// <param name="commitChanges">
         /// Whether database updates (by ORM repositories) will be committed or rollbacked.
-        /// Note: Database updates done by SqlExecuter are always instantly committed.
         /// </param>
         /// <param name="rhetosServerFolder">
         /// If not set, the class will try to automatically locate Rhetos server, looking from current directory.
@@ -98,8 +96,13 @@ namespace Rhetos.Configuration.Autofac
                     lock (_containerInitializationLock)
                         if (_iocContainer == null)
                         {
-                            Paths.InitializeRhetosServerRootPath(SearchForRhetosServerRootFolder());
-                            _iocContainer = InitializeIocContainer();
+                            var rhetosAppRootPath = SearchForRhetosServerRootFolder();
+                            var configurationProvider = new ConfigurationBuilder()
+                                .AddRhetosAppConfiguration(rhetosAppRootPath)
+                                .AddConfigurationManagerConfiguration()
+                                .Build();
+
+                            _iocContainer = InitializeIocContainer(configurationProvider);
                         }
                 }
 
@@ -111,11 +114,11 @@ namespace Rhetos.Configuration.Autofac
             }
         }
 
-        protected virtual bool IsValidRhetosServerDirectory(string path)
+        private static bool IsValidRhetosServerDirectory(string path)
         {
             return
                 File.Exists(Path.Combine(path, @"web.config"))
-                && File.Exists(Path.Combine(path, @"bin\Rhetos.dll"));
+                && File.Exists(Path.Combine(path, @"bin\Rhetos.Utilities.dll"));
         }
 
         protected string SearchForRhetosServerRootFolder()
@@ -143,22 +146,20 @@ namespace Rhetos.Configuration.Autofac
             if (folder.Name == "Rhetos" && IsValidRhetosServerDirectory(folder.FullName))
                 return folder.FullName;
 
-            throw new ApplicationException("Cannot locate a valid Rhetos server's folder from '" + Environment.CurrentDirectory + "'. Unexpected folder '" + folder.FullName + "'.");
+            throw new FrameworkException("Cannot locate a valid Rhetos server's folder from '" + Environment.CurrentDirectory + "'. Unexpected folder '" + folder.FullName + "'.");
         }
 
-        private IContainer InitializeIocContainer()
+        private IContainer InitializeIocContainer(IConfigurationProvider configurationProvider)
         {
             AppDomain.CurrentDomain.AssemblyResolve += SearchForAssembly;
 
-            // Specific registrations and initialization:
-            Plugins.SetInitializationLogging(new ConsoleLogProvider());
-
             // General registrations:
-            var builder = new ContainerBuilder();
-            builder.RegisterModule(new DefaultAutofacConfiguration(deploymentTime: false, deployDatabaseOnly: false));
+            var builder = new RhetosContainerBuilder(configurationProvider, new ConsoleLogProvider(), LegacyUtilities.GetListAssembliesDelegate(configurationProvider));
+            builder.AddRhetosRuntime();
+            builder.AddPluginModules();
 
-            // Specific registrations override:
-            builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();
+            // Overriding registrations from plugins:
+            builder.RegisterType<ProcessUserInfo>().As<IUserInfo>(); // Override runtime IUserInfo plugins. This container is intended to be used in a simple process or unit tests.
             builder.RegisterType<ConsoleLogProvider>().As<ILogProvider>();
 
             // Build the container:

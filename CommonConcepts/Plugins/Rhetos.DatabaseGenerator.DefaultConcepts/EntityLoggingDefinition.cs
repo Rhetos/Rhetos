@@ -31,7 +31,6 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
     [Export(typeof(IConceptDatabaseDefinition))]
     [ExportMetadata(MefProvider.Implements, typeof(EntityLoggingInfo))]
-    [ConceptImplementationVersion(2, 0)]
     public class EntityLoggingDefinition : IConceptDatabaseDefinitionExtension
     {
         public static readonly SqlTag<EntityLoggingInfo> LogPropertyTag = "LogProperty";

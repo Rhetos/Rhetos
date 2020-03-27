@@ -25,6 +25,10 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// This object should be created in database after the given table's ID column is created, but not necessarily all other columns.
+    /// Use this instead of SqlDependsOn to avoid having dependencies to all properties of the entity.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SqlDependsOnID")]
     public class SqlDependsOnIDInfo : IConceptInfo

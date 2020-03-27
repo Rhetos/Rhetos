@@ -25,6 +25,11 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// A read method that loads and returns data for the given parameter value.
+    /// The lambda expression returns an array of records: (repository, parameter) => filtered DataStructure[].
+    /// The parameter type also represents the filter name.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("FilterBy")]
     public class FilterByInfo : IConceptInfo

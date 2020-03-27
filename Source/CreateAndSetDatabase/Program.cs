@@ -132,16 +132,16 @@ namespace CreateAndSetDatabase
             Console.WriteLine();
 
             string appPath = AppDomain.CurrentDomain.BaseDirectory;
-            string connectionStringConfigPath = Path.Combine(appPath, @"ConnectionStrings.config");
+            string connectionStringConfigPath = Path.Combine(appPath, @"..\ConnectionStrings.config");
             
             if (!File.Exists(connectionStringConfigPath))
-                File.Copy(Path.Combine(appPath, @"Template.ConnectionStrings.config"), connectionStringConfigPath);
+                File.Copy(Path.Combine(appPath, @"..\Template.ConnectionStrings.config"), connectionStringConfigPath);
 
-            Console.WriteLine(@"Writing connection string in ""ConnectionStrings.config""");
+            Console.WriteLine($@"Writing connection string in ""{connectionStringConfigPath}""");
             // set Rhetos to point to new database
             FileReplaceHelper.ReplaceWithRegex(connectionStringConfigPath
                             , @"<add.*?name=""ServerConnectionString""(.|\n)*?/>"
-                            , @"<add connectionString=""" + rhetosConnectionString + @""" name=""ServerConnectionString"" providerName=""Rhetos.MsSql"" />"
+                            , @"<add connectionString=""" + rhetosConnectionString + @""" name=""ServerConnectionString"" />"
                             , "Not valid ConnectionStrings.config file.");
         }
     }

@@ -26,6 +26,9 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Copies a FilterBy filter implementation from the parent data structure to the detail. 
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("FilterByReferenced")]
     public class FilterByReferencedNoSubfilterInfo : FilterByReferencedInfo, IAlternativeInitializationConcept

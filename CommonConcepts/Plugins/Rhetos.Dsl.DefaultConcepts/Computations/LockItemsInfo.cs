@@ -25,6 +25,9 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    ///  Deny update and delete of the entity records, for records in a certain state (provided by a filter).
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Lock")]
     public class LockItemsInfo : IConceptInfo

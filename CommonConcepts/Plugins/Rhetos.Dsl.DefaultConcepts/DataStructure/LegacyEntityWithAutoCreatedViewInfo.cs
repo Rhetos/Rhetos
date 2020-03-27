@@ -27,6 +27,14 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    ///  Simplifies access from Rhetos application to legacy application database.
+    ///  It maps a Rhetos data structure to the legacy database table or view.
+    ///  It allows both read and write operations (either with updateable views or generated instead-of triggers).
+    ///  It allows mapping of complex primary and foreign keys to standard Rhetos reference properties.
+    ///  Prerequisites: The legacy table needs to be extended with uniqueidentifier ID column with default NEWID() and a unique index.
+    ///  Automatically creates view with entity name and the corresponding instead-of triggers for writing data directly into that view.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("LegacyEntity")]
     public class LegacyEntityWithAutoCreatedViewInfo : DataStructureInfo, IWritableOrmDataStructure

@@ -28,6 +28,9 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Subvariant of Required. The value must be entered by system internally.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SystemRequired")]
     public class SystemRequiredInfo : IMacroConcept

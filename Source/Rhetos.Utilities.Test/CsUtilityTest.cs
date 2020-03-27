@@ -268,5 +268,51 @@ namespace Rhetos.Utilities.Test
             foreach (var test in tests)
                 Assert.AreEqual(test.Item4, CsUtility.ReportSegment(test.Item1, test.Item2, test.Item3), $"Test: {test.Item1} {test.Item2} {test.Item3}");
         }
+
+        [TestMethod]
+        public void GetShortTypeName()
+        {
+            var types = new[]
+            {
+                typeof(int),
+                typeof(string),
+                typeof(InnerClass),
+                typeof(List<int>),
+                typeof(List<string>),
+                typeof(List<InnerClass>),
+                typeof(int[]),
+                typeof(string[]),
+                typeof(InnerClass[]),
+                typeof(Dictionary<List<InnerClass[]>, InnerClass>),
+            };
+
+            var results = types.Select(t => CsUtility.GetShortTypeName(t)).ToList();
+
+            string expected =
+@"Int32
+String
+InnerClass
+List`1<Int32>
+List`1<String>
+List`1<InnerClass>
+Int32[]
+String[]
+InnerClass[]
+Dictionary`2<List`1<InnerClass[]>, InnerClass>";
+
+            TestUtility.AssertAreEqualByLine(expected, string.Join("\r\n", results));
+        }
+
+        class InnerClass { };
+
+        [TestMethod]
+        public void Indent()
+        {
+            Assert.AreEqual("", CsUtility.Indent("", 0));
+            Assert.AreEqual(" a", CsUtility.Indent("a", 1));
+            Assert.AreEqual("  a", CsUtility.Indent("a", 2));
+            Assert.AreEqual("  a\r\n  b", CsUtility.Indent("a\r\nb", 2));
+            Assert.AreEqual("  a\r\n  b", CsUtility.Indent("a\nb", 2));
+        }
     }
 }

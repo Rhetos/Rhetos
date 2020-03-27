@@ -32,7 +32,6 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
     [Export(typeof(IConceptDatabaseDefinition))]
     [ExportMetadata(MefProvider.Implements, typeof(ShortStringPropertyInfo))]
-    [ConceptImplementationVersion(2, 1)]
     public class ShortStringPropertyDatabaseDefinition : IConceptDatabaseDefinition
     {
         ConceptMetadata _conceptMetadata;

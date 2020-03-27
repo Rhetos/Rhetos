@@ -26,6 +26,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Unicode string property, intended for long multi-line text. Length is not limited by the application.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("LongString")]
     public class LongStringPropertyInfo : PropertyInfo, IConceptInfo

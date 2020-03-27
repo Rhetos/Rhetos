@@ -17,91 +17,162 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Autofac;
 using Rhetos;
-using Rhetos.Deployment;
-using Rhetos.Dom;
-using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 
 namespace DeployPackages
 {
-    public class Program
+    public static class Program
     {
+        private readonly static Dictionary<string, string> _validArguments =  new Dictionary<string, string>()
+        {
+            { "/StartPaused", "Use for debugging with Visual Studio (Attach to Process)." },
+            { "/Debug", "Generates unoptimized dlls (ServerDom.*.dll, e.g.) for debugging." },
+            { "/NoPause", "Don't pause on error. Use this switch for build automation." },
+            { "/IgnoreDependencies", "Allow installing incompatible versions of Rhetos packages." },
+            { "/ShortTransactions", "Commit transaction after creating or dropping each database object." },
+            { "/DatabaseOnly", "Keep old plugins and files in bin\\Generated." },
+            { "/SkipRecompute", "Use this if you want to skip all computed data." }
+        };
+
         public static int Main(string[] args)
         {
-            ILogger logger = new ConsoleLogger("DeployPackages"); // Using the simplest logger outside of try-catch block.
-            string oldCurrentDirectory = null;
-            DeployArguments arguments = null;
+            var logProvider = new NLogProvider();
+            var logger = logProvider.GetLogger("DeployPackages");
+            var pauseOnError = false;
+
+            logger.Info(() => "Logging configured.");
 
             try
             {
-                logger = DeploymentUtility.InitializationLogProvider.GetLogger("DeployPackages"); // Setting the final log provider inside the try-catch block, so that the simple ConsoleLogger can be used (see above) in case of an initialization error.
-
-                arguments = new DeployArguments(args);
-                if (arguments.Help)
+                if (!ValidateArguments(args))
                     return 1;
 
-                if (arguments.StartPaused)
+                string rhetosAppRootPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".."));
+                
+                // Using build-time configuration:
                 {
-                    if (!Environment.UserInteractive)
-                        throw new Rhetos.UserException("DeployPackages parameter 'StartPaused' must not be set, because the application is executed in a non-interactive environment.");
+                    var rhetosAppEnvironment = new RhetosAppEnvironment
+                    {
+                        RootFolder = rhetosAppRootPath,
+                        BinFolder = Path.Combine(rhetosAppRootPath, "bin"),
+                        AssetsFolder = Path.Combine(rhetosAppRootPath, "bin", "Generated"),
+                        LegacyPluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins"),
+                        LegacyAssetsFolder = Path.Combine(rhetosAppRootPath, "Resources"),
+                    };
+                    var configurationProvider = new ConfigurationBuilder()
+                        .AddRhetosAppEnvironment(rhetosAppEnvironment)
+                        .AddKeyValue(nameof(BuildOptions.ProjectFolder), rhetosAppRootPath)
+                        .AddKeyValue(nameof(BuildOptions.GeneratedAssetsFolder), rhetosAppEnvironment.AssetsFolder)
+                        .AddKeyValue(nameof(BuildOptions.CacheFolder), Path.Combine(rhetosAppRootPath, "GeneratedFilesCache"))
+                        .AddKeyValue(nameof(BuildOptions.GeneratedSourceFolder), null)
+                        .AddWebConfiguration(rhetosAppRootPath)
+                        .AddConfigurationManagerConfiguration()
+                        .AddCommandLineArguments(args, "/")
+                        .Build();
 
-                    // Use for debugging (Attach to Process)
-                    Console.WriteLine("Press any key to continue . . .");
-                    Console.ReadKey(true);
+                    var deployOptions = configurationProvider.GetOptions<DeployOptions>();
+                    pauseOnError = !deployOptions.NoPause;
+                    if (deployOptions.StartPaused)
+                        StartPaused();
+
+                    var deployment = new ApplicationDeployment(configurationProvider, logProvider, () => Directory.GetFiles(rhetosAppEnvironment.LegacyPluginsFolder, "*.dll", SearchOption.TopDirectoryOnly));
+                    if (!deployOptions.DatabaseOnly)
+                    {
+                        DeleteObsoleteFiles(logProvider, logger);
+                        var installedPackages = deployment.DownloadPackages(deployOptions.IgnoreDependencies);
+                        deployment.GenerateApplication(installedPackages);
+                    }
+                    else
+                    {
+                        logger.Info("Skipped deleting old generated files (DeployDatabaseOnly).");
+                        logger.Info("Skipped download packages (DeployDatabaseOnly).");
+                        logger.Info("Skipped code generators (DeployDatabaseOnly).");
+                    }
                 }
 
-                Paths.InitializeRhetosServerRootPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".."));
+                // Using run-time configuration:
+                {
+                    var configurationProvider = new ConfigurationBuilder()
+                        .AddRhetosAppConfiguration(rhetosAppRootPath)
+                        .AddConfigurationManagerConfiguration()
+                        .AddCommandLineArguments(args, "/")
+                        .Build();
 
-                oldCurrentDirectory = Directory.GetCurrentDirectory();
-                Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
+                    var deployment = new ApplicationDeployment(configurationProvider, logProvider, LegacyUtilities.GetListAssembliesDelegate(configurationProvider));
 
-                InitialCleanup(logger, arguments);
-                DownloadPackages(logger, arguments);
-                GenerateApplication(logger, arguments);
-                InitializeGeneratedApplication(logger, arguments);
-                logger.Trace("Done.");
+                    deployment.UpdateDatabase();
+                    deployment.InitializeGeneratedApplication();
+                    deployment.RestartWebServer();
+                }
+
+                logger.Info("Done.");
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                logger.Error(ex.ToString());
+                logger.Error(e.ToString());
 
-                string typeLoadReport = CsUtility.ReportTypeLoadException(ex);
+                string typeLoadReport = CsUtility.ReportTypeLoadException(e);
                 if (typeLoadReport != null)
                     logger.Error(typeLoadReport);
 
                 if (Environment.UserInteractive)
-                {
-                    PrintSummary(ex);
-                    if (arguments != null && !arguments.NoPauseOnError)
-                    {
-                        Console.WriteLine("Press any key to continue . . .  (use /NoPause switch to avoid pause on error)");
-                        Console.ReadKey(true);
-                    }
-                }
+                    InteractiveExceptionInfo(e, pauseOnError);
 
                 return 1;
-            }
-            finally
-            {
-                if (oldCurrentDirectory != null && Directory.Exists(oldCurrentDirectory))
-                    Directory.SetCurrentDirectory(oldCurrentDirectory);
             }
 
             return 0;
         }
 
-        private static void InitialCleanup(ILogger logger, DeployArguments arguments)
+        /// <summary>
+        /// This feature is intended to simplify attaching debugger to the process that was run from a build script.
+        /// </summary>
+        private static void StartPaused()
         {
-            // Warning to backup obsolete folders:
+            if (!Environment.UserInteractive)
+                throw new UserException("DeployPackages parameter 'StartPaused' must not be set, because the application is executed in a non-interactive environment.");
+
+            Console.WriteLine("Press any key to continue . . .");
+            Console.ReadKey(true);
+        }
+
+        private static bool ValidateArguments(string[] args)
+        {
+            if (args.Contains("/?"))
+            {
+                ShowHelp();
+                return false;
+            }
+
+            var invalidArgument = args.FirstOrDefault(arg => !_validArguments.Keys.Contains(arg, StringComparer.InvariantCultureIgnoreCase));
+            if (invalidArgument != null)
+            {
+                ShowHelp();
+                throw new FrameworkException($"Unexpected command-line argument: '{invalidArgument}'.");
+            }
+            return true;
+        }
+
+        private static void ShowHelp()
+        {
+            Console.WriteLine("Command-line arguments:");
+            foreach (var argument in _validArguments)
+                Console.WriteLine($"{argument.Key.PadRight(20)} {argument.Value}");
+        }
+
+        /// <summary>
+        /// Deletes left-over files from old versions of Rhetos framework.
+        /// Throws an exception if important data might be lost.
+        /// </summary>
+        private static void DeleteObsoleteFiles(ILogProvider logProvider, ILogger logger)
+        {
+            var filesUtility = new FilesUtility(logProvider);
 
             var obsoleteFolders = new string[]
             {
@@ -112,130 +183,30 @@ namespace DeployPackages
             if (obsoleteFolder != null)
                 throw new UserException("Please backup all Rhetos server folders and delete obsolete folder '" + obsoleteFolder + "'. It is no longer used.");
 
-            // Delete obsolete generated files:
-
             var deleteObsoleteFiles = new string[]
             {
                 Path.Combine(Paths.BinFolder, "ServerDom.cs"),
                 Path.Combine(Paths.BinFolder, "ServerDom.dll"),
                 Path.Combine(Paths.BinFolder, "ServerDom.pdb")
             };
-            var filesUtility = new FilesUtility(DeploymentUtility.InitializationLogProvider);
+
             foreach (var path in deleteObsoleteFiles)
                 if (File.Exists(path))
                 {
-                    logger.Info($"Deleting obsolete file '{path}'.");
+                    logger.Warning($"Deleting obsolete file '{path}'.");
                     filesUtility.SafeDeleteFile(path);
                 }
-
-            // Backup and delete generated files:
-
-            if (!arguments.DeployDatabaseOnly)
-            {
-                logger.Trace("Moving old generated files to cache.");
-                new GeneratedFilesCache(DeploymentUtility.InitializationLogProvider).MoveGeneratedFilesToCache();
-                filesUtility.SafeCreateDirectory(Paths.GeneratedFolder);
-            }
-            else
-            {
-                var missingFile = Paths.DomAssemblyFiles.FirstOrDefault(f => !File.Exists(f));
-                if (missingFile != null)
-                    throw new UserException($"'/DatabaseOnly' switch cannot be used if the server have not been deployed successfully before. Run a regular deployment instead. Missing '{missingFile}'.");
-
-                logger.Info("Skipped deleting old generated files (DeployDatabaseOnly).");
-            }
         }
 
-        private static void DownloadPackages(ILogger logger, DeployArguments arguments)
+        private static void InteractiveExceptionInfo(Exception e, bool pauseOnError)
         {
-            if (!arguments.DeployDatabaseOnly)
+            ApplicationDeployment.PrintErrorSummary(e);
+
+            if (pauseOnError)
             {
-                logger.Trace("Getting packages.");
-                var config = new DeploymentConfiguration(DeploymentUtility.InitializationLogProvider);
-                var packageDownloaderOptions = new PackageDownloaderOptions { IgnorePackageDependencies = arguments.IgnorePackageDependencies };
-                var packageDownloader = new PackageDownloader(config, DeploymentUtility.InitializationLogProvider, packageDownloaderOptions);
-                var packages = packageDownloader.GetPackages();
-
-                InstalledPackages.Save(packages);
+                Console.WriteLine("Press any key to continue . . .  (use /NoPause switch to avoid pause on error)");
+                Console.ReadKey(true);
             }
-            else
-                logger.Info("Skipped download packages (DeployDatabaseOnly).");
-        }
-
-        private static void GenerateApplication(ILogger logger, DeployArguments arguments)
-        {
-            logger.Trace("Loading plugins.");
-            var stopwatch = Stopwatch.StartNew();
-
-            var builder = new ContainerBuilder();
-            builder.RegisterModule(new AutofacModuleConfiguration(
-                deploymentTime: true,
-                configurationArguments: arguments));
-
-            using (var container = builder.Build())
-            {
-                var performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
-                performanceLogger.Write(stopwatch, "DeployPackages.Program: Modules and plugins registered.");
-                Plugins.LogRegistrationStatistics("Generating application", container);
-
-                if (arguments.Debug)
-                    container.Resolve<DomGeneratorOptions>().Debug = true;
-
-                container.Resolve<ApplicationGenerator>().ExecuteGenerators(arguments.DeployDatabaseOnly);
-            }
-        }
-
-        private static void InitializeGeneratedApplication(ILogger logger, DeployArguments arguments)
-        {
-            // Creating a new container builder instead of using builder.Update, because of severe performance issues with the Update method.
-            Plugins.ClearCache();
-
-            logger.Trace("Loading generated plugins.");
-            var stopwatch = Stopwatch.StartNew();
-
-            var builder = new ContainerBuilder();
-            builder.RegisterModule(new AutofacModuleConfiguration(
-                deploymentTime: false,
-                configurationArguments: arguments));
-            
-            using (var container = builder.Build())
-            {
-                var performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
-                var initializers = ApplicationInitialization.GetSortedInitializers(container);
-
-                performanceLogger.Write(stopwatch, "DeployPackages.Program: New modules and plugins registered.");
-                Plugins.LogRegistrationStatistics("Initializing application", container);
-
-                if (!initializers.Any())
-                {
-                    logger.Trace("No server initialization plugins.");
-                } else
-                {
-                    foreach (var initializer in initializers)
-                        ApplicationInitialization.ExecuteInitializer(container, initializer);
-                }
-            }
-
-            RestartWebServer(logger);
-        }
-
-        private static void RestartWebServer(ILogger logger)
-        {
-            var configFile = Paths.RhetosServerWebConfigFile;
-            if (FilesUtility.SafeTouch(configFile))
-                logger.Trace($"Updated {Path.GetFileName(configFile)} modification date to restart server.");
-            else
-                logger.Trace($"Missing {Path.GetFileName(configFile)}.");
-        }
-
-        private static void PrintSummary(Exception ex)
-        {
-            Console.WriteLine();
-            Console.WriteLine("=============== ERROR SUMMARY ===============");
-            Console.WriteLine(ex.GetType().Name + ": " + ExceptionsUtility.SafeFormatUserMessage(ex));
-            Console.WriteLine("=============================================");
-            Console.WriteLine();
-            Console.WriteLine("See DeployPackages.log for more information on error. Enable TraceLog in DeployPackages.exe.config for even more details.");
         }
     }
 }

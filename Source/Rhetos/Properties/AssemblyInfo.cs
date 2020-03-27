@@ -40,3 +40,5 @@ using System.Runtime.InteropServices;
 [assembly: Guid("3246f6b7-1193-4b14-94d0-f0089b6d2dfc")]
 
 [assembly: CLSCompliant(true)]
+
+[assembly: InternalsVisibleTo("DeployPackages.Test")]

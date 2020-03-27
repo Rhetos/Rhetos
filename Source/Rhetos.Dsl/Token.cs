@@ -32,6 +32,7 @@ namespace Rhetos.Dsl
         public string Value;
         public DslScript DslScript;
         public int PositionInDslScript;
+        public int PositionEndInDslScript;
         public TokenType Type;
     }
 }

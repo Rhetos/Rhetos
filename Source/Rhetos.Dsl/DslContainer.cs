@@ -24,7 +24,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 
 namespace Rhetos.Dsl
 {
@@ -46,8 +45,6 @@ namespace Rhetos.Dsl
         private readonly MultiDictionary<string, UnresolvedReference> _unresolvedConceptsByReference = new MultiDictionary<string, UnresolvedReference>();
         private readonly List<IDslModelIndex> _dslModelIndexes;
         private readonly Dictionary<Type, IDslModelIndex> _dslModelIndexesByType;
-        private readonly Lazy<SortConceptsMethod> _sortConceptsMethod;
-        private enum SortConceptsMethod { None, Key, KeyDescending };
 
         private class ConceptDescription
         {
@@ -80,13 +77,12 @@ namespace Rhetos.Dsl
             }
         }
 
-        public DslContainer(ILogProvider logProvider, IPluginsContainer<IDslModelIndex> dslModelIndexPlugins, IConfiguration configuration)
+        public DslContainer(ILogProvider logProvider, IPluginsContainer<IDslModelIndex> dslModelIndexPlugins)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("DslContainer");
             _dslModelIndexes = dslModelIndexPlugins.GetPlugins().ToList();
             _dslModelIndexesByType = _dslModelIndexes.ToDictionary(index => index.GetType());
-            _sortConceptsMethod = configuration.GetEnum("CommonConcepts.Debug.SortConcepts", SortConceptsMethod.None);
         }
 
         #region IDslModel filters implementation
@@ -328,7 +324,7 @@ namespace Rhetos.Dsl
                         $"Unresolved dependency to '{u.ReferencedKey}' <= '{u.Dependant.Concept.GetUserDescription()}',"
                         + $" {u.Member.Name} = '{u.ReferencedStub.GetUserDescription()}' ({u.Dependant.UnresolvedDependencies} left)")));
 
-                var internalError = unresolvedConcepts.Where(u => u.Dependant.UnresolvedDependencies <= 0).FirstOrDefault();
+                var internalError = unresolvedConcepts.FirstOrDefault(u => u.Dependant.UnresolvedDependencies <= 0);
                 if (internalError != null)
                     throw new FrameworkException($"Internal error while resolving references of '{internalError.Dependant.Concept.GetUserDescription()}'."
                         + $" The concept has {internalError.Dependant.UnresolvedDependencies} unresolved dependencies,"
@@ -349,8 +345,7 @@ namespace Rhetos.Dsl
                 return unresolved;
 
             var referencedUnresolvedConcept = _unresolvedConceptsByReference.SelectMany(ucbr => ucbr.Value)
-                .Where(u => u.Dependant.Key == unresolved.ReferencedKey)
-                .FirstOrDefault();
+                .FirstOrDefault(u => u.Dependant.Key == unresolved.ReferencedKey);
 
             if (referencedUnresolvedConcept == null)
                 throw new FrameworkException($"Internal error when resolving concept's references: '{unresolved.Dependant.Concept.GetUserDescription()}' has unresolved reference to '{unresolved.ReferencedStub.GetUserDescription()}', but the referenced concept is not marked as unresolved.");
@@ -374,24 +369,22 @@ namespace Rhetos.Dsl
         /// This will allow code generators to safely assume that the code for referenced concept B
         /// is already generated before the concept A inserts an additional code snippet into it.
         /// </summary>
-        public void SortReferencesBeforeUsingConcept()
+        public void SortReferencesBeforeUsingConcept(InitialConceptsSort initialSort)
         {
             var sw = Stopwatch.StartNew();
 
-            if (_sortConceptsMethod.Value != SortConceptsMethod.None)
+            if (initialSort != InitialConceptsSort.None)
             {
                 // Initial sorting will reduce variations in the generated application source
                 // that are created by different macro evaluation order on each deployment.
-                var sortComparison = new Dictionary<SortConceptsMethod, Comparison<IConceptInfo>>
-            {
-                    { SortConceptsMethod.Key, (a, b) => a.GetKey().CompareTo(b.GetKey()) },
-                    // Descending option can be used in testing (along with ascending sort) to detect missing dependencies between concepts
-                // (code generators might fail with "script does not contain tag", upgrade of empty database might fail with missing column, e.g.).
-                    { SortConceptsMethod.KeyDescending, (a, b) => -a.GetKey().CompareTo(b.GetKey()) },
+                var sortComparison = new Dictionary<InitialConceptsSort, Comparison<IConceptInfo>>
+                {
+                    { InitialConceptsSort.Key, (a, b) => a.GetKey().CompareTo(b.GetKey()) },
+                    { InitialConceptsSort.KeyDescending, (a, b) => -a.GetKey().CompareTo(b.GetKey()) },
                 };
 
-                _resolvedConcepts.Sort(sortComparison[_sortConceptsMethod.Value]);
-                _performanceLogger.Write(sw, $"DslContainer.SortReferencesBeforeUsingConcept: Initial sort by {_sortConceptsMethod.Value}.");
+                _resolvedConcepts.Sort(sortComparison[initialSort]);
+                _performanceLogger.Write(sw, $"DslContainer.SortReferencesBeforeUsingConcept: Initial sort by {initialSort}.");
             }
 
             List<IConceptInfo> sortedList = new List<IConceptInfo>(_resolvedConcepts.Count);

@@ -26,6 +26,10 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// For inheriting filters from referenced data structure.
+    /// Use subFilterExpression to additionally filter out some items or sort the items within a group with the same reference value.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ComposableFilterByReferenced")]
     public class ComposableFilterByReferencedInfo : IValidatedConcept, IMacroConcept

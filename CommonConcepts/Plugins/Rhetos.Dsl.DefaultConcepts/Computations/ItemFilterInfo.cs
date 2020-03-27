@@ -25,6 +25,10 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Helper concept for simplified definition of simple "one-liner" filters, that generates a ComposableFilterBy.
+    /// The lambda expression returns whether each records passes the filter: item => bool.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ItemFilter")]
     public class ItemFilterInfo : IConceptInfo

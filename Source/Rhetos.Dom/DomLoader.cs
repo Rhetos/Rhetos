@@ -36,11 +36,13 @@ namespace Rhetos.Dom
 
         private List<Assembly> _assemblies;
         private readonly object _assembliesLock = new object();
+        private readonly RhetosAppEnvironment _rhetosAppEnvironment;
 
-        public DomLoader(ILogProvider logProvider)
+        public DomLoader(ILogProvider logProvider, RhetosAppEnvironment rhetosAppEnvironment)
         {
             _logger = logProvider.GetLogger("DomLoader");
             _performanceLogger = logProvider.GetLogger("Performance");
+            _rhetosAppEnvironment = rhetosAppEnvironment;
         }
 
         public IEnumerable<Assembly> Assemblies
@@ -60,16 +62,24 @@ namespace Rhetos.Dom
         {
             var loaded = new List<Assembly>();
             var sw = Stopwatch.StartNew();
-            foreach (string name in Paths.DomAssemblyFiles.Select(Path.GetFileNameWithoutExtension))
+            if (string.IsNullOrEmpty(_rhetosAppEnvironment.AssemblyName))
             {
-                _logger.Trace("Loading assembly \"" + name + "\".");
-                var assembly = Assembly.Load(name);
-                if (assembly == null)
-                    throw new FrameworkException($"Failed to load assembly '{name}'.");
-                loaded.Add(assembly);
-                _performanceLogger.Write(sw, "DomLoader.LoadObjectModel " + name);
+                //This is a legacy way to load the DomainObjectModel so it is OK to use the Paths class
+                foreach (string name in Paths.DomAssemblyFiles.Select(Path.GetFileNameWithoutExtension))
+                {
+                    _logger.Trace("Loading assembly \"" + name + "\".");
+                    var assembly = Assembly.Load(name);
+                    if (assembly == null)
+                        throw new FrameworkException($"Failed to load assembly '{name}'.");
+                    loaded.Add(assembly);
+                    _performanceLogger.Write(sw, "DomLoader.LoadObjectModel " + name);
+                }
+                return loaded;
             }
-            return loaded;
+            else
+            {
+                return new List<Assembly> { Assembly.Load(_rhetosAppEnvironment.AssemblyName) };
+            }
         }
     }
 }

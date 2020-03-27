@@ -25,6 +25,9 @@ using System.Reflection;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Equivalent to AutoCodeForEach with cached last code values.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("AutoCodeForEachCached")]
     public class AutoCodeForEachCachedInfo : AutoCodeCachedInfo, IValidatedConcept

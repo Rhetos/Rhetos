@@ -215,7 +215,7 @@ namespace Rhetos.Processing
                 : logException is UserException ? EventType.Trace
                 : logException is ClientException ? EventType.Info
                 : EventType.Error;
-                 
+            
             _logger.Write(errorSeverity, () => logError + (string.IsNullOrEmpty(logError) ? "" : " ") + logException);
 
             var result = new ProcessingResult

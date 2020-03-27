@@ -28,6 +28,9 @@ using System.Globalization;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// It is similar to the FilterBy, it just returns a query instead of a simple array.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Query")]
     public class QueryWithParameterInfo : IValidatedConcept

@@ -20,11 +20,9 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 
 namespace Rhetos.Dsl.Test
 {
@@ -33,10 +31,9 @@ namespace Rhetos.Dsl.Test
     {
         class DslContainerAccessor : DslContainer
         {
-            public DslContainerAccessor(IConfiguration configuration = null)
+            public DslContainerAccessor()
                 : base(new ConsoleLogProvider(),
-                      new MockPluginsContainer<IDslModelIndex>(new DslModelIndexByType()),
-                      configuration ?? new MockConfiguration())
+                      new MockPluginsContainer<IDslModelIndex>(new DslModelIndexByType()))
             {
             }
 
@@ -47,7 +44,7 @@ namespace Rhetos.Dsl.Test
                     return (List<IConceptInfo>)typeof(DslContainer)
                         .GetField("_resolvedConcepts", BindingFlags.NonPublic | BindingFlags.Instance)
                         .GetValue(this);
-        }
+                }
                 set
                 {
                     typeof(DslContainer)
@@ -234,28 +231,26 @@ namespace Rhetos.Dsl.Test
             var testData = new List<IConceptInfo> { c02, c01, cB2, c2Dependant, cInit, c03, cB1 };
 
             // The expected positions may somewhat change if the sorting algorithm internals change.
-            var tests = new List<(string SortMethod, List<IConceptInfo> ExpectedResult)>
+            var tests = new List<(InitialConceptsSort SortMethod, List<IConceptInfo> ExpectedResult)>
             {
                 // cInit always goes first. cDependant does not need to move because it is after referenced c1 and c5.
-                ( "None", new List<IConceptInfo> { cInit, c02, c01, cB2, c2Dependant, c03, cB1 } ),
+                ( InitialConceptsSort.None, new List<IConceptInfo> { cInit, c02, c01, cB2, c2Dependant, c03, cB1 } ),
 
                 // cB2 is pushed before c2Dependant, to respect dependency precedence.
-                ( "Key", new List<IConceptInfo> { cInit, c01, c02, c03, cB2, c2Dependant, cB1 } ),
+                ( InitialConceptsSort.Key, new List<IConceptInfo> { cInit, c01, c02, c03, cB2, c2Dependant, cB1 } ),
 
                 // c01 is pushed before c2Dependant, to respect dependency precedence.
-                ( "KeyDescending", new List<IConceptInfo> { cInit, cB2, cB1, c01, c2Dependant, c03, c02 } ),
+                ( InitialConceptsSort.KeyDescending, new List<IConceptInfo> { cInit, cB2, cB1, c01, c2Dependant, c03, c02 } ),
             };
 
             foreach (var test in tests)
             {
-                var configuration = new MockConfiguration { { "CommonConcepts.Debug.SortConcepts", test.SortMethod } };
-                var dslContainer = new DslContainerAccessor(configuration);
-                dslContainer.ResolvedConcepts = testData;
-                dslContainer.SortReferencesBeforeUsingConcept();
+                var dslContainer = new DslContainerAccessor { ResolvedConcepts = testData };
+                dslContainer.SortReferencesBeforeUsingConcept(test.SortMethod);
                 Assert.AreEqual(
                     TestUtility.Dump(test.ExpectedResult, c => c.GetKey()),
                     TestUtility.Dump(dslContainer.ResolvedConcepts, c => c.GetKey()),
-                    test.SortMethod);
+                    $"SortConceptsMethod: {test.SortMethod}");
             }
         }
     }

@@ -25,6 +25,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    ///  Adds a property that contains a list of detail items (records from another entity that references this entity).
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("LinkedItems")]
     public class LinkedItemsInfo : PropertyInfo, IValidatedConcept

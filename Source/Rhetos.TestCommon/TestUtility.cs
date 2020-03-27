@@ -51,7 +51,7 @@ namespace Rhetos.TestCommon
 
             Assert.IsNotNull(exception, "Expected exception did not happen.");
 
-            string message = exception.GetType().Name + ": " + ExceptionsUtility.SafeFormatUserMessage(exception);
+            string message = exception.GetType().Name + ": " + ExceptionsUtility.MessageForLog(exception);
             if (exception is UserException && ((UserException)exception).SystemMessage != null)
                 message += "\r\n  SystemMessage: " + ((UserException)exception).SystemMessage;
             Console.WriteLine("[ShouldFail] " + message);
@@ -189,7 +189,7 @@ namespace Rhetos.TestCommon
         /// </summary>
         public static void CheckDatabaseAvailability(string expectedLanguage = null)
         {
-            const string connectionStringLocation = @"Enter the database connection in Rhetos\bin\ConnectionStrings.config, then rebuild this project.";
+            const string connectionStringLocation = @"Enter the database connection in Rhetos\ConnectionStrings.config, then rebuild this project.";
             try
             {
                 Assert.IsNotNull(SqlUtility.ConnectionString);

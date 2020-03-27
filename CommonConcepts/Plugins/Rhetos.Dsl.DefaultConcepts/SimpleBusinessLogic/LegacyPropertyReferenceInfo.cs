@@ -25,6 +25,11 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    ///  Mapping reference property to a FK column in source view.
+    ///  It supports foreign keys over multiple columns;
+    ///  they will be automatically mapped to a single uniqueidentifier value for standard Rhetos reference property.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("LegacyProperty")]
     public class LegacyPropertyReferenceInfo : LegacyPropertyInfo

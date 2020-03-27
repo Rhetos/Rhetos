@@ -26,6 +26,10 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Simple helper for reading an old version of the data that can be reused in different business rules.
+    /// It will load the old data between Initialization and OldDataLoaded.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("LoadOldItems")]
     public class LoadOldItemsInfo : IConceptInfo

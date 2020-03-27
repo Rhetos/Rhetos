@@ -12,7 +12,9 @@ CALL Source\Rhetos\GetServerFiles.bat %Config% /NOPAUSE || GOTO Error0
 REM Packing the files with an older version of nuget.exe for backward compatibility (spaces in file names, https://github.com/Rhetos/Rhetos/issues/80).
 IF NOT EXIST Install\NuGet.exe POWERSHELL (New-Object System.Net.WebClient).DownloadFile('https://dist.nuget.org/win-x86-commandline/v4.5.1/nuget.exe', 'Install\NuGet.exe') || GOTO Error0
 
-Install\NuGet.exe pack Rhetos.nuspec -OutputDirectory Install || GOTO Error0
+NuGet.exe pack Source\Rhetos.Core.nuspec -OutputDirectory Install || GOTO Error0
+NuGet.exe pack Source\Rhetos.nuspec -OutputDirectory Install || GOTO Error0
+NuGet.exe pack Source\Rhetos.Wcf.nuspec -OutputDirectory Install || GOTO Error0
 Install\NuGet.exe pack CommonConcepts\Rhetos.CommonConcepts.nuspec -OutputDirectory Install || GOTO Error0
 
 MD Install\RhetosServer
@@ -23,7 +25,6 @@ XCOPY /Y/D/R Source\Rhetos\bin\*.pdb Install\RhetosServer\bin || GOTO Error0
 XCOPY /Y/D/R Source\Rhetos\bin\Rhetos*.xml Install\RhetosServer\bin || GOTO Error0
 XCOPY /Y/D/R Source\Rhetos\bin\*.exe Install\RhetosServer\bin || GOTO Error0
 XCOPY /Y/D/R Source\Rhetos\bin\*.config Install\RhetosServer\bin || GOTO Error0
-DEL /F /Q Install\RhetosServer\bin\ConnectionStrings.config
 
 XCOPY /Y/D/R Source\Rhetos\*.aspx Install\RhetosServer\ || GOTO Error0
 XCOPY /Y/D/R Source\Rhetos\*.asax Install\RhetosServer\ || GOTO Error0

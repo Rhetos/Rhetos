@@ -25,6 +25,9 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// This object should be created in database after the given table or view, and all its columns, is created.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SqlDependsOn")]
     public class SqlDependsOnDataStructureInfo : IConceptInfo

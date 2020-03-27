@@ -21,6 +21,10 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Add an additional security claim. It can be assigned by administrator to a user or a role, and verified by IAuthorizationManager.
+    /// Note: in the DSL script it must be placed outside of a Module.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("CustomClaim")]
     public class CustomClaimInfo : IConceptInfo

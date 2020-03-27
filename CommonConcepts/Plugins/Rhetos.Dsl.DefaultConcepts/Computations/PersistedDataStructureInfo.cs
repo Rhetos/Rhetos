@@ -25,6 +25,10 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Creates entity which will contain cached data from the given source. 
+    /// The source can be any readable data structure (Browse, SqlQueryable, Computed and similar).
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Persisted")]
     public class PersistedDataStructureInfo : EntityInfo, IMacroConcept

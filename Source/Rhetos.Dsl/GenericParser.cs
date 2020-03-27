@@ -75,6 +75,8 @@ namespace Rhetos.Dsl
             Warnings.Add(warning);
         }
 
+        public event DslParser.OnMemberReadEvent OnMemberRead;
+
         private ValueOrError<IConceptInfo> ParseMembers(ITokenReader tokenReader, IConceptInfo useLastConcept, bool readingAReference, ref bool parsedFirstReferenceElement)
         {
             IConceptInfo conceptInfo = (IConceptInfo)Activator.CreateInstance(ConceptInfoType);
@@ -94,6 +96,7 @@ namespace Rhetos.Dsl
                     parsedFirstReferenceElement = false; // Reset a reference elements group, that should separated by dot.
 
                 var valueOrError = ReadMemberValue(member, tokenReader, member == parentProperty ? useLastConcept : null, firstMember, ref parsedFirstReferenceElement, readingAReference);
+                OnMemberRead?.Invoke(tokenReader, conceptInfo, member, valueOrError);
 
                 if (valueOrError.IsError)
                     return ValueOrError<IConceptInfo>.CreateError(string.Format(CultureInfo.InvariantCulture,

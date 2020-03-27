@@ -26,6 +26,9 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Includes the entity's property in temporal data management.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("History")]
     public class EntityHistoryPropertyInfo : IMacroConcept, IAlternativeInitializationConcept

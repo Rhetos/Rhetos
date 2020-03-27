@@ -19,7 +19,6 @@
 
 using Rhetos.Logging;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -50,8 +49,10 @@ namespace Rhetos.Utilities
                     if (tries <= 1)
                         throw;
 
-                    if (tries == maxTries - 1) // Logging the second retry instead of the first one, because first retries are too common.
-                        _logger.Trace(() => "Waiting to " + actionName.Invoke() + ".");
+                    if (tries == maxTries) // First retries are very common on some environments.
+                        _logger.Trace(() => $"Waiting to {actionName.Invoke()}.");
+                    if (tries == maxTries - 1) // Second retry is often result of a locked file.
+                        _logger.Warning(() => $"Waiting to {actionName.Invoke()}.");
 
                     System.Threading.Thread.Sleep(500);
                 }
@@ -68,7 +69,7 @@ namespace Rhetos.Utilities
             }
             catch (Exception ex)
             {
-                throw new FrameworkException(String.Format("Can't create directory '{0}'. Check that it's not locked.", path), ex);
+                throw new FrameworkException($"Can't create directory '{path}'. Check that it's not locked.", ex);
             }
         }
 
@@ -93,7 +94,7 @@ namespace Rhetos.Utilities
             }
             catch (Exception ex)
             {
-                throw new FrameworkException(String.Format("Can't delete directory '{0}'. Check that it's not locked.", path), ex);
+                throw new FrameworkException($"Can't delete directory '{path}'. Check that it's not locked.", ex);
             }
         }
 
@@ -120,20 +121,25 @@ namespace Rhetos.Utilities
             }
             catch (Exception ex)
             {
-                throw new FrameworkException(String.Format("Can't move file '{0}' to '{1}'. Check that destination file or folder is not locked.", source, destination), ex);
+                throw new FrameworkException($"Can't move file '{source}' to '{destination}'. Check that destination file or folder is not locked.", ex);
             }
         }
 
         public void SafeCopyFile(string sourceFile, string destinationFile)
         {
+            SafeCopyFile(sourceFile, destinationFile, false);
+        }
+
+        public void SafeCopyFile(string sourceFile, string destinationFile, bool overwrite)
+        {
             try
             {
                 SafeCreateDirectory(Path.GetDirectoryName(destinationFile));
-                Retry(() => File.Copy(sourceFile, destinationFile), () => "copy file " + sourceFile);
+                Retry(() => File.Copy(sourceFile, destinationFile, overwrite), () => "copy file " + sourceFile);
             }
             catch (Exception ex)
             {
-                throw new FrameworkException(String.Format("Can't copy file '{0}' to '{1}'. Check that destination folder is not locked.", sourceFile, destinationFile), ex);
+                throw new FrameworkException($"Can't copy file '{sourceFile}' to '{destinationFile}'. Check that destination folder is not locked.", ex);
             }
         }
 
@@ -170,7 +176,7 @@ namespace Rhetos.Utilities
             {
                 bool tryDefault = !Encoding.Default.Equals(Encoding.UTF8);
 
-                _logger.Info($"WARNING: File '{path}' contains invalid UTF-8 character at line {ScriptPositionReporting.Line(text, invalidCharIndex)}." +
+                _logger.Warning($"Warning: File '{path}' contains invalid UTF-8 character at line {ScriptPositionReporting.Line(text, invalidCharIndex)}." +
                     (tryDefault ? $" Reading with default system encoding instead." : "") +
                     $" Save text file as UTF-8.");
 
@@ -182,11 +188,15 @@ namespace Rhetos.Utilities
 
         public static string RelativeToAbsolutePath(string baseFolder, string path)
         {
+            if (path == null)
+                return null;
             return Path.GetFullPath(Path.Combine(baseFolder, path));
         }
 
         public static string AbsoluteToRelativePath(string baseFolder, string target)
         {
+            if (target == null)
+                return null;
             var baseParts = Path.GetFullPath(baseFolder).Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
             var targetParts = Path.GetFullPath(target).Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
 
@@ -221,6 +231,14 @@ namespace Rhetos.Utilities
             }
             else
                 return false;
+        }
+
+        public static bool IsSameDirectory(string path1, string path2)
+        {
+            return string.Equals(
+                Path.GetFullPath(Path.Combine(path1, ".")),
+                Path.GetFullPath(Path.Combine(path2, ".")),
+                StringComparison.OrdinalIgnoreCase);
         }
     }
 }

@@ -25,6 +25,9 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Two records cannot have same value of this property.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Unique")]
     public class UniquePropertyInfo : IConceptInfo

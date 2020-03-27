@@ -26,8 +26,8 @@ using System.Text;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// This concept is not necessary for defining a filter. Any data structure (or any data type) can be user as a filter parameter.
-    /// This concept can be used instead of the "DataStructure" concept simply to show an intention and produce a self-documenting code.
+    /// Data structure for FilterBy and ComposableFilterBy parameters. It also represents the filter name.
+    /// Although any data structure can be used as filter parameter, the Parameter concept describes an intention behind the data structure.
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Parameter")]

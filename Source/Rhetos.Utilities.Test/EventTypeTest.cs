@@ -32,7 +32,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void Order()
         {
-            var eventsOrderedByLevel = new[] { EventType.Trace, EventType.Info, EventType.Error };
+            var eventsOrderedByLevel = new[] { EventType.Trace, EventType.Info, EventType.Warning, EventType.Error };
 
             Assert.AreEqual(
                 Enum.GetValues(typeof(EventType)).Length,

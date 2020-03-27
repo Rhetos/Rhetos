@@ -76,6 +76,11 @@ namespace Rhetos.Utilities
             return value;
         }
 
+        public static string Indent(string lines, int indentation)
+        {
+            return string.Join("\r\n", lines.Replace("\r\n", "\n").Replace("\r", "\n").Split('\n').Select(line => new string(' ', indentation) + line));
+        }
+
         /// <summary>
         /// Reads a value from the dictionary, with extended error handling.
         /// Parameter exceptionMessage can contain format tag {0} that will be replaced by missing key.
@@ -114,21 +119,21 @@ namespace Rhetos.Utilities
         public static string GetIdentifierError(string name)
         {
             if (name == null)
-                return "Given name is null.";
+                return "Identifier name is null.";
 
             if (string.IsNullOrEmpty(name))
-                return "Given name is empty.";
+                return "Identifier name is empty.";
 
             {
                 char c = name[0];
                 if ((c < 'a' || c > 'z') && (c < 'A' || c > 'Z') && c != '_')
-                    return "Given name '" + name + "' is not valid. First character is not an English letter or underscore.";
+                    return "Identifier name '" + name + "' is not valid. First character is not an English letter or underscore.";
             }
 
             {
                 foreach (char c in name)
                     if ((c < 'a' || c > 'z') && (c < 'A' || c > 'Z') && c != '_' && (c < '0' || c > '9'))
-                        return "Given name '" + name + "' is not valid. Character '" + c + "' is not an English letter or number or underscore.";
+                        return "Identifier name '" + name + "' is not valid. Character '" + c + "' is not an English letter or number or underscore.";
             }
 
             return null;
@@ -191,9 +196,11 @@ namespace Rhetos.Utilities
         public static string ReportTypeLoadException(Exception ex, string errorContext = null, IEnumerable<string> referencedAssembliesPaths = null)
         {
             List<Exception> loaderExceptions;
-            if (ex is ReflectionTypeLoadException)
-                loaderExceptions = ((ReflectionTypeLoadException)ex).LoaderExceptions.GroupBy(exception => exception.Message).Select(group => group.First()).ToList();
+            if (ex is ReflectionTypeLoadException typeLoadException)
+                loaderExceptions = typeLoadException.LoaderExceptions.GroupBy(exception => exception.Message).Select(group => group.First()).ToList();
             else if (ex is FileLoadException)
+                loaderExceptions = new List<Exception> { ex };
+            else if (ex is FileNotFoundException fileNotFoundException && fileNotFoundException.FusionLog != null)
                 loaderExceptions = new List<Exception> { ex };
             else
                 return null;
@@ -203,7 +210,8 @@ namespace Rhetos.Utilities
                 (string.IsNullOrEmpty(errorContext) ? errorContext + " " : "")
                 + "Please check if the assembly is missing or has a different version.");
             report.AddRange(ReportLoaderExceptions(loaderExceptions));
-            report.AddRange(ReportAssemblyLoadErrors(referencedAssembliesPaths));
+            if (referencedAssembliesPaths != null)
+                report.AddRange(ReportAssemblyLoadErrors(referencedAssembliesPaths));
 
             return string.Join("\r\n", report);
         }
@@ -250,7 +258,7 @@ namespace Rhetos.Utilities
                         reportExceptions = new[] { ex };
 
                     foreach (var exceptionInfo in reportExceptions.Select(re => re.GetType().Name + ": " + re.Message).Distinct().Take(5))
-                        report.Add($"* '{Path.GetFileName(assemblyPath)}' throws {exceptionInfo}.");
+                        report.Add($"* '{Path.GetFileName(assemblyPath)}' throws {exceptionInfo}");
                 }
             }
             return report;
@@ -268,7 +276,7 @@ namespace Rhetos.Utilities
             int strIndex = 0;
             int prefixIndex = 0;
             var matches = new List<string>();
-            while (strIndex < strings.Count() && prefixIndex < prefixes.Count())
+            while (strIndex < strings.Count && prefixIndex < prefixes.Count)
             {
                 string str = strings[strIndex];
                 string prefix = prefixes[prefixIndex];
@@ -403,6 +411,17 @@ namespace Rhetos.Utilities
             return prefix
                 + query.Substring(start, end - start).Replace(@"\", @"\\").Replace("\r", @"\r").Replace("\n", @"\n").Replace("\t", @"\t")
                 + suffix;
+        }
+
+        /// <summary>
+        /// Simplified type name for logging and reporting, without namespace and assembly information.
+        /// </summary>
+        public static string GetShortTypeName(Type type)
+        {
+            if (!type.IsGenericType)
+                return type.Name;
+            else
+                return type.Name + "<" + string.Join(", ", type.GetGenericArguments().Select(argumentType => GetShortTypeName(argumentType))) + ">";
         }
     }
 }

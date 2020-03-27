@@ -27,6 +27,9 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Automatically updates cache when a base record is inserted. Automatically enabled when the cache is an extension of an entity.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ComputeForNewBaseItems")]
     public class PersistedComputeForNewBaseItemsInfo : IMacroConcept, IValidatedConcept

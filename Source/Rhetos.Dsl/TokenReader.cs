@@ -66,14 +66,6 @@ namespace Rhetos.Dsl
 
         public bool EndOfInput { get { return PositionInTokenList >= _tokenList.Count; } }
 
-        private static void ThrowReadException(string value, string reason)
-        {
-            throw new DslSyntaxException(string.Format(CultureInfo.InvariantCulture,
-                "{0}Expected \"{1}\". ",
-                    string.IsNullOrEmpty(reason) ? "" : (reason + " "),
-                    value));
-        }
-
         public bool TryRead(string value)
         {
             if (PositionInTokenList >= _tokenList.Count || CurrentToken.Type == TokenType.EndOfFile)
@@ -87,27 +79,20 @@ namespace Rhetos.Dsl
             return true;
         }
 
+        public (DslScript dslScript, int position) GetPositionInScript()
+        {
+            if (PositionInTokenList < _tokenList.Count)
+                return (CurrentToken.DslScript, CurrentToken.PositionInDslScript);
+            else if (_tokenList.Count > 0)
+                return (_tokenList[_tokenList.Count - 1].DslScript, _tokenList[_tokenList.Count - 1].DslScript.Script.Length);
+            else
+                return (new DslScript {Script = "", Name = "", Path = ""}, 0);
+        }
+
         public string ReportPosition()
         {
-            
-            DslScript dslScript;
-            int position;
+            var (dslScript, position) = GetPositionInScript();
 
-            if (PositionInTokenList < _tokenList.Count)
-            {
-                dslScript = CurrentToken.DslScript;
-                position = CurrentToken.PositionInDslScript;
-            }
-            else if (_tokenList.Count > 0)
-            {
-                dslScript = _tokenList[_tokenList.Count - 1].DslScript;
-                position = dslScript.Script.Length;
-            }
-            else
-            {
-                dslScript = new DslScript { Script = "", Name = "", Path = "" };
-                position = 0;
-            }
             return ScriptPositionReporting.ReportPosition(dslScript.Script, position, dslScript.Path);
         }
 

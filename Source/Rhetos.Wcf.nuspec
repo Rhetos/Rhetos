@@ -1,0 +1,30 @@
+﻿<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Rhetos.Wcf</id>
+    <version>4.0.0-dev</version>
+    <authors>Omega software</authors>
+    <owners>Omega software</owners>
+    <licenseUrl>http://opensource.org/licenses/AGPL-3.0</licenseUrl>
+    <projectUrl>https://github.com/rhetos/rhetos</projectUrl>
+    <description>Rhetos is a DSL framework that enables you to create your own domain-specific language to build server applications.</description>
+    <copyright>Copyright Omega software 2013</copyright>
+    <tags>Rhetos plugin</tags>
+    <dependencies>
+      <dependency id="Rhetos" version="[4.0.0-dev,4.1.0)" include="all" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="Rhetos\Default.aspx" target="tools\projectFiles" />
+    <file src="Rhetos\Default.aspx.cs" target="tools\projectFiles" />
+    <file src="Rhetos\Global.asax" target="tools\projectFiles" />
+    <file src="Rhetos\Global.asax.cs" target="tools\projectFiles" />
+    <file src="Rhetos\Rhetos Server SOAP.linq" target="tools\projectFiles" />
+    <file src="Rhetos\Rhetos Server DOM.linq" target="tools\projectFiles" />
+    <file src="Rhetos\RhetosService.svc.cs" target="tools\projectFiles" />
+    <file src="Rhetos\RhetosService.svc" target="tools\projectFiles" />
+    <file src="Rhetos\Template.ConnectionStrings.config" target="tools\projectFiles" />
+    <file src="Rhetos\Web.config" target="tools\projectFiles" />
+    <file src="MsBuildIntegration\Add-RhetosWcfFiles.ps1" target="tools" />
+  </files>
+</package>

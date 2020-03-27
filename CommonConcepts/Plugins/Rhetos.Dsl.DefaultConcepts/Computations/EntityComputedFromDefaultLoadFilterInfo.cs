@@ -25,6 +25,9 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    ///  Limits automatic computation on a subset of rows on KeepSynchronized.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("DefaultLoadFilter")]
     public class EntityComputedFromDefaultLoadFilterInfo : IConceptInfo

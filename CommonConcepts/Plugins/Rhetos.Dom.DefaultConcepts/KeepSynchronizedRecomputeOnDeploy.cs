@@ -38,21 +38,21 @@ namespace Rhetos.Dom.DefaultConcepts
         ILogger _performanceLogger;
         ILogger _logger;
         CurrentKeepSynchronizedMetadata _currentKeepSynchronizedMetadata;
-        DeployArguments _deployArguments;
+        private RhetosAppOptions _rhetosAppOptions;
         IDslModel _dslModel;
 
         public KeepSynchronizedRecomputeOnDeploy(
             GenericRepositories genericRepositories,
             ILogProvider logProvider,
             CurrentKeepSynchronizedMetadata currentKeepSynchronizedMetadata,
-            DeployArguments deployArguments,
+            RhetosAppOptions rhetosAppOptions,
             IDslModel dslModel)
         {
             _genericRepositories = genericRepositories;
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("KeepSynchronizedRecomputeOnDeploy");
             _currentKeepSynchronizedMetadata = currentKeepSynchronizedMetadata;
-            _deployArguments = deployArguments;
+            _rhetosAppOptions = rhetosAppOptions;
             _dslModel = dslModel;
         }
 
@@ -67,7 +67,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             var skipRecomputeDslConcept = new HashSet<string>(_dslModel.FindByType<SkipRecomputeOnDeployInfo>().Select(GetComputationKey));
 
-            bool skipRecomputeDeployParameter = _deployArguments.SkipRecompute;
+            bool skipRecomputeDeployParameter = _rhetosAppOptions.SkipRecompute;
 
             IEnumerable<IKeepSynchronizedMetadata> toInsert, toUpdate, toDelete;
             keepSyncRepos.Diff(oldItems, _currentKeepSynchronizedMetadata, new SameRecord(), SameValue, Assign, out toInsert, out toUpdate, out toDelete);
@@ -78,19 +78,19 @@ namespace Rhetos.Dom.DefaultConcepts
             {
                 if (skipRecomputeDeployParameter)
                 {
-                    _logger.Info(() => $"Skipped recomputing {compute.Target} from {compute.Source} due to deployment parameter.");
+                    _logger.Warning(() => $"Skipped recomputing {compute.Target} from {compute.Source} due to deployment parameter.");
                 }
                 else if (skipRecomputeDslConcept.Contains(GetComputationKey(compute)))
                 {
-                    _logger.Info(() => $"Skipped recomputing {compute.Target} from {compute.Source} due to DSL concept.");
+                    _logger.Warning(() => $"Skipped recomputing {compute.Target} from {compute.Source} due to DSL concept.");
                 }
                 else if (skipRecomputeDbMetadata.Contains(GetComputationKey(compute)))
                 {
-                    _logger.Info(() => $"Skipped recomputing {compute.Target} from {compute.Source} due to database metadata.");
+                    _logger.Warning(() => $"Skipped recomputing {compute.Target} from {compute.Source} due to database metadata.");
                 }
                 else
                 {
-                    _logger.Info(() => $"Recomputing {compute.Target} from {compute.Source}.");
+                    _logger.Warning(() => $"Recomputing {compute.Target} from {compute.Source}.");
                     _genericRepositories.GetGenericRepository(compute.Target).RecomputeFrom(compute.Source);
                     _performanceLogger.Write(sw, () => $"{nameof(KeepSynchronizedRecomputeOnDeploy)}: {compute.Target} from {compute.Source}.");
                 }

@@ -26,6 +26,9 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Limits the highest string length in ShortString or LongString property.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("MaxLength")]
     public class MaxLengthInfo : IMacroConcept, IValidatedConcept

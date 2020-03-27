@@ -25,6 +25,10 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// A queryable data structure, implemented with a C# code (the lambda expression), for extending entities with simple computed data.
+    /// The lambda expression returns records as a query: (IQueryable&lt;BaseEntity&gt; source, repository) => IQueryable&lt;Extension&gt;.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("QueryableExtension")]
     public class QueryableExtensionInfo : DataStructureInfo, IMacroConcept

@@ -24,6 +24,9 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// Same as AutoCode, but the numbers are starting from 1 within each group of records. The group is defined by the second property value.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("AutoCodeForEach")]
     public class AutoCodeForEachInfo : AutoCodePropertyInfo, IValidatedConcept

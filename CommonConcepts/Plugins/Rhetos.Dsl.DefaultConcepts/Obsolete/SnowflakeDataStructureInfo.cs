@@ -26,9 +26,12 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// 
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Snowflake")]
-    [Obsolete] // TODO: Move the concept to the LegacyConcepts DSL package.
+    [Obsolete("Use Browse concept instead")] // TODO: Move the concept to the LegacyConcepts DSL package.
     public class SnowflakeDataStructureInfo : BrowseDataStructureInfo
     {
     }

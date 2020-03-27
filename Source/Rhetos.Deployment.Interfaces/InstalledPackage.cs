@@ -18,7 +18,6 @@
 */
 
 using Rhetos.Utilities;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -73,23 +72,27 @@ namespace Rhetos.Deployment
         }
 
         /// <summary>
-        /// Local paths should be absolute in runtime to avoid ambiguity of current working folder when using the Rhetos server object model from other applications.
+        /// Compatible with <see cref="PackageRequest.ReportIdVersionRequestSource"/>.
         /// </summary>
-        public void SetAbsoluteFolderPath()
+        public string ReportIdVersionRequestSource()
         {
-            Folder = FilesUtility.RelativeToAbsolutePath(Paths.RhetosServerRootPath, Folder);
-            foreach (var file in ContentFiles)
-                file.PhysicalPath = FilesUtility.RelativeToAbsolutePath(Paths.RhetosServerRootPath, file.PhysicalPath);
+            var report = new StringBuilder(300);
+
+            report.Append(Id);
+            report.Append(", version ").Append(Version);
+            report.Append(", requested by ").Append(Request.RequestedBy);
+            report.Append(" requesting ").Append(Request.VersionsRange ?? "unspecified version");
+            if (!string.IsNullOrEmpty(Request.Source))
+                report.Append(", source \"").Append(Request.Source).Append("\"");
+
+            return report.ToString();
         }
 
-        /// <summary>
-        /// Local paths should be relative when saving the path to a cache file, to allow moving the Rhetos server folder to testing environment or production.
-        /// </summary>
-        public void SetRelativeFolderPath()
+        public void RemoveFolderPath()
         {
-            Folder = FilesUtility.AbsoluteToRelativePath(Paths.RhetosServerRootPath, Folder);
+            Folder = null;
             foreach (var file in ContentFiles)
-                file.PhysicalPath = FilesUtility.AbsoluteToRelativePath(Paths.RhetosServerRootPath, file.PhysicalPath);
+                file.PhysicalPath = null;
         }
 
         private static List<ContentFile> FilesFromFolder(string folder, string packageId)
