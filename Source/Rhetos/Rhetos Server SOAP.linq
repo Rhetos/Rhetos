@@ -135,6 +135,10 @@ void Main()
                 {
                     return Channel.Execute(serverCommands);
                 }
+                catch (EndpointNotFoundException ex)
+				{
+					throw new ApplicationException($"Please review if 'rhetosServerAddress' is correct at the beginning of LINQPad script '{Path.GetFileName(Util.CurrentQueryPath) }', and check if the server is running.", ex);
+				}
                 catch (Exception ex)
                 {
                     if (ex.Message.StartsWith("The HTTP request is unauthorized with client authentication scheme 'Negotiate'."))

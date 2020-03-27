@@ -17,5 +17,22 @@ $project.ProjectItems.AddFromFileCopy("$sourceFolder\RhetosService.svc") > $null
 $project.ProjectItems.AddFromFileCopy("$sourceFolder\Global.asax") > $null
 $project.ProjectItems.AddFromFileCopy("$sourceFolder\Default.aspx") > $null
 
+function ReplaceText
+{
+    param([string]$file, [string]$pattern, [string]$replacement)
+    $content = (Get-Content -Path $file -Raw)
+    $content = $content -Replace $pattern,$replacement
+    Set-Content -Path $file -Value $content -NoNewline
+}
+
 $assemblyName = $project.Properties["AssemblyName"].Value
-(Get-Content -Path "$projectFolder\RhetosService.svc" -Raw) -Replace ", Rhetos",", $assemblyName" | Set-Content -Path "$projectFolder\RhetosService.svc" -NoNewline
+ReplaceText "$projectFolder\RhetosService.svc" ", Rhetos" ", $assemblyName"
+
+ReplaceText "$projectFolder\Rhetos Server DOM.linq" "bin\\Plugins\\" "bin\"
+ReplaceText "$projectFolder\Rhetos Server SOAP.linq" "bin\\Plugins\\" "bin\"
+
+ReplaceText "$projectFolder\Rhetos Server DOM.linq" "bin\\Generated\\ServerDom.Model.dll" "bin\$assemblyName.dll"
+ReplaceText "$projectFolder\Rhetos Server SOAP.linq" "bin\\Generated\\ServerDom.Model.dll" "bin\$assemblyName.dll"
+ReplaceText "$projectFolder\Rhetos Server SOAP.linq" "ServerDom.Model" "$assemblyName"
+
+ReplaceText "$projectFolder\Rhetos Server SOAP.linq" "localhost/Rhetos" "ENTER-APPLICATION-URL-HERE"
