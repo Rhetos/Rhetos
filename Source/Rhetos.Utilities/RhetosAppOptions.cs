@@ -26,7 +26,7 @@ namespace Rhetos.Utilities
     {
         public bool BuiltinAdminOverride { get; set; } = false;
         public bool SkipRecompute { get; set; } = false;
-        public bool EntityFramework__UseDatabaseNullSemantics { get; set; } = false;
+        public bool EntityFramework__UseDatabaseNullSemantics { get; set; } = true;
         public double AuthorizationCacheExpirationSeconds { get; set; } = 30;
         public bool AuthorizationAddUnregisteredPrincipals { get; set; } = false;
     }
