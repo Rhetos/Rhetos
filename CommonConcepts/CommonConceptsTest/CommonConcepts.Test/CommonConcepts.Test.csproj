@@ -124,6 +124,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Source\Rhetos.TestCommon\bin\$(Configuration)\Rhetos.TestCommon.dll</HintPath>
     </Reference>
+    <Reference Include="Rhetos.Web">
+      <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.Web.dll</HintPath>
+    </Reference>
     <Reference Include="Rhetos.XmlSerialization, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.XmlSerialization.dll</HintPath>

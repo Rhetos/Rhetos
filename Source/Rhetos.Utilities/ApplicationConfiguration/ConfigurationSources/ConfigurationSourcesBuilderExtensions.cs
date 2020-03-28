@@ -24,7 +24,6 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Web.Configuration;
 
 namespace Rhetos
 {
@@ -110,22 +109,6 @@ namespace Rhetos
             return builder;
         }
 
-        /// <summary>
-        /// Adds standard configuration from specified web application.
-        /// This method is similar to <see cref="AddConfigurationManagerConfiguration"/> but work on a different application context:
-        /// It is needed for utility applications that reference the generated Rhetos applications and use it's runtime components.
-        /// This method load's the Rhetos application's configuration, while <see cref="AddConfigurationManagerConfiguration"/> loads the current utility application's configuration.
-        /// When executed from the generated Rhetos application, it should yield same result as <see cref="AddConfigurationManagerConfiguration"/>.
-        /// </summary>
-        public static IConfigurationBuilder AddWebConfiguration(this IConfigurationBuilder builder, string webRootPath)
-        {
-            webRootPath = Path.GetFullPath(webRootPath);
-            VirtualDirectoryMapping vdm = new VirtualDirectoryMapping(webRootPath, true);
-            WebConfigurationFileMap wcfm = new WebConfigurationFileMap();
-            wcfm.VirtualDirectories.Add("/", vdm);
-            System.Configuration.Configuration configuration = WebConfigurationManager.OpenMappedWebConfiguration(wcfm, "/");
-            builder.Add(new ConfigurationFileSource(configuration));
-            return builder;
         }
     }
 }

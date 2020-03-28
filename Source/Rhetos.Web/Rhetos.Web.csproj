@@ -53,6 +53,7 @@
   <ItemGroup>
     <Compile Include="CommitBeforeResponseBehavior.cs" />
     <Compile Include="CommitBeforeResponseMessageInspector.cs" />
+    <Compile Include="WebConfigurationSourcesBuilderExtensions.cs" />
     <Compile Include="ErrorHandlerBehavior.cs" />
     <Compile Include="ErrorServiceBehavior.cs" />
     <Compile Include="GlobalErrorHandler.cs" />

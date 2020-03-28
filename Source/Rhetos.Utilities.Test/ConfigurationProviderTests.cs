@@ -303,20 +303,6 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual(99, provider.GetValue("TestCfgValue", 0));
         }
 
-        [TestMethod]
-        [DeploymentItem("Web.config")]
-        public void WebConfigurationSource()
-        {
-            var rootPath = AppDomain.CurrentDomain.BaseDirectory;
-            System.Diagnostics.Trace.WriteLine($"Using {rootPath} as rootPath.");
-            var provider = new ConfigurationBuilder()
-                .AddWebConfiguration(rootPath)
-                .Build();
-
-            Assert.IsTrue(provider.AllKeys.Contains("ConnectionStrings:WebConnectionString:Name"));
-            Assert.AreEqual(199, provider.GetValue("TestWebValue", 0));
-        }
-
         public class PocoSingleValid
         {
             public int opt = 1;

@@ -118,6 +118,10 @@
       <Project>{f3480d1e-1c20-448d-b2f6-133472ceeb93}</Project>
       <Name>Rhetos.Security</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Web\Rhetos.Web.csproj">
+      <Project>{a334fffd-0400-4fec-bc83-c044072c76a8}</Project>
+      <Name>Rhetos.Web</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Autofac">

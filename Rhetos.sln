@@ -171,6 +171,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Directory.Build.props = Directory.Build.props
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Web.Test", "Source\Rhetos.Web.Test\Rhetos.Web.Test.csproj", "{31170410-B3E6-47DF-A651-2D2D4A25C676}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		CodeAnalysis|Any CPU = CodeAnalysis|Any CPU
@@ -927,6 +929,24 @@ Global
 		{18540084-6499-4656-8B38-F4F8FB3D949B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{18540084-6499-4656-8B38-F4F8FB3D949B}.Release|x86.ActiveCfg = Release|Any CPU
 		{18540084-6499-4656-8B38-F4F8FB3D949B}.Release|x86.Build.0 = Release|Any CPU
+		{31170410-B3E6-47DF-A651-2D2D4A25C676}.CodeAnalysis|Any CPU.ActiveCfg = Release|Any CPU
+		{31170410-B3E6-47DF-A651-2D2D4A25C676}.CodeAnalysis|Any CPU.Build.0 = Release|Any CPU
+		{31170410-B3E6-47DF-A651-2D2D4A25C676}.CodeAnalysis|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{31170410-B3E6-47DF-A651-2D2D4A25C676}.CodeAnalysis|Mixed Platforms.Build.0 = Release|Any CPU
+		{31170410-B3E6-47DF-A651-2D2D4A25C676}.CodeAnalysis|x86.ActiveCfg = Release|Any CPU
+		{31170410-B3E6-47DF-A651-2D2D4A25C676}.CodeAnalysis|x86.Build.0 = Release|Any CPU
+		{31170410-B3E6-47DF-A651-2D2D4A25C676}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{31170410-B3E6-47DF-A651-2D2D4A25C676}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{31170410-B3E6-47DF-A651-2D2D4A25C676}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{31170410-B3E6-47DF-A651-2D2D4A25C676}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{31170410-B3E6-47DF-A651-2D2D4A25C676}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{31170410-B3E6-47DF-A651-2D2D4A25C676}.Debug|x86.Build.0 = Debug|Any CPU
+		{31170410-B3E6-47DF-A651-2D2D4A25C676}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{31170410-B3E6-47DF-A651-2D2D4A25C676}.Release|Any CPU.Build.0 = Release|Any CPU
+		{31170410-B3E6-47DF-A651-2D2D4A25C676}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{31170410-B3E6-47DF-A651-2D2D4A25C676}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{31170410-B3E6-47DF-A651-2D2D4A25C676}.Release|x86.ActiveCfg = Release|Any CPU
+		{31170410-B3E6-47DF-A651-2D2D4A25C676}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -980,6 +1000,7 @@ Global
 		{13864809-505B-4FE3-B04E-31F9735B5FFC} = {2D001517-CE8E-4902-8C0A-0EA13C134830}
 		{7F9950B3-CCAE-4886-9303-297D78559F30} = {0124322E-2731-48E8-910C-957E37181628}
 		{18540084-6499-4656-8B38-F4F8FB3D949B} = {2D001517-CE8E-4902-8C0A-0EA13C134830}
+		{31170410-B3E6-47DF-A651-2D2D4A25C676} = {E6D8EA3D-AF0C-412E-B8C5-BDED68BD5700}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4B8D1BEA-EAAA-484D-B00D-1D23226A5A90}
