@@ -11,7 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{E6D8EA
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{0124322E-2731-48E8-910C-957E37181628}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Utilities", "Source\Rhetos.Utilities\Rhetos.Utilities.csproj", "{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Utilities", "Source\Rhetos.Utilities\Rhetos.Utilities.csproj", "{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Extensibility", "Source\Rhetos.Extensibility\Rhetos.Extensibility.csproj", "{7EAF15BD-39C9-44AB-8834-EC0AE013A8A2}"
 EndProject
@@ -186,10 +186,10 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}.CodeAnalysis|Any CPU.ActiveCfg = CodeAnalysis|Any CPU
-		{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}.CodeAnalysis|Any CPU.Build.0 = CodeAnalysis|Any CPU
-		{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}.CodeAnalysis|Mixed Platforms.ActiveCfg = CodeAnalysis|Any CPU
-		{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}.CodeAnalysis|x86.ActiveCfg = CodeAnalysis|Any CPU
+		{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}.CodeAnalysis|Any CPU.ActiveCfg = Release|Any CPU
+		{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}.CodeAnalysis|Any CPU.Build.0 = Release|Any CPU
+		{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}.CodeAnalysis|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}.CodeAnalysis|x86.ActiveCfg = Release|Any CPU
 		{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU

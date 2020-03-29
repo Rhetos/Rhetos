@@ -108,7 +108,5 @@ namespace Rhetos
             builder.Add(new JsonFileSource(jsonFilePath, optional));
             return builder;
         }
-
-        }
     }
 }
