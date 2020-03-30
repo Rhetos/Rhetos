@@ -42,8 +42,7 @@ namespace DeployPackages.Test
             _configurationProvider = new ConfigurationBuilder()
                 .AddRhetosAppEnvironment(new RhetosAppEnvironment
                 {
-                    RootFolder = rhetosAppRootPath,
-                    BinFolder = Path.Combine(rhetosAppRootPath, "bin"),
+                    AssemblyFolder = Path.Combine(rhetosAppRootPath, "bin"),
                     AssetsFolder = Path.Combine(rhetosAppRootPath, "bin", "Generated"),
                     LegacyPluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins"),
                     LegacyAssetsFolder = Path.Combine(rhetosAppRootPath, "Resources"),
@@ -99,10 +98,9 @@ namespace DeployPackages.Test
         [TestMethod]
         public void CorrectRegistrationsRuntimeWithInitialization()
         {
-            var deployment = new ApplicationDeployment(_configurationProvider, new NLogProvider(), PluginsFromThisAssembly);
-            var builder = deployment.CreateAppInitializationComponentsContainer();
+            var deployment = new ApplicationDeployment(_configurationProvider, new NLogProvider(), null);
 
-            using (var container = builder.Build())
+            using (var container = new RhetosRuntime_Accessor(false).BuildContainer(new NLogProvider(), _configurationProvider, deployment.AddAppInitializationComponents, PluginsFromThisAssembly))
             {
                 var registrationsDump = DumpSortedRegistrations(container);
                 System.Diagnostics.Trace.WriteLine(registrationsDump);
@@ -117,10 +115,7 @@ namespace DeployPackages.Test
         [TestMethod]
         public void CorrectRegistrationsServerRuntime()
         {
-            var builder = new RhetosContainerBuilder(_configurationProvider, new NLogProvider(), PluginsFromThisAssembly);
-            Rhetos.Global.AddRhetosComponents(builder);
-
-            using (var container = builder.Build())
+            using (var container = new RhetosRuntime_Accessor(true).BuildContainer(new NLogProvider(), _configurationProvider, null, PluginsFromThisAssembly))
             {
                 var registrationsDump = DumpSortedRegistrations(container);
                 System.Diagnostics.Trace.WriteLine(registrationsDump);
@@ -220,7 +215,6 @@ Activator = NullUserInfo (ReflectionActivator), Services = [Rhetos.Utilities.IUs
 Activator = PluginScannerCache (ReflectionActivator), Services = [Rhetos.Extensibility.IGenerator], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = ResourcesGenerator (ReflectionActivator), Services = [Rhetos.Extensibility.IGenerator], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = RhetosAppEnvironment (DelegateActivator), Services = [Rhetos.Utilities.RhetosAppEnvironment], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
-Activator = RhetosAppEnvironmentGenerator (ReflectionActivator), Services = [Rhetos.Extensibility.IGenerator], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = SourceWriter (ReflectionActivator), Services = [Rhetos.Compiler.ISourceWriter], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = TestWebSecurityUserInfo (ReflectionActivator), Services = [Rhetos.Utilities.IUserInfo], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = Tokenizer (ReflectionActivator), Services = [Rhetos.Dsl.Tokenizer], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope

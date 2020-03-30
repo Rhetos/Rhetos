@@ -17,30 +17,21 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Extensibility;
-using Rhetos.Utilities;
-using Rhetos.Utilities.ApplicationConfiguration;
 using System;
+using Autofac;
 using System.Collections.Generic;
+using Rhetos.Logging;
+using Rhetos;
 
-namespace Rhetos.Deployment
+namespace DeployPackages.Test
 {
-    public class RhetosAppEnvironmentGenerator : IGenerator
+    public class RhetosRuntime_Accessor : RhetosRuntime
     {
-        private readonly RhetosAppEnvironment _rhetosAppEnvironment;
-        private readonly BuildOptions _buildOptions;
+        public RhetosRuntime_Accessor(bool isHost) : base(isHost) { }
 
-        public RhetosAppEnvironmentGenerator(RhetosAppEnvironment rhetosAppEnvironment, BuildOptions buildOptions)
+        new public IContainer BuildContainer(ILogProvider logProvider, IConfigurationProvider configurationProvider, Action<ContainerBuilder> configureAction, Func<IEnumerable<string>> getAssembliesDelegate)
         {
-            _rhetosAppEnvironment = rhetosAppEnvironment;
-            _buildOptions = buildOptions;
+            return base.BuildContainer(logProvider, configurationProvider, configureAction, getAssembliesDelegate);
         }
-
-        public void Generate()
-        {
-            RhetosAppEnvironmentProvider.SaveForRuntime(_rhetosAppEnvironment, _buildOptions.GeneratedAssetsFolder);
-        }
-
-        public IEnumerable<string> Dependencies => Array.Empty<string>();
     }
 }

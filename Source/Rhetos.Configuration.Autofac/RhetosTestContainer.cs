@@ -97,12 +97,18 @@ namespace Rhetos.Configuration.Autofac
                         if (_iocContainer == null)
                         {
                             var rhetosAppRootPath = SearchForRhetosServerRootFolder();
-                            var configurationProvider = new ConfigurationBuilder()
-                                .AddRhetosAppConfiguration(rhetosAppRootPath)
-                                .AddConfigurationManagerConfiguration()
-                                .Build();
+                            var rhetosRuntime = Host.Find(Path.Combine(rhetosAppRootPath, "bin"));
+                            var configurationProvider = rhetosRuntime.BuildConfiguration(new ConsoleLogProvider(),
+                                Path.Combine(rhetosAppRootPath, "bin"), null);
 
-                            _iocContainer = InitializeIocContainer(configurationProvider);
+                            AppDomain.CurrentDomain.AssemblyResolve += SearchForAssembly;
+
+                            var sw = Stopwatch.StartNew();
+                            _iocContainer = rhetosRuntime.BuildContainer(new ConsoleLogProvider(), configurationProvider, (builder) => {
+                                builder.RegisterType<ProcessUserInfo>().As<IUserInfo>(); // Override runtime IUserInfo plugins. This container is intended to be used in a simple process or unit tests.
+                                builder.RegisterType<ConsoleLogProvider>().As<ILogProvider>();
+                            });
+                            _performanceLogger.Write(sw, "RhetosTestContainer: Built IoC container");
                         }
                 }
 
@@ -147,26 +153,6 @@ namespace Rhetos.Configuration.Autofac
                 return folder.FullName;
 
             throw new FrameworkException("Cannot locate a valid Rhetos server's folder from '" + Environment.CurrentDirectory + "'. Unexpected folder '" + folder.FullName + "'.");
-        }
-
-        private IContainer InitializeIocContainer(IConfigurationProvider configurationProvider)
-        {
-            AppDomain.CurrentDomain.AssemblyResolve += SearchForAssembly;
-
-            // General registrations:
-            var builder = new RhetosContainerBuilder(configurationProvider, new ConsoleLogProvider(), LegacyUtilities.GetListAssembliesDelegate(configurationProvider));
-            builder.AddRhetosRuntime();
-            builder.AddPluginModules();
-
-            // Overriding registrations from plugins:
-            builder.RegisterType<ProcessUserInfo>().As<IUserInfo>(); // Override runtime IUserInfo plugins. This container is intended to be used in a simple process or unit tests.
-            builder.RegisterType<ConsoleLogProvider>().As<ILogProvider>();
-
-            // Build the container:
-            var sw = Stopwatch.StartNew();
-            var container = builder.Build();
-            _performanceLogger.Write(sw, "RhetosTestContainer: Built IoC container");
-            return container;
         }
 
         protected Assembly SearchForAssembly(object sender, ResolveEventArgs args)

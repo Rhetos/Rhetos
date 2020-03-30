@@ -26,6 +26,7 @@ using Rhetos.Utilities.ApplicationConfiguration;
 using Rhetos.Web;
 using System;
 using System.Diagnostics;
+using System.IO;
 
 namespace Rhetos
 {
@@ -44,13 +45,13 @@ namespace Rhetos
         private static void ConfigureApplication()
         {
             var stopwatch = Stopwatch.StartNew();
+            var logProvider = new NLogProvider();
+            var runtimeContextFactory = new RhetosRuntime(true);
+            var configuration = runtimeContextFactory.BuildConfiguration(logProvider,
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin"),
+                null);
+            AutofacServiceHostFactory.Container = runtimeContextFactory.BuildContainer(logProvider, configuration, null);
 
-            var configuration = LoadConfiguration();
-            var builder = new RhetosContainerBuilder(configuration, new NLogProvider(), LegacyUtilities.GetListAssembliesDelegate(configuration));
-            AddRhetosComponents(builder);
-            AutofacServiceHostFactory.Container = builder.Build();
-
-            var logProvider = AutofacServiceHostFactory.Container.Resolve<ILogProvider>();
             _logger = logProvider.GetLogger("Global");
             _logger.Trace("Startup");
 
@@ -58,33 +59,6 @@ namespace Rhetos
 
             var _performanceLogger = logProvider.GetLogger("Performance");
             _performanceLogger.Write(stopwatch, "Application configured.");
-        }
-
-        private static IConfigurationProvider LoadConfiguration()
-        {
-            var rhetosAppEnvironment = RhetosAppEnvironmentProvider.Load(AppDomain.CurrentDomain.BaseDirectory);
-            var configurationProvider = new ConfigurationBuilder()
-                .AddRhetosAppEnvironment(rhetosAppEnvironment)
-                .AddConfigurationManagerConfiguration()
-                .Build();
-            return configurationProvider;
-        }
-
-        internal static void AddRhetosComponents(RhetosContainerBuilder builder)
-        {
-            // General registrations
-            builder.AddRhetosRuntime();
-
-            // Specific registrations
-            builder.RegisterType<WcfWindowsUserInfo>().As<IUserInfo>().InstancePerLifetimeScope();
-            builder.RegisterType<RhetosService>().As<RhetosService>().As<IServerApplication>();
-            builder.RegisterType<Rhetos.Web.GlobalErrorHandler>();
-            builder.RegisterType<WebServices>();
-            builder.GetPluginRegistration().FindAndRegisterPlugins<IService>();
-            builder.GetPluginRegistration().FindAndRegisterPlugins<IHomePageSnippet>();
-
-            // Plugin modules
-            builder.AddPluginModules();
         }
 
         // Called once for each application instance.

@@ -51,7 +51,7 @@ namespace Rhetos
             {
                 string[] pluginsPaths = new[]
                 {
-                    rhetosAppEnvironment.LegacyPluginsFolder ?? rhetosAppEnvironment.BinFolder, // When using separate LegacyPluginsFolder, there is no need to scan BinFolder, because Rhetos framework binaries do not contain plugins exports (only explicit registrations).
+                    rhetosAppEnvironment.LegacyPluginsFolder ?? rhetosAppEnvironment.AssemblyFolder, // When using separate LegacyPluginsFolder, there is no need to scan BinFolder, because Rhetos framework binaries do not contain plugins exports (only explicit registrations).
                     rhetosAppEnvironment.AssetsFolder // TODO: Remove AssetsFolder after modifying AssemblyGenerator to not build DLLs.
                 };
 

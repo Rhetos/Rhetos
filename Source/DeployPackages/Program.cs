@@ -59,8 +59,7 @@ namespace DeployPackages
                 {
                     var rhetosAppEnvironment = new RhetosAppEnvironment
                     {
-                        RootFolder = rhetosAppRootPath,
-                        BinFolder = Path.Combine(rhetosAppRootPath, "bin"),
+                        AssemblyFolder = Path.Combine(rhetosAppRootPath, "bin"),
                         AssetsFolder = Path.Combine(rhetosAppRootPath, "bin", "Generated"),
                         LegacyPluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins"),
                         LegacyAssetsFolder = Path.Combine(rhetosAppRootPath, "Resources"),
@@ -68,7 +67,6 @@ namespace DeployPackages
                     var configurationProvider = new ConfigurationBuilder()
                         .AddRhetosAppEnvironment(rhetosAppEnvironment)
                         .AddKeyValue(nameof(BuildOptions.ProjectFolder), rhetosAppRootPath)
-                        .AddKeyValue(nameof(BuildOptions.GeneratedAssetsFolder), rhetosAppEnvironment.AssetsFolder)
                         .AddKeyValue(nameof(BuildOptions.CacheFolder), Path.Combine(rhetosAppRootPath, "GeneratedFilesCache"))
                         .AddKeyValue(nameof(BuildOptions.GeneratedSourceFolder), null)
                         .AddWebConfiguration(rhetosAppRootPath)
@@ -98,16 +96,16 @@ namespace DeployPackages
 
                 // Using run-time configuration:
                 {
-                    var configurationProvider = new ConfigurationBuilder()
-                        .AddRhetosAppConfiguration(rhetosAppRootPath)
-                        .AddConfigurationManagerConfiguration()
-                        .AddCommandLineArguments(args, "/")
-                        .Build();
+                    var rhetosRuntime = Host.Find(AppDomain.CurrentDomain.BaseDirectory);
+                    var configurationProvider = rhetosRuntime
+                        .BuildConfiguration(logProvider, AppDomain.CurrentDomain.BaseDirectory, (builder) => {
+                            builder.AddCommandLineArguments(args, "/");
+                        });
 
                     var deployment = new ApplicationDeployment(configurationProvider, logProvider, LegacyUtilities.GetListAssembliesDelegate(configurationProvider));
 
                     deployment.UpdateDatabase();
-                    deployment.InitializeGeneratedApplication();
+                    deployment.InitializeGeneratedApplication(rhetosRuntime);
                     deployment.RestartWebServer();
                 }
 

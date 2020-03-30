@@ -124,16 +124,14 @@ namespace Rhetos
 
         //=====================================================================
 
-        public void InitializeGeneratedApplication()
+        public void InitializeGeneratedApplication(IRhetosRuntime rhetosRuntime)
         {
             // Creating a new container builder instead of using builder.Update(), because of severe performance issues with the Update method.
 
             _logger.Info("Loading generated plugins.");
             var stopwatch = Stopwatch.StartNew();
 
-            var builder = CreateAppInitializationComponentsContainer();
-
-            using (var container = builder.Build())
+            using (var container = rhetosRuntime.BuildContainer(_logProvider, _configurationProvider, AddAppInitializationComponents))
             {
                 var performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
                 var initializers = ApplicationInitialization.GetSortedInitializers(container);
@@ -153,14 +151,10 @@ namespace Rhetos
             }
         }
 
-        internal RhetosContainerBuilder CreateAppInitializationComponentsContainer()
+        internal void AddAppInitializationComponents(ContainerBuilder builder)
         {
-            var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, _pluginAssemblies);
-            builder.AddRhetosRuntime();
             builder.RegisterModule(new AppInitializeModule());
-            builder.AddPluginModules();
             builder.RegisterType<ProcessUserInfo>().As<IUserInfo>(); // Override runtime IUserInfo plugins. This container is intended to be used in a simple process.
-            return builder;
         }
 
         //=====================================================================

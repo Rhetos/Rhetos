@@ -4,7 +4,8 @@
         <RhetosBuild Condition=" '$(RhetosBuild)'=='' ">True</RhetosBuild>
         <RhetosDeploy Condition=" '$(RhetosDeploy)'=='' ">True</RhetosDeploy>
         <RhetosBuildCompleteFile>$(BaseIntermediateOutputPath)Rhetos\Rhetos.BuildComplete</RhetosBuildCompleteFile>
-		<RhetosDatabaseUpdated>$(BaseIntermediateOutputPath)Rhetos\Rhetos.DatabaseUpdated</RhetosDatabaseUpdated>
+        <RhetosDatabaseUpdated>$(BaseIntermediateOutputPath)Rhetos\Rhetos.DatabaseUpdated</RhetosDatabaseUpdated>
+        <RhetosGeneratedAssetsFolder Condition=" '$(RhetosGeneratedAssetsFolder)'=='' ">$(TargetDir)RhetosAssets\</RhetosGeneratedAssetsFolder>
     </PropertyGroup>
     <ItemGroup>
         <RhetosInput Include="$(BaseIntermediateOutputPath)project.assets.json" />

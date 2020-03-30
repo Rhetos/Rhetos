@@ -41,7 +41,6 @@ namespace Rhetos.Configuration.Autofac.Modules
             AddDsl(builder, pluginRegistration);
             AddPersistence(builder, pluginRegistration);
             AddCompiler(builder, pluginRegistration);
-            builder.RegisterType<RhetosAppEnvironmentGenerator>().As<IGenerator>();
             builder.RegisterType<DomGenerator>().As<IGenerator>();
             builder.RegisterType<ResourcesGenerator>().As<IGenerator>();
             builder.RegisterType<PluginScannerCache>().As<IGenerator>();

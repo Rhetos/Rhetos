@@ -26,11 +26,9 @@ namespace Rhetos.Utilities
     public class RhetosAppEnvironment
     {
         /// <summary>
-        /// Rhetos application's base folder.
+        /// The folder which contains all the assemblies needed to load the host application.
         /// </summary>
-        public string RootFolder { get; set; }
-
-        public string BinFolder { get; set; }
+        public string AssemblyFolder { get; set; }
 
         public string AssetsFolder { get; set; }
 
@@ -42,7 +40,7 @@ namespace Rhetos.Utilities
         public string LegacyPluginsFolder { get; set; }
 
         /// <summary>
-        /// This folder can be configured to support legacy plugins by setting value to "Resources" subfolder inside the <see cref="RootFolder"/>.
+        /// This folder can be configured to support legacy plugins by setting value to "Resources" subfolder inside the <see cref="AssemblyFolder"/>.
         /// </summary>
         public string LegacyAssetsFolder { get; set; }
     }

@@ -19,6 +19,7 @@
     <file src="Rhetos\Default.aspx.cs" target="tools\projectFiles" />
     <file src="Rhetos\Global.asax" target="tools\projectFiles" />
     <file src="Rhetos\Global.asax.cs" target="tools\projectFiles" />
+    <file src="Rhetos\RhetosRuntime.cs" target="tools\projectFiles" />
     <file src="Rhetos\Rhetos Server SOAP.linq" target="tools\projectFiles" />
     <file src="Rhetos\Rhetos Server DOM.linq" target="tools\projectFiles" />
     <file src="Rhetos\RhetosService.svc.cs" target="tools\projectFiles" />

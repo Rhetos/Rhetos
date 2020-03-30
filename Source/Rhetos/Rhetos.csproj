@@ -116,6 +116,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="RhetosRuntime.cs" />
     <Compile Include="RhetosService.svc.cs">
       <DependentUpon>RhetosService.svc</DependentUpon>
     </Compile>

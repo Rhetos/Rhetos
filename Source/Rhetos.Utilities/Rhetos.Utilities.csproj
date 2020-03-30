@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Rhetos.Utilities</RootNamespace>
     <AssemblyName>Rhetos.Utilities</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SccProjectName>
     </SccProjectName>
@@ -135,7 +135,7 @@
     <Compile Include="ApplicationConfiguration\IConfigurationProvider.cs" />
     <Compile Include="ApplicationConfiguration\ConfigurationSources\IConfigurationSource.cs" />
     <Compile Include="ApplicationConfiguration\ConfigurationSources\KeyValuesSource.cs" />
-    <Compile Include="ApplicationConfiguration\RhetosAppEnvironmentProvider.cs" />
+    <Compile Include="ApplicationConfiguration\IRhetosRuntime.cs" />
     <Compile Include="BuildOptions.cs" />
     <Compile Include="FilePosition.cs" />
     <Compile Include="Legacy\LegacyUtilities.cs" />
@@ -152,6 +152,7 @@
     <Compile Include="ListOfTuples.cs" />
     <Compile Include="RhetosAppEnvironment.cs" />
     <Compile Include="RhetosAppOptions.cs" />
+    <Compile Include="RhetosRuntime.cs" />
     <Compile Include="SecurityOptions.cs" />
     <Compile Include="DatabaseOptions.cs" />
     <Compile Include="SqlTransactionBatches.cs" />
@@ -201,6 +202,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Autofac">
+      <Version>4.9.4</Version>
+    </PackageReference>
     <PackageReference Include="EntityFramework">
       <Version>6.1.3</Version>
     </PackageReference>

@@ -34,10 +34,9 @@ namespace CleanupOldData
         {
             try
             {
-                var configuration = new ConfigurationBuilder()
-                    .AddRhetosAppConfiguration()
-                    .AddConfigurationManagerConfiguration()
-                    .Build();
+                var appRootFolder = AppDomain.CurrentDomain.BaseDirectory;
+                var configuration = Host.Find(appRootFolder)
+                    .BuildConfiguration(new ConsoleLogProvider(), appRootFolder, null);
 
                 LegacyUtilities.Initialize(configuration);
 
