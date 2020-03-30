@@ -34,23 +34,17 @@ namespace Rhetos.Dsl
         private readonly ILogger _performanceLogger;
         private readonly ILogger _logger;
         private readonly ILogger _keywordsLogger;
-        private readonly Lazy<LegacySyntax> _legacySyntax;
+        private readonly ExcessDotInKey _legacySyntax;
 
-        /// <summary>
-        /// Before Rhetos v4.0, dot character was expected before string key parameter of current statement.
-        /// Since Rhetos v4.0, dot should only be used for separating key parameters of referenced concept,
-        /// but legacy syntax is allowed by setting this option to <see cref="Ignore"/> or <see cref="Warning"/>.
-        /// </summary>
-        private enum LegacySyntax { Ignore, Warning, Error };
 
-        public DslParser(Tokenizer tokenizer, IConceptInfo[] conceptInfoPlugins, ILogProvider logProvider, IConfiguration configuration)
+        public DslParser(Tokenizer tokenizer, IConceptInfo[] conceptInfoPlugins, ILogProvider logProvider, BuildOptions buildOptions)
         {
             _tokenizer = tokenizer;
             _conceptInfoPlugins = conceptInfoPlugins;
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("DslParser");
             _keywordsLogger = logProvider.GetLogger("DslParser.Keywords");
-            _legacySyntax = configuration.GetEnum("DslParser.LegacySyntax", LegacySyntax.Ignore);
+            _legacySyntax = buildOptions.Dsl__ExcessDotInKey;
         }
 
         public IEnumerable<IConceptInfo> ParsedConcepts => GetConcepts();
@@ -168,12 +162,12 @@ namespace Rhetos.Dsl
 
             foreach (string warning in warnings)
             {
-                if (_legacySyntax.Value == LegacySyntax.Ignore)
+                if (_legacySyntax == ExcessDotInKey.Ignore)
                     _logger.Trace(warning);
                 else
                     _logger.Warning(warning);
             }
-            if (_legacySyntax.Value == LegacySyntax.Error && warnings.Any())
+            if (_legacySyntax == ExcessDotInKey.Error && warnings.Any())
                 throw new DslSyntaxException(warnings.First());
 
             return newConcepts;

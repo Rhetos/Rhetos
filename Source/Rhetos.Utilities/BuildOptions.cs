@@ -32,7 +32,8 @@ namespace Rhetos.Utilities
         public bool DataMigration__SkipScriptsWithWrongOrder { get; set; } = false;
         public bool CommonConcepts__Legacy__AutoGeneratePolymorphicProperty { get; set; } = false;
         public bool CommonConcepts__Legacy__CascadeDeleteInDatabase { get; set; } = false;
-        public InitialConceptsSort CommonConcepts__Debug__SortConcepts { get; set; } = InitialConceptsSort.Key; // TODO: Rename property to Dsl__InitialConceptsSort. This feature is part of Rhetos framework, not CommonConcepts.
+        public InitialConceptsSort Dsl__InitialConceptsSort { get; set; } = InitialConceptsSort.Key;
+        public ExcessDotInKey Dsl__ExcessDotInKey { get; set; } = ExcessDotInKey.Ignore;
     }
 
     /// <summary>
@@ -41,4 +42,11 @@ namespace Rhetos.Utilities
     /// Changing the sort method can be used to test if correct dependencies are specified for code generators or for database objects.
     /// </summary>
     public enum InitialConceptsSort { None, Key, KeyDescending };
+
+    /// <summary>
+    /// Before Rhetos v4.0, dot character was expected before string key parameter of current statement.
+    /// Since Rhetos v4.0, dot should only be used for separating key parameters of referenced concept,
+    /// but legacy syntax is allowed by setting this option to <see cref="Ignore"/> or <see cref="Warning"/>.
+    /// </summary>
+    public enum ExcessDotInKey { Ignore, Warning, Error };
 }
