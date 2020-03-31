@@ -7,31 +7,27 @@
     <owners>Omega software</owners>
     <licenseUrl>http://opensource.org/licenses/AGPL-3.0</licenseUrl>
     <projectUrl>https://github.com/rhetos/rhetos</projectUrl>
-    <description>Rhetos is a DSL framework that enables you to create your own domain-specific language to build server applications.</description>
+    <description>Rhetos DSL framework libraries.</description>
     <copyright>Copyright Omega software 2013</copyright>
     <tags>Rhetos</tags>
     <dependencies>
-      <dependency id="Rhetos.Core" version="[4.0.0-dev,4.1.0)" />
+      <dependency id="Autofac" version="4.9.4" />
+      <dependency id="Autofac.Wcf" version="4.1.0" />
+      <dependency id="EntityFramework" version="6.1.3" />
+      <dependency id="Microsoft.Web.Xdt" version="2.1.1" />
+      <dependency id="Newtonsoft.Json" version="12.0.2" />
+      <dependency id="NLog" version="4.6.7" />
+      <dependency id="NuGet.Core" version="2.14.0" />
+      <dependency id="System.ComponentModel.Composition" version="4.7.0" /> <!-- Rhetos plugins use MEF. -->
+      <dependency id="System.CommandLine" version="2.0.0-beta1.20071.2" /> <!-- For RhetosCli. -->
+      <dependency id="System.Data.SqlClient" version="4.8.1" />
+      <dependency id="System.CodeDom" version="4.7.0" /> <!-- For IAssemblyGenerator legacy method. -->
+      <dependency id="Oracle.ManagedDataAccess" version="12.1.24160719" />
     </dependencies>
-    <contentFiles>
-      <files include="any/any/rhetos.exe" buildAction="None" copyToOutput="true" />
-      <files include="any/any/rhetos.pdb" buildAction="None" copyToOutput="true" />
-      <files include="any/any/rhetos.exe.config" buildAction="None" copyToOutput="true" />
-    </contentFiles>
   </metadata>
   <files>
-    <file src="RhetosCli\bin\Debug\*.dll" target="tools" />
-    <file src="RhetosCli\bin\Debug\*.pdb" target="tools" />
-    <file src="RhetosCli\bin\Debug\rhetos.exe" target="tools" />
-    <file src="RhetosCli\bin\Debug\rhetos.exe.config" target="tools" />
-
-    <file src="MsBuildIntegration\Rhetos.targets" target="build" />
-    <file src="MsBuildIntegration\Rhetos.props" target="build" />
-    <file src="RhetosVSIntegration\bin\Debug\*.dll" target="build" />
-    <file src="RhetosVSIntegration\bin\Debug\*.pdb" target="build" />
-
-    <file src="RhetosCli\bin\Debug\rhetos.exe" target="contentFiles/any/any" />
-    <file src="RhetosCli\bin\Debug\rhetos.pdb" target="contentFiles/any/any" />
-    <file src="RhetosCli\bin\Debug\rhetos.exe.config" target="contentFiles/any/any" />
+    <file src="Rhetos\bin\Rhetos.*.dll" target="lib\net472" />
+    <file src="Rhetos\bin\Rhetos.*.pdb" target="lib\net472" />
+    <file src="Rhetos\bin\Rhetos.*.xml" target="lib\net472" />
   </files>
 </package>

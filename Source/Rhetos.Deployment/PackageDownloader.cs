@@ -70,8 +70,8 @@ namespace Rhetos.Deployment
             // These Rhetos framework packages are already integrated in Rhetos application when using DeployPackages build process.
             installedPackages.Add(new InstalledPackage("Rhetos", SystemUtility.GetRhetosVersion(), new List<PackageRequest>(), Paths.RhetosServerRootPath,
                 new PackageRequest { Id = "Rhetos", VersionsRange = "", Source = "", RequestedBy = "Rhetos framework" }, ".", new List<ContentFile> { }));
-            installedPackages.Add(new InstalledPackage("Rhetos.Core", SystemUtility.GetRhetosVersion(), new List<PackageRequest>(), Paths.RhetosServerRootPath,
-                new PackageRequest { Id = "Rhetos.Core", VersionsRange = "", Source = "", RequestedBy = "Rhetos framework" }, ".", new List<ContentFile> { }));
+            installedPackages.Add(new InstalledPackage("Rhetos.MSBuild", SystemUtility.GetRhetosVersion(), new List<PackageRequest>(), Paths.RhetosServerRootPath,
+                new PackageRequest { Id = "Rhetos.MSBuild", VersionsRange = "", Source = "", RequestedBy = "Rhetos framework" }, ".", new List<ContentFile> { }));
 
             var binFileSyncer = new FileSyncer(_logProvider);
             binFileSyncer.AddDestinations(Paths.PluginsFolder); // Even if there are no packages, this folder must be emptied.
