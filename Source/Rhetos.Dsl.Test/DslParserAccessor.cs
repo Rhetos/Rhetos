@@ -31,7 +31,7 @@ namespace Rhetos.Dsl.Test
                 new TestTokenizer(dsl),
                 conceptInfoPlugins ?? Array.Empty<IConceptInfo>(),
                 new ConsoleLogProvider(),
-                new NullConfiguration())
+                new BuildOptions())
         {
         }
 
