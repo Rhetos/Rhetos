@@ -18,6 +18,7 @@
 */
 
 using Rhetos;
+using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
@@ -96,7 +97,7 @@ namespace DeployPackages
 
                 // Using run-time configuration:
                 {
-                    var rhetosRuntime = Host.Find(AppDomain.CurrentDomain.BaseDirectory);
+                    var rhetosRuntime = Host.Find(AppDomain.CurrentDomain.BaseDirectory, logProvider);
                     var configurationProvider = rhetosRuntime
                         .BuildConfiguration(logProvider, AppDomain.CurrentDomain.BaseDirectory, (builder) => {
                             builder.AddCommandLineArguments(args, "/");

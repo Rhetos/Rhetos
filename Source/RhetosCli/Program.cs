@@ -18,6 +18,7 @@
 */
 
 using Rhetos.Dsl;
+using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
@@ -138,14 +139,14 @@ namespace Rhetos
 
         private void DbUpdate(DirectoryInfo assemblyFolder)
         {
-            var runtimeContextFactory = Host.Find(assemblyFolder.FullName);
+            var runtimeContextFactory = Host.Find(assemblyFolder.FullName, LogProvider);
             var deployment = SetupRuntime(runtimeContextFactory, assemblyFolder);
             deployment.UpdateDatabase();
         }
 
         private void AppInitialize(DirectoryInfo assemblyFolder)
         {
-            var runtimeContextFactory = Host.Find(assemblyFolder.FullName);
+            var runtimeContextFactory = Host.Find(assemblyFolder.FullName, LogProvider);
             var deployment = SetupRuntime(runtimeContextFactory, assemblyFolder);
             deployment.InitializeGeneratedApplication(runtimeContextFactory);
         }

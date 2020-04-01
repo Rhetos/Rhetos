@@ -73,6 +73,10 @@
       <Project>{F4ACD412-2782-4191-8708-C7AE99B0CEE9}</Project>
       <Name>Rhetos.Dsl.Interfaces</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Extensibility\Rhetos.Extensibility.csproj">
+      <Project>{7EAF15BD-39C9-44AB-8834-EC0AE013A8A2}</Project>
+      <Name>Rhetos.Extensibility</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rhetos.Logging\Rhetos.Logging.csproj">
       <Project>{8c9f1c24-2d9c-420b-9787-3fcad96c5b3e}</Project>
       <Name>Rhetos.Logging</Name>

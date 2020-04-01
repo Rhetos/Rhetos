@@ -22,6 +22,7 @@ using Rhetos.Logging;
 using Rhetos.Persistence;
 using Rhetos.Security;
 using Rhetos.Utilities;
+using Rhetos.Extensibility;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -97,14 +98,15 @@ namespace Rhetos.Configuration.Autofac
                         if (_iocContainer == null)
                         {
                             var rhetosAppRootPath = SearchForRhetosServerRootFolder();
-                            var rhetosRuntime = Host.Find(Path.Combine(rhetosAppRootPath, "bin"));
+                            var logProvider = new ConsoleLogProvider();
+                            var rhetosRuntime = Host.Find(Path.Combine(rhetosAppRootPath, "bin"), logProvider);
                             var configurationProvider = rhetosRuntime.BuildConfiguration(new ConsoleLogProvider(),
                                 Path.Combine(rhetosAppRootPath, "bin"), null);
 
                             AppDomain.CurrentDomain.AssemblyResolve += SearchForAssembly;
 
                             var sw = Stopwatch.StartNew();
-                            _iocContainer = rhetosRuntime.BuildContainer(new ConsoleLogProvider(), configurationProvider, (builder) => {
+                            _iocContainer = rhetosRuntime.BuildContainer(logProvider, configurationProvider, (builder) => {
                                 builder.RegisterType<ProcessUserInfo>().As<IUserInfo>(); // Override runtime IUserInfo plugins. This container is intended to be used in a simple process or unit tests.
                                 builder.RegisterType<ConsoleLogProvider>().As<ILogProvider>();
                             });

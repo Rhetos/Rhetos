@@ -26,7 +26,7 @@ using System.IO;
 
 namespace Rhetos.Extensibility
 {
-    public class PluginScannerCache : IGenerator
+    public class PluginScannerCache
     {
         private const string _pluginScannerBuildCacheFilename = "PluginScanner.BuildCache.json";
         private const string _pluginScannerRuntimeCacheFilename = "PluginScanner.RuntimeCache.json";
@@ -41,21 +41,11 @@ namespace Rhetos.Extensibility
             _logger = logProvider.GetLogger(GetType().Name);
             if (buildOptions?.CacheFolder != null)
                 _buildCacheFilePath = Path.Combine(buildOptions.CacheFolder, _pluginScannerBuildCacheFilename);
-            _runtimeCacheFilePath = Path.Combine(rhetosAppEnvironment.AssetsFolder, _pluginScannerRuntimeCacheFilename);
+            _runtimeCacheFilePath = Path.Combine(rhetosAppEnvironment.AssemblyFolder, _pluginScannerRuntimeCacheFilename);
             _filesUtility = filesUtility;
         }
 
         public IEnumerable<string> Dependencies => Array.Empty<string>();
-
-        public void Generate()
-        {
-            // Copy build cache to runtime cache, to reuse it.
-            if (File.Exists(_buildCacheFilePath))
-            {
-                _logger.Trace($"Copying build cache to runtime cache.");
-                _filesUtility.SafeCopyFile(_buildCacheFilePath, _runtimeCacheFilePath, overwrite: true); // HACK: To allow parallel background build when VS Code is open.
-            }
-        }
 
         internal PluginsCacheData LoadPluginsCacheData()
         {

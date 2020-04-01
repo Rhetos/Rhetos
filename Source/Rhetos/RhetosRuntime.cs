@@ -19,6 +19,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.IO;
 using Autofac;
 using Rhetos.Logging;
@@ -28,6 +29,7 @@ using Rhetos.Web;
 
 namespace Rhetos
 {
+    [Export(typeof(IRhetosRuntime))]
     public class RhetosRuntime : IRhetosRuntime
     {
         private readonly bool _isHost;
