@@ -34,16 +34,16 @@ namespace Rhetos.Extensibility
             var pluginScanner = new PluginScanner(
                     () => hostAssemblies,
                     new Utilities.BuildOptions(),
-                    new Utilities.RhetosAppEnvironment { AssemblyFolder = assemblyFolder},
+                    new Utilities.RhetosAppEnvironment { AssemblyFolder = assemblyFolder },
                     logProvider, new PluginScannerOptions());
 
             var rhetosRuntimeTypes = pluginScanner.FindPlugins(typeof(IRhetosRuntime)).Select(x => x.Type).ToList();
 
             if (rhetosRuntimeTypes.Count == 0)
-                throw new Rhetos.FrameworkException($"No implementation of interface {nameof(IRhetosRuntime)} found."); ;
+                throw new FrameworkException($"No implementation of interface {nameof(IRhetosRuntime)} found with Export attribute.");
 
             if (rhetosRuntimeTypes.Count > 1)
-                throw new Rhetos.FrameworkException($"Found multiple implementation of the type {nameof(IRhetosRuntime)}.");
+                throw new FrameworkException($"Found multiple implementation of the type {nameof(IRhetosRuntime)}.");
 
             var rhetosRuntimeInstance = Activator.CreateInstance(rhetosRuntimeTypes.First()) as IRhetosRuntime;
 
