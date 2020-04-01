@@ -36,6 +36,7 @@ namespace Rhetos.Deployment
     {
         private readonly InstalledPackages _installedPackages;
         private readonly ILogProvider _logProvider;
+        private readonly BuildOptions _buildOptions;
         private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
 
@@ -43,11 +44,18 @@ namespace Rhetos.Deployment
         {
             _installedPackages = installedPackages;
             _logProvider = logProvider;
+            _buildOptions = buildOptions;
             _logger = logProvider.GetLogger(GetType().Name);
             _performanceLogger = logProvider.GetLogger("Performance");
         }
 
         public void Generate()
+        {
+            if (_buildOptions.UseLegacyResourcesFolder)
+                CopyResourcesFromPackages();
+        }
+
+        private void CopyResourcesFromPackages()
         {
             var stopwatch = Stopwatch.StartNew();
             var _fileSyncer = new FileSyncer(_logProvider);

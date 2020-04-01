@@ -45,7 +45,6 @@ namespace DeployPackages.Test
                     AssemblyFolder = Path.Combine(rhetosAppRootPath, "bin"),
                     AssetsFolder = Path.Combine(rhetosAppRootPath, "bin", "Generated"),
                     LegacyPluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins"),
-                    LegacyAssetsFolder = Path.Combine(rhetosAppRootPath, "Resources"),
                 })
                 .AddWebConfiguration(rhetosAppRootPath)
                 .AddKeyValue(nameof(RhetosAppEnvironment.AssetsFolder), AppDomain.CurrentDomain.BaseDirectory)

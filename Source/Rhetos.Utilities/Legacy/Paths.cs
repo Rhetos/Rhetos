@@ -41,8 +41,7 @@ namespace Rhetos.Utilities
         public static string RhetosServerRootPath => Path.GetFullPath(Directory.GetParent(SafeGetAppEnvironment().AssemblyFolder).FullName)
                 ?? throw new FrameworkException($"'{nameof(RhetosAppEnvironment.AssemblyFolder)}' is expected to be configured with valid value, but is empty.");
 
-        public static string ResourcesFolder => SafeGetAppEnvironment().LegacyAssetsFolder
-                ?? throw new FrameworkException($"'{nameof(RhetosAppEnvironment.LegacyAssetsFolder)}' is expected to be configured with valid value, but is empty.");
+        public static string ResourcesFolder => Path.Combine(RhetosServerRootPath, "Resources");
 
         public static string BinFolder => SafeGetAppEnvironment().AssemblyFolder
                 ?? throw new FrameworkException($"'{nameof(RhetosAppEnvironment.AssemblyFolder)}' is expected to be configured with valid value, but is empty.");

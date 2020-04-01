@@ -42,10 +42,5 @@ namespace Rhetos.Utilities
         /// This folder can be configured to support legacy plugins.
         /// </summary>
         public string LegacyPluginsFolder { get; set; }
-
-        /// <summary>
-        /// This folder can be configured to support legacy plugins by setting value to "Resources" subfolder inside the <see cref="AssemblyFolder"/>.
-        /// </summary>
-        public string LegacyAssetsFolder { get; set; }
     }
 }

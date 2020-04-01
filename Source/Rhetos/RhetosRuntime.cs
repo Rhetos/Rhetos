@@ -51,7 +51,6 @@ namespace Rhetos
                     // TODO: Rhetos CLI should not use LegacyPluginsFolder. Referenced plugins are automatically copied to output bin folder by NuGet. It is used by DeployPackages.exe when downloading packages and in legacy application runtime for assembly resolver and probing paths.
                     // TODO: Set LegacyPluginsFolder to null after reviewing impact to AspNetFormsAuth CLI utilities and similar packages.
                     LegacyPluginsFolder = Path.Combine(assemblyFolder, "Plugins"),
-                    LegacyAssetsFolder = Path.Combine(new DirectoryInfo(assemblyFolder).Parent.FullName, "Resources"),
                 });
 
             if (_isHost)

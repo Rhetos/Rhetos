@@ -63,7 +63,6 @@ namespace DeployPackages
                         AssemblyFolder = Path.Combine(rhetosAppRootPath, "bin"),
                         AssetsFolder = Path.Combine(rhetosAppRootPath, "bin", "Generated"),
                         LegacyPluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins"),
-                        LegacyAssetsFolder = Path.Combine(rhetosAppRootPath, "Resources"),
                     };
                     var configurationProvider = new ConfigurationBuilder()
                         .AddRhetosAppEnvironment(rhetosAppEnvironment)

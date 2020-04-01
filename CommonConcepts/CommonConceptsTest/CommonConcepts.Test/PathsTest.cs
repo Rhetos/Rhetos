@@ -42,7 +42,6 @@ namespace CommonConcepts.Test
                     AssemblyFolder = Path.Combine(rootPath, "bin"),
                     AssetsFolder = Path.Combine(rootPath, "bin", "Generated"),
                     LegacyPluginsFolder = Path.Combine(rootPath, "bin", "Plugins"),
-                    LegacyAssetsFolder = Path.Combine(rootPath, "Resources")
                 }).Build();
 
             LegacyUtilities.Initialize(configurationProvider);
