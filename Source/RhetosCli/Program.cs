@@ -139,21 +139,21 @@ namespace Rhetos
 
         private void DbUpdate(DirectoryInfo assemblyFolder)
         {
-            var runtimeContextFactory = Host.Find(assemblyFolder.FullName, LogProvider);
-            var deployment = SetupRuntime(runtimeContextFactory, assemblyFolder);
+            var rhetosRuntime = Host.Find(assemblyFolder.FullName, LogProvider);
+            var deployment = SetupRuntime(rhetosRuntime, assemblyFolder);
             deployment.UpdateDatabase();
         }
 
         private void AppInitialize(DirectoryInfo assemblyFolder)
         {
-            var runtimeContextFactory = Host.Find(assemblyFolder.FullName, LogProvider);
-            var deployment = SetupRuntime(runtimeContextFactory, assemblyFolder);
-            deployment.InitializeGeneratedApplication(runtimeContextFactory);
+            var rhetosRuntime = Host.Find(assemblyFolder.FullName, LogProvider);
+            var deployment = SetupRuntime(rhetosRuntime, assemblyFolder);
+            deployment.InitializeGeneratedApplication(rhetosRuntime);
         }
 
-        private ApplicationDeployment SetupRuntime(IRhetosRuntime runtimeContextFactory, DirectoryInfo assemblyFolder)
+        private ApplicationDeployment SetupRuntime(IRhetosRuntime rhetosRuntime, DirectoryInfo assemblyFolder)
         {
-            var configurationProvider = runtimeContextFactory.BuildConfiguration(LogProvider, assemblyFolder.FullName, (configurationBuilder)=> {
+            var configurationProvider = rhetosRuntime.BuildConfiguration(LogProvider, assemblyFolder.FullName, configurationBuilder => {
                 configurationBuilder.AddKeyValue(nameof(DatabaseOptions.SqlCommandTimeout), 0);
             });
 

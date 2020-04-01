@@ -32,6 +32,10 @@ namespace Rhetos.Utilities
 
         public string AssetsFolder { get; set; }
 
+        /// <summary>
+        /// Assembly that contains the generated object model.
+        /// Null for old Rhetos applications with multiple generated ServerDom libraries.
+        /// </summary>
         public string AssemblyName { get; set; }
 
         /// <summary>

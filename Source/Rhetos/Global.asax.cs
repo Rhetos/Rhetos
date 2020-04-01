@@ -20,9 +20,6 @@
 using Autofac;
 using Autofac.Integration.Wcf;
 using Rhetos.Logging;
-using Rhetos.Security;
-using Rhetos.Utilities;
-using Rhetos.Utilities.ApplicationConfiguration;
 using Rhetos.Web;
 using System;
 using System.Diagnostics;
@@ -46,11 +43,11 @@ namespace Rhetos
         {
             var stopwatch = Stopwatch.StartNew();
             var logProvider = new NLogProvider();
-            var runtimeContextFactory = new RhetosRuntime(true);
-            var configuration = runtimeContextFactory.BuildConfiguration(logProvider,
+            var rhetosRuntime = new RhetosRuntime(true);
+            var configuration = rhetosRuntime.BuildConfiguration(logProvider,
                 Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin"),
                 null);
-            AutofacServiceHostFactory.Container = runtimeContextFactory.BuildContainer(logProvider, configuration, null);
+            AutofacServiceHostFactory.Container = rhetosRuntime.BuildContainer(logProvider, configuration, null);
 
             _logger = logProvider.GetLogger("Global");
             _logger.Trace("Startup");
