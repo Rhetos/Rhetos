@@ -17,7 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -38,7 +37,5 @@ using System.Runtime.InteropServices;
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("3246f6b7-1193-4b14-94d0-f0089b6d2dfc")]
-
-[assembly: CLSCompliant(true)]
 
 [assembly: InternalsVisibleTo("DeployPackages.Test")]

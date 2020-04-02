@@ -41,15 +41,13 @@ namespace Rhetos
             _isHost = isHost;
         }
 
-        public IConfigurationProvider BuildConfiguration(ILogProvider logProvider, string assemblyFolder, Action<IConfigurationBuilder> configureAction)
+        public IConfigurationProvider BuildConfiguration(ILogProvider logProvider, string assemblyFolder, Action<IConfigurationBuilder> addConfiguration)
         {
             var configurationBuilder = new ConfigurationBuilder()
                 .AddRhetosAppEnvironment(new RhetosAppEnvironment
                 {
                     AssemblyFolder = assemblyFolder,
                     AssetsFolder = Path.Combine(assemblyFolder, "Generated"),
-                    // TODO: Rhetos CLI should not use LegacyPluginsFolder. Referenced plugins are automatically copied to output bin folder by NuGet. It is used by DeployPackages.exe when downloading packages and in legacy application runtime for assembly resolver and probing paths.
-                    // TODO: Set LegacyPluginsFolder to null after reviewing impact to AspNetFormsAuth CLI utilities and similar packages.
                     LegacyPluginsFolder = Path.Combine(assemblyFolder, "Plugins"),
                 });
 
@@ -58,25 +56,26 @@ namespace Rhetos
             else
                 configurationBuilder.AddWebConfiguration(new DirectoryInfo(assemblyFolder).Parent.FullName);
 
-            configureAction?.Invoke(configurationBuilder);
+            addConfiguration?.Invoke(configurationBuilder);
             return configurationBuilder.Build();
         }
 
-        public IContainer BuildContainer(ILogProvider logProvider, IConfigurationProvider configurationProvider, Action<ContainerBuilder> configureAction)
+        public IContainer BuildContainer(ILogProvider logProvider, IConfigurationProvider configurationProvider, Action<ContainerBuilder> registerComponents)
         {
-            return BuildContainer(logProvider, configurationProvider, configureAction, LegacyUtilities.GetListAssembliesDelegate(configurationProvider));
+            return BuildContainer(logProvider, configurationProvider, registerComponents, LegacyUtilities.GetListAssembliesDelegate(configurationProvider));
         }
 
-        private IContainer BuildContainer(ILogProvider logProvider, IConfigurationProvider configurationProvider, Action<ContainerBuilder> configureAction, Func<IEnumerable<string>> getAssembliesDelegate)
+        private IContainer BuildContainer(ILogProvider logProvider, IConfigurationProvider configurationProvider, Action<ContainerBuilder> registerComponents, Func<IEnumerable<string>> getAssembliesDelegate)
         {
             var builder = new RhetosContainerBuilder(configurationProvider, logProvider, getAssembliesDelegate);
-            // General registrations
+
             builder.AddRhetosRuntime();
 
-            //For backward compatibility
             if (_isHost)
             {
-                // Specific registrations
+                // WCF-specific component registrations.
+                // Can be customized later by plugin modules.
+
                 builder.RegisterType<WcfWindowsUserInfo>().As<IUserInfo>().InstancePerLifetimeScope();
                 builder.RegisterType<RhetosService>().As<RhetosService>().As<IServerApplication>();
                 builder.RegisterType<Rhetos.Web.GlobalErrorHandler>();
@@ -85,10 +84,9 @@ namespace Rhetos
                 builder.GetPluginRegistration().FindAndRegisterPlugins<IHomePageSnippet>();
             }
 
-            // Plugin modules
             builder.AddPluginModules();
 
-            configureAction?.Invoke(builder);
+            registerComponents?.Invoke(builder);
 
             return builder.Build();
         }

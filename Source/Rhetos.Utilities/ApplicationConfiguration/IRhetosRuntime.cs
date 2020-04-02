@@ -23,10 +23,28 @@ using System;
 
 namespace Rhetos
 {
+    /// <summary>
+    /// Host application with Rhetos runtime components should have one implementation of this interface.
+    /// The implementation provides basic runtime infrastructure: configuration settings and system components.
+    /// </summary>
     public interface IRhetosRuntime
     {
-        IConfigurationProvider BuildConfiguration(ILogProvider logProvider, string assemblyFolder, Action<IConfigurationBuilder> configureAction);
+        /// <summary>
+        /// Initializes configuration settings for Rhetos application.
+        /// </summary>
+        /// <param name="addConfiguration">
+        /// Add or override configuration settings.
+        /// This is commonly used by utilities and tests that need to customize the host application's settings.
+        /// </param>
+        IConfigurationProvider BuildConfiguration(ILogProvider logProvider, string assemblyFolder, Action<IConfigurationBuilder> addConfiguration);
 
-        IContainer BuildContainer(ILogProvider logProvider, IConfigurationProvider configurationProvider, Action<ContainerBuilder> configureAction);
+        /// <summary>
+        /// Creates Dependency Injections container for Rhetos application.
+        /// </summary>
+        /// <param name="registerComponents">
+        /// Register custom components that may override system and plugins services.
+        /// This is commonly used by utilities and tests that need to override host application's components or register additional plugins.
+        /// </param>
+        IContainer BuildContainer(ILogProvider logProvider, IConfigurationProvider configurationProvider, Action<ContainerBuilder> registerComponents);
     }
 }

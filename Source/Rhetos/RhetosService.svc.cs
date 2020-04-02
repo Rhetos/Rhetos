@@ -98,7 +98,7 @@ namespace Rhetos
                 .SelectMany(command => new[] { command.GetType().Name, command.GetType().FullName, command.GetType().AssemblyQualifiedName }
                     .Select(name => new { command, name }));
 
-            var invalidGroup = commandNames.GroupBy(cn => cn.name).Where(g => g.Count() > 1).FirstOrDefault();
+            var invalidGroup = commandNames.GroupBy(cn => cn.name).FirstOrDefault(g => g.Count() > 1);
             if (invalidGroup != null)
                 throw new FrameworkException(string.Format(
                     "Two commands {0} and {1} have the same name: \"{2}\".",
@@ -163,13 +163,13 @@ namespace Rhetos
                 Success = result.Success,
                 UserMessage = result.UserMessage,
                 SystemMessage = result.SystemMessage,
-                ServerCommandResults = result.CommandResults == null ? null :
-                  (from c in result.CommandResults
-                   select new ServerCommandResult
-                   {
-                       Message = c.Message,
-                       Data = c.Data != null && c.Data.Value != null ? _xmlUtility.SerializeToXml(c.Data.Value) : null
-                   }).ToArray()
+                ServerCommandResults = result.CommandResults
+                    ?.Select(c => new ServerCommandResult
+                       {
+                           Message = c.Message,
+                           Data = c.Data?.Value != null ? _xmlUtility.SerializeToXml(c.Data.Value) : null
+                       })
+                    ?.ToArray()
             };
         }
     }
