@@ -99,7 +99,7 @@ namespace DeployPackages.Test
         {
             var deployment = new ApplicationDeployment(_configurationProvider, new NLogProvider(), null);
 
-            using (var container = new RhetosRuntime_Accessor(false).BuildContainer(new NLogProvider(), _configurationProvider, deployment.AddAppInitializationComponents, PluginsFromThisAssembly))
+            using (var container = new RhetosRuntimeAccessor(false).BuildContainer(new NLogProvider(), _configurationProvider, deployment.AddAppInitializationComponents, PluginsFromThisAssembly))
             {
                 var registrationsDump = DumpSortedRegistrations(container);
                 System.Diagnostics.Trace.WriteLine(registrationsDump);
@@ -114,7 +114,7 @@ namespace DeployPackages.Test
         [TestMethod]
         public void CorrectRegistrationsServerRuntime()
         {
-            using (var container = new RhetosRuntime_Accessor(true).BuildContainer(new NLogProvider(), _configurationProvider, null, PluginsFromThisAssembly))
+            using (var container = new RhetosRuntimeAccessor(true).BuildContainer(new NLogProvider(), _configurationProvider, null, PluginsFromThisAssembly))
             {
                 var registrationsDump = DumpSortedRegistrations(container);
                 System.Diagnostics.Trace.WriteLine(registrationsDump);

@@ -36,7 +36,7 @@ namespace Rhetos
 
         public RhetosRuntime() : this(false) { }
 
-        public RhetosRuntime(bool isHost)
+        internal RhetosRuntime(bool isHost)
         {
             _isHost = isHost;
         }
@@ -67,7 +67,7 @@ namespace Rhetos
             return BuildContainer(logProvider, configurationProvider, configureAction, LegacyUtilities.GetListAssembliesDelegate(configurationProvider));
         }
 
-        protected IContainer BuildContainer(ILogProvider logProvider, IConfigurationProvider configurationProvider, Action<ContainerBuilder> configureAction, Func<IEnumerable<string>> getAssembliesDelegate)
+        private IContainer BuildContainer(ILogProvider logProvider, IConfigurationProvider configurationProvider, Action<ContainerBuilder> configureAction, Func<IEnumerable<string>> getAssembliesDelegate)
         {
             var builder = new RhetosContainerBuilder(configurationProvider, logProvider, getAssembliesDelegate);
             // General registrations

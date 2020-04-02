@@ -22,16 +22,17 @@ using Autofac;
 using System.Collections.Generic;
 using Rhetos.Logging;
 using Rhetos;
+using Rhetos.TestCommon;
 
 namespace DeployPackages.Test
 {
-    public class RhetosRuntime_Accessor : RhetosRuntime
+    public class RhetosRuntimeAccessor : RhetosRuntime, ITestAccessor
     {
-        public RhetosRuntime_Accessor(bool isHost) : base(isHost) { }
+        public RhetosRuntimeAccessor(bool isHost) : base(isHost) { }
 
-        new public IContainer BuildContainer(ILogProvider logProvider, IConfigurationProvider configurationProvider, Action<ContainerBuilder> configureAction, Func<IEnumerable<string>> getAssembliesDelegate)
+        public IContainer BuildContainer(ILogProvider logProvider, IConfigurationProvider configurationProvider, Action<ContainerBuilder> configureAction, Func<IEnumerable<string>> getAssembliesDelegate)
         {
-            return base.BuildContainer(logProvider, configurationProvider, configureAction, getAssembliesDelegate);
+            return this.Invoke(nameof(BuildContainer), logProvider, configurationProvider, configureAction, getAssembliesDelegate);
         }
     }
 }
