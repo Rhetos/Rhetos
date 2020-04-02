@@ -17,15 +17,37 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Autofac;
+using Rhetos.Extensibility;
 using Rhetos.Logging;
+using Rhetos.Utilities;
 using System;
 using System.IO;
 using System.Linq;
 
-namespace Rhetos.Extensibility
+namespace Rhetos
 {
     public static class Host
     {
+        /// <summary>
+        /// Helper method that bundles Rhetos runtime location (<see cref="Host.Find"/>),
+        /// configuration (<see cref="IRhetosRuntime.BuildConfiguration"/>)
+        /// and DI registration (<see cref="IRhetosRuntime.BuildContainer"/>).
+        /// </summary>
+        /// <param name="assemblyFolder">If not specified, using current application base directory by default.</param>
+        /// <param name="logProvider">If not specified, using ConsoleLogProvider by default.</param>
+        /// <returns>DI container for Rhetos runtime.</returns>
+        public static IContainer Initialize(string assemblyFolder = null, ILogProvider logProvider = null,
+            Action<IConfigurationBuilder> addConfiguration = null, Action<ContainerBuilder> registerComponents = null)
+        {
+            assemblyFolder = assemblyFolder ?? AppDomain.CurrentDomain.BaseDirectory;
+            logProvider = logProvider ?? new ConsoleLogProvider();
+
+            var rhetosRuntome = Find(assemblyFolder, logProvider);
+            var configurationProvider = rhetosRuntome.BuildConfiguration(logProvider, assemblyFolder, addConfiguration);
+            return rhetosRuntome.BuildContainer(logProvider, configurationProvider, registerComponents);
+        }
+
         public static IRhetosRuntime Find(string assemblyFolder, ILogProvider logProvider)
         {
             var supportedExtensions = new[] { ".dll", ".exe" };
