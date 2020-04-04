@@ -17,10 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities.ApplicationConfiguration;
-using System.IO;
-using System.Reflection;
-
 namespace Rhetos.Utilities
 {
     /// <summary>
@@ -28,6 +24,9 @@ namespace Rhetos.Utilities
     /// </summary>
     public class RhetosAppEnvironment : IRhetosEnvironment
     {
+        public static readonly string ConfigurationFileName = "rhetos-app.settings.json";
+        public static readonly string LocalConfigurationFileName = "rhetos-app.local.settings.json";
+
         public string ApplicationRootFolder { get; set; }
 
         public string RhetosRuntimePath { get; set; }
@@ -35,40 +34,5 @@ namespace Rhetos.Utilities
         public string AssemblyFolder { get; set; }
 
         public string AssetsFolder { get; set; }
-
-        /// <summary>
-        /// Assembly that contains the generated object model.
-        /// Null for old Rhetos applications with multiple generated ServerDom libraries.
-        /// </summary>
-        public string AssemblyName { get; set; }
-
-        /// <summary>
-        /// Initializes RhetosAppEnvironment from runtime configuration.
-        /// </summary>
-        public static RhetosAppEnvironment FromRuntimeConfiguration(IConfigurationProvider configuration)
-        {
-            // Settings provided by host application:
-            var appRootFolder = configuration.GetValue<string>(nameof(ApplicationRootFolder));
-            if (string.IsNullOrEmpty(appRootFolder))
-                throw new FrameworkException($"Missing '{nameof(ApplicationRootFolder)}' configuration setting. Please verify that the Rhetos build have passed successfully.");
-
-            // Settings from configuration generated at build-time:
-            var appConfiguration = configuration.GetOptions<RhetosAppConfiguration>();
-            if (string.IsNullOrEmpty(appConfiguration.RhetosRuntimePath))
-                throw new FrameworkException($"Missing '{nameof(RhetosAppConfiguration.RhetosRuntimePath)}' configuration setting. Please verify that the Rhetos build have passed successfully.");
-            if (string.IsNullOrEmpty(appConfiguration.AssetsFolder))
-                throw new FrameworkException($"Missing '{nameof(RhetosAppConfiguration.AssetsFolder)}' configuration setting. Please verify that the Rhetos build have passed successfully.");
-
-            string absolutePath(string relativePath) => relativePath != null ? Path.GetFullPath(Path.Combine(appRootFolder, relativePath)) : null;
-
-            return new RhetosAppEnvironment
-            {
-                ApplicationRootFolder = Path.GetFullPath(appRootFolder),
-                RhetosRuntimePath = absolutePath(appConfiguration.RhetosRuntimePath),
-                AssetsFolder = absolutePath(appConfiguration.AssetsFolder),
-                AssemblyFolder = Path.GetDirectoryName(absolutePath(appConfiguration.RhetosRuntimePath)),
-                AssemblyName = Assembly.Load(absolutePath(appConfiguration.RhetosRuntimePath)).GetName().Name,
-            };
-        }
     }
 }

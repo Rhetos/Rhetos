@@ -17,15 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
-using System.Text;
 using Rhetos.Logging;
 using Rhetos.Utilities;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 
 namespace Rhetos.Dom
 {
@@ -62,9 +60,9 @@ namespace Rhetos.Dom
         {
             var loaded = new List<Assembly>();
             var sw = Stopwatch.StartNew();
-            if (string.IsNullOrEmpty(_rhetosAppEnvironment.AssemblyName))
+
+            if (Paths.DomAssemblyFiles.All(file => File.Exists(file)))
             {
-                //This is a legacy way to load the DomainObjectModel so it is OK to use the Paths class
                 foreach (string name in Paths.DomAssemblyFiles.Select(Path.GetFileNameWithoutExtension))
                 {
                     _logger.Trace("Loading assembly \"" + name + "\".");
@@ -78,7 +76,7 @@ namespace Rhetos.Dom
             }
             else
             {
-                return new List<Assembly> { Assembly.Load(_rhetosAppEnvironment.AssemblyName) };
+                return new List<Assembly> { Assembly.Load(_rhetosAppEnvironment.RhetosRuntimePath) };
             }
         }
     }

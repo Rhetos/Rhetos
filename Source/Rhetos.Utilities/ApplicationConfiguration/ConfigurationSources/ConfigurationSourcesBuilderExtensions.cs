@@ -18,7 +18,6 @@
 */
 
 using Rhetos.Utilities;
-using Rhetos.Utilities.ApplicationConfiguration;
 using Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources;
 using System.Collections.Generic;
 using System.Configuration;
@@ -71,11 +70,10 @@ namespace Rhetos
         /// <summary>
         /// Adds runtime configuration from Rhetos-specific configuration files.
         /// </summary>
-        public static IConfigurationBuilder AddRhetosRuntimeEnvironment(this IConfigurationBuilder builder, string applicationRootFolder)
+        public static IConfigurationBuilder AddRhetosRuntimeEnvironment(this IConfigurationBuilder builder, string configurationFolder)
         {
-            builder.AddKeyValue(nameof(RhetosAppEnvironment.ApplicationRootFolder), applicationRootFolder);
-            builder.AddJsonFile(Path.Combine(applicationRootFolder, RhetosAppConfiguration.ConfigurationFileName), optional: true);
-            builder.AddJsonFile(Path.Combine(applicationRootFolder, RhetosAppConfiguration.LocalConfigurationFileName), optional: true);
+            builder.Add(new RhetosAppEnvironmentSource(configurationFolder));
+            builder.Add(new JsonFileSource(Path.Combine(configurationFolder, RhetosAppEnvironment.LocalConfigurationFileName), optional: true));
             return builder;
         }
 

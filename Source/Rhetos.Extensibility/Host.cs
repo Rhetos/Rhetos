@@ -22,7 +22,6 @@ using Newtonsoft.Json;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;
-using Rhetos.Utilities.ApplicationConfiguration;
 using System;
 using System.IO;
 using System.Linq;
@@ -37,7 +36,7 @@ namespace Rhetos
         /// and DI registration (<see cref="IRhetosRuntime.BuildContainer"/>).
         /// </summary>
         /// /// <param name="applicationFolder">
-        /// Folder where the Rhetos configuration file is located (see <see cref="RhetosAppConfiguration.ConfigurationFileName"/>),
+        /// Folder where the Rhetos configuration file is located (see <see cref="RhetosAppEnvironment.ConfigurationFileName"/>),
         /// or any subfolder.
         /// If not specified, using current application base directory by default.
         /// </param>
@@ -59,7 +58,7 @@ namespace Rhetos
         public string ConfigurationFolder { get; private set; }
 
         /// <param name="applicationFolder">
-        /// Folder where the Rhetos configuration file is located (see <see cref="RhetosAppConfiguration.ConfigurationFileName"/>),
+        /// Folder where the Rhetos configuration file is located (see <see cref="RhetosAppEnvironment.ConfigurationFileName"/>),
         /// or any subfolder.
         /// </param>
         public static Host Find(string applicationFolder, ILogProvider logProvider)
@@ -82,7 +81,7 @@ namespace Rhetos
             try
             {
                 while (configurationDirectory != null
-                    && !configurationDirectory.GetFiles().Any(file => string.Equals(file.Name, RhetosAppConfiguration.ConfigurationFileName, StringComparison.OrdinalIgnoreCase)))
+                    && !configurationDirectory.GetFiles().Any(file => string.Equals(file.Name, RhetosAppEnvironment.ConfigurationFileName, StringComparison.OrdinalIgnoreCase)))
                 {
                     configurationDirectory = configurationDirectory.Parent;
                 }
@@ -93,7 +92,7 @@ namespace Rhetos
             }
             if (configurationDirectory == null || searchException != null)
                 throw new FrameworkException(
-                    $"Cannot find application's configuration ({RhetosAppConfiguration.ConfigurationFileName})" +
+                    $"Cannot find application's configuration ({RhetosAppEnvironment.ConfigurationFileName})" +
                     $" in '{Path.GetFullPath(applicationFolder)}' or any parent folder." +
                     $" Make sure the specified folder is correct and that the build has passed successfully.",
                     searchException);
@@ -102,9 +101,9 @@ namespace Rhetos
 
         private static string LoadRhetosRuntimePath(string configurationFolder)
         {
-            string serialized = File.ReadAllText(Path.Combine(configurationFolder, RhetosAppConfiguration.ConfigurationFileName));
-            var appConfiguration = JsonConvert.DeserializeObject<RhetosAppConfiguration>(serialized);
-            string rhetosRuntimePath = Path.Combine(configurationFolder, appConfiguration.RhetosRuntimePath);
+            string serialized = File.ReadAllText(Path.Combine(configurationFolder, RhetosAppEnvironment.ConfigurationFileName));
+            var runtimeSettings = JsonConvert.DeserializeObject<RhetosAppEnvironment>(serialized);
+            string rhetosRuntimePath = Path.Combine(configurationFolder, runtimeSettings.RhetosRuntimePath);
             return rhetosRuntimePath;
         }
 
