@@ -39,9 +39,9 @@ namespace Rhetos.Dsl
     {
         private readonly string _cacheFilePath;
 
-        public MacroOrderRepository(BuildOptions buildOptions)
+        public MacroOrderRepository(RhetosBuildEnvironment buildEnvironment)
         {
-            _cacheFilePath = Path.Combine(buildOptions.CacheFolder, "MacroOrder.json");
+            _cacheFilePath = Path.Combine(buildEnvironment.CacheFolder, "MacroOrder.json");
         }
 
         public List<MacroOrder> Load()

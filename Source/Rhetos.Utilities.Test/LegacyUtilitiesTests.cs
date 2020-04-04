@@ -26,35 +26,55 @@ namespace Rhetos.Utilities.Test
     [TestClass]
     public class LegacyUtilitiesTests
     {
-        public LegacyUtilitiesTests()
+        [TestMethod]
+        public void SqlUtilityWorksCorrectly()
         {
             var configurationProvider = new ConfigurationBuilder()
                 .AddConfigurationManagerConfiguration()
                 .Build();
-
             LegacyUtilities.Initialize(configurationProvider);
-        }
 
-        [TestMethod]
-        public void SqlUtilityWorksCorrectly()
-        {
             Assert.AreEqual("MsSql", SqlUtility.DatabaseLanguage);
             Assert.IsFalse(string.IsNullOrEmpty(SqlUtility.ConnectionString));
             Assert.AreEqual(31, SqlUtility.SqlCommandTimeout);
         }
 
         [TestMethod]
-        public void PathThrowsOnNullEnvironment()
+        public void PathsOnNullEnvironment()
         {
-            Paths.Initialize(null);
-            TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.RhetosServerRootPath), "Rhetos server is not initialized (Paths class)");
-            TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.BinFolder), "Rhetos server is not initialized (Paths class)");
-            TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.GeneratedFolder), "Rhetos server is not initialized (Paths class)");
-            TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.PluginsFolder), "Rhetos server is not initialized (Paths class)");
-            TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.ResourcesFolder), "Rhetos server is not initialized (Paths class)");
+            var configurationProvider = new ConfigurationBuilder().Build();
+            Paths.Initialize(configurationProvider);
 
-            Paths.Initialize(new RhetosAppEnvironment());
-            TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.GeneratedFolder), "'AssetsFolder' is expected to be configured");
+            TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.RhetosServerRootPath),
+                "Paths property 'RhetosServerRootPath' is not configured in uninitialized environment.");
+            TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.BinFolder), "BinFolder");
+            TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.GeneratedFolder), "GeneratedFolder");
+            TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.PluginsFolder), "PluginsFolder");
+            TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.ResourcesFolder), "RhetosServerRootPath");
+        }
+
+        [TestMethod]
+        public void PathsOnRuntimelEnvironment()
+        {
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddOptions(new RhetosAppEnvironment { ApplicationRootFolder = "." });
+            Paths.Initialize(configurationBuilder.Build());
+
+            Assert.IsNotNull(Paths.RhetosServerRootPath);
+            TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.GeneratedFolder),
+                "Paths property 'GeneratedFolder' is not configured in run-time environment.");
+        }
+
+        [TestMethod]
+        public void PathsOnBuildEnvironment()
+        {
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddOptions(new RhetosBuildEnvironment { ProjectFolder = "." });
+            Paths.Initialize(configurationBuilder.Build());
+
+            Assert.IsNotNull(Paths.RhetosServerRootPath);
+            TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.GeneratedFolder),
+                "Paths property 'GeneratedFolder' is not configured in build environment.");
         }
     }
 }

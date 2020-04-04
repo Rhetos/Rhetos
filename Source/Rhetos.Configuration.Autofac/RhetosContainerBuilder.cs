@@ -46,8 +46,7 @@ namespace Rhetos
 
             var pluginScanner = new PluginScanner(
                 pluginAssemblies,
-                configurationProvider.GetOptions<BuildOptions>(),
-                configurationProvider.GetOptions<RhetosAppEnvironment>(),
+                PluginScanner.GetCacheFolder(configurationProvider),
                 logProvider,
                 configurationProvider.GetOptions<PluginScannerOptions>());
 

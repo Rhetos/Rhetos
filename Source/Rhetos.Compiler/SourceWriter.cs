@@ -30,23 +30,23 @@ namespace Rhetos.Compiler
     public class SourceWriter : ISourceWriter
     {
         private readonly ILogger _logger;
-        private readonly BuildOptions _buildOptions;
+        private readonly RhetosBuildEnvironment _buildEnvironment;
         private readonly FilesUtility _filesUtility;
         private readonly ConcurrentDictionary<string, string> _files = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-        public SourceWriter(BuildOptions buildOptions, ILogProvider logProvider, FilesUtility filesUtility)
+        public SourceWriter(RhetosBuildEnvironment buildEnvironment, ILogProvider logProvider, FilesUtility filesUtility)
         {
             _logger = logProvider.GetLogger(GetType().Name);
-            _buildOptions = buildOptions;
+            _buildEnvironment = buildEnvironment;
             _filesUtility = filesUtility;
         }
 
         public void Add(string relativePath, string content)
         {
-            string filePath = Path.GetFullPath(Path.Combine(_buildOptions.GeneratedSourceFolder, relativePath));
+            string filePath = Path.GetFullPath(Path.Combine(_buildEnvironment.GeneratedSourceFolder, relativePath));
 
-            if (!filePath.StartsWith(_buildOptions.GeneratedSourceFolder))
-                throw new FrameworkException($"Generated source file '{filePath}' should be inside the folder '{_buildOptions.GeneratedSourceFolder}'." +
+            if (!filePath.StartsWith(_buildEnvironment.GeneratedSourceFolder))
+                throw new FrameworkException($"Generated source file '{filePath}' should be inside the folder '{_buildEnvironment.GeneratedSourceFolder}'." +
                     $" Provide a simple file name or a relative path for {nameof(ISourceWriter)}.{nameof(ISourceWriter.Add)} method.");
             
             _files.AddOrUpdate(filePath, content, ErrorOnUpdate);
@@ -95,7 +95,7 @@ namespace Rhetos.Compiler
 
         public void CleanUp()
         {
-            var deleteFiles = Directory.GetFiles(_buildOptions.GeneratedSourceFolder, "*", SearchOption.AllDirectories)
+            var deleteFiles = Directory.GetFiles(_buildEnvironment.GeneratedSourceFolder, "*", SearchOption.AllDirectories)
                 .Except(_files.Keys);
 
             foreach (var deleteFile in deleteFiles)
@@ -107,7 +107,7 @@ namespace Rhetos.Compiler
 
         private void Log(string title, string filePath, EventType eventType)
         {
-            _logger.Write(eventType, () => $"{title} '{FilesUtility.AbsoluteToRelativePath(_buildOptions.GeneratedSourceFolder, filePath)}'.");
+            _logger.Write(eventType, () => $"{title} '{FilesUtility.AbsoluteToRelativePath(_buildEnvironment.GeneratedSourceFolder, filePath)}'.");
         }
     }
 }

@@ -18,7 +18,6 @@
 */
 
 using Rhetos;
-using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
@@ -58,17 +57,16 @@ namespace DeployPackages
                 
                 // Using build-time configuration:
                 {
-                    var rhetosAppEnvironment = new RhetosAppEnvironment
+                    var buildEnvironment = new RhetosBuildEnvironment
                     {
-                        AssemblyFolder = Path.Combine(rhetosAppRootPath, "bin"),
-                        AssetsFolder = Path.Combine(rhetosAppRootPath, "bin", "Generated"),
-                        LegacyPluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins"),
+                        ProjectFolder = rhetosAppRootPath,
+                        OutputAssemblyName = null,
+                        CacheFolder = Path.Combine(rhetosAppRootPath, "GeneratedFilesCache"),
+                        GeneratedAssetsFolder = Path.Combine(rhetosAppRootPath, "bin", "Generated"),
+                        GeneratedSourceFolder = null,
                     };
                     var configurationProvider = new ConfigurationBuilder()
-                        .AddRhetosAppEnvironment(rhetosAppEnvironment)
-                        .AddKeyValue(nameof(BuildOptions.ProjectFolder), rhetosAppRootPath)
-                        .AddKeyValue(nameof(BuildOptions.CacheFolder), Path.Combine(rhetosAppRootPath, "GeneratedFilesCache"))
-                        .AddKeyValue(nameof(BuildOptions.GeneratedSourceFolder), null)
+                        .AddOptions(buildEnvironment)
                         .AddWebConfiguration(rhetosAppRootPath)
                         .AddConfigurationManagerConfiguration()
                         .AddCommandLineArguments(args, "/")
@@ -79,7 +77,8 @@ namespace DeployPackages
                     if (deployOptions.StartPaused)
                         StartPaused();
 
-                    var deployment = new ApplicationDeployment(configurationProvider, logProvider, () => Directory.GetFiles(rhetosAppEnvironment.LegacyPluginsFolder, "*.dll", SearchOption.TopDirectoryOnly));
+                    string pluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins");
+                    var deployment = new ApplicationDeployment(configurationProvider, logProvider, () => GetBuildPlugins(pluginsFolder));
                     if (!deployOptions.DatabaseOnly)
                     {
                         DeleteObsoleteFiles(logProvider, logger);
@@ -96,16 +95,16 @@ namespace DeployPackages
 
                 // Using run-time configuration:
                 {
-                    var rhetosRuntime = Host.Find(AppDomain.CurrentDomain.BaseDirectory, logProvider);
-                    var configurationProvider = rhetosRuntime
-                        .BuildConfiguration(logProvider, AppDomain.CurrentDomain.BaseDirectory, (builder) => {
+                    var host = Host.Find(AppDomain.CurrentDomain.BaseDirectory, logProvider);
+                    var configurationProvider = host.RhetosRuntime
+                        .BuildConfiguration(logProvider, host.ConfigurationFolder, (builder) => {
                             builder.AddCommandLineArguments(args, "/");
                         });
 
                     var deployment = new ApplicationDeployment(configurationProvider, logProvider, LegacyUtilities.GetListAssembliesDelegate(configurationProvider));
 
                     deployment.UpdateDatabase();
-                    deployment.InitializeGeneratedApplication(rhetosRuntime);
+                    deployment.InitializeGeneratedApplication(host.RhetosRuntime);
                     deployment.RestartWebServer();
                 }
 
@@ -126,6 +125,11 @@ namespace DeployPackages
             }
 
             return 0;
+        }
+
+        private static IEnumerable<string> GetBuildPlugins(string pluginsFolder)
+        {
+            return Directory.GetFiles(pluginsFolder, "*.dll", SearchOption.TopDirectoryOnly);
         }
 
         /// <summary>

@@ -35,11 +35,11 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly string EntityFrameworkConfigurationTag = "/*EntityFrameworkConfiguration*/";
         public static readonly string QueryExtensionsMembersTag = "/*QueryExtensionsMembers*/";
 
-        private readonly BuildOptions _buildOptions;
+        private readonly RhetosBuildEnvironment _buildEnvironment;
 
-        public DomInitializationCodeGenerator(BuildOptions buildOptions)
+        public DomInitializationCodeGenerator(RhetosBuildEnvironment buildEnvironment)
         {
-            _buildOptions = buildOptions;
+            _buildEnvironment = buildEnvironment;
         }
 
         public static readonly string StandardNamespacesSnippet =
@@ -55,7 +55,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             codeBuilder.InsertCodeToFile(ModelSnippet, $"{DomAssemblies.Model}\\QueryExtensions");
-            codeBuilder.InsertCodeToFile(OrmSnippet, string.IsNullOrEmpty(_buildOptions.GeneratedSourceFolder) ? DomAssemblies.Orm.ToString() : "EntityFrameworkContext");
+            codeBuilder.InsertCodeToFile(OrmSnippet, string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder) ? DomAssemblies.Orm.ToString() : "EntityFrameworkContext");
             codeBuilder.InsertCodeToFile(RepositoriesSnippet, DomAssemblies.Repositories.ToString());
 
             codeBuilder.InsertCode("this.Configuration.UseDatabaseNullSemantics = _rhetosAppOptions.EntityFramework__UseDatabaseNullSemantics;\r\n            ", EntityFrameworkContextInitializeTag);

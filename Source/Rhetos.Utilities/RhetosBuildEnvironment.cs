@@ -17,18 +17,22 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Deployment;
-using System.Collections.Generic;
-
-namespace Rhetos
+namespace Rhetos.Utilities
 {
-    /// <summary>
-    /// Build-time assets.
-    /// </summary>
-    public class RhetosProjectAssets
+    public class RhetosBuildEnvironment
     {
-        public InstalledPackages InstalledPackages { get; set; }
+        public string ProjectFolder { get; set; }
 
-        public IEnumerable<string> Assemblies { get; set; }
+        /// <summary>
+        /// Assembly that will contains the generated object model.
+        /// Null for old Rhetos applications with multiple generated ServerDom libraries.
+        /// </summary>
+        public string OutputAssemblyName { get; set; }
+
+        public string CacheFolder { get; set; }
+
+        public string GeneratedAssetsFolder { get; set; }
+
+        public string GeneratedSourceFolder { get; set; }
     }
 }

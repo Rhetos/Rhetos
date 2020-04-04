@@ -44,7 +44,13 @@ namespace Rhetos
             _projectRootFolder = projectRootFolder;
         }
 
-        public RhetosProjectAssets Load()
+        private class BuildEnvironmentAndProjectAssets
+        {
+            public RhetosBuildEnvironment RhetosBuildEnvironment { get; set; }
+            public RhetosProjectAssets RhetosProjectAssets { get; set; }
+        }
+
+        public (RhetosBuildEnvironment RhetosBuildEnvironment, RhetosProjectAssets RhetosProjectAssets) Load()
         {
             if (!File.Exists(ProjectAssetsFilePath))
             {
@@ -58,12 +64,18 @@ namespace Rhetos
             }
 
             string serialized = File.ReadAllText(ProjectAssetsFilePath, Encoding.UTF8);
-            return JsonConvert.DeserializeObject<RhetosProjectAssets>(serialized, _serializerSettings);
+            var buildEnvironmentAndAssets = JsonConvert.DeserializeObject<BuildEnvironmentAndProjectAssets>(serialized, _serializerSettings);
+            return (buildEnvironmentAndAssets.RhetosBuildEnvironment, buildEnvironmentAndAssets.RhetosProjectAssets);
         }
 
-        public void Save(RhetosProjectAssets rhetosProjectAssets)
+        public void Save(RhetosBuildEnvironment rhetosBuildEnvironment, RhetosProjectAssets rhetosProjectAssets)
         {
-            string serialized = JsonConvert.SerializeObject(rhetosProjectAssets, _serializerSettings);
+            var buildEnvironmentAndAssets = new BuildEnvironmentAndProjectAssets
+            {
+                RhetosBuildEnvironment = rhetosBuildEnvironment,
+                RhetosProjectAssets = rhetosProjectAssets
+            };
+            string serialized = JsonConvert.SerializeObject(buildEnvironmentAndAssets, _serializerSettings);
             string oldSerializedData = File.Exists(ProjectAssetsFilePath) ? File.ReadAllText(ProjectAssetsFilePath, Encoding.UTF8) : "";
 
             if (!Directory.Exists(Path.GetDirectoryName(ProjectAssetsFilePath)))

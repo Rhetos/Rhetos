@@ -18,47 +18,99 @@
 */
 
 using Autofac;
+using Newtonsoft.Json;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;
+using Rhetos.Utilities.ApplicationConfiguration;
 using System;
 using System.IO;
 using System.Linq;
 
 namespace Rhetos
 {
-    public static class Host
+    public class Host
     {
         /// <summary>
         /// Helper method that bundles Rhetos runtime location (<see cref="Host.Find"/>),
         /// configuration (<see cref="IRhetosRuntime.BuildConfiguration"/>)
         /// and DI registration (<see cref="IRhetosRuntime.BuildContainer"/>).
         /// </summary>
-        /// <param name="assemblyFolder">If not specified, using current application base directory by default.</param>
+        /// /// <param name="applicationFolder">
+        /// Folder where the Rhetos configuration file is located (see <see cref="RhetosAppConfiguration.ConfigurationFileName"/>),
+        /// or any subfolder.
+        /// If not specified, using current application base directory by default.
+        /// </param>
         /// <param name="logProvider">If not specified, using ConsoleLogProvider by default.</param>
         /// <returns>DI container for Rhetos runtime.</returns>
-        public static IContainer Initialize(string assemblyFolder = null, ILogProvider logProvider = null,
+        public static IContainer Initialize(string applicationFolder = null, ILogProvider logProvider = null,
             Action<IConfigurationBuilder> addConfiguration = null, Action<ContainerBuilder> registerComponents = null)
         {
-            assemblyFolder = assemblyFolder ?? AppDomain.CurrentDomain.BaseDirectory;
+            applicationFolder = applicationFolder ?? AppDomain.CurrentDomain.BaseDirectory;
             logProvider = logProvider ?? new ConsoleLogProvider();
 
-            var rhetosRuntome = Find(assemblyFolder, logProvider);
-            var configurationProvider = rhetosRuntome.BuildConfiguration(logProvider, assemblyFolder, addConfiguration);
-            return rhetosRuntome.BuildContainer(logProvider, configurationProvider, registerComponents);
+            var host = Find(applicationFolder, logProvider);
+            var configurationProvider = host.RhetosRuntime.BuildConfiguration(logProvider, host.ConfigurationFolder, addConfiguration);
+            return host.RhetosRuntime.BuildContainer(logProvider, configurationProvider, registerComponents);
         }
 
-        public static IRhetosRuntime Find(string assemblyFolder, ILogProvider logProvider)
+        public IRhetosRuntime RhetosRuntime { get; private set; }
+
+        public string ConfigurationFolder { get; private set; }
+
+        /// <param name="applicationFolder">
+        /// Folder where the Rhetos configuration file is located (see <see cref="RhetosAppConfiguration.ConfigurationFileName"/>),
+        /// or any subfolder.
+        /// </param>
+        public static Host Find(string applicationFolder, ILogProvider logProvider)
         {
-            var supportedExtensions = new[] { ".dll", ".exe" };
-            var hostAssemblies = Directory.GetFiles(assemblyFolder).Where(x => supportedExtensions.Contains(Path.GetExtension(x)));
+            var configurationFolder = FindConfiguration(applicationFolder);
+            string rhetosRuntimePath = LoadRhetosRuntimePath(configurationFolder);
+            IRhetosRuntime rhetosRuntimeInstance = CreateRhetosRuntimeInstance(logProvider, rhetosRuntimePath);
 
-            var pluginScanner = new PluginScanner(
-                    () => hostAssemblies,
-                    new Utilities.BuildOptions(),
-                    new Utilities.RhetosAppEnvironment { AssemblyFolder = assemblyFolder },
-                    logProvider, new PluginScannerOptions());
+            return new Host
+            {
+                RhetosRuntime = rhetosRuntimeInstance,
+                ConfigurationFolder = configurationFolder,
+            };
+        }
 
+        private static string FindConfiguration(string applicationFolder)
+        {
+            var configurationDirectory = new DirectoryInfo(applicationFolder);
+            Exception searchException = null;
+            try
+            {
+                while (configurationDirectory != null
+                    && !configurationDirectory.GetFiles().Any(file => string.Equals(file.Name, RhetosAppConfiguration.ConfigurationFileName, StringComparison.OrdinalIgnoreCase)))
+                {
+                    configurationDirectory = configurationDirectory.Parent;
+                }
+            }
+            catch (Exception e)
+            {
+                searchException = e;
+            }
+            if (configurationDirectory == null || searchException != null)
+                throw new FrameworkException(
+                    $"Cannot find application's configuration ({RhetosAppConfiguration.ConfigurationFileName})" +
+                    $" in '{Path.GetFullPath(applicationFolder)}' or any parent folder." +
+                    $" Make sure the specified folder is correct and that the build has passed successfully.",
+                    searchException);
+            return configurationDirectory.FullName;
+        }
+
+        private static string LoadRhetosRuntimePath(string configurationFolder)
+        {
+            string serialized = File.ReadAllText(Path.Combine(configurationFolder, RhetosAppConfiguration.ConfigurationFileName));
+            var appConfiguration = JsonConvert.DeserializeObject<RhetosAppConfiguration>(serialized);
+            string rhetosRuntimePath = Path.Combine(configurationFolder, appConfiguration.RhetosRuntimePath);
+            return rhetosRuntimePath;
+        }
+
+        private static IRhetosRuntime CreateRhetosRuntimeInstance(ILogProvider logProvider, string rhetosRuntimePath)
+        {
+            var pluginScanner = new PluginScanner(() => new[] { rhetosRuntimePath }, Path.GetDirectoryName(rhetosRuntimePath), logProvider, new PluginScannerOptions());
             var rhetosRuntimeTypes = pluginScanner.FindPlugins(typeof(IRhetosRuntime)).Select(x => x.Type).ToList();
 
             if (rhetosRuntimeTypes.Count == 0)
@@ -67,8 +119,7 @@ namespace Rhetos
             if (rhetosRuntimeTypes.Count > 1)
                 throw new FrameworkException($"Found multiple implementation of the type {nameof(IRhetosRuntime)}.");
 
-            var rhetosRuntimeInstance = Activator.CreateInstance(rhetosRuntimeTypes.First()) as IRhetosRuntime;
-
+            var rhetosRuntimeInstance = (IRhetosRuntime)Activator.CreateInstance(rhetosRuntimeTypes.Single());
             return rhetosRuntimeInstance;
         }
     }

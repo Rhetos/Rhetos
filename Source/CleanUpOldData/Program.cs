@@ -19,12 +19,10 @@
 
 using Rhetos;
 using Rhetos.Deployment;
-using Rhetos.Extensibility;
 using Rhetos.Persistence;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 
 namespace CleanupOldData
@@ -37,8 +35,8 @@ namespace CleanupOldData
             {
                 var appRootFolder = AppDomain.CurrentDomain.BaseDirectory;
                 var logProvider = new ConsoleLogProvider();
-                var configuration = Host.Find(appRootFolder, logProvider)
-                    .BuildConfiguration(logProvider, appRootFolder, null);
+                var host = Host.Find(appRootFolder, logProvider);
+                var configuration = host.RhetosRuntime.BuildConfiguration(logProvider, host.ConfigurationFolder, null);
 
                 LegacyUtilities.Initialize(configuration);
 

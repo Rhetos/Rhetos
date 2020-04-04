@@ -150,8 +150,10 @@
     <Compile Include="ISqlUtility.cs" />
     <Compile Include="IUserInfoAdmin.cs" />
     <Compile Include="ListOfTuples.cs" />
+    <Compile Include="ApplicationConfiguration\RhetosAppConfiguration.cs" />
     <Compile Include="RhetosAppEnvironment.cs" />
     <Compile Include="RhetosAppOptions.cs" />
+    <Compile Include="RhetosBuildEnvironment.cs" />
     <Compile Include="SecurityOptions.cs" />
     <Compile Include="DatabaseOptions.cs" />
     <Compile Include="SqlTransactionBatches.cs" />

@@ -34,7 +34,7 @@ namespace Rhetos.Deployment
         private readonly IDslModel _dslModel;
         private readonly IPluginsContainer<IGenerator> _generatorsContainer;
         private readonly RhetosAppEnvironment _rhetosAppEnvironment;
-        private readonly BuildOptions _buildOptions;
+        private readonly RhetosBuildEnvironment _buildEnvironment;
         private readonly FilesUtility _filesUtility;
         private readonly ISourceWriter _sourceWriter;
 
@@ -43,7 +43,7 @@ namespace Rhetos.Deployment
             IDslModel dslModel,
             IPluginsContainer<IGenerator> generatorsContainer,
             RhetosAppEnvironment rhetosAppEnvironment,
-            BuildOptions buildOptions,
+            RhetosBuildEnvironment buildEnvironment,
             FilesUtility filesUtility,
             ISourceWriter sourceWriter)
         {
@@ -51,7 +51,7 @@ namespace Rhetos.Deployment
             _dslModel = dslModel;
             _generatorsContainer = generatorsContainer;
             _rhetosAppEnvironment = rhetosAppEnvironment;
-            _buildOptions = buildOptions;
+            _buildEnvironment = buildEnvironment;
             _filesUtility = filesUtility;
             _sourceWriter = sourceWriter;
         }
@@ -59,9 +59,9 @@ namespace Rhetos.Deployment
         public void ExecuteGenerators()
         {
             _filesUtility.EmptyDirectory(_rhetosAppEnvironment.AssetsFolder);
-            _filesUtility.SafeCreateDirectory(_buildOptions.CacheFolder); // Cache is not deleted between builds.
-            if(!string.IsNullOrEmpty(_buildOptions.GeneratedSourceFolder))
-                _filesUtility.SafeCreateDirectory(_buildOptions.GeneratedSourceFolder); // Obsolete source files will be cleaned later. Keeping the existing files to allowing source change detection in Visual Studio.
+            _filesUtility.SafeCreateDirectory(_buildEnvironment.CacheFolder); // Cache is not deleted between builds.
+            if(!string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder))
+                _filesUtility.SafeCreateDirectory(_buildEnvironment.GeneratedSourceFolder); // Obsolete source files will be cleaned later. Keeping the existing files to allowing source change detection in Visual Studio.
 
             CheckDslModelErrors();
 
@@ -74,7 +74,7 @@ namespace Rhetos.Deployment
             if (!generators.Any())
                 _logger.Info("No additional generators.");
 
-            if(!string.IsNullOrEmpty(_buildOptions.GeneratedSourceFolder))
+            if(!string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder))
                 _sourceWriter.CleanUp();
         }
 

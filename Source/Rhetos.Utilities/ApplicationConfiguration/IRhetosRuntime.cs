@@ -32,19 +32,22 @@ namespace Rhetos
         /// <summary>
         /// Initializes configuration settings for Rhetos application.
         /// </summary>
-        /// <param name="addConfiguration">
+        /// <param name="addCustomConfiguration">
         /// Add or override configuration settings.
         /// This is commonly used by utilities and tests that need to customize the host application's settings.
         /// </param>
-        IConfigurationProvider BuildConfiguration(ILogProvider logProvider, string assemblyFolder, Action<IConfigurationBuilder> addConfiguration);
+        /// <param name="configurationFolder">
+        /// Folder where application's configuration files are located.
+        /// </param>
+        IConfigurationProvider BuildConfiguration(ILogProvider logProvider, string configurationFolder, Action<IConfigurationBuilder> addCustomConfiguration);
 
         /// <summary>
         /// Creates Dependency Injections container for Rhetos application.
         /// </summary>
-        /// <param name="registerComponents">
+        /// <param name="registerCustomComponents">
         /// Register custom components that may override system and plugins services.
         /// This is commonly used by utilities and tests that need to override host application's components or register additional plugins.
         /// </param>
-        IContainer BuildContainer(ILogProvider logProvider, IConfigurationProvider configurationProvider, Action<ContainerBuilder> registerComponents);
+        IContainer BuildContainer(ILogProvider logProvider, IConfigurationProvider configurationProvider, Action<ContainerBuilder> registerCustomComponents);
     }
 }

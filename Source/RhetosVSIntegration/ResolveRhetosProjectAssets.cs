@@ -22,6 +22,7 @@ using Microsoft.Build.Utilities;
 using Rhetos;
 using Rhetos.Deployment;
 using Rhetos.Utilities;
+using System.IO;
 using System.Linq;
 
 namespace RhetosVSIntegration
@@ -40,6 +41,12 @@ namespace RhetosVSIntegration
         [Required]
         public ITaskItem[] ProjectContentFiles { get; set; }
 
+        [Required]
+        public string GeneratedAssetsFolder { get; set; }
+
+        [Required]
+        public string IntermediateOutputFolder { get; set; }
+
         public override bool Execute()
         {
             var resolvedProjectContentFiles = ProjectContentFiles.Select(x => new { x.ItemSpec, FullPath = x.GetMetadata("FullPath") });
@@ -55,15 +62,23 @@ namespace RhetosVSIntegration
             var nuget = new NuGetUtilities(ProjectDirectory, resolvedProjectContentFiles.Select(x => x.FullPath), new NuGetLogger(Log), null);
             var packagesAssemblies = nuget.GetRuntimeAssembliesFromPackages();
 
+            var rhetosBuildEnvironment = new RhetosBuildEnvironment
+            {
+                ProjectFolder = ProjectDirectory,
+                OutputAssemblyName = AssemblyName,
+                CacheFolder = Path.Combine(ProjectDirectory, IntermediateOutputFolder),
+                GeneratedAssetsFolder = GeneratedAssetsFolder,
+                GeneratedSourceFolder = Path.Combine(ProjectDirectory, IntermediateOutputFolder, "RhetosSource"),
+            };
+
             var rhetosProjectAssets = new RhetosProjectAssets
             {
                 InstalledPackages = new InstalledPackages { Packages = nuget.GetInstalledPackages() },
                 Assemblies = packagesAssemblies.Union(assembliesInReferencedProjects.Select(x => x.FullPath)),
-                OutputAssemblyName = AssemblyName
             };
 
             var rhetosProjectAssetsFileProvider = new RhetosProjectAssetsFileProvider(ProjectDirectory, new VSLogProvider(Log));
-            rhetosProjectAssetsFileProvider.Save(rhetosProjectAssets);
+            rhetosProjectAssetsFileProvider.Save(rhetosBuildEnvironment, rhetosProjectAssets);
             //The file touch is added to notify the language server that something has happened even if the file has not been changed.
             //This is a problem when in a referenced project we implement a new concept, the RhetosProjectAssetsFile remains the same but the language server
             //must be restarted to take into account the new concept

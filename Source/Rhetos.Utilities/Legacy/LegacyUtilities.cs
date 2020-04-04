@@ -34,7 +34,7 @@ namespace Rhetos
         /// </summary>
         public static void Initialize(IConfigurationProvider configurationProvider)
         {
-            Paths.Initialize(configurationProvider.GetOptions<RhetosAppEnvironment>());
+            Paths.Initialize(configurationProvider);
             ConfigUtility.Initialize(configurationProvider);
             SqlUtility.Initialize(configurationProvider);
             Configuration.Initialize(configurationProvider);
@@ -45,15 +45,28 @@ namespace Rhetos
         /// </summary>
         public static Func<string[]> GetListAssembliesDelegate(IConfigurationProvider configurationProvider)
         {
-            var rhetosAppEnvironment = configurationProvider.GetOptions<RhetosAppEnvironment>();
+            var runtimeEnvironment = configurationProvider.GetOptions<RhetosAppEnvironment>();
+            if (runtimeEnvironment?.AssemblyFolder == null)
+                throw new FrameworkException($"Run-time environment not initialized." +
+                    $" {nameof(RhetosAppEnvironment)}.{nameof(RhetosAppEnvironment.AssemblyFolder)} is not set.");
 
             return () =>
             {
-                string[] pluginsPaths = new[]
+                var pluginsPaths = new List<string>();
+
+                if (string.IsNullOrEmpty(runtimeEnvironment.Legacy__PluginsFolder))
                 {
-                    rhetosAppEnvironment.LegacyPluginsFolder ?? rhetosAppEnvironment.AssemblyFolder, // When using separate LegacyPluginsFolder, there is no need to scan BinFolder, because Rhetos framework binaries do not contain plugins exports (only explicit registrations).
-                    rhetosAppEnvironment.AssetsFolder // TODO: Remove AssetsFolder after modifying AssemblyGenerator to not build DLLs.
-                };
+                    pluginsPaths.Add(runtimeEnvironment.AssemblyFolder);
+                }
+                else
+                {
+                    // Old build process (DeployPackages) copies plugins from packages to Plugins folder,
+                    // and builds new libraries in AssetsFolder.
+                    // We don't need to scan main AssemblyFolder because it contains only Rhetos framework binaries
+                    // that have no plugins exports, only explicit registrations.
+                    pluginsPaths.Add(runtimeEnvironment.Legacy__PluginsFolder);
+                    pluginsPaths.Add(runtimeEnvironment.AssetsFolder);
+                }
 
                 var assemblyFiles = pluginsPaths
                     .Where(folder => Directory.Exists(folder)) // Some paths don't exist in certain phases of build and deployment.

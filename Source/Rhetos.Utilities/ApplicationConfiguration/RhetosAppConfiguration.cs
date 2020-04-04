@@ -17,18 +17,22 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Deployment;
-using System.Collections.Generic;
-
-namespace Rhetos
+namespace Rhetos.Utilities.ApplicationConfiguration
 {
     /// <summary>
-    /// Build-time assets.
+    /// Minimal content of the configuration file <see cref="RhetosAppConfiguration.ConfigurationFileName"/>.
+    /// This class is intended for internal initialization of configuration, it should not be used directly as an options class.
+    /// Use <see cref="RhetosAppEnvironment"/> instead to read runtime configuration.
     /// </summary>
-    public class RhetosProjectAssets
+    public class RhetosAppConfiguration
     {
-        public InstalledPackages InstalledPackages { get; set; }
+        public static readonly string ConfigurationFileName = "rhetos-app.settings.json";
 
-        public IEnumerable<string> Assemblies { get; set; }
+        public string RhetosRuntimePath { get; set; }
+        public string AssetsFolder { get; set; }
+        /// <summary>
+        /// Optional.
+        /// </summary>
+        public string Legacy__PluginsFolders { get; set; }
     }
 }

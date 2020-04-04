@@ -20,7 +20,6 @@
 using Rhetos.Utilities;
 using Rhetos.Utilities.ApplicationConfiguration;
 using Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources;
-using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
@@ -70,6 +69,17 @@ namespace Rhetos
         }
 
         /// <summary>
+        /// Loads configuration from Rhetos-specific configuration files, and adds application root folder.
+        /// </summary>
+        public static IConfigurationBuilder AddRhetosRuntimeConfiguration(this IConfigurationBuilder builder, string applicationRootFolder)
+        {
+            builder.AddKeyValue(nameof(RhetosAppEnvironment.ApplicationRootFolder), applicationRootFolder);
+            builder.AddJsonFile(Path.Combine(applicationRootFolder, RhetosAppConfiguration.ConfigurationFileName), optional: true);
+            builder.AddJsonFile(Path.Combine(applicationRootFolder, "rhetos-app.local.settings.json"), optional: true);
+            return builder;
+        }
+
+        /// <summary>
         /// Adds current application's configuration (App.config or Web.config, see <see cref="ConfigurationManager.AppSettings"/>).
         /// Note that the "current application" in this context can be a generated web application,
         /// or a custom command-line utility that references generated Rhetos application and uses it's runtime components.
@@ -95,12 +105,8 @@ namespace Rhetos
             return builder;
         }
 
-        public static IConfigurationBuilder AddRhetosAppEnvironment(this IConfigurationBuilder builder, RhetosAppEnvironment rhetosAppEnvironment)
-        {
-            return builder.AddOptions(rhetosAppEnvironment);
-        }
-
         /// <summary>
+        /// Adds standard configuration from specified web application.
         /// This method is similar to <see cref="AddConfigurationManagerConfiguration"/> but work on a different application context:
         /// It is needed for utility applications that reference the generated Rhetos applications and use it's runtime components.
         /// This method load's the Rhetos application's configuration, while <see cref="AddConfigurationManagerConfiguration"/> loads the current utility application's configuration.

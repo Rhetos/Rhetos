@@ -99,14 +99,13 @@ namespace Rhetos.Configuration.Autofac
                         {
                             var rhetosAppRootPath = SearchForRhetosServerRootFolder();
                             var logProvider = new ConsoleLogProvider();
-                            var rhetosRuntime = Host.Find(Path.Combine(rhetosAppRootPath, "bin"), logProvider);
-                            var configurationProvider = rhetosRuntime.BuildConfiguration(new ConsoleLogProvider(),
-                                Path.Combine(rhetosAppRootPath, "bin"), null);
+                            var host = Host.Find(rhetosAppRootPath, logProvider);
+                            var configurationProvider = host.RhetosRuntime.BuildConfiguration(new ConsoleLogProvider(), host.ConfigurationFolder, null);
 
                             AppDomain.CurrentDomain.AssemblyResolve += SearchForAssembly;
 
                             var sw = Stopwatch.StartNew();
-                            _iocContainer = rhetosRuntime.BuildContainer(logProvider, configurationProvider, (builder) => {
+                            _iocContainer = host.RhetosRuntime.BuildContainer(logProvider, configurationProvider, (builder) => {
                                 builder.RegisterType<ProcessUserInfo>().As<IUserInfo>(); // Override runtime IUserInfo plugins. This container is intended to be used in a simple process or unit tests.
                                 builder.RegisterType<ConsoleLogProvider>().As<ILogProvider>();
                             });
@@ -159,7 +158,7 @@ namespace Rhetos.Configuration.Autofac
 
         protected Assembly SearchForAssembly(object sender, ResolveEventArgs args)
         {
-            foreach (var folder in new[] { Paths.PluginsFolder, Paths.GeneratedFolder, Paths.BinFolder })
+            foreach (var folder in new[] { Paths.PluginsFolder, Paths.GeneratedFolder, Paths.BinFolder }.Distinct())
             {
                 string pluginAssemblyPath = Path.Combine(folder, new AssemblyName(args.Name).Name + ".dll");
                 if (File.Exists(pluginAssemblyPath))

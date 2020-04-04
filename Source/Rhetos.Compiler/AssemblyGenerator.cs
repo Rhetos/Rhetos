@@ -39,18 +39,21 @@ namespace Rhetos.Compiler
         private readonly ILogger _logger;
         private readonly int _errorReportLimit;
         private readonly BuildOptions _buildOptions;
+        private readonly RhetosBuildEnvironment _buildEnvironment;
         private readonly CacheUtility _cacheUtility;
         private readonly ISourceWriter _sourceWriter;
 
         public AssemblyGenerator(ILogProvider logProvider, IConfigurationProvider configurationProvider,
-            BuildOptions buildOptions, FilesUtility filesUtility, ISourceWriter sourceWriter)
+            BuildOptions buildOptions, RhetosBuildEnvironment buildEnvironment,
+            FilesUtility filesUtility, ISourceWriter sourceWriter)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("AssemblyGenerator");
             _errorReportLimit = configurationProvider.GetValue("AssemblyGenerator.ErrorReportLimit", 5);
             _buildOptions = buildOptions;
+            _buildEnvironment = buildEnvironment;
             _sourceWriter = sourceWriter;
-            _cacheUtility = new CacheUtility(typeof(AssemblyGenerator), buildOptions, filesUtility);
+            _cacheUtility = new CacheUtility(typeof(AssemblyGenerator), buildEnvironment, filesUtility);
         }
 
         [Obsolete("See the description in IAssemblyGenerator.")]
@@ -77,7 +80,7 @@ namespace Rhetos.Compiler
                 + $"// Debug = \"{_buildOptions.Debug}\"\r\n\r\n"
                 + assemblySource.GeneratedCode;
 
-            if (string.IsNullOrEmpty(_buildOptions.GeneratedSourceFolder) || isLegecayResourcesLibrary)
+            if (string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder) || isLegecayResourcesLibrary)
             {
                 string sourcePath = Path.GetFullPath(Path.ChangeExtension(outputAssemblyPath, ".cs"));
                 File.WriteAllText(sourcePath, sourceCode, Encoding.UTF8);

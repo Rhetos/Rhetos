@@ -31,11 +31,11 @@ namespace Rhetos.Compiler
         private readonly SHA256 _sha256;
         private readonly string _cacheDirectory;
 
-        public CacheUtility(Type generatorType, BuildOptions buildOptions, FilesUtility filesUtility)
+        public CacheUtility(Type generatorType, RhetosBuildEnvironment buildEnvironment, FilesUtility filesUtility)
         {
             _filesUtility = filesUtility;
             _sha256 = SHA256.Create();
-            _cacheDirectory = Path.Combine(buildOptions.CacheFolder, generatorType.Name);
+            _cacheDirectory = Path.Combine(buildEnvironment.CacheFolder, generatorType.Name);
         }
 
         private string GetHashFile(string sourceFile) => Path.Combine(_cacheDirectory, Path.GetFileName(sourceFile) + ".hash");

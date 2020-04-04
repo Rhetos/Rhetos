@@ -3,13 +3,19 @@
 
     <Target Name="ResolveRhetosProjectAssets" DependsOnTargets="ResolveNuGetPackageAssets;ResolveAssemblyReferences" BeforeTargets="CoreCompile">
         <Message Text="ResolveRhetosProjectAssets" />
-        <ResolveRhetosProjectAssets ProjectDirectory="$(ProjectDir)." ProjectContentFiles="@(RhetosBuild)" Assemblies="@(ReferencePath)" AssemblyName="$(AssemblyName)" />      
+        <ResolveRhetosProjectAssets
+            ProjectDirectory="$(ProjectDir)."
+            ProjectContentFiles="@(RhetosBuild)"
+            Assemblies="@(ReferencePath)"
+            AssemblyName="$(AssemblyName)"
+            GeneratedAssetsFolder="obj\Rhetos\RhetosAssets"
+            IntermediateOutputPath="$(BaseIntermediateOutputPath)Rhetos"/>
     </Target>
 
     <Target Name="BuildRhetosApp" DependsOnTargets="ResolveRhetosProjectAssets;" BeforeTargets="CoreCompile" Condition="'$(RhetosBuild)'=='True' and $(BuildingProject)=='True'" Inputs="@(RhetosInput);@(RhetosBuild)" Outputs="@(RhetosOutput)">
         <Message Text="BuildRhetosApp" />
         <Delete Files="$(RhetosBuildCompleteFile)" />
-        <Exec Command="&quot;$(RhetosCliExecutablePath)&quot; build &quot;$(ProjectDir).&quot; --assembly-folder &quot;$(TargetDir).&quot; --msbuild-format" CustomErrorRegularExpression="\[Error\]" CustomWarningRegularExpression="\[Warn\]" />
+        <Exec Command="&quot;$(RhetosCliExecutablePath)&quot; build &quot;$(ProjectDir).&quot; --msbuild-format" CustomErrorRegularExpression="\[Error\]" CustomWarningRegularExpression="\[Warn\]" />
         <WriteLinesToFile File="$(RhetosBuildCompleteFile)" Lines="" Overwrite="true" />
     </Target>
 
@@ -58,10 +64,10 @@
 
         <!-- Copy plugin scanner cache -->
         <PropertyGroup>
-            <_PluginScannerCachePath>$(BaseIntermediateOutputPath)Rhetos\PluginScanner.BuildCache.json</_PluginScannerCachePath>
+            <_PluginScannerCachePath>$(BaseIntermediateOutputPath)Rhetos\PluginScanner.json</_PluginScannerCachePath>
         </PropertyGroup>
         <Copy SourceFiles="$(_PluginScannerCachePath)" Retries="$(CopyRetryCount)" RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
-            DestinationFiles="$(TargetDir)\PluginScanner.RuntimeCache.json" 
+            DestinationFiles="$(TargetDir)\PluginScanner.json" 
             SkipUnchangedFiles="True">
             <Output TaskParameter="CopiedFiles" ItemName="_CopiedPluginScannerCache" />
         </Copy>

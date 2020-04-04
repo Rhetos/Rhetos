@@ -204,6 +204,7 @@
     <Content Include="packages.config" />
     <Content Include="Template.RhetosPackages.config" />
     <Content Include="Template.RhetosPackageSources.config" />
+    <Content Include="rhetos-app.settings.json" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

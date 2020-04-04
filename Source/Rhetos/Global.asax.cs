@@ -23,7 +23,6 @@ using Rhetos.Logging;
 using Rhetos.Web;
 using System;
 using System.Diagnostics;
-using System.IO;
 
 namespace Rhetos
 {
@@ -44,9 +43,7 @@ namespace Rhetos
             var stopwatch = Stopwatch.StartNew();
             var logProvider = new NLogProvider();
             var rhetosRuntime = new RhetosRuntime(true);
-            var configuration = rhetosRuntime.BuildConfiguration(logProvider,
-                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin"),
-                null);
+            var configuration = rhetosRuntime.BuildConfiguration(logProvider, AppDomain.CurrentDomain.BaseDirectory, null);
             AutofacServiceHostFactory.Container = rhetosRuntime.BuildContainer(logProvider, configuration, null);
 
             _logger = logProvider.GetLogger("Global");

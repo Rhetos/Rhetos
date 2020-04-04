@@ -17,15 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.IO;
 using Autofac;
 using Rhetos.Logging;
 using Rhetos.Security;
 using Rhetos.Utilities;
 using Rhetos.Web;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.Composition;
 
 namespace Rhetos
 {
@@ -41,41 +40,36 @@ namespace Rhetos
             _isHost = isHost;
         }
 
-        public IConfigurationProvider BuildConfiguration(ILogProvider logProvider, string assemblyFolder, Action<IConfigurationBuilder> addConfiguration)
+        public IConfigurationProvider BuildConfiguration(ILogProvider logProvider, string configurationFolder, Action<IConfigurationBuilder> addCustomConfiguration)
         {
-            var configurationBuilder = new ConfigurationBuilder()
-                .AddRhetosAppEnvironment(new RhetosAppEnvironment
-                {
-                    AssemblyFolder = assemblyFolder,
-                    AssetsFolder = Path.Combine(assemblyFolder, "Generated"),
-                    LegacyPluginsFolder = Path.Combine(assemblyFolder, "Plugins"),
-                });
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddRhetosRuntimeConfiguration(configurationFolder);
 
+            // Add WCF-specific configuration.
             if (_isHost)
                 configurationBuilder.AddConfigurationManagerConfiguration();
             else
-                configurationBuilder.AddWebConfiguration(new DirectoryInfo(assemblyFolder).Parent.FullName);
+                configurationBuilder.AddWebConfiguration(configurationFolder);
 
-            addConfiguration?.Invoke(configurationBuilder);
+            addCustomConfiguration?.Invoke(configurationBuilder);
             return configurationBuilder.Build();
         }
 
-        public IContainer BuildContainer(ILogProvider logProvider, IConfigurationProvider configurationProvider, Action<ContainerBuilder> registerComponents)
+        public IContainer BuildContainer(ILogProvider logProvider, IConfigurationProvider configurationProvider, Action<ContainerBuilder> registerCustomComponents)
         {
-            return BuildContainer(logProvider, configurationProvider, registerComponents, LegacyUtilities.GetListAssembliesDelegate(configurationProvider));
+            return BuildContainer(logProvider, configurationProvider, registerCustomComponents, LegacyUtilities.GetListAssembliesDelegate(configurationProvider));
         }
 
-        private IContainer BuildContainer(ILogProvider logProvider, IConfigurationProvider configurationProvider, Action<ContainerBuilder> registerComponents, Func<IEnumerable<string>> getAssembliesDelegate)
+        private IContainer BuildContainer(ILogProvider logProvider, IConfigurationProvider configurationProvider, Action<ContainerBuilder> registerCustomComponents, Func<IEnumerable<string>> getAssembliesDelegate)
         {
             var builder = new RhetosContainerBuilder(configurationProvider, logProvider, getAssembliesDelegate);
 
             builder.AddRhetosRuntime();
 
+            // WCF-specific component registrations.
+            // Can be customized later by plugin modules.
             if (_isHost)
             {
-                // WCF-specific component registrations.
-                // Can be customized later by plugin modules.
-
                 builder.RegisterType<WcfWindowsUserInfo>().As<IUserInfo>().InstancePerLifetimeScope();
                 builder.RegisterType<RhetosService>().As<RhetosService>().As<IServerApplication>();
                 builder.RegisterType<Rhetos.Web.GlobalErrorHandler>();
@@ -86,7 +80,7 @@ namespace Rhetos
 
             builder.AddPluginModules();
 
-            registerComponents?.Invoke(builder);
+            registerCustomComponents?.Invoke(builder);
 
             return builder.Build();
         }

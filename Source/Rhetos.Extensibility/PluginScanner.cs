@@ -47,18 +47,32 @@ namespace Rhetos.Extensibility
         /// It searches for type implementations in the provided list of assemblies.
         /// </summary>
         /// <param name="findAssemblies">The findAssemblies function should return a list of DLL file paths that will be searched for plugins when invoking the method <see cref="FindPlugins"/></param>
-        public PluginScanner(Func<IEnumerable<string>> findAssemblies, BuildOptions buildOptions, RhetosAppEnvironment rhetosAppEnvironment, ILogProvider logProvider, PluginScannerOptions pluginScannerOptions)
+        public PluginScanner(Func<IEnumerable<string>> findAssemblies, string cacheFolder, ILogProvider logProvider, PluginScannerOptions pluginScannerOptions)
         {
             _pluginsByExport = new Lazy<MultiDictionary<string, PluginInfo>>(
                 () => GetPluginsByExport(findAssemblies),
                 LazyThreadSafetyMode.ExecutionAndPublication);
-            _pluginScannerCache = new PluginScannerCache(buildOptions, rhetosAppEnvironment, logProvider, new FilesUtility(logProvider));
+            _pluginScannerCache = new PluginScannerCache(cacheFolder, logProvider, new FilesUtility(logProvider));
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger(GetType().Name);
 
             var ignoreList = pluginScannerOptions.PredefinedIgnoreAssemblyFiles.Concat(pluginScannerOptions.IgnoreAssemblyFiles ?? Array.Empty<string>()).Distinct().ToList();
             _ignoreAssemblyFiles = new HashSet<string>(ignoreList.Where(name => !name.EndsWith("*")), StringComparer.OrdinalIgnoreCase);
             _ignoreAssemblyPrefixes = ignoreList.Where(name => name.EndsWith("*")).Select(name => name.Trim('*')).ToArray();
+        }
+
+        /// <summary>
+        /// Finds the cache folder in either build-time or run-time configuration, since plugin scanner is used in both environments.
+        /// </summary>
+        public static string GetCacheFolder(IConfigurationProvider configurationProvider)
+        {
+            var rhetosBuildEnvironment = configurationProvider.GetOptions<RhetosBuildEnvironment>();
+            var rhetosAppEnvironment = configurationProvider.GetOptions<RhetosAppEnvironment>();
+            string cacheFolder = rhetosBuildEnvironment?.CacheFolder ?? rhetosAppEnvironment?.AssemblyFolder;
+            if (cacheFolder == null)
+                throw new FrameworkException($"Missing configuration settings for build ({nameof(RhetosBuildEnvironment.CacheFolder)})" +
+                    $" or runtime ({nameof(RhetosAppEnvironment.AssemblyFolder)}).");
+            return cacheFolder;
         }
 
         /// <summary>

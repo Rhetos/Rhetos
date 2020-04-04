@@ -32,7 +32,7 @@ namespace Rhetos.Dom
         private readonly IPluginsContainer<IConceptCodeGenerator> _pluginRepository;
         private readonly ICodeGenerator _codeGenerator;
         private readonly IAssemblyGenerator _assemblyGenerator;
-        private readonly BuildOptions _buildOptions;
+        private readonly RhetosBuildEnvironment _buildEnvironment;
         private readonly ISourceWriter _sourceWriter;
 
         /// <summary>
@@ -43,13 +43,13 @@ namespace Rhetos.Dom
             IPluginsContainer<IConceptCodeGenerator> plugins,
             ICodeGenerator codeGenerator,
             IAssemblyGenerator assemblyGenerator,
-            BuildOptions buildOptions,
+            RhetosBuildEnvironment buildEnvironment,
             ISourceWriter sourceWriter)
         {
             _pluginRepository = plugins;
             _codeGenerator = codeGenerator;
             _assemblyGenerator = assemblyGenerator;
-            _buildOptions = buildOptions;
+            _buildEnvironment = buildEnvironment;
             _sourceWriter = sourceWriter;
         }
 
@@ -59,7 +59,7 @@ namespace Rhetos.Dom
         {
             var sourceFiles = _codeGenerator.ExecutePluginsToFiles(_pluginRepository, "/*", "*/", null);
 
-            if (!string.IsNullOrEmpty(_buildOptions.GeneratedSourceFolder))
+            if (!string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder))
             {
                 foreach (var sourceFile in sourceFiles)
                     _sourceWriter.Add(sourceFile.Key + ".cs", sourceFile.Value.GeneratedCode);

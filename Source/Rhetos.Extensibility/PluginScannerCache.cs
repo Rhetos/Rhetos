@@ -28,20 +28,16 @@ namespace Rhetos.Extensibility
 {
     public class PluginScannerCache
     {
-        private const string _pluginScannerBuildCacheFilename = "PluginScanner.BuildCache.json";
-        private const string _pluginScannerRuntimeCacheFilename = "PluginScanner.RuntimeCache.json";
+        private const string _pluginScannerCacheFilename = "PluginScanner.json";
 
+        private readonly string _cacheFilePath;
         private readonly ILogger _logger;
-        private readonly string _buildCacheFilePath;
-        private readonly string _runtimeCacheFilePath;
         private readonly FilesUtility _filesUtility;
 
-        public PluginScannerCache(BuildOptions buildOptions, RhetosAppEnvironment rhetosAppEnvironment, ILogProvider logProvider, FilesUtility filesUtility)
+        public PluginScannerCache(string cacheFolder, ILogProvider logProvider, FilesUtility filesUtility)
         {
+            _cacheFilePath = Path.Combine(cacheFolder, _pluginScannerCacheFilename);
             _logger = logProvider.GetLogger(GetType().Name);
-            if (buildOptions?.CacheFolder != null)
-                _buildCacheFilePath = Path.Combine(buildOptions.CacheFolder, _pluginScannerBuildCacheFilename);
-            _runtimeCacheFilePath = Path.Combine(rhetosAppEnvironment.AssemblyFolder, _pluginScannerRuntimeCacheFilename);
             _filesUtility = filesUtility;
         }
 
@@ -49,11 +45,10 @@ namespace Rhetos.Extensibility
 
         internal PluginsCacheData LoadPluginsCacheData()
         {
-            string cacheFilePath = GetExistingCacheFile();
-            if (cacheFilePath != null)
+            if (File.Exists(_cacheFilePath))
             {
-                _logger.Trace($"Reading cache from '{cacheFilePath}'.");
-                return JsonConvert.DeserializeObject<PluginsCacheData>(File.ReadAllText(cacheFilePath));
+                _logger.Trace($"Reading cache from '{_cacheFilePath}'.");
+                return JsonConvert.DeserializeObject<PluginsCacheData>(File.ReadAllText(_cacheFilePath));
             }
             else
             {
@@ -64,21 +59,10 @@ namespace Rhetos.Extensibility
 
         internal void SavePluginsCacheData(PluginsCacheData cache)
         {
-            string cacheFilePath = GetExistingCacheFile() ?? _buildCacheFilePath ?? _runtimeCacheFilePath;
 
-            _logger.Trace($"Writing cache to '{cacheFilePath}'.");
-            _filesUtility.SafeCreateDirectory(Path.GetDirectoryName(cacheFilePath)); // Plugin scanner can be executed before other Rhetos components are initialized.
-            File.WriteAllText(cacheFilePath, JsonConvert.SerializeObject(cache, Formatting.Indented));
-        }
-
-        private string GetExistingCacheFile()
-        {
-            if (File.Exists(_runtimeCacheFilePath))
-                return _runtimeCacheFilePath;
-            else if (File.Exists(_buildCacheFilePath))
-                return _buildCacheFilePath;
-            else
-                return null;
+            _logger.Trace($"Writing cache to '{_cacheFilePath}'.");
+            _filesUtility.SafeCreateDirectory(Path.GetDirectoryName(_cacheFilePath)); // Plugin scanner can be executed before other Rhetos components are initialized.
+            File.WriteAllText(_cacheFilePath, JsonConvert.SerializeObject(cache, Formatting.Indented));
         }
     }
 }
