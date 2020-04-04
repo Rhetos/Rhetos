@@ -22,7 +22,6 @@ using Rhetos.Deployment;
 using Rhetos.Dom;
 using Rhetos.Dsl;
 using Rhetos.Extensibility;
-using Rhetos.Logging;
 using Rhetos.Persistence;
 using Rhetos.Processing;
 using Rhetos.Security;
@@ -35,15 +34,17 @@ namespace Rhetos.Configuration.Autofac.Modules
     {
         protected override void Load(ContainerBuilder builder)
         {
-            var pluginRegistration = builder.GetPluginRegistration();
-            builder.Register(context => RhetosAppEnvironment.FromRuntimeConfiguration(context.Resolve<IConfigurationProvider>())).SingleInstance();
-            builder.Register(context => new InstalledPackagesProvider(context.Resolve<ILogProvider>(), context.Resolve<RhetosAppEnvironment>()).Load()).As<InstalledPackages>().As<IInstalledPackages>().SingleInstance();
+            builder.Register(context => RhetosAppEnvironment.FromRuntimeConfiguration(context.Resolve<IConfigurationProvider>()))
+                .As<RhetosAppEnvironment>().As<IRhetosEnvironment>().SingleInstance();
+            builder.RegisterType<InstalledPackagesProvider>();
+            builder.Register(context => context.Resolve<InstalledPackagesProvider>().Load()).As<InstalledPackages>().As<IInstalledPackages>().SingleInstance();
             builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<RhetosAppOptions>()).SingleInstance().PreserveExistingDefaults();
             builder.RegisterType<DomLoader>().As<IDomainObjectModel>().SingleInstance();
             builder.RegisterType<PersistenceTransaction>().As<IPersistenceTransaction>().InstancePerLifetimeScope();
             builder.RegisterType<DslModelFile>().As<IDslModel>().SingleInstance();
             builder.RegisterModule(new DatabaseRuntimeModule());
 
+            var pluginRegistration = builder.GetPluginRegistration();
             AddSecurity(builder, pluginRegistration);
             AddUtilities(builder, pluginRegistration);
             AddCommandsProcessing(builder, pluginRegistration);

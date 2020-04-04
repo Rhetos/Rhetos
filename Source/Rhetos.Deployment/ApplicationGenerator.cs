@@ -33,7 +33,6 @@ namespace Rhetos.Deployment
         private readonly ILogger _logger;
         private readonly IDslModel _dslModel;
         private readonly IPluginsContainer<IGenerator> _generatorsContainer;
-        private readonly RhetosAppEnvironment _rhetosAppEnvironment;
         private readonly RhetosBuildEnvironment _buildEnvironment;
         private readonly FilesUtility _filesUtility;
         private readonly ISourceWriter _sourceWriter;
@@ -42,7 +41,6 @@ namespace Rhetos.Deployment
             ILogProvider logProvider,
             IDslModel dslModel,
             IPluginsContainer<IGenerator> generatorsContainer,
-            RhetosAppEnvironment rhetosAppEnvironment,
             RhetosBuildEnvironment buildEnvironment,
             FilesUtility filesUtility,
             ISourceWriter sourceWriter)
@@ -50,7 +48,6 @@ namespace Rhetos.Deployment
             _logger = logProvider.GetLogger(GetType().Name);
             _dslModel = dslModel;
             _generatorsContainer = generatorsContainer;
-            _rhetosAppEnvironment = rhetosAppEnvironment;
             _buildEnvironment = buildEnvironment;
             _filesUtility = filesUtility;
             _sourceWriter = sourceWriter;
@@ -58,7 +55,7 @@ namespace Rhetos.Deployment
 
         public void ExecuteGenerators()
         {
-            _filesUtility.EmptyDirectory(_rhetosAppEnvironment.AssetsFolder);
+            _filesUtility.EmptyDirectory(_buildEnvironment.GeneratedAssetsFolder);
             _filesUtility.SafeCreateDirectory(_buildEnvironment.CacheFolder); // Cache is not deleted between builds.
             if(!string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder))
                 _filesUtility.SafeCreateDirectory(_buildEnvironment.GeneratedSourceFolder); // Obsolete source files will be cleaned later. Keeping the existing files to allowing source change detection in Visual Studio.

@@ -28,19 +28,17 @@ namespace Rhetos.DatabaseGenerator
 {
     public class DatabaseModelFile
     {
-        private readonly ILogger _performanceLogger;
-
         private const string DatabaseModelFileName = "DatabaseModel.json";
-        private readonly RhetosAppEnvironment _rhetosAppEnvironment;
 
-        private string DatabaseModelFilePath => Path.Combine(_rhetosAppEnvironment.AssetsFolder, DatabaseModelFileName);
+        private readonly ILogger _performanceLogger;
+        private readonly string _databaseModelFilePath;
 
         public DatabaseModelFile(
             ILogProvider logProvider,
-            RhetosAppEnvironment rhetosAppEnvironment)
+            IRhetosEnvironment rhetosEnvironment)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
-            _rhetosAppEnvironment = rhetosAppEnvironment;
+            _databaseModelFilePath = Path.Combine(rhetosEnvironment.AssetsFolder, DatabaseModelFileName);
         }
 
         public void Save(DatabaseModel databaseModel)
@@ -50,7 +48,7 @@ namespace Rhetos.DatabaseGenerator
             string serializedModel = JsonConvert.SerializeObject(databaseModel, JsonSerializerSettings);
             _performanceLogger.Write(stopwatch, $"{nameof(DatabaseModelFile)}.{nameof(Save)}: Serialize.");
 
-            File.WriteAllText(DatabaseModelFilePath, serializedModel, Encoding.UTF8);
+            File.WriteAllText(_databaseModelFilePath, serializedModel, Encoding.UTF8);
             _performanceLogger.Write(stopwatch, $"{nameof(DatabaseModelFile)}.{nameof(Save)}: Write.");
         }
 
@@ -61,7 +59,7 @@ namespace Rhetos.DatabaseGenerator
             string serializedModel;
             try
             {
-                serializedModel = File.ReadAllText(DatabaseModelFilePath, Encoding.UTF8);
+                serializedModel = File.ReadAllText(_databaseModelFilePath, Encoding.UTF8);
             }
             catch (FileNotFoundException ex)
             {

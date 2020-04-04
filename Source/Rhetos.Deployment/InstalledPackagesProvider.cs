@@ -30,10 +30,10 @@ namespace Rhetos.Deployment
         private readonly ILogger _logger;
         private readonly string _packagesFilePath;
 
-        public InstalledPackagesProvider(ILogProvider logProvider, RhetosAppEnvironment rhetosAppEnvironment)
+        public InstalledPackagesProvider(ILogProvider logProvider, IRhetosEnvironment rhetosEnvironment)
         {
             _logger = logProvider.GetLogger(GetType().Name);
-            _packagesFilePath = Path.Combine(rhetosAppEnvironment.AssetsFolder, PackagesFileName);
+            _packagesFilePath = Path.Combine(rhetosEnvironment.AssetsFolder, PackagesFileName);
         }
 
         private const string PackagesFileName = "InstalledPackages.json";

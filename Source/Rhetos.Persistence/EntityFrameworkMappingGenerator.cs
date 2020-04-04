@@ -48,18 +48,18 @@ namespace Rhetos.Persistence
         private readonly ICodeGenerator _codeGenerator;
         private readonly IPluginsContainer<IConceptMapping> _plugins;
         private readonly ILogger _performanceLogger;
-        private readonly RhetosAppEnvironment _rhetosAppEnvironment;
+        private readonly RhetosBuildEnvironment _rhetosBuildEnvironment;
 
         public EntityFrameworkMappingGenerator(
             ICodeGenerator codeGenerator,
             IPluginsContainer<IConceptMapping> plugins,
-            RhetosAppEnvironment rhetosAppEnvironment,
+            RhetosBuildEnvironment rhetosBuildEnvironment,
             ILogProvider logProvider)
         {
             _plugins = plugins;
             _codeGenerator = codeGenerator;
             _performanceLogger = logProvider.GetLogger("Performance");
-            _rhetosAppEnvironment = rhetosAppEnvironment;
+            _rhetosBuildEnvironment = rhetosBuildEnvironment;
         }
 
         public void Generate()
@@ -75,7 +75,7 @@ namespace Rhetos.Persistence
             for (int s = 0; s < segments.Count(); s++)
             {
                 string clearedXml = XmlUtility.RemoveComments(segments[s]);
-                string filePath = Path.Combine(_rhetosAppEnvironment.AssetsFolder, EntityFrameworkMapping.ModelFiles[s]);
+                string filePath = Path.Combine(_rhetosBuildEnvironment.GeneratedAssetsFolder, EntityFrameworkMapping.ModelFiles[s]);
                 File.WriteAllText(filePath, clearedXml, Encoding.UTF8);
             }
 
@@ -112,7 +112,7 @@ $@"<Schema Namespace=""{EntityFrameworkMapping.ConceptualModelNamespace}"" Alias
 
         public IEnumerable<string> Dependencies
         {
-            get { return null; }
+            get { return Array.Empty<string>(); }
         }
     }
 }

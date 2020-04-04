@@ -69,13 +69,13 @@ namespace Rhetos
         }
 
         /// <summary>
-        /// Loads configuration from Rhetos-specific configuration files, and adds application root folder.
+        /// Adds runtime configuration from Rhetos-specific configuration files.
         /// </summary>
-        public static IConfigurationBuilder AddRhetosRuntimeConfiguration(this IConfigurationBuilder builder, string applicationRootFolder)
+        public static IConfigurationBuilder AddRhetosRuntimeEnvironment(this IConfigurationBuilder builder, string applicationRootFolder)
         {
             builder.AddKeyValue(nameof(RhetosAppEnvironment.ApplicationRootFolder), applicationRootFolder);
             builder.AddJsonFile(Path.Combine(applicationRootFolder, RhetosAppConfiguration.ConfigurationFileName), optional: true);
-            builder.AddJsonFile(Path.Combine(applicationRootFolder, "rhetos-app.local.settings.json"), optional: true);
+            builder.AddJsonFile(Path.Combine(applicationRootFolder, RhetosAppConfiguration.LocalConfigurationFileName), optional: true);
             return builder;
         }
 

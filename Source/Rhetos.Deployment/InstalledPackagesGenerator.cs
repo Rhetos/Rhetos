@@ -18,8 +18,6 @@
 */
 
 using Rhetos.Extensibility;
-using Rhetos.Logging;
-using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 
@@ -30,9 +28,9 @@ namespace Rhetos.Deployment
         private readonly InstalledPackagesProvider _installedPackagesProvider;
         private readonly InstalledPackages _installedPackages;
 
-        public InstalledPackagesGenerator(InstalledPackages installedPackages, ILogProvider logProvider, RhetosAppEnvironment rhetosAppEnvironment)
+        public InstalledPackagesGenerator(InstalledPackages installedPackages, InstalledPackagesProvider installedPackagesProvider)
         {
-            _installedPackagesProvider = new InstalledPackagesProvider(logProvider, rhetosAppEnvironment);
+            _installedPackagesProvider = installedPackagesProvider;
             _installedPackages = installedPackages;
         }
 

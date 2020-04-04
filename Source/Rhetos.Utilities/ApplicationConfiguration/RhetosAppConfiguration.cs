@@ -27,6 +27,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration
     public class RhetosAppConfiguration
     {
         public static readonly string ConfigurationFileName = "rhetos-app.settings.json";
+        public static readonly string LocalConfigurationFileName = "rhetos-app.local.settings.json";
 
         public string RhetosRuntimePath { get; set; }
 

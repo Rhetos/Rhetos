@@ -125,6 +125,7 @@
     <Compile Include="ApplicationConfiguration\ConfigurationBuilder.cs" />
     <Compile Include="ApplicationConfiguration\ConfigurationProvider.cs" />
     <Compile Include="ApplicationConfiguration\ConfigurationSources\JsonFileSource.cs" />
+    <Compile Include="ApplicationConfiguration\ConfigurationSources\RhetosAppEnvironmentSource.cs" />
     <Compile Include="ApplicationConfiguration\ConfigurationSources\JsonSource.cs" />
     <Compile Include="ApplicationConfiguration\ConfigurationSources\CommandLineArgumentsSource.cs" />
     <Compile Include="ApplicationConfiguration\ConfigurationSources\ConfigurationSourcesBuilderExtensions.cs" />
@@ -154,6 +155,7 @@
     <Compile Include="ApplicationConfiguration\RhetosAppConfiguration.cs" />
     <Compile Include="RhetosAppEnvironment.cs" />
     <Compile Include="RhetosAppOptions.cs" />
+    <Compile Include="IRhetosEnvironment.cs" />
     <Compile Include="RhetosBuildEnvironment.cs" />
     <Compile Include="SecurityOptions.cs" />
     <Compile Include="DatabaseOptions.cs" />

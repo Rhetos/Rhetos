@@ -19,22 +19,15 @@
 
 namespace Rhetos.Utilities
 {
-    public class RhetosBuildEnvironment : IRhetosEnvironment
+    /// <summary>
+    /// Common settings for build-time and run-time environment.
+    /// </summary>
+    public interface IRhetosEnvironment
     {
-        public string ProjectFolder { get; set; }
-
         /// <summary>
-        /// Assembly that will contains the generated object model.
-        /// Null for old Rhetos applications with multiple generated ServerDom libraries.
+        /// Output folder at build-time.
+        /// Input and writable folder at run-time.
         /// </summary>
-        public string OutputAssemblyName { get; set; }
-
-        public string CacheFolder { get; set; }
-
-        public string GeneratedAssetsFolder { get; set; }
-
-        public string GeneratedSourceFolder { get; set; }
-
-        string IRhetosEnvironment.AssetsFolder => GeneratedAssetsFolder;
+        string AssetsFolder { get; }
     }
 }

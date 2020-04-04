@@ -17,18 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rhetos.Dsl.DefaultConcepts;
-using System.Globalization;
-using System.ComponentModel.Composition;
-using Rhetos.Extensibility;
-using Rhetos.Dsl;
 using Rhetos.Compiler;
+using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Persistence;
 using Rhetos.Utilities;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -44,18 +37,19 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly XmlTag<DataStructureInfo> StorageModelEntityTypePropertyTag = "StorageModelEntityTypeProperty";
 
         public static readonly XmlTag<DataStructureInfo> StorageModelCustomannotationIndexForIDTag = "StorageModelCustomannotationIndexForID";
-        private readonly RhetosAppEnvironment _rhetosAppEnvironment;
 
-        public DataStructureEdmxCodeGenerator(RhetosAppEnvironment rhetosAppEnvironment)
+        private readonly RhetosBuildEnvironment _rhetosBuildEnvironment;
+
+        public DataStructureEdmxCodeGenerator(RhetosBuildEnvironment rhetosBuildEnvironment)
         {
-            _rhetosAppEnvironment = rhetosAppEnvironment;
+            _rhetosBuildEnvironment = rhetosBuildEnvironment;
         }
 
         public override void GenerateCode(DataStructureInfo dataStructureInfo, ICodeBuilder codeBuilder)
         {
             if (dataStructureInfo is IOrmDataStructure)
             {
-                codeBuilder.InsertCode(GetEntityTypeNodeForConceptualModel(dataStructureInfo, _rhetosAppEnvironment), EntityFrameworkMapping.ConceptualModelTag);
+                codeBuilder.InsertCode(GetEntityTypeNodeForConceptualModel(dataStructureInfo), EntityFrameworkMapping.ConceptualModelTag);
                 codeBuilder.InsertCode(GetEntitySetNodeForConceptualModel(dataStructureInfo), EntityFrameworkMapping.ConceptualModelEntityContainerTag);
 
                 codeBuilder.InsertCode(GetEntitySetMappingForMapping(dataStructureInfo), EntityFrameworkMapping.MappingEntityContainerTag);
@@ -65,7 +59,7 @@ namespace Rhetos.Dom.DefaultConcepts
             }
         }
 
-        private static string GetEntitySetMappingForMapping(DataStructureInfo dataStructureInfo)
+        private string GetEntitySetMappingForMapping(DataStructureInfo dataStructureInfo)
         {
             return $@"
   <EntitySetMapping Name=""{GetName(dataStructureInfo)}"">
@@ -77,7 +71,7 @@ namespace Rhetos.Dom.DefaultConcepts
   </EntitySetMapping>";
         }
 
-        private static string GetEntityTypeNodeForStorageModel(DataStructureInfo dataStructureInfo)
+        private string GetEntityTypeNodeForStorageModel(DataStructureInfo dataStructureInfo)
         {
             return $@"
   <EntityType Name=""{GetName(dataStructureInfo)}"">
@@ -88,9 +82,9 @@ namespace Rhetos.Dom.DefaultConcepts
   </EntityType>";
         }
 
-        private static string GetEntityTypeNodeForConceptualModel(DataStructureInfo dataStructureInfo, RhetosAppEnvironment rhetosAppEnvironment)
+        private string GetEntityTypeNodeForConceptualModel(DataStructureInfo dataStructureInfo)
         {
-            var assemblyName = string.IsNullOrEmpty(rhetosAppEnvironment.AssemblyName) ? "ServerDom.Model, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" : rhetosAppEnvironment.AssemblyName;
+            var assemblyName = string.IsNullOrEmpty(_rhetosBuildEnvironment.OutputAssemblyName) ? "ServerDom.Model, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" : _rhetosBuildEnvironment.OutputAssemblyName;
             return $@"
   <EntityType Name=""{GetName(dataStructureInfo)}"" customannotation:ClrType=""Common.Queryable.{GetName(dataStructureInfo)}, {assemblyName}"">
     <Key>
@@ -100,13 +94,13 @@ namespace Rhetos.Dom.DefaultConcepts
   </EntityType>";
         }
 
-        private static string GetEntitySetNodeForConceptualModel(DataStructureInfo dataStructureInfo)
+        private string GetEntitySetNodeForConceptualModel(DataStructureInfo dataStructureInfo)
         {
             return $@"
     <EntitySet Name=""{GetName(dataStructureInfo)}"" EntityType=""Self.{GetName(dataStructureInfo)}"" />";
         }
 
-        private static string GetEntitySetNodeForStorageModel(DataStructureInfo dataStructureInfo)
+        private string GetEntitySetNodeForStorageModel(DataStructureInfo dataStructureInfo)
         {
             var ormStructure = (IOrmDataStructure)dataStructureInfo;
             return $@"

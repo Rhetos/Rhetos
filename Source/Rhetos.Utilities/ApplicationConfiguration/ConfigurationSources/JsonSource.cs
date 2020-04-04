@@ -17,14 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
 {
@@ -46,6 +43,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
         }
 
         private static readonly JTokenType[] _allowedJTokenTypes = { JTokenType.Boolean, JTokenType.String, JTokenType.Integer, JTokenType.Float, JTokenType.Object };
+
         private Dictionary<string, object> GetKeysFromObject(JObject jObject, string path)
         {
             var jsonOptions = new Dictionary<string, object>();
