@@ -57,16 +57,23 @@ namespace DeployPackages
                 
                 // Using build-time configuration:
                 {
-                    var buildEnvironment = new RhetosBuildEnvironment
-                    {
-                        ProjectFolder = rhetosAppRootPath,
-                        OutputAssemblyName = null,
-                        CacheFolder = Path.Combine(rhetosAppRootPath, "GeneratedFilesCache"),
-                        GeneratedAssetsFolder = Path.Combine(rhetosAppRootPath, "bin", "Generated"),
-                        GeneratedSourceFolder = null,
-                    };
+                    string pluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins");
+
                     var configurationProvider = new ConfigurationBuilder()
-                        .AddOptions(buildEnvironment)
+                        .AddOptions(new RhetosBuildEnvironment
+                        {
+                            ProjectFolder = rhetosAppRootPath,
+                            OutputAssemblyName = null,
+                            CacheFolder = Path.Combine(rhetosAppRootPath, "GeneratedFilesCache"),
+                            GeneratedAssetsFolder = Path.Combine(rhetosAppRootPath, "bin", "Generated"),
+                            GeneratedSourceFolder = null,
+                        })
+                        .AddOptions(new LegacyPathsConfiguration
+                        {
+                            BinFolder = Path.Combine(rhetosAppRootPath, "bin"),
+                            PluginsFolder = pluginsFolder,
+                            ResourcesFolder = Path.Combine(rhetosAppRootPath, "Resources"),
+                        }, "Legacy:Paths")
                         .AddWebConfiguration(rhetosAppRootPath)
                         .AddConfigurationManagerConfiguration()
                         .AddCommandLineArguments(args, "/")
@@ -77,7 +84,6 @@ namespace DeployPackages
                     if (deployOptions.StartPaused)
                         StartPaused();
 
-                    string pluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins");
                     var deployment = new ApplicationDeployment(configurationProvider, logProvider, () => GetBuildPlugins(pluginsFolder));
                     if (!deployOptions.DatabaseOnly)
                     {
@@ -101,7 +107,7 @@ namespace DeployPackages
                             builder.AddCommandLineArguments(args, "/");
                         });
 
-                    var deployment = new ApplicationDeployment(configurationProvider, logProvider, LegacyUtilities.GetListAssembliesDelegate(configurationProvider));
+                    var deployment = new ApplicationDeployment(configurationProvider, logProvider, LegacyUtilities.GetRuntimeAssembliesDelegate(configurationProvider));
 
                     deployment.UpdateDatabase();
                     deployment.InitializeGeneratedApplication(host.RhetosRuntime);
@@ -179,7 +185,7 @@ namespace DeployPackages
             var obsoleteFolders = new string[]
             {
                 Path.Combine(Paths.RhetosServerRootPath, "DslScripts"),
-                Path.Combine(Paths.RhetosServerRootPath, "DataMigration")
+                Path.Combine(Paths.RhetosServerRootPath, "DataMigration"),
             };
             var obsoleteFolder = obsoleteFolders.FirstOrDefault(folder => Directory.Exists(folder));
             if (obsoleteFolder != null)
@@ -187,9 +193,9 @@ namespace DeployPackages
 
             var deleteObsoleteFiles = new string[]
             {
-                Path.Combine(Paths.BinFolder, "ServerDom.cs"),
-                Path.Combine(Paths.BinFolder, "ServerDom.dll"),
-                Path.Combine(Paths.BinFolder, "ServerDom.pdb")
+                Path.Combine(Paths.RhetosServerRootPath, "bin", "ServerDom.cs"),
+                Path.Combine(Paths.RhetosServerRootPath, "bin", "ServerDom.dll"),
+                Path.Combine(Paths.RhetosServerRootPath, "bin", "ServerDom.pdb"),
             };
 
             foreach (var path in deleteObsoleteFiles)

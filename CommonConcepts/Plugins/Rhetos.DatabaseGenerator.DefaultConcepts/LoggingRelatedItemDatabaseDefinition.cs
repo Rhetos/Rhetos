@@ -24,7 +24,6 @@ using Rhetos.Utilities;
 using Rhetos.Extensibility;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Dsl;
-using System.Globalization;
 using Rhetos.Compiler;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts

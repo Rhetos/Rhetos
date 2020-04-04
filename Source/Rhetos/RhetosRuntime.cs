@@ -57,7 +57,7 @@ namespace Rhetos
 
         public IContainer BuildContainer(ILogProvider logProvider, IConfigurationProvider configurationProvider, Action<ContainerBuilder> registerCustomComponents)
         {
-            return BuildContainer(logProvider, configurationProvider, registerCustomComponents, LegacyUtilities.GetListAssembliesDelegate(configurationProvider));
+            return BuildContainer(logProvider, configurationProvider, registerCustomComponents, LegacyUtilities.GetRuntimeAssembliesDelegate(configurationProvider));
         }
 
         private IContainer BuildContainer(ILogProvider logProvider, IConfigurationProvider configurationProvider, Action<ContainerBuilder> registerCustomComponents, Func<IEnumerable<string>> getAssembliesDelegate)

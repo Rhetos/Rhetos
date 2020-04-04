@@ -43,29 +43,31 @@ namespace Rhetos
         /// <summary>
         /// Returns list of assemblies that will be scanned for plugin exports.
         /// </summary>
-        public static Func<string[]> GetListAssembliesDelegate(IConfigurationProvider configurationProvider)
+        public static Func<string[]> GetRuntimeAssembliesDelegate(IConfigurationProvider configurationProvider)
         {
             var runtimeEnvironment = configurationProvider.GetOptions<RhetosAppEnvironment>();
             if (runtimeEnvironment?.AssemblyFolder == null)
                 throw new FrameworkException($"Run-time environment not initialized." +
                     $" {nameof(RhetosAppEnvironment)}.{nameof(RhetosAppEnvironment.AssemblyFolder)} is not set.");
 
+            var legacyPaths = configurationProvider.GetOptions<LegacyPathsConfiguration>("Legacy:Paths");
+
             return () =>
             {
                 var pluginsPaths = new List<string>();
 
-                if (string.IsNullOrEmpty(runtimeEnvironment.Legacy__PluginsFolder))
-                {
-                    pluginsPaths.Add(runtimeEnvironment.AssemblyFolder);
-                }
-                else
+                if (!string.IsNullOrEmpty(legacyPaths.PluginsFolder))
                 {
                     // Old build process (DeployPackages) copies plugins from packages to Plugins folder,
                     // and builds new libraries in AssetsFolder.
                     // We don't need to scan main AssemblyFolder because it contains only Rhetos framework binaries
                     // that have no plugins exports, only explicit registrations.
-                    pluginsPaths.Add(runtimeEnvironment.Legacy__PluginsFolder);
+                    pluginsPaths.Add(legacyPaths.PluginsFolder);
                     pluginsPaths.Add(runtimeEnvironment.AssetsFolder);
+                }
+                else
+                {
+                    pluginsPaths.Add(runtimeEnvironment.AssemblyFolder);
                 }
 
                 var assemblyFiles = pluginsPaths

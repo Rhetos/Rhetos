@@ -28,11 +28,12 @@ namespace Rhetos.Utilities
     [Obsolete("Use RhetosAppEnvironment instead.")]
     public static class Paths
     {
-        private static string _environment;
         private static string _rhetosServerRootPath;
         private static string _binFolder;
         private static string _generatedFolder;
         private static string _pluginsFolder;
+        private static string _resourcesFolder;
+        private static string _environment;
 
         /// <summary>
         /// Initialize legacy Paths for the Rhetos server.
@@ -41,57 +42,52 @@ namespace Rhetos.Utilities
         {
             var runtimeEnvironment = configurationProvider.GetOptions<RhetosAppEnvironment>();
             var buildEnvironment = configurationProvider.GetOptions<RhetosBuildEnvironment>();
+            var legacyPaths = configurationProvider.GetOptions<LegacyPathsConfiguration>("Legacy:Paths");
+
+            _rhetosServerRootPath = buildEnvironment.ProjectFolder ?? runtimeEnvironment.ApplicationRootFolder;
+            _binFolder = legacyPaths.BinFolder ?? runtimeEnvironment.AssemblyFolder;
+            _generatedFolder = buildEnvironment.GeneratedAssetsFolder ?? runtimeEnvironment.AssetsFolder;
+            _pluginsFolder = legacyPaths.PluginsFolder;
+            _resourcesFolder = legacyPaths.ResourcesFolder;
 
             if (buildEnvironment?.ProjectFolder != null)
-                Initialize(buildEnvironment);
+                _environment = "build";
             else if (runtimeEnvironment?.ApplicationRootFolder != null)
-                Initialize(runtimeEnvironment);
+                _environment = "run-time";
             else
-                InitializeNone();
+                _environment = "unspecified";
         }
 
-        private static void Initialize(RhetosBuildEnvironment buildEnvironment)
+        public static string RhetosServerRootPath => PathOrError(_rhetosServerRootPath, "RhetosServerRootPath");
+
+        public static string ResourcesFolder => AbsolutePathOrError(_resourcesFolder, "ResourcesFolder");
+
+        public static string BinFolder => AbsolutePathOrError(_binFolder, "BinFolder");
+
+        public static string GeneratedFolder => AbsolutePathOrError(_generatedFolder, "GeneratedFolder");
+
+        public static string PluginsFolder => AbsolutePathOrError(_pluginsFolder, "PluginsFolder");
+
+        private static string PathOrError(string path, string name)
         {
-            _environment = "build";
-            _rhetosServerRootPath = buildEnvironment.ProjectFolder;
-            _binFolder = null;
-            _generatedFolder = buildEnvironment.GeneratedAssetsFolder;
-            _pluginsFolder = null;
+            if (string.IsNullOrEmpty(path))
+                throw new FrameworkException($"Paths property '{name}' is not configured in '{_environment}' environment.");
+            return path;
         }
 
-        private static void Initialize(RhetosAppEnvironment runtimeEnvironment)
+        private static string AbsolutePathOrError(string path, string name)
         {
-            _environment = "run-time";
-            _rhetosServerRootPath = runtimeEnvironment.ApplicationRootFolder;
-            _binFolder = runtimeEnvironment.AssemblyFolder;
-            _generatedFolder = runtimeEnvironment.AssetsFolder;
-            _pluginsFolder = runtimeEnvironment.Legacy__PluginsFolder;
-        }
-
-        private static void InitializeNone()
-        {
-            _environment = "uninitialized";
-            _rhetosServerRootPath = null;
-            _binFolder = null;
-            _generatedFolder = null;
-            _pluginsFolder = null;
-        }
-
-        public static string RhetosServerRootPath => ErrorIfNull(_rhetosServerRootPath, "RhetosServerRootPath");
-
-        public static string ResourcesFolder => Path.Combine(RhetosServerRootPath, "Resources");
-
-        public static string BinFolder => ErrorIfNull(_binFolder, "BinFolder");
-
-        public static string GeneratedFolder => ErrorIfNull(_generatedFolder, "GeneratedFolder");
-
-        public static string PluginsFolder => ErrorIfNull(_pluginsFolder, "PluginsFolder");
-
-        private static T ErrorIfNull<T>(T value, string name) where T : class
-        {
-            if (value is null)
-                throw new FrameworkException($"Paths property '{name}' is not configured in {_environment} environment.");
-            return value;
+            if (string.IsNullOrEmpty(path))
+                throw new FrameworkException($"Paths property '{name}' is not configured in '{_environment}' environment.");
+            if (string.IsNullOrEmpty(_rhetosServerRootPath))
+            {
+                if (path == Path.GetFullPath(path))
+                    return path;
+                else
+                    throw new FrameworkException($"Paths property '{name}' is not configured correctly in '{_environment}' environment." +
+                        $" Specified relative path '{path}' without known root folder ({nameof(RhetosServerRootPath)}).");
+            }
+            return Path.GetFullPath(Path.Combine(_rhetosServerRootPath, path));
         }
 
         public static string GetDomAssemblyFile(DomAssemblies domAssembly) => Path.Combine(GeneratedFolder, $"ServerDom.{domAssembly}.dll");

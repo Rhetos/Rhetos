@@ -240,5 +240,12 @@ namespace Rhetos.Utilities
                 Path.GetFullPath(Path.Combine(path2, ".")),
                 StringComparison.OrdinalIgnoreCase);
         }
+
+        public static bool IsInsideDirectory(string child, string parent)
+        {
+            return Path.GetFullPath(Path.Combine(child, "."))
+                .StartsWith(Path.GetFullPath(Path.Combine(parent, ".")),
+                    StringComparison.OrdinalIgnoreCase);
+        }
     }
 }

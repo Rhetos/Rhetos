@@ -108,14 +108,19 @@ namespace Rhetos
         {
             var buildEnvironmentAndAssets = new RhetosProjectAssetsFileProvider(projectRootPath, LogProvider).Load();
 
-            string binFolder = Path.Combine(projectRootPath, "bin");
-            if (FilesUtility.IsSameDirectory(AppDomain.CurrentDomain.BaseDirectory, binFolder))
+            if (FilesUtility.IsInsideDirectory(AppDomain.CurrentDomain.BaseDirectory, Path.Combine(projectRootPath, "bin")))
                 throw new FrameworkException($"Rhetos build command cannot be run from the generated application folder." +
                     $" Visual Studio integration runs it automatically from Rhetos NuGet package tools folder." +
-                    $" You can run it manually from Package Manager Console, it is included in PATH.");
+                    $" You can run it manually from Package Manager Console, since the tools folder it is included in PATH.");
 
             var configurationProvider = new ConfigurationBuilder()
                 .AddOptions(buildEnvironmentAndAssets.RhetosBuildEnvironment)
+                .AddOptions(new LegacyPathsConfiguration
+                {
+                    BinFolder = null, // It should not be needed for build with Rhetos CLI.
+                    PluginsFolder = null, // It should not be needed for build with Rhetos CLI.
+                    ResourcesFolder = Path.Combine(projectRootPath, "Resources"), // Currently supporting old plugins by default.
+                }, "Legacy:Paths")
                 .AddConfigurationManagerConfiguration()
                 .AddJsonFile(Path.Combine(projectRootPath, "rhetos-build.settings.json"), optional: true)
                 .Build();
@@ -145,7 +150,7 @@ namespace Rhetos
                 configurationBuilder.AddKeyValue(nameof(DatabaseOptions.SqlCommandTimeout), 0);
             });
 
-            var assemblyFiles = LegacyUtilities.GetListAssembliesDelegate(configurationProvider).Invoke(); // Using same assembly locations as the generated application runtime.
+            var assemblyFiles = LegacyUtilities.GetRuntimeAssembliesDelegate(configurationProvider).Invoke(); // Using same assembly locations as the generated application runtime.
             AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(assemblyFiles);
 
             return new ApplicationDeployment(configurationProvider, LogProvider, () => assemblyFiles);

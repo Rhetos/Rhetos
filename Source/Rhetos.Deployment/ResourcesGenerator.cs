@@ -51,7 +51,7 @@ namespace Rhetos.Deployment
 
         public void Generate()
         {
-            if (_buildOptions.Legacy__UseResourcesFolder)
+            if (_buildOptions.Legacy__BuildResourcesFolder)
                 CopyResourcesFromPackages();
         }
 

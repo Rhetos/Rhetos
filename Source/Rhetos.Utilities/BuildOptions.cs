@@ -30,7 +30,7 @@ namespace Rhetos.Utilities
         public bool CommonConcepts__Legacy__CascadeDeleteInDatabase { get; set; } = false;
         public InitialConceptsSort Dsl__InitialConceptsSort { get; set; } = InitialConceptsSort.Key;
         public ExcessDotInKey Dsl__ExcessDotInKey { get; set; } = ExcessDotInKey.Ignore;
-        public bool Legacy__UseResourcesFolder { get; set; } = false;
+        public bool Legacy__BuildResourcesFolder { get; set; } = false;
     }
 
     /// <summary>

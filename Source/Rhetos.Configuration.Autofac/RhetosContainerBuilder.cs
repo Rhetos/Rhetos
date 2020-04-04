@@ -20,7 +20,6 @@
 using Autofac;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
-using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 

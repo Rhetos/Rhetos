@@ -17,19 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-namespace Rhetos.Utilities.ApplicationConfiguration
+namespace Rhetos.Utilities
 {
-    /// <summary>
-    /// Minimal content of the configuration file <see cref="ConfigurationFileName"/>.
-    /// This class is intended for internal initialization of configuration, it should not be used directly as an options class.
-    /// Use <see cref="RhetosAppEnvironment"/> instead to get runtime configuration from DI container.
-    /// </summary>
-    public class RhetosAppConfiguration
+    public class LegacyPathsConfiguration
     {
-        public static readonly string ConfigurationFileName = "rhetos-app.settings.json";
-
-        public string RhetosRuntimePath { get; set; }
-
-        public string AssetsFolder { get; set; }
+        public string BinFolder { get; set; }
+        public string PluginsFolder { get; set; }
+        public string ResourcesFolder { get; set; }
     }
 }

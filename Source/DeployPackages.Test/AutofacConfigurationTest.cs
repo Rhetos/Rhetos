@@ -41,26 +41,31 @@ namespace DeployPackages.Test
             string rhetosAppRootPath = AppDomain.CurrentDomain.BaseDirectory;
 
             // This code is mostly copied from DeployPackages build-time configuration.
-            var buildEnvironment = new RhetosBuildEnvironment
-            {
-                ProjectFolder = rhetosAppRootPath,
-                OutputAssemblyName = null,
-                CacheFolder = Path.Combine(rhetosAppRootPath, "GeneratedFilesCache"),
-                GeneratedAssetsFolder = Path.Combine(rhetosAppRootPath), // Custom for testing
-                GeneratedSourceFolder = null,
-            };
-            var rhetosAppEnvironment = new RhetosAppEnvironment
-            {
-                ApplicationRootFolder = rhetosAppRootPath,
-                AssemblyFolder = Path.Combine(rhetosAppRootPath, "bin"),
-                AssetsFolder = Path.Combine(rhetosAppRootPath, "bin", "Generated"),
-                Legacy__PluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins"),
-                AssemblyName = null,
-                RhetosRuntimePath = GetType().Assembly.Location
-            };
+
             _configurationProvider = new ConfigurationBuilder()
-                .AddOptions(buildEnvironment)
-                .AddOptions(rhetosAppEnvironment) // TODO: Should not register both build-time and run-time environment.
+                .AddOptions(new RhetosBuildEnvironment
+                {
+                    ProjectFolder = rhetosAppRootPath,
+                    OutputAssemblyName = null,
+                    CacheFolder = Path.Combine(rhetosAppRootPath, "GeneratedFilesCache"),
+                    GeneratedAssetsFolder = Path.Combine(rhetosAppRootPath), // Custom for testing
+                    GeneratedSourceFolder = null,
+                })
+                // TODO: Should not register both build-time and run-time environment.
+                .AddOptions(new RhetosBuildEnvironment
+                {
+                    ProjectFolder = rhetosAppRootPath,
+                    OutputAssemblyName = null,
+                    CacheFolder = Path.Combine(rhetosAppRootPath, "GeneratedFilesCache"),
+                    GeneratedAssetsFolder = Path.Combine(rhetosAppRootPath), // Custom for testing
+                    GeneratedSourceFolder = null,
+                })
+                .AddOptions(new LegacyPathsConfiguration
+                {
+                    BinFolder = Path.Combine(rhetosAppRootPath, "bin"),
+                    PluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins"),
+                    ResourcesFolder = Path.Combine(rhetosAppRootPath, "Resources"),
+                }, "Legacy:Paths")
                 .AddWebConfiguration(rhetosAppRootPath)
                 .AddKeyValue(nameof(RhetosAppEnvironment.AssetsFolder), AppDomain.CurrentDomain.BaseDirectory)
                 .AddConfigurationManagerConfiguration()

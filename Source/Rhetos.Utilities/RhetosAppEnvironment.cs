@@ -47,14 +47,15 @@ namespace Rhetos.Utilities
             if (string.IsNullOrEmpty(appConfiguration.AssetsFolder))
                 throw new FrameworkException($"Missing '{nameof(RhetosAppConfiguration.AssetsFolder)}' configuration setting. Please verify that the Rhetos build have passed successfully.");
 
+            string absolutePath(string relativePath) => relativePath != null ? Path.GetFullPath(Path.Combine(appRootFolder, relativePath)) : null;
+
             return new RhetosAppEnvironment
             {
                 ApplicationRootFolder = Path.GetFullPath(appRootFolder),
-                RhetosRuntimePath = Path.GetFullPath(appConfiguration.RhetosRuntimePath),
-                AssemblyFolder = Path.GetFullPath(Path.GetDirectoryName(appConfiguration.RhetosRuntimePath)),
-                AssetsFolder = Path.GetFullPath(appConfiguration.AssetsFolder),
-                AssemblyName = Assembly.Load(appConfiguration.RhetosRuntimePath).GetName().Name,
-                Legacy__PluginsFolder = appConfiguration.Legacy__PluginsFolders != null ? Path.GetFullPath(appConfiguration.Legacy__PluginsFolders) : null,
+                RhetosRuntimePath = absolutePath(appConfiguration.RhetosRuntimePath),
+                AssemblyFolder = Path.GetDirectoryName(absolutePath(appConfiguration.RhetosRuntimePath)),
+                AssetsFolder = absolutePath(appConfiguration.AssetsFolder),
+                AssemblyName = Assembly.Load(absolutePath(appConfiguration.RhetosRuntimePath)).GetName().Name,
             };
         }
 
@@ -71,11 +72,5 @@ namespace Rhetos.Utilities
         /// Null for old Rhetos applications with multiple generated ServerDom libraries.
         /// </summary>
         public string AssemblyName { get; set; }
-
-        /// <summary>
-        /// This folder can be configured to support legacy plugins.
-        /// Null for new Rhetos applications, where plugins are placed in <see cref="AssemblyFolder"/> by NuGet.
-        /// </summary>
-        public string Legacy__PluginsFolder { get; set; }
     }
 }
