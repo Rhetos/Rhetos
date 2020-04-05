@@ -31,7 +31,8 @@ namespace Rhetos
     public class Host
     {
         /// <summary>
-        /// Helper method that bundles Rhetos runtime location (<see cref="Host.Find"/>),
+        /// Helper method that creates a run-time Dependency Injection container for Rhetos application.
+        /// It bundles Rhetos runtime location (<see cref="Host.Find"/>),
         /// configuration (<see cref="IRhetosRuntime.BuildConfiguration"/>)
         /// and DI registration (<see cref="IRhetosRuntime.BuildContainer"/>).
         /// </summary>
@@ -42,7 +43,7 @@ namespace Rhetos
         /// </param>
         /// <param name="logProvider">If not specified, using ConsoleLogProvider by default.</param>
         /// <returns>DI container for Rhetos runtime.</returns>
-        public static IContainer Initialize(string applicationFolder = null, ILogProvider logProvider = null,
+        public static IContainer CreateRhetosContainer(string applicationFolder = null, ILogProvider logProvider = null,
             Action<IConfigurationBuilder> addConfiguration = null, Action<ContainerBuilder> registerComponents = null)
         {
             applicationFolder = applicationFolder ?? AppDomain.CurrentDomain.BaseDirectory;
