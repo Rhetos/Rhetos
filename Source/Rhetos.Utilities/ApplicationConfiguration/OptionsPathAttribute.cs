@@ -17,23 +17,18 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.Collections.Generic;
+using Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources;
+using System;
 
-namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
+namespace Rhetos
 {
     /// <summary>
-    /// Each implementation source is responsible for normalizing configuration paths to predefined colon (:) separator.
-    /// Empty path fragments are not allowed. Path should not start with a separator (root configuration items are just verbatim setting names).
-    /// Paths and keys are NOT case sensitive.
+    /// When reading this configuration setting, any relative path will be converted to absolute.
+    /// The base folder depends on configuration source implementation of <see cref="IConfigurationSource.BaseFolder"/>,
+    /// it should match the configuration file location.
     /// </summary>
-    public interface IConfigurationSource
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
+    public sealed class OptionsPathAttribute : Attribute
     {
-        IDictionary<string, object> Load();
-
-        /// <summary>
-        /// Base directory for converting relative paths (see <see cref="OptionsPathAttribute"/>).
-        /// Return null or empty if not applicable.
-        /// </summary>
-        string BaseFolder { get; }
     }
 }

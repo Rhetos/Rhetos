@@ -34,6 +34,8 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
             _optional = optional;
         }
 
+        public string BaseFolder => Path.GetDirectoryName(_filePath);
+
         public IDictionary<string, object> Load()
         {
             if (_optional && !File.Exists(_filePath))
@@ -43,7 +45,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
 
             try
             {
-                var jsonSource = new JsonSource(jsonText);
+                var jsonSource = new JsonSource(jsonText, Path.GetDirectoryName(_filePath));
                 return jsonSource.Load();
             }
             catch (Exception e)

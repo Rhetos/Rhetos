@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
@@ -25,6 +26,8 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
 {
     public class ConfigurationManagerSource : IConfigurationSource
     {
+        public string BaseFolder => AppDomain.CurrentDomain.BaseDirectory;
+
         public IDictionary<string, object> Load()
         {
             var appSettings = new List<KeyValuePair<string, string>>();

@@ -36,6 +36,8 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
             _jsonFileSource = new JsonFileSource(Path.Combine(configurationFolder, RhetosAppEnvironment.ConfigurationFileName), optional: true);
         }
 
+        public string BaseFolder => _configurationFolder;
+
         public IDictionary<string, object> Load()
         {
             var settings = new Dictionary<string, object>(_jsonFileSource.Load());

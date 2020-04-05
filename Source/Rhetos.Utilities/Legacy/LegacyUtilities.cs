@@ -50,7 +50,7 @@ namespace Rhetos
                 throw new FrameworkException($"Run-time environment not initialized." +
                     $" {nameof(RhetosAppEnvironment)}.{nameof(RhetosAppEnvironment.AssemblyFolder)} is not set.");
 
-            var legacyPaths = configurationProvider.GetOptions<LegacyPathsOptions>("Legacy:Paths");
+            var legacyPaths = configurationProvider.GetOptions<LegacyPathsOptions>();
 
             return () =>
             {

@@ -50,6 +50,10 @@ namespace Rhetos
 
         public static IConfigurationBuilder AddOptions(this IConfigurationBuilder builder, object options, string configurationPath = "")
         {
+            var optionsAttribute = options.GetType().GetCustomAttribute<OptionsAttribute>();
+            if (string.IsNullOrEmpty(configurationPath))
+                configurationPath = optionsAttribute?.ConfigurationPath ?? "";
+
             var members = options.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public).Select(member => (member.Name, Value: member.GetValue(options)))
                 .Concat(options.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public).Select(member => (member.Name, Value: member.GetValue(options))));
 

@@ -17,9 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 
@@ -28,9 +30,9 @@ namespace Rhetos
     public class ConfigurationProvider : IConfigurationProvider
     {
         public static readonly string ConfigurationPathSeparator = ":";
-        private readonly Dictionary<string, object> _configurationValues;
+        private readonly Dictionary<string, (object Value, string BaseFolder)> _configurationValues;
 
-        public ConfigurationProvider(IDictionary<string, object> configurationValues)
+        public ConfigurationProvider(IDictionary<string, (object Value, string BaseFolder)> configurationValues)
         {
             _configurationValues = configurationValues
                 .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.InvariantCultureIgnoreCase);
@@ -40,6 +42,9 @@ namespace Rhetos
         {
             var optionsType = typeof(T);
             var optionsInstance = Activator.CreateInstance(optionsType);
+            var optionsAttribute = optionsType.GetCustomAttribute<OptionsAttribute>();
+            if (string.IsNullOrEmpty(configurationPath))
+                configurationPath = optionsAttribute?.ConfigurationPath ?? "";
 
             var props = optionsType.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(prop => prop.CanWrite);
             var fields = optionsType.GetFields(BindingFlags.Public | BindingFlags.Instance).Where(field => !field.IsInitOnly);
@@ -48,7 +53,8 @@ namespace Rhetos
             var membersBound = new List<MemberInfo>();
             foreach (var member in members)
             {
-                if (TryGetConfigurationValueForMemberName(member.Name, out var memberValue, configurationPath))
+                bool convertRelativePath = member.GetCustomAttribute<OptionsPathAttribute>() != null;
+                if (TryGetConfigurationValueForMemberName(member.Name, out var memberValue, configurationPath, convertRelativePath))
                 {
                     SetMemberValue(optionsInstance, member, memberValue);
 
@@ -69,12 +75,12 @@ namespace Rhetos
         private const string _memberMappingSeparator = "__";
         private const string _memberMappingSeparatorDot = ".";
 
-        private bool TryGetConfigurationValueForMemberName(string memberName, out object value, string configurationPath)
+        private bool TryGetConfigurationValueForMemberName(string memberName, out object value, string configurationPath, bool convertRelativePath)
         {
             value = null;
             var matchCount = 0;
             
-            if (TryGetConfigurationValue(memberName, out var memberNameLiteral, configurationPath))
+            if (TryGetConfigurationValue(memberName, out var memberNameLiteral, configurationPath, convertRelativePath))
             {
                 value = memberNameLiteral;
                 matchCount++;
@@ -82,12 +88,12 @@ namespace Rhetos
 
             if (memberName.Contains(_memberMappingSeparator))
             {
-                if (TryGetConfigurationValue(memberName.Replace(_memberMappingSeparator, ConfigurationPathSeparator), out var memberNameColon, configurationPath))
+                if (TryGetConfigurationValue(memberName.Replace(_memberMappingSeparator, ConfigurationPathSeparator), out var memberNameColon, configurationPath, convertRelativePath))
                 {
                     value = memberNameColon;
                     matchCount++;
                 }
-                if (TryGetConfigurationValue(memberName.Replace(_memberMappingSeparator, _memberMappingSeparatorDot), out var memberNameDot, configurationPath))
+                if (TryGetConfigurationValue(memberName.Replace(_memberMappingSeparator, _memberMappingSeparatorDot), out var memberNameDot, configurationPath, convertRelativePath))
                 {
                     value = memberNameDot;
                     matchCount++;
@@ -106,7 +112,7 @@ namespace Rhetos
 
         public T GetValue<T>(string configurationKey, T defaultValue = default(T), string configurationPath = "")
         {
-            if (!TryGetConfigurationValue(configurationKey, out var value, configurationPath))
+            if (!TryGetConfigurationValue(configurationKey, out var value, configurationPath, convertRelativePath: false))
                 return defaultValue;
 
             return Convert<T>(value, configurationKey);
@@ -124,14 +130,25 @@ namespace Rhetos
                 throw new FrameworkException($"Unhandled member type {member.GetType()}.");
         }
 
-        private bool TryGetConfigurationValue(string configurationKey, out object result, string configurationPath = "")
+        private bool TryGetConfigurationValue(string configurationKey, out object result, string configurationPath, bool convertRelativePath)
         {
             if (!string.IsNullOrEmpty(configurationPath))
                 configurationKey = $"{configurationPath}{ConfigurationPathSeparator}{configurationKey}";
 
-            return _configurationValues.TryGetValue(configurationKey, out result);
+            if (_configurationValues.TryGetValue(configurationKey, out var entry))
+            {
+                if (convertRelativePath && !string.IsNullOrEmpty(entry.BaseFolder) && !string.IsNullOrEmpty(entry.Value as string))
+                    result = Path.Combine(entry.BaseFolder, (string)entry.Value);
+                else
+                    result = entry.Value;
+                return true;
+            }
+            else
+            {
+                result = null;
+                return false;
+            }
         }
-
 
         private T Convert<T>(object value, string forKeyDebugInfo)
         {

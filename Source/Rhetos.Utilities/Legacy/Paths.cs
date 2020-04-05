@@ -42,7 +42,7 @@ namespace Rhetos.Utilities
         {
             var runtimeEnvironment = configurationProvider.GetOptions<RhetosAppEnvironment>();
             var buildEnvironment = configurationProvider.GetOptions<RhetosBuildEnvironment>();
-            var legacyPaths = configurationProvider.GetOptions<LegacyPathsOptions>("Legacy:Paths");
+            var legacyPaths = configurationProvider.GetOptions<LegacyPathsOptions>();
 
             _rhetosServerRootPath = buildEnvironment.ProjectFolder ?? runtimeEnvironment.ApplicationRootFolder;
             _binFolder = legacyPaths.BinFolder ?? runtimeEnvironment.AssemblyFolder;

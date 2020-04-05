@@ -136,6 +136,8 @@
     <Compile Include="ApplicationConfiguration\IConfigurationProvider.cs" />
     <Compile Include="ApplicationConfiguration\ConfigurationSources\IConfigurationSource.cs" />
     <Compile Include="ApplicationConfiguration\ConfigurationSources\KeyValuesSource.cs" />
+    <Compile Include="ApplicationConfiguration\OptionsPathAttribute.cs" />
+    <Compile Include="ApplicationConfiguration\OptionsAttribute.cs" />
     <Compile Include="ApplicationConfiguration\IRhetosRuntime.cs" />
     <Compile Include="BuildOptions.cs" />
     <Compile Include="FilePosition.cs" />

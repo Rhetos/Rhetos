@@ -17,11 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
 {
@@ -33,6 +30,8 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
         {
             this.keyValuePairs = keyValuePairs;
         }
+
+        public string BaseFolder => null;
 
         public IDictionary<string, object> Load()
         {

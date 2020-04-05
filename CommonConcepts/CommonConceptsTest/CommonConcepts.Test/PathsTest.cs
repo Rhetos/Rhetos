@@ -50,8 +50,10 @@ namespace CommonConcepts.Test
                     BinFolder = Path.Combine(rootPath, "bin"),
                     PluginsFolder = Path.Combine(rootPath, "bin", "Plugins"),
                     ResourcesFolder = Path.Combine(rootPath, "Resources"),
-                }, "Legacy:Paths")
+                })
                 .Build();
+
+#pragma warning disable CS0618 // Type or member is obsolete -- Testing obsolete Paths class for backward compatibility.
 
             LegacyUtilities.Initialize(configurationProvider);
             Console.WriteLine($"Paths: {Paths.RhetosServerRootPath}");
@@ -61,6 +63,8 @@ namespace CommonConcepts.Test
             Assert.AreEqual(Path.Combine(rootPath, "bin\\Generated"), Paths.GeneratedFolder);
             Assert.AreEqual(Path.Combine(rootPath, "bin\\Plugins"), Paths.PluginsFolder);
             Assert.AreEqual(Path.Combine(rootPath, "Resources"), Paths.ResourcesFolder);
+
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         private string Normalize(string path)

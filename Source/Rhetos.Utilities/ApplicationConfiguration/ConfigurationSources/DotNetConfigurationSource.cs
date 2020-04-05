@@ -20,8 +20,6 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Linq;
-using System.Text;
 
 namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
 {
@@ -38,6 +36,8 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
             this.appSettings = appSettings;
             this.connectionStrings = connectionStrings;
         }
+
+        public string BaseFolder => AppDomain.CurrentDomain.BaseDirectory;
 
         public IDictionary<string, object> Load()
         {
