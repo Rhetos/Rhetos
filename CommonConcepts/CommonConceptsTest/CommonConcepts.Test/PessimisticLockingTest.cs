@@ -17,15 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos.TestCommon;
 using Rhetos.Configuration.Autofac;
-using Rhetos.Utilities;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.TestCommon;
+using Rhetos.Utilities;
+using System;
+using System.Linq;
 
 namespace CommonConcepts.Test
 {
@@ -275,7 +273,7 @@ namespace CommonConcepts.Test
                 var repository = container.Resolve<Common.DomRepository>();
                 var article = repository.TestPessimisticLocking.Article.Load().Single();
 
-                TestSetLock(new Common.SetLock { ResourceType = "TestPessimisticLocking.Article", ResourceID = article.ID }, repository, container.Resolve<IUserInfo>());
+                TestSetLock(new Common.SetLock { ResourceType = "TestPessimisticLocking.Article", ResourceID = article.ID }, repository);
                 var myLock = repository.Common.ExclusiveLock.Load().Single();
                 Assert.AreEqual("TestPessimisticLocking.Article", myLock.ResourceType);
                 Assert.AreEqual(article.ID, myLock.ResourceID);
@@ -316,7 +314,7 @@ namespace CommonConcepts.Test
                 };
                 repository.Common.ExclusiveLock.Insert(new[] { oldLock });
 
-                TestUtility.ShouldFail(() => TestSetLock(new Common.SetLock { ResourceType = "TestPessimisticLocking.Article", ResourceID = article.ID }, repository, container.Resolve<IUserInfo>()),
+                TestUtility.ShouldFail(() => TestSetLock(new Common.SetLock { ResourceType = "TestPessimisticLocking.Article", ResourceID = article.ID }, repository),
                     "OtherUser", article.ID.ToString());
             }
         }
@@ -350,7 +348,7 @@ namespace CommonConcepts.Test
                 };
                 repository.Common.ExclusiveLock.Insert(new[] { oldLock });
 
-                TestSetLock(new Common.SetLock { ResourceType = "TestPessimisticLocking.Article", ResourceID = article.ID }, repository, container.Resolve<IUserInfo>());
+                TestSetLock(new Common.SetLock { ResourceType = "TestPessimisticLocking.Article", ResourceID = article.ID }, repository);
                 var myLock = repository.Common.ExclusiveLock.Load().Single();
                 Assert.AreEqual("TestPessimisticLocking.Article", myLock.ResourceType);
                 Assert.AreEqual(article.ID, myLock.ResourceID);
@@ -392,7 +390,7 @@ namespace CommonConcepts.Test
                 };
                 repository.Common.ExclusiveLock.Insert(new[] { oldLock });
 
-                TestSetLock(new Common.SetLock { ResourceType = "TestPessimisticLocking.Article", ResourceID = article.ID }, repository, container.Resolve<IUserInfo>());
+                TestSetLock(new Common.SetLock { ResourceType = "TestPessimisticLocking.Article", ResourceID = article.ID }, repository);
                 var myLock = repository.Common.ExclusiveLock.Load().Single();
                 Assert.AreEqual("TestPessimisticLocking.Article", myLock.ResourceType);
                 Assert.AreEqual(article.ID, myLock.ResourceID);
@@ -404,7 +402,7 @@ namespace CommonConcepts.Test
             }
         }
 
-        private void TestSetLock(Common.SetLock parameters, Common.DomRepository repository, Rhetos.Utilities.IUserInfo userInfo)
+        private void TestSetLock(Common.SetLock parameters, Common.DomRepository repository)
         {
             repository.Common.SetLock.Execute(parameters);
         }
@@ -427,7 +425,7 @@ namespace CommonConcepts.Test
                 var repository = container.Resolve<Common.DomRepository>();
                 var article = repository.TestPessimisticLocking.Article.Load().Single();
 
-                TestReleaseLock(new Common.ReleaseLock { ResourceType = "TestPessimisticLocking.Article", ResourceID = article.ID }, repository, container.Resolve<IUserInfo>());
+                TestReleaseLock(new Common.ReleaseLock { ResourceType = "TestPessimisticLocking.Article", ResourceID = article.ID }, repository);
                 Assert.AreEqual(0, repository.Common.ExclusiveLock.Query().Count());
 
                 var oldLock = new Common.ExclusiveLock
@@ -442,13 +440,13 @@ namespace CommonConcepts.Test
                 repository.Common.ExclusiveLock.Insert(new[] { oldLock });
                 Assert.AreEqual(1, repository.Common.ExclusiveLock.Query().Count());
 
-                TestReleaseLock(new Common.ReleaseLock { ResourceType = "TestPessimisticLocking.NonexistingEntity", ResourceID = article.ID }, repository, container.Resolve<IUserInfo>());
+                TestReleaseLock(new Common.ReleaseLock { ResourceType = "TestPessimisticLocking.NonexistingEntity", ResourceID = article.ID }, repository);
                 Assert.AreEqual(1, repository.Common.ExclusiveLock.Query().Count());
 
-                TestReleaseLock(new Common.ReleaseLock { ResourceType = "TestPessimisticLocking.Article", ResourceID = Guid.NewGuid() }, repository, container.Resolve<IUserInfo>());
+                TestReleaseLock(new Common.ReleaseLock { ResourceType = "TestPessimisticLocking.Article", ResourceID = Guid.NewGuid() }, repository);
                 Assert.AreEqual(1, repository.Common.ExclusiveLock.Query().Count());
 
-                TestReleaseLock(new Common.ReleaseLock { ResourceType = "TestPessimisticLocking.Article", ResourceID = article.ID }, repository, container.Resolve<IUserInfo>());
+                TestReleaseLock(new Common.ReleaseLock { ResourceType = "TestPessimisticLocking.Article", ResourceID = article.ID }, repository);
                 Assert.AreEqual(0, repository.Common.ExclusiveLock.Query().Count());
             }
         }
@@ -483,12 +481,12 @@ namespace CommonConcepts.Test
                 repository.Common.ExclusiveLock.Insert(new[] { oldLock });
                 Assert.AreEqual(1, repository.Common.ExclusiveLock.Query().Count());
 
-                TestReleaseLock(new Common.ReleaseLock { ResourceType = "TestPessimisticLocking.Article", ResourceID = article.ID }, repository, container.Resolve<IUserInfo>());
+                TestReleaseLock(new Common.ReleaseLock { ResourceType = "TestPessimisticLocking.Article", ResourceID = article.ID }, repository);
                 Assert.AreEqual(1, repository.Common.ExclusiveLock.Query().Count(), "Server should silently ignore invalid calls to release lock.");
             }
         }
 
-        private void TestReleaseLock(Common.ReleaseLock parameters, Common.DomRepository repository, Rhetos.Utilities.IUserInfo userInfo)
+        private void TestReleaseLock(Common.ReleaseLock parameters, Common.DomRepository repository)
         {
             repository.Common.ReleaseLock.Execute(parameters);
         }

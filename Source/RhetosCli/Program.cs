@@ -54,17 +54,20 @@ namespace Rhetos
             // CurrentDirectory by default, because rhetos.exe on *build* is expected to be located in NuGet package cache.
             buildCommand.Add(new Argument<DirectoryInfo>("project-root-folder", () => new DirectoryInfo(Environment.CurrentDirectory)));
             buildCommand.Add(new Option<bool>("--msbuild-format", false, "Adjust error output format for MSBuild integration."));
-            buildCommand.Handler = CommandHandler.Create((DirectoryInfo projectRootFolder, bool msbuildFormat) => ReportError(() => Build(projectRootFolder.FullName), msbuildFormat));
+            buildCommand.Handler = CommandHandler.Create((DirectoryInfo projectRootFolder, bool msbuildFormat)
+                => ReportError(() => Build(projectRootFolder.FullName), msbuildFormat));
             rootCommand.AddCommand(buildCommand);
 
             var dbUpdateCommand = new Command("dbupdate", "Updates the database, based on the generated files from the build process.");
             dbUpdateCommand.Add(new Argument<DirectoryInfo>("application-folder", () => new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory)) { Description = "If not specified, it will search for the application at rhetos.exe location and parent directories." });
-            dbUpdateCommand.Handler = CommandHandler.Create((DirectoryInfo applicationFolder) => ReportError(() => DbUpdate(applicationFolder)));
+            dbUpdateCommand.Handler = CommandHandler.Create((DirectoryInfo applicationFolder)
+                => ReportError(() => DbUpdate(applicationFolder)));
             rootCommand.AddCommand(dbUpdateCommand);
 
             var appInitializeCommand = new Command("appinitialize", "Initializes the application.");
             appInitializeCommand.Add(new Argument<DirectoryInfo>("application-folder", () => new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory)) { Description = "If not specified, it will search for the application at rhetos.exe location and parent directories." });
-            appInitializeCommand.Handler = CommandHandler.Create((DirectoryInfo applicationFolder) => ReportError(() => AppInitialize(applicationFolder)));
+            appInitializeCommand.Handler = CommandHandler.Create((DirectoryInfo applicationFolder)
+                => ReportError(() => AppInitialize(applicationFolder)));
             rootCommand.AddCommand(appInitializeCommand);
 
             return rootCommand.Invoke(args);
