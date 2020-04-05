@@ -550,7 +550,7 @@ namespace Rhetos.Utilities.Test
             var builder = new ConfigurationBuilder()
                 .Add(new JsonFileSource("JsonConfigurationFile_Invalid.json"));
 
-            TestUtility.ShouldFail<FrameworkException>(() => builder.Build(), "Error parsing Json contents", "JsonConfigurationFile_Invalid.json");
+            TestUtility.ShouldFail<FrameworkException>(() => builder.Build(), "Error parsing JSON contents", "JsonConfigurationFile_Invalid.json");
         }
 
         [TestMethod]
@@ -595,7 +595,7 @@ namespace Rhetos.Utilities.Test
             Func<string, IConfigurationProvider> buildWithJson = jsonText => new ConfigurationBuilder().Add(new JsonSource(jsonText)).Build();
 
             TestUtility.ShouldFail(() => buildWithJson("{"), "Error reading JObject from JsonReader");
-            TestUtility.ShouldFail<FrameworkException>(() => buildWithJson("{\"array\": [] }"), "Json token type Array is not allowed");
+            TestUtility.ShouldFail<FrameworkException>(() => buildWithJson("{\"array\": [] }"), "JSON token type Array is not allowed");
         }
 
         private class TestOptions

@@ -1,6 +1,10 @@
 ﻿{
   "RhetosRuntimePath": "bin\\Rhetos.dll",
   "AssetsFolder": "bin\\Generated",
-  "Legacy.Paths.PluginsFolder": "bin\\Plugins",
-  "Legacy.Paths.ResourcesFolder": "bin\\Resources"
+  "Legacy": {
+    "Paths": {
+      "PluginsFolder": "bin\\Plugins",
+      "ResourcesFolder": "bin\\Resources"
+    }
+  }
 }

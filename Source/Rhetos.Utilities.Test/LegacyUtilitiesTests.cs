@@ -46,11 +46,11 @@ namespace Rhetos.Utilities.Test
             Paths.Initialize(configurationProvider);
 
             TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.RhetosServerRootPath),
-                "Paths property 'RhetosServerRootPath' is not configured in uninitialized environment.");
+                "Paths property 'RhetosServerRootPath' is not configured in 'unspecified' environment.");
             TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.BinFolder), "BinFolder");
             TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.GeneratedFolder), "GeneratedFolder");
             TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.PluginsFolder), "PluginsFolder");
-            TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.ResourcesFolder), "RhetosServerRootPath");
+            TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.ResourcesFolder), "ResourcesFolder");
         }
 
         [TestMethod]
@@ -62,7 +62,7 @@ namespace Rhetos.Utilities.Test
 
             Assert.IsNotNull(Paths.RhetosServerRootPath);
             TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.GeneratedFolder),
-                "Paths property 'GeneratedFolder' is not configured in run-time environment.");
+                "Paths property 'GeneratedFolder' is not configured in 'run-time' environment.");
         }
 
         [TestMethod]
@@ -74,7 +74,7 @@ namespace Rhetos.Utilities.Test
 
             Assert.IsNotNull(Paths.RhetosServerRootPath);
             TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.GeneratedFolder),
-                "Paths property 'GeneratedFolder' is not configured in build environment.");
+                "Paths property 'GeneratedFolder' is not configured in 'build' environment.");
         }
     }
 }
