@@ -43,7 +43,7 @@ namespace Rhetos
         public IConfigurationProvider BuildConfiguration(ILogProvider logProvider, string configurationFolder, Action<IConfigurationBuilder> addCustomConfiguration)
         {
             var configurationBuilder = new ConfigurationBuilder();
-            configurationBuilder.AddRhetosRuntimeEnvironment(configurationFolder);
+            configurationBuilder.AddRhetosAppEnvironment(configurationFolder);
 
             // Add WCF-specific configuration.
             if (_isHost)

@@ -60,7 +60,7 @@ namespace DeployPackages.Test
                     GeneratedAssetsFolder = Path.Combine(rhetosAppRootPath), // Custom for testing
                     GeneratedSourceFolder = null,
                 })
-                .AddOptions(new LegacyPathsConfiguration
+                .AddOptions(new LegacyPathsOptions
                 {
                     BinFolder = Path.Combine(rhetosAppRootPath, "bin"),
                     PluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins"),

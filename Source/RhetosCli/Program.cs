@@ -18,7 +18,6 @@
 */
 
 using Rhetos.Dsl;
-using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
@@ -115,7 +114,7 @@ namespace Rhetos
 
             var configurationProvider = new ConfigurationBuilder()
                 .AddOptions(buildEnvironmentAndAssets.RhetosBuildEnvironment)
-                .AddOptions(new LegacyPathsConfiguration
+                .AddOptions(new LegacyPathsOptions
                 {
                     BinFolder = null, // It should not be needed for build with Rhetos CLI.
                     PluginsFolder = null, // It should not be needed for build with Rhetos CLI.

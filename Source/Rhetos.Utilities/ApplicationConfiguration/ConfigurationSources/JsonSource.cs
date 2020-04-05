@@ -48,6 +48,9 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
         {
             var jsonOptions = new Dictionary<string, object>();
 
+            // Expecting dot as a standard path separator in JSON configuration.
+            string convertPath(string keyPath) => keyPath;//.Replace(".", ConfigurationProvider.ConfigurationPathSeparator);
+
             foreach (var keyValue in jObject)
             {
                 var fullKey = string.IsNullOrEmpty(path)
@@ -60,11 +63,11 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
                 if (keyValue.Value.Type == JTokenType.Object)
                 {
                     var childOptions = GetKeysFromObject(keyValue.Value as JObject, fullKey);
-                    foreach (var pair in childOptions) jsonOptions.Add(pair.Key, pair.Value);
+                    foreach (var pair in childOptions) jsonOptions.Add(convertPath(pair.Key), pair.Value);
                 }
                 else
                 {
-                    jsonOptions.Add(fullKey, keyValue.Value.ToString());
+                    jsonOptions.Add(convertPath(fullKey), keyValue.Value.ToString());
                 }
             }
 

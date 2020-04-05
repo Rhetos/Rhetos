@@ -19,10 +19,25 @@
 
 namespace Rhetos.Utilities
 {
-    public class LegacyPathsConfiguration
+    /// <summary>
+    /// Legacy paths, supporting build process with DeployPackages and obsolete <see cref="Paths"/> class.
+    /// Available at both build-time and run-time.
+    /// </summary>
+    public class LegacyPathsOptions
     {
+        /// <summary>
+        /// At build-time, returns target bin folder. At run-time returns host assembly folder.
+        /// </summary>
         public string BinFolder { get; set; }
+
+        /// <summary>
+        /// Build process with DeployPackages places libraries from NuGet packages in separate plugins folder.
+        /// </summary>
         public string PluginsFolder { get; set; }
+
+        /// <summary>
+        /// New plugins and applications should use <see cref="RhetosAppEnvironment.AssetsFolder"/> instead.
+        /// </summary>
         public string ResourcesFolder { get; set; }
     }
 }

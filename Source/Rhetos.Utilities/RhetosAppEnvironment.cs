@@ -33,6 +33,9 @@ namespace Rhetos.Utilities
 
         public string AssemblyFolder { get; set; }
 
+        /// <summary>
+        /// Run-time assets folder.
+        /// </summary>
         public string AssetsFolder { get; set; }
     }
 }

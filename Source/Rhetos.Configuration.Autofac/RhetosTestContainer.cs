@@ -28,6 +28,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Collections.Generic;
 
 namespace Rhetos.Configuration.Autofac
 {
@@ -102,10 +103,11 @@ namespace Rhetos.Configuration.Autofac
                             var host = Host.Find(rhetosAppRootPath, logProvider);
                             var configurationProvider = host.RhetosRuntime.BuildConfiguration(new ConsoleLogProvider(), host.ConfigurationFolder, null);
 
-                            AppDomain.CurrentDomain.AssemblyResolve += SearchForAssembly;
+                            AppDomain.CurrentDomain.AssemblyResolve += new AssemblyResolver(configurationProvider).SearchForAssembly;
 
                             var sw = Stopwatch.StartNew();
-                            _iocContainer = host.RhetosRuntime.BuildContainer(logProvider, configurationProvider, (builder) => {
+                            _iocContainer = host.RhetosRuntime.BuildContainer(logProvider, configurationProvider, (builder) =>
+                            {
                                 builder.RegisterType<ProcessUserInfo>().As<IUserInfo>(); // Override runtime IUserInfo plugins. This container is intended to be used in a simple process or unit tests.
                                 builder.RegisterType<ConsoleLogProvider>().As<ILogProvider>();
                             });
@@ -156,15 +158,37 @@ namespace Rhetos.Configuration.Autofac
             throw new FrameworkException("Cannot locate a valid Rhetos server's folder from '" + Environment.CurrentDirectory + "'. Unexpected folder '" + folder.FullName + "'.");
         }
 
-        protected Assembly SearchForAssembly(object sender, ResolveEventArgs args)
+        private class AssemblyResolver
         {
-            foreach (var folder in new[] { Paths.PluginsFolder, Paths.GeneratedFolder, Paths.BinFolder }.Distinct())
+            private readonly List<string> _searchFolders;
+
+            public AssemblyResolver(IConfigurationProvider configurationProvider)
             {
-                string pluginAssemblyPath = Path.Combine(folder, new AssemblyName(args.Name).Name + ".dll");
-                if (File.Exists(pluginAssemblyPath))
-                    return Assembly.LoadFrom(pluginAssemblyPath);
+                var rhetosAppEnvironment = configurationProvider.GetOptions<RhetosAppEnvironment>();
+                var legacyPaths = configurationProvider.GetOptions<LegacyPathsOptions>();
+                _searchFolders = new[]
+                {
+                    rhetosAppEnvironment.AssemblyFolder,
+                    rhetosAppEnvironment.AssetsFolder,
+                    legacyPaths.BinFolder,
+                    legacyPaths.PluginsFolder,
+                }
+                    .Where(folder => !string.IsNullOrEmpty(folder))
+                    .Distinct()
+                    .ToList();
             }
-            return null;
+
+            public Assembly SearchForAssembly(object sender, ResolveEventArgs args)
+            {
+                foreach (var folder in _searchFolders)
+                {
+                    string pluginAssemblyPath = Path.Combine(folder, new AssemblyName(args.Name).Name + ".dll");
+                    if (File.Exists(pluginAssemblyPath))
+                        return Assembly.LoadFrom(pluginAssemblyPath);
+                }
+                return null;
+            }
         }
+
     }
 }

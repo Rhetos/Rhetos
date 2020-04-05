@@ -38,11 +38,20 @@ namespace CommonConcepts.Test
             Console.WriteLine($"rootPath: {rootPath}");
 
             var configurationProvider = new ConfigurationBuilder()
-                .AddRhetosAppEnvironment(new RhetosAppEnvironment {
+                .AddOptions(new RhetosAppEnvironment
+                {
+                    ApplicationRootFolder = rootPath,
+                    RhetosRuntimePath = Path.Combine(rootPath, "bin", "Generated", "Rhetos.dll"),
                     AssemblyFolder = Path.Combine(rootPath, "bin"),
                     AssetsFolder = Path.Combine(rootPath, "bin", "Generated"),
-                    LegacyPluginsFolder = Path.Combine(rootPath, "bin", "Plugins"),
-                }).Build();
+                })
+                .AddOptions(new LegacyPathsOptions
+                {
+                    BinFolder = Path.Combine(rootPath, "bin"),
+                    PluginsFolder = Path.Combine(rootPath, "bin", "Plugins"),
+                    ResourcesFolder = Path.Combine(rootPath, "Resources"),
+                }, "Legacy:Paths")
+                .Build();
 
             LegacyUtilities.Initialize(configurationProvider);
             Console.WriteLine($"Paths: {Paths.RhetosServerRootPath}");

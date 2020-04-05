@@ -68,11 +68,14 @@ namespace Rhetos
         }
 
         /// <summary>
-        /// Adds runtime configuration from Rhetos-specific configuration files.
+        /// Adds runtime configuration from Rhetos-specific configuration files
+        /// and configures RhetosAppEnvironment.
         /// </summary>
-        public static IConfigurationBuilder AddRhetosRuntimeEnvironment(this IConfigurationBuilder builder, string configurationFolder)
+        public static IConfigurationBuilder AddRhetosAppEnvironment(this IConfigurationBuilder builder, string configurationFolder)
         {
+            // Basic run-time configuration file. Some additional processing of RhetosAppEnvironment paths.
             builder.Add(new RhetosAppEnvironmentSource(configurationFolder));
+            // User-specific run-time configuration file.
             builder.Add(new JsonFileSource(Path.Combine(configurationFolder, RhetosAppEnvironment.LocalConfigurationFileName), optional: true));
             return builder;
         }

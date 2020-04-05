@@ -68,7 +68,7 @@ namespace DeployPackages
                             GeneratedAssetsFolder = Path.Combine(rhetosAppRootPath, "bin", "Generated"),
                             GeneratedSourceFolder = null,
                         })
-                        .AddOptions(new LegacyPathsConfiguration
+                        .AddOptions(new LegacyPathsOptions
                         {
                             BinFolder = Path.Combine(rhetosAppRootPath, "bin"),
                             PluginsFolder = pluginsFolder,
