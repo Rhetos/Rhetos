@@ -29,7 +29,7 @@ namespace Rhetos.Configuration.Autofac.Modules
         protected override void Load(ContainerBuilder builder)
         {
             builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<RhetosAppEnvironment>()).SingleInstance()
-                .As<RhetosAppEnvironment>().As<IRhetosEnvironment>().SingleInstance();
+                .As<RhetosAppEnvironment>().As<IAssetsOptions>().SingleInstance();
             builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<BuildOptions>()).SingleInstance().PreserveExistingDefaults();
 
             builder.RegisterType<DatabaseDeployment>();

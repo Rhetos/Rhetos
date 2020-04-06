@@ -35,10 +35,10 @@ namespace Rhetos.DatabaseGenerator
 
         public DatabaseModelFile(
             ILogProvider logProvider,
-            IRhetosEnvironment rhetosEnvironment)
+            IAssetsOptions assetsOptions)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
-            _databaseModelFilePath = Path.Combine(rhetosEnvironment.AssetsFolder, DatabaseModelFileName);
+            _databaseModelFilePath = Path.Combine(assetsOptions.AssetsFolder, DatabaseModelFileName);
         }
 
         public void Save(DatabaseModel databaseModel)

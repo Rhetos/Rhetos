@@ -156,7 +156,7 @@
     <Compile Include="ListOfTuples.cs" />
     <Compile Include="RhetosAppEnvironment.cs" />
     <Compile Include="RhetosAppOptions.cs" />
-    <Compile Include="IRhetosEnvironment.cs" />
+    <Compile Include="IAssetsOptions.cs" />
     <Compile Include="RhetosBuildEnvironment.cs" />
     <Compile Include="SecurityOptions.cs" />
     <Compile Include="DatabaseOptions.cs" />

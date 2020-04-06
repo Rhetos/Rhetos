@@ -35,7 +35,7 @@ namespace Rhetos.Configuration.Autofac.Modules
         protected override void Load(ContainerBuilder builder)
         {
             builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<RhetosAppEnvironment>()).SingleInstance()
-                .As<RhetosAppEnvironment>().As<IRhetosEnvironment>().SingleInstance();
+                .As<RhetosAppEnvironment>().As<IAssetsOptions>().SingleInstance();
             builder.RegisterType<InstalledPackagesProvider>();
             builder.Register(context => context.Resolve<InstalledPackagesProvider>().Load()).As<InstalledPackages>().As<IInstalledPackages>().SingleInstance();
             builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<RhetosAppOptions>()).SingleInstance().PreserveExistingDefaults();

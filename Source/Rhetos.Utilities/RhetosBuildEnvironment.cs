@@ -19,7 +19,7 @@
 
 namespace Rhetos.Utilities
 {
-    public class RhetosBuildEnvironment : IRhetosEnvironment
+    public class RhetosBuildEnvironment : IAssetsOptions
     {
         public string ProjectFolder { get; set; }
 
@@ -35,6 +35,6 @@ namespace Rhetos.Utilities
 
         public string GeneratedSourceFolder { get; set; }
 
-        string IRhetosEnvironment.AssetsFolder => GeneratedAssetsFolder;
+        string IAssetsOptions.AssetsFolder => GeneratedAssetsFolder;
     }
 }

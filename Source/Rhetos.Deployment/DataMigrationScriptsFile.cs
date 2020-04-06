@@ -36,10 +36,10 @@ namespace Rhetos.Deployment
 
         public IEnumerable<string> Dependencies => new List<string>();
 
-        public DataMigrationScriptsFile(IRhetosEnvironment rhetosEnvironment, ILogProvider logProvider)
+        public DataMigrationScriptsFile(IAssetsOptions assetsOptions, ILogProvider logProvider)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
-            _dataMigrationScriptsFilePath = Path.Combine(rhetosEnvironment.AssetsFolder, DataMigrationScriptsFileName);
+            _dataMigrationScriptsFilePath = Path.Combine(assetsOptions.AssetsFolder, DataMigrationScriptsFileName);
         }
 
         /// <summary>

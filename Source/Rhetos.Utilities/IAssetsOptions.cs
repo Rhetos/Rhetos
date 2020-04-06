@@ -22,7 +22,7 @@ namespace Rhetos.Utilities
     /// <summary>
     /// Common settings for build-time and run-time environment.
     /// </summary>
-    public interface IRhetosEnvironment
+    public interface IAssetsOptions
     {
         /// <summary>
         /// Output folder at build-time.

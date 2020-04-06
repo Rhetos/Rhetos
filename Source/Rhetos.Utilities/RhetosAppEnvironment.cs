@@ -22,7 +22,7 @@ namespace Rhetos.Utilities
     /// <summary>
     /// Run-time environment.
     /// </summary>
-    public class RhetosAppEnvironment : IRhetosEnvironment
+    public class RhetosAppEnvironment : IAssetsOptions
     {
         public static readonly string ConfigurationFileName = "rhetos-app.settings.json";
         public static readonly string LocalConfigurationFileName = "rhetos-app.local.settings.json";
