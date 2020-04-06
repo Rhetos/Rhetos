@@ -45,7 +45,7 @@ namespace Rhetos.Compiler
         {
             string filePath = Path.GetFullPath(Path.Combine(_buildEnvironment.GeneratedSourceFolder, relativePath));
 
-            if (!filePath.StartsWith(_buildEnvironment.GeneratedSourceFolder))
+            if (!FilesUtility.IsInsideDirectory(filePath, _buildEnvironment.GeneratedSourceFolder))
                 throw new FrameworkException($"Generated source file '{filePath}' should be inside the folder '{_buildEnvironment.GeneratedSourceFolder}'." +
                     $" Provide a simple file name or a relative path for {nameof(ISourceWriter)}.{nameof(ISourceWriter.Add)} method.");
             

@@ -17,7 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
 namespace Rhetos.Utilities
 {
     public class BuildOptions
@@ -31,6 +30,10 @@ namespace Rhetos.Utilities
         public InitialConceptsSort Dsl__InitialConceptsSort { get; set; } = InitialConceptsSort.Key;
         public ExcessDotInKey Dsl__ExcessDotInKey { get; set; } = ExcessDotInKey.Ignore;
         public bool Legacy__BuildResourcesFolder { get; set; } = false;
+        /// <summary>
+        /// Creates or updates Rhetos runtime configuration file (<see cref="RhetosAppEnvironment.ConfigurationFileName"/>)
+        /// with essential information on application structure.
+        /// </summary>
         public bool GenerateAppSettings { get; set; } = true;
     }
 

@@ -9,6 +9,7 @@
     </PropertyGroup>
     <ItemGroup>
         <RhetosInput Include="$(BaseIntermediateOutputPath)project.assets.json" />
+        <RhetosInput Include="rhetos-build.settings.json" />
         <RhetosBuild Include="DslScripts\**\*" />
         <RhetosBuild Include="DataMigration\**\*" />        
     </ItemGroup>

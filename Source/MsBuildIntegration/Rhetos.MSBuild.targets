@@ -9,7 +9,9 @@
             Assemblies="@(ReferencePath)"
             AssemblyName="$(AssemblyName)"
             GeneratedAssetsFolder="obj\Rhetos\RhetosAssets"
-            IntermediateOutputPath="$(BaseIntermediateOutputPath)Rhetos"/>
+            IntermediateOutputFolder="$(BaseIntermediateOutputPath)Rhetos"
+            TargetPath="$(TargetPath)"
+            TargetAssetsFolder="$(TargetDir)RhetosAssets" />
     </Target>
 
     <Target Name="BuildRhetosApp" DependsOnTargets="ResolveRhetosProjectAssets;" BeforeTargets="CoreCompile" Condition="'$(RhetosBuild)'=='True' and $(BuildingProject)=='True'" Inputs="@(RhetosInput);@(RhetosBuild)" Outputs="@(RhetosOutput)">
@@ -19,7 +21,7 @@
         <WriteLinesToFile File="$(RhetosBuildCompleteFile)" Lines="" Overwrite="true" />
     </Target>
 
-    <Target Name="AddRhetosSourceFiles" DependsOnTargets="BuildRhetosApp" BeforeTargets="CoreCompile" >
+    <Target Name="AddRhetosSourceFiles" DependsOnTargets="BuildRhetosApp" BeforeTargets="CoreCompile">
         <Message Text="AddRhetosSourceFiles" />
         <ItemGroup>
             <RhetosSourceFiles Include="obj\Rhetos\RhetosSource\**\*.cs" />
@@ -28,7 +30,7 @@
         <WriteLinesToFile Lines="@(RhetosSourceFiles -> '%(FullPath)')" Overwrite="True" WriteOnlyWhenDifferent="True" File="$(BaseIntermediateOutputPath)Rhetos\RhetosGeneratedSourceFiles.txt"/>
     </Target>
     
-    <Target Name="CopyRhetosFilesToOutput" DependsOnTargets="AddRhetosSourceFiles" AfterTargets="CopyFilesToOutputDirectory" >
+    <Target Name="CopyRhetosFilesToOutput" DependsOnTargets="AddRhetosSourceFiles" AfterTargets="CopyFilesToOutputDirectory">
         <Message Text="CopyRhetosFilesToOutput" />
 
         <!--Generated sources-->

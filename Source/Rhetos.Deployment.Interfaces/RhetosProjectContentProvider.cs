@@ -26,7 +26,7 @@ using System.Text;
 
 namespace Rhetos
 {
-    public class RhetosProjectAssetsFileProvider
+    public class RhetosProjectContentProvider
     {
         private const string ProjectAssetsFileName = "rhetos-project.assets.json";
 
@@ -36,7 +36,7 @@ namespace Rhetos
         private readonly ILogger _logger;
         private readonly string _projectRootFolder;
 
-        public RhetosProjectAssetsFileProvider(string projectRootFolder, ILogProvider logProvider)
+        public RhetosProjectContentProvider(string projectRootFolder, ILogProvider logProvider)
         {
             ProjectAssetsFilePath = Path.Combine(projectRootFolder, "obj", "Rhetos", ProjectAssetsFileName);
             _filesUtility = new FilesUtility(logProvider);
@@ -44,13 +44,7 @@ namespace Rhetos
             _projectRootFolder = projectRootFolder;
         }
 
-        private class BuildEnvironmentAndProjectAssets
-        {
-            public RhetosBuildEnvironment RhetosBuildEnvironment { get; set; }
-            public RhetosProjectAssets RhetosProjectAssets { get; set; }
-        }
-
-        public (RhetosBuildEnvironment RhetosBuildEnvironment, RhetosProjectAssets RhetosProjectAssets) Load()
+        public RhetosProjectContent Load()
         {
             if (!File.Exists(ProjectAssetsFilePath))
             {
@@ -64,18 +58,19 @@ namespace Rhetos
             }
 
             string serialized = File.ReadAllText(ProjectAssetsFilePath, Encoding.UTF8);
-            var buildEnvironmentAndAssets = JsonConvert.DeserializeObject<BuildEnvironmentAndProjectAssets>(serialized, _serializerSettings);
-            return (buildEnvironmentAndAssets.RhetosBuildEnvironment, buildEnvironmentAndAssets.RhetosProjectAssets);
+            var rhetosProjectContent = JsonConvert.DeserializeObject<RhetosProjectContent>(serialized, _serializerSettings);
+            return rhetosProjectContent;
         }
 
-        public void Save(RhetosBuildEnvironment rhetosBuildEnvironment, RhetosProjectAssets rhetosProjectAssets)
+        public void Save(RhetosBuildEnvironment rhetosBuildEnvironment, RhetosTargetEnvironment rhetosTargetEnvironment, RhetosProjectAssets rhetosProjectAssets)
         {
-            var buildEnvironmentAndAssets = new BuildEnvironmentAndProjectAssets
+            var rhetosProjectContent = new RhetosProjectContent
             {
                 RhetosBuildEnvironment = rhetosBuildEnvironment,
+                RhetosTargetEnvironment = rhetosTargetEnvironment,
                 RhetosProjectAssets = rhetosProjectAssets
             };
-            string serialized = JsonConvert.SerializeObject(buildEnvironmentAndAssets, _serializerSettings);
+            string serialized = JsonConvert.SerializeObject(rhetosProjectContent, _serializerSettings);
             string oldSerializedData = File.Exists(ProjectAssetsFilePath) ? File.ReadAllText(ProjectAssetsFilePath, Encoding.UTF8) : "";
 
             if (!Directory.Exists(Path.GetDirectoryName(ProjectAssetsFilePath)))

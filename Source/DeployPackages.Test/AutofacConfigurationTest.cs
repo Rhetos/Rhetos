@@ -51,15 +51,6 @@ namespace DeployPackages.Test
                     GeneratedAssetsFolder = Path.Combine(rhetosAppRootPath), // Custom for testing
                     GeneratedSourceFolder = null,
                 })
-                // TODO: Should not configure both build-time and run-time environment.
-                .AddOptions(new RhetosBuildEnvironment
-                {
-                    ProjectFolder = rhetosAppRootPath,
-                    OutputAssemblyName = null,
-                    CacheFolder = Path.Combine(rhetosAppRootPath, "GeneratedFilesCache"),
-                    GeneratedAssetsFolder = Path.Combine(rhetosAppRootPath), // Custom for testing
-                    GeneratedSourceFolder = null,
-                })
                 .AddOptions(new LegacyPathsOptions
                 {
                     BinFolder = Path.Combine(rhetosAppRootPath, "bin"),

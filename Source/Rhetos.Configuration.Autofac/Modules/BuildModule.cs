@@ -35,6 +35,7 @@ namespace Rhetos.Configuration.Autofac.Modules
         {
             builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<RhetosBuildEnvironment>())
                 .As<RhetosBuildEnvironment>().As<IAssetsOptions>().SingleInstance();
+            builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<RhetosTargetEnvironment>()).SingleInstance();
             builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<BuildOptions>()).SingleInstance().PreserveExistingDefaults();
 
             var pluginRegistration = builder.GetPluginRegistration();

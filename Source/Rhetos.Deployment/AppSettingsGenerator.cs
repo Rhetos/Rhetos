@@ -30,20 +30,27 @@ using System.Reflection;
 namespace Rhetos.Deployment
 {
     /// <summary>
-    /// Created or updated Rhetos runtime configuration file (<see cref="RhetosAppEnvironment.ConfigurationFileName"/>)
+    /// Creates or updates Rhetos runtime configuration file (<see cref="RhetosAppEnvironment.ConfigurationFileName"/>)
     /// with essential information on application structure.
     /// </summary>
     public class AppSettingsGenerator : IGenerator
     {
         private readonly RhetosBuildEnvironment _rhetosBuildEnvironment;
-        private readonly LegacyPathsOptions _legacyPathsOptions;
+		private readonly RhetosTargetEnvironment _rhetosTargetEnvironment;
+		private readonly LegacyPathsOptions _legacyPathsOptions;
 		private readonly ILogger _logger;
 		private readonly BuildOptions _buildOptions;
 
-        public AppSettingsGenerator(RhetosBuildEnvironment rhetosBuildEnvironment, LegacyPathsOptions legacyPathsOptions, ILogProvider logProvider, BuildOptions buildOptions)
+        public AppSettingsGenerator(
+			RhetosBuildEnvironment rhetosBuildEnvironment,
+			RhetosTargetEnvironment rhetosTargetEnvironment,
+			LegacyPathsOptions legacyPathsOptions,
+			ILogProvider logProvider,
+			BuildOptions buildOptions)
         {
             _rhetosBuildEnvironment = rhetosBuildEnvironment;
-            _legacyPathsOptions = legacyPathsOptions;
+			_rhetosTargetEnvironment = rhetosTargetEnvironment;
+			_legacyPathsOptions = legacyPathsOptions;
 			_logger = logProvider.GetLogger(GetType().Name);
 			_buildOptions = buildOptions;
         }
@@ -64,15 +71,13 @@ namespace Rhetos.Deployment
 
         private IEnumerable<(string Path, string Value)> GetExpectedConfiguration()
         {
-			string relativeTargetAssemblyPath = _rhetosBuildEnvironment.OutputAssemblyName;
-			//throw new NotImplementedException();
-
 			var configurationItems = new List<(string Path, string Value)>();
 
-			configurationItems.Add((nameof(RhetosAppEnvironment.RhetosRuntimePath), relativeTargetAssemblyPath));
+			configurationItems.Add((nameof(RhetosAppEnvironment.RhetosRuntimePath),
+				FilesUtility.AbsoluteToRelativePath(_rhetosBuildEnvironment.ProjectFolder, _rhetosTargetEnvironment.TargetPath)));
 
 			configurationItems.Add((nameof(RhetosAppEnvironment.AssetsFolder),
-				FilesUtility.AbsoluteToRelativePath(_rhetosBuildEnvironment.ProjectFolder, _rhetosBuildEnvironment.GeneratedAssetsFolder)));
+				FilesUtility.AbsoluteToRelativePath(_rhetosBuildEnvironment.ProjectFolder, _rhetosTargetEnvironment.TargetAssetsFolder)));
 
 			string legacyPathsConfigurationPath = typeof(LegacyPathsOptions).GetCustomAttribute<OptionsAttribute>().ConfigurationPath;
 

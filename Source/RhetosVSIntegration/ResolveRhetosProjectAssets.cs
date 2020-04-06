@@ -47,6 +47,12 @@ namespace RhetosVSIntegration
         [Required]
         public string IntermediateOutputFolder { get; set; }
 
+        [Required]
+        public string TargetPath { get; set; }
+
+        [Required]
+        public string TargetAssetsFolder { get; set; }
+
         public override bool Execute()
         {
             var resolvedProjectContentFiles = ProjectContentFiles.Select(x => new { x.ItemSpec, FullPath = x.GetMetadata("FullPath") });
@@ -64,11 +70,17 @@ namespace RhetosVSIntegration
 
             var rhetosBuildEnvironment = new RhetosBuildEnvironment
             {
-                ProjectFolder = ProjectDirectory,
+                ProjectFolder = Path.GetFullPath(ProjectDirectory),
                 OutputAssemblyName = AssemblyName,
-                CacheFolder = Path.Combine(ProjectDirectory, IntermediateOutputFolder),
-                GeneratedAssetsFolder = GeneratedAssetsFolder,
-                GeneratedSourceFolder = Path.Combine(ProjectDirectory, IntermediateOutputFolder, "RhetosSource"),
+                CacheFolder = Path.GetFullPath(Path.Combine(ProjectDirectory, IntermediateOutputFolder)),
+                GeneratedAssetsFolder = Path.GetFullPath(Path.Combine(ProjectDirectory, GeneratedAssetsFolder)),
+                GeneratedSourceFolder = Path.GetFullPath(Path.Combine(ProjectDirectory, IntermediateOutputFolder, "RhetosSource")),
+            };
+
+            var rhetosTargetEnvironment = new RhetosTargetEnvironment
+            {
+                TargetPath = Path.GetFullPath(Path.Combine(ProjectDirectory, TargetPath)),
+                TargetAssetsFolder = Path.GetFullPath(Path.Combine(ProjectDirectory, TargetAssetsFolder)),
             };
 
             var rhetosProjectAssets = new RhetosProjectAssets
@@ -77,8 +89,8 @@ namespace RhetosVSIntegration
                 Assemblies = packagesAssemblies.Union(assembliesInReferencedProjects.Select(x => x.FullPath)),
             };
 
-            var rhetosProjectAssetsFileProvider = new RhetosProjectAssetsFileProvider(ProjectDirectory, new VSLogProvider(Log));
-            rhetosProjectAssetsFileProvider.Save(rhetosBuildEnvironment, rhetosProjectAssets);
+            var rhetosProjectAssetsFileProvider = new RhetosProjectContentProvider(ProjectDirectory, new VSLogProvider(Log));
+            rhetosProjectAssetsFileProvider.Save(rhetosBuildEnvironment, rhetosTargetEnvironment, rhetosProjectAssets);
             //The file touch is added to notify the language server that something has happened even if the file has not been changed.
             //This is a problem when in a referenced project we implement a new concept, the RhetosProjectAssetsFile remains the same but the language server
             //must be restarted to take into account the new concept

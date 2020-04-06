@@ -76,7 +76,7 @@ namespace Rhetos.Dom
             }
             else
             {
-                return new List<Assembly> { Assembly.Load(_rhetosAppEnvironment.RhetosRuntimePath) };
+                return new List<Assembly> { Assembly.Load(Path.GetFileNameWithoutExtension(_rhetosAppEnvironment.RhetosRuntimePath)) };
             }
         }
     }

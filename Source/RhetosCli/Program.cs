@@ -108,7 +108,7 @@ namespace Rhetos
 
         private void Build(string projectRootPath)
         {
-            var buildEnvironmentAndAssets = new RhetosProjectAssetsFileProvider(projectRootPath, LogProvider).Load();
+            var rhetosProjectContent = new RhetosProjectContentProvider(projectRootPath, LogProvider).Load();
 
             if (FilesUtility.IsInsideDirectory(AppDomain.CurrentDomain.BaseDirectory, Path.Combine(projectRootPath, "bin")))
                 throw new FrameworkException($"Rhetos build command cannot be run from the generated application folder." +
@@ -116,7 +116,8 @@ namespace Rhetos
                     $" You can run it manually from Package Manager Console, since the tools folder it is included in PATH.");
 
             var configurationProvider = new ConfigurationBuilder()
-                .AddOptions(buildEnvironmentAndAssets.RhetosBuildEnvironment)
+                .AddOptions(rhetosProjectContent.RhetosBuildEnvironment)
+                .AddOptions(rhetosProjectContent.RhetosTargetEnvironment)
                 .AddOptions(new LegacyPathsOptions
                 {
                     BinFolder = null, // It should not be needed for build with Rhetos CLI.
@@ -127,9 +128,9 @@ namespace Rhetos
                 .AddJsonFile(Path.Combine(projectRootPath, "rhetos-build.settings.json"), optional: true)
                 .Build();
 
-            AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(buildEnvironmentAndAssets.RhetosProjectAssets.Assemblies.ToArray());
-            var build = new ApplicationBuild(configurationProvider, LogProvider, () => buildEnvironmentAndAssets.RhetosProjectAssets.Assemblies);
-            build.GenerateApplication(buildEnvironmentAndAssets.RhetosProjectAssets.InstalledPackages);
+            AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(rhetosProjectContent.RhetosProjectAssets.Assemblies.ToArray());
+            var build = new ApplicationBuild(configurationProvider, LogProvider, () => rhetosProjectContent.RhetosProjectAssets.Assemblies);
+            build.GenerateApplication(rhetosProjectContent.RhetosProjectAssets.InstalledPackages);
         }
 
         private void DbUpdate(DirectoryInfo applicationFolder)
