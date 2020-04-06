@@ -46,6 +46,7 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.RegisterType<ResourcesGenerator>().As<IGenerator>();
             builder.RegisterType<InstalledPackagesProvider>();
             builder.RegisterType<InstalledPackagesGenerator>().As<IGenerator>();
+            builder.RegisterType<AppSettingsGenerator>().As<IGenerator>();
 
             builder.RegisterType<ApplicationGenerator>();
             pluginRegistration.FindAndRegisterPlugins<IGenerator>();

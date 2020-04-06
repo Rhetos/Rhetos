@@ -18,10 +18,8 @@
 */
 
 using Autofac;
-using Autofac.Core;
 using Rhetos.Configuration.Autofac.Modules;
 using Rhetos.Deployment;
-using Rhetos.Dsl;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Security;
@@ -49,47 +47,6 @@ namespace Rhetos
             _logProvider = logProvider;
             _pluginAssemblies = pluginAssemblies;
             LegacyUtilities.Initialize(configurationProvider);
-        }
-
-        public InstalledPackages DownloadPackages(bool ignoreDependencies)
-        {
-            _logger.Info("Getting packages.");
-            var config = new DeploymentConfiguration(_logProvider);
-            var packageDownloaderOptions = new PackageDownloaderOptions { IgnorePackageDependencies = ignoreDependencies };
-            var packageDownloader = new PackageDownloader(config, _logProvider, packageDownloaderOptions);
-            var installedPackages = packageDownloader.GetPackages();
-            return installedPackages;
-        }
-
-        //=====================================================================
-
-        public void GenerateApplication(InstalledPackages installedPackages)
-        {
-            _logger.Info("Loading plugins.");
-            var stopwatch = Stopwatch.StartNew();
-
-            var builder = CreateBuildComponentsContainer(installedPackages);
-
-            using (var container = builder.Build())
-            {
-                var performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
-                performanceLogger.Write(stopwatch, "DeployPackages.Program: Modules and plugins registered.");
-                ContainerBuilderPluginRegistration.LogRegistrationStatistics("Generating application", container, _logProvider);
-                
-                container.Resolve<ApplicationGenerator>().ExecuteGenerators();
-            }
-        }
-
-        internal RhetosContainerBuilder CreateBuildComponentsContainer(InstalledPackages installedPackages)
-        {
-            var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, _pluginAssemblies);
-            builder.RegisterModule(new CoreModule());
-            builder.RegisterModule(new CorePluginsModule());
-            builder.RegisterModule(new BuildModule());
-            builder.AddPluginModules();
-            builder.RegisterType<NullUserInfo>().As<IUserInfo>(); // Override runtime IUserInfo plugins. This container should not execute the application's business features.
-            builder.RegisterInstance(installedPackages).As<IInstalledPackages>().As<InstalledPackages>();
-            return builder;
         }
 
         //=====================================================================
@@ -157,30 +114,6 @@ namespace Rhetos
         }
 
         //=====================================================================
-
-        public static void PrintErrorSummary(Exception ex)
-        {
-            while (ex is DependencyResolutionException && ex.InnerException != null)
-                ex = ex.InnerException;
-
-            Console.WriteLine();
-            Console.WriteLine("=============== ERROR SUMMARY ===============");
-            Console.WriteLine(ex.GetType().Name + ": " + ExceptionsUtility.MessageForLog(ex));
-            Console.WriteLine("=============================================");
-            Console.WriteLine();
-            Console.WriteLine("See DeployPackages.log for more information on error. Enable TraceLog in DeployPackages.exe.config for even more details.");
-        }
-
-        public static void PrintCanonicalError(DslSyntaxException dslException)
-        {
-            string origin = dslException.FilePosition?.CanonicalOrigin ?? "Rhetos DSL";
-            string canonicalError = $"{origin}: error {dslException.ErrorCode ?? "RH0000"}: {dslException.Message.Replace('\r', ' ').Replace('\n', ' ')}";
-
-            var oldColor = Console.ForegroundColor;
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(canonicalError);
-            Console.ForegroundColor = oldColor;
-        }
 
         public void RestartWebServer()
         {

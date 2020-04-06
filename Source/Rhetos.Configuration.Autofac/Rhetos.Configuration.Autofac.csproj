@@ -100,6 +100,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DeploymentUtility.cs" />
+    <Compile Include="ApplicationBuild.cs" />
     <Compile Include="ApplicationDeployment.cs" />
     <Compile Include="ContainerBuilderExtensions.cs" />
     <Compile Include="Modules\BuildModule.cs" />

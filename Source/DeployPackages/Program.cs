@@ -71,7 +71,9 @@ namespace DeployPackages
                             BinFolder = Path.Combine(rhetosAppRootPath, "bin"),
                             PluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins"),
                             ResourcesFolder = Path.Combine(rhetosAppRootPath, "Resources"),
-                        }, "Legacy:Paths")
+                        })
+                        .AddKeyValue(nameof(BuildOptions.GenerateAppSettings), false)
+                        .AddKeyValue(nameof(BuildOptions.Legacy__BuildResourcesFolder).Replace("__","."), true)
                         .AddWebConfiguration(rhetosAppRootPath)
                         .AddConfigurationManagerConfiguration()
                         .AddCommandLineArguments(args, "/")
@@ -82,12 +84,12 @@ namespace DeployPackages
                     if (deployOptions.StartPaused)
                         StartPaused();
 
-                    var deployment = new ApplicationDeployment(configurationProvider, logProvider, () => GetBuildPlugins(Path.Combine(rhetosAppRootPath, "bin", "Plugins")));
+                    var build = new ApplicationBuild(configurationProvider, logProvider, () => GetBuildPlugins(Path.Combine(rhetosAppRootPath, "bin", "Plugins")));
                     if (!deployOptions.DatabaseOnly)
                     {
                         DeleteObsoleteFiles(logProvider, logger);
-                        var installedPackages = deployment.DownloadPackages(deployOptions.IgnoreDependencies);
-                        deployment.GenerateApplication(installedPackages);
+                        var installedPackages = build.DownloadPackages(deployOptions.IgnoreDependencies);
+                        build.GenerateApplication(installedPackages);
                     }
                     else
                     {
@@ -206,7 +208,7 @@ namespace DeployPackages
 
         private static void InteractiveExceptionInfo(Exception e, bool pauseOnError)
         {
-            ApplicationDeployment.PrintErrorSummary(e);
+            DeploymentUtility.PrintErrorSummary(e);
 
             if (pauseOnError)
             {

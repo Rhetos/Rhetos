@@ -31,6 +31,7 @@ namespace Rhetos.Utilities
         public InitialConceptsSort Dsl__InitialConceptsSort { get; set; } = InitialConceptsSort.Key;
         public ExcessDotInKey Dsl__ExcessDotInKey { get; set; } = ExcessDotInKey.Ignore;
         public bool Legacy__BuildResourcesFolder { get; set; } = false;
+        public bool GenerateAppSettings { get; set; } = true;
     }
 
     /// <summary>

@@ -65,7 +65,7 @@ namespace DeployPackages.Test
                     BinFolder = Path.Combine(rhetosAppRootPath, "bin"),
                     PluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins"),
                     ResourcesFolder = Path.Combine(rhetosAppRootPath, "Resources"),
-                }, "Legacy:Paths")
+                })
                 .AddWebConfiguration(rhetosAppRootPath)
                 .AddKeyValue(nameof(RhetosAppEnvironment.AssetsFolder), AppDomain.CurrentDomain.BaseDirectory)
                 .AddConfigurationManagerConfiguration()
@@ -82,8 +82,8 @@ namespace DeployPackages.Test
         [TestMethod]
         public void CorrectRegistrationsBuildTime()
         {
-            var deployment = new ApplicationDeployment(_configurationProvider, new NLogProvider(), PluginsFromThisAssembly);
-            var builder = deployment.CreateBuildComponentsContainer(new InstalledPackages());
+            var build = new ApplicationBuild(_configurationProvider, new NLogProvider(), PluginsFromThisAssembly);
+            var builder = build.CreateBuildComponentsContainer(new InstalledPackages());
 
             using (var container = builder.Build())
             {

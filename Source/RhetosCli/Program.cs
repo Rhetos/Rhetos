@@ -82,7 +82,7 @@ namespace Rhetos
             }
             catch (DslSyntaxException dslException) when (msBuildErrorFormat)
             {
-                ApplicationDeployment.PrintCanonicalError(dslException);
+                DeploymentUtility.PrintCanonicalError(dslException);
 
                 // Detailed exception info is logged as additional information, not as an error, to avoid duplicate error reporting.
                 Logger.Info(dslException.ToString());
@@ -98,7 +98,7 @@ namespace Rhetos
                     Logger.Error(typeLoadReport);
 
                 if (Environment.UserInteractive)
-                    ApplicationDeployment.PrintErrorSummary(e);
+                    DeploymentUtility.PrintErrorSummary(e);
 
                 return 1;
             }
@@ -122,14 +122,14 @@ namespace Rhetos
                     BinFolder = null, // It should not be needed for build with Rhetos CLI.
                     PluginsFolder = null, // It should not be needed for build with Rhetos CLI.
                     ResourcesFolder = Path.Combine(projectRootPath, "Resources"), // Currently supporting old plugins by default.
-                }, "Legacy:Paths")
+                })
                 .AddConfigurationManagerConfiguration()
                 .AddJsonFile(Path.Combine(projectRootPath, "rhetos-build.settings.json"), optional: true)
                 .Build();
 
             AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(buildEnvironmentAndAssets.RhetosProjectAssets.Assemblies.ToArray());
-            var deployment = new ApplicationDeployment(configurationProvider, LogProvider, () => buildEnvironmentAndAssets.RhetosProjectAssets.Assemblies);
-            deployment.GenerateApplication(buildEnvironmentAndAssets.RhetosProjectAssets.InstalledPackages);
+            var build = new ApplicationBuild(configurationProvider, LogProvider, () => buildEnvironmentAndAssets.RhetosProjectAssets.Assemblies);
+            build.GenerateApplication(buildEnvironmentAndAssets.RhetosProjectAssets.InstalledPackages);
         }
 
         private void DbUpdate(DirectoryInfo applicationFolder)

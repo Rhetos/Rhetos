@@ -27,23 +27,14 @@ namespace Rhetos.Configuration.Autofac.Modules
     {
         protected override void Load(ContainerBuilder builder)
         {
-            AddCommon(builder);
-            AddUtilities(builder);
-
-            base.Load(builder);
-        }
-
-        private void AddCommon(ContainerBuilder builder)
-        {
             builder.RegisterType<NLogProvider>().As<ILogProvider>().InstancePerLifetimeScope();
-        }
-
-        private void AddUtilities(ContainerBuilder builder)
-        {
             builder.RegisterType<XmlUtility>().SingleInstance();
             builder.RegisterType<FilesUtility>().SingleInstance();
             builder.RegisterType<Utilities.Configuration>().As<IConfiguration>().SingleInstance();
             builder.RegisterType(DatabaseTypes.GetSqlUtilityType(SqlUtility.DatabaseLanguage)).As<ISqlUtility>().InstancePerLifetimeScope();
+            builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<LegacyPathsOptions>()).SingleInstance().PreserveExistingDefaults();
+
+            base.Load(builder);
         }
     }
 }
