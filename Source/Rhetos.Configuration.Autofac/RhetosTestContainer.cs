@@ -168,9 +168,9 @@ namespace Rhetos.Configuration.Autofac
                 var legacyPaths = configurationProvider.GetOptions<LegacyPathsOptions>();
                 _searchFolders = new[]
                 {
+                    legacyPaths.BinFolder ?? rhetosAppEnvironment.AssemblyFolder,
                     legacyPaths.PluginsFolder,
                     rhetosAppEnvironment.AssetsFolder,
-                    legacyPaths.BinFolder ?? rhetosAppEnvironment.AssemblyFolder
                 }
                     .Where(folder => !string.IsNullOrEmpty(folder))
                     .Distinct()

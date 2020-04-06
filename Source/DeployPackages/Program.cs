@@ -57,8 +57,6 @@ namespace DeployPackages
                 
                 // Using build-time configuration:
                 {
-                    string pluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins");
-
                     var configurationProvider = new ConfigurationBuilder()
                         .AddOptions(new RhetosBuildEnvironment
                         {
@@ -71,7 +69,7 @@ namespace DeployPackages
                         .AddOptions(new LegacyPathsOptions
                         {
                             BinFolder = Path.Combine(rhetosAppRootPath, "bin"),
-                            PluginsFolder = pluginsFolder,
+                            PluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins"),
                             ResourcesFolder = Path.Combine(rhetosAppRootPath, "Resources"),
                         }, "Legacy:Paths")
                         .AddWebConfiguration(rhetosAppRootPath)
@@ -84,7 +82,7 @@ namespace DeployPackages
                     if (deployOptions.StartPaused)
                         StartPaused();
 
-                    var deployment = new ApplicationDeployment(configurationProvider, logProvider, () => GetBuildPlugins(pluginsFolder));
+                    var deployment = new ApplicationDeployment(configurationProvider, logProvider, () => GetBuildPlugins(Path.Combine(rhetosAppRootPath, "bin", "Plugins")));
                     if (!deployOptions.DatabaseOnly)
                     {
                         DeleteObsoleteFiles(logProvider, logger);
