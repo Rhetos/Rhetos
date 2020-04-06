@@ -47,7 +47,7 @@ namespace Rhetos.Utilities
             _rhetosServerRootPath = buildEnvironment.ProjectFolder ?? runtimeEnvironment.ApplicationRootFolder;
             _binFolder = legacyPaths.BinFolder ?? runtimeEnvironment.AssemblyFolder;
             _generatedFolder = buildEnvironment.GeneratedAssetsFolder ?? runtimeEnvironment.AssetsFolder;
-            _pluginsFolder = legacyPaths.PluginsFolder;
+            _pluginsFolder = legacyPaths.PluginsFolder ?? runtimeEnvironment.AssemblyFolder;
             _resourcesFolder = legacyPaths.ResourcesFolder;
 
             if (buildEnvironment?.ProjectFolder != null)
