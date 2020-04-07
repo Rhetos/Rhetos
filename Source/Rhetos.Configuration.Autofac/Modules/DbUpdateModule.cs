@@ -30,6 +30,7 @@ namespace Rhetos.Configuration.Autofac.Modules
         {
             builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<RhetosAppEnvironment>()).SingleInstance()
                 .As<RhetosAppEnvironment>().As<IAssetsOptions>().SingleInstance();
+            builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<DbUpdateOptions>()).SingleInstance().PreserveExistingDefaults();
             builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<BuildOptions>()).SingleInstance().PreserveExistingDefaults();
 
             builder.RegisterType<DatabaseDeployment>();
@@ -41,7 +42,6 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.RegisterType<DatabaseModelFile>();
             builder.Register(context => context.Resolve<DatabaseModelFile>().Load()).As<DatabaseModel>().SingleInstance();
             builder.RegisterType<ConceptApplicationRepository>().As<IConceptApplicationRepository>();
-            builder.Register(context => new DatabaseGeneratorOptions { ShortTransactions = context.Resolve<BuildOptions>().ShortTransactions }).SingleInstance();
             builder.RegisterType<DatabaseGenerator.DatabaseGenerator>().As<IDatabaseGenerator>();
 
             // Executing data migration from SQL scripts:

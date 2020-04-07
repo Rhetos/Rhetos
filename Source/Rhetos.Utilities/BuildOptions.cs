@@ -23,8 +23,6 @@ namespace Rhetos.Utilities
     {
         public string DatabaseLanguage { get; set; } = "MsSql";
         public bool Debug { get; set; }
-        public bool ShortTransactions { get; set; }
-        public bool DataMigration__SkipScriptsWithWrongOrder { get; set; } = false;
         public bool CommonConcepts__Legacy__AutoGeneratePolymorphicProperty { get; set; } = false;
         public bool CommonConcepts__Legacy__CascadeDeleteInDatabase { get; set; } = false;
         public InitialConceptsSort Dsl__InitialConceptsSort { get; set; } = InitialConceptsSort.Key;

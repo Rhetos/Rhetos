@@ -31,16 +31,16 @@ namespace Rhetos.Deployment
         protected readonly ILogger _logger;
         protected readonly DataMigrationScripts _dataMigrationScripts;
         protected readonly SqlTransactionBatches _sqlTransactionBatches;
-        protected readonly BuildOptions _buildOptions;
+        protected readonly DbUpdateOptions _dbUpdateOptions;
 
-        public DataMigrationScriptsExecuter(ISqlExecuter sqlExecuter, ILogProvider logProvider, DataMigrationScripts dataMigrationScripts, 
-            BuildOptions buildOptions, SqlTransactionBatches sqlTransactionBatches)
+        public DataMigrationScriptsExecuter(ISqlExecuter sqlExecuter, ILogProvider logProvider, DataMigrationScripts dataMigrationScripts,
+            DbUpdateOptions dbUpdateOptions, SqlTransactionBatches sqlTransactionBatches)
         {
             _sqlExecuter = sqlExecuter;
             _logger = logProvider.GetLogger("DataMigration");
             _dataMigrationScripts = dataMigrationScripts;
             _sqlTransactionBatches = sqlTransactionBatches;
-            _buildOptions = buildOptions;
+            _dbUpdateOptions = dbUpdateOptions;
         }
 
         public DataMigrationReport Execute()
@@ -65,7 +65,7 @@ namespace Rhetos.Deployment
             string skippedReport = string.Empty;
             if (skipped.Count > 0)
             {
-                if (_buildOptions.DataMigration__SkipScriptsWithWrongOrder)
+                if (_dbUpdateOptions.DataMigration__SkipScriptsWithWrongOrder)
                 {
                     // Ignore skipped scripts for backward compatibility.
                     LogScripts("Skipped older script", skipped, EventType.Warning);

@@ -88,7 +88,7 @@ namespace Rhetos.DatabaseGenerator.Test
                 sqlTransactionBatches,
                 conceptApplicationRepository,
                 new ConsoleLogProvider(),
-                new DatabaseGeneratorOptions { ShortTransactions = false },
+                new DbUpdateOptions { ShortTransactions = false },
                 databaseModel);
 
             databaseGenerator.UpdateDatabaseStructure();

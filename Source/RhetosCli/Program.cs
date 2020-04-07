@@ -60,15 +60,11 @@ namespace Rhetos
 
             var dbUpdateCommand = new Command("dbupdate", "Updates the database, based on the generated files from the build process.");
             dbUpdateCommand.Add(new Argument<DirectoryInfo>("application-folder", () => new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory)) { Description = "If not specified, it will search for the application at rhetos.exe location and parent directories." });
-            dbUpdateCommand.Handler = CommandHandler.Create((DirectoryInfo applicationFolder)
-                => ReportError(() => DbUpdate(applicationFolder)));
+            dbUpdateCommand.Add(new Option<bool?>("--short-transactions", "Commit transaction after creating or dropping each database object."));
+            dbUpdateCommand.Add(new Option<bool?>("--skip-recompute", "Use this if you want to skip all computed data."));
+            dbUpdateCommand.Handler = CommandHandler.Create<DirectoryInfo, bool?, bool?>((DirectoryInfo applicationFolder, bool? shortTransactions, bool? skipRecompute)
+                => ReportError(() => DbUpdate(applicationFolder, shortTransactions, skipRecompute)));
             rootCommand.AddCommand(dbUpdateCommand);
-
-            var appInitializeCommand = new Command("appinitialize", "Initializes the application.");
-            appInitializeCommand.Add(new Argument<DirectoryInfo>("application-folder", () => new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory)) { Description = "If not specified, it will search for the application at rhetos.exe location and parent directories." });
-            appInitializeCommand.Handler = CommandHandler.Create((DirectoryInfo applicationFolder)
-                => ReportError(() => AppInitialize(applicationFolder)));
-            rootCommand.AddCommand(appInitializeCommand);
 
             return rootCommand.Invoke(args);
         }
@@ -133,24 +129,22 @@ namespace Rhetos
             build.GenerateApplication(rhetosProjectContent.RhetosProjectAssets.InstalledPackages);
         }
 
-        private void DbUpdate(DirectoryInfo applicationFolder)
+        private void DbUpdate(DirectoryInfo applicationFolder, bool? shortTransactions, bool? skipRecompute)
         {
             var host = Host.Find(applicationFolder.FullName, LogProvider);
-            var deployment = SetupRuntime(host);
+            var deployment = SetupRuntime(host, shortTransactions, skipRecompute);
             deployment.UpdateDatabase();
-        }
-
-        private void AppInitialize(DirectoryInfo applicationFolder)
-        {
-            var host = Host.Find(applicationFolder.FullName, LogProvider);
-            var deployment = SetupRuntime(host);
             deployment.InitializeGeneratedApplication(host.RhetosRuntime);
         }
 
-        private ApplicationDeployment SetupRuntime(Host host)
+        private ApplicationDeployment SetupRuntime(Host host, bool? shortTransactions, bool? skipRecompute)
         {
             var configurationProvider = host.RhetosRuntime.BuildConfiguration(LogProvider, host.ConfigurationFolder, configurationBuilder => {
                 configurationBuilder.AddKeyValue(nameof(DatabaseOptions.SqlCommandTimeout), 0);
+                if(shortTransactions.HasValue)
+                    configurationBuilder.AddKeyValue(nameof(DbUpdateOptions.ShortTransactions), shortTransactions);
+                if (skipRecompute.HasValue)
+                    configurationBuilder.AddKeyValue(nameof(DbUpdateOptions.SkipRecompute), skipRecompute);
             });
 
             var assemblyFiles = LegacyUtilities.GetRuntimeAssembliesDelegate(configurationProvider).Invoke(); // Using same assembly locations as the generated application runtime.

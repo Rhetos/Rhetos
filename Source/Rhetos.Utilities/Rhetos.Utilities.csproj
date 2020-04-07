@@ -140,6 +140,7 @@
     <Compile Include="ApplicationConfiguration\OptionsAttribute.cs" />
     <Compile Include="ApplicationConfiguration\IRhetosRuntime.cs" />
     <Compile Include="BuildOptions.cs" />
+    <Compile Include="DbUpdateOptions.cs" />
     <Compile Include="FilePosition.cs" />
     <Compile Include="Legacy\LegacyUtilities.cs" />
     <Compile Include="Legacy\Configuration.cs" />

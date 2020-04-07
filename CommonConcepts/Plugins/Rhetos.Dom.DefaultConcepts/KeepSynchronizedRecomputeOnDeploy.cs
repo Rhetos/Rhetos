@@ -34,25 +34,25 @@ namespace Rhetos.Dom.DefaultConcepts
     [Export(typeof(IServerInitializer))]
     public class KeepSynchronizedRecomputeOnDeploy : IServerInitializer
     {
-        GenericRepositories _genericRepositories;
-        ILogger _performanceLogger;
-        ILogger _logger;
-        CurrentKeepSynchronizedMetadata _currentKeepSynchronizedMetadata;
-        private RhetosAppOptions _rhetosAppOptions;
-        IDslModel _dslModel;
+        private readonly GenericRepositories _genericRepositories;
+        private readonly ILogger _performanceLogger;
+        private readonly ILogger _logger;
+        private readonly CurrentKeepSynchronizedMetadata _currentKeepSynchronizedMetadata;
+        private readonly DbUpdateOptions _dbUpdateOptions;
+        private readonly IDslModel _dslModel;
 
         public KeepSynchronizedRecomputeOnDeploy(
             GenericRepositories genericRepositories,
             ILogProvider logProvider,
             CurrentKeepSynchronizedMetadata currentKeepSynchronizedMetadata,
-            RhetosAppOptions rhetosAppOptions,
+            DbUpdateOptions dbUpdateOptions,
             IDslModel dslModel)
         {
             _genericRepositories = genericRepositories;
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("KeepSynchronizedRecomputeOnDeploy");
             _currentKeepSynchronizedMetadata = currentKeepSynchronizedMetadata;
-            _rhetosAppOptions = rhetosAppOptions;
+            _dbUpdateOptions = dbUpdateOptions;
             _dslModel = dslModel;
         }
 
@@ -67,7 +67,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             var skipRecomputeDslConcept = new HashSet<string>(_dslModel.FindByType<SkipRecomputeOnDeployInfo>().Select(GetComputationKey));
 
-            bool skipRecomputeDeployParameter = _rhetosAppOptions.SkipRecompute;
+            bool skipRecomputeDeployParameter = _dbUpdateOptions.SkipRecompute;
 
             IEnumerable<IKeepSynchronizedMetadata> toInsert, toUpdate, toDelete;
             keepSyncRepos.Diff(oldItems, _currentKeepSynchronizedMetadata, new SameRecord(), SameValue, Assign, out toInsert, out toUpdate, out toDelete);

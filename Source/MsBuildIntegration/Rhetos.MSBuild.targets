@@ -82,7 +82,6 @@
         Inputs="$(RhetosBuildCompleteFile)" Outputs="$(RhetosDatabaseUpdated)">
         <Message Text="DeployRhetosApp" />
         <Exec Command="&quot;$(TargetDir)rhetos.exe&quot; dbupdate &quot;$(TargetDir).&quot;" CustomErrorRegularExpression="\[Error\]" CustomWarningRegularExpression="\[Warn\]" />
-        <Exec Command="&quot;$(TargetDir)rhetos.exe&quot; appinitialize &quot;$(TargetDir).&quot;" CustomErrorRegularExpression="\[Error\]" CustomWarningRegularExpression="\[Warn\]" />
         <WriteLinesToFile File="$(RhetosDatabaseUpdated)" Lines="" Overwrite="true" />
     </Target>
 </Project>

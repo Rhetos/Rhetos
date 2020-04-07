@@ -39,14 +39,14 @@ namespace Rhetos.DatabaseGenerator
 		/// <summary>Special logger for keeping track of inserted/updated/deleted concept applications in database.</summary>
         private readonly ILogger _changesLogger;
         private readonly ILogger _performanceLogger;
-        private readonly DatabaseGeneratorOptions _options;
+        private readonly DbUpdateOptions _dbUpdateOptions;
         private readonly DatabaseModel _databaseModel;
 
         public DatabaseGenerator(
             SqlTransactionBatches sqlTransactionBatches, 
             IConceptApplicationRepository conceptApplicationRepository,
             ILogProvider logProvider,
-            DatabaseGeneratorOptions options,
+            DbUpdateOptions dbUpdateOptions,
             DatabaseModel databaseModel)
         {
             _sqlTransactionBatches = sqlTransactionBatches;
@@ -54,7 +54,7 @@ namespace Rhetos.DatabaseGenerator
             _logger = logProvider.GetLogger(GetType().Name);
             _changesLogger = logProvider.GetLogger("DatabaseGeneratorChanges");
             _performanceLogger = logProvider.GetLogger("Performance");
-            _options = options;
+            _dbUpdateOptions = dbUpdateOptions;
             _databaseModel = databaseModel;
         }
 
@@ -279,7 +279,7 @@ namespace Rhetos.DatabaseGenerator
 
         private IEnumerable<string> MaybeCommitMetadataAfterDdl(string[] databaseModificationScripts)
         {
-            if (_options.ShortTransactions)
+            if (_dbUpdateOptions.ShortTransactions)
                 yield return SqlUtility.NoTransactionTag; // The NoTransaction script will force commit of the previous (metadata) scripts.
 
             // If a DDL script is executed out of transaction, its metadata should also be committed immediately,
