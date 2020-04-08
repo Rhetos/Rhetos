@@ -38,7 +38,7 @@ namespace Rhetos.Utilities
         /// <summary>
         /// Initialize legacy Paths for the Rhetos server.
         /// </summary>
-        public static void Initialize(IConfigurationProvider configurationProvider)
+        public static void Initialize(IConfiguration configurationProvider)
         {
             var runtimeEnvironment = configurationProvider.GetOptions<RhetosAppEnvironment>();
             var buildEnvironment = configurationProvider.GetOptions<RhetosBuildEnvironment>();

@@ -27,7 +27,7 @@ using System.Reflection;
 
 namespace Rhetos
 {
-    public class ConfigurationProvider : IConfigurationProvider
+    public class ConfigurationProvider : IConfiguration
     {
         public static readonly string ConfigurationPathSeparator = ":";
         private readonly Dictionary<string, (object Value, string BaseFolder)> _configurationValues;
@@ -205,5 +205,17 @@ namespace Rhetos
                 .Replace(".", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator)
                 .Replace(",", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator);
         }
+
+        [Obsolete("Use GetValue or GetOptions instead")]
+        public Lazy<string> GetString(string key, string defaultValue) => new Lazy<string>(() => GetValue(key, defaultValue));
+
+        [Obsolete("Use GetValue or GetOptions instead")]
+        public Lazy<int> GetInt(string key, int defaultValue) => new Lazy<int>(() => GetValue(key, defaultValue));
+
+        [Obsolete("Use GetValue or GetOptions instead")]
+        public Lazy<bool> GetBool(string key, bool defaultValue) => new Lazy<bool>(() => GetValue(key, defaultValue));
+
+        [Obsolete("Use GetValue or GetOptions instead")]
+        public Lazy<T> GetEnum<T>(string key, T defaultValue) where T : struct => new Lazy<T>(() => GetValue(key, defaultValue));
     }
 }

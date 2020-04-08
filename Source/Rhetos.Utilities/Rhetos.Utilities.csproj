@@ -133,7 +133,6 @@
     <Compile Include="ApplicationConfiguration\ConfigurationSources\ConfigurationFileSource.cs" />
     <Compile Include="ApplicationConfiguration\ConfigurationSources\DotNetConfigurationSource.cs" />
     <Compile Include="ApplicationConfiguration\IConfigurationBuilder.cs" />
-    <Compile Include="ApplicationConfiguration\IConfigurationProvider.cs" />
     <Compile Include="ApplicationConfiguration\ConfigurationSources\IConfigurationSource.cs" />
     <Compile Include="ApplicationConfiguration\ConfigurationSources\KeyValuesSource.cs" />
     <Compile Include="ApplicationConfiguration\OptionsPathAttribute.cs" />

@@ -24,12 +24,12 @@ using System.Text;
 
 namespace Rhetos.Utilities
 {
-    [Obsolete("Use IConfigurationProvider instead.")]
+    [Obsolete("Use IConfiguration instead.")]
     public static class ConfigUtility
     {
-        private static IConfigurationProvider _configurationProvider;
+        private static IConfiguration _configurationProvider;
 
-        public static void Initialize(IConfigurationProvider configurationProvider)
+        public static void Initialize(IConfiguration configurationProvider)
         {
             _configurationProvider = configurationProvider;
         }
@@ -49,7 +49,7 @@ namespace Rhetos.Utilities
         private static void ThrowIfNotInitialized()
         {
             if (_configurationProvider == null)
-                throw new FrameworkException("ConfigUtility is not initialized. Use LegacyUtilities.Initialize() to initialize obsolete static utilities or use the new IConfigurationProvider.");
+                throw new FrameworkException("ConfigUtility is not initialized. Use LegacyUtilities.Initialize() to initialize obsolete static utilities or use the new IConfiguration.");
         }
     }
 }

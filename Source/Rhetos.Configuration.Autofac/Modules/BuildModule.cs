@@ -33,10 +33,10 @@ namespace Rhetos.Configuration.Autofac.Modules
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<RhetosBuildEnvironment>())
+            builder.Register(context => context.Resolve<IConfiguration>().GetOptions<RhetosBuildEnvironment>())
                 .As<RhetosBuildEnvironment>().As<IAssetsOptions>().SingleInstance();
-            builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<RhetosTargetEnvironment>()).SingleInstance();
-            builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<BuildOptions>()).SingleInstance().PreserveExistingDefaults();
+            builder.Register(context => context.Resolve<IConfiguration>().GetOptions<RhetosTargetEnvironment>()).SingleInstance();
+            builder.Register(context => context.Resolve<IConfiguration>().GetOptions<BuildOptions>()).SingleInstance().PreserveExistingDefaults();
 
             var pluginRegistration = builder.GetPluginRegistration();
             AddDatabaseGenerator(builder, pluginRegistration);

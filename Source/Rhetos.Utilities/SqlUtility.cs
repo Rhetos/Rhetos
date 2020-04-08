@@ -54,7 +54,7 @@ namespace Rhetos.Utilities
             return value;
         }
 
-        public static void Initialize(IConfigurationProvider configurationProvider)
+        public static void Initialize(IConfiguration configurationProvider)
         {
             _initialized = true;
 

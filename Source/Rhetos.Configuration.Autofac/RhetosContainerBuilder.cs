@@ -20,26 +20,27 @@
 using Autofac;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 
 namespace Rhetos
 {
     /// <summary>
-    /// Container builder initialized with <see cref="IConfigurationProvider"/>.
+    /// Container builder initialized with <see cref="IConfiguration"/>.
     /// It makes the <see cref="ILogProvider"/> and <see cref="IPluginScanner"/> accessible during registration process and
-    /// registers <see cref="IConfigurationProvider"/> to the container.
+    /// registers <see cref="IConfiguration"/> to the container.
     /// </summary>
     public class RhetosContainerBuilder : ContainerBuilder
     {
         /// <summary>
-        /// Initializes a container with specified <see cref="IConfigurationProvider"/>. 
-        /// Registers <see cref="IConfigurationProvider"/> instance to newly created container.
+        /// Initializes a container with specified <see cref="IConfiguration"/>. 
+        /// Registers <see cref="IConfiguration"/> instance to newly created container.
         /// <see cref="ILogProvider"/> is not registered and is meant to be used during the lifetime of registration and container building process.
         /// <see cref="LegacyUtilities"/> will also be initialized with the given configuration.
         /// </summary>
         /// <param name="pluginAssemblies">List of assemblies (DLL file paths) that will be used for plugins search when using the <see cref="ContainerBuilderPluginRegistration"/></param>
-        public RhetosContainerBuilder(IConfigurationProvider configurationProvider, ILogProvider logProvider, Func<IEnumerable<string>> pluginAssemblies)
+        public RhetosContainerBuilder(IConfiguration configurationProvider, ILogProvider logProvider, Func<IEnumerable<string>> pluginAssemblies)
         {
             this.RegisterInstance(configurationProvider);
 

@@ -19,18 +19,27 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Rhetos.Utilities
 {
-    [Obsolete("Use IConfigurationProvider instead.")]
     public interface IConfiguration
     {
+        T GetValue<T>(string configurationKey, T defaultValue = default(T), string configurationPath = "");
+
+        T GetOptions<T>(string configurationPath = "", bool requireAllMembers = false) where T : class;
+
+        IEnumerable<string> AllKeys { get; }
+
+        [Obsolete("Use GetValue or GetOptions instead")]
         Lazy<string> GetString(string key, string defaultValue);
+
+        [Obsolete("Use GetValue or GetOptions instead")]
         Lazy<int> GetInt(string key, int defaultValue);
+
+        [Obsolete("Use GetValue or GetOptions instead")]
         Lazy<bool> GetBool(string key, bool defaultValue);
+
+        [Obsolete("Use GetValue or GetOptions instead")]
         Lazy<T> GetEnum<T>(string key, T defaultValue) where T : struct;
     }
 }

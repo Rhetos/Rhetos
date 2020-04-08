@@ -18,7 +18,6 @@
 */
 
 using Autofac;
-using Rhetos.Deployment;
 using Rhetos.Extensibility;
 using Rhetos.Utilities;
 
@@ -28,7 +27,7 @@ namespace Rhetos.Configuration.Autofac.Modules
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<DbUpdateOptions>()).SingleInstance().PreserveExistingDefaults();
+            builder.Register(context => context.Resolve<IConfiguration>().GetOptions<DbUpdateOptions>()).SingleInstance().PreserveExistingDefaults();
             builder.GetPluginRegistration().FindAndRegisterPlugins<IServerInitializer>();
             base.Load(builder);
         }

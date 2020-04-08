@@ -35,12 +35,12 @@ namespace Rhetos
     public class ApplicationDeployment
     {
         private readonly ILogger _logger;
-        private readonly IConfigurationProvider _configurationProvider;
+        private readonly IConfiguration _configurationProvider;
         private readonly ILogProvider _logProvider;
         private readonly Func<IEnumerable<string>> _pluginAssemblies;
 
         /// <param name="pluginAssemblies">List of assemblies (DLL file paths) that will be scanned for plugins.</param>
-        public ApplicationDeployment(IConfigurationProvider configurationProvider, ILogProvider logProvider, Func<IEnumerable<string>> pluginAssemblies)
+        public ApplicationDeployment(IConfiguration configurationProvider, ILogProvider logProvider, Func<IEnumerable<string>> pluginAssemblies)
         {
             _logger = logProvider.GetLogger(GetType().Name);
             _configurationProvider = configurationProvider;

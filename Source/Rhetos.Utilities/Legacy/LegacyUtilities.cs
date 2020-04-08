@@ -32,7 +32,7 @@ namespace Rhetos
         /// Use to initialize obsolete static utilities <see cref="Paths"/>, <see cref="ConfigUtility"/>, <see cref="Configuration"/> and <see cref="SqlUtility"/> 
         /// prior to using any of their methods. This will bind those utilities to configuration source compliant with new configuration convention.
         /// </summary>
-        public static void Initialize(IConfigurationProvider configurationProvider)
+        public static void Initialize(IConfiguration configurationProvider)
         {
             Paths.Initialize(configurationProvider);
             ConfigUtility.Initialize(configurationProvider);
@@ -43,7 +43,7 @@ namespace Rhetos
         /// <summary>
         /// Returns list of assemblies that will be scanned for plugin exports.
         /// </summary>
-        public static Func<string[]> GetRuntimeAssembliesDelegate(IConfigurationProvider configurationProvider)
+        public static Func<string[]> GetRuntimeAssembliesDelegate(IConfiguration configurationProvider)
         {
             var runtimeEnvironment = configurationProvider.GetOptions<RhetosAppEnvironment>();
             if (runtimeEnvironment?.AssemblyFolder == null)
