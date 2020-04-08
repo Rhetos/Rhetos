@@ -21,7 +21,7 @@
 	{
 		Bool Applies;
 		
-		FilterBy 'Common.Claim' '(repository, parameter, executionContext) =>
+		FilterBy 'Common.Claim' '(repository, parameter) =>
 			{
 				var claim = repository.Common.Claim.Query().Where(item => item.ClaimResource == parameter.ClaimResource && item.ClaimRight == parameter.ClaimRight).SingleOrDefault();
 				if (claim == null)
@@ -29,24 +29,18 @@
 						new[] { parameter.ClaimResource, parameter.ClaimRight }, null, null);
 				
 				return repository.Common.MyClaim.Filter(new[] { claim });
-			}'
-		{
-			UseExecutionContext;
-		}
+			}';
 		
-		FilterBy 'IEnumerable<Common.Claim>' '(repository, claims, executionContext) =>
+		FilterBy 'IEnumerable<Common.Claim>' '(repository, claims) =>
 			{
                 var securityClaims = claims.Select(c => new Rhetos.Security.Claim(c.ClaimResource, c.ClaimRight)).ToList();
-                var authorizations = executionContext.AuthorizationManager.GetAuthorizations(securityClaims);
+                var authorizations = _executionContext.AuthorizationManager.GetAuthorizations(securityClaims);
 			
                 return claims.Zip(authorizations, (claim, authorized) => new Common.MyClaim {
                         ID = claim.ID,
                         Applies = authorized
                     }).ToArray();
-             }'
-		{
-			UseExecutionContext;
-		}
+             }';
 	}
 	
 	//=====================================================
