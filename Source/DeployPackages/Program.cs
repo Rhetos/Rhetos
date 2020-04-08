@@ -37,7 +37,7 @@ namespace DeployPackages
             { "/IgnoreDependencies", "Allow installing incompatible versions of Rhetos packages." },
             { "/ShortTransactions", "Commit transaction after creating or dropping each database object." },
             { "/DatabaseOnly", "Keep old plugins and files in bin\\Generated." },
-            { "/SkipRecompute", "Use this if you want to skip all computed data." }
+            { "/SkipRecompute", "Skip automatic update of computed data with KeepSynchronized." }
         };
 
         public static int Main(string[] args)
@@ -54,65 +54,9 @@ namespace DeployPackages
                     return 1;
 
                 string rhetosAppRootPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".."));
-                
-                // Using build-time configuration:
-                {
-                    var configurationProvider = new ConfigurationBuilder()
-                        .AddOptions(new RhetosBuildEnvironment
-                        {
-                            ProjectFolder = rhetosAppRootPath,
-                            OutputAssemblyName = null,
-                            CacheFolder = Path.Combine(rhetosAppRootPath, "GeneratedFilesCache"),
-                            GeneratedAssetsFolder = Path.Combine(rhetosAppRootPath, "bin", "Generated"),
-                            GeneratedSourceFolder = null,
-                        })
-                        .AddOptions(new LegacyPathsOptions
-                        {
-                            BinFolder = Path.Combine(rhetosAppRootPath, "bin"),
-                            PluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins"),
-                            ResourcesFolder = Path.Combine(rhetosAppRootPath, "Resources"),
-                        })
-                        .AddKeyValue(nameof(BuildOptions.GenerateAppSettings), false)
-                        .AddKeyValue(nameof(BuildOptions.Legacy__BuildResourcesFolder).Replace("__","."), true) // This legacy option is hardcorded for legacy build. This option can be set in rhetos-build.settings.json, but that JSON file does not need to be shipped with DeployPackages zip package.
-                        .AddWebConfiguration(rhetosAppRootPath)
-                        .AddConfigurationManagerConfiguration()
-                        .AddCommandLineArguments(args, "/")
-                        .Build();
 
-                    var deployOptions = configurationProvider.GetOptions<DeployOptions>();
-                    pauseOnError = !deployOptions.NoPause;
-                    if (deployOptions.StartPaused)
-                        StartPaused();
-
-                    var build = new ApplicationBuild(configurationProvider, logProvider, () => GetBuildPlugins(Path.Combine(rhetosAppRootPath, "bin", "Plugins")));
-                    if (!deployOptions.DatabaseOnly)
-                    {
-                        DeleteObsoleteFiles(logProvider, logger);
-                        var installedPackages = build.DownloadPackages(deployOptions.IgnoreDependencies);
-                        build.GenerateApplication(installedPackages);
-                    }
-                    else
-                    {
-                        logger.Info("Skipped deleting old generated files (DeployDatabaseOnly).");
-                        logger.Info("Skipped download packages (DeployDatabaseOnly).");
-                        logger.Info("Skipped code generators (DeployDatabaseOnly).");
-                    }
-                }
-
-                // Using run-time configuration:
-                {
-                    var host = Host.Find(AppDomain.CurrentDomain.BaseDirectory, logProvider);
-                    var configurationProvider = host.RhetosRuntime
-                        .BuildConfiguration(logProvider, host.ConfigurationFolder, (builder) => {
-                            builder.AddCommandLineArguments(args, "/");
-                        });
-
-                    var deployment = new ApplicationDeployment(configurationProvider, logProvider, LegacyUtilities.GetRuntimeAssembliesDelegate(configurationProvider));
-
-                    deployment.UpdateDatabase();
-                    deployment.InitializeGeneratedApplication(host.RhetosRuntime);
-                    deployment.RestartWebServer();
-                }
+                Build(args, logProvider, rhetosAppRootPath, out pauseOnError);
+                DbUpdate(args, logProvider);
 
                 logger.Info("Done.");
             }
@@ -131,6 +75,52 @@ namespace DeployPackages
             }
 
             return 0;
+        }
+
+        private static void Build(string[] args, NLogProvider logProvider, string rhetosAppRootPath, out bool pauseOnError)
+        {
+            var logger = logProvider.GetLogger("DeployPackages");
+
+            var configurationProvider = new ConfigurationBuilder()
+                   .AddOptions(new RhetosBuildEnvironment
+                   {
+                       ProjectFolder = rhetosAppRootPath,
+                       OutputAssemblyName = null,
+                       CacheFolder = Path.Combine(rhetosAppRootPath, "GeneratedFilesCache"),
+                       GeneratedAssetsFolder = Path.Combine(rhetosAppRootPath, "bin", "Generated"),
+                       GeneratedSourceFolder = null,
+                   })
+                   .AddOptions(new LegacyPathsOptions
+                   {
+                       BinFolder = Path.Combine(rhetosAppRootPath, "bin"),
+                       PluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins"),
+                       ResourcesFolder = Path.Combine(rhetosAppRootPath, "Resources"),
+                   })
+                   .AddKeyValue(nameof(BuildOptions.GenerateAppSettings), false)
+                   .AddKeyValue(nameof(BuildOptions.Legacy__BuildResourcesFolder).Replace("__", "."), true) // This legacy option is hardcorded for legacy build. This option can be set in rhetos-build.settings.json, but that JSON file does not need to be shipped with DeployPackages zip package.
+                   .AddWebConfiguration(rhetosAppRootPath)
+                   .AddConfigurationManagerConfiguration()
+                   .AddCommandLineArguments(args, "/")
+                   .Build();
+
+            var deployOptions = configurationProvider.GetOptions<DeployOptions>();
+            pauseOnError = !deployOptions.NoPause;
+            if (deployOptions.StartPaused)
+                StartPaused();
+
+            var build = new ApplicationBuild(configurationProvider, logProvider, () => GetBuildPlugins(Path.Combine(rhetosAppRootPath, "bin", "Plugins")));
+            if (!deployOptions.DatabaseOnly)
+            {
+                DeleteObsoleteFiles(logProvider, logger);
+                var installedPackages = build.DownloadPackages(deployOptions.IgnoreDependencies);
+                build.GenerateApplication(installedPackages);
+            }
+            else
+            {
+                logger.Info("Skipped deleting old generated files (DeployDatabaseOnly).");
+                logger.Info("Skipped download packages (DeployDatabaseOnly).");
+                logger.Info("Skipped code generators (DeployDatabaseOnly).");
+            }
         }
 
         private static IEnumerable<string> GetBuildPlugins(string pluginsFolder)
@@ -204,6 +194,22 @@ namespace DeployPackages
                     logger.Warning($"Deleting obsolete file '{path}'.");
                     filesUtility.SafeDeleteFile(path);
                 }
+        }
+
+        private static void DbUpdate(string[] args, NLogProvider logProvider)
+        {
+            var host = Host.Find(AppDomain.CurrentDomain.BaseDirectory, logProvider);
+            var configurationProvider = host.RhetosRuntime
+                .BuildConfiguration(logProvider, host.ConfigurationFolder, (builder) =>
+                {
+                    builder.AddCommandLineArguments(args, "/");
+                });
+
+            var deployment = new ApplicationDeployment(configurationProvider, logProvider, LegacyUtilities.GetRuntimeAssembliesDelegate(configurationProvider));
+
+            deployment.UpdateDatabase();
+            deployment.InitializeGeneratedApplication(host.RhetosRuntime);
+            deployment.RestartWebServer();
         }
 
         private static void InteractiveExceptionInfo(Exception e, bool pauseOnError)
