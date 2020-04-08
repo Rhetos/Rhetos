@@ -63,11 +63,10 @@ namespace Rhetos.Utilities
 
             _connectionString = configurationProvider.GetValue<string>($"ConnectionStrings:{RhetosConnectionStringName}:ConnectionString");
 
+            var runtimeEnvironment = configurationProvider.GetOptions<RhetosAppEnvironment>();
             var buildOptions = configurationProvider.GetOptions<BuildOptions>();
-            if (string.IsNullOrEmpty(buildOptions.DatabaseLanguage))
-                throw new FrameworkException($"{nameof(BuildOptions)}.{nameof(BuildOptions.DatabaseLanguage)} is not configured.");
+            _databaseLanguage = runtimeEnvironment.DatabaseLanguage ?? buildOptions.DatabaseLanguage;
 
-            _databaseLanguage = buildOptions.DatabaseLanguage;
             _nationalLanguage = configurationProvider.GetValue("Database:Oracle:NationalLanguage", ""); // TODO: Review if this is a desired key for build options after refactoring configuration key to avoid property name collisions.
             InitializeProviderContext();
         }

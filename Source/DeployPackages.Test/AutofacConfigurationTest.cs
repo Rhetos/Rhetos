@@ -57,8 +57,9 @@ namespace DeployPackages.Test
                     PluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins"),
                     ResourcesFolder = Path.Combine(rhetosAppRootPath, "Resources"),
                 })
+                .AddKeyValue(nameof(BuildOptions.GenerateAppSettings), false)
+                .AddKeyValue(nameof(BuildOptions.Legacy__BuildResourcesFolder).Replace("__", "."), true) // This legacy option is hardcorded for legacy build. This option can be set in rhetos-build.settings.json, but that JSON file does not need to be shipped with DeployPackages zip package.
                 .AddWebConfiguration(rhetosAppRootPath)
-                .AddKeyValue(nameof(RhetosAppEnvironment.AssetsFolder), AppDomain.CurrentDomain.BaseDirectory)
                 .AddConfigurationManagerConfiguration()
                 .Build();
 
@@ -234,8 +235,7 @@ Activator = Tokenizer (ReflectionActivator), Services = [Rhetos.Dsl.Tokenizer], 
 Activator = XmlUtility (ReflectionActivator), Services = [Rhetos.Utilities.XmlUtility], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope";
 
         const string _expectedRegistrationsDbUpdate =
-@"Activator = BuildOptions (DelegateActivator), Services = [Rhetos.Utilities.BuildOptions], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
-Activator = ConceptApplicationRepository (ReflectionActivator), Services = [Rhetos.DatabaseGenerator.IConceptApplicationRepository], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
+@"Activator = ConceptApplicationRepository (ReflectionActivator), Services = [Rhetos.DatabaseGenerator.IConceptApplicationRepository], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = ConceptDataMigrationExecuter (ReflectionActivator), Services = [Rhetos.DatabaseGenerator.IConceptDataMigrationExecuter], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = Configuration (ReflectionActivator), Services = [Rhetos.Utilities.IConfiguration], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = ConfigurationProvider (ProvidedInstanceActivator), Services = [Rhetos.IConfigurationProvider], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope

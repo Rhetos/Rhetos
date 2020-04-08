@@ -21,6 +21,7 @@ namespace Rhetos.Utilities
 {
     /// <summary>
     /// Run-time environment.
+    /// These options are specified at build-time, they should be considered as hard-coded at run-time.
     /// </summary>
     public class RhetosAppEnvironment : IAssetsOptions
     {
@@ -37,5 +38,7 @@ namespace Rhetos.Utilities
         /// Run-time assets folder.
         /// </summary>
         public string AssetsFolder { get; set; }
+
+        public string DatabaseLanguage { get; set; }
     }
 }

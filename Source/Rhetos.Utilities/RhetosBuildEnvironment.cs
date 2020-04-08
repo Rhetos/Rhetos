@@ -19,6 +19,12 @@
 
 namespace Rhetos.Utilities
 {
+    /// <summary>
+    /// Build-time environment.
+    /// These options are specified as development project infrastructure (by Rhetos MSBuild integration, e.g.),
+    /// they should be considered as hard-coded at Rhetos build.
+    /// See <see cref="BuildOptions"/> for configurable build settings.
+    /// </summary>
     public class RhetosBuildEnvironment : IAssetsOptions
     {
         public string ProjectFolder { get; set; }
