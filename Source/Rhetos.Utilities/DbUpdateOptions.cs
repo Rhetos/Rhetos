@@ -21,6 +21,8 @@ namespace Rhetos.Utilities
 {
     public class DbUpdateOptions
     {
+        public static readonly string ConfigurationFileName = "rhetos-dbupdate.settings.json";
+
         public bool ShortTransactions { get; set; } = false;
         public bool DataMigration__SkipScriptsWithWrongOrder { get; set; } = false;
         public bool SkipRecompute { get; set; } = false;

@@ -108,9 +108,10 @@ namespace DeployPackages
             if (deployOptions.StartPaused)
                 StartPaused();
 
-            var build = new ApplicationBuild(configurationProvider, logProvider, () => GetBuildPlugins(Path.Combine(rhetosAppRootPath, "bin", "Plugins")));
             if (!deployOptions.DatabaseOnly)
             {
+                var build = new ApplicationBuild(configurationProvider, logProvider, () => GetBuildPlugins(Path.Combine(rhetosAppRootPath, "bin", "Plugins")));
+                LegacyUtilities.Initialize(configurationProvider);
                 DeleteObsoleteFiles(logProvider, logger);
                 var installedPackages = build.DownloadPackages(deployOptions.IgnoreDependencies);
                 build.GenerateApplication(installedPackages);
@@ -206,7 +207,6 @@ namespace DeployPackages
                 });
 
             var deployment = new ApplicationDeployment(configurationProvider, logProvider, LegacyUtilities.GetRuntimeAssembliesDelegate(configurationProvider));
-
             deployment.UpdateDatabase();
             deployment.InitializeGeneratedApplication(host.RhetosRuntime);
             deployment.RestartWebServer();

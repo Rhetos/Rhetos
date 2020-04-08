@@ -46,7 +46,6 @@ namespace Rhetos
             _configurationProvider = configurationProvider;
             _logProvider = logProvider;
             _pluginAssemblies = pluginAssemblies;
-            LegacyUtilities.Initialize(configurationProvider);
         }
 
         //=====================================================================
