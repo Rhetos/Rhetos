@@ -137,6 +137,7 @@ namespace Rhetos
             var configurationProvider = host.RhetosRuntime.BuildConfiguration(LogProvider, host.ConfigurationFolder, configurationBuilder =>
             {
                 configurationBuilder.AddKeyValue(nameof(DatabaseOptions.SqlCommandTimeout), 0);
+                configurationBuilder.AddJsonFile(Path.Combine(host.ConfigurationFolder, DbUpdateOptions.ConfigurationFileName), optional: true);
                 if (shortTransactions)
                     configurationBuilder.AddKeyValue(nameof(DbUpdateOptions.ShortTransactions), shortTransactions);
                 if (skipRecompute)
