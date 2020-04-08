@@ -60,9 +60,9 @@ namespace Rhetos
 
             var dbUpdateCommand = new Command("dbupdate", "Updates the database, based on the generated files from the build process.");
             dbUpdateCommand.Add(new Argument<DirectoryInfo>("application-folder", () => new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory)) { Description = "If not specified, it will search for the application at rhetos.exe location and parent directories." });
-            dbUpdateCommand.Add(new Option<bool?>("--short-transactions", "Commit transaction after creating or dropping each database object."));
-            dbUpdateCommand.Add(new Option<bool?>("--skip-recompute", "Use this if you want to skip all computed data."));
-            dbUpdateCommand.Handler = CommandHandler.Create<DirectoryInfo, bool?, bool?>((DirectoryInfo applicationFolder, bool? shortTransactions, bool? skipRecompute)
+            dbUpdateCommand.Add(new Option<bool>("--short-transactions", "Commit transaction after creating or dropping each database object."));
+            dbUpdateCommand.Add(new Option<bool>("--skip-recompute", "Skip automatic update of computed data with KeepSynchronized. See output log for data that needs updating."));
+            dbUpdateCommand.Handler = CommandHandler.Create((DirectoryInfo applicationFolder, bool shortTransactions, bool skipRecompute)
                 => ReportError(() => DbUpdate(applicationFolder, shortTransactions, skipRecompute)));
             rootCommand.AddCommand(dbUpdateCommand);
 
@@ -125,32 +125,30 @@ namespace Rhetos
                 .Build();
 
             AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(rhetosProjectContent.RhetosProjectAssets.Assemblies.ToArray());
+
             var build = new ApplicationBuild(configurationProvider, LogProvider, () => rhetosProjectContent.RhetosProjectAssets.Assemblies);
             build.GenerateApplication(rhetosProjectContent.RhetosProjectAssets.InstalledPackages);
         }
 
-        private void DbUpdate(DirectoryInfo applicationFolder, bool? shortTransactions, bool? skipRecompute)
+        private void DbUpdate(DirectoryInfo applicationFolder, bool shortTransactions, bool skipRecompute)
         {
             var host = Host.Find(applicationFolder.FullName, LogProvider);
-            var deployment = SetupRuntime(host, shortTransactions, skipRecompute);
-            deployment.UpdateDatabase();
-            deployment.InitializeGeneratedApplication(host.RhetosRuntime);
-        }
 
-        private ApplicationDeployment SetupRuntime(Host host, bool? shortTransactions, bool? skipRecompute)
-        {
-            var configurationProvider = host.RhetosRuntime.BuildConfiguration(LogProvider, host.ConfigurationFolder, configurationBuilder => {
+            var configurationProvider = host.RhetosRuntime.BuildConfiguration(LogProvider, host.ConfigurationFolder, configurationBuilder =>
+            {
                 configurationBuilder.AddKeyValue(nameof(DatabaseOptions.SqlCommandTimeout), 0);
-                if(shortTransactions.HasValue)
+                if (shortTransactions)
                     configurationBuilder.AddKeyValue(nameof(DbUpdateOptions.ShortTransactions), shortTransactions);
-                if (skipRecompute.HasValue)
+                if (skipRecompute)
                     configurationBuilder.AddKeyValue(nameof(DbUpdateOptions.SkipRecompute), skipRecompute);
             });
 
             var assemblyFiles = LegacyUtilities.GetRuntimeAssembliesDelegate(configurationProvider).Invoke(); // Using same assembly locations as the generated application runtime.
             AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(assemblyFiles);
 
-            return new ApplicationDeployment(configurationProvider, LogProvider, () => assemblyFiles);
+            var deployment = new ApplicationDeployment(configurationProvider, LogProvider, () => assemblyFiles);
+            deployment.UpdateDatabase();
+            deployment.InitializeGeneratedApplication(host.RhetosRuntime);
         }
 
         private ResolveEventHandler GetSearchForAssemblyDelegate(params string[] assemblyList)
