@@ -55,7 +55,7 @@ namespace CommonConcepts.Test
 
 #pragma warning disable CS0618 // Type or member is obsolete -- Testing obsolete Paths class for backward compatibility.
 
-            LegacyUtilities.Initialize(configurationProvider);
+            Paths.Initialize(configurationProvider);
             Console.WriteLine($"Paths: {Paths.RhetosServerRootPath}");
 
             Assert.AreEqual(Normalize(rootPath), Normalize(Paths.RhetosServerRootPath));
