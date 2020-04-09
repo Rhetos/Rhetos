@@ -19,12 +19,10 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
+using Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources;
 
 namespace Rhetos.Utilities.Test
 {

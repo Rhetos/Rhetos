@@ -18,10 +18,9 @@
 */
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
+using Rhetos.TestCommon;
 using System.Collections.Generic;
 using System.Linq;
-using Rhetos.TestCommon;
 
 namespace Rhetos.Deployment.Test
 {

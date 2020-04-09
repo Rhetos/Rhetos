@@ -18,11 +18,11 @@
 */
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 using Rhetos.TestCommon;
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Data;
+using System.Linq;
 
 namespace Rhetos.Utilities.Test
 {
@@ -91,6 +91,7 @@ namespace Rhetos.Utilities.Test
         }
 
         [TestMethod]
+        [DeploymentItem("ConnectionStrings.config")]
         public void OracleObjectName()
         {
             TestUtility.CheckDatabaseAvailability("Oracle");
