@@ -43,7 +43,7 @@ namespace Rhetos.Compiler
         private readonly CacheUtility _cacheUtility;
         private readonly ISourceWriter _sourceWriter;
 
-        public AssemblyGenerator(ILogProvider logProvider, IConfigurationProvider configurationProvider,
+        public AssemblyGenerator(ILogProvider logProvider, IConfiguration configurationProvider,
             BuildOptions buildOptions, RhetosBuildEnvironment buildEnvironment,
             FilesUtility filesUtility, ISourceWriter sourceWriter)
         {

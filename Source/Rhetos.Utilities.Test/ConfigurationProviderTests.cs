@@ -592,7 +592,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void JsonErrorsThrow()
         {
-            Func<string, IConfigurationProvider> buildWithJson = jsonText => new ConfigurationBuilder().Add(new JsonSource(jsonText)).Build();
+            Func<string, IConfiguration> buildWithJson = jsonText => new ConfigurationBuilder().Add(new JsonSource(jsonText)).Build();
 
             TestUtility.ShouldFail(() => buildWithJson("{"), "Error reading JObject from JsonReader");
             TestUtility.ShouldFail<FrameworkException>(() => buildWithJson("{\"array\": [] }"), "JSON token type Array is not allowed");

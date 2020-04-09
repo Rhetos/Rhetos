@@ -162,7 +162,7 @@ namespace Rhetos.Configuration.Autofac
         {
             private readonly List<string> _searchFolders;
 
-            public AssemblyResolver(IConfigurationProvider configurationProvider)
+            public AssemblyResolver(IConfiguration configurationProvider)
             {
                 var rhetosAppEnvironment = configurationProvider.GetOptions<RhetosAppEnvironment>();
                 var legacyPaths = configurationProvider.GetOptions<LegacyPathsOptions>();

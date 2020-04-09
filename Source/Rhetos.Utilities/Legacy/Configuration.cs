@@ -19,52 +19,54 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Rhetos.Utilities
 {
-    [Obsolete("Use IConfigurationProvider instead.")]
+    /// <summary>
+    /// Legacy configuration class.
+    /// 
+    /// Legacy code that accessed this class indirectly through dependency injection referenced only <see cref="IConfiguration"/> interface.
+    /// This interface is now resolved to new implementation: <see cref="ConfigurationProvider"/>.
+    /// 
+    /// Legacy code that accessed this class directly has used it with default constructor, without dependency injection,
+    /// expecting it to read global system configuration. This class is left as a support for that legacy code.
+    /// </summary>
+    [Obsolete("Use IConfiguration instead.")]
     public class Configuration : IConfiguration
     {
-        private readonly IConfigurationProvider _configurationProvider;
-        private static IConfigurationProvider _staticConfigurationProvider;
-        private IConfigurationProvider AnyConfigurationProvider => _configurationProvider ?? _staticConfigurationProvider;
+        private static IConfiguration _staticConfigurationProvider;
 
-        internal static void Initialize(IConfigurationProvider configurationProvider)
+        internal static void Initialize(IConfiguration configurationProvider)
         {
             _staticConfigurationProvider = configurationProvider;
         }
 
-        public Configuration()
-        {
-            // Legacy constructor, _staticConfigurationProvider will be used.
-        }
-
-        public Configuration(IConfigurationProvider configurationProvider)
-        {
-            _configurationProvider = configurationProvider;
-        }
-        
-
         public Lazy<string> GetString(string key, string defaultValue)
         {
-            return new Lazy<string>(() => AnyConfigurationProvider.GetValue(key, defaultValue));
+            return new Lazy<string>(() => _staticConfigurationProvider.GetValue(key, defaultValue));
         }
 
         public Lazy<int> GetInt(string key, int defaultValue)
         {
-            return new Lazy<int>(() => AnyConfigurationProvider.GetValue(key, defaultValue));
+            return new Lazy<int>(() => _staticConfigurationProvider.GetValue(key, defaultValue));
         }
 
         public Lazy<bool> GetBool(string key, bool defaultValue)
         {
-            return new Lazy<bool>(() => AnyConfigurationProvider.GetValue(key, defaultValue));
+            return new Lazy<bool>(() => _staticConfigurationProvider.GetValue(key, defaultValue));
         }
 
         public Lazy<T> GetEnum<T>(string key, T defaultValue) where T : struct
         {
-            return new Lazy<T>(() => AnyConfigurationProvider.GetValue(key, defaultValue));
+            return new Lazy<T>(() => _staticConfigurationProvider.GetValue(key, defaultValue));
         }
+
+        string _legacyError => $"Legacy class {nameof(Configuration)} does not implement new {nameof(IConfiguration)} members. Please use {nameof(IConfiguration)} from DI container instead.";
+
+        public IEnumerable<string> AllKeys => throw new FrameworkException(_legacyError);
+
+        public T GetValue<T>(string configurationKey, T defaultValue = default, string configurationPath = "") => throw new FrameworkException(_legacyError);
+
+        public T GetOptions<T>(string configurationPath = "", bool requireAllMembers = false) where T : class => throw new FrameworkException(_legacyError);
     }
 }

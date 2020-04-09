@@ -34,11 +34,11 @@ namespace Rhetos.Configuration.Autofac.Modules
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<RhetosAppEnvironment>()).SingleInstance()
+            builder.Register(context => context.Resolve<IConfiguration>().GetOptions<RhetosAppEnvironment>()).SingleInstance()
                 .As<RhetosAppEnvironment>().As<IAssetsOptions>().SingleInstance();
             builder.RegisterType<InstalledPackagesProvider>();
             builder.Register(context => context.Resolve<InstalledPackagesProvider>().Load()).As<InstalledPackages>().As<IInstalledPackages>().SingleInstance();
-            builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<RhetosAppOptions>()).SingleInstance().PreserveExistingDefaults();
+            builder.Register(context => context.Resolve<IConfiguration>().GetOptions<RhetosAppOptions>()).SingleInstance().PreserveExistingDefaults();
             builder.RegisterType<DomLoader>().As<IDomainObjectModel>().SingleInstance();
             builder.RegisterType<PersistenceTransaction>().As<IPersistenceTransaction>().InstancePerLifetimeScope();
             builder.RegisterType<DslModelFile>().As<IDslModel>().SingleInstance();
@@ -54,7 +54,7 @@ namespace Rhetos.Configuration.Autofac.Modules
 
         private void AddSecurity(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
         {
-            builder.Register(context => context.Resolve<IConfigurationProvider>().GetOptions<SecurityOptions>()).SingleInstance().PreserveExistingDefaults();
+            builder.Register(context => context.Resolve<IConfiguration>().GetOptions<SecurityOptions>()).SingleInstance().PreserveExistingDefaults();
             builder.RegisterType<WindowsSecurity>().As<IWindowsSecurity>().SingleInstance();
             builder.RegisterType<AuthorizationManager>().As<IAuthorizationManager>().InstancePerLifetimeScope();
 

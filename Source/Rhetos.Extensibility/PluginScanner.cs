@@ -64,7 +64,7 @@ namespace Rhetos.Extensibility
         /// <summary>
         /// Finds the cache folder in either build-time or run-time configuration, since plugin scanner is used in both environments.
         /// </summary>
-        public static string GetCacheFolder(IConfigurationProvider configurationProvider)
+        public static string GetCacheFolder(IConfiguration configurationProvider)
         {
             var rhetosBuildEnvironment = configurationProvider.GetOptions<RhetosBuildEnvironment>();
             var rhetosAppEnvironment = configurationProvider.GetOptions<RhetosAppEnvironment>();

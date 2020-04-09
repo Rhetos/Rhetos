@@ -40,7 +40,7 @@ namespace Rhetos
             _isHost = isHost;
         }
 
-        public IConfigurationProvider BuildConfiguration(ILogProvider logProvider, string configurationFolder, Action<IConfigurationBuilder> addCustomConfiguration)
+        public IConfiguration BuildConfiguration(ILogProvider logProvider, string configurationFolder, Action<IConfigurationBuilder> addCustomConfiguration)
         {
             var configurationBuilder = new ConfigurationBuilder();
             configurationBuilder.AddRhetosAppEnvironment(configurationFolder);
@@ -55,12 +55,12 @@ namespace Rhetos
             return configurationBuilder.Build();
         }
 
-        public IContainer BuildContainer(ILogProvider logProvider, IConfigurationProvider configurationProvider, Action<ContainerBuilder> registerCustomComponents)
+        public IContainer BuildContainer(ILogProvider logProvider, IConfiguration configurationProvider, Action<ContainerBuilder> registerCustomComponents)
         {
             return BuildContainer(logProvider, configurationProvider, registerCustomComponents, LegacyUtilities.GetRuntimeAssembliesDelegate(configurationProvider));
         }
 
-        private IContainer BuildContainer(ILogProvider logProvider, IConfigurationProvider configurationProvider, Action<ContainerBuilder> registerCustomComponents, Func<IEnumerable<string>> getAssembliesDelegate)
+        private IContainer BuildContainer(ILogProvider logProvider, IConfiguration configurationProvider, Action<ContainerBuilder> registerCustomComponents, Func<IEnumerable<string>> getAssembliesDelegate)
         {
             var builder = new RhetosContainerBuilder(configurationProvider, logProvider, getAssembliesDelegate);
 

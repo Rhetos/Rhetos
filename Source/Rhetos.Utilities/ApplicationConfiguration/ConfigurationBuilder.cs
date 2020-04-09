@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Utilities;
 using Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources;
 using System;
 using System.Collections.Generic;
@@ -34,7 +35,7 @@ namespace Rhetos
             return this;
         }
 
-        public IConfigurationProvider Build()
+        public IConfiguration Build()
         {
             var configurationValues = new Dictionary<string, (object Value, string BaseFolder)>(StringComparer.InvariantCultureIgnoreCase);
 
