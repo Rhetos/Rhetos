@@ -44,6 +44,7 @@ Write-Output "Setting version '$fullVersion'."
 RegexReplace '*AssemblyInfo.cs' '([\n^]\[assembly: Assembly(File)?Version(Attribute)?\(\").*(\"\)\])' ('${1}' + $version + '${4}')
 RegexReplace '*AssemblyInfo.cs' '([\n^]\[assembly: AssemblyInformationalVersion(Attribute)?\(\").*(\"\)\])' ('${1}' + $fullVersion + '${3}')
 RegexReplace '*.nuspec' '([\n^]\s*\<version\>).*(\<\/version\>\s*)' ('${1}' + $fullVersion + '${2}')
+RegexReplace 'Directory.Build.props' '([\n^]\s*\<InformationalVersion\>).*(\<\/InformationalVersion\>\s*)' ('${1}' + $fullVersion + '${2}')
 
 # CommonConcepts is developed together with Rhetos framework, so it is expected to match the release version. Difference in patch version (Build) is allowed here.
 If ($Version.Build -gt 0)
@@ -57,4 +58,4 @@ Else
 
 [string]$nextFrameworkVersion=$version.Major.ToString() + '.' + ($version.Minor + 1).ToString() + '.0'
 
-RegexReplace '*.nuspec' '(dependency id=\"Rhetos(\.Core)?\" version=\").*?(\")' ('${1}[' + $minFrameworkVersion + ',' + $nextFrameworkVersion + ')${3}')
+RegexReplace '*.nuspec' '(dependency id=\"Rhetos(\.MSBuild)?\" version=\").*?(\")' ('${1}[' + $minFrameworkVersion + ',' + $nextFrameworkVersion + ')${3}')
