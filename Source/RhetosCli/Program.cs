@@ -127,6 +127,7 @@ namespace Rhetos
             AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(rhetosProjectContent.RhetosProjectAssets.Assemblies.ToArray());
 
             var build = new ApplicationBuild(configurationProvider, LogProvider, () => rhetosProjectContent.RhetosProjectAssets.Assemblies);
+            build.ReportLegacyPluginsFolders(rhetosProjectContent.RhetosProjectAssets.InstalledPackages);
             build.GenerateApplication(rhetosProjectContent.RhetosProjectAssets.InstalledPackages);
         }
 
