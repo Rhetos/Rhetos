@@ -27,7 +27,7 @@ namespace Rhetos.Utilities
     public class LegacyPathsOptions
     {
         /// <summary>
-        /// At build-time, returns target bin folder. At run-time returns host assembly folder.
+        /// At build-time, returns target bin folder with Rhetos framework libraries. At run-time returns host assembly folder.
         /// </summary>
         [OptionsPath]
         public string BinFolder { get; set; }

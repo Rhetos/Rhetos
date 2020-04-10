@@ -116,8 +116,8 @@ namespace Rhetos
                 .AddOptions(rhetosProjectContent.RhetosTargetEnvironment)
                 .AddOptions(new LegacyPathsOptions
                 {
-                    BinFolder = null, // It should not be needed for build with Rhetos CLI.
-                    PluginsFolder = null, // It should not be needed for build with Rhetos CLI.
+                    BinFolder = null, // // Rhetos CLI does not use bin folder at build-time. Rhetos framework libraries are provided by NuGet.
+                    PluginsFolder = null, // Rhetos CLI does not manage plugin libraries directly, they are provided by NuGet.
                     ResourcesFolder = Path.Combine(projectRootPath, "Resources"), // Currently supporting old plugins by default.
                 })
                 .AddConfigurationManagerConfiguration()
