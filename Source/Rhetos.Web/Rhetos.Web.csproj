@@ -37,7 +37,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.configuration" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
@@ -53,6 +53,7 @@
   <ItemGroup>
     <Compile Include="CommitBeforeResponseBehavior.cs" />
     <Compile Include="CommitBeforeResponseMessageInspector.cs" />
+    <Compile Include="WebConfigurationSourcesBuilderExtensions.cs" />
     <Compile Include="ErrorHandlerBehavior.cs" />
     <Compile Include="ErrorServiceBehavior.cs" />
     <Compile Include="GlobalErrorHandler.cs" />

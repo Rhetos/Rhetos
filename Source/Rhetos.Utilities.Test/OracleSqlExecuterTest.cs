@@ -17,12 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.Diagnostics;
-using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos.TestCommon;
 using System;
 using System.Collections.Generic;
-using Rhetos.TestCommon;
+using System.Diagnostics;
+using System.Linq;
 
 namespace Rhetos.Utilities.Test
 {
@@ -30,6 +30,30 @@ namespace Rhetos.Utilities.Test
     [DeploymentItem("ConnectionStrings.config")]
     public class OracleSqlExecuterTest
     {
+        [TestInitialize]
+        public void CheckDatabaseAvailability()
+        {
+            TestUtility.CheckDatabaseAvailability("Oracle");
+        }
+
+        [ClassCleanup]
+        public static void MyTestCleanup()
+        {
+            try { TestUtility.CheckDatabaseAvailability("Oracle"); }
+            catch { return; }
+
+            GetSqlExecuter().ExecuteSql(new[] { @"declare
+  c integer;
+begin
+  select count(*) into c from SYS.user$ where Name = 'RHETOSUNITTEST';
+  if c = 1 then
+    BEGIN
+      EXECUTE IMMEDIATE ('drop user ""RHETOSUNITTEST"" CASCADE');
+    END;
+  end if;
+end;" });
+        }
+
         static OracleSqlExecuter GetSqlExecuter()
         {
             return new OracleSqlExecuter(SqlUtility.ConnectionString, new ConsoleLogProvider(), new NullUserInfo());
@@ -55,30 +79,6 @@ end;" });
             var newTableName = "RHETOSUNITTEST.T" + Guid.NewGuid().ToString().Replace("-", "").Substring(0, 15).ToUpper();
             Console.WriteLine("Generated random table name: " + newTableName);
             return newTableName;
-        }
-
-        [TestInitialize]
-        public void CheckDatabaseAvailability()
-        {
-            TestUtility.CheckDatabaseAvailability("Oracle");
-        }
-
-        [ClassCleanup]
-        public static void MyTestCleanup()
-        {
-            try { TestUtility.CheckDatabaseAvailability("Oracle"); }
-            catch { return; }
-
-            GetSqlExecuter().ExecuteSql(new[] { @"declare
-  c integer;
-begin
-  select count(*) into c from SYS.user$ where Name = 'RHETOSUNITTEST';
-  if c = 1 then
-    BEGIN
-      EXECUTE IMMEDIATE ('drop user ""RHETOSUNITTEST"" CASCADE');
-    END;
-  end if;
-end;" });
         }
 
         [TestMethod]

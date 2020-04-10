@@ -52,7 +52,6 @@
       <HintPath>..\..\..\Source\Rhetos\bin\EntityFramework.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Rhetos.Configuration.Autofac">
       <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.Configuration.Autofac.dll</HintPath>
     </Reference>
@@ -124,6 +123,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Source\Rhetos.TestCommon\bin\$(Configuration)\Rhetos.TestCommon.dll</HintPath>
     </Reference>
+    <Reference Include="Rhetos.Web">
+      <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.Web.dll</HintPath>
+    </Reference>
     <Reference Include="Rhetos.XmlSerialization, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Source\Rhetos\bin\Rhetos.XmlSerialization.dll</HintPath>
@@ -138,6 +140,10 @@
       <HintPath>..\..\..\Source\Rhetos\bin\Generated\ServerDom.Repositories.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration.ConfigurationManager, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Source\Rhetos\bin\System.Configuration.ConfigurationManager.dll</HintPath>
+    </Reference>
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -231,6 +237,14 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MSTest.TestAdapter">
+      <Version>2.1.0</Version>
+    </PackageReference>
+    <PackageReference Include="MSTest.TestFramework">
+      <Version>2.1.0</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

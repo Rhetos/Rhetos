@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{FFD3FAE3-C83E-4DA7-B2C5-94B2280F39F8}</ProjectGuid>
+    <ProjectGuid>{31170410-B3E6-47DF-A651-2D2D4A25C676}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Rhetos.Deployment.Test</RootNamespace>
-    <AssemblyName>Rhetos.Deployment.Test</AssemblyName>
+    <RootNamespace>Rhetos.Web.Test</RootNamespace>
+    <AssemblyName>Rhetos.Web.Test</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -42,13 +42,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Rhetos\Properties\GlobalAssemblyInfo.cs">
-      <Link>Properties\GlobalAssemblyInfo.cs</Link>
-    </Compile>
-    <Compile Include="DatabaseCleanerTest.cs" />
-    <Compile Include="DataMigrationTest.cs" />
-    <Compile Include="DataMigration_Accessor.cs" />
-    <Compile Include="PackageDownloaderTest.cs" />
+    <Compile Include="WebConfigurationProviderTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -60,29 +54,19 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Rhetos.Deployment.Interfaces\Rhetos.Deployment.Interfaces.csproj">
-      <Project>{945537dc-4af7-4def-b73c-07f19229efe6}</Project>
-      <Name>Rhetos.Deployment.Interfaces</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rhetos.Deployment\Rhetos.Deployment.csproj">
-      <Project>{a7328bfa-a009-4f1e-b9a1-b51b2020f45c}</Project>
-      <Name>Rhetos.Deployment</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rhetos.Logging.Interfaces\Rhetos.Logging.Interfaces.csproj">
-      <Project>{bb7e5668-1b43-4fce-a832-444cc57fee80}</Project>
-      <Name>Rhetos.Logging.Interfaces</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rhetos.TestCommon\Rhetos.TestCommon.csproj">
-      <Project>{43ba178b-7642-473c-a43a-dbf58294635a}</Project>
-      <Name>Rhetos.TestCommon</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Rhetos.Utilities\Rhetos.Utilities.csproj">
       <Project>{71e63722-57bc-41df-9ff5-57ecc67e4bc1}</Project>
       <Name>Rhetos.Utilities</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Web\Rhetos.Web.csproj">
+      <Project>{a334fffd-0400-4fec-bc83-c044072c76a8}</Project>
+      <Name>Rhetos.Web</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="Web.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

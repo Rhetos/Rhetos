@@ -19,12 +19,10 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
+using Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources;
 
 namespace Rhetos.Utilities.Test
 {
@@ -301,20 +299,6 @@ namespace Rhetos.Utilities.Test
 
             Assert.IsTrue(provider.AllKeys.Contains("ConnectionStrings:TestConnectionString:Name"));
             Assert.AreEqual(99, provider.GetValue("TestCfgValue", 0));
-        }
-
-        [TestMethod]
-        [DeploymentItem("Web.config")]
-        public void WebConfigurationSource()
-        {
-            var rootPath = AppDomain.CurrentDomain.BaseDirectory;
-            System.Diagnostics.Trace.WriteLine($"Using {rootPath} as rootPath.");
-            var provider = new ConfigurationBuilder()
-                .AddWebConfiguration(rootPath)
-                .Build();
-
-            Assert.IsTrue(provider.AllKeys.Contains("ConnectionStrings:WebConnectionString:Name"));
-            Assert.AreEqual(199, provider.GetValue("TestWebValue", 0));
         }
 
         public class PocoSingleValid

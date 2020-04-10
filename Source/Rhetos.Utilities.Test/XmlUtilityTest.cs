@@ -17,14 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos.Dom;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Xml.Serialization;
 using System.Linq;
-using Rhetos.Dom;
 
 namespace Rhetos.Utilities.Test
 {

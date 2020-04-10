@@ -17,21 +17,27 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities;
-using System.Collections.Generic;
+using System;
+using System.Linq;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Rhetos.Deployment.Test
+namespace Rhetos.Web.Test
 {
-    class DataMigration_Accessor : DataMigrationScriptsExecuter
+    [TestClass]
+    public class WebConfigurationProviderTest
     {
-        public DataMigration_Accessor()
-            : base(null, new ConsoleLogProvider(), null, null, null)
+        [TestMethod]
+        [DeploymentItem("Web.config")]
+        public void WebConfigurationSource()
         {
-        }
+            var rootPath = AppDomain.CurrentDomain.BaseDirectory;
+            System.Diagnostics.Trace.WriteLine($"Using {rootPath} as rootPath.");
+            var provider = new ConfigurationBuilder()
+                .AddWebConfiguration(rootPath)
+                .Build();
 
-        new public List<DataMigrationScript> FindSkipedScriptsInEachPackage(List<DataMigrationScript> oldScripts, List<DataMigrationScript> newScripts)
-        {
-            return base.FindSkipedScriptsInEachPackage(oldScripts, newScripts);
+            Assert.IsTrue(provider.AllKeys.Contains("ConnectionStrings:WebConnectionString:Name"));
+            Assert.AreEqual(199, provider.GetValue("TestWebValue", 0));
         }
     }
 }
