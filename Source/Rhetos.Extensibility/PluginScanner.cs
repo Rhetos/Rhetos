@@ -53,7 +53,7 @@ namespace Rhetos.Extensibility
                 () => GetPluginsByExport(findAssemblies),
                 LazyThreadSafetyMode.ExecutionAndPublication);
             _pluginScannerCache = new PluginScannerCache(cacheFolder, logProvider, new FilesUtility(logProvider));
-            _performanceLogger = logProvider.GetLogger("Performance");
+            _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _logger = logProvider.GetLogger(GetType().Name);
 
             var ignoreList = pluginScannerOptions.PredefinedIgnoreAssemblyFiles.Concat(pluginScannerOptions.IgnoreAssemblyFiles ?? Array.Empty<string>()).Distinct().ToList();
@@ -154,7 +154,7 @@ namespace Rhetos.Extensibility
                 else
                     _logger.Trace(() => $"Searching for plugins in '{assembly}'");
 
-            _performanceLogger.Write(stopwatch, $"{nameof(PluginScanner)}: Listed assemblies ({assemblies.Count}).");
+            _performanceLogger.Write(stopwatch, $"Listed assemblies ({assemblies.Count}).");
             return assemblies;
         }
 
@@ -182,6 +182,7 @@ namespace Rhetos.Extensibility
                     }
                     else
                     {
+                        _logger.Trace($"Assembly '{assemblyPath}' is not cached. Scanning all types.");
                         exports = GetMefExportsForAssembly(assemblyPath);
                     }
 
@@ -215,7 +216,7 @@ namespace Rhetos.Extensibility
                 foreach (var pluginsGroup in pluginsByExport)
                     SortByDependency(pluginsGroup.Value);
 
-                _performanceLogger.Write(stopwatch, $"{nameof(PluginScanner)}: Loaded plugins ({pluginsCount}).");
+                _performanceLogger.Write(stopwatch, $"Loaded plugins ({pluginsCount}).");
 
                 return pluginsByExport;
             }
