@@ -33,7 +33,14 @@ namespace Rhetos
     {
         public static int Main(string[] args)
         {
-            return new Program().Run(args);
+            try
+            {
+                return new Program().Run(args);
+            }
+            finally
+            {
+                NLogProvider.FlushAndShutdown();
+            }
         }
 
         private ILogProvider LogProvider { get; }

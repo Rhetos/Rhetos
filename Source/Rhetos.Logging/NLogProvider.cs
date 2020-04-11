@@ -17,10 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using NLog;
 
 namespace Rhetos.Logging
@@ -30,6 +26,11 @@ namespace Rhetos.Logging
         public ILogger GetLogger(string eventName)
         {
             return new NLogger(eventName);
+        }
+
+        public static void FlushAndShutdown()
+        {
+            LogManager.Shutdown();
         }
     }
 }
