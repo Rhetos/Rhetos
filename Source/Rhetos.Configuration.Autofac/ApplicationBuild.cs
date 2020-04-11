@@ -26,6 +26,7 @@ using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Rhetos
 {
@@ -55,7 +56,22 @@ namespace Rhetos
             return installedPackages;
         }
 
-        //=====================================================================
+        /// <summary>
+        /// Rhetos CLI does not support legacy Rhetos packages with libraries locates in Plugins subfolder.
+        /// </summary>
+        public void ReportLegacyPluginsFolders(InstalledPackages installedPackages)
+        {
+            var legacyLibraries = installedPackages.Packages.SelectMany(
+                    package => package.ContentFiles
+                        .Where(file => file.InPackagePath.StartsWith(@"Plugins\") && file.InPackagePath.EndsWith(".dll"))
+                        .Select(file => (Package: package, File: file)));
+
+            if (legacyLibraries.Any())
+                _logger.Warning("Rhetos NuGet packages with DLLs in \"Plugins\" folder are not supported in this environment." +
+                    " To update the packages, in their .nuspec files replace target=\"Plugins\" with target=\"lib\"," +
+                    " to match the standard NuGet convention. Packages: " +
+                    string.Join(", ", legacyLibraries.Select(library => library.Package.Id).Distinct()) + ".");
+        }
 
         public void GenerateApplication(InstalledPackages installedPackages)
         {
