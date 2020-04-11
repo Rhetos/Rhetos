@@ -70,7 +70,8 @@
         </PropertyGroup>
         <Copy SourceFiles="$(_PluginScannerCachePath)" Retries="$(CopyRetryCount)" RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
             DestinationFiles="$(TargetDir)\PluginScanner.json" 
-            SkipUnchangedFiles="True">
+            SkipUnchangedFiles="True"
+            Condition="!Exists('$(TargetDir)\PluginScanner.json')">
             <Output TaskParameter="CopiedFiles" ItemName="_CopiedPluginScannerCache" />
         </Copy>
         <ItemGroup>
