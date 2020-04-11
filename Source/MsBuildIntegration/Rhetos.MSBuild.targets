@@ -72,11 +72,7 @@
             DestinationFiles="$(TargetDir)\PluginScanner.json" 
             SkipUnchangedFiles="True"
             Condition="!Exists('$(TargetDir)\PluginScanner.json')">
-            <Output TaskParameter="CopiedFiles" ItemName="_CopiedPluginScannerCache" />
         </Copy>
-        <ItemGroup>
-            <FileWrites Include="@(_CopiedPluginScannerCache)" />
-        </ItemGroup>
     </Target>
 
     <Target Name="DeployRhetosApp" DependsOnTargets="BuildRhetosApp;CopyFilesToOutputDirectory" AfterTargets="Build" Condition="'$(RhetosDeploy)'=='True' And Exists('$(RhetosBuildCompleteFile)')"
