@@ -35,14 +35,15 @@ namespace Rhetos
         /// It bundles Rhetos runtime location (<see cref="Host.Find"/>),
         /// configuration (<see cref="IRhetosRuntime.BuildConfiguration"/>)
         /// and DI registration (<see cref="IRhetosRuntime.BuildContainer"/>).
+        /// If you need more control over the system configuration, use these methods directly instead.
         /// </summary>
         /// /// <param name="applicationFolder">
         /// Folder where the Rhetos configuration file is located (see <see cref="RhetosAppEnvironment.ConfigurationFileName"/>),
         /// or any subfolder.
-        /// If not specified, using current application base directory by default.
+        /// If not specified, the current application's base directory is used by default.
         /// </param>
-        /// <param name="logProvider">If not specified, using ConsoleLogProvider by default.</param>
-        /// <returns>DI container for Rhetos runtime.</returns>
+        /// <param name="logProvider">If not specified, ConsoleLogProvider is used by default.</param>
+        /// <returns>Dependency Injection container for Rhetos runtime.</returns>
         public static IContainer CreateRhetosContainer(string applicationFolder = null, ILogProvider logProvider = null,
             Action<IConfigurationBuilder> addCustomConfiguration = null, Action<ContainerBuilder> registerCustomComponents = null)
         {

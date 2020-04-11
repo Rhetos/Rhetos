@@ -25,7 +25,7 @@ using System.Linq;
 
 namespace Rhetos.Utilities
 {
-    [Obsolete("Use RhetosAppEnvironment instead.")]
+    [Obsolete("Use RhetosAppEnvironment for run-time folders. Use RhetosBuildEnvironment for build-time folder. Use IAssetsOptions.AssetsFolder for files generated at build-time and read at run-time.")]
     public static class Paths
     {
         private static string _rhetosServerRootPath;
@@ -64,6 +64,7 @@ namespace Rhetos.Utilities
 
         public static string BinFolder => AbsolutePathOrError(_binFolder, "BinFolder");
 
+        [Obsolete("If generating and reading assets files use IAssetsOptions.AssetsFolder instead. If used within SearchForAssembly, migrate to Host.CreateRhetosContainer instead.")]
         public static string GeneratedFolder => AbsolutePathOrError(_generatedFolder, "GeneratedFolder");
 
         public static string PluginsFolder => AbsolutePathOrError(_pluginsFolder, "PluginsFolder");
