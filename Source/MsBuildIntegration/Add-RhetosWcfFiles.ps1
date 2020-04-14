@@ -16,7 +16,6 @@ Copy-Item -Path "$sourceFolder\Template.ConnectionStrings.config" -Destination $
 $project.ProjectItems.AddFromFileCopy("$sourceFolder\RhetosService.svc") > $null
 $project.ProjectItems.AddFromFileCopy("$sourceFolder\Global.asax") > $null
 $project.ProjectItems.AddFromFileCopy("$sourceFolder\Default.aspx") > $null
-$project.ProjectItems.AddFromFileCopy("$sourceFolder\rhetos-build.settings.json") > $null
 $project.ProjectItems.AddFromFileCopy("$sourceFolder\RhetosRuntime.cs") > $null
 
 function ReplaceText
@@ -38,3 +37,29 @@ ReplaceText "$projectFolder\Rhetos Server SOAP.linq" "bin\\Generated\\ServerDom.
 ReplaceText "$projectFolder\Rhetos Server SOAP.linq" "ServerDom.Model" "$assemblyName"
 
 ReplaceText "$projectFolder\Rhetos Server SOAP.linq" "localhost/Rhetos" "ENTER-APPLICATION-URL-HERE"
+
+$rhetosAppSettingsPath = "$projectFolder\rhetos-app.settings.json"
+@"
+{
+  "RhetosRuntimePath": "bin\\$assemblyName.dll",
+  "AssetsFolder": "bin\\RhetosAssets",
+  "DatabaseLanguage": "MsSql",
+  "Legacy":  {
+    "Paths": {
+        "ResourcesFolder": "Resources"
+    }
+  }
+}
+"@ | Set-Content -Path $rhetosAppSettingsPath
+$project.ProjectItems.AddFromFile($rhetosAppSettingsPath) > $null
+
+$rhetosBuildSettingsPath = "$projectFolder\rhetos-build.settings.json"
+@"
+{
+  "GenerateAppSettings": false,
+  "Legacy": {
+    "BuildResourcesFolder": true
+  }
+}
+"@ | Set-Content -Path $rhetosBuildSettingsPath
+$project.ProjectItems.AddFromFile($rhetosBuildSettingsPath) > $null
