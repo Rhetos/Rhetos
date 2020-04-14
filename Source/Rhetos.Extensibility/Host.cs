@@ -44,14 +44,14 @@ namespace Rhetos
         /// <param name="logProvider">If not specified, using ConsoleLogProvider by default.</param>
         /// <returns>DI container for Rhetos runtime.</returns>
         public static IContainer CreateRhetosContainer(string applicationFolder = null, ILogProvider logProvider = null,
-            Action<IConfigurationBuilder> addConfiguration = null, Action<ContainerBuilder> registerComponents = null)
+            Action<IConfigurationBuilder> addCustomConfiguration = null, Action<ContainerBuilder> registerCustomComponents = null)
         {
             applicationFolder = applicationFolder ?? AppDomain.CurrentDomain.BaseDirectory;
             logProvider = logProvider ?? new ConsoleLogProvider();
 
             var host = Find(applicationFolder, logProvider);
-            var configurationProvider = host.RhetosRuntime.BuildConfiguration(logProvider, host.ConfigurationFolder, addConfiguration);
-            return host.RhetosRuntime.BuildContainer(logProvider, configurationProvider, registerComponents);
+            var configurationProvider = host.RhetosRuntime.BuildConfiguration(logProvider, host.ConfigurationFolder, addCustomConfiguration);
+            return host.RhetosRuntime.BuildContainer(logProvider, configurationProvider, registerCustomComponents);
         }
 
         public IRhetosRuntime RhetosRuntime { get; private set; }
