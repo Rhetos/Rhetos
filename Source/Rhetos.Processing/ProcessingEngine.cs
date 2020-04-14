@@ -86,13 +86,25 @@ namespace Rhetos.Processing
             _commandsLogger.Trace(() => _xmlUtility.SerializeToXml(new ExecutionCommandsLogEntry { ExecutionId = executionId, UserInfo = _userInfo.Report(), Commands = commands }));
 
             var result = ExecuteInner(commands, executionId);
-            _commandsResultLogger.Trace(() => _xmlUtility.SerializeToXml(new ExecutionResultLogEntry { ExecutionId = executionId, Result = result }));
+            _commandsResultLogger.Trace(() => SafeSerialize(new ExecutionResultLogEntry { ExecutionId = executionId, Result = result }));
 
             // On error, the CommandResults will contain partial results of the commands executed before the failed one, and should be cleared.
             if (!result.Success)
                 result.CommandResults = null;
 
             return result;
+        }
+
+        private string SafeSerialize(ExecutionResultLogEntry logEntry)
+        {
+            try
+            {
+                return _xmlUtility.SerializeToXml(logEntry);
+            }
+            catch (Exception e)
+            {
+                return $"Cannot serialize command result '{logEntry.Result.GetType()}' for detailed logging, ExecutionId {logEntry.ExecutionId}. {e}";
+            }
         }
 
         public ProcessingResult ExecuteInner(IList<ICommandInfo> commands, Guid executionId)
