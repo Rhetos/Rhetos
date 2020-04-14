@@ -45,7 +45,6 @@ namespace Rhetos
             var configurationBuilder = new ConfigurationBuilder();
             configurationBuilder.AddRhetosAppEnvironment(configurationFolder);
 
-            // Add WCF-specific configuration.
             if (_isHost)
                 configurationBuilder.AddConfigurationManagerConfiguration();
             else
@@ -66,10 +65,10 @@ namespace Rhetos
 
             builder.AddRhetosRuntime();
 
-            // WCF-specific component registrations.
-            // Can be customized later by plugin modules.
             if (_isHost)
             {
+                // WCF-specific component registrations.
+                // Can be customized later by plugin modules.
                 builder.RegisterType<WcfWindowsUserInfo>().As<IUserInfo>().InstancePerLifetimeScope();
                 builder.RegisterType<RhetosService>().As<RhetosService>().As<IServerApplication>();
                 builder.RegisterType<Rhetos.Web.GlobalErrorHandler>();

@@ -23,7 +23,8 @@ using System.IO;
 namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
 {
     /// <summary>
-    /// Loads Rhetos run-time configuration from JSON file and initializes RhetosAppEnvironment.
+    /// Loads Rhetos run-time configuration from <see cref="RhetosAppEnvironment.ConfigurationFileName"/>
+    /// and initializes RhetosAppEnvironment paths.
     /// </summary>
     public class RhetosAppEnvironmentSource : IConfigurationSource
     {

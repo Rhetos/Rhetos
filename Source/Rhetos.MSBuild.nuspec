@@ -7,7 +7,7 @@
     <owners>Omega software</owners>
     <licenseUrl>http://opensource.org/licenses/AGPL-3.0</licenseUrl>
     <projectUrl>https://github.com/rhetos/rhetos</projectUrl>
-    <description>MSBuild integration for Rhetos DSL framework.</description>
+    <description>MSBuild integration with Rhetos CLI, for Rhetos DSL framework.</description>
     <copyright>Copyright Omega software 2013</copyright>
     <tags>Rhetos</tags>
     <dependencies>
