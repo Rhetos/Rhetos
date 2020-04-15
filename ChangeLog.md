@@ -4,44 +4,79 @@
 
 ### Breaking changes
 
-* Rhetos has migrated to new configuration and DI container initialization design. Utility applications that use Rhetos application libraries will need to be updated.
-  * Follow **instructions** in article [
-Upgrading custom utility applications to Rhetos 4.0](https://github.com/Rhetos/Rhetos/wiki/Upgrading-custom-utility-applications-to-Rhetos-40)
-* Legacy settings turned off by default.
-When upgrading application to Rhetos v4, make sure to copy the following setting values from your old *web.config* file. For each setting key, if you had it specified before in *web.config*, **keep** your old value. If you did not have it specified, **add** the backward-compatible value provided here:
-  * `<add key="DataMigration.SkipScriptsWithWrongOrder" value="True" />`
-  * `<add key="CommonConcepts.Legacy.AutoGeneratePolymorphicProperty" value="True" />`
-  * `<add key="CommonConcepts.Legacy.CascadeDeleteInDatabase" value="True" />`
-  * `<add key="EntityFramework.UseDatabaseNullSemantics" value="False" />`
-* BuiltinAdminOverride is not set by default. Recommended setup process is for developer to manually set AllClaimsForUsers or AllClaimsForAnonymous.
-* Updated unit tests utilities to new MSTest libraries (MSTest).
-  * Building old unit test projects that reference Rhetos.TestCommon may fail with error CS0433: `The type 'TestMethodAttribute' exists in both 'Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' and 'Microsoft.VisualStudio.TestPlatform.TestFramework, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'`.
-  * In the unit test project **remove the reference** to `Microsoft.VisualStudio.QualityTools.UnitTestFramework` and **add NuGet packages** MSTest.TestAdapter and MSTest.TestFramework,
-  or create a new Unit Test Project from scratch (MSTest on .NET Framework) and copy tests from the old one.
-* Initial concepts sorting enabled by default.
-  This might cause existing project to fail because of missing dependencies that were not detected earlier:
-  errors on database update because of incorrect order of created object, and errors for missing tag in code generators.
-  You can suppress this issues by setting this build option to None (e.g. `<add key="Dsl.InitialConceptsSort" value="None" />`.
-* `IQueryable` extension method `ToSimple()` moved from Rhetos.Dom.DefaultConcepts namespace to System.Linq.
-* ProcessUserInfo no longer supports BuiltinAdminOverride configuration option. This might affect unit tests or custom utilities that directly use Rhetos.Processing.IProcessingEngine. Any such test or utilities should register NullAuthorizationProvider instead if they need to override end-user permissions checking.
-* The `Rhetos.Configuration.Autofac.SecurityModuleConfiguration` class no longer exists.
-  * **Delete** attributes `[ExportMetadata(MefProvider.DependsOn, typeof(Rhetos.Configuration.Autofac.SecurityModuleConfiguration))]`
-    and ``[ExportMetadata(MefProvider.DependsOn, typeof(SecurityModuleConfiguration))]`` from your code.
+1. Rhetos has migrated to new configuration and DI container initialization design.
+   Custom utility applications (executables and other tools) that use Rhetos application
+   libraries will need to be updated.
+   * Follow the **instructions** at [Upgrading custom utility applications to Rhetos 4.0](https://github.com/Rhetos/Rhetos/wiki/Upgrading-custom-utility-applications-to-Rhetos-40).
+2. Class `Rhetos.Configuration.Autofac.SecurityModuleConfiguration` no longer exists.
+   * **Delete** attributes `[ExportMetadata(MefProvider.DependsOn, typeof(Rhetos.Configuration.Autofac.SecurityModuleConfiguration))]`
+     and ``[ExportMetadata(MefProvider.DependsOn, typeof(SecurityModuleConfiguration))]`` from your code.
+3. The `IQueryable` extension method `ToSimple()` moved from Rhetos.Dom.DefaultConcepts
+   namespace to System.Linq.
+   * **Add** `using System.Linq;` in custom source file with compiler error
+     `'IQueryable<X>' does not contain a definition for 'ToSimple'`.
+4. Some legacy settings are turned off by default. When upgrading application to Rhetos v4,
+   make sure to use the following setting values *web.config* file.
+   For each setting key, if it was already specified in *web.config*, **keep the old value**.
+   If you did not have it specified, **add** the backward-compatible value provided here:
+   * `<add key="DataMigration.SkipScriptsWithWrongOrder" value="True" />`
+   * `<add key="CommonConcepts.Legacy.AutoGeneratePolymorphicProperty" value="True" />`
+   * `<add key="CommonConcepts.Legacy.CascadeDeleteInDatabase" value="True" />`
+   * `<add key="EntityFramework.UseDatabaseNullSemantics" value="False" />`
+5. Updated Rhetos.TestCommon.dll to new MSTest libraries (MSTest).
+   Old unit test projects that reference Rhetos.TestCommon may fail with error CS0433:
+   `The type 'TestMethodAttribute' exists in both 'Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' and 'Microsoft.VisualStudio.TestPlatform.TestFramework, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'`.
+   * To solve this error, in the unit test project **remove the reference** to
+     `Microsoft.VisualStudio.QualityTools.UnitTestFramework` and **add NuGet packages**
+     MSTest.TestAdapter and MSTest.TestFramework, or create a new Unit Test Project
+     from scratch (MSTest on .NET Framework) and copy the tests from the old one.
+6. Partial concept sorting enabled by default. This might cause build or deployment
+   to fail if the existing project or a plugin package has an issue of missing
+   dependencies between concepts, that was not detected earlier.
+   * Missing dependencies can cause an error on database update because of incorrect order
+     of created objects (typically `Invalid column name` or `Invalid object name`),
+     or `Generated script does not contain tag` error in code generators.
+   * If *DeployPackages* fails with some of errors above, **add** missing dependencies
+     to [custom concepts](https://github.com/Rhetos/Rhetos/wiki/Rhetos-concept-development#dependency-between-code-generators)
+     and [database object](https://github.com/Rhetos/Rhetos/wiki/Database-objects#dependencies-between-database-objects),
+     or **suppress** this issues by disabling the concept sorting in Web.config:
+     `<add key="Dsl.InitialConceptsSort" value="None" />`.
+7. [BuiltinAdminOverride](https://github.com/Rhetos/Rhetos/wiki/Basic-permissions#suppressing-permissions-in-a-development-environment)
+   option is not enabled by default. This might affect testing in development
+   environment if permission-checking was intentionally suppressed.
+   * Recommended new setup process for development environment is to **configure**
+     `Security.AllClaimsForUsers` in `ExternalAppSettings.config`
+     (see [Suppressing permissions in a development environment](https://github.com/Rhetos/Rhetos/wiki/Basic-permissions#suppressing-permissions-in-a-development-environment)),
+     or enable BuiltinAdminOverride for backward-compatibility in Web.config:
+     `<add key="BuiltinAdminOverride" value="True" />`.
+8. ProcessUserInfo no longer supports BuiltinAdminOverride configuration option.
+   This might affect unit tests or custom utilities that directly use
+   Rhetos.Processing.IProcessingEngine.
+   * Any such test or utilities can register NullAuthorizationProvider to DI container,
+     if they need to override end-user permissions checking.
+     For example, if using RhetosTestContainer add
+     `container.InitializeSession += builder.RegisterType<Rhetos.Security.NullAuthorizationProvider>().As<IAuthorizationProvider>();`
 
 ### New features
 
-* Rhetos CLI (rhetos.exe), a successor to DeployPackages.exe.
-  * Old build process with DeployPackages.exe still works.
-  * To migrate to new build process see instructions at
+* **Rhetos CLI and MSBuild integration**
+  * It allows custom source code to be developed and compiled side-by-side with generated
+    C# source code in the same Rhetos application.
+  * New Rhetos application are created and developed as standard web application in Visual Studio
+    by adding Rhetos NuGet packages. Currently only WCF applications are supported.
+  * Rhetos CLI (rhetos.exe) is a successor to DeployPackages, but old build process with DeployPackages.exe still works.
+  * To migrate an existing Rhetos application to new build process follow the instructions at
     [Migrating from DeployPackages to Rhetos CLI](https://github.com/Rhetos/Rhetos/wiki/Migrating-from-DeployPackages-to-Rhetos-CLI).
-* Security.AllClaimsForAnonymous
-* Rhetos.MSBuild NuGet package for integration with MSBuild and Visual Studio.
-* Rhetos.Wcf NuGet package for quick-start of new WCF application project (contains Rhetos.MSBuild).
+* **Rhetos.MSBuild** NuGet package for integration with MSBuild and Visual Studio.
+* **Rhetos DSL IntelliSense for Visual Studio**. See installation instructions and features at
+  [Rhetos/LanguageServices](https://github.com/Rhetos/LanguageServices/blob/master/README.md).
+* **Rhetos.Wcf** NuGet package for quick-start of new WCF application project (contains Rhetos.MSBuild).
   See [Creating new WCF Rhetos application](https://github.com/Rhetos/Rhetos/wiki/Creating-new-WCF-Rhetos-application).
-* Rhetos DSL IntelliSense for Visual Studio (see installation instructions and features in [README.md](https://github.com/Rhetos/LanguageServices)).
 
 ### Internal improvements
 
+* Better support for anonymous access and testing with new security option
+  [Security.AllClaimsForAnonymous](https://github.com/Rhetos/Rhetos/wiki/Basic-permissions#suppressing-permissions-in-a-development-environment).
 * Migrated most of the Rhetos framework libraries to .NET Standard 2.0.
 * Rhetos configuration can be extended with custom options classes.
   * See IConfiguration.GetOptions(), OptionsAttribute and OptionsPathAttribute.
