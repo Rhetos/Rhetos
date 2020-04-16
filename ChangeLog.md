@@ -64,34 +64,33 @@
     C# source code in the same Rhetos application.
   * New Rhetos application are created and developed as standard web application in Visual Studio
     by adding Rhetos NuGet packages. Currently only WCF applications are supported.
-  * Rhetos CLI (rhetos.exe) is a successor to DeployPackages, but old build process with DeployPackages.exe still works.
+  * Rhetos CLI (rhetos.exe) is a successor to DeployPackages. The old build process with DeployPackages.exe still works.
   * To migrate an existing Rhetos application to new build process follow the instructions at
     [Migrating from DeployPackages to Rhetos CLI](https://github.com/Rhetos/Rhetos/wiki/Migrating-from-DeployPackages-to-Rhetos-CLI).
 * **Rhetos.MSBuild** NuGet package for integration with MSBuild and Visual Studio.
-* **Rhetos DSL IntelliSense for Visual Studio**. See installation instructions and features at
+* **Rhetos DSL IntelliSense for Visual Studio** provides syntax highlighting,
+  context-sensitive autocompletion, concept description with parameters and real-time
+  syntax errors. See installation instructions and features at
   [Rhetos/LanguageServices](https://github.com/Rhetos/LanguageServices/blob/master/README.md).
-* **Rhetos.Wcf** NuGet package for quick-start of new WCF application project (contains Rhetos.MSBuild).
+* **Rhetos.Wcf** NuGet package for quick-start of new WCF application projects (contains Rhetos.MSBuild).
   See [Creating new WCF Rhetos application](https://github.com/Rhetos/Rhetos/wiki/Creating-new-WCF-Rhetos-application).
 
 ### Internal improvements
 
-* Better support for anonymous access and testing with new security option
-  [Security.AllClaimsForAnonymous](https://github.com/Rhetos/Rhetos/wiki/Basic-permissions#suppressing-permissions-in-a-development-environment).
-* Migrated most of the Rhetos framework libraries to .NET Standard 2.0.
-* Rhetos configuration can be extended with custom options classes.
-  * See IConfiguration.GetOptions(), OptionsAttribute and OptionsPathAttribute.
-  * Register new options class to DI, for example MyCustomOptions is registered with `builder.Register(context => context.Resolve<IConfiguration>().GetOptions<MyCustomOptions>()).SingleInstance();`
-* Added summaries to all DSL concepts in CommonConcepts. They are visible in Rhetos DSL IntelliSense for Visual Studio.
-* Formatting DSL syntax errors in canonical format for better integration with MSBuild (file and position) and other tools.
+* Added summaries to all DSL concepts in CommonConcepts. They are displayed in Rhetos DSL IntelliSense for Visual Studio.
+* Better support for anonymous access and testing with new security option [Security.AllClaimsForAnonymous](https://github.com/Rhetos/Rhetos/wiki/Basic-permissions#suppressing-permissions-in-a-development-environment).
+* Rhetos configuration can be extended with [custom options classes](https://github.com/Rhetos/Rhetos/wiki/Configuration-management#configuring-application-from-code).
 * New logging level: *Warning*. Simplified logging rules settings in Web.config.
-* ConnectionStrings.config no longer needs to be a separate file in the 'bin' folder. It is recommended to use a separate file, but place it in the application root folder, to avoid deleting it when rebuilding bin folder. Note that it's location should be specified in Web.config file.
-* Updated Rhetos framework C# language to 7.3. It requires Visual Studio 2017 version 15.7 or later (available since May 2018).
-* Logging modified database objects information by default. This will help with analysis was a database object modified on deployment.
+* ConnectionStrings.config no longer needs to be a separate file in the 'bin' folder. It is recommended to use a separate file, but place it in the application root folder, to avoid deleting it when rebuilding bin folder. Note that its location must be specified in Web.config file.
 * Removed Rhetos-specific database providerName from connection string.
+* Verifying and updating EntityFramework ProviderManifestToken on each runtime startup. This allows different versions of SQL Server in build and testing environment (local SQL Server, Azure SQL, ...).
 * Bugfix: `DeployPackages /DatabaseOnly` requires packages source available (PackagesCache or source folder) to update the database. If an application was built with packages included directly from source folder, it could not be deployed with DatabaseOnly switch.
-* Verifying and updating EntityFramework ProviderManifestToken on each runtime startup. This allows different versions of SQL Server in build and testing environment (local SQL, Azure SQL, ...).
-* Minor performance improvements of DeployPackages and application start-up.
 * Bugfix: Trace logging fails on some server commands because of result types unsupported by XML serializer (e.g. ODataGenerator).
+* Migrated most of the Rhetos framework libraries to .NET Standard 2.0.
+* Logging modified database objects information by default. This will help with analysis of deployment performance issues.
+* Formatting DSL syntax errors in canonical format (file and position) for better integration with MSBuild and other tools.
+* Updated Rhetos framework C# language to 7.3. Framework development now requires Visual Studio 2017 v15.7 or later (available since May 2018).
+* Minor performance improvements of DeployPackages and application start-up.
 
 ## 3.1.0 (TO BE RELEASED)
 

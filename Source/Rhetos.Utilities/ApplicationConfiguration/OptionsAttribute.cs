@@ -29,7 +29,7 @@ namespace Rhetos
     public sealed class OptionsAttribute : Attribute
     {
         /// <param name="configurationPath">
-        /// Default configuration path in settings.
+        /// Default configuration path that will be applied in GetOptions and AddOptions methods.
         /// Use <see cref="ConfigurationProvider.ConfigurationPathSeparator"/> as a separator in the path.
         /// </param>
         public OptionsAttribute(string configurationPath)
@@ -38,7 +38,7 @@ namespace Rhetos
         }
 
         /// <summary>
-        /// Default configuration path in settings.
+        /// Default configuration path that will be applied in GetOptions and AddOptions methods.
         /// Use <see cref="ConfigurationProvider.ConfigurationPathSeparator"/> as a separator in the path.
         /// </summary>
         public string ConfigurationPath { get; }

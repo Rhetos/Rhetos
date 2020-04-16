@@ -22,7 +22,10 @@ using System;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+
+[assembly: InternalsVisibleTo("Rhetos.Utilities.Test")]
 
 namespace Rhetos.Utilities
 {
@@ -54,6 +57,8 @@ namespace Rhetos.Utilities
             return value;
         }
 
+        internal const string OracleNationalLanguageKey = "Database:Oracle:NationalLanguage"; // TODO: Review if this is a desired key for build options after refactoring configuration key to avoid property name collisions.
+
         public static void Initialize(IConfiguration configurationProvider)
         {
             _initialized = true;
@@ -66,8 +71,7 @@ namespace Rhetos.Utilities
             var runtimeEnvironment = configurationProvider.GetOptions<RhetosAppEnvironment>();
             var buildOptions = configurationProvider.GetOptions<BuildOptions>();
             _databaseLanguage = runtimeEnvironment.DatabaseLanguage ?? buildOptions.DatabaseLanguage;
-
-            _nationalLanguage = configurationProvider.GetValue("Database:Oracle:NationalLanguage", ""); // TODO: Review if this is a desired key for build options after refactoring configuration key to avoid property name collisions.
+            _nationalLanguage = configurationProvider.GetValue(OracleNationalLanguageKey, "");
             InitializeProviderContext();
         }
 

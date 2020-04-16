@@ -320,7 +320,9 @@ END;" }),
             Assert.AreEqual(
                 TestUtility.DumpSorted(new[] { "a", "A" }),
                 TestUtility.DumpSorted(result),
-                "Comparison will be case insensitive depending on SqlUtility.NationalLanguage (see NLS_SORT), provided in connection string ProviderName (for example Rhetos.Oracle.GENERIC_M_CI or Rhetos.Oracle.XGERMAN_CI).");
+                "Comparison will be case insensitive depending on SqlUtility.NationalLanguage" +
+                $" (see NLS_SORT), provided in configuration for '{SqlUtility.OracleNationalLanguageKey}'" +
+                " (for example Rhetos.Oracle.GENERIC_M_CI or Rhetos.Oracle.XGERMAN_CI).");
 
             result.Clear();
             sqlExecuter = new OracleSqlExecuter(SqlUtility.ConnectionString, new ConsoleLogProvider(), new NullUserInfo());
