@@ -16,7 +16,6 @@ Copy-Item -Path "$sourceFolder\Template.ConnectionStrings.config" -Destination $
 $project.ProjectItems.AddFromFileCopy("$sourceFolder\RhetosService.svc") > $null
 $project.ProjectItems.AddFromFileCopy("$sourceFolder\Global.asax") > $null
 $project.ProjectItems.AddFromFileCopy("$sourceFolder\Default.aspx") > $null
-$project.ProjectItems.AddFromFileCopy("$sourceFolder\rhetos-build.settings.json") > $null
 $project.ProjectItems.AddFromFileCopy("$sourceFolder\RhetosRuntime.cs") > $null
 
 function ReplaceText
@@ -39,5 +38,17 @@ ReplaceText "$projectFolder\Rhetos Server SOAP.linq" "ServerDom.Model" "$assembl
 
 ReplaceText "$projectFolder\Rhetos Server SOAP.linq" "localhost/Rhetos" "ENTER-APPLICATION-URL-HERE"
 
-ReplaceText "$projectFolder\RhetosRuntime.cs" "AssetsFolder = Path.Combine\(assemblyFolder, ""Generated""\)," "AssetsFolder = Path.Combine(assemblyFolder, ""RhetosAssets""),`r`n                    AssemblyName = GetType().Assembly.GetName().Name,"
-ReplaceText "$projectFolder\RhetosRuntime.cs" "LegacyPluginsFolder = Path.Combine\(assemblyFolder, ""Plugins""\)," "LegacyPluginsFolder = null,"
+$rhetosAppSettingsPath = "$projectFolder\rhetos-app.settings.json"
+"{}" | Set-Content -Path $rhetosAppSettingsPath
+$project.ProjectItems.AddFromFile($rhetosAppSettingsPath) > $null
+
+$rhetosBuildSettingsPath = "$projectFolder\rhetos-build.settings.json"
+@"
+{
+  "GenerateAppSettings": true,
+  "Legacy": {
+    "BuildResourcesFolder": true
+  }
+}
+"@ | Set-Content -Path $rhetosBuildSettingsPath
+$project.ProjectItems.AddFromFile($rhetosBuildSettingsPath) > $null
