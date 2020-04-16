@@ -96,17 +96,30 @@
 
 ### New features
 
-* DSL syntax: ConceptParentAttribute for explicit specification of parent property for nested and recursive concepts.
-  Fists property is assumed to be parent concept by default, unless ConceptParentAttribute is used.
+* DSL syntax: ConceptParentAttribute for explicit specification of parent property for
+  nested and recursive concepts. Fists property is assumed to be parent concept by default,
+  unless ConceptParentAttribute is used.
   **Recursive concepts** must use ConceptParentAttribute.
-* DSL syntax: Dot is required as a parameter separator only for referenced concepts. In previous versions, dot was also required as a separator before key properties of type string. The old syntax is also allowed for backward compatibility (configurable).
-  * For example, when using *flat* syntax for ShortString, previous versions required dot before property name: `ShortString Demo.School.Name;`, but new version does not: `ShortString Demo.School Name;`. New version makes more clear that ShortString contains 2 parameters: entity (Demo.School) and property name (Name).
+* DSL syntax: Dot is required as a parameter separator *only* for referenced concepts.
+  In previous versions, dot was also required as a separator before key properties
+  of type string.
+  For backward compatibility, both old and new syntax is currently allowed (configurable).
+  * For example, when using *flat* syntax for ShortString, previous versions required
+    dot before property name: `ShortString Demo.School.Name;`, but new version does not:
+    `ShortString Demo.School Name;`.
+    New version makes it more clear that ShortString contains 2 parameters:
+    entity (`Demo.School`) and property name (`Name`).
 
 ### Internal improvements
 
-* Bugfix: Optimized "Contains" query with GroupBy and subquery results with `EntityCommandExecutionException: An error occurred while executing the command definition.` with inner exception `IndexOutOfRangeException: Invalid index -1 for this SqlParameterCollection with Count=0.` (issue #278)
-* Bugfix: Downgrade from Rhetos 4.0 results with SQL error: `Cannot find the object "Rhetos.DatabaseGeneratorAppliedConcept" because it does not exist or you do not have permissions.`
-* Bugfix: KeepSynchronized metadata tracking can result with syntax error in *ServerDom.Repositories.cs* depending on concept ordering.
+* Bugfix: Optimized "Contains" query with GroupBy and subquery results with
+  `EntityCommandExecutionException: An error occurred while executing the command definition.`
+  with inner exception
+  `IndexOutOfRangeException: Invalid index -1 for this SqlParameterCollection with Count=0.` (issue #278)
+* Bugfix: Downgrade from Rhetos 4.0 results with SQL error:
+  `Cannot find the object "Rhetos.DatabaseGeneratorAppliedConcept" because it does not exist or you do not have permissions.`
+* Bugfix: KeepSynchronized metadata tracking can result with syntax error in
+  *ServerDom.Repositories.cs* depending on concept ordering.
 
 ## 3.0.1 (2019-11-22)
 
