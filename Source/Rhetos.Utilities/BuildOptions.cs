@@ -32,7 +32,7 @@ namespace Rhetos.Utilities
         /// Creates or updates Rhetos runtime configuration file (<see cref="RhetosAppEnvironment.ConfigurationFileName"/>)
         /// with essential information on application structure.
         /// </summary>
-        public bool GenerateAppSettings { get; set; } = true;
+        public bool GenerateAppSettings { get; set; } = false;
     }
 
     /// <summary>

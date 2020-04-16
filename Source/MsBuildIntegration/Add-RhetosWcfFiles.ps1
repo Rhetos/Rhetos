@@ -31,24 +31,26 @@ ReplaceText "$projectFolder\RhetosService.svc" ", Rhetos" ", $assemblyName"
 
 ReplaceText "$projectFolder\Rhetos Server DOM.linq" "bin\\Plugins\\" "bin\"
 ReplaceText "$projectFolder\Rhetos Server SOAP.linq" "bin\\Plugins\\" "bin\"
-
 ReplaceText "$projectFolder\Rhetos Server DOM.linq" "bin\\Generated\\ServerDom.Model.dll" "bin\$assemblyName.dll"
 ReplaceText "$projectFolder\Rhetos Server SOAP.linq" "bin\\Generated\\ServerDom.Model.dll" "bin\$assemblyName.dll"
 ReplaceText "$projectFolder\Rhetos Server SOAP.linq" "ServerDom.Model" "$assemblyName"
-
 ReplaceText "$projectFolder\Rhetos Server SOAP.linq" "localhost/Rhetos" "ENTER-APPLICATION-URL-HERE"
 
 $rhetosAppSettingsPath = "$projectFolder\rhetos-app.settings.json"
-"{}" | Set-Content -Path $rhetosAppSettingsPath
+if (!(Test-Path -Path $rhetosAppSettingsPath)) {
+  Set-Content -Path $rhetosAppSettingsPath -Value '{}' -NoNewline
+}
 $project.ProjectItems.AddFromFile($rhetosAppSettingsPath) > $null
 
 $rhetosBuildSettingsPath = "$projectFolder\rhetos-build.settings.json"
-@"
+$rhetosBuildSettings =
+@'
 {
   "GenerateAppSettings": true,
   "Legacy": {
     "BuildResourcesFolder": true
   }
 }
-"@ | Set-Content -Path $rhetosBuildSettingsPath
+'@
+Set-Content -Path $rhetosBuildSettingsPath -Value $rhetosBuildSettings -NoNewline
 $project.ProjectItems.AddFromFile($rhetosBuildSettingsPath) > $null
