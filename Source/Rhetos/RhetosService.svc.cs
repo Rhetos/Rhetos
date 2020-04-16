@@ -88,7 +88,7 @@ namespace Rhetos
             }
             finally
             {
-                _performanceLogger.Write(totalTime, "RhetosService: Executed " + string.Join(",", commands.Select(c => c.CommandName)) + ".");
+                _performanceLogger.Write(totalTime, $"RhetosService: Executed {string.Join(",", commands.Select(c => c.CommandName))}.");
             }
         }
 
@@ -117,8 +117,7 @@ namespace Rhetos
             var commandsWithType = commands.Select(c => 
                 {
                     Type commandType = null;
-                    ICommandInfo command;
-                    if (_commandsByName.TryGetValue(c.CommandName, out command))
+                    if (_commandsByName.TryGetValue(c.CommandName, out ICommandInfo command))
                         commandType = command.GetType();
 
                     return new { Command = c, Type = commandType };
@@ -126,11 +125,11 @@ namespace Rhetos
 
             var unknownCommandNames = commandsWithType.Where(c => c.Type == null).Select(c => c.Command.CommandName).ToArray();
             if (unknownCommandNames.Length > 0)
-                return ValueOrError.CreateError("Unknown command type: " + string.Join(", ", unknownCommandNames) + ".");
+                return ValueOrError.CreateError($"Unknown command type: {string.Join(", ", unknownCommandNames)}.");
 
             var dataNotSetCommandNames = commands.Where(c => c.Data == null).Select(c => c.CommandName).ToArray();
             if (dataNotSetCommandNames.Length > 0)
-                return ValueOrError.CreateError("Command data not set: " + string.Join(", ", dataNotSetCommandNames) + ".");
+                return ValueOrError.CreateError($"Command data not set: {string.Join(", ", dataNotSetCommandNames)}.");
 
             var processingCommands = new List<ICommandInfo>();
             foreach (var cmd in commandsWithType)
@@ -139,17 +138,16 @@ namespace Rhetos
                 {
                     var deserializedData = _xmlUtility.DeserializeFromXml(cmd.Type, cmd.Command.Data);
                     if (deserializedData == null)
-                        return ValueOrError.CreateError("Deserialization of " + cmd.Command.CommandName + " resulted in null value.");
+                        return ValueOrError.CreateError($"Deserialization of {cmd.Command.CommandName} resulted in null value.");
 
-                    var commandInfo = deserializedData as ICommandInfo;
-                    if (commandInfo == null)
-                        return ValueOrError.CreateError("Cannot cast " + cmd.Command.CommandName + " to ICommandInfo.");
-
-                    processingCommands.Add(commandInfo);
+                    if (deserializedData is ICommandInfo commandInfo)
+                        processingCommands.Add(commandInfo);
+                    else
+                        return ValueOrError.CreateError($"Cannot cast {cmd.Command.CommandName} to {nameof(ICommandInfo)}.");
                 }
                 catch (Exception ex)
                 {
-                    return ValueOrError.CreateError("Exception while deserializing " + cmd.Command.CommandName + "." + Environment.NewLine + ex);
+                    return ValueOrError.CreateError($"Exception while deserializing {cmd.Command.CommandName}.{Environment.NewLine}{ex}");
                 }
             }
 
