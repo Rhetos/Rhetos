@@ -39,24 +39,13 @@ ReplaceText "$projectFolder\Rhetos Server SOAP.linq" "ServerDom.Model" "$assembl
 ReplaceText "$projectFolder\Rhetos Server SOAP.linq" "localhost/Rhetos" "ENTER-APPLICATION-URL-HERE"
 
 $rhetosAppSettingsPath = "$projectFolder\rhetos-app.settings.json"
-@"
-{
-  "RhetosRuntimePath": "bin\\$assemblyName.dll",
-  "AssetsFolder": "bin\\RhetosAssets",
-  "DatabaseLanguage": "MsSql",
-  "Legacy":  {
-    "Paths": {
-        "ResourcesFolder": "Resources"
-    }
-  }
-}
-"@ | Set-Content -Path $rhetosAppSettingsPath
+"{}" | Set-Content -Path $rhetosAppSettingsPath
 $project.ProjectItems.AddFromFile($rhetosAppSettingsPath) > $null
 
 $rhetosBuildSettingsPath = "$projectFolder\rhetos-build.settings.json"
 @"
 {
-  "GenerateAppSettings": false,
+  "GenerateAppSettings": true,
   "Legacy": {
     "BuildResourcesFolder": true
   }
