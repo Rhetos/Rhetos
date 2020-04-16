@@ -52,7 +52,8 @@
 8. ProcessUserInfo no longer supports BuiltinAdminOverride configuration option.
    This might affect unit tests or custom utilities that directly use
    Rhetos.Processing.IProcessingEngine.
-   * Any such test or utilities can register NullAuthorizationProvider to DI container,
+   * Add the required permissions for the system account that runs the test or utility application.
+   * Alternatively, the test or utility can register NullAuthorizationProvider to DI container,
      if they need to override end-user permissions checking.
      For example, if using RhetosTestContainer add
      `container.InitializeSession += builder.RegisterType<Rhetos.Security.NullAuthorizationProvider>().As<IAuthorizationProvider>();`
