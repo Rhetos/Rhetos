@@ -18,6 +18,7 @@
 */
 
 using Autofac;
+using Rhetos.HomePage;
 using Rhetos.Logging;
 using Rhetos.Security;
 using Rhetos.Utilities;
@@ -74,10 +75,17 @@ namespace Rhetos
                 builder.RegisterType<Rhetos.Web.GlobalErrorHandler>();
                 builder.RegisterType<WebServices>();
                 builder.GetPluginRegistration().FindAndRegisterPlugins<IService>();
-                builder.GetPluginRegistration().FindAndRegisterPlugins<IHomePageSnippet>();
             }
 
             builder.AddPluginModules();
+
+            if (_isHost)
+            {
+                // HomePageServiceInitializer must be register after other core services and plugins to allow routing overrides.
+                builder.RegisterType<HomePageService>().InstancePerLifetimeScope();
+                builder.RegisterType<HomePageServiceInitializer>().As<IService>();
+                builder.GetPluginRegistration().FindAndRegisterPlugins<IHomePageSnippet>();
+            }
 
             registerCustomComponents?.Invoke(builder);
 

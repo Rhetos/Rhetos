@@ -15,7 +15,6 @@ Copy-Item -Path "$sourceFolder\Template.ConnectionStrings.config" -Destination $
 
 $project.ProjectItems.AddFromFileCopy("$sourceFolder\RhetosService.svc") > $null
 $project.ProjectItems.AddFromFileCopy("$sourceFolder\Global.asax") > $null
-$project.ProjectItems.AddFromFileCopy("$sourceFolder\Default.aspx") > $null
 $project.ProjectItems.AddFromFileCopy("$sourceFolder\RhetosRuntime.cs") > $null
 
 function ReplaceText
