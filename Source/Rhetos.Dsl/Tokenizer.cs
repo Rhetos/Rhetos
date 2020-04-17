@@ -177,7 +177,7 @@ namespace Rhetos.Dsl
                 if (end >= script.Length)
                 {
                     var errorMessage = $"Unexpected end of script within quoted string. Missing closing character: {quote}.";
-                    throw new DslParseSyntaxException(errorMessage, "RH0008", dslScript, begin, 0, null);
+                    throw new DslSyntaxException(errorMessage, "RH0008", dslScript, begin, 0, null);
                 }
                 if (end + 1 < script.Length && script[end + 1] == quote)
                 {
@@ -215,13 +215,13 @@ namespace Rhetos.Dsl
             if (end >= script.Length)
             {
                 var errorMessage = "Unexpected end of script within external text reference. Missing closing character: '>'.";
-                throw new DslParseSyntaxException(errorMessage, "RH0009", dslScript, begin, 0, null);
+                throw new DslSyntaxException(errorMessage, "RH0009", dslScript, begin, 0, null);
             }
 
             if (script[end] != '>')
             {
                 var errorMessage = "Invalid filename character within external text reference.";
-                throw new DslParseSyntaxException(errorMessage, "RH0010", dslScript, end, 0, null);
+                throw new DslSyntaxException(errorMessage, "RH0010", dslScript, end, 0, null);
             }
 
             end++; // Skip closing character.
@@ -243,7 +243,7 @@ namespace Rhetos.Dsl
                 if (string.IsNullOrWhiteSpace(fileName))
                 {
                     var errorMessage = $"Referenced empty file name ({basicFilePath}) in DSL script.";
-                    throw new DslParseSyntaxException(errorMessage, "RH0011", dslScript, begin, 0, null);
+                    throw new DslSyntaxException(errorMessage, "RH0011", dslScript, begin, 0, null);
                 }
 
                 // Look for SQL dialect-specific files before the generic SQL file:
@@ -257,7 +257,7 @@ namespace Rhetos.Dsl
 
             var notFoundMessage = "Cannot find the extension file referenced in DSL script.";
             var fileListMessage = "Looking for files:\r\n" + string.Join("\r\n", filePaths);
-            throw new DslParseSyntaxException($"{notFoundMessage} {fileListMessage}", "RH0012", dslScript, begin, 0, null);
+            throw new DslSyntaxException($"{notFoundMessage} {fileListMessage}", "RH0012", dslScript, begin, 0, null);
         }
     }
 }
