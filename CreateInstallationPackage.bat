@@ -33,6 +33,7 @@ XCOPY /Y/D/R Source\Rhetos\Template.RhetosPackages.config Install\RhetosServer\ 
 XCOPY /Y/D/R Source\Rhetos\Template.RhetosPackageSources.config Install\RhetosServer\ || GOTO Error0
 XCOPY /Y/D/R Source\Rhetos\*.linq Install\RhetosServer\ || GOTO Error0
 XCOPY /Y/D/R Source\Rhetos\*.svc Install\RhetosServer\ || GOTO Error0
+XCOPY /Y/D/R Source\Rhetos\rhetos-app.settings.json Install\RhetosServer\ || GOTO Error0
 
 XCOPY /Y/D/R ChangeLog.md Install\RhetosServer\ || GOTO Error0
 XCOPY /Y/D/R Readme.md Install\RhetosServer\ || GOTO Error0
