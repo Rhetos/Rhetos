@@ -25,15 +25,18 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Rhetos.Utilities.ApplicationConfiguration;
+using Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources;
 
 namespace Rhetos
 {
     public class ConfigurationProvider : IConfiguration
     {
         public static readonly string ConfigurationPathSeparator = ":";
-        private readonly Dictionary<string, (IConfigurationValue ConfigurationValue, string BaseFolder)> _configurationValues;
+        private readonly Dictionary<string, IConfigurationValue> _configurationValues;
 
-        public ConfigurationProvider(IDictionary<string, (IConfigurationValue ConfigurationValue, string BaseFolder)> configurationValues)
+        public IEnumerable<string> AllKeys => _configurationValues.Keys;
+
+        public ConfigurationProvider(IDictionary<string, IConfigurationValue> configurationValues)
         {
             _configurationValues = configurationValues
                 .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.InvariantCultureIgnoreCase);
@@ -54,7 +57,7 @@ namespace Rhetos
             var membersBound = new List<MemberInfo>();
             foreach (var member in members)
             {
-                bool convertRelativePath = member.GetCustomAttribute<OptionsPathAttribute>() != null;
+                bool convertRelativePath = member.GetCustomAttribute<AbsolutePathOptionValueAttribute>() != null;
                 if (TryGetConfigurationValueForMemberName(member.Name, out var memberValue, configurationPath, convertRelativePath))
                 {
                     SetMemberValue(optionsInstance, member, memberValue);
@@ -119,8 +122,6 @@ namespace Rhetos
             return Convert<T>(value, configurationKey);
         }
 
-        public IEnumerable<string> AllKeys => _configurationValues.Keys;
-
         private void SetMemberValue(object instance, MemberInfo member, object value)
         {
             if (member is PropertyInfo propertyInfo)
@@ -138,10 +139,13 @@ namespace Rhetos
 
             if (_configurationValues.TryGetValue(configurationKey, out var entry))
             {
-                if (convertRelativePath && !string.IsNullOrEmpty(entry.BaseFolder) && !string.IsNullOrEmpty(entry.ConfigurationValue.Value as string))
-                    result = Path.Combine(entry.BaseFolder, (string)entry.ConfigurationValue.Value);
+                var baseFolder = Path.GetDirectoryName((entry as FileSourceConfigurationValue)?.FilePath)
+                                 ?? AppDomain.CurrentDomain.BaseDirectory;
+
+                if (convertRelativePath && !string.IsNullOrEmpty(baseFolder) && (entry.Value is string))
+                    result = Path.Combine(baseFolder, (string)entry.Value);
                 else
-                    result = entry.ConfigurationValue.Value;
+                    result = entry.Value;
                 return true;
             }
             else

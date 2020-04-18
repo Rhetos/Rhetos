@@ -37,8 +37,6 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
             this.connectionStrings = connectionStrings;
         }
 
-        public string BaseFolder => AppDomain.CurrentDomain.BaseDirectory;
-
         public IDictionary<string, IConfigurationValue> Load()
         {
             var settings = new Dictionary<string, IConfigurationValue>();

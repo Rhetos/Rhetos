@@ -26,8 +26,6 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
 {
     public class ConfigurationManagerSource : IConfigurationSource
     {
-        public string BaseFolder => AppDomain.CurrentDomain.BaseDirectory;
-
         public IDictionary<string, IConfigurationValue> Load()
         {
             var appSettings = new List<KeyValuePair<string, string>>();

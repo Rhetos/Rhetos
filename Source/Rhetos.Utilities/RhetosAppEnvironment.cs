@@ -28,15 +28,19 @@ namespace Rhetos.Utilities
         public static readonly string ConfigurationFileName = "rhetos-app.settings.json";
         public static readonly string LocalConfigurationFileName = "rhetos-app.local.settings.json";
 
+        [AbsolutePathOptionValue]
         public string ApplicationRootFolder { get; set; }
 
+        [AbsolutePathOptionValue]
         public string RhetosRuntimePath { get; set; }
 
+        [AbsolutePathOptionValue]
         public string AssemblyFolder { get; set; }
 
         /// <summary>
         /// Run-time assets folder.
         /// </summary>
+        [AbsolutePathOptionValue]
         public string AssetsFolder { get; set; }
 
         public string DatabaseLanguage { get; set; }

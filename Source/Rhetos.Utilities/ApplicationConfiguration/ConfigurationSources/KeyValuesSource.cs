@@ -24,18 +24,16 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
 {
     public class KeyValuesSource : IConfigurationSource
     {
-        private readonly IEnumerable<KeyValuePair<string, object>> keyValuePairs;
+        private readonly IEnumerable<KeyValuePair<string, IConfigurationValue>> keyValuePairs;
 
-        public KeyValuesSource(IEnumerable<KeyValuePair<string, object>> keyValuePairs)
+        public KeyValuesSource(IEnumerable<KeyValuePair<string, IConfigurationValue>> keyValuePairs)
         {
             this.keyValuePairs = keyValuePairs;
         }
 
-        public string BaseFolder => null;
-
         public IDictionary<string, IConfigurationValue> Load()
         {
-            return keyValuePairs.ToDictionary(pair => pair.Key, pair => (IConfigurationValue)new VerbatimConfigurationValue(pair.Value));
+            return keyValuePairs.ToDictionary(pair => pair.Key, pair => pair.Value);
         }
     }
 }

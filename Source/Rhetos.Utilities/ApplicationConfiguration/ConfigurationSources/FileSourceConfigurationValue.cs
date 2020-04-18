@@ -17,17 +17,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.Collections.Generic;
-
 namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
 {
-    /// <summary>
-    /// Each implementation source is responsible for normalizing configuration paths to predefined colon (:) separator.
-    /// Empty path fragments are not allowed. Path should not start with a separator (root configuration items are just verbatim setting names).
-    /// Paths and keys are NOT case sensitive.
-    /// </summary>
-    public interface IConfigurationSource
+    public class FileSourceConfigurationValue : IConfigurationValue
     {
-        IDictionary<string, IConfigurationValue> Load();
+        public object Value { get; }
+        public string FilePath { get; }
+
+        public FileSourceConfigurationValue(object value, string filePath)
+        {
+            Value = value;
+            FilePath = filePath;
+        }
     }
 }

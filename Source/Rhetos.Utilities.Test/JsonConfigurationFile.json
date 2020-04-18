@@ -3,5 +3,7 @@
   /* comment */
   "Section": {
     "SectionProp": "SectionPropValue"
-  }
+  },
+  "Path": "relative\\test.json",
+  "PathConvert": "relative\\testc.json" 
 }

@@ -29,10 +29,9 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
     {
         private readonly string _jsonText;
 
-        public JsonSource(string jsonText, string baseDirectory = null)
+        public JsonSource(string jsonText)
         {
             _jsonText = jsonText;
-            BaseFolder = baseDirectory;
         }
 
         public IDictionary<string, IConfigurationValue> Load()
@@ -44,8 +43,6 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
         }
 
         private static readonly JTokenType[] _allowedJTokenTypes = { JTokenType.Boolean, JTokenType.String, JTokenType.Integer, JTokenType.Float, JTokenType.Object };
-
-        public string BaseFolder { get; }
 
         private Dictionary<string, IConfigurationValue> GetKeysFromObject(JObject jObject, string path)
         {

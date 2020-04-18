@@ -20,6 +20,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
 {
@@ -34,8 +35,6 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
             _optional = optional;
         }
 
-        public string BaseFolder => Path.GetDirectoryName(_filePath);
-
         public IDictionary<string, IConfigurationValue> Load()
         {
             if (_optional && !File.Exists(_filePath))
@@ -45,8 +44,9 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
 
             try
             {
-                var jsonSource = new JsonSource(jsonText, Path.GetDirectoryName(_filePath));
-                return jsonSource.Load();
+                var jsonSource = new JsonSource(jsonText);
+                return jsonSource.Load()
+                    .ToDictionary(a => a.Key, a => (IConfigurationValue) new FileSourceConfigurationValue(a.Value.Value, _filePath));
             }
             catch (Exception e)
             {

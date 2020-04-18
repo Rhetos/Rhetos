@@ -24,26 +24,27 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Rhetos.Utilities.ApplicationConfiguration;
 
 namespace Rhetos
 {
     public static class ConfigurationSourcesBuilderExtensions
     {
-        public static IConfigurationBuilder AddKeyValues(this IConfigurationBuilder builder, params KeyValuePair<string, object>[] keyValues)
-        {
-            builder.Add(new KeyValuesSource(keyValues));
-            return builder;
-        }
-
         public static IConfigurationBuilder AddKeyValues(this IConfigurationBuilder builder, IEnumerable<KeyValuePair<string, object>> keyValues)
         {
-            builder.Add(new KeyValuesSource(keyValues));
+            builder.Add(new KeyValuesSource(keyValues.Select(a => new KeyValuePair<string, IConfigurationValue>(a.Key, new VerbatimConfigurationValue(a.Value)))));
             return builder;
         }
 
+        public static IConfigurationBuilder AddKeyValues(this IConfigurationBuilder builder, params KeyValuePair<string, object>[] keyValues)
+        {
+            builder.AddKeyValues(keyValues.AsEnumerable());
+            return builder;
+        }
+        
         public static IConfigurationBuilder AddKeyValue(this IConfigurationBuilder builder, string key, object value)
         {
-            builder.Add(new KeyValuesSource(new [] { new KeyValuePair<string, object>(key, value) }));
+            builder.AddKeyValues(new KeyValuePair<string, object>(key, value));
             return builder;
         }
 

@@ -36,8 +36,6 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
             this.configurationPath = configurationPath;
         }
 
-        public string BaseFolder => AppDomain.CurrentDomain.BaseDirectory;
-
         public IDictionary<string, IConfigurationValue> Load()
         {
             var argsTrimmed = args.Select(arg => arg.TrimStart(argumentPrefix.ToCharArray())).Where(arg => !string.IsNullOrWhiteSpace(arg));

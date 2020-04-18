@@ -21,8 +21,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
 using Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Rhetos.Utilities.ApplicationConfiguration;
 
 namespace Rhetos.Utilities.Test
 {
@@ -627,6 +629,72 @@ namespace Rhetos.Utilities.Test
                 .Build();
             Assert.AreEqual("p:PublicField:3, p:PublicProperty:4, p:PublicPropertyGetter:6, p:PublicPropertyInt:5, p:PublicPropertyNull:",
                 TestUtility.DumpSorted(configuration.AllKeys.Select(key => $"{key}:{configuration.GetValue<object>(key)}")));
+        }
+
+        private class TestPathOptions
+        {
+            [AbsolutePathOptionValue]
+            public string PathConvert { get; set; }
+            public string Path { get; set; }
+        }
+
+
+        [TestMethod]
+        public void KeyValueSourceConvertingPaths()
+        {
+            var configuration = new ConfigurationBuilder()
+                .AddKeyValue("Path", "relative\\test.json")
+                .AddKeyValue("PathConvert", "relative\\testc.json")
+                .Build();
+
+            var options = configuration.GetOptions<TestPathOptions>();
+
+            Assert.AreEqual("relative\\test.json", options.Path);
+
+            var expectedConverted = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "relative\\testc.json");
+            Assert.AreEqual(expectedConverted, options.PathConvert);
+        }
+
+        [TestMethod]
+        public void JsonFileSourceConvertsPaths()
+        {
+            var configuration = new ConfigurationBuilder()
+                .AddJsonFile("JsonConfigurationFile.json")
+                .Build();
+
+            var options = configuration.GetOptions<TestPathOptions>();
+
+            Assert.AreEqual("relative\\test.json", options.Path);
+
+            var expectedConverted = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "relative\\testc.json");
+            Assert.AreEqual(expectedConverted, options.PathConvert);
+        }
+
+        [TestMethod]
+        public void ConfigurationManagerSourceConvertsPaths()
+        {
+            var configuration = new ConfigurationBuilder()
+                .AddConfigurationManagerConfiguration()
+                .Build();
+
+            var options = configuration.GetOptions<TestPathOptions>();
+
+            Assert.AreEqual("relative\\apptest.json", options.Path);
+
+            var expectedConverted = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "relative\\apptestc.json");
+            Assert.AreEqual(expectedConverted, options.PathConvert);
+        }
+
+        [TestMethod]
+        public void EmptyRelativeFolder()
+        {
+            var configurationValue = new FileSourceConfigurationValue("", "c:\\testpath\\subfolder\\cfg.json");
+            var configuration = new ConfigurationBuilder()
+                .Add(new KeyValuesSource(new[] {new KeyValuePair<string, IConfigurationValue>("PathConvert", configurationValue)}))
+                .Build();
+
+            var options = configuration.GetOptions<TestPathOptions>();
+            Assert.AreEqual("c:\\testpath\\subfolder", options.PathConvert);
         }
     }
 }
