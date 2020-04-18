@@ -33,9 +33,9 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
 
         public string BaseFolder => null;
 
-        public IDictionary<string, object> Load()
+        public IDictionary<string, IConfigurationValue> Load()
         {
-            return keyValuePairs.ToDictionary(pair => pair.Key, pair => pair.Value);
+            return keyValuePairs.ToDictionary(pair => pair.Key, pair => (IConfigurationValue)new VerbatimConfigurationValue(pair.Value));
         }
     }
 }

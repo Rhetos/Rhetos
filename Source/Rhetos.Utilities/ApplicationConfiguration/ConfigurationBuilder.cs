@@ -18,6 +18,7 @@
 */
 
 using Rhetos.Utilities;
+using Rhetos.Utilities.ApplicationConfiguration;
 using Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources;
 using System;
 using System.Collections.Generic;
@@ -37,7 +38,7 @@ namespace Rhetos
 
         public IConfiguration Build()
         {
-            var configurationValues = new Dictionary<string, (object Value, string BaseFolder)>(StringComparer.InvariantCultureIgnoreCase);
+            var configurationValues = new Dictionary<string, (IConfigurationValue ConfigurationValue, string BaseFolder)>(StringComparer.InvariantCultureIgnoreCase);
 
             foreach (var configurationSource in configurationSources)
             {

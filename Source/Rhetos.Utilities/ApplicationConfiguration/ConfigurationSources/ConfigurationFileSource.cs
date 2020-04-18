@@ -35,7 +35,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
 
         public string BaseFolder => Path.GetDirectoryName(configuration.FilePath);
 
-        public IDictionary<string, object> Load()
+        public IDictionary<string, IConfigurationValue> Load()
         {
             var appSettings = new List<KeyValuePair<string, string>>();
             if (configuration.AppSettings?.Settings != null)

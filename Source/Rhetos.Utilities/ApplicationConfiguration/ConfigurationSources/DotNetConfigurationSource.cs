@@ -39,20 +39,20 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
 
         public string BaseFolder => AppDomain.CurrentDomain.BaseDirectory;
 
-        public IDictionary<string, object> Load()
+        public IDictionary<string, IConfigurationValue> Load()
         {
-            var settings = new Dictionary<string, object>();
+            var settings = new Dictionary<string, IConfigurationValue>();
 
             foreach (var pair in appSettings)
-                settings[pair.Key] = pair.Value;
+                settings[pair.Key] = new VerbatimConfigurationValue(pair.Value);
 
             if (connectionStrings != null)
                 foreach (ConnectionStringSettings connectionString in connectionStrings)
                 {
                     var connectionSectionName = $"ConnectionStrings{ConfigurationProvider.ConfigurationPathSeparator}{connectionString.Name}";
-                    settings[$"{connectionSectionName}{ConfigurationProvider.ConfigurationPathSeparator}Name"] = connectionString.Name;
-                    settings[$"{connectionSectionName}{ConfigurationProvider.ConfigurationPathSeparator}ConnectionString"] = connectionString.ConnectionString;
-                    settings[$"{connectionSectionName}{ConfigurationProvider.ConfigurationPathSeparator}ProviderName"] = connectionString.ProviderName;
+                    settings[$"{connectionSectionName}{ConfigurationProvider.ConfigurationPathSeparator}Name"] = new VerbatimConfigurationValue(connectionString.Name);
+                    settings[$"{connectionSectionName}{ConfigurationProvider.ConfigurationPathSeparator}ConnectionString"] = new VerbatimConfigurationValue(connectionString.ConnectionString);
+                    settings[$"{connectionSectionName}{ConfigurationProvider.ConfigurationPathSeparator}ProviderName"] = new VerbatimConfigurationValue(connectionString.ProviderName);
                 }
 
             return settings;

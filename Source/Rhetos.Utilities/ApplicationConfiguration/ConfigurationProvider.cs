@@ -24,15 +24,16 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Rhetos.Utilities.ApplicationConfiguration;
 
 namespace Rhetos
 {
     public class ConfigurationProvider : IConfiguration
     {
         public static readonly string ConfigurationPathSeparator = ":";
-        private readonly Dictionary<string, (object Value, string BaseFolder)> _configurationValues;
+        private readonly Dictionary<string, (IConfigurationValue ConfigurationValue, string BaseFolder)> _configurationValues;
 
-        public ConfigurationProvider(IDictionary<string, (object Value, string BaseFolder)> configurationValues)
+        public ConfigurationProvider(IDictionary<string, (IConfigurationValue ConfigurationValue, string BaseFolder)> configurationValues)
         {
             _configurationValues = configurationValues
                 .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.InvariantCultureIgnoreCase);
@@ -137,10 +138,10 @@ namespace Rhetos
 
             if (_configurationValues.TryGetValue(configurationKey, out var entry))
             {
-                if (convertRelativePath && !string.IsNullOrEmpty(entry.BaseFolder) && !string.IsNullOrEmpty(entry.Value as string))
-                    result = Path.Combine(entry.BaseFolder, (string)entry.Value);
+                if (convertRelativePath && !string.IsNullOrEmpty(entry.BaseFolder) && !string.IsNullOrEmpty(entry.ConfigurationValue.Value as string))
+                    result = Path.Combine(entry.BaseFolder, (string)entry.ConfigurationValue.Value);
                 else
-                    result = entry.Value;
+                    result = entry.ConfigurationValue.Value;
                 return true;
             }
             else

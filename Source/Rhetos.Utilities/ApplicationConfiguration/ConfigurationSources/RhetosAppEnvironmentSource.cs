@@ -39,17 +39,17 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
 
         public string BaseFolder => _configurationFolder;
 
-        public IDictionary<string, object> Load()
+        public IDictionary<string, IConfigurationValue> Load()
         {
-            var settings = new Dictionary<string, object>(_jsonFileSource.Load());
+            var settings = new Dictionary<string, IConfigurationValue>(_jsonFileSource.Load());
 
             // Settings from configuration generated at build-time:
 
-            string rhetosRuntimePath = settings.GetValueOrDefault(nameof(RhetosAppEnvironment.RhetosRuntimePath)) as string;
+            string rhetosRuntimePath = settings.GetValueOrDefault(nameof(RhetosAppEnvironment.RhetosRuntimePath)).Value as string;
             if (string.IsNullOrEmpty(rhetosRuntimePath))
                 throw new FrameworkException($"Missing '{nameof(RhetosAppEnvironment.RhetosRuntimePath)}' configuration setting. Please verify that the Rhetos build have passed successfully.");
 
-            string assetsFolder = settings.GetValueOrDefault(nameof(RhetosAppEnvironment.AssetsFolder)) as string;
+            string assetsFolder = settings.GetValueOrDefault(nameof(RhetosAppEnvironment.AssetsFolder)).Value as string;
             if (string.IsNullOrEmpty(assetsFolder))
                 throw new FrameworkException($"Missing '{nameof(RhetosAppEnvironment.AssetsFolder)}' configuration setting. Please verify that the Rhetos build have passed successfully.");
 
@@ -57,10 +57,10 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
 
             string absolutePath(string relativePath) => relativePath != null ? Path.GetFullPath(Path.Combine(_configurationFolder, relativePath)) : null;
 
-            settings[nameof(RhetosAppEnvironment.ApplicationRootFolder)] = Path.GetFullPath(_configurationFolder);
-            settings[nameof(RhetosAppEnvironment.RhetosRuntimePath)] = absolutePath(rhetosRuntimePath);
-            settings[nameof(RhetosAppEnvironment.AssetsFolder)] = absolutePath(assetsFolder);
-            settings[nameof(RhetosAppEnvironment.AssemblyFolder)] = Path.GetDirectoryName(absolutePath(rhetosRuntimePath));
+            settings[nameof(RhetosAppEnvironment.ApplicationRootFolder)] = new VerbatimConfigurationValue(Path.GetFullPath(_configurationFolder));
+            settings[nameof(RhetosAppEnvironment.RhetosRuntimePath)] = new VerbatimConfigurationValue(absolutePath(rhetosRuntimePath));
+            settings[nameof(RhetosAppEnvironment.AssetsFolder)] = new VerbatimConfigurationValue(absolutePath(assetsFolder));
+            settings[nameof(RhetosAppEnvironment.AssemblyFolder)] = new VerbatimConfigurationValue(Path.GetDirectoryName(absolutePath(rhetosRuntimePath)));
             
             return settings;
         }

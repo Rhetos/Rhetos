@@ -36,10 +36,10 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
 
         public string BaseFolder => Path.GetDirectoryName(_filePath);
 
-        public IDictionary<string, object> Load()
+        public IDictionary<string, IConfigurationValue> Load()
         {
             if (_optional && !File.Exists(_filePath))
-                return new Dictionary<string, object>();
+                return new Dictionary<string, IConfigurationValue>();
 
             var jsonText = File.ReadAllText(_filePath);
 

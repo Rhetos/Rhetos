@@ -35,7 +35,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
             BaseFolder = baseDirectory;
         }
 
-        public IDictionary<string, object> Load()
+        public IDictionary<string, IConfigurationValue> Load()
         {
             var reader = new JsonTextReader(new StringReader(_jsonText));
             reader.DateParseHandling = DateParseHandling.None;
@@ -47,9 +47,9 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
 
         public string BaseFolder { get; }
 
-        private Dictionary<string, object> GetKeysFromObject(JObject jObject, string path)
+        private Dictionary<string, IConfigurationValue> GetKeysFromObject(JObject jObject, string path)
         {
-            var jsonOptions = new Dictionary<string, object>();
+            var jsonOptions = new Dictionary<string, IConfigurationValue>();
 
             foreach (var keyValue in jObject)
             {
@@ -67,7 +67,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
                 }
                 else
                 {
-                    jsonOptions.Add(fullKey, keyValue.Value.ToString());
+                    jsonOptions.Add(fullKey, new VerbatimConfigurationValue(keyValue.Value.ToString()));
                 }
             }
 
