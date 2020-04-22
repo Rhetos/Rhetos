@@ -44,12 +44,18 @@ namespace Rhetos
         public IConfiguration BuildConfiguration(ILogProvider logProvider, string configurationFolder, Action<IConfigurationBuilder> addCustomConfiguration)
         {
             var configurationBuilder = new ConfigurationBuilder();
-            configurationBuilder.AddRhetosAppEnvironment(configurationFolder);
 
             if (_isHost)
-                configurationBuilder.AddConfigurationManagerConfiguration();
+            {
+                configurationBuilder.AddConfigurationManagerConfiguration(); // Main application configuration (usually Web.config)
+                configurationBuilder.AddRhetosAppEnvironment(configurationFolder); // Rhetos runtime configuration (Rhetos JSON files)
+            }
             else
-                configurationBuilder.AddWebConfiguration(configurationFolder);
+            {
+                configurationBuilder.AddWebConfiguration(configurationFolder); // Main application configuration (usually Web.config)
+                configurationBuilder.AddRhetosAppEnvironment(configurationFolder); // Rhetos runtime configuration (Rhetos JSON files)
+                configurationBuilder.AddConfigurationManagerConfiguration(); // Current utility configuration overrides (SomeUtility.exe.config, e.g.)
+            }
 
             addCustomConfiguration?.Invoke(configurationBuilder);
             return configurationBuilder.Build();
