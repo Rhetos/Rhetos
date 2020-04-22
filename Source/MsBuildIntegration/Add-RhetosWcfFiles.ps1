@@ -6,6 +6,7 @@
 $sourceFolder = "$PSScriptRoot\projectFiles"
 $project = (Get-Project)
 $projectFolder = (Get-Item $project.FullName).DirectoryName
+"Target project: $project"
 "Source folder: $sourceFolder"
 
 Copy-Item -Path "$sourceFolder\Web.config" -Destination $projectFolder -Force
@@ -47,9 +48,7 @@ $rhetosBuildSettings =
 @'
 {
   "GenerateAppSettings": true,
-  "Legacy": {
-    "BuildResourcesFolder": true
-  }
+  "BuildResourcesFolder": true
 }
 '@
 Set-Content -Path $rhetosBuildSettingsPath -Value $rhetosBuildSettings -NoNewline

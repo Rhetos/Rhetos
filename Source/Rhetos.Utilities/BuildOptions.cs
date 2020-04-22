@@ -23,11 +23,13 @@ namespace Rhetos.Utilities
     {
         public string DatabaseLanguage { get; set; } = "MsSql";
         public bool Debug { get; set; }
-        public bool CommonConcepts__Legacy__AutoGeneratePolymorphicProperty { get; set; } = false;
-        public bool CommonConcepts__Legacy__CascadeDeleteInDatabase { get; set; } = false;
-        public InitialConceptsSort Dsl__InitialConceptsSort { get; set; } = InitialConceptsSort.Key;
-        public ExcessDotInKey Dsl__ExcessDotInKey { get; set; } = ExcessDotInKey.Ignore;
-        public bool Legacy__BuildResourcesFolder { get; set; } = false;
+        public InitialConceptsSort InitialConceptsSort { get; set; } = InitialConceptsSort.Key;
+        public ExcessDotInKey DslSyntaxExcessDotInKey { get; set; } = ExcessDotInKey.Ignore;
+        /// <summary>
+        /// Copies files from Resources folders, from all included packages, into the Resourced folder of the generated application.
+        /// Some common Rhetos packages require this feature enabled.
+        /// </summary>
+        public bool BuildResourcesFolder { get; set; } = false;
         /// <summary>
         /// Creates or updates Rhetos runtime configuration file (<see cref="RhetosAppEnvironment.ConfigurationFileName"/>)
         /// with essential information on application structure.

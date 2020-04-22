@@ -58,7 +58,7 @@ namespace DeployPackages.Test
                     ResourcesFolder = Path.Combine(rhetosAppRootPath, "Resources"),
                 })
                 .AddKeyValue(nameof(BuildOptions.GenerateAppSettings), false)
-                .AddKeyValue(nameof(BuildOptions.Legacy__BuildResourcesFolder).Replace("__", "."), true)
+                .AddKeyValue(nameof(BuildOptions.BuildResourcesFolder), true)
                 .AddWebConfiguration(rhetosAppRootPath)
                 .AddConfigurationManagerConfiguration()
                 .Build();

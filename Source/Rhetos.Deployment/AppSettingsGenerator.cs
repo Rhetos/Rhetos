@@ -84,7 +84,7 @@ namespace Rhetos.Deployment
 
 			string legacyPathsConfigurationPath = typeof(LegacyPathsOptions).GetCustomAttribute<OptionsAttribute>().ConfigurationPath;
 
-			if (_buildOptions.Legacy__BuildResourcesFolder)
+			if (_buildOptions.BuildResourcesFolder)
 				configurationItems.Add(($"{legacyPathsConfigurationPath}:{nameof(LegacyPathsOptions.ResourcesFolder)}",
 					FilesUtility.AbsoluteToRelativePath(_rhetosBuildEnvironment.ProjectFolder, _legacyPathsOptions.ResourcesFolder)));
 

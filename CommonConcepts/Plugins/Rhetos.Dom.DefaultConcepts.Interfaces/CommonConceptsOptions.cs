@@ -17,13 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-namespace Rhetos.Utilities
+namespace Rhetos.Dom.DefaultConcepts
 {
-    [Options("Security")]
-    public class SecurityOptions
+    [Options("CommonConcepts")]
+    public class CommonConceptsOptions
     {
-        public bool LookupClientHostname { get; set; } = false;
-        public string AllClaimsForUsers { get; set; } = "";
-        public bool AllClaimsForAnonymous { get; set; } = false;
+        public bool Legacy__AutoGeneratePolymorphicProperty { get; set; } = false;
+
+        public bool Legacy__CascadeDeleteInDatabase { get; set; } = false;
     }
 }

@@ -18,10 +18,10 @@
 */
 
 using Rhetos.Compiler;
+using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
-using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -34,9 +34,9 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     {
         private readonly bool _legacyCascadeDeleteInDatabase;
 
-        public UniqueReferenceCascadeDeleteDatabaseDefinition(BuildOptions buildOptions)
+        public UniqueReferenceCascadeDeleteDatabaseDefinition(CommonConceptsOptions commonConceptsOptions)
         {
-            _legacyCascadeDeleteInDatabase = buildOptions.CommonConcepts__Legacy__CascadeDeleteInDatabase;
+            _legacyCascadeDeleteInDatabase = commonConceptsOptions.Legacy__CascadeDeleteInDatabase;
         }
 
         public void ExtendDatabaseStructure(

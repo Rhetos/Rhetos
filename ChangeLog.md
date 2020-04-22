@@ -40,7 +40,7 @@
      to [custom concepts](https://github.com/Rhetos/Rhetos/wiki/Rhetos-concept-development#dependency-between-code-generators)
      and [database object](https://github.com/Rhetos/Rhetos/wiki/Database-objects#dependencies-between-database-objects),
      or **suppress** this issues by disabling the concept sorting in Web.config:
-     `<add key="Dsl.InitialConceptsSort" value="None" />`.
+     `<add key="InitialConceptsSort" value="None" />`.
 7. [BuiltinAdminOverride](https://github.com/Rhetos/Rhetos/wiki/Basic-permissions#suppressing-permissions-in-a-development-environment)
    option is not enabled by default. This might affect testing in development
    environment if permission-checking was intentionally suppressed.

@@ -37,8 +37,8 @@ namespace Rhetos.Security
     /// </summary>
     public class WindowsSecurity : IWindowsSecurity
     {
-        private ILogger _logger;
-        private ILogger _performanceLogger;
+        private readonly ILogger _logger;
+        private readonly ILogger _performanceLogger;
         private readonly SecurityOptions _securityOptions;
 
         public WindowsSecurity(ILogProvider logProvider, SecurityOptions securityOptions)
@@ -74,7 +74,7 @@ namespace Rhetos.Security
 
             string name = null;
 
-            if (_securityOptions.Security__LookupClientHostname)
+            if (_securityOptions.LookupClientHostname)
             {
                 name = GetNameFromAddress(endpointInfo.Address, endpointInfo.Port);
 
