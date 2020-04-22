@@ -139,11 +139,11 @@ namespace Rhetos
 
             if (_configurationValues.TryGetValue(configurationKey, out var entry))
             {
-                var baseFolder = (entry.ConfigurationSource as IConfigurationSourceFolder)?.SourceFolder
+                string GetBaseFolder() => (entry.ConfigurationSource as IConfigurationSourceFolder)?.SourceFolder
                                  ?? AppDomain.CurrentDomain.BaseDirectory;
 
                 result = convertRelativePath && entry.Value is string stringValue
-                    ? Path.GetFullPath(Path.Combine(baseFolder, stringValue))
+                    ? Path.GetFullPath(Path.Combine(GetBaseFolder(), stringValue))
                     : entry.Value;
                 return true;
             }
