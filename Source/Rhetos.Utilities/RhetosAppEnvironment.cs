@@ -21,28 +21,12 @@ namespace Rhetos.Utilities
 {
     /// <summary>
     /// Run-time environment.
-    /// These options are specified at build-time, they should be considered as hard-coded at run-time.
     /// </summary>
-    public class RhetosAppEnvironment : IAssetsOptions
+    public class RhetosAppEnvironment
     {
         public static readonly string ConfigurationFileName = "rhetos-app.settings.json";
         public static readonly string LocalConfigurationFileName = "rhetos-app.local.settings.json";
 
-        [AbsolutePathOptionValue]
         public string ApplicationRootFolder { get; set; }
-
-        [AbsolutePathOptionValue]
-        public string RhetosRuntimePath { get; set; }
-
-        [AbsolutePathOptionValue]
-        public string AssemblyFolder { get; set; }
-
-        /// <summary>
-        /// Run-time assets folder.
-        /// </summary>
-        [AbsolutePathOptionValue]
-        public string AssetsFolder { get; set; }
-
-        public string DatabaseLanguage { get; set; }
     }
 }

@@ -34,11 +34,12 @@ namespace Rhetos.Configuration.Autofac.Modules
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.Register(context => context.Resolve<IConfiguration>().GetOptions<RhetosAppEnvironment>()).SingleInstance()
-                .As<RhetosAppEnvironment>().As<IAssetsOptions>().SingleInstance();
+            builder.Register(context => context.Resolve<IConfiguration>().GetOptions<RhetosAppEnvironment>()).SingleInstance();
             builder.RegisterType<InstalledPackagesProvider>();
-            builder.Register(context => context.Resolve<InstalledPackagesProvider>().Load()).As<InstalledPackages>().As<IInstalledPackages>().SingleInstance();
-            builder.Register(context => context.Resolve<IConfiguration>().GetOptions<RhetosAppOptions>()).SingleInstance().PreserveExistingDefaults();
+            builder.Register(context => context.Resolve<InstalledPackagesProvider>().Load())
+                .As<InstalledPackages>().As<IInstalledPackages>().SingleInstance();
+            builder.Register(context => context.Resolve<IConfiguration>().GetOptions<RhetosAppOptions>())
+                .As<RhetosAppOptions>().As<IAssetsOptions>().SingleInstance();
             builder.RegisterType<DomLoader>().As<IDomainObjectModel>().SingleInstance();
             builder.RegisterType<PersistenceTransaction>().As<IPersistenceTransaction>().InstancePerLifetimeScope();
             builder.RegisterType<DslModelFile>().As<IDslModel>().SingleInstance();

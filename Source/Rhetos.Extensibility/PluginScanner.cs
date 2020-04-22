@@ -67,11 +67,11 @@ namespace Rhetos.Extensibility
         public static string GetCacheFolder(IConfiguration configurationProvider)
         {
             var rhetosBuildEnvironment = configurationProvider.GetOptions<RhetosBuildEnvironment>();
-            var rhetosAppEnvironment = configurationProvider.GetOptions<RhetosAppEnvironment>();
-            string cacheFolder = rhetosBuildEnvironment?.CacheFolder ?? rhetosAppEnvironment?.AssemblyFolder;
+            var rhetosAppOptions = configurationProvider.GetOptions<RhetosAppOptions>();
+            string cacheFolder = rhetosBuildEnvironment?.CacheFolder ?? rhetosAppOptions?.GetAssemblyFolder();
             if (cacheFolder == null)
                 throw new FrameworkException($"Missing configuration settings for build ({nameof(RhetosBuildEnvironment.CacheFolder)})" +
-                    $" or runtime ({nameof(RhetosAppEnvironment.AssemblyFolder)}).");
+                    $" or runtime ({nameof(RhetosAppOptions.GetAssemblyFolder)}).");
             return cacheFolder;
         }
 

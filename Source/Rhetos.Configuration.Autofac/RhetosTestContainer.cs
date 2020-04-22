@@ -164,13 +164,13 @@ namespace Rhetos.Configuration.Autofac
 
             public AssemblyResolver(IConfiguration configurationProvider)
             {
-                var rhetosAppEnvironment = configurationProvider.GetOptions<RhetosAppEnvironment>();
+                var rhetosAppOptins = configurationProvider.GetOptions<RhetosAppOptions>();
                 var legacyPaths = configurationProvider.GetOptions<LegacyPathsOptions>();
                 _searchFolders = new[]
                 {
-                    legacyPaths.BinFolder ?? rhetosAppEnvironment.AssemblyFolder,
+                    legacyPaths.BinFolder ?? rhetosAppOptins.GetAssemblyFolder(),
                     legacyPaths.PluginsFolder,
-                    rhetosAppEnvironment.AssetsFolder,
+                    rhetosAppOptins.AssetsFolder,
                 }
                     .Where(folder => !string.IsNullOrEmpty(folder))
                     .Distinct()

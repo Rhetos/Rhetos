@@ -45,11 +45,7 @@ namespace Rhetos
         /// </summary>
         public static Func<string[]> GetRuntimeAssembliesDelegate(IConfiguration configurationProvider)
         {
-            var runtimeEnvironment = configurationProvider.GetOptions<RhetosAppEnvironment>();
-            if (runtimeEnvironment?.AssemblyFolder == null)
-                throw new FrameworkException($"Run-time environment not initialized." +
-                    $" {nameof(RhetosAppEnvironment)}.{nameof(RhetosAppEnvironment.AssemblyFolder)} is not set.");
-
+            var runtimeOptions = configurationProvider.GetOptions<RhetosAppOptions>();
             var legacyPaths = configurationProvider.GetOptions<LegacyPathsOptions>();
 
             return () =>
@@ -63,11 +59,11 @@ namespace Rhetos
                     // We don't need to scan main AssemblyFolder because it contains only Rhetos framework binaries
                     // that have no plugins exports, only explicit registrations.
                     pluginsPaths.Add(legacyPaths.PluginsFolder);
-                    pluginsPaths.Add(runtimeEnvironment.AssetsFolder);
+                    pluginsPaths.Add(runtimeOptions.AssetsFolder);
                 }
                 else
                 {
-                    pluginsPaths.Add(runtimeEnvironment.AssemblyFolder);
+                    pluginsPaths.Add(runtimeOptions.GetAssemblyFolder());
                 }
 
                 var assemblyFiles = pluginsPaths
