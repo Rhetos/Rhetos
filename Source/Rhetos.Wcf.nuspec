@@ -15,8 +15,6 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="Rhetos\Default.aspx" target="tools\projectFiles" />
-    <file src="Rhetos\Default.aspx.cs" target="tools\projectFiles" />
     <file src="Rhetos\Global.asax" target="tools\projectFiles" />
     <file src="Rhetos\Global.asax.cs" target="tools\projectFiles" />
     <file src="Rhetos\RhetosRuntime.cs" target="tools\projectFiles" />

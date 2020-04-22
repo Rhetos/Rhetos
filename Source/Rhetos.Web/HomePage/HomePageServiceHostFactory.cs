@@ -18,14 +18,15 @@
 */
 
 using System;
+using System.ServiceModel;
 
-namespace Rhetos
+namespace Rhetos.HomePage
 {
-    public partial class Default : System.Web.UI.Page
+    public class HomePageServiceHostFactory : Autofac.Integration.Wcf.AutofacServiceHostFactory
     {
-        protected void Page_Load(object sender, EventArgs e)
+        protected override ServiceHost CreateServiceHost(Type serviceType, Uri[] baseAddresses)
         {
-
+            return new HomePageServiceHost(serviceType, baseAddresses);
         }
     }
 }

@@ -53,6 +53,10 @@
   <ItemGroup>
     <Compile Include="CommitBeforeResponseBehavior.cs" />
     <Compile Include="CommitBeforeResponseMessageInspector.cs" />
+    <Compile Include="HomePage\HomePageService.cs" />
+    <Compile Include="HomePage\HomePageServiceHost.cs" />
+    <Compile Include="HomePage\HomePageServiceHostFactory.cs" />
+    <Compile Include="HomePage\HomePageServiceInitializer.cs" />
     <Compile Include="WebConfigurationSourcesBuilderExtensions.cs" />
     <Compile Include="ErrorHandlerBehavior.cs" />
     <Compile Include="ErrorServiceBehavior.cs" />
@@ -67,6 +71,14 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Rhetos.Deployment.Interfaces\Rhetos.Deployment.Interfaces.csproj">
+      <Project>{945537DC-4AF7-4DEF-B73C-07F19229EFE6}</Project>
+      <Name>Rhetos.Deployment.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Extensibility.Interfaces\Rhetos.Extensibility.Interfaces.csproj">
+      <Project>{DDC73F5F-BB0E-4944-92CC-4AC937398499}</Project>
+      <Name>Rhetos.Extensibility.Interfaces</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rhetos.Interfaces\Rhetos.Interfaces.csproj">
       <Project>{52b9e0eb-f4d1-4ca5-9239-93917dc76e2b}</Project>
       <Name>Rhetos.Interfaces</Name>
