@@ -37,20 +37,20 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
             this.connectionStrings = connectionStrings;
         }
 
-        public IDictionary<string, IConfigurationValue> Load()
+        public IDictionary<string, ConfigurationValue> Load()
         {
-            var settings = new Dictionary<string, IConfigurationValue>();
+            var settings = new Dictionary<string, ConfigurationValue>();
 
             foreach (var pair in appSettings)
-                settings[pair.Key] = new VerbatimConfigurationValue(pair.Value);
+                settings[pair.Key] = new ConfigurationValue(pair.Value, this);
 
             if (connectionStrings != null)
                 foreach (ConnectionStringSettings connectionString in connectionStrings)
                 {
                     var connectionSectionName = $"ConnectionStrings{ConfigurationProvider.ConfigurationPathSeparator}{connectionString.Name}";
-                    settings[$"{connectionSectionName}{ConfigurationProvider.ConfigurationPathSeparator}Name"] = new VerbatimConfigurationValue(connectionString.Name);
-                    settings[$"{connectionSectionName}{ConfigurationProvider.ConfigurationPathSeparator}ConnectionString"] = new VerbatimConfigurationValue(connectionString.ConnectionString);
-                    settings[$"{connectionSectionName}{ConfigurationProvider.ConfigurationPathSeparator}ProviderName"] = new VerbatimConfigurationValue(connectionString.ProviderName);
+                    settings[$"{connectionSectionName}{ConfigurationProvider.ConfigurationPathSeparator}Name"] = new ConfigurationValue(connectionString.Name, this);
+                    settings[$"{connectionSectionName}{ConfigurationProvider.ConfigurationPathSeparator}ConnectionString"] = new ConfigurationValue(connectionString.ConnectionString, this);
+                    settings[$"{connectionSectionName}{ConfigurationProvider.ConfigurationPathSeparator}ProviderName"] = new ConfigurationValue(connectionString.ProviderName, this);
                 }
 
             return settings;

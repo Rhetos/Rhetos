@@ -17,18 +17,19 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using Rhetos.Utilities.ApplicationConfiguration;
+using Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources;
 
-namespace Rhetos
+namespace Rhetos.Utilities.ApplicationConfiguration
 {
-    /// <summary>
-    /// When reading this configuration setting, any relative path will be converted to absolute.
-    /// The base folder depends on configuration source implementation of <see cref="IConfigurationValue"/>,
-    /// it should match the configuration file location.
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
-    public sealed class AbsolutePathOptionValueAttribute : Attribute
+    public class ConfigurationValue
     {
+        public object Value { get; }
+        public IConfigurationSource ConfigurationSource { get; }
+
+        public ConfigurationValue(object value, IConfigurationSource configurationSource)
+        {
+            Value = value;
+            ConfigurationSource = configurationSource;
+        }
     }
 }

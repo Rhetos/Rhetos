@@ -30,14 +30,14 @@ namespace Rhetos.Utilities
         /// Main application's assembly file that contains <see cref="IRhetosRuntime"/> implementation.
         /// The value is configured automatically by Rhetos build if <see cref="BuildOptions.GenerateAppSettings"/> is enabled.
         /// </summary>
-        [AbsolutePathOptionValue]
+        [AbsolutePathOption]
         public string RhetosRuntimePath { get; set; }
 
         /// <summary>
         /// Run-time assets folder.
         /// The value is configured automatically by Rhetos build if <see cref="BuildOptions.GenerateAppSettings"/> is enabled.
         /// </summary>
-        [AbsolutePathOptionValue]
+        [AbsolutePathOption]
         public string AssetsFolder { get; set; }
 
         /// <summary>

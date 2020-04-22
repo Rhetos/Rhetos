@@ -32,11 +32,11 @@ namespace Rhetos
     public class ConfigurationProvider : IConfiguration
     {
         public static readonly string ConfigurationPathSeparator = ":";
-        private readonly Dictionary<string, IConfigurationValue> _configurationValues;
+        private readonly Dictionary<string, ConfigurationValue> _configurationValues;
 
         public IEnumerable<string> AllKeys => _configurationValues.Keys;
 
-        public ConfigurationProvider(IDictionary<string, IConfigurationValue> configurationValues)
+        public ConfigurationProvider(IDictionary<string, ConfigurationValue> configurationValues)
         {
             _configurationValues = configurationValues
                 .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.InvariantCultureIgnoreCase);
@@ -57,7 +57,7 @@ namespace Rhetos
             var membersBound = new List<MemberInfo>();
             foreach (var member in members)
             {
-                bool convertRelativePath = member.GetCustomAttribute<AbsolutePathOptionValueAttribute>() != null;
+                bool convertRelativePath = member.GetCustomAttribute<AbsolutePathOptionAttribute>() != null;
                 if (TryGetConfigurationValueForMemberName(member.Name, out var memberValue, configurationPath, convertRelativePath))
                 {
                     SetMemberValue(optionsInstance, member, memberValue);
@@ -139,13 +139,12 @@ namespace Rhetos
 
             if (_configurationValues.TryGetValue(configurationKey, out var entry))
             {
-                var baseFolder = Path.GetDirectoryName((entry as FileSourceConfigurationValue)?.FilePath)
+                var baseFolder = (entry.ConfigurationSource as IConfigurationSourceFolder)?.SourceFolder
                                  ?? AppDomain.CurrentDomain.BaseDirectory;
 
-                if (convertRelativePath && !string.IsNullOrEmpty(baseFolder) && (entry.Value is string))
-                    result = Path.Combine(baseFolder, (string)entry.Value);
-                else
-                    result = entry.Value;
+                result = convertRelativePath && entry.Value is string stringValue
+                    ? Path.GetFullPath(Path.Combine(baseFolder, stringValue))
+                    : entry.Value;
                 return true;
             }
             else

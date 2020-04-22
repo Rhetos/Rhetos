@@ -34,7 +34,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
             _jsonText = jsonText;
         }
 
-        public IDictionary<string, IConfigurationValue> Load()
+        public IDictionary<string, ConfigurationValue> Load()
         {
             var reader = new JsonTextReader(new StringReader(_jsonText));
             reader.DateParseHandling = DateParseHandling.None;
@@ -44,9 +44,9 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
 
         private static readonly JTokenType[] _allowedJTokenTypes = { JTokenType.Boolean, JTokenType.String, JTokenType.Integer, JTokenType.Float, JTokenType.Object };
 
-        private Dictionary<string, IConfigurationValue> GetKeysFromObject(JObject jObject, string path)
+        private Dictionary<string, ConfigurationValue> GetKeysFromObject(JObject jObject, string path)
         {
-            var jsonOptions = new Dictionary<string, IConfigurationValue>();
+            var jsonOptions = new Dictionary<string, ConfigurationValue>();
 
             foreach (var keyValue in jObject)
             {
@@ -64,7 +64,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
                 }
                 else
                 {
-                    jsonOptions.Add(fullKey, new VerbatimConfigurationValue(keyValue.Value.ToString()));
+                    jsonOptions.Add(fullKey, new ConfigurationValue(keyValue.Value.ToString(), this));
                 }
             }
 

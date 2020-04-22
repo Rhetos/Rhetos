@@ -18,13 +18,17 @@
 */
 
 using System;
-using System.Collections.Generic;
-using System.Text;
+using Rhetos.Utilities.ApplicationConfiguration;
 
-namespace Rhetos.Utilities.ApplicationConfiguration
+namespace Rhetos
 {
-    public interface IConfigurationValue
+    /// <summary>
+    /// When reading this configuration setting, any relative path will be converted to absolute.
+    /// The base folder depends on configuration source implementation of <see cref="IConfigurationValue"/>,
+    /// it should match the configuration file location.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
+    public sealed class AbsolutePathOptionAttribute : Attribute
     {
-        object Value { get; }
     }
 }

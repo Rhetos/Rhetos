@@ -29,19 +29,19 @@ namespace Rhetos.Utilities
         /// <summary>
         /// At build-time, returns target bin folder with Rhetos framework libraries. At run-time returns host assembly folder.
         /// </summary>
-        [AbsolutePathOptionValue]
+        [AbsolutePathOption]
         public string BinFolder { get; set; }
 
         /// <summary>
         /// Build process with DeployPackages places libraries from NuGet packages in separate plugins folder.
         /// </summary>
-        [AbsolutePathOptionValue]
+        [AbsolutePathOption]
         public string PluginsFolder { get; set; }
 
         /// <summary>
         /// New plugins and applications should use <see cref="RhetosAppEnvironment.AssetsFolder"/> instead.
         /// </summary>
-        [AbsolutePathOptionValue]
+        [AbsolutePathOption]
         public string ResourcesFolder { get; set; }
     }
 }

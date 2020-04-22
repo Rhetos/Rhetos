@@ -32,7 +32,7 @@ namespace Rhetos
     {
         public static IConfigurationBuilder AddKeyValues(this IConfigurationBuilder builder, IEnumerable<KeyValuePair<string, object>> keyValues)
         {
-            builder.Add(new KeyValuesSource(keyValues.Select(a => new KeyValuePair<string, IConfigurationValue>(a.Key, new VerbatimConfigurationValue(a.Value)))));
+            builder.Add(new KeyValuesSource(keyValues));
             return builder;
         }
 

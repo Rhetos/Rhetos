@@ -633,7 +633,7 @@ namespace Rhetos.Utilities.Test
 
         private class TestPathOptions
         {
-            [AbsolutePathOptionValue]
+            [AbsolutePathOption]
             public string PathConvert { get; set; }
             public string Path { get; set; }
         }
@@ -666,7 +666,7 @@ namespace Rhetos.Utilities.Test
 
             Assert.AreEqual("relative\\test.json", options.Path);
 
-            var expectedConverted = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "relative\\testc.json");
+            var expectedConverted = Path.Combine(Environment.CurrentDirectory, "relative\\testc.json");
             Assert.AreEqual(expectedConverted, options.PathConvert);
         }
 
@@ -688,13 +688,12 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void EmptyRelativeFolder()
         {
-            var configurationValue = new FileSourceConfigurationValue("", "c:\\testpath\\subfolder\\cfg.json");
             var configuration = new ConfigurationBuilder()
-                .Add(new KeyValuesSource(new[] {new KeyValuePair<string, IConfigurationValue>("PathConvert", configurationValue)}))
+                .Add(new KeyValuesSource(new[] {new KeyValuePair<string, object>("PathConvert", "")}))
                 .Build();
 
             var options = configuration.GetOptions<TestPathOptions>();
-            Assert.AreEqual("c:\\testpath\\subfolder", options.PathConvert);
+            Assert.AreEqual(AppDomain.CurrentDomain.BaseDirectory, options.PathConvert);
         }
     }
 }

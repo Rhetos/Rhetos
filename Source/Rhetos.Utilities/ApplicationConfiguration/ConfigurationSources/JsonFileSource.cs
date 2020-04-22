@@ -24,10 +24,12 @@ using System.Linq;
 
 namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
 {
-    public class JsonFileSource : IConfigurationSource
+    public class JsonFileSource : IConfigurationSource, IConfigurationSourceFolder
     {
         private readonly string _filePath;
         private readonly bool _optional;
+
+        public string SourceFolder => Path.GetDirectoryName(_filePath);
 
         public JsonFileSource(string filePath, bool optional = false)
         {
@@ -35,10 +37,10 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
             _optional = optional;
         }
 
-        public IDictionary<string, IConfigurationValue> Load()
+        public IDictionary<string, ConfigurationValue> Load()
         {
             if (_optional && !File.Exists(_filePath))
-                return new Dictionary<string, IConfigurationValue>();
+                return new Dictionary<string, ConfigurationValue>();
 
             var jsonText = File.ReadAllText(_filePath);
 
@@ -46,7 +48,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
             {
                 var jsonSource = new JsonSource(jsonText);
                 return jsonSource.Load()
-                    .ToDictionary(a => a.Key, a => (IConfigurationValue) new FileSourceConfigurationValue(a.Value.Value, _filePath));
+                    .ToDictionary(entry => entry.Key, entry => new ConfigurationValue(entry.Value.Value, this));
             }
             catch (Exception e)
             {

@@ -19,15 +19,8 @@
 
 namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
 {
-    public class FileSourceConfigurationValue : IConfigurationValue
+    public interface IConfigurationSourceFolder
     {
-        public object Value { get; }
-        public string FilePath { get; }
-
-        public FileSourceConfigurationValue(object value, string filePath)
-        {
-            Value = value;
-            FilePath = filePath;
-        }
+        string SourceFolder { get; }
     }
 }
