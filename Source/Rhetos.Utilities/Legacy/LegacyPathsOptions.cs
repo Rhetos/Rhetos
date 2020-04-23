@@ -23,7 +23,7 @@ namespace Rhetos.Utilities
     /// Legacy paths, supporting build process with DeployPackages and obsolete <see cref="Paths"/> class.
     /// Available at both build-time and run-time.
     /// </summary>
-    [Options("Legacy:Paths")]
+    [Options("LegacyPaths")]
     public class LegacyPathsOptions
     {
         /// <summary>

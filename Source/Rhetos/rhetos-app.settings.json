@@ -2,10 +2,8 @@
   "RhetosRuntimePath": "bin\\Rhetos.dll",
   "AssetsFolder": "bin\\Generated",
   "DatabaseLanguage": "MsSql",
-  "Legacy": {
-    "Paths": {
-      "PluginsFolder": "bin\\Plugins",
-      "ResourcesFolder": "Resources"
-    }
+  "LegacyPaths": {
+    "PluginsFolder": "bin\\Plugins",
+    "ResourcesFolder": "Resources"
   }
 }
