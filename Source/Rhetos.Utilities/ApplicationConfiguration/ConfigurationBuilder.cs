@@ -38,7 +38,7 @@ namespace Rhetos
 
         public IConfiguration Build()
         {
-            var configurationValues = new Dictionary<string, ConfigurationValue>(StringComparer.InvariantCultureIgnoreCase);
+            var configurationValues = new Dictionary<string, ConfigurationValue>(new ConfigurationKeyComparer());
 
             foreach (var configurationSource in configurationSources)
             {

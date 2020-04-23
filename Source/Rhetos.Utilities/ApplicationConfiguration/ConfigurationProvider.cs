@@ -32,6 +32,7 @@ namespace Rhetos
     public class ConfigurationProvider : IConfiguration
     {
         public static readonly string ConfigurationPathSeparator = ":";
+        public static readonly string ConfigurationPathSeparatorAlternative = ".";
         private readonly Dictionary<string, ConfigurationValue> _configurationValues;
 
         public IEnumerable<string> AllKeys => _configurationValues.Keys;
@@ -39,7 +40,7 @@ namespace Rhetos
         public ConfigurationProvider(IDictionary<string, ConfigurationValue> configurationValues)
         {
             _configurationValues = configurationValues
-                .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.InvariantCultureIgnoreCase);
+                .ToDictionary(pair => pair.Key, pair => pair.Value, new ConfigurationKeyComparer());
         }
 
         public T GetOptions<T>(string configurationPath = "", bool requireAllMembers = false) where T : class
@@ -77,7 +78,6 @@ namespace Rhetos
         }
 
         private const string _memberMappingSeparator = "__";
-        private const string _memberMappingSeparatorDot = ".";
 
         private bool TryGetConfigurationValueForMemberName(string memberName, out object value, string configurationPath, bool convertRelativePath)
         {
@@ -95,11 +95,6 @@ namespace Rhetos
                 if (TryGetConfigurationValue(memberName.Replace(_memberMappingSeparator, ConfigurationPathSeparator), out var memberNameColon, configurationPath, convertRelativePath))
                 {
                     value = memberNameColon;
-                    matchCount++;
-                }
-                if (TryGetConfigurationValue(memberName.Replace(_memberMappingSeparator, _memberMappingSeparatorDot), out var memberNameDot, configurationPath, convertRelativePath))
-                {
-                    value = memberNameDot;
                     matchCount++;
                 }
             }
