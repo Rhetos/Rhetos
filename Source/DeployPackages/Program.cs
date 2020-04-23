@@ -201,10 +201,9 @@ namespace DeployPackages
         {
             var host = Host.Find(AppDomain.CurrentDomain.BaseDirectory, logProvider);
             var configurationProvider = host.RhetosRuntime
-                .BuildConfiguration(logProvider, host.ConfigurationFolder, (builder) =>
-                {
-                    builder.AddCommandLineArguments(args, "/");
-                });
+                .BuildConfiguration(logProvider, host.ConfigurationFolder, configurationBuilder => configurationBuilder
+                    .AddConfigurationManagerConfiguration()
+                    .AddCommandLineArguments(args, "/"));
 
             var deployment = new ApplicationDeployment(configurationProvider, logProvider, LegacyUtilities.GetRuntimeAssembliesDelegate(configurationProvider));
             deployment.UpdateDatabase();

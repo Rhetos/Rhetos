@@ -84,9 +84,9 @@ namespace Rhetos
         }
 
         /// <summary>
-        /// Adds current application's configuration (App.config or Web.config, see <see cref="ConfigurationManager.AppSettings"/>).
-        /// Note that the "current application" in this context can be a generated web application,
-        /// or a custom command-line utility that references generated Rhetos application and uses it's runtime components.
+        /// Adds current application's configuration (App.config or Web.config: appSettings and connectionStrings).
+        /// Note that the "current application" in this context can be main Rhetos application,
+        /// or a custom command-line utility that references the main application and uses it's runtime components.
         /// </summary>
         public static IConfigurationBuilder AddConfigurationManagerConfiguration(this IConfigurationBuilder builder)
         {

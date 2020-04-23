@@ -101,7 +101,8 @@ namespace Rhetos.Configuration.Autofac
                             var rhetosAppRootPath = SearchForRhetosServerRootFolder();
                             var logProvider = new ConsoleLogProvider();
                             var host = Host.Find(rhetosAppRootPath, logProvider);
-                            var configurationProvider = host.RhetosRuntime.BuildConfiguration(new ConsoleLogProvider(), host.ConfigurationFolder, null);
+                            var configurationProvider = host.RhetosRuntime.BuildConfiguration(new ConsoleLogProvider(), host.ConfigurationFolder,
+                                configurationBuilder => configurationBuilder.AddConfigurationManagerConfiguration());
 
                             AppDomain.CurrentDomain.AssemblyResolve += new AssemblyResolver(configurationProvider).SearchForAssembly;
 

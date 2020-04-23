@@ -24,6 +24,11 @@ using System.Linq;
 
 namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
 {
+    /// <summary>
+    /// Loads current application's configuration (App.config or Web.config: appSettings and connectionStrings).
+    /// Note that the "current application" in this context can be main Rhetos application,
+    /// or a custom command-line utility that references the main application and uses it's runtime components.
+    /// </summary>
     public class ConfigurationManagerSource : IConfigurationSource
     {
         public string BaseFolder => AppDomain.CurrentDomain.BaseDirectory;

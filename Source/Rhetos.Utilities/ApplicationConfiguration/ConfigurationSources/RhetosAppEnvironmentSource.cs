@@ -29,12 +29,14 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
     public class RhetosAppEnvironmentSource : IConfigurationSource
     {
         private readonly string _configurationFolder;
+        private readonly string _configurationFile;
         private readonly JsonFileSource _jsonFileSource;
 
         public RhetosAppEnvironmentSource(string configurationFolder)
         {
             _configurationFolder = configurationFolder;
-            _jsonFileSource = new JsonFileSource(Path.Combine(configurationFolder, RhetosAppEnvironment.ConfigurationFileName), optional: true);
+            _configurationFile = Path.Combine(configurationFolder, RhetosAppEnvironment.ConfigurationFileName);
+            _jsonFileSource = new JsonFileSource(_configurationFile, optional: true);
         }
 
         public string BaseFolder => _configurationFolder;
@@ -47,11 +49,11 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
 
             string rhetosRuntimePath = settings.GetValueOrDefault(nameof(RhetosAppEnvironment.RhetosRuntimePath)) as string;
             if (string.IsNullOrEmpty(rhetosRuntimePath))
-                throw new FrameworkException($"Missing '{nameof(RhetosAppEnvironment.RhetosRuntimePath)}' configuration setting. Please verify that the Rhetos build have passed successfully.");
+                throw new FrameworkException($"Missing '{nameof(RhetosAppEnvironment.RhetosRuntimePath)}' configuration setting in '{_configurationFile}'. Please verify that the Rhetos build have passed successfully.");
 
             string assetsFolder = settings.GetValueOrDefault(nameof(RhetosAppEnvironment.AssetsFolder)) as string;
             if (string.IsNullOrEmpty(assetsFolder))
-                throw new FrameworkException($"Missing '{nameof(RhetosAppEnvironment.AssetsFolder)}' configuration setting. Please verify that the Rhetos build have passed successfully.");
+                throw new FrameworkException($"Missing '{nameof(RhetosAppEnvironment.AssetsFolder)}' configuration setting in '{_configurationFile}'. Please verify that the Rhetos build have passed successfully.");
 
             // RhetosAppEnvironment: Converting to full path and adding computed properties.
 
