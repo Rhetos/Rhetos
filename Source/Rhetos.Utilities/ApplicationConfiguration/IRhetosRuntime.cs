@@ -40,7 +40,6 @@ namespace Rhetos
         /// <param name="configurationFolder">
         /// Folder where application's configuration files are located.
         /// </param>
-        
         IConfiguration BuildConfiguration(ILogProvider logProvider, string configurationFolder, Action<IConfigurationBuilder> addCustomConfiguration);
 
         /// <summary>
