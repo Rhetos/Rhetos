@@ -17,18 +17,27 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources;
 using System;
+using System.Collections.Generic;
 
-namespace Rhetos
+namespace Rhetos.Utilities.ApplicationConfiguration
 {
-    /// <summary>
-    /// When reading this configuration setting, any relative path will be converted to absolute.
-    /// The base folder depends on configuration source implementation of <see cref="IConfigurationSource.BaseFolder"/>,
-    /// it should match the configuration file location.
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
-    public sealed class OptionsPathAttribute : Attribute
+    public class ConfigurationKeyComparer : IEqualityComparer<string>
     {
+        public bool Equals(string key1, string key2)
+        {
+            if (key1 == null && key2 == null) return true;
+            if (key1 == null || key2 == null) return false;
+
+            return StringComparer.InvariantCultureIgnoreCase.Equals(Normalize(key1), Normalize(key2));
+        }
+
+        public int GetHashCode(string key)
+        {
+            return StringComparer.InvariantCultureIgnoreCase.GetHashCode(Normalize(key));
+        }
+
+        private static string Normalize(string key)
+            => key.Replace(ConfigurationProvider.ConfigurationPathSeparatorAlternative, ConfigurationProvider.ConfigurationPathSeparator);
     }
 }

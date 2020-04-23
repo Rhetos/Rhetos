@@ -24,26 +24,27 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Rhetos.Utilities.ApplicationConfiguration;
 
 namespace Rhetos
 {
     public static class ConfigurationSourcesBuilderExtensions
     {
-        public static IConfigurationBuilder AddKeyValues(this IConfigurationBuilder builder, params KeyValuePair<string, object>[] keyValues)
-        {
-            builder.Add(new KeyValuesSource(keyValues));
-            return builder;
-        }
-
         public static IConfigurationBuilder AddKeyValues(this IConfigurationBuilder builder, IEnumerable<KeyValuePair<string, object>> keyValues)
         {
             builder.Add(new KeyValuesSource(keyValues));
             return builder;
         }
 
+        public static IConfigurationBuilder AddKeyValues(this IConfigurationBuilder builder, params KeyValuePair<string, object>[] keyValues)
+        {
+            builder.AddKeyValues(keyValues.AsEnumerable());
+            return builder;
+        }
+        
         public static IConfigurationBuilder AddKeyValue(this IConfigurationBuilder builder, string key, object value)
         {
-            builder.Add(new KeyValuesSource(new [] { new KeyValuePair<string, object>(key, value) }));
+            builder.AddKeyValues(new KeyValuePair<string, object>(key, value));
             return builder;
         }
 
@@ -71,15 +72,21 @@ namespace Rhetos
         }
 
         /// <summary>
-        /// Adds runtime configuration from Rhetos-specific configuration files
-        /// and configures RhetosAppEnvironment.
+        /// Configures RhetosAppEnvironment and loads configuration from Rhetos run-time configuration files.
         /// </summary>
         public static IConfigurationBuilder AddRhetosAppEnvironment(this IConfigurationBuilder builder, string configurationFolder)
         {
-            // Basic run-time configuration file. Some additional processing of RhetosAppEnvironment paths.
-            builder.Add(new RhetosAppEnvironmentSource(configurationFolder));
+            // Normalize path for better error handling and more robust configuration.
+            configurationFolder = Path.GetFullPath(Path.Combine(configurationFolder, "."));
+
+            builder.AddKeyValue(nameof(RhetosAppEnvironment.ApplicationRootFolder), configurationFolder);
+
+            // Main run-time configuration file.
+            builder.AddJsonFile(Path.Combine(configurationFolder, RhetosAppEnvironment.ConfigurationFileName), optional: true);
+
             // User-specific run-time configuration file.
-            builder.Add(new JsonFileSource(Path.Combine(configurationFolder, RhetosAppEnvironment.LocalConfigurationFileName), optional: true));
+            builder.AddJsonFile(Path.Combine(configurationFolder, RhetosAppEnvironment.LocalConfigurationFileName), optional: true);
+
             return builder;
         }
 

@@ -28,12 +28,6 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
     /// </summary>
     public interface IConfigurationSource
     {
-        IDictionary<string, object> Load();
-
-        /// <summary>
-        /// Base directory for converting relative paths (see <see cref="OptionsPathAttribute"/>).
-        /// Return null or empty if not applicable.
-        /// </summary>
-        string BaseFolder { get; }
+        IDictionary<string, ConfigurationValue> Load();
     }
 }

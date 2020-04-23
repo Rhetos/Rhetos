@@ -25,7 +25,7 @@ using System.Linq;
 
 namespace Rhetos.Utilities
 {
-    [Obsolete("Use RhetosAppEnvironment for run-time folders. Use RhetosBuildEnvironment for build-time folder. Use IAssetsOptions.AssetsFolder for files generated at build-time and read at run-time.")]
+    [Obsolete("Use RhetosAppOptions and RhetosAppEnvironment for run-time folders. Use RhetosBuildEnvironment for build-time folder. Use IAssetsOptions.AssetsFolder for files generated at build-time and read at run-time.")]
     public static class Paths
     {
         private static string _rhetosServerRootPath;
@@ -41,13 +41,14 @@ namespace Rhetos.Utilities
         public static void Initialize(IConfiguration configurationProvider)
         {
             var runtimeEnvironment = configurationProvider.GetOptions<RhetosAppEnvironment>();
+            var runtimeOptions = configurationProvider.GetOptions<RhetosAppOptions>();
             var buildEnvironment = configurationProvider.GetOptions<RhetosBuildEnvironment>();
             var legacyPaths = configurationProvider.GetOptions<LegacyPathsOptions>();
 
             _rhetosServerRootPath = buildEnvironment.ProjectFolder ?? runtimeEnvironment.ApplicationRootFolder;
-            _binFolder = legacyPaths.BinFolder ?? runtimeEnvironment.AssemblyFolder;
-            _generatedFolder = buildEnvironment.GeneratedAssetsFolder ?? runtimeEnvironment.AssetsFolder;
-            _pluginsFolder = legacyPaths.PluginsFolder ?? runtimeEnvironment.AssemblyFolder;
+            _binFolder = legacyPaths.BinFolder ?? runtimeOptions.GetAssemblyFolder();
+            _generatedFolder = buildEnvironment.GeneratedAssetsFolder ?? runtimeOptions.AssetsFolder;
+            _pluginsFolder = legacyPaths.PluginsFolder ?? runtimeOptions.GetAssemblyFolder();
             _resourcesFolder = legacyPaths.ResourcesFolder;
 
             if (buildEnvironment?.ProjectFolder != null)

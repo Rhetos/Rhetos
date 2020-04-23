@@ -24,18 +24,23 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Rhetos.Utilities.ApplicationConfiguration;
+using Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources;
 
 namespace Rhetos
 {
     public class ConfigurationProvider : IConfiguration
     {
         public static readonly string ConfigurationPathSeparator = ":";
-        private readonly Dictionary<string, (object Value, string BaseFolder)> _configurationValues;
+        public static readonly string ConfigurationPathSeparatorAlternative = ".";
+        private readonly Dictionary<string, ConfigurationValue> _configurationValues;
 
-        public ConfigurationProvider(IDictionary<string, (object Value, string BaseFolder)> configurationValues)
+        public IEnumerable<string> AllKeys => _configurationValues.Keys;
+
+        public ConfigurationProvider(IDictionary<string, ConfigurationValue> configurationValues)
         {
             _configurationValues = configurationValues
-                .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.InvariantCultureIgnoreCase);
+                .ToDictionary(pair => pair.Key, pair => pair.Value, new ConfigurationKeyComparer());
         }
 
         public T GetOptions<T>(string configurationPath = "", bool requireAllMembers = false) where T : class
@@ -53,7 +58,7 @@ namespace Rhetos
             var membersBound = new List<MemberInfo>();
             foreach (var member in members)
             {
-                bool convertRelativePath = member.GetCustomAttribute<OptionsPathAttribute>() != null;
+                bool convertRelativePath = member.GetCustomAttribute<AbsolutePathOptionAttribute>() != null;
                 if (TryGetConfigurationValueForMemberName(member.Name, out var memberValue, configurationPath, convertRelativePath))
                 {
                     SetMemberValue(optionsInstance, member, memberValue);
@@ -73,7 +78,6 @@ namespace Rhetos
         }
 
         private const string _memberMappingSeparator = "__";
-        private const string _memberMappingSeparatorDot = ".";
 
         private bool TryGetConfigurationValueForMemberName(string memberName, out object value, string configurationPath, bool convertRelativePath)
         {
@@ -91,11 +95,6 @@ namespace Rhetos
                 if (TryGetConfigurationValue(memberName.Replace(_memberMappingSeparator, ConfigurationPathSeparator), out var memberNameColon, configurationPath, convertRelativePath))
                 {
                     value = memberNameColon;
-                    matchCount++;
-                }
-                if (TryGetConfigurationValue(memberName.Replace(_memberMappingSeparator, _memberMappingSeparatorDot), out var memberNameDot, configurationPath, convertRelativePath))
-                {
-                    value = memberNameDot;
                     matchCount++;
                 }
             }
@@ -118,8 +117,6 @@ namespace Rhetos
             return Convert<T>(value, configurationKey);
         }
 
-        public IEnumerable<string> AllKeys => _configurationValues.Keys;
-
         private void SetMemberValue(object instance, MemberInfo member, object value)
         {
             if (member is PropertyInfo propertyInfo)
@@ -137,10 +134,12 @@ namespace Rhetos
 
             if (_configurationValues.TryGetValue(configurationKey, out var entry))
             {
-                if (convertRelativePath && !string.IsNullOrEmpty(entry.BaseFolder) && !string.IsNullOrEmpty(entry.Value as string))
-                    result = Path.Combine(entry.BaseFolder, (string)entry.Value);
-                else
-                    result = entry.Value;
+                string GetBaseFolder() => (entry.ConfigurationSource as IConfigurationSourceFolder)?.SourceFolder
+                                 ?? AppDomain.CurrentDomain.BaseDirectory;
+
+                result = convertRelativePath && entry.Value is string stringValue
+                    ? Path.GetFullPath(Path.Combine(GetBaseFolder(), stringValue))
+                    : entry.Value;
                 return true;
             }
             else

@@ -17,23 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.Collections.Generic;
-using System.Linq;
-
 namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
 {
-    public class KeyValuesSource : IConfigurationSource
+    public interface IConfigurationSourceFolder
     {
-        private readonly IEnumerable<KeyValuePair<string, object>> keyValuePairs;
-
-        public KeyValuesSource(IEnumerable<KeyValuePair<string, object>> keyValuePairs)
-        {
-            this.keyValuePairs = keyValuePairs;
-        }
-
-        public IDictionary<string, ConfigurationValue> Load()
-        {
-            return keyValuePairs.ToDictionary(pair => pair.Key, pair => new ConfigurationValue(pair.Value,this));
-        }
+        string SourceFolder { get; }
     }
 }

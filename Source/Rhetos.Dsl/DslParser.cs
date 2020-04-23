@@ -44,7 +44,7 @@ namespace Rhetos.Dsl
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("DslParser");
             _keywordsLogger = logProvider.GetLogger("DslParser.Keywords");
-            _legacySyntax = buildOptions.Dsl__ExcessDotInKey;
+            _legacySyntax = buildOptions.DslSyntaxExcessDotInKey;
         }
 
         public IEnumerable<IConceptInfo> ParsedConcepts => GetConcepts();

@@ -91,7 +91,7 @@ namespace Rhetos.Dsl
             ExpandMacroConcepts(dslContainer);
             dslContainer.ReportErrorForUnresolvedConcepts();
             CheckSemantics(dslContainer);
-            dslContainer.SortReferencesBeforeUsingConcept(_buildOptions.Dsl__InitialConceptsSort);
+            dslContainer.SortReferencesBeforeUsingConcept(_buildOptions.InitialConceptsSort);
             ReportObsoleteConcepts(dslContainer);
             _dslModelFile.SaveConcepts(dslContainer.Concepts);
 

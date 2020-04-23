@@ -33,9 +33,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
             this.configuration = configuration;
         }
 
-        public string BaseFolder => Path.GetDirectoryName(configuration.FilePath);
-
-        public IDictionary<string, object> Load()
+        public IDictionary<string, ConfigurationValue> Load()
         {
             var appSettings = new List<KeyValuePair<string, string>>();
             if (configuration.AppSettings?.Settings != null)
@@ -47,7 +45,8 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
             var connectionStrings = configuration.ConnectionStrings?.ConnectionStrings?.Cast<ConnectionStringSettings>();
 
             return new DotNetConfigurationSource(appSettings, connectionStrings)
-                .Load();
+                .Load()
+                .ToDictionary(entry => entry.Key, entry => new ConfigurationValue(entry.Value.Value, this));
         }
     }
 }

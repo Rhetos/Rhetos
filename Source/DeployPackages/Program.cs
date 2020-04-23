@@ -97,7 +97,7 @@ namespace DeployPackages
                        ResourcesFolder = Path.Combine(rhetosAppRootPath, "Resources"),
                    })
                    .AddKeyValue(nameof(BuildOptions.GenerateAppSettings), false)
-                   .AddKeyValue(nameof(BuildOptions.Legacy__BuildResourcesFolder).Replace("__", "."), true) // This legacy option is hardcorded for legacy build. This option can be set in rhetos-build.settings.json, but that JSON file does not need to be shipped with DeployPackages zip package.
+                   .AddKeyValue(nameof(BuildOptions.BuildResourcesFolder), true)
                    .AddWebConfiguration(rhetosAppRootPath)
                    .AddConfigurationManagerConfiguration()
                    .AddCommandLineArguments(args, "/")

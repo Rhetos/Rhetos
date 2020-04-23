@@ -128,7 +128,7 @@ namespace Rhetos
                     ResourcesFolder = Path.Combine(projectRootPath, "Resources"), // Currently supporting old plugins by default.
                 })
                 .AddConfigurationManagerConfiguration()
-                .AddJsonFile(Path.Combine(projectRootPath, "rhetos-build.settings.json"), optional: true)
+                .AddJsonFile(Path.Combine(projectRootPath, RhetosBuildEnvironment.ConfigurationFileName), optional: true)
                 .Build();
 
             AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(rhetosProjectContent.RhetosProjectAssets.Assemblies.ToArray());

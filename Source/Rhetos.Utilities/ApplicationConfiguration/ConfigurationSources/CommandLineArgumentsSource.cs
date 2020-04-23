@@ -36,16 +36,14 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
             this.configurationPath = configurationPath;
         }
 
-        public string BaseFolder => AppDomain.CurrentDomain.BaseDirectory;
-
-        public IDictionary<string, object> Load()
+        public IDictionary<string, ConfigurationValue> Load()
         {
             var argsTrimmed = args.Select(arg => arg.TrimStart(argumentPrefix.ToCharArray())).Where(arg => !string.IsNullOrWhiteSpace(arg));
             if (!string.IsNullOrEmpty(configurationPath))
                 argsTrimmed = argsTrimmed.Select(arg => $"{configurationPath}{ConfigurationProvider.ConfigurationPathSeparator}{arg}").ToArray();
             
             return argsTrimmed
-                .ToDictionary(arg => arg, _ => (object)true);
+                .ToDictionary(arg => arg, _ => new ConfigurationValue(true, this));
         }
     }
 }

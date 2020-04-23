@@ -73,18 +73,18 @@ namespace Rhetos.Deployment
         {
 			var configurationItems = new List<(string Path, string Value)>();
 
-			configurationItems.Add((nameof(RhetosAppEnvironment.RhetosRuntimePath),
+			configurationItems.Add((nameof(RhetosAppOptions.RhetosRuntimePath),
 				FilesUtility.AbsoluteToRelativePath(_rhetosBuildEnvironment.ProjectFolder, _rhetosTargetEnvironment.TargetPath)));
 
-			configurationItems.Add((nameof(RhetosAppEnvironment.AssetsFolder),
+			configurationItems.Add((nameof(RhetosAppOptions.AssetsFolder),
 				FilesUtility.AbsoluteToRelativePath(_rhetosBuildEnvironment.ProjectFolder, _rhetosTargetEnvironment.TargetAssetsFolder)));
 
 			if (!string.IsNullOrEmpty(_buildOptions.DatabaseLanguage))
-				configurationItems.Add((nameof(RhetosAppEnvironment.DatabaseLanguage), _buildOptions.DatabaseLanguage));
+				configurationItems.Add((nameof(RhetosAppOptions.DatabaseLanguage), _buildOptions.DatabaseLanguage));
 
 			string legacyPathsConfigurationPath = typeof(LegacyPathsOptions).GetCustomAttribute<OptionsAttribute>().ConfigurationPath;
 
-			if (_buildOptions.Legacy__BuildResourcesFolder)
+			if (_buildOptions.BuildResourcesFolder)
 				configurationItems.Add(($"{legacyPathsConfigurationPath}:{nameof(LegacyPathsOptions.ResourcesFolder)}",
 					FilesUtility.AbsoluteToRelativePath(_rhetosBuildEnvironment.ProjectFolder, _legacyPathsOptions.ResourcesFolder)));
 

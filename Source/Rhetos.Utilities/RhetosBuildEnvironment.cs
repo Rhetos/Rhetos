@@ -27,6 +27,8 @@ namespace Rhetos.Utilities
     /// </summary>
     public class RhetosBuildEnvironment : IAssetsOptions
     {
+        public static readonly string ConfigurationFileName = "rhetos-build.settings.json";
+
         public string ProjectFolder { get; set; }
 
         /// <summary>
