@@ -34,7 +34,7 @@ namespace DeployPackages.Test
     [TestClass]
     public class AutofacConfigurationTest
     {
-        private readonly IConfiguration _configurationProvider;
+        private readonly IConfiguration _configuration;
 
         public AutofacConfigurationTest()
         {
@@ -42,7 +42,7 @@ namespace DeployPackages.Test
 
             // This code is mostly copied from DeployPackages build-time configuration.
 
-            _configurationProvider = new ConfigurationBuilder()
+            _configuration = new ConfigurationBuilder()
                 .AddOptions(new RhetosBuildEnvironment
                 {
                     ProjectFolder = rhetosAppRootPath,
@@ -63,7 +63,7 @@ namespace DeployPackages.Test
                 .AddConfigurationManagerConfiguration()
                 .Build();
 
-            LegacyUtilities.Initialize(_configurationProvider);
+            LegacyUtilities.Initialize(_configuration);
         }
 
         private IEnumerable<string> PluginsFromThisAssembly()
@@ -74,7 +74,7 @@ namespace DeployPackages.Test
         [TestMethod]
         public void CorrectRegistrationsBuildTime()
         {
-            var build = new ApplicationBuild(_configurationProvider, new NLogProvider(), PluginsFromThisAssembly);
+            var build = new ApplicationBuild(_configuration, new NLogProvider(), PluginsFromThisAssembly);
             var builder = build.CreateBuildComponentsContainer(new InstalledPackages());
 
             using (var container = builder.Build())
@@ -92,7 +92,7 @@ namespace DeployPackages.Test
         [TestMethod]
         public void CorrectRegistrationsDbUpdate()
         {
-            var deployment = new ApplicationDeployment(_configurationProvider, new NLogProvider(), PluginsFromThisAssembly);
+            var deployment = new ApplicationDeployment(_configuration, new NLogProvider(), PluginsFromThisAssembly);
             var builder = deployment.CreateDbUpdateComponentsContainer();
 
             using (var container = builder.Build())
@@ -109,9 +109,9 @@ namespace DeployPackages.Test
         [TestMethod]
         public void CorrectRegistrationsRuntimeWithInitialization()
         {
-            var deployment = new ApplicationDeployment(_configurationProvider, new NLogProvider(), null);
+            var deployment = new ApplicationDeployment(_configuration, new NLogProvider(), null);
 
-            using (var container = new RhetosRuntimeAccessor(false).BuildContainer(new NLogProvider(), _configurationProvider, deployment.AddAppInitializationComponents, PluginsFromThisAssembly))
+            using (var container = new RhetosRuntimeAccessor(false).BuildContainer(new NLogProvider(), _configuration, deployment.AddAppInitializationComponents, PluginsFromThisAssembly))
             {
                 var registrationsDump = DumpSortedRegistrations(container);
                 System.Diagnostics.Trace.WriteLine(registrationsDump);
@@ -126,7 +126,7 @@ namespace DeployPackages.Test
         [TestMethod]
         public void CorrectRegistrationsServerRuntime()
         {
-            using (var container = new RhetosRuntimeAccessor(true).BuildContainer(new NLogProvider(), _configurationProvider, null, PluginsFromThisAssembly))
+            using (var container = new RhetosRuntimeAccessor(true).BuildContainer(new NLogProvider(), _configuration, null, PluginsFromThisAssembly))
             {
                 var registrationsDump = DumpSortedRegistrations(container);
                 System.Diagnostics.Trace.WriteLine(registrationsDump);

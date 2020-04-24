@@ -729,15 +729,15 @@ namespace Rhetos.Utilities.Test
                 .Add(new JsonSource(jsonCfg));
 
             {
-                var configurationProvider = configurationBuilder.Build();
+                var configuration = configurationBuilder.Build();
 
-                var keyValueColon = configurationProvider.GetValue<string>("SeparatorTest:SomeConfigurationKey");
+                var keyValueColon = configuration.GetValue<string>("SeparatorTest:SomeConfigurationKey");
                 Assert.AreEqual("NewValue", keyValueColon);
 
-                var keyValueDot = configurationProvider.GetValue<string>("SeparatorTest.SomeConfigurationKey");
+                var keyValueDot = configuration.GetValue<string>("SeparatorTest.SomeConfigurationKey");
                 Assert.AreEqual("NewValue", keyValueDot);
 
-                var options = configurationProvider.GetOptions<OverrideOptions>();
+                var options = configuration.GetOptions<OverrideOptions>();
                 Assert.AreEqual("NewValue", options.SeparatorTest__SomeConfigurationKey);
             }
         }

@@ -51,8 +51,8 @@ namespace Rhetos
             logProvider = logProvider ?? new ConsoleLogProvider();
 
             var host = Find(applicationFolder, logProvider);
-            var configurationProvider = host.RhetosRuntime.BuildConfiguration(logProvider, host.ConfigurationFolder, addCustomConfiguration);
-            return host.RhetosRuntime.BuildContainer(logProvider, configurationProvider, registerCustomComponents);
+            var configuration = host.RhetosRuntime.BuildConfiguration(logProvider, host.ConfigurationFolder, addCustomConfiguration);
+            return host.RhetosRuntime.BuildContainer(logProvider, configuration, registerCustomComponents);
         }
 
         public IRhetosRuntime RhetosRuntime { get; private set; }

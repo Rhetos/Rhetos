@@ -116,7 +116,7 @@ namespace Rhetos.Utilities
         {
             try
             {
-                SafeCreateDirectory(Path.GetDirectoryName(destination)); // Less problems with locked folders if the directory is created before moving the file. Locking may occur when using TortoiseHg and the Rhetos folder is opened in Windows Explorer.
+                SafeCreateDirectory(Path.GetDirectoryName(destination)); // Less problems with locked folders if the directory is created before moving the file. Locking may occur with different file-monitoring utilities or if the folder is opened in Windows Explorer.
                 Retry(() => File.Move(source, destination), () => "move file " + source);
             }
             catch (Exception ex)

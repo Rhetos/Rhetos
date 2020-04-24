@@ -35,15 +35,15 @@ namespace Rhetos
     public class ApplicationDeployment
     {
         private readonly ILogger _logger;
-        private readonly IConfiguration _configurationProvider;
+        private readonly IConfiguration _configuration;
         private readonly ILogProvider _logProvider;
         private readonly Func<IEnumerable<string>> _pluginAssemblies;
 
         /// <param name="pluginAssemblies">List of assemblies (DLL file paths) that will be scanned for plugins.</param>
-        public ApplicationDeployment(IConfiguration configurationProvider, ILogProvider logProvider, Func<IEnumerable<string>> pluginAssemblies)
+        public ApplicationDeployment(IConfiguration configuration, ILogProvider logProvider, Func<IEnumerable<string>> pluginAssemblies)
         {
             _logger = logProvider.GetLogger(GetType().Name);
-            _configurationProvider = configurationProvider;
+            _configuration = configuration;
             _logProvider = logProvider;
             _pluginAssemblies = pluginAssemblies;
         }
@@ -69,7 +69,7 @@ namespace Rhetos
 
         internal RhetosContainerBuilder CreateDbUpdateComponentsContainer()
         {
-            var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, _pluginAssemblies);
+            var builder = new RhetosContainerBuilder(_configuration, _logProvider, _pluginAssemblies);
             builder.RegisterModule(new CoreModule());
             builder.RegisterModule(new DbUpdateModule());
             builder.AddPluginModules();
@@ -86,7 +86,7 @@ namespace Rhetos
             _logger.Info("Loading generated plugins.");
             var stopwatch = Stopwatch.StartNew();
 
-            using (var container = rhetosRuntime.BuildContainer(_logProvider, _configurationProvider, AddAppInitializationComponents))
+            using (var container = rhetosRuntime.BuildContainer(_logProvider, _configuration, AddAppInitializationComponents))
             {
                 var performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
                 var initializers = ApplicationInitialization.GetSortedInitializers(container);

@@ -58,14 +58,14 @@ namespace Rhetos
             return configurationBuilder.Build();
         }
 
-        public IContainer BuildContainer(ILogProvider logProvider, IConfiguration configurationProvider, Action<ContainerBuilder> registerCustomComponents)
+        public IContainer BuildContainer(ILogProvider logProvider, IConfiguration configuration, Action<ContainerBuilder> registerCustomComponents)
         {
-            return BuildContainer(logProvider, configurationProvider, registerCustomComponents, LegacyUtilities.GetRuntimeAssembliesDelegate(configurationProvider));
+            return BuildContainer(logProvider, configuration, registerCustomComponents, LegacyUtilities.GetRuntimeAssembliesDelegate(configuration));
         }
 
-        private IContainer BuildContainer(ILogProvider logProvider, IConfiguration configurationProvider, Action<ContainerBuilder> registerCustomComponents, Func<IEnumerable<string>> getAssembliesDelegate)
+        private IContainer BuildContainer(ILogProvider logProvider, IConfiguration configuration, Action<ContainerBuilder> registerCustomComponents, Func<IEnumerable<string>> getAssembliesDelegate)
         {
-            var builder = new RhetosContainerBuilder(configurationProvider, logProvider, getAssembliesDelegate);
+            var builder = new RhetosContainerBuilder(configuration, logProvider, getAssembliesDelegate);
 
             builder.AddRhetosRuntime();
 

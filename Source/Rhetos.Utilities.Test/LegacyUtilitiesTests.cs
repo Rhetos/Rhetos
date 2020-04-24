@@ -29,10 +29,10 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void SqlUtilityWorksCorrectly()
         {
-            var configurationProvider = new ConfigurationBuilder()
+            var configuration = new ConfigurationBuilder()
                 .AddConfigurationManagerConfiguration()
                 .Build();
-            LegacyUtilities.Initialize(configurationProvider);
+            LegacyUtilities.Initialize(configuration);
 
             Assert.AreEqual("MsSql", SqlUtility.DatabaseLanguage);
             Assert.IsFalse(string.IsNullOrEmpty(SqlUtility.ConnectionString));
@@ -42,8 +42,8 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void PathsOnNullEnvironment()
         {
-            var configurationProvider = new ConfigurationBuilder().Build();
-            Paths.Initialize(configurationProvider);
+            var configuration = new ConfigurationBuilder().Build();
+            Paths.Initialize(configuration);
 
             TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.RhetosServerRootPath),
                 "Paths property 'RhetosServerRootPath' is not configured in 'unspecified' environment.");

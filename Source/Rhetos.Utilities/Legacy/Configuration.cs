@@ -36,9 +36,9 @@ namespace Rhetos.Utilities
     {
         private static IConfiguration _staticConfigurationProvider;
 
-        internal static void Initialize(IConfiguration configurationProvider)
+        internal static void Initialize(IConfiguration configuration)
         {
-            _staticConfigurationProvider = configurationProvider;
+            _staticConfigurationProvider = configuration;
         }
 
         public Lazy<string> GetString(string key, string defaultValue)

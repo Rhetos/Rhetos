@@ -101,13 +101,13 @@ namespace Rhetos.Configuration.Autofac
                             var rhetosAppRootPath = SearchForRhetosServerRootFolder();
                             var logProvider = new ConsoleLogProvider();
                             var host = Host.Find(rhetosAppRootPath, logProvider);
-                            var configurationProvider = host.RhetosRuntime.BuildConfiguration(new ConsoleLogProvider(), host.ConfigurationFolder,
+                            var configuration = host.RhetosRuntime.BuildConfiguration(new ConsoleLogProvider(), host.ConfigurationFolder,
                                 configurationBuilder => configurationBuilder.AddConfigurationManagerConfiguration());
 
-                            AppDomain.CurrentDomain.AssemblyResolve += new AssemblyResolver(configurationProvider).SearchForAssembly;
+                            AppDomain.CurrentDomain.AssemblyResolve += new AssemblyResolver(configuration).SearchForAssembly;
 
                             var sw = Stopwatch.StartNew();
-                            _iocContainer = host.RhetosRuntime.BuildContainer(logProvider, configurationProvider, (builder) =>
+                            _iocContainer = host.RhetosRuntime.BuildContainer(logProvider, configuration, (builder) =>
                             {
                                 builder.RegisterType<ProcessUserInfo>().As<IUserInfo>(); // Override runtime IUserInfo plugins. This container is intended to be used in a simple process or unit tests.
                                 builder.RegisterType<ConsoleLogProvider>().As<ILogProvider>();
@@ -163,10 +163,10 @@ namespace Rhetos.Configuration.Autofac
         {
             private readonly List<string> _searchFolders;
 
-            public AssemblyResolver(IConfiguration configurationProvider)
+            public AssemblyResolver(IConfiguration configuration)
             {
-                var rhetosAppOptins = configurationProvider.GetOptions<RhetosAppOptions>();
-                var legacyPaths = configurationProvider.GetOptions<LegacyPathsOptions>();
+                var rhetosAppOptins = configuration.GetOptions<RhetosAppOptions>();
+                var legacyPaths = configuration.GetOptions<LegacyPathsOptions>();
                 _searchFolders = new[]
                 {
                     legacyPaths.BinFolder ?? rhetosAppOptins.GetAssemblyFolder(),

@@ -40,22 +40,22 @@ namespace Rhetos
         /// <see cref="LegacyUtilities"/> will also be initialized with the given configuration.
         /// </summary>
         /// <param name="pluginAssemblies">List of assemblies (DLL file paths) that will be used for plugins search when using the <see cref="ContainerBuilderPluginRegistration"/></param>
-        public RhetosContainerBuilder(IConfiguration configurationProvider, ILogProvider logProvider, Func<IEnumerable<string>> pluginAssemblies)
+        public RhetosContainerBuilder(IConfiguration configuration, ILogProvider logProvider, Func<IEnumerable<string>> pluginAssemblies)
         {
-            this.RegisterInstance(configurationProvider);
+            this.RegisterInstance(configuration);
 
             var pluginScanner = new PluginScanner(
                 pluginAssemblies,
-                PluginScanner.GetCacheFolder(configurationProvider),
+                PluginScanner.GetCacheFolder(configuration),
                 logProvider,
-                configurationProvider.GetOptions<PluginScannerOptions>());
+                configuration.GetOptions<PluginScannerOptions>());
 
             // make properties accessible to modules which are provided with new/unique instance of ContainerBuilder
             this.Properties.Add(nameof(IPluginScanner), pluginScanner);
             this.Properties.Add(nameof(ILogProvider), logProvider);
 
             // this is a patch/mock to provide backward compatibility for all usages of old static classes
-            LegacyUtilities.Initialize(configurationProvider);
+            LegacyUtilities.Initialize(configuration);
 
             Plugins.Initialize(builder => builder.GetPluginRegistration());
         }

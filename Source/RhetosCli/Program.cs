@@ -118,7 +118,7 @@ namespace Rhetos
                     $" Visual Studio integration runs it automatically from Rhetos NuGet package tools folder." +
                     $" You can run it manually from Package Manager Console, since the tools folder it is included in PATH.");
 
-            var configurationProvider = new ConfigurationBuilder()
+            var configuration = new ConfigurationBuilder()
                 .AddOptions(rhetosProjectContent.RhetosBuildEnvironment)
                 .AddOptions(rhetosProjectContent.RhetosTargetEnvironment)
                 .AddOptions(new LegacyPathsOptions
@@ -133,7 +133,7 @@ namespace Rhetos
 
             AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(rhetosProjectContent.RhetosProjectAssets.Assemblies.ToArray());
 
-            var build = new ApplicationBuild(configurationProvider, LogProvider, () => rhetosProjectContent.RhetosProjectAssets.Assemblies);
+            var build = new ApplicationBuild(configuration, LogProvider, () => rhetosProjectContent.RhetosProjectAssets.Assemblies);
             build.ReportLegacyPluginsFolders(rhetosProjectContent.RhetosProjectAssets.InstalledPackages);
             build.GenerateApplication(rhetosProjectContent.RhetosProjectAssets.InstalledPackages);
         }
@@ -142,7 +142,7 @@ namespace Rhetos
         {
             var host = Host.Find(applicationFolder.FullName, LogProvider);
 
-            var configurationProvider = host.RhetosRuntime.BuildConfiguration(LogProvider, host.ConfigurationFolder, configurationBuilder =>
+            var configuration = host.RhetosRuntime.BuildConfiguration(LogProvider, host.ConfigurationFolder, configurationBuilder =>
             {
                 configurationBuilder.AddConfigurationManagerConfiguration();
                 configurationBuilder.AddKeyValue(nameof(DatabaseOptions.SqlCommandTimeout), 0);
@@ -153,10 +153,10 @@ namespace Rhetos
                     configurationBuilder.AddKeyValue(nameof(DbUpdateOptions.SkipRecompute), skipRecompute);
             });
 
-            var assemblyFiles = LegacyUtilities.GetRuntimeAssembliesDelegate(configurationProvider).Invoke(); // Using same assembly locations as the generated application runtime.
+            var assemblyFiles = LegacyUtilities.GetRuntimeAssembliesDelegate(configuration).Invoke(); // Using same assembly locations as the generated application runtime.
             AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(assemblyFiles);
 
-            var deployment = new ApplicationDeployment(configurationProvider, LogProvider, () => assemblyFiles);
+            var deployment = new ApplicationDeployment(configuration, LogProvider, () => assemblyFiles);
             deployment.UpdateDatabase();
             deployment.InitializeGeneratedApplication(host.RhetosRuntime);
         }

@@ -80,10 +80,10 @@ namespace Rhetos.DatabaseGenerator.Test
 
         public ConceptApplicationRepositoryTest()
         {
-            var configurationProvider = new ConfigurationBuilder()
+            var configuration = new ConfigurationBuilder()
                 .AddConfigurationManagerConfiguration()
                 .Build();
-            LegacyUtilities.Initialize(configurationProvider);
+            LegacyUtilities.Initialize(configuration);
         }
 
         private class MockSqlExecuter : ISqlExecuter

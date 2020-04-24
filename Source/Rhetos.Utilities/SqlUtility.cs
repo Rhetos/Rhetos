@@ -59,19 +59,19 @@ namespace Rhetos.Utilities
 
         internal const string OracleNationalLanguageKey = "Database:Oracle:NationalLanguage"; // TODO: Review if this is a desired key for build options after refactoring configuration key to avoid property name collisions.
 
-        public static void Initialize(IConfiguration configurationProvider)
+        public static void Initialize(IConfiguration configuration)
         {
             _initialized = true;
 
-            var dbOptions = configurationProvider.GetOptions<DatabaseOptions>();
+            var dbOptions = configuration.GetOptions<DatabaseOptions>();
             SqlCommandTimeout = dbOptions.SqlCommandTimeout;
 
-            _connectionString = configurationProvider.GetValue<string>($"ConnectionStrings:{RhetosConnectionStringName}:ConnectionString");
+            _connectionString = configuration.GetValue<string>($"ConnectionStrings:{RhetosConnectionStringName}:ConnectionString");
 
-            var runtimeOptions = configurationProvider.GetOptions<RhetosAppOptions>();
-            var buildOptions = configurationProvider.GetOptions<BuildOptions>();
+            var runtimeOptions = configuration.GetOptions<RhetosAppOptions>();
+            var buildOptions = configuration.GetOptions<BuildOptions>();
             _databaseLanguage = runtimeOptions.DatabaseLanguage ?? buildOptions.DatabaseLanguage;
-            _nationalLanguage = configurationProvider.GetValue(OracleNationalLanguageKey, "");
+            _nationalLanguage = configuration.GetValue(OracleNationalLanguageKey, "");
             InitializeProviderContext();
         }
 
