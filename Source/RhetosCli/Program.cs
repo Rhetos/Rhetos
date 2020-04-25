@@ -57,15 +57,15 @@ namespace Rhetos
             Logger.Info(() => "Logging configured.");
 
             var rootCommand = new RootCommand();
-            var buildCommand = new Command("build", "Generates the Rhetos application inside the <project-root-folder>. If <project-root-folder> is not set it will use the current working directory.");
+            var buildCommand = new Command("build", "Generates C# code, database model file and other project assets.");
             // CurrentDirectory by default, because rhetos.exe on *build* is expected to be located in NuGet package cache.
-            buildCommand.Add(new Argument<DirectoryInfo>("project-root-folder", () => new DirectoryInfo(Environment.CurrentDirectory)));
+            buildCommand.Add(new Argument<DirectoryInfo>("project-root-folder", () => new DirectoryInfo(Environment.CurrentDirectory)) { Description = "Project folder where csproj file is located. If not specified, current working directory is used by default." });
             buildCommand.Add(new Option<bool>("--msbuild-format", false, "Adjust error output format for MSBuild integration."));
             buildCommand.Handler = CommandHandler.Create((DirectoryInfo projectRootFolder, bool msbuildFormat)
                 => ReportError(() => Build(projectRootFolder.FullName), msbuildFormat));
             rootCommand.AddCommand(buildCommand);
 
-            var dbUpdateCommand = new Command("dbupdate", "Updates the database, based on the generated files from the build process.");
+            var dbUpdateCommand = new Command("dbupdate", "Updates the database structure and initializes the application data in the database.");
             dbUpdateCommand.Add(new Argument<DirectoryInfo>("application-folder", () => new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory)) { Description = "If not specified, it will search for the application at rhetos.exe location and parent directories." });
             dbUpdateCommand.Add(new Option<bool>("--short-transactions", "Commit transaction after creating or dropping each database object."));
             dbUpdateCommand.Add(new Option<bool>("--skip-recompute", "Skip automatic update of computed data with KeepSynchronized. See output log for data that needs updating."));
