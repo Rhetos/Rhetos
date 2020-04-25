@@ -97,6 +97,7 @@ Module Test9
 	{
 		AllProperties;
 		KeepSynchronized;
+        CascadeDeleteInDatabase; // Hack for recomputation issues after cascade delete in application.
 	}
     
 	SqlQueryable ComputeDocumentAggregates
@@ -127,6 +128,7 @@ Module Test9
             var lockedDocuments = new HashSet<Guid>(repository.Test9.Document.Filter(ids).Where(d => !d.Name.Contains("locked")).Select(d => d.ID));
             return documentAggregates.Where(da => lockedDocuments.Contains(da.ID)).ToList();
         }';
+        CascadeDeleteInDatabase; // Hack for recomputation issues after cascade delete in application.
 	}
 }
 
