@@ -24,15 +24,15 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// <summary>
     /// A low-level concept for generating cascade delete in database.
     /// It should be rarely used because deleting records directly in database
-    /// circumvents any business logic implemented in the application related to those records.
+    /// circumvents any business logic implemented in the application, related to those records.
     /// If the legacy option CommonConcepts.Legacy.CascadeDeleteInDatabase is enabled,
-    /// this concept will be created automatically for each Reference with CascadeDelete (for example, on Detail concept)
+    /// this concept will be created automatically for each UniqueReference with CascadeDelete (for example, on Extends concept)
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("CascadeDeleteInDatabase")]
-    public class ReferenceCascadeDeleteDbInfo : IConceptInfo
+    public class UniqueReferenceCascadeDeleteDbInfo : IConceptInfo
     {
         [ConceptKey]
-        public ReferencePropertyDbConstraintInfo ReferenceDbConstraint { get; set; }
+        public UniqueReferenceInfo UniqueReference { get; set; }
     }
 }

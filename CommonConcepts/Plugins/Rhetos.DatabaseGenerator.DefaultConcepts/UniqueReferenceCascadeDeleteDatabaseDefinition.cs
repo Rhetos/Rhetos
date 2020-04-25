@@ -18,7 +18,6 @@
 */
 
 using Rhetos.Compiler;
-using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
@@ -29,16 +28,9 @@ using System.ComponentModel.Composition;
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
     [Export(typeof(IConceptDatabaseDefinition))]
-    [ExportMetadata(MefProvider.Implements, typeof(UniqueReferenceCascadeDeleteInfo))]
+    [ExportMetadata(MefProvider.Implements, typeof(UniqueReferenceCascadeDeleteDbInfo))]
     public class UniqueReferenceCascadeDeleteDatabaseDefinition : IConceptDatabaseDefinitionExtension
     {
-        private readonly bool _legacyCascadeDeleteInDatabase;
-
-        public UniqueReferenceCascadeDeleteDatabaseDefinition(CommonConceptsOptions commonConceptsOptions)
-        {
-            _legacyCascadeDeleteInDatabase = commonConceptsOptions.Legacy__CascadeDeleteInDatabase;
-        }
-
         public void ExtendDatabaseStructure(
             IConceptInfo conceptInfo, ICodeBuilder codeBuilder,
             out IEnumerable<Tuple<IConceptInfo, IConceptInfo>> createdDependencies)
@@ -46,9 +38,9 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             // Cascade delete FK in database is not needed because the server application will explicitly delete the referencing data (to ensure server-side validations and recomputations).
             // Cascade delete in database is just a legacy feature, a convenience for development and testing.
             // It is turned off by default because if a record is deleted by cascade delete directly in the database, then the business logic implemented in application layer will not be executed.
-            var info = (UniqueReferenceCascadeDeleteInfo) conceptInfo;
+            var info = (UniqueReferenceCascadeDeleteDbInfo) conceptInfo;
 
-            if (_legacyCascadeDeleteInDatabase && UniqueReferenceDatabaseDefinition.IsSupported(info.UniqueReference))
+            if (UniqueReferenceDatabaseDefinition.IsSupported(info.UniqueReference))
                 codeBuilder.InsertCode("ON DELETE CASCADE ", UniqueReferenceDatabaseDefinition.ForeignKeyConstraintOptionsTag, info.UniqueReference);
 
             createdDependencies = null;
