@@ -18,13 +18,8 @@
 */
 
 using Autofac;
-using Rhetos.Logging;
-using Rhetos.Persistence;
-using Rhetos.Security;
 using Rhetos.Utilities;
-using Rhetos.Extensibility;
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -39,14 +34,14 @@ namespace Rhetos.Configuration.Autofac
     {
 
         // Global:
-        private static IContainer _iocContainer;
         private static object _containerInitializationLock = new object();
-        protected static ILogger _performanceLogger = new ConsoleLogger("Performance");
+        private static RhetosProcessContainer _rhetosProcessContainer;
 
         // Instance per test or session:
         protected ILifetimeScope _lifetimeScope;
         protected bool _commitChanges;
         protected string _explicitRhetosServerFolder;
+        protected RhetosTransactionScopeContainer _rhetosTransactionScope;
         public event Action<ContainerBuilder> InitializeSession;
 
         /// <param name="commitChanges">
@@ -71,55 +66,38 @@ namespace Rhetos.Configuration.Autofac
         /// </summary>
         public void Initialize()
         {
-            InitializeLifetimeScope();
+            InitializeRhetosProcessContainer();
         }
 
         public T Resolve<T>()
         {
-            InitializeLifetimeScope();
-            return _lifetimeScope.Resolve<T>();
+            InitializeRhetosProcessContainer();
+            return _rhetosTransactionScope.Resolve<T>();
         }
 
         public void Dispose()
         {
-            if (!_commitChanges && _lifetimeScope != null)
-                _lifetimeScope.Resolve<IPersistenceTransaction>().DiscardChanges();
-
-            if (_lifetimeScope != null)
-                _lifetimeScope.Dispose();
+            if (_rhetosTransactionScope != null)
+                _rhetosTransactionScope.Dispose();
         }
 
-        private void InitializeLifetimeScope()
+        private void InitializeRhetosProcessContainer()
         {
-            if (_lifetimeScope == null)
+            if (_rhetosTransactionScope == null)
             {
-                if (_iocContainer == null)
+                if (_rhetosProcessContainer == null)
                 {
                     lock (_containerInitializationLock)
-                        if (_iocContainer == null)
+                        if (_rhetosProcessContainer == null)
                         {
-                            var rhetosAppRootPath = SearchForRhetosServerRootFolder();
-                            var logProvider = new ConsoleLogProvider();
-                            var host = Host.Find(rhetosAppRootPath, logProvider);
-                            var configurationProvider = host.RhetosRuntime.BuildConfiguration(new ConsoleLogProvider(), host.ConfigurationFolder, null);
-
-                            AppDomain.CurrentDomain.AssemblyResolve += new AssemblyResolver(configurationProvider).SearchForAssembly;
-
-                            var sw = Stopwatch.StartNew();
-                            _iocContainer = host.RhetosRuntime.BuildContainer(logProvider, configurationProvider, (builder) =>
-                            {
-                                builder.RegisterType<ProcessUserInfo>().As<IUserInfo>(); // Override runtime IUserInfo plugins. This container is intended to be used in a simple process or unit tests.
-                                builder.RegisterType<ConsoleLogProvider>().As<ILogProvider>();
-                            });
-                            _performanceLogger.Write(sw, "RhetosTestContainer: Built IoC container");
+                            _rhetosProcessContainer = new RhetosProcessContainer(SearchForRhetosServerRootFolder, new ConsoleLogProvider());
+                            var configuration = _rhetosProcessContainer.CreateTransactionScope(false).Resolve<IConfiguration>();
+                            AppDomain.CurrentDomain.AssemblyResolve += new AssemblyResolver(configuration).SearchForAssembly;
                         }
                 }
 
-                if (InitializeSession != null)
-                    _lifetimeScope = _iocContainer.BeginLifetimeScope(InitializeSession);
-                else
-                    _lifetimeScope = _iocContainer.BeginLifetimeScope();
-
+                _rhetosTransactionScope = _rhetosProcessContainer.CreateTransactionScope(_commitChanges);
+                _rhetosTransactionScope.ScopeInitialization += (containerBuilder) => InitializeSession?.Invoke(containerBuilder);
             }
         }
 
@@ -188,6 +166,5 @@ namespace Rhetos.Configuration.Autofac
                 return null;
             }
         }
-
     }
 }
