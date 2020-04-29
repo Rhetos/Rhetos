@@ -97,8 +97,7 @@ namespace Rhetos.Configuration.Autofac
                         }
                 }
 
-                _rhetosTransactionScope = _rhetosProcessContainer.CreateTransactionScope(_commitChanges);
-                _rhetosTransactionScope.ScopeInitialization += (containerBuilder) => InitializeSession?.Invoke(containerBuilder);
+                _rhetosTransactionScope = _rhetosProcessContainer.CreateTransactionScope(_commitChanges, InitializeSession);
             }
         }
 

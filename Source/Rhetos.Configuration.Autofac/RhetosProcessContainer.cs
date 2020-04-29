@@ -56,8 +56,11 @@ namespace Rhetos.Configuration.Autofac
         public T Resolve<T>() => _rhetosIocContainer.Value.Resolve<T>();
 
         /// <param name="commitChanges">
-        /// Whether database updates (by ORM repositories) will be committed or rollbacked.
+        /// Whether database updates (by ORM repositories) will be committed or rollbacked. By default it is set to true.
         /// </param>
-        public RhetosTransactionScopeContainer CreateTransactionScope(bool commitChanges) => new RhetosTransactionScopeContainer(_rhetosIocContainer, commitChanges);
+        /// <param name="configureContainer">
+        /// Used to customize the trnsaction scope Dependency Injection container. By default it is set to null.
+        /// </param>/// 
+        public RhetosTransactionScopeContainer CreateTransactionScope(bool commitChanges, Action<ContainerBuilder> configureContainer = null) => new RhetosTransactionScopeContainer(_rhetosIocContainer, commitChanges, configureContainer);
     }
 }

@@ -28,24 +28,10 @@ namespace Rhetos.Configuration.Autofac
     /// </summary>
     public class RhetosTransactionScopeContainer : IDisposable
     {
-        private event Action<ContainerBuilder> _scopeInitialization;
+        private Action<ContainerBuilder> _configureContainer;
         private bool _commitChanges;
         private Lazy<IContainer> _iocConatiner;
         private ILifetimeScope _lifetimeScope;
-
-        public event Action<ContainerBuilder> ScopeInitialization
-        {
-            add
-            {
-                CheckIfScopeHasAlreadyBeenInitialized();
-                _scopeInitialization += value;
-            }
-            remove
-            {
-                CheckIfScopeHasAlreadyBeenInitialized();
-                _scopeInitialization -= value;
-            }
-        }
 
         /// <param name="iocConatiner">
         /// The Dependency Injection container used to create the transaction scope container.
@@ -53,10 +39,11 @@ namespace Rhetos.Configuration.Autofac
         /// <param name="commitChanges">
         /// Whether database updates (by ORM repositories) will be committed or rollbacked when Dispose is called.
         /// </param>
-        public RhetosTransactionScopeContainer(Lazy<IContainer> iocConatiner, bool commitChanges = true)
+        public RhetosTransactionScopeContainer(Lazy<IContainer> iocConatiner, bool commitChanges, Action<ContainerBuilder> configureContainer)
         {
             _iocConatiner = iocConatiner;
             _commitChanges = commitChanges;
+            _configureContainer = configureContainer;
         }
 
         public T Resolve<T>()
@@ -78,17 +65,11 @@ namespace Rhetos.Configuration.Autofac
         {
             if (_lifetimeScope == null)
             {
-                if (_scopeInitialization != null)
-                    _lifetimeScope = _iocConatiner.Value.BeginLifetimeScope(_scopeInitialization);
+                if (_configureContainer != null)
+                    _lifetimeScope = _iocConatiner.Value.BeginLifetimeScope(_configureContainer);
                 else
                     _lifetimeScope = _iocConatiner.Value.BeginLifetimeScope();
             }
-        }
-
-        private void CheckIfScopeHasAlreadyBeenInitialized()
-        {
-            if (_lifetimeScope != null)
-                throw new FrameworkException($"The Dependency Injection container has already been initialized. Customize container configuration with {nameof(ScopeInitialization)} before calling the {nameof(Resolve)} method.");
         }
     }
 }
