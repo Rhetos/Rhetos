@@ -31,9 +31,9 @@ namespace DeployPackages.Test
     {
         public RhetosRuntimeAccessor(bool isHost) : base(isHost) { }
 
-        public IContainer BuildContainer(ILogProvider logProvider, IConfiguration configurationProvider, Action<ContainerBuilder> configureAction, Func<IEnumerable<string>> getAssembliesDelegate)
+        public IContainer BuildContainer(ILogProvider logProvider, IConfiguration configuration, Action<ContainerBuilder> configureAction, Func<IEnumerable<string>> getAssembliesDelegate)
         {
-            return this.Invoke(nameof(BuildContainer), logProvider, configurationProvider, configureAction, getAssembliesDelegate);
+            return this.Invoke(nameof(BuildContainer), logProvider, configuration, configureAction, getAssembliesDelegate);
         }
     }
 }

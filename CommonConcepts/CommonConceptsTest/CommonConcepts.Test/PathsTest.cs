@@ -41,8 +41,10 @@ namespace CommonConcepts.Test
                 .AddOptions(new RhetosAppEnvironment
                 {
                     ApplicationRootFolder = rootPath,
-                    RhetosRuntimePath = Path.Combine(rootPath, "bin", "Generated", "Rhetos.dll"),
-                    AssemblyFolder = Path.Combine(rootPath, "bin"),
+                })
+                .AddOptions(new RhetosAppOptions
+                {
+                    RhetosRuntimePath = Path.Combine(rootPath, "bin", "Rhetos.dll"),
                     AssetsFolder = Path.Combine(rootPath, "bin", "Generated"),
                 })
                 .AddOptions(new LegacyPathsOptions

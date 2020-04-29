@@ -27,11 +27,11 @@ namespace Rhetos.Utilities
     [Obsolete("Use IConfiguration instead.")]
     public static class ConfigUtility
     {
-        private static IConfiguration _configurationProvider;
+        private static IConfiguration _configuration;
 
-        public static void Initialize(IConfiguration configurationProvider)
+        public static void Initialize(IConfiguration configuration)
         {
-            _configurationProvider = configurationProvider;
+            _configuration = configuration;
         }
 
         /// <summary>
@@ -43,12 +43,12 @@ namespace Rhetos.Utilities
         public static string GetAppSetting(string key)
         {
             ThrowIfNotInitialized();
-            return _configurationProvider.GetValue<string>(key);
+            return _configuration.GetValue<string>(key);
         }
 
         private static void ThrowIfNotInitialized()
         {
-            if (_configurationProvider == null)
+            if (_configuration == null)
                 throw new FrameworkException("ConfigUtility is not initialized. Use LegacyUtilities.Initialize() to initialize obsolete static utilities or use the new IConfiguration.");
         }
     }

@@ -33,10 +33,10 @@ namespace Rhetos.DatabaseGenerator.Test
     {
         public DatabaseGeneratorTest()
         {
-            var configurationProvider = new ConfigurationBuilder()
+            var configuration = new ConfigurationBuilder()
                 .AddConfigurationManagerConfiguration()
                 .Build();
-            LegacyUtilities.Initialize(configurationProvider);
+            LegacyUtilities.Initialize(configuration);
         }
 
         #region Helper methods

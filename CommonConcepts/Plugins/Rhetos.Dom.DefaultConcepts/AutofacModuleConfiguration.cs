@@ -20,6 +20,7 @@
 using Autofac;
 using Rhetos.Dom.DefaultConcepts.Persistence;
 using Rhetos.Security;
+using Rhetos.Utilities;
 using System.ComponentModel.Composition;
 
 namespace Rhetos.Dom.DefaultConcepts
@@ -42,6 +43,8 @@ namespace Rhetos.Dom.DefaultConcepts
             builder.RegisterType<AuthorizationDataCache>().As<AuthorizationDataCache>().As<IAuthorizationData>().InstancePerLifetimeScope();
             builder.RegisterType<CommonAuthorizationProvider>().As<IAuthorizationProvider>().InstancePerLifetimeScope();
             builder.RegisterType<EntityFrameworkMetadata>().SingleInstance();
+
+            builder.Register(context => context.Resolve<IConfiguration>().GetOptions<CommonConceptsOptions>()).SingleInstance();
 
             base.Load(builder);
         }

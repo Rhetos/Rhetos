@@ -21,8 +21,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
 using Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Rhetos.Utilities.ApplicationConfiguration;
 
 namespace Rhetos.Utilities.Test
 {
@@ -81,16 +83,16 @@ namespace Rhetos.Utilities.Test
                 .Build();
 
             Assert.AreEqual("n/a", provider.GetValue("StringValue", "n/a"));
-            Assert.AreEqual("Hello", provider.GetValue("StringValue", "n/a", "App:TestSection"));
-            Assert.AreEqual("Hello", provider.GetValue("stringvalue", "n/a", "app:testSection"));
+            Assert.AreEqual("Hello2", provider.GetValue("StringValue", "n/a", "App:TestSection"));
+            Assert.AreEqual("Hello2", provider.GetValue("StringValue", "n/a", "App.TestSection"));
+            Assert.AreEqual("Hello2", provider.GetValue("stringvalue", "n/a", "app:testSection"));
 
             Assert.AreEqual("n/a", provider.GetValue("RootValue", "n/a", "App:TestSection"));
             Assert.AreEqual("world", provider.GetValue("RootValue", "n/a"));
 
-            // dot is not a path separator
-            Assert.AreEqual("n/a", provider.GetValue("StringValue", "n/a", "App.TestSection"));
-
             Assert.AreEqual("Hello2", provider.GetValue("App.TestSection.StringValue", "n/a"));
+            Assert.AreEqual("Hello2", provider.GetValue("App:TestSection.StringValue", "n/a"));
+            Assert.AreEqual("Hello2", provider.GetValue("App.TestSection:StringValue", "n/a"));
         }
 
         public enum TestEnum
@@ -437,7 +439,16 @@ namespace Rhetos.Utilities.Test
                     .AddKeyValue("Section.a.Option1", 50)
                     .Build();
 
-                TestUtility.ShouldFail<FrameworkException>(() => provider.GetOptions<PocoPath>(), "Found multiple matches while binding configuration value to member 'Section__A__Option1'");
+                Assert.AreEqual(50, provider.GetOptions<PocoPath>().Section__A__Option1);
+            }
+
+            {
+                var provider = new ConfigurationBuilder()
+                    .AddKeyValue("section.a.option1", 49)
+                    .AddKeyValue("Section:a:Option1", 50)
+                    .Build();
+
+                Assert.AreEqual(50, provider.GetOptions<PocoPath>().Section__A__Option1);
             }
 
             {
@@ -627,6 +638,138 @@ namespace Rhetos.Utilities.Test
                 .Build();
             Assert.AreEqual("p:PublicField:3, p:PublicProperty:4, p:PublicPropertyGetter:6, p:PublicPropertyInt:5, p:PublicPropertyNull:",
                 TestUtility.DumpSorted(configuration.AllKeys.Select(key => $"{key}:{configuration.GetValue<object>(key)}")));
+        }
+
+        private class TestPathOptions
+        {
+            [AbsolutePathOption]
+            public string PathConvert { get; set; }
+            public string Path { get; set; }
+        }
+
+
+        [TestMethod]
+        public void KeyValueSourceConvertingPaths()
+        {
+            var configuration = new ConfigurationBuilder()
+                .AddKeyValue("Path", "relative\\test.json")
+                .AddKeyValue("PathConvert", "relative\\testc.json")
+                .Build();
+
+            var options = configuration.GetOptions<TestPathOptions>();
+
+            Assert.AreEqual("relative\\test.json", options.Path);
+
+            var expectedConverted = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "relative\\testc.json");
+            Assert.AreEqual(expectedConverted, options.PathConvert);
+        }
+
+        [TestMethod]
+        public void JsonFileSourceConvertsPaths()
+        {
+            var configuration = new ConfigurationBuilder()
+                .AddJsonFile("JsonConfigurationFile.json")
+                .Build();
+
+            var options = configuration.GetOptions<TestPathOptions>();
+
+            Assert.AreEqual("relative\\test.json", options.Path);
+
+            var expectedConverted = Path.Combine(Environment.CurrentDirectory, "relative\\testc.json");
+            Assert.AreEqual(expectedConverted, options.PathConvert);
+        }
+
+        [TestMethod]
+        public void ConfigurationManagerSourceConvertsPaths()
+        {
+            var configuration = new ConfigurationBuilder()
+                .AddConfigurationManagerConfiguration()
+                .Build();
+
+            var options = configuration.GetOptions<TestPathOptions>();
+
+            Assert.AreEqual("relative\\apptest.json", options.Path);
+
+            var expectedConverted = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "relative\\apptestc.json");
+            Assert.AreEqual(expectedConverted, options.PathConvert);
+        }
+
+        [TestMethod]
+        public void EmptyRelativeFolder()
+        {
+            var configuration = new ConfigurationBuilder()
+                .Add(new KeyValuesSource(new[] {new KeyValuePair<string, object>("PathConvert", "")}))
+                .Build();
+
+            var options = configuration.GetOptions<TestPathOptions>();
+            Assert.AreEqual(AppDomain.CurrentDomain.BaseDirectory, options.PathConvert);
+        }
+
+        private class OverrideOptions
+        {
+            public string SeparatorTest__SomeConfigurationKey { get; set; }
+        }
+
+        [TestMethod]
+        public void DifferentSourcesOverrides()
+        {
+            var configurationBuilder = new ConfigurationBuilder()
+                .AddConfigurationManagerConfiguration();
+
+            {
+                var keyValueColon = configurationBuilder.Build().GetValue<string>("SeparatorTest:SomeConfigurationKey");
+                Assert.AreEqual("OriginalValue", keyValueColon);
+
+                var keyValueDot = configurationBuilder.Build().GetValue<string>("SeparatorTest.SomeConfigurationKey");
+                Assert.AreEqual("OriginalValue", keyValueDot);
+            }
+
+            var jsonCfg = @"{ ""SeparatorTest"": { ""SomeConfigurationKey"": ""NewValue"" } }";
+            configurationBuilder
+                .Add(new JsonSource(jsonCfg));
+
+            {
+                var configuration = configurationBuilder.Build();
+
+                var keyValueColon = configuration.GetValue<string>("SeparatorTest:SomeConfigurationKey");
+                Assert.AreEqual("NewValue", keyValueColon);
+
+                var keyValueDot = configuration.GetValue<string>("SeparatorTest.SomeConfigurationKey");
+                Assert.AreEqual("NewValue", keyValueDot);
+
+                var options = configuration.GetOptions<OverrideOptions>();
+                Assert.AreEqual("NewValue", options.SeparatorTest__SomeConfigurationKey);
+            }
+        }
+
+        [Options("MixedPathTest")]
+        private class MixedPathOptions
+        {
+            public string Legacy__AutoGeneratePolymorphicProperty { get; set; }
+        }
+
+        [TestMethod]
+        public void ResolvesMixedPathOption()
+        {
+            var configuration = new ConfigurationBuilder()
+                .AddConfigurationManagerConfiguration()
+                .Build();
+
+            var options = configuration.GetOptions<MixedPathOptions>();
+            Assert.AreEqual("MixedPathValue", options.Legacy__AutoGeneratePolymorphicProperty);
+        }
+
+        [TestMethod]
+        public void DoubleUnderscoreNotInvariant()
+        {
+            var configuration = new ConfigurationBuilder()
+                .AddKeyValue("path.key", "value1")
+                .AddKeyValue("path__key", "value2")
+                .Build();
+
+            Assert.AreEqual("value1", configuration.GetValue<string>("path.key"));
+            Assert.AreEqual("value1", configuration.GetValue<string>("path:key"));
+            Assert.AreEqual("value2", configuration.GetValue<string>("path__key"));
         }
     }
 }

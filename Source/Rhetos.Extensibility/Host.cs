@@ -51,8 +51,8 @@ namespace Rhetos
             logProvider = logProvider ?? new ConsoleLogProvider();
 
             var host = Find(applicationFolder, logProvider);
-            var configurationProvider = host.RhetosRuntime.BuildConfiguration(logProvider, host.ConfigurationFolder, addCustomConfiguration);
-            return host.RhetosRuntime.BuildContainer(logProvider, configurationProvider, registerCustomComponents);
+            var configuration = host.RhetosRuntime.BuildConfiguration(logProvider, host.ConfigurationFolder, addCustomConfiguration);
+            return host.RhetosRuntime.BuildContainer(logProvider, configuration, registerCustomComponents);
         }
 
         public IRhetosRuntime RhetosRuntime { get; private set; }
@@ -103,8 +103,13 @@ namespace Rhetos
 
         private static string LoadRhetosRuntimePath(string configurationFolder)
         {
-            string serialized = File.ReadAllText(Path.Combine(configurationFolder, RhetosAppEnvironment.ConfigurationFileName));
-            var runtimeSettings = JsonConvert.DeserializeObject<RhetosAppEnvironment>(serialized);
+            string configurationFile = Path.Combine(configurationFolder, RhetosAppEnvironment.ConfigurationFileName);
+            string serialized = File.ReadAllText(configurationFile);
+
+            var runtimeSettings = JsonConvert.DeserializeObject<RhetosAppOptions>(serialized);
+            if (string.IsNullOrEmpty(runtimeSettings.RhetosRuntimePath))
+                throw new FrameworkException($"Configuration setting '{nameof(RhetosAppOptions.RhetosRuntimePath)}' is not specified in '{configurationFile}'.");
+
             string rhetosRuntimePath = Path.Combine(configurationFolder, runtimeSettings.RhetosRuntimePath);
             return rhetosRuntimePath;
         }

@@ -33,15 +33,15 @@ namespace Rhetos
     public class ApplicationBuild
     {
         private readonly ILogger _logger;
-        private readonly IConfiguration _configurationProvider;
+        private readonly IConfiguration _configuration;
         private readonly ILogProvider _logProvider;
         private readonly Func<IEnumerable<string>> _pluginAssemblies;
 
         /// <param name="pluginAssemblies">List of assemblies (DLL file paths) that will be scanned for plugins.</param>
-        public ApplicationBuild(IConfiguration configurationProvider, ILogProvider logProvider, Func<IEnumerable<string>> pluginAssemblies)
+        public ApplicationBuild(IConfiguration configuration, ILogProvider logProvider, Func<IEnumerable<string>> pluginAssemblies)
         {
             _logger = logProvider.GetLogger(GetType().Name);
-            _configurationProvider = configurationProvider;
+            _configuration = configuration;
             _logProvider = logProvider;
             _pluginAssemblies = pluginAssemblies;
         }
@@ -92,7 +92,7 @@ namespace Rhetos
 
         internal RhetosContainerBuilder CreateBuildComponentsContainer(InstalledPackages installedPackages)
         {
-            var builder = new RhetosContainerBuilder(_configurationProvider, _logProvider, _pluginAssemblies);
+            var builder = new RhetosContainerBuilder(_configuration, _logProvider, _pluginAssemblies);
             builder.RegisterModule(new CoreModule());
             builder.RegisterModule(new CorePluginsModule());
             builder.RegisterModule(new BuildModule());

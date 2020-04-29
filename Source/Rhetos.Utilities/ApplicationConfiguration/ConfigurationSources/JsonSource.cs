@@ -29,13 +29,12 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
     {
         private readonly string _jsonText;
 
-        public JsonSource(string jsonText, string baseDirectory = null)
+        public JsonSource(string jsonText)
         {
             _jsonText = jsonText;
-            BaseFolder = baseDirectory;
         }
 
-        public IDictionary<string, object> Load()
+        public IDictionary<string, ConfigurationValue> Load()
         {
             var reader = new JsonTextReader(new StringReader(_jsonText));
             reader.DateParseHandling = DateParseHandling.None;
@@ -45,11 +44,9 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
 
         private static readonly JTokenType[] _allowedJTokenTypes = { JTokenType.Boolean, JTokenType.String, JTokenType.Integer, JTokenType.Float, JTokenType.Object };
 
-        public string BaseFolder { get; }
-
-        private Dictionary<string, object> GetKeysFromObject(JObject jObject, string path)
+        private Dictionary<string, ConfigurationValue> GetKeysFromObject(JObject jObject, string path)
         {
-            var jsonOptions = new Dictionary<string, object>();
+            var jsonOptions = new Dictionary<string, ConfigurationValue>();
 
             foreach (var keyValue in jObject)
             {
@@ -67,7 +64,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
                 }
                 else
                 {
-                    jsonOptions.Add(fullKey, keyValue.Value.ToString());
+                    jsonOptions.Add(fullKey, new ConfigurationValue(keyValue.Value.ToString(), this));
                 }
             }
 

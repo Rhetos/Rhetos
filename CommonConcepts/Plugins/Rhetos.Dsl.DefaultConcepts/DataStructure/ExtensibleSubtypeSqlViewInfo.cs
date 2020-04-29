@@ -17,15 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rhetos.Dsl;
-using System.ComponentModel.Composition;
-using Rhetos.Utilities;
 using Rhetos.Compiler;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Utilities;
+using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.Linq;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
@@ -92,11 +89,11 @@ FROM
     [Export(typeof(IConceptMacro))]
     public class ExtensibleSubtypeSqlViewMacro : IConceptMacro<ExtensibleSubtypeSqlViewInfo>
     {
-        private readonly BuildOptions _buildOptions;
+        private readonly CommonConceptsOptions _commonConceptsOptions;
 
-        public ExtensibleSubtypeSqlViewMacro(BuildOptions buildOptions)
+        public ExtensibleSubtypeSqlViewMacro(CommonConceptsOptions commonConceptsOptions)
         {
-            _buildOptions = buildOptions;
+            _commonConceptsOptions = commonConceptsOptions;
         }
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(ExtensibleSubtypeSqlViewInfo conceptInfo, IDslModel existingConcepts)
@@ -124,8 +121,7 @@ FROM
             var missingProperties = missingImplementations.Select(subim => subim.Property).Where(supp => !subtypeProperties.Any(subp => subp.Name == supp.Name));
             var missingPropertiesToAdd = missingProperties.Select(missing => DslUtility.CreatePassiveClone(missing, conceptInfo.IsSubtypeOf.Subtype)).ToList();
 
-            if (_buildOptions.CommonConcepts__Legacy__AutoGeneratePolymorphicProperty == false
-                && missingProperties.Count() > 0)
+            if (!_commonConceptsOptions.Legacy__AutoGeneratePolymorphicProperty && missingProperties.Any())
             {
                 throw new DslSyntaxException( "The property " + missingProperties.First().GetUserDescription() + 
                     " is not implemented in the polymorphic subtype " + conceptInfo.IsSubtypeOf.Subtype.GetUserDescription() + ". " + 

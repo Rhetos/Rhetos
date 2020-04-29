@@ -17,19 +17,19 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
+using Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources;
 
-namespace Rhetos.Dsl
+namespace Rhetos.Utilities.ApplicationConfiguration
 {
-    [Obsolete("Use DslSyntaxException instead.")]
-    public class DslParseSyntaxException : DslSyntaxException
+    public class ConfigurationValue
     {
-        public readonly string SimpleMessage;
+        public object Value { get; }
+        public IConfigurationSource ConfigurationSource { get; }
 
-        public DslParseSyntaxException(string message, string errorCode, DslScript dslScript, int positionBegin, int positionEnd, string details)
-            : base(message, errorCode, dslScript, positionBegin, positionEnd, details)
+        public ConfigurationValue(object value, IConfigurationSource configurationSource)
         {
-            this.SimpleMessage = message;
+            Value = value;
+            ConfigurationSource = configurationSource;
         }
     }
 }

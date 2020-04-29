@@ -32,25 +32,21 @@ namespace Rhetos
         /// Use to initialize obsolete static utilities <see cref="Paths"/>, <see cref="ConfigUtility"/>, <see cref="Configuration"/> and <see cref="SqlUtility"/> 
         /// prior to using any of their methods. This will bind those utilities to configuration source compliant with new configuration convention.
         /// </summary>
-        public static void Initialize(IConfiguration configurationProvider)
+        public static void Initialize(IConfiguration configuration)
         {
-            Paths.Initialize(configurationProvider);
-            ConfigUtility.Initialize(configurationProvider);
-            SqlUtility.Initialize(configurationProvider);
-            Configuration.Initialize(configurationProvider);
+            Paths.Initialize(configuration);
+            ConfigUtility.Initialize(configuration);
+            SqlUtility.Initialize(configuration);
+            Configuration.Initialize(configuration);
         }
 
         /// <summary>
         /// Returns list of assemblies that will be scanned for plugin exports.
         /// </summary>
-        public static Func<string[]> GetRuntimeAssembliesDelegate(IConfiguration configurationProvider)
+        public static Func<string[]> GetRuntimeAssembliesDelegate(IConfiguration configuration)
         {
-            var runtimeEnvironment = configurationProvider.GetOptions<RhetosAppEnvironment>();
-            if (runtimeEnvironment?.AssemblyFolder == null)
-                throw new FrameworkException($"Run-time environment not initialized." +
-                    $" {nameof(RhetosAppEnvironment)}.{nameof(RhetosAppEnvironment.AssemblyFolder)} is not set.");
-
-            var legacyPaths = configurationProvider.GetOptions<LegacyPathsOptions>();
+            var runtimeOptions = configuration.GetOptions<RhetosAppOptions>();
+            var legacyPaths = configuration.GetOptions<LegacyPathsOptions>();
 
             return () =>
             {
@@ -63,11 +59,11 @@ namespace Rhetos
                     // We don't need to scan main AssemblyFolder because it contains only Rhetos framework binaries
                     // that have no plugins exports, only explicit registrations.
                     pluginsPaths.Add(legacyPaths.PluginsFolder);
-                    pluginsPaths.Add(runtimeEnvironment.AssetsFolder);
+                    pluginsPaths.Add(runtimeOptions.AssetsFolder);
                 }
                 else
                 {
-                    pluginsPaths.Add(runtimeEnvironment.AssemblyFolder);
+                    pluginsPaths.Add(runtimeOptions.GetAssemblyFolder());
                 }
 
                 var assemblyFiles = pluginsPaths

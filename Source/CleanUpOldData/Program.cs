@@ -36,7 +36,8 @@ namespace CleanupOldData
                 var appRootFolder = AppDomain.CurrentDomain.BaseDirectory;
                 var logProvider = new ConsoleLogProvider();
                 var host = Host.Find(appRootFolder, logProvider);
-                var configuration = host.RhetosRuntime.BuildConfiguration(logProvider, host.ConfigurationFolder, null);
+                var configuration = host.RhetosRuntime.BuildConfiguration(logProvider, host.ConfigurationFolder,
+                    configurationBuilder => configurationBuilder.AddConfigurationManagerConfiguration());
 
                 LegacyUtilities.Initialize(configuration);
 

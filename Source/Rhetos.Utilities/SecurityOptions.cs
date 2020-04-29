@@ -17,18 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Rhetos.Utilities
 {
+    [Options("Security")]
     public class SecurityOptions
     {
-        public bool Security__LookupClientHostname { get; set; } = false;
-        public string Security__AllClaimsForUsers { get; set; } = "";
-        public bool Security__AllClaimsForAnonymous { get; set; } = false;
+        public bool LookupClientHostname { get; set; } = false;
+        public string AllClaimsForUsers { get; set; } = "";
+        public bool AllClaimsForAnonymous { get; set; } = false;
     }
 }

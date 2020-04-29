@@ -40,7 +40,6 @@ namespace Rhetos
         /// <param name="configurationFolder">
         /// Folder where application's configuration files are located.
         /// </param>
-        
         IConfiguration BuildConfiguration(ILogProvider logProvider, string configurationFolder, Action<IConfigurationBuilder> addCustomConfiguration);
 
         /// <summary>
@@ -50,6 +49,6 @@ namespace Rhetos
         /// Register custom components that may override system and plugins services.
         /// This is commonly used by utilities and tests that need to override host application's components or register additional plugins.
         /// </param>
-        IContainer BuildContainer(ILogProvider logProvider, IConfiguration configurationProvider, Action<ContainerBuilder> registerCustomComponents);
+        IContainer BuildContainer(ILogProvider logProvider, IConfiguration configuration, Action<ContainerBuilder> registerCustomComponents);
     }
 }

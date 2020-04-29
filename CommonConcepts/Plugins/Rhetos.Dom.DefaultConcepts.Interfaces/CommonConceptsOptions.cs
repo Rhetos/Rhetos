@@ -17,18 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources;
-using System;
-
-namespace Rhetos
+namespace Rhetos.Dom.DefaultConcepts
 {
-    /// <summary>
-    /// When reading this configuration setting, any relative path will be converted to absolute.
-    /// The base folder depends on configuration source implementation of <see cref="IConfigurationSource.BaseFolder"/>,
-    /// it should match the configuration file location.
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
-    public sealed class OptionsPathAttribute : Attribute
+    [Options("CommonConcepts")]
+    public class CommonConceptsOptions
     {
+        public bool Legacy__AutoGeneratePolymorphicProperty { get; set; } = false;
+
+        public bool Legacy__CascadeDeleteInDatabase { get; set; } = false;
     }
 }

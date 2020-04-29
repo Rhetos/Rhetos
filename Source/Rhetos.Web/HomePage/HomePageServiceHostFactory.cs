@@ -17,23 +17,16 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.Collections.Generic;
-using System.Linq;
+using System;
+using System.ServiceModel;
 
-namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
+namespace Rhetos.HomePage
 {
-    public class KeyValuesSource : IConfigurationSource
+    public class HomePageServiceHostFactory : Autofac.Integration.Wcf.AutofacServiceHostFactory
     {
-        private readonly IEnumerable<KeyValuePair<string, object>> keyValuePairs;
-
-        public KeyValuesSource(IEnumerable<KeyValuePair<string, object>> keyValuePairs)
+        protected override ServiceHost CreateServiceHost(Type serviceType, Uri[] baseAddresses)
         {
-            this.keyValuePairs = keyValuePairs;
-        }
-
-        public IDictionary<string, ConfigurationValue> Load()
-        {
-            return keyValuePairs.ToDictionary(pair => pair.Key, pair => new ConfigurationValue(pair.Value,this));
+            return new HomePageServiceHost(serviceType, baseAddresses);
         }
     }
 }

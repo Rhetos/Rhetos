@@ -18,6 +18,7 @@
 */
 
 using Rhetos.Utilities;
+using Rhetos.Utilities.ApplicationConfiguration;
 using Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources;
 using System;
 using System.Collections.Generic;
@@ -37,22 +38,18 @@ namespace Rhetos
 
         public IConfiguration Build()
         {
-            var configurationValues = new Dictionary<string, (object Value, string BaseFolder)>(StringComparer.InvariantCultureIgnoreCase);
+            var configurationValues = new Dictionary<string, ConfigurationValue>(new ConfigurationKeyComparer());
 
             foreach (var configurationSource in configurationSources)
             {
                 var sourceValues = configurationSource.Load();
-
-                string baseFolder = configurationSource.BaseFolder;
-                if (!string.IsNullOrEmpty(baseFolder) && Path.GetFullPath(baseFolder) != baseFolder)
-                    throw new FrameworkException($"Full path must be specified for {nameof(IConfigurationSource.BaseFolder)}: '{baseFolder}'.");
 
                 foreach (var sourceValue in sourceValues)
                 {
                     if (string.IsNullOrWhiteSpace(sourceValue.Key))
                         throw new FrameworkException("Trying to add empty or null configuration key.");
 
-                    configurationValues[sourceValue.Key] = (sourceValue.Value, baseFolder);
+                    configurationValues[sourceValue.Key] = sourceValue.Value;
                 }
             }
             return new ConfigurationProvider(configurationValues);

@@ -90,7 +90,8 @@ namespace Rhetos.Configuration.Autofac
                     lock (_containerInitializationLock)
                         if (_rhetosProcessContainer == null)
                         {
-                            _rhetosProcessContainer = new RhetosProcessContainer(SearchForRhetosServerRootFolder, new ConsoleLogProvider());
+                            _rhetosProcessContainer = new RhetosProcessContainer(SearchForRhetosServerRootFolder, new ConsoleLogProvider(),
+                                configurationBuilder => configurationBuilder.AddConfigurationManagerConfiguration());
                             var configuration = _rhetosProcessContainer.CreateTransactionScope(false).Resolve<IConfiguration>();
                             AppDomain.CurrentDomain.AssemblyResolve += new AssemblyResolver(configuration).SearchForAssembly;
                         }
@@ -140,15 +141,15 @@ namespace Rhetos.Configuration.Autofac
         {
             private readonly List<string> _searchFolders;
 
-            public AssemblyResolver(IConfiguration configurationProvider)
+            public AssemblyResolver(IConfiguration configuration)
             {
-                var rhetosAppEnvironment = configurationProvider.GetOptions<RhetosAppEnvironment>();
-                var legacyPaths = configurationProvider.GetOptions<LegacyPathsOptions>();
+                var rhetosAppOptins = configuration.GetOptions<RhetosAppOptions>();
+                var legacyPaths = configuration.GetOptions<LegacyPathsOptions>();
                 _searchFolders = new[]
                 {
-                    legacyPaths.BinFolder ?? rhetosAppEnvironment.AssemblyFolder,
+                    legacyPaths.BinFolder ?? rhetosAppOptins.GetAssemblyFolder(),
                     legacyPaths.PluginsFolder,
-                    rhetosAppEnvironment.AssetsFolder,
+                    rhetosAppOptins.AssetsFolder,
                 }
                     .Where(folder => !string.IsNullOrEmpty(folder))
                     .Distinct()

@@ -34,13 +34,13 @@ namespace Rhetos.Dom
 
         private List<Assembly> _assemblies;
         private readonly object _assembliesLock = new object();
-        private readonly RhetosAppEnvironment _rhetosAppEnvironment;
+        private readonly RhetosAppOptions _rhetosAppOptions;
 
-        public DomLoader(ILogProvider logProvider, RhetosAppEnvironment rhetosAppEnvironment)
+        public DomLoader(ILogProvider logProvider, RhetosAppOptions rhetosAppOptions)
         {
             _logger = logProvider.GetLogger("DomLoader");
             _performanceLogger = logProvider.GetLogger("Performance");
-            _rhetosAppEnvironment = rhetosAppEnvironment;
+            _rhetosAppOptions = rhetosAppOptions;
         }
 
         public IEnumerable<Assembly> Assemblies
@@ -76,7 +76,7 @@ namespace Rhetos.Dom
             }
             else
             {
-                return new List<Assembly> { Assembly.Load(Path.GetFileNameWithoutExtension(_rhetosAppEnvironment.RhetosRuntimePath)) };
+                return new List<Assembly> { Assembly.Load(Path.GetFileNameWithoutExtension(_rhetosAppOptions.RhetosRuntimePath)) };
             }
         }
     }

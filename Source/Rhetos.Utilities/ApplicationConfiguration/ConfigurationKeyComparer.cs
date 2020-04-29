@@ -18,14 +18,26 @@
 */
 
 using System;
+using System.Collections.Generic;
 
-namespace Rhetos
+namespace Rhetos.Utilities.ApplicationConfiguration
 {
-    public partial class Default : System.Web.UI.Page
+    public class ConfigurationKeyComparer : IEqualityComparer<string>
     {
-        protected void Page_Load(object sender, EventArgs e)
+        public bool Equals(string key1, string key2)
         {
+            if (key1 == null && key2 == null) return true;
+            if (key1 == null || key2 == null) return false;
 
+            return StringComparer.InvariantCultureIgnoreCase.Equals(Normalize(key1), Normalize(key2));
         }
+
+        public int GetHashCode(string key)
+        {
+            return StringComparer.InvariantCultureIgnoreCase.GetHashCode(Normalize(key));
+        }
+
+        private static string Normalize(string key)
+            => key.Replace(ConfigurationProvider.ConfigurationPathSeparatorAlternative, ConfigurationProvider.ConfigurationPathSeparator);
     }
 }

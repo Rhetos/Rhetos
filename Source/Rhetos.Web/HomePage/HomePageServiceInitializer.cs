@@ -17,23 +17,22 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.Collections.Generic;
-using System.Linq;
+using System.ServiceModel.Activation;
+using System.Web.Routing;
 
-namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
+namespace Rhetos.HomePage
 {
-    public class KeyValuesSource : IConfigurationSource
+    public class HomePageServiceInitializer : IService
     {
-        private readonly IEnumerable<KeyValuePair<string, object>> keyValuePairs;
-
-        public KeyValuesSource(IEnumerable<KeyValuePair<string, object>> keyValuePairs)
+        public void Initialize()
         {
-            this.keyValuePairs = keyValuePairs;
+            RouteTable.Routes.Add(new ServiceRoute(
+                "", new HomePageServiceHostFactory(), typeof(HomePageService)));
         }
 
-        public IDictionary<string, ConfigurationValue> Load()
+        public void InitializeApplicationInstance(System.Web.HttpApplication context)
         {
-            return keyValuePairs.ToDictionary(pair => pair.Key, pair => new ConfigurationValue(pair.Value,this));
+            // No need to initialize each request.
         }
     }
 }
