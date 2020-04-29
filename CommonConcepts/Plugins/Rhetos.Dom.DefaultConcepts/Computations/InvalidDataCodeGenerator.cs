@@ -17,17 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using Rhetos.Utilities;
 using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
+using Rhetos.Utilities;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -36,7 +31,7 @@ namespace Rhetos.Dom.DefaultConcepts
     public class InvalidDataCodeGenerator : IConceptCodeGenerator
     {
         public static readonly CsTag<InvalidDataInfo> ErrorMetadataTag = "ErrorMetadata";
-        public static readonly CsTag<InvalidDataInfo> OverrideUserMessagesTag = "OverrideUserMessages";
+        public static readonly CsTag<InvalidDataInfo> CustomValidationResultTag = new CsTag<InvalidDataInfo>("CustomValidationResult", TagType.Reverse);
 
         private readonly IDslModel _dslModel;
 
@@ -53,25 +48,38 @@ namespace Rhetos.Dom.DefaultConcepts
             string errorMessageMethod =
         $@"public IEnumerable<InvalidDataMessage> {info.GetErrorMessageMethodName()}(IEnumerable<Guid> invalidData_Ids)
         {{
-            const string invalidData_Description = {CsUtility.QuotedString(info.ErrorMessage)};
             IDictionary<string, object> metadata = new Dictionary<string, object>();
             {ErrorMetadataTag.Evaluate(info)}
-            {OverrideUserMessagesTag.Evaluate(info)} return invalidData_Ids.Select(id => new InvalidDataMessage {{ ID = id, Message = invalidData_Description, Metadata = metadata }});
+            {CustomValidationResultTag.Evaluate(info)}
         }}
 
         ";
             codeBuilder.InsertCode(errorMessageMethod, RepositoryHelper.RepositoryMembers, info.Source);
             codeBuilder.AddReferencesFromDependency(typeof(InvalidDataMessage));
 
+            // HACK: Using IDslModel as a cleaner alternative to ConceptMetadata (which is not saved with DslModel).
+            // We could remove InvalidDataMessageInfo and InvalidDataAllowSaveInfo concepts,
+            // add a base validation concept for InvalidData that does not have these features (default validation result and DenySave),
+            // and make InvalidData a macro that adds the features, but the result would not be fully backward compatible.
+            bool hasCustomValidationMessage = _dslModel.FindByKey($"{nameof(InvalidDataMessageInfo)} {info.GetKeyProperties()}") != null;
+
+            if (!hasCustomValidationMessage)
+            {
+                string defaultValidationResult =
+            $@"return invalidData_Ids.Select(id => new InvalidDataMessage
+            {{
+                ID = id,
+                Message = {CsUtility.QuotedString(info.ErrorMessage)},
+                Metadata = metadata
+            }});
+            ";
+                codeBuilder.InsertCode(defaultValidationResult, CustomValidationResultTag, info);
+            }
+
             codeBuilder.InsertCode(
                 "metadata[\"Validation\"] = " + CsUtility.QuotedString(info.FilterType) + ";\r\n            ",
                 ErrorMetadataTag, info);
 
-            // HACK: IDslModel should not be used in code generator.
-            // We should remove AllowSave concept,
-            // add a base validation concept for InvalidData that does not block saving,
-            // add DenySave concept that referenced the base validation and blocks saving,
-            // and make InvalidData a macro that adds DenySave.
             bool allowSave = _dslModel.FindByKey($"{nameof(InvalidDataAllowSaveInfo)} {info.GetKeyProperties()}") != null;
 
             string validationSnippet =

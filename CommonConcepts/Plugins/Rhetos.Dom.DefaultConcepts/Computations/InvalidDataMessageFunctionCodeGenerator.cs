@@ -17,17 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using Rhetos.Utilities;
 using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -39,12 +33,12 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var info = (InvalidDataMessageFunctionInfo)conceptInfo;
 
-            // Using nonstandard naming of variables to avoid name clashes with injected code.
+            // Using underscore in variable name to avoid name clashes with custom injected code.
             string setMessages =
             @"Func<IEnumerable<Guid>, IEnumerable<InvalidDataMessage>> invalidData_Func = " + info.MessageFunction + @";
             return invalidData_Func(invalidData_Ids);
-            // ";
-            codeBuilder.InsertCode(setMessages, InvalidDataCodeGenerator.OverrideUserMessagesTag, info.InvalidData);
+            ";
+            codeBuilder.InsertCode(setMessages, InvalidDataCodeGenerator.CustomValidationResultTag, info.InvalidData);
         }
     }
 }

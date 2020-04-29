@@ -17,17 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using Rhetos.Utilities;
 using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
+using Rhetos.Utilities;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -40,15 +35,15 @@ namespace Rhetos.Dom.DefaultConcepts
             var info = (InvalidDataMessageParametersConstantInfo)conceptInfo;
 
             string setMessages =
-            @"return invalidData_Ids.Select(id => new InvalidDataMessage
-            {
+            $@"return invalidData_Ids.Select(id => new InvalidDataMessage
+            {{
                 ID = id,
-                Message = invalidData_Description,
-                MessageParameters = new object[] { " + info.MessageParameters + @" },
+                Message = {CsUtility.QuotedString(info.InvalidData.ErrorMessage)},
+                MessageParameters = new object[] {{ {info.MessageParameters} }},
                 Metadata = metadata
-            });
-            // ";
-            codeBuilder.InsertCode(setMessages, InvalidDataCodeGenerator.OverrideUserMessagesTag, info.InvalidData);
+            }});
+            ";
+            codeBuilder.InsertCode(setMessages, InvalidDataCodeGenerator.CustomValidationResultTag, info.InvalidData);
         }
     }
 }

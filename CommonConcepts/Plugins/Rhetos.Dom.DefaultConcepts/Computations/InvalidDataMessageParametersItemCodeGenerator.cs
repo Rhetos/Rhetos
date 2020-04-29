@@ -17,17 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using Rhetos.Utilities;
 using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
+using Rhetos.Utilities;
+using System.ComponentModel.Composition;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Rhetos.Dom.DefaultConcepts
@@ -46,18 +42,18 @@ namespace Rhetos.Dom.DefaultConcepts
                 + " }";
 
             string setMessages =
-            @"return this.Query(invalidData_Ids)
-                .Select(" + info.MessageParameters + @")
+            $@"return this.Query(invalidData_Ids)
+                .Select({info.MessageParameters})
                 .ToList()
                 .Select(parameters => new InvalidDataMessage
-                {
+                {{
                     ID = parameters.ID,
-                    Message = invalidData_Description,
-                    MessageParameters = " + parametersArray + @",
+                    Message = {CsUtility.QuotedString(info.InvalidData.ErrorMessage)},
+                    MessageParameters = {parametersArray},
                     Metadata = metadata
-                });
-            // ";
-            codeBuilder.InsertCode(setMessages, InvalidDataCodeGenerator.OverrideUserMessagesTag, info.InvalidData);
+                }});
+            ";
+            codeBuilder.InsertCode(setMessages, InvalidDataCodeGenerator.CustomValidationResultTag, info.InvalidData);
         }
 
         private int FindMaxParameter(string messageFormat)
@@ -68,7 +64,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 .Select(param => int.Parse(param))
                 .ToList();
 
-            if (parameters.Count() > 0)
+            if (parameters.Any())
                 return parameters.Max();
             else
                 return -1;
