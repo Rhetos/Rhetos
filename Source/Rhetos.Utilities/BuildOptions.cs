@@ -39,7 +39,9 @@ namespace Rhetos.Utilities
         /// </summary>
         public bool GenerateAppSettings { get; set; } = false;
 
-        [Obsolete("Option is a part of legacy design/configuration.")]
+        /// <summary>
+        /// Option is a part of legacy design/configuration.
+        /// </summary>
         public int AssemblyGeneratorErrorReportLimit { get; set; } = 5;
     }
 

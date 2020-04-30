@@ -57,7 +57,7 @@ namespace Rhetos.Utilities
             return value;
         }
 
-        internal const string OracleNationalLanguageKey = "Database:Oracle:NationalLanguage"; // TODO: Review if this is a desired key for build options after refactoring configuration key to avoid property name collisions.
+        internal const string OracleNationalLanguageKey = "Rhetos:DatabaseOracle:NationalLanguage";
 
         public static void Initialize(IConfiguration configuration)
         {

@@ -32,12 +32,12 @@ namespace DeployPackages
         private readonly static Dictionary<string, (string description, string configurationPath)> _validArguments
             = new Dictionary<string, (string info, string configurationPath)>(StringComparer.InvariantCultureIgnoreCase)
         {
-            { "/StartPaused", ("Use for debugging with Visual Studio (Attach to Process).", OptionsAttribute.GetConfigurationPath<DeployOptions>()) },
+            { "/StartPaused", ("Use for debugging with Visual Studio (Attach to Process).", OptionsAttribute.GetConfigurationPath<DeployPackagesOptions>()) },
             { "/Debug", ("Generates unoptimized dlls (ServerDom.*.dll, e.g.) for debugging.", OptionsAttribute.GetConfigurationPath<BuildOptions>()) },
-            { "/NoPause", ("Don't pause on error. Use this switch for build automation.", OptionsAttribute.GetConfigurationPath<DeployOptions>()) },
-            { "/IgnoreDependencies", ("Allow installing incompatible versions of Rhetos packages.", OptionsAttribute.GetConfigurationPath<DeployOptions>()) },
+            { "/NoPause", ("Don't pause on error. Use this switch for build automation.", OptionsAttribute.GetConfigurationPath<DeployPackagesOptions>()) },
+            { "/IgnoreDependencies", ("Allow installing incompatible versions of Rhetos packages.", OptionsAttribute.GetConfigurationPath<DeployPackagesOptions>()) },
             { "/ShortTransactions", ("Commit transaction after creating or dropping each database object.", OptionsAttribute.GetConfigurationPath<DbUpdateOptions>()) },
-            { "/DatabaseOnly", ("Keep old plugins and files in bin\\Generated.", OptionsAttribute.GetConfigurationPath<DeployOptions>()) },
+            { "/DatabaseOnly", ("Keep old plugins and files in bin\\Generated.", OptionsAttribute.GetConfigurationPath<DeployPackagesOptions>()) },
             { "/SkipRecompute", ("Skip automatic update of computed data with KeepSynchronized.", OptionsAttribute.GetConfigurationPath<DbUpdateOptions>()) }
         };
 
@@ -112,18 +112,18 @@ namespace DeployPackages
 
             var configuration = configurationBuilder.Build();
 
-            var deployOptions = configuration.GetOptions<DeployOptions>();
+            var deployPackagesOptions = configuration.GetOptions<DeployPackagesOptions>();
 
-            pauseOnError = !deployOptions.NoPause;
-            if (deployOptions.StartPaused)
+            pauseOnError = !deployPackagesOptions.NoPause;
+            if (deployPackagesOptions.StartPaused)
                 StartPaused();
 
-            if (!deployOptions.DatabaseOnly)
+            if (!deployPackagesOptions.DatabaseOnly)
             {
                 var build = new ApplicationBuild(configuration, logProvider, () => GetBuildPlugins(Path.Combine(rhetosAppRootPath, "bin", "Plugins")));
                 LegacyUtilities.Initialize(configuration);
                 DeleteObsoleteFiles(logProvider, logger);
-                var installedPackages = build.DownloadPackages(deployOptions.IgnoreDependencies);
+                var installedPackages = build.DownloadPackages(deployPackagesOptions.IgnoreDependencies);
                 build.GenerateApplication(installedPackages);
             }
             else

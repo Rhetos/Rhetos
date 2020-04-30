@@ -17,13 +17,25 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-namespace Rhetos.Utilities
+using Rhetos;
+
+namespace DeployPackages
 {
-    [Options("Rhetos:Security")]
-    public class SecurityOptions
+    /// <summary>
+    /// Options specific to DeployPackages utility. Should not be used outside of that scope.
+    /// </summary>
+    [Options("Rhetos:DeployPackages")]
+    public class DeployPackagesOptions
     {
-        public bool LookupClientHostname { get; set; } = false;
-        public string AllClaimsForUsers { get; set; } = "";
-        public bool AllClaimsForAnonymous { get; set; } = false;
+        public bool StartPaused { get; set; }
+        /// <summary>
+        /// No pause on error.
+        /// </summary>
+        public bool NoPause { get; set; }
+        /// <summary>
+        /// Do not stop deployment if a NuGet package dependency has an incompatible version.
+        /// </summary>
+        public bool IgnoreDependencies { get; set; }
+        public bool DatabaseOnly { get; set; }
     }
 }

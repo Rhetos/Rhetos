@@ -24,10 +24,14 @@ namespace Rhetos.Dom.DefaultConcepts
     [Options("CommonConcepts")]
     public class CommonConceptsOptions
     {
-        [Obsolete("Option is a part of legacy design/configuration.")]
+        /// <summary>
+        /// Option is a part of legacy design/configuration.
+        /// </summary>
         public bool AutoGeneratePolymorphicProperty { get; set; } = false;
 
-        [Obsolete("Option is a part of legacy design/configuration.")]
+        /// <summary>
+        /// Option is a part of legacy design/configuration.
+        /// </summary>
         public bool CascadeDeleteInDatabase { get; set; } = false;
     }
 }
