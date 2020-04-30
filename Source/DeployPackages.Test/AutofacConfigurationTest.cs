@@ -57,8 +57,8 @@ namespace DeployPackages.Test
                     PluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins"),
                     ResourcesFolder = Path.Combine(rhetosAppRootPath, "Resources"),
                 })
-                .AddKeyValue(nameof(BuildOptions.GenerateAppSettings), false)
-                .AddKeyValue(nameof(BuildOptions.BuildResourcesFolder), true)
+                .AddKeyValue($"{OptionsAttribute.GetConfigurationPath<BuildOptions>()}:{nameof(BuildOptions.GenerateAppSettings)}", false)
+                .AddKeyValue($"{OptionsAttribute.GetConfigurationPath<BuildOptions>()}:{nameof(BuildOptions.BuildResourcesFolder)}", true)
                 .AddWebConfiguration(rhetosAppRootPath)
                 .AddConfigurationManagerConfiguration()
                 .Build();
@@ -69,6 +69,14 @@ namespace DeployPackages.Test
         private IEnumerable<string> PluginsFromThisAssembly()
         {
             return new[] { GetType().Assembly.Location };
+        }
+
+        [TestMethod]
+        public void CorrectOptionsAddedByKeyValue()
+        {
+            var buildOptions = _configuration.GetOptions<BuildOptions>();
+            Assert.AreEqual(false, buildOptions.GenerateAppSettings);
+            Assert.AreEqual(true, buildOptions.BuildResourcesFolder);
         }
 
         [TestMethod]

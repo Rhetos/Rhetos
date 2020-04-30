@@ -23,6 +23,7 @@ namespace Rhetos.Utilities
     /// Internal helper class for MSBuild integration.
     /// Use <see cref="RhetosBuildEnvironment"/> for build folders instead.
     /// </summary>
+    [Options("Rhetos:RhetosTargetEnvironment")]
     public class RhetosTargetEnvironment
     {
         public string TargetPath { get; set; }

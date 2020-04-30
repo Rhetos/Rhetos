@@ -19,7 +19,7 @@
 
 namespace Rhetos.Utilities
 {
-    [Options("Security")]
+    [Options("Rhetos:Security")]
     public class SecurityOptions
     {
         public bool LookupClientHostname { get; set; } = false;

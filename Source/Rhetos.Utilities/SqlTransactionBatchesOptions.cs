@@ -19,6 +19,7 @@
 
 namespace Rhetos.Utilities
 {
+    [Options("Rhetos:SqlTransactionBatches")]
     public class SqlTransactionBatchesOptions
     {
         public int ReportProgressMs { get; set; } = 60_000; // Report progress each minute by default

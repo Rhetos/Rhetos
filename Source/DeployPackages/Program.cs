@@ -29,15 +29,16 @@ namespace DeployPackages
 {
     public static class Program
     {
-        private readonly static Dictionary<string, string> _validArguments =  new Dictionary<string, string>()
+        private readonly static Dictionary<string, (string description, string configurationPath)> _validArguments
+            = new Dictionary<string, (string info, string configurationPath)>(StringComparer.InvariantCultureIgnoreCase)
         {
-            { "/StartPaused", "Use for debugging with Visual Studio (Attach to Process)." },
-            { "/Debug", "Generates unoptimized dlls (ServerDom.*.dll, e.g.) for debugging." },
-            { "/NoPause", "Don't pause on error. Use this switch for build automation." },
-            { "/IgnoreDependencies", "Allow installing incompatible versions of Rhetos packages." },
-            { "/ShortTransactions", "Commit transaction after creating or dropping each database object." },
-            { "/DatabaseOnly", "Keep old plugins and files in bin\\Generated." },
-            { "/SkipRecompute", "Skip automatic update of computed data with KeepSynchronized." }
+            { "/StartPaused", ("Use for debugging with Visual Studio (Attach to Process).", OptionsAttribute.GetConfigurationPath<DeployOptions>()) },
+            { "/Debug", ("Generates unoptimized dlls (ServerDom.*.dll, e.g.) for debugging.", OptionsAttribute.GetConfigurationPath<BuildOptions>()) },
+            { "/NoPause", ("Don't pause on error. Use this switch for build automation.", OptionsAttribute.GetConfigurationPath<DeployOptions>()) },
+            { "/IgnoreDependencies", ("Allow installing incompatible versions of Rhetos packages.", OptionsAttribute.GetConfigurationPath<DeployOptions>()) },
+            { "/ShortTransactions", ("Commit transaction after creating or dropping each database object.", OptionsAttribute.GetConfigurationPath<DbUpdateOptions>()) },
+            { "/DatabaseOnly", ("Keep old plugins and files in bin\\Generated.", OptionsAttribute.GetConfigurationPath<DeployOptions>()) },
+            { "/SkipRecompute", ("Skip automatic update of computed data with KeepSynchronized.", OptionsAttribute.GetConfigurationPath<DbUpdateOptions>()) }
         };
 
         public static int Main(string[] args)
@@ -81,7 +82,7 @@ namespace DeployPackages
         {
             var logger = logProvider.GetLogger("DeployPackages");
 
-            var configuration = new ConfigurationBuilder()
+            var configurationBuilder = new ConfigurationBuilder()
                    .AddOptions(new RhetosBuildEnvironment
                    {
                        ProjectFolder = rhetosAppRootPath,
@@ -96,14 +97,23 @@ namespace DeployPackages
                        PluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins"),
                        ResourcesFolder = Path.Combine(rhetosAppRootPath, "Resources"),
                    })
-                   .AddKeyValue(nameof(BuildOptions.GenerateAppSettings), false)
-                   .AddKeyValue(nameof(BuildOptions.BuildResourcesFolder), true)
+                   .AddKeyValue($"{OptionsAttribute.GetConfigurationPath<BuildOptions>()}:{nameof(BuildOptions.GenerateAppSettings)}", false)
+                   .AddKeyValue($"{OptionsAttribute.GetConfigurationPath<BuildOptions>()}:{nameof(BuildOptions.BuildResourcesFolder)}", true)
                    .AddWebConfiguration(rhetosAppRootPath)
-                   .AddConfigurationManagerConfiguration()
-                   .AddCommandLineArguments(args, "/")
-                   .Build();
+                   .AddConfigurationManagerConfiguration();
+
+            var argsByPath = args
+                .Select(arg => (arg, configurationPath: _validArguments.TryGetValue(arg, out var argInfo) ? argInfo.configurationPath : ""))
+                .GroupBy(arg => arg.configurationPath)
+                .Select(grouped => (configurationPath: grouped.Key, args: grouped.Select(arg => arg.arg).ToArray()));
+
+            foreach (var argGroup in argsByPath)
+                configurationBuilder.AddCommandLineArguments(argGroup.args, "/", argGroup.configurationPath);
+
+            var configuration = configurationBuilder.Build();
 
             var deployOptions = configuration.GetOptions<DeployOptions>();
+
             pauseOnError = !deployOptions.NoPause;
             if (deployOptions.StartPaused)
                 StartPaused();
@@ -149,7 +159,7 @@ namespace DeployPackages
                 return false;
             }
 
-            var invalidArgument = args.FirstOrDefault(arg => !_validArguments.Keys.Contains(arg, StringComparer.InvariantCultureIgnoreCase));
+            var invalidArgument = args.FirstOrDefault(arg => !_validArguments.Keys.Contains(arg));
             if (invalidArgument != null)
             {
                 ShowHelp();
@@ -162,7 +172,7 @@ namespace DeployPackages
         {
             Console.WriteLine("Command-line arguments:");
             foreach (var argument in _validArguments)
-                Console.WriteLine($"{argument.Key.PadRight(20)} {argument.Value}");
+                Console.WriteLine($"{argument.Key.PadRight(20)} {argument.Value.description}");
         }
 
         /// <summary>

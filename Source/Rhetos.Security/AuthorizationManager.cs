@@ -82,7 +82,7 @@ namespace Rhetos.Security
             }
             catch (Exception ex)
             {
-                throw new FrameworkException($"Invalid '{nameof(SecurityOptions.AllClaimsForUsers)}' parameter format in web.config. Expected comma-separated list of entries formatted as username@servername.", ex);
+                throw new FrameworkException($"Invalid '{OptionsAttribute.GetConfigurationPath<SecurityOptions>()}:{nameof(SecurityOptions.AllClaimsForUsers)}' parameter format in web.config. Expected comma-separated list of entries formatted as username@servername.", ex);
             }
         }
 
@@ -105,7 +105,7 @@ namespace Rhetos.Security
         {
             if (_securityOptions.AllClaimsForAnonymous && _userInfo.IsUserRecognized)
                 throw new FrameworkException($"Invalid security configuration settings. Both anonymous access and user-level security should not be active at the same time." +
-                    $" Disable '{nameof(SecurityOptions.AllClaimsForAnonymous)}' option.");
+                    $" Disable '{OptionsAttribute.GetConfigurationPath<SecurityOptions>()}:{nameof(SecurityOptions.AllClaimsForAnonymous)}' option.");
 
             return _userInfo.IsUserRecognized
                 &&

@@ -25,6 +25,7 @@ namespace Rhetos.Utilities
     /// they should be considered as hard-coded at Rhetos build.
     /// See <see cref="BuildOptions"/> for configurable build settings.
     /// </summary>
+    [Options("Rhetos:RhetosBuildEnvironment")]
     public class RhetosBuildEnvironment : IAssetsOptions
     {
         public static readonly string ConfigurationFileName = "rhetos-build.settings.json";

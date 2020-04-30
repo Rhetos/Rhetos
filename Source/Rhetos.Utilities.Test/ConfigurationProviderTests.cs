@@ -274,7 +274,7 @@ namespace Rhetos.Utilities.Test
                 .Build();
 
             Assert.IsTrue(provider.AllKeys.Contains("ConnectionStrings:ServerConnectionString:Name"));
-            Assert.AreEqual(31, provider.GetValue("SqlCommandTimeout", 0));
+            Assert.AreEqual(31, provider.GetValue("Rhetos:Database:SqlCommandTimeout", 0));
             Assert.AreEqual("TestSettingValue", provider.GetValue("AdditionalTestSetting", "", "TestSection"));
         }
 

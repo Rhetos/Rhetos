@@ -17,11 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos;
+
 namespace DeployPackages
 {
     /// <summary>
     /// Options specific to DeployPackages utility. Should not be used outside of that scope.
     /// </summary>
+    [Options("Rhetos:Deploy")]
     public class DeployOptions
     {
         public bool StartPaused { get; set; }

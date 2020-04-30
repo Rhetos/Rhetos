@@ -69,7 +69,7 @@ namespace CommonConcepts.Test
 
                 foreach (string scriptsDescription in scriptsDescriptions)
                 {
-                    var dbUpdateOptions = new DbUpdateOptions() { DataMigration__SkipScriptsWithWrongOrder = skipScriptsWithWrongOrder };
+                    var dbUpdateOptions = new DbUpdateOptions() { DataMigrationSkipScriptsWithWrongOrder = skipScriptsWithWrongOrder };
                     var dataMigration = new DataMigrationScriptsExecuter(sqlExecuter, container.Resolve<ILogProvider>(), DataMigrationScriptsFromScriptsDescription(scriptsDescription), dbUpdateOptions, sqlBatches);
                     dataMigration.Execute();
                 }

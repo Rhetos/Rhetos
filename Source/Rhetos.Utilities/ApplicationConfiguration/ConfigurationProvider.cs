@@ -47,9 +47,8 @@ namespace Rhetos
         {
             var optionsType = typeof(T);
             var optionsInstance = Activator.CreateInstance(optionsType);
-            var optionsAttribute = optionsType.GetCustomAttribute<OptionsAttribute>();
             if (string.IsNullOrEmpty(configurationPath))
-                configurationPath = optionsAttribute?.ConfigurationPath ?? "";
+                configurationPath = OptionsAttribute.GetConfigurationPath<T>();
 
             var props = optionsType.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(prop => prop.CanWrite);
             var fields = optionsType.GetFields(BindingFlags.Public | BindingFlags.Instance).Where(field => !field.IsInitOnly);

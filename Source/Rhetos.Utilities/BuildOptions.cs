@@ -17,8 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System;
+
 namespace Rhetos.Utilities
 {
+    [Options("Rhetos:Build")]
     public class BuildOptions
     {
         public string DatabaseLanguage { get; set; } = "MsSql";
@@ -35,6 +38,9 @@ namespace Rhetos.Utilities
         /// with essential information on application structure.
         /// </summary>
         public bool GenerateAppSettings { get; set; } = false;
+
+        [Obsolete("Option is a part of legacy design/configuration.")]
+        public int AssemblyGeneratorErrorReportLimit { get; set; } = 5;
     }
 
     /// <summary>

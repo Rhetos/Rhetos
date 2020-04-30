@@ -65,7 +65,7 @@ namespace Rhetos.Deployment
             string skippedReport = string.Empty;
             if (skipped.Count > 0)
             {
-                if (_dbUpdateOptions.DataMigration__SkipScriptsWithWrongOrder)
+                if (_dbUpdateOptions.DataMigrationSkipScriptsWithWrongOrder)
                 {
                     // Ignore skipped scripts for backward compatibility.
                     LogScripts("Skipped older script", skipped, EventType.Warning);
