@@ -21,6 +21,7 @@ using System.Collections.Generic;
 
 namespace Rhetos.Extensibility
 {
+    [Options("Rhetos:PluginScanner")]
     public class PluginScannerOptions
     {
         /// <summary>

@@ -42,7 +42,7 @@ namespace Rhetos.Security
         private readonly HashSet<string> _allClaimsForUsers;
         private readonly IAuthorizationProvider _authorizationProvider;
         private readonly ILocalizer _localizer;
-        private readonly SecurityOptions _securityOptions;
+        private readonly AppSecurityOptions _appSecurityOptions;
 
         public AuthorizationManager(
             RhetosAppOptions rhetosAppOptions,
@@ -50,10 +50,10 @@ namespace Rhetos.Security
             IUserInfo userInfo,
             ILogProvider logProvider,
             IAuthorizationProvider authorizationProvider,
-            SecurityOptions securityOptions,
+            AppSecurityOptions appSecurityOptions,
             ILocalizer localizer)
         {
-            _securityOptions = securityOptions;
+            _appSecurityOptions = appSecurityOptions;
             _userInfo = userInfo;
             _claimProviders = claimProviders;
             _authorizationProvider = authorizationProvider;
@@ -68,7 +68,7 @@ namespace Rhetos.Security
         {
             try
             {
-                var setting = _securityOptions.AllClaimsForUsers;
+                var setting = _appSecurityOptions.AllClaimsForUsers;
                 var users = setting.Split(',').Select(u => u.Trim()).Where(u => !string.IsNullOrEmpty(u))
                     .Select(u => u.Split('@'))
                     .Select(u => new { UserName = u[0], HostName = u[1] })
@@ -82,7 +82,7 @@ namespace Rhetos.Security
             }
             catch (Exception ex)
             {
-                throw new FrameworkException($"Invalid '{nameof(SecurityOptions.AllClaimsForUsers)}' parameter format in web.config. Expected comma-separated list of entries formatted as username@servername.", ex);
+                throw new FrameworkException($"Invalid '{OptionsAttribute.GetConfigurationPath<AppSecurityOptions>()}:{nameof(AppSecurityOptions.AllClaimsForUsers)}' in configuration files. Expected comma-separated list of entries formatted as username@servername.", ex);
             }
         }
 
@@ -103,9 +103,9 @@ namespace Rhetos.Security
 
         private bool AssumeAllClaims()
         {
-            if (_securityOptions.AllClaimsForAnonymous && _userInfo.IsUserRecognized)
+            if (_appSecurityOptions.AllClaimsForAnonymous && _userInfo.IsUserRecognized)
                 throw new FrameworkException($"Invalid security configuration settings. Both anonymous access and user-level security should not be active at the same time." +
-                    $" Disable '{nameof(SecurityOptions.AllClaimsForAnonymous)}' option.");
+                    $" Disable '{OptionsAttribute.GetConfigurationPath<AppSecurityOptions>()}:{nameof(AppSecurityOptions.AllClaimsForAnonymous)}' option.");
 
             return _userInfo.IsUserRecognized
                 &&
@@ -116,7 +116,7 @@ namespace Rhetos.Security
                         && _userInfo is IUserInfoAdmin
                         && ((IUserInfoAdmin)_userInfo).IsBuiltInAdministrator
                 )
-                || _securityOptions.AllClaimsForAnonymous;
+                || _appSecurityOptions.AllClaimsForAnonymous;
         }
 
         public string Authorize(IList<ICommandInfo> commandInfos)

@@ -43,14 +43,14 @@ namespace Rhetos.Compiler
         private readonly CacheUtility _cacheUtility;
         private readonly ISourceWriter _sourceWriter;
 
-        public AssemblyGenerator(ILogProvider logProvider, IConfiguration configuration,
+        public AssemblyGenerator(ILogProvider logProvider,
             BuildOptions buildOptions, RhetosBuildEnvironment buildEnvironment,
             FilesUtility filesUtility, ISourceWriter sourceWriter)
         {
             _performanceLogger = logProvider.GetLogger("Performance");
             _logger = logProvider.GetLogger("AssemblyGenerator");
-            _errorReportLimit = configuration.GetValue("AssemblyGenerator.ErrorReportLimit", 5);
             _buildOptions = buildOptions;
+            _errorReportLimit = buildOptions.AssemblyGeneratorErrorReportLimit;
             _buildEnvironment = buildEnvironment;
             _sourceWriter = sourceWriter;
             _cacheUtility = new CacheUtility(typeof(AssemblyGenerator), buildEnvironment, filesUtility);

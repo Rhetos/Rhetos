@@ -80,9 +80,9 @@ namespace CommonConcepts.Test
             container.InitializeSession += builder =>
             {
                 builder.RegisterInstance(
-                    new RhetosAppOptions { EntityFramework__UseDatabaseNullSemantics = useDatabaseNullSemantics });
+                    new RhetosAppOptions { EntityFrameworkUseDatabaseNullSemantics = useDatabaseNullSemantics });
             };
-            Console.WriteLine($"{nameof(RhetosAppOptions)}.{nameof(RhetosAppOptions.EntityFramework__UseDatabaseNullSemantics)} = {useDatabaseNullSemantics}");
+            Console.WriteLine($"{nameof(RhetosAppOptions)}.{nameof(RhetosAppOptions.EntityFrameworkUseDatabaseNullSemantics)} = {useDatabaseNullSemantics}");
         }
     }
 }

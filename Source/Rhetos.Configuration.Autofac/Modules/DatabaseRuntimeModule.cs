@@ -28,7 +28,7 @@ namespace Rhetos.Configuration.Autofac.Modules
         {
             builder.RegisterInstance(new ConnectionString(SqlUtility.ConnectionString));
             builder.RegisterType(DatabaseTypes.GetSqlExecuterType(SqlUtility.DatabaseLanguage)).As<ISqlExecuter>().InstancePerLifetimeScope();
-            builder.Register(context => context.Resolve<IConfiguration>().GetOptions<SqlTransactionBatchesOptions>("Database:SqlTransactionBatches")).InstancePerLifetimeScope();
+            builder.Register(context => context.Resolve<IConfiguration>().GetOptions<SqlTransactionBatchesOptions>()).InstancePerLifetimeScope();
             builder.RegisterType<SqlTransactionBatches>().InstancePerLifetimeScope();
 
             base.Load(builder);

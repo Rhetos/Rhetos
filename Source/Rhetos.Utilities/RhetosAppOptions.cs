@@ -24,6 +24,7 @@ namespace Rhetos.Utilities
     /// <summary>
     /// Runtime configuration settings.
     /// </summary>
+    [Options("Rhetos:App")]
     public class RhetosAppOptions : IAssetsOptions
     {
         /// <summary>
@@ -47,7 +48,7 @@ namespace Rhetos.Utilities
 
         public bool BuiltinAdminOverride { get; set; } = false;
 
-        public bool EntityFramework__UseDatabaseNullSemantics { get; set; } = true;
+        public bool EntityFrameworkUseDatabaseNullSemantics { get; set; } = true;
 
         public double AuthorizationCacheExpirationSeconds { get; set; } = 30;
 

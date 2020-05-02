@@ -61,7 +61,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             // Cascade delete FK in database is usually not needed because the server application will explicitly delete the referencing data (to ensure server-side validations and recomputations).
             // Cascade delete in database is just a legacy feature, a convenience for development and testing.
             // It is turned off by default because if a record is deleted by cascade delete directly in the database, then the business logic implemented in application layer will not be executed.
-            if (_commonConceptsOptions.Legacy__CascadeDeleteInDatabase)
+            if (_commonConceptsOptions.CascadeDeleteInDatabase)
             {
                 var dbConstraint = (ReferencePropertyDbConstraintInfo)existingConcepts.FindByKey($"ReferencePropertyDbConstraintInfo {conceptInfo.Reference}");
                 if (dbConstraint != null)

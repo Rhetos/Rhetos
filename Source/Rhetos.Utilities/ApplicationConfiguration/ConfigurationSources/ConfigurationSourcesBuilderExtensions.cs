@@ -50,9 +50,8 @@ namespace Rhetos
 
         public static IConfigurationBuilder AddOptions(this IConfigurationBuilder builder, object options, string configurationPath = "")
         {
-            var optionsAttribute = options.GetType().GetCustomAttribute<OptionsAttribute>();
             if (string.IsNullOrEmpty(configurationPath))
-                configurationPath = optionsAttribute?.ConfigurationPath ?? "";
+                configurationPath = OptionsAttribute.GetConfigurationPath(options.GetType());
 
             var members = options.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public).Select(member => (member.Name, Value: member.GetValue(options)))
                 .Concat(options.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public).Select(member => (member.Name, Value: member.GetValue(options))));
@@ -79,7 +78,7 @@ namespace Rhetos
             // Normalize path for better error handling and more robust configuration.
             configurationFolder = Path.GetFullPath(Path.Combine(configurationFolder, "."));
 
-            builder.AddKeyValue(nameof(RhetosAppEnvironment.ApplicationRootFolder), configurationFolder);
+            builder.AddKeyValue($"{OptionsAttribute.GetConfigurationPath<RhetosAppEnvironment>()}:{nameof(RhetosAppEnvironment.ApplicationRootFolder)}", configurationFolder);
 
             // Main run-time configuration file.
             builder.AddJsonFile(Path.Combine(configurationFolder, RhetosAppEnvironment.ConfigurationFileName), optional: true);

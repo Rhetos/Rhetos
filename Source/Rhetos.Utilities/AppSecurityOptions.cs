@@ -19,8 +19,8 @@
 
 namespace Rhetos.Utilities
 {
-    [Options("Security")]
-    public class SecurityOptions
+    [Options("Rhetos:AppSecurity")]
+    public class AppSecurityOptions
     {
         public bool LookupClientHostname { get; set; } = false;
         public string AllClaimsForUsers { get; set; } = "";

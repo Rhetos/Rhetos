@@ -58,7 +58,7 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.InsertCodeToFile(OrmSnippet, string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder) ? DomAssemblies.Orm.ToString() : "EntityFrameworkContext");
             codeBuilder.InsertCodeToFile(RepositoriesSnippet, DomAssemblies.Repositories.ToString());
 
-            codeBuilder.InsertCode("this.Configuration.UseDatabaseNullSemantics = _rhetosAppOptions.EntityFramework__UseDatabaseNullSemantics;\r\n            ", EntityFrameworkContextInitializeTag);
+            codeBuilder.InsertCode("this.Configuration.UseDatabaseNullSemantics = _rhetosAppOptions.EntityFrameworkUseDatabaseNullSemantics;\r\n            ", EntityFrameworkContextInitializeTag);
 
             // Types used in the preceding code snippet:
             codeBuilder.AddReferencesFromDependency(typeof(Autofac.Module)); // Includes a reference to Autofac.dll.

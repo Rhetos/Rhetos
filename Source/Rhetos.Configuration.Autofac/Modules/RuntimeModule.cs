@@ -55,7 +55,7 @@ namespace Rhetos.Configuration.Autofac.Modules
 
         private void AddSecurity(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
         {
-            builder.Register(context => context.Resolve<IConfiguration>().GetOptions<SecurityOptions>()).SingleInstance().PreserveExistingDefaults();
+            builder.Register(context => context.Resolve<IConfiguration>().GetOptions<AppSecurityOptions>()).SingleInstance().PreserveExistingDefaults();
             builder.RegisterType<WindowsSecurity>().As<IWindowsSecurity>().SingleInstance();
             builder.RegisterType<AuthorizationManager>().As<IAuthorizationManager>().InstancePerLifetimeScope();
 

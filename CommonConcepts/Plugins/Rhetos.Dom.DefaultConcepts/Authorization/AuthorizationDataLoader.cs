@@ -74,7 +74,8 @@ namespace Rhetos.Dom.DefaultConcepts
             {
                 if (_rhetosAppOptions.AuthorizationAddUnregisteredPrincipals)
                 {
-                    _logger.Info(() => "Adding unregistered principal '" + username + "'. See AuthorizationAddUnregisteredPrincipals in web.config.");
+                    _logger.Info(() =>
+                        $"Adding unregistered principal '{username}'. See {OptionsAttribute.GetConfigurationPath<RhetosAppOptions>()}:{nameof(RhetosAppOptions.AuthorizationAddUnregisteredPrincipals)} in configuration files.");
                     var newPrincipal = _principalGenericRepository.Value.CreateInstance();
                     newPrincipal.ID = Guid.NewGuid();
                     newPrincipal.Name = username;

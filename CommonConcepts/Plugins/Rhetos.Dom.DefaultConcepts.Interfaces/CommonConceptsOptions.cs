@@ -17,13 +17,21 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System;
+
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Options("CommonConcepts")]
     public class CommonConceptsOptions
     {
-        public bool Legacy__AutoGeneratePolymorphicProperty { get; set; } = false;
+        /// <summary>
+        /// Option is a part of legacy design/configuration.
+        /// </summary>
+        public bool AutoGeneratePolymorphicProperty { get; set; } = false;
 
-        public bool Legacy__CascadeDeleteInDatabase { get; set; } = false;
+        /// <summary>
+        /// Option is a part of legacy design/configuration.
+        /// </summary>
+        public bool CascadeDeleteInDatabase { get; set; } = false;
     }
 }
