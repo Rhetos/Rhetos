@@ -29,6 +29,12 @@ namespace Rhetos.Configuration.Autofac
     public class RhetosProcessContainer
     {
         private readonly Lazy<IContainer> _rhetosIocContainer;
+        private readonly Lazy<Host> _host;
+        private readonly Lazy<IConfiguration> _configuration;
+
+        public IConfiguration Configuration {
+            get { return _configuration.Value; }
+        }
 
         /// <summary>
         /// It encapuslates a Dependency Injection container created by calling the method
@@ -39,10 +45,19 @@ namespace Rhetos.Configuration.Autofac
             Action<IConfigurationBuilder> addCustomConfiguration = null, Action<ContainerBuilder> registerCustomComponents = null)
         {
             logProvider = logProvider ?? new ConsoleLogProvider();
+            if(findRhetosHostFolder == null)
+                findRhetosHostFolder = () => AppDomain.CurrentDomain.BaseDirectory;
+
+            _host = new Lazy<Host>(() => Host.Find(findRhetosHostFolder(), logProvider), true);
+            _configuration = new Lazy<IConfiguration>(() => _host.Value.RhetosRuntime.BuildConfiguration(logProvider, _host.Value.ConfigurationFolder, addCustomConfiguration), true);
 
             _rhetosIocContainer = new Lazy<IContainer>(() => {
+                //The values for rhetosRuntime and configuration are resolved before the call to Stopwatch.StartNew
+                //so that the performance logging only takes into account the time needed to build the ioc container
+                var rhetosRuntime = _host.Value.RhetosRuntime;
+                var configuration = _configuration.Value;
                 var sw = Stopwatch.StartNew();
-                var iocContainer = Host.CreateRhetosContainer(findRhetosHostFolder(), logProvider, addCustomConfiguration, (builder) => {
+                var iocContainer = rhetosRuntime.BuildContainer(logProvider, configuration, (builder) => {
                     // Override runtime IUserInfo plugins. This container is intended to be used in a simple process or unit tests.
                     builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();
                     builder.RegisterType<ConsoleLogProvider>().As<ILogProvider>();

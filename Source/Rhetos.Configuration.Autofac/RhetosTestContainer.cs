@@ -92,8 +92,7 @@ namespace Rhetos.Configuration.Autofac
                         {
                             _rhetosProcessContainer = new RhetosProcessContainer(SearchForRhetosServerRootFolder, new ConsoleLogProvider(),
                                 configurationBuilder => configurationBuilder.AddConfigurationManagerConfiguration());
-                            var configuration = _rhetosProcessContainer.CreateTransactionScope(false).Resolve<IConfiguration>();
-                            AppDomain.CurrentDomain.AssemblyResolve += new AssemblyResolver(configuration).SearchForAssembly;
+                            AppDomain.CurrentDomain.AssemblyResolve += new AssemblyResolver(_rhetosProcessContainer.Configuration).SearchForAssembly;
                         }
                 }
 
