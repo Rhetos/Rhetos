@@ -31,7 +31,6 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(UniqueReferenceCascadeDeleteDbInfo))]
     public class UniqueReferenceCascadeDeleteDatabaseDefinition : IConceptDatabaseDefinitionExtension
     {
-            _legacyCascadeDeleteInDatabase = commonConceptsOptions.CascadeDeleteInDatabase;
         public void ExtendDatabaseStructure(
             IConceptInfo conceptInfo, ICodeBuilder codeBuilder,
             out IEnumerable<Tuple<IConceptInfo, IConceptInfo>> createdDependencies)
