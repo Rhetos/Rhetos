@@ -42,7 +42,8 @@ namespace Rhetos.Dom.DefaultConcepts
                 + " }";
 
             string setMessages =
-            $@"return this.Query(invalidData_Ids)
+            $@"
+            return this.Query(invalidData_Ids)
                 .Select({info.MessageParameters})
                 .ToList()
                 .Select(parameters => new InvalidDataMessage
@@ -51,8 +52,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     Message = {CsUtility.QuotedString(info.InvalidData.ErrorMessage)},
                     MessageParameters = {parametersArray},
                     Metadata = metadata
-                }});
-            ";
+                }});";
             codeBuilder.InsertCode(setMessages, InvalidDataCodeGenerator.CustomValidationResultTag, info.InvalidData);
         }
 

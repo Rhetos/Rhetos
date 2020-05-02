@@ -66,13 +66,13 @@ namespace Rhetos.Dom.DefaultConcepts
             if (!hasCustomValidationMessage)
             {
                 string defaultValidationResult =
-            $@"return invalidData_Ids.Select(id => new InvalidDataMessage
+            $@"
+            return invalidData_Ids.Select(id => new InvalidDataMessage
             {{
                 ID = id,
                 Message = {CsUtility.QuotedString(info.ErrorMessage)},
                 Metadata = metadata
-            }});
-            ";
+            }});";
                 codeBuilder.InsertCode(defaultValidationResult, CustomValidationResultTag, info);
             }
 

@@ -35,14 +35,14 @@ namespace Rhetos.Dom.DefaultConcepts
             var info = (InvalidDataMessageParametersConstantInfo)conceptInfo;
 
             string setMessages =
-            $@"return invalidData_Ids.Select(id => new InvalidDataMessage
+            $@"
+            return invalidData_Ids.Select(id => new InvalidDataMessage
             {{
                 ID = id,
                 Message = {CsUtility.QuotedString(info.InvalidData.ErrorMessage)},
                 MessageParameters = new object[] {{ {info.MessageParameters} }},
                 Metadata = metadata
-            }});
-            ";
+            }});";
             codeBuilder.InsertCode(setMessages, InvalidDataCodeGenerator.CustomValidationResultTag, info.InvalidData);
         }
     }

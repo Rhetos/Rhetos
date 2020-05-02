@@ -35,9 +35,9 @@ namespace Rhetos.Dom.DefaultConcepts
 
             // Using underscore in variable name to avoid name clashes with custom injected code.
             string setMessages =
-            @"Func<IEnumerable<Guid>, IEnumerable<InvalidDataMessage>> invalidData_Func = " + info.MessageFunction + @";
-            return invalidData_Func(invalidData_Ids);
-            ";
+            @"
+            Func<IEnumerable<Guid>, IEnumerable<InvalidDataMessage>> invalidData_Func = " + info.MessageFunction + @";
+            return invalidData_Func(invalidData_Ids);";
             codeBuilder.InsertCode(setMessages, InvalidDataCodeGenerator.CustomValidationResultTag, info.InvalidData);
         }
     }
