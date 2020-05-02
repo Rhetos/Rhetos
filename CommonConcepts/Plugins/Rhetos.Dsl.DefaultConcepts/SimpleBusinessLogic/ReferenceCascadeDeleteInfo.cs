@@ -25,13 +25,11 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
     /// Automatically deletes detail records when a master record is deleted.
+    /// Remarks:
+    /// If referencing polymorphic concept, cascade delete will occur when the _Materialized record is automatically deleted.
+    /// Cascade delete is implemented in the application layer, because a database implementation would not execute any business logic that is implemented on detail entity.
+    /// For cascade delete in database see CascadeDeleteInDatabase concept or legacy option CommonConcepts.Legacy.CascadeDeleteInDatabase.
     /// </summary>
-    /// <remarks>
-    /// This feature does not create "on delete cascade" in database unless CommonConcepts.Legacy.CascadeDeleteInDatabase
-    /// is enabled (since Rhetos v2.11).
-    /// It is implemented in the application layer, because a database implementation would not execute
-    /// any business logic that is implemented on the child entity.
-    /// </remarks> 
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("CascadeDelete")]
     public class ReferenceCascadeDeleteInfo : IConceptInfo
@@ -60,7 +58,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                     Parent = ((PolymorphicInfo)conceptInfo.Reference.Referenced).GetMaterializedEntity()
                 });
 
-            // Cascade delete FK in database is not needed because the server application will explicitly delete the referencing data (to ensure server-side validations and recomputations).
+            // Cascade delete FK in database is usually not needed because the server application will explicitly delete the referencing data (to ensure server-side validations and recomputations).
             // Cascade delete in database is just a legacy feature, a convenience for development and testing.
             // It is turned off by default because if a record is deleted by cascade delete directly in the database, then the business logic implemented in application layer will not be executed.
             if (_commonConceptsOptions.Legacy__CascadeDeleteInDatabase)
