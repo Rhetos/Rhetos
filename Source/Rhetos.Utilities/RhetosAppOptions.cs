@@ -46,8 +46,6 @@ namespace Rhetos.Utilities
         /// </summary>
         public string DatabaseLanguage { get; set; }
 
-        public bool BuiltinAdminOverride { get; set; } = false;
-
         public bool EntityFrameworkUseDatabaseNullSemantics { get; set; } = true;
 
         public double AuthorizationCacheExpirationSeconds { get; set; } = 30;

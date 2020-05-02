@@ -35,7 +35,6 @@ namespace Rhetos.Security
         private readonly IPluginsContainer<IClaimProvider> _claimProviders;
         private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
-        private readonly bool _allowBuiltinAdminOverride;
         /// <summary>
         /// Case-insensitive HashSet.
         /// </summary>
@@ -45,7 +44,6 @@ namespace Rhetos.Security
         private readonly AppSecurityOptions _appSecurityOptions;
 
         public AuthorizationManager(
-            RhetosAppOptions rhetosAppOptions,
             IPluginsContainer<IClaimProvider> claimProviders,
             IUserInfo userInfo,
             ILogProvider logProvider,
@@ -59,7 +57,6 @@ namespace Rhetos.Security
             _authorizationProvider = authorizationProvider;
             _logger = logProvider.GetLogger(GetType().Name);
             _performanceLogger = logProvider.GetLogger("Performance");
-            _allowBuiltinAdminOverride = rhetosAppOptions.BuiltinAdminOverride;
             _allClaimsForUsers = FromConfigAllClaimsForUsers();
             _localizer = localizer;
         }
@@ -112,7 +109,7 @@ namespace Rhetos.Security
                 (
                     _allClaimsForUsers.Contains(_userInfo.UserName)
                     ||
-                    _allowBuiltinAdminOverride
+                    _appSecurityOptions.BuiltinAdminOverride
                         && _userInfo is IUserInfoAdmin
                         && ((IUserInfoAdmin)_userInfo).IsBuiltInAdministrator
                 )
