@@ -28,48 +28,49 @@ namespace Rhetos.Configuration.Autofac
     /// </summary>
     public class RhetosTransactionScopeContainer : IDisposable
     {
-        private Action<ContainerBuilder> _configureContainer;
-        private bool _commitChanges;
-        private Lazy<IContainer> _iocConatiner;
-        private ILifetimeScope _lifetimeScope;
+        private readonly bool _commitChanges;
+        private readonly Lazy<ILifetimeScope> _lifetimeScope;
 
-        /// <param name="iocConatiner">
+        /// <param name="iocContainer">
         /// The Dependency Injection container used to create the transaction scope container.
         /// </param>
         /// <param name="commitChanges">
         /// Whether database updates (by ORM repositories) will be committed or rollbacked when Dispose is called.
         /// </param>
-        public RhetosTransactionScopeContainer(Lazy<IContainer> iocConatiner, bool commitChanges, Action<ContainerBuilder> configureContainer)
+        public RhetosTransactionScopeContainer(Lazy<IContainer> iocContainer, bool commitChanges, Action<ContainerBuilder> registerCustomComponents = null)
         {
-            _iocConatiner = iocConatiner;
             _commitChanges = commitChanges;
-            _configureContainer = configureContainer;
+            _lifetimeScope = new Lazy<ILifetimeScope>(() => registerCustomComponents != null ? iocContainer.Value.BeginLifetimeScope(registerCustomComponents) : iocContainer.Value.BeginLifetimeScope());
         }
 
         public T Resolve<T>()
         {
-            InitializeScope();
-            return _lifetimeScope.Resolve<T>();
+            return _lifetimeScope.Value.Resolve<T>();
         }
+
+        private bool disposed = false; // Standard IDisposable pattern to detect redundant calls.
 
         public void Dispose()
         {
-            if (!_commitChanges && _lifetimeScope != null)
-                _lifetimeScope.Resolve<IPersistenceTransaction>().DiscardChanges();
-
-            if (_lifetimeScope != null)
-                _lifetimeScope.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
-        private void InitializeScope()
+        protected virtual void Dispose(bool disposing)
         {
-            if (_lifetimeScope == null)
+            if (disposed)
+                return;
+
+            if (disposing)
             {
-                if (_configureContainer != null)
-                    _lifetimeScope = _iocConatiner.Value.BeginLifetimeScope(_configureContainer);
-                else
-                    _lifetimeScope = _iocConatiner.Value.BeginLifetimeScope();
+                if (!_commitChanges && _lifetimeScope.IsValueCreated)
+                    _lifetimeScope.Value.Resolve<IPersistenceTransaction>().DiscardChanges();
+
+                if (_lifetimeScope.IsValueCreated)
+                    _lifetimeScope.Value.Dispose();
             }
+
+            disposed = true;
         }
     }
 }

@@ -28,17 +28,17 @@ using System.Collections.Generic;
 namespace Rhetos.Configuration.Autofac
 {
     /// <summary>
+    /// RhetosTestContainer is a legacy wrapper around <see cref="RhetosProcessContainer"/> and <see cref="RhetosTransactionScopeContainer"/>.
+    /// For new projects use those classes directly.
     /// Inherit this class and override virtual functions to customize it.
     /// </summary>
     public class RhetosTestContainer : IDisposable
     {
-
         // Global:
         private static object _containerInitializationLock = new object();
         private static RhetosProcessContainer _rhetosProcessContainer;
 
         // Instance per test or session:
-        protected ILifetimeScope _lifetimeScope;
         protected bool _commitChanges;
         protected string _explicitRhetosServerFolder;
         protected RhetosTransactionScopeContainer _rhetosTransactionScope;
@@ -66,22 +66,38 @@ namespace Rhetos.Configuration.Autofac
         /// </summary>
         public void Initialize()
         {
-            InitializeRhetosProcessContainer();
+            InitializeRhetosTransactionScopeContainer();
         }
 
         public T Resolve<T>()
         {
-            InitializeRhetosProcessContainer();
+            InitializeRhetosTransactionScopeContainer();
             return _rhetosTransactionScope.Resolve<T>();
         }
 
+        private bool disposed = false; // Standard IDisposable pattern to detect redundant calls.
+
         public void Dispose()
         {
-            if (_rhetosTransactionScope != null)
-                _rhetosTransactionScope.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
-        private void InitializeRhetosProcessContainer()
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed)
+                return;
+
+            if (disposing)
+            {
+                if (_rhetosTransactionScope != null)
+                    _rhetosTransactionScope.Dispose();
+            }
+
+            disposed = true;
+        }
+
+        private void InitializeRhetosTransactionScopeContainer()
         {
             if (_rhetosTransactionScope == null)
             {

@@ -30,9 +30,12 @@ namespace Rhetos.Configuration.Autofac
     /// <summary>
     /// It encapsulates a Dependency Injection container (see 
     /// <see cref="Host.CreateRhetosContainer(string, ILogProvider, Action{IConfigurationBuilder}, Action{ContainerBuilder})"/>)
-    /// for creating the lifetime-scope sub-containers with <see cref="CreateTransactionScope"/>.
-    /// Use the sub-containers to isolate units of work into separate atomic transactions.
-    /// The sub-containers are thread-safe: the main RhetosProcessContainer instance can be reused between threads to reduce the initialization time, such as plugin discovery and Entity Framework startup.
+    /// for creating the lifetime-scope child containers with <see cref="CreateTransactionScope"/>.
+    /// Use the child containers to isolate units of work into separate atomic transactions.
+    /// 
+    /// RhetosProcessContainer is thread-safe: the main RhetosProcessContainer instance can be reused between threads
+    /// to reduce the initialization time, such as plugin discovery and Entity Framework startup.
+    /// Each thread should use <see cref="CreateTransactionScope"/> to create its own lifetime-scope child container.
     /// </summary>
     public class RhetosProcessContainer
     {
@@ -83,9 +86,9 @@ namespace Rhetos.Configuration.Autofac
         /// <param name="commitChanges">
         /// Whether database updates (by ORM repositories) will be committed or rollbacked. By default it is set to true.
         /// </param>
-        /// <param name="configureContainer">
+        /// <param name="registerCustomComponents">
         /// Used to customize the transaction scope Dependency Injection container. By default it is set to null.
         /// </param>/// 
-        public RhetosTransactionScopeContainer CreateTransactionScope(bool commitChanges, Action<ContainerBuilder> configureContainer = null) => new RhetosTransactionScopeContainer(_rhetosIocContainer, commitChanges, configureContainer);
+        public RhetosTransactionScopeContainer CreateTransactionScope(bool commitChanges, Action<ContainerBuilder> registerCustomComponents = null) => new RhetosTransactionScopeContainer(_rhetosIocContainer, commitChanges, registerCustomComponents);
     }
 }
