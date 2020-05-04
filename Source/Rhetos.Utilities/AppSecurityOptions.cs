@@ -19,9 +19,10 @@
 
 namespace Rhetos.Utilities
 {
-    [Options("Security")]
-    public class SecurityOptions
+    [Options("Rhetos:AppSecurity")]
+    public class AppSecurityOptions
     {
+        public bool BuiltinAdminOverride { get; set; } = false;
         public bool LookupClientHostname { get; set; } = false;
         public string AllClaimsForUsers { get; set; } = "";
         public bool AllClaimsForAnonymous { get; set; } = false;

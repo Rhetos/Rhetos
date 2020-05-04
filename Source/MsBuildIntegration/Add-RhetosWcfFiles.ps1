@@ -46,8 +46,12 @@ $rhetosBuildSettingsPath = "$projectFolder\rhetos-build.settings.json"
 $rhetosBuildSettings =
 @'
 {
-  "GenerateAppSettings": true,
-  "BuildResourcesFolder": true
+  "Rhetos": {
+    "Build": {
+      "GenerateAppSettings": true,
+      "BuildResourcesFolder": true
+    } 
+  } 
 }
 '@
 Set-Content -Path $rhetosBuildSettingsPath -Value $rhetosBuildSettings -NoNewline

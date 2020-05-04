@@ -22,11 +22,14 @@ using System.ComponentModel.Composition;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// An internal concept for generating cascade delete in database.
+    /// A low-level concept for generating cascade delete in database.
     /// It should be rarely used because deleting records directly in database
     /// circumvents any business logic implemented in the application related to those records.
+    /// If the legacy option CommonConcepts.Legacy.CascadeDeleteInDatabase is enabled,
+    /// this concept will be created automatically for each Reference with CascadeDelete (for example, on Detail concept)
     /// </summary>
     [Export(typeof(IConceptInfo))]
+    [ConceptKeyword("CascadeDeleteInDatabase")]
     public class ReferenceCascadeDeleteDbInfo : IConceptInfo
     {
         [ConceptKey]

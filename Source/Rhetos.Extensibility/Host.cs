@@ -104,14 +104,15 @@ namespace Rhetos
         private static string LoadRhetosRuntimePath(string configurationFolder)
         {
             string configurationFile = Path.Combine(configurationFolder, RhetosAppEnvironment.ConfigurationFileName);
-            string serialized = File.ReadAllText(configurationFile);
+            var configuration = new ConfigurationBuilder()
+                .AddJsonFile(configurationFile)
+                .Build();
 
-            var runtimeSettings = JsonConvert.DeserializeObject<RhetosAppOptions>(serialized);
+            var runtimeSettings = configuration.GetOptions<RhetosAppOptions>();
             if (string.IsNullOrEmpty(runtimeSettings.RhetosRuntimePath))
-                throw new FrameworkException($"Configuration setting '{nameof(RhetosAppOptions.RhetosRuntimePath)}' is not specified in '{configurationFile}'.");
-
-            string rhetosRuntimePath = Path.Combine(configurationFolder, runtimeSettings.RhetosRuntimePath);
-            return rhetosRuntimePath;
+                throw new FrameworkException($"Configuration setting '{OptionsAttribute.GetConfigurationPath<RhetosAppOptions>()}:{nameof(RhetosAppOptions.RhetosRuntimePath)}' is not specified in '{configurationFile}'.");
+            
+            return runtimeSettings.RhetosRuntimePath;
         }
 
         private static IRhetosRuntime CreateRhetosRuntimeInstance(ILogProvider logProvider, string rhetosRuntimePath)

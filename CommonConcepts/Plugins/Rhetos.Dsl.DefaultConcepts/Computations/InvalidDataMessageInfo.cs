@@ -17,17 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
     /// This base class for different implementations of error messages is used to
     /// ensure only one implementation will be used on a single InvalidData concept.
+    /// This concept will suppress default validation result (message, parameters and metadata) to allow custom implementation.
     /// </summary>
     [Export(typeof(IConceptInfo))]
     public class InvalidDataMessageInfo : IConceptInfo

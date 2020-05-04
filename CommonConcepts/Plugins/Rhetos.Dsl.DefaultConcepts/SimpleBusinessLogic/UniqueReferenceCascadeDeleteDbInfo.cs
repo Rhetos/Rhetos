@@ -17,17 +17,22 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-namespace Rhetos.Utilities
+using System.ComponentModel.Composition;
+
+namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// Internal helper class for MSBuild integration.
-    /// Use <see cref="RhetosBuildEnvironment"/> for build folders instead.
+    /// A low-level concept for generating cascade delete in database.
+    /// It should be rarely used because deleting records directly in database
+    /// circumvents any business logic implemented in the application, related to those records.
+    /// If the legacy option CommonConcepts.Legacy.CascadeDeleteInDatabase is enabled,
+    /// this concept will be created automatically for each UniqueReference with CascadeDelete (for example, on Extends concept)
     /// </summary>
-    [Options("Rhetos:RhetosTargetEnvironment")]
-    public class RhetosTargetEnvironment
+    [Export(typeof(IConceptInfo))]
+    [ConceptKeyword("CascadeDeleteInDatabase")]
+    public class UniqueReferenceCascadeDeleteDbInfo : IConceptInfo
     {
-        public string TargetPath { get; set; }
-
-        public string TargetAssetsFolder { get; set; }
+        [ConceptKey]
+        public UniqueReferenceInfo UniqueReference { get; set; }
     }
 }

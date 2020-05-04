@@ -145,12 +145,12 @@ namespace Rhetos
             var configuration = host.RhetosRuntime.BuildConfiguration(LogProvider, host.ConfigurationFolder, configurationBuilder =>
             {
                 configurationBuilder.AddConfigurationManagerConfiguration();
-                configurationBuilder.AddKeyValue(nameof(DatabaseOptions.SqlCommandTimeout), 0);
+                configurationBuilder.AddKeyValue($"{OptionsAttribute.GetConfigurationPath<DatabaseOptions>()}:{nameof(DatabaseOptions.SqlCommandTimeout)}", 0);
                 configurationBuilder.AddJsonFile(Path.Combine(host.ConfigurationFolder, DbUpdateOptions.ConfigurationFileName), optional: true);
                 if (shortTransactions)
-                    configurationBuilder.AddKeyValue(nameof(DbUpdateOptions.ShortTransactions), shortTransactions);
+                    configurationBuilder.AddKeyValue($"{OptionsAttribute.GetConfigurationPath<DbUpdateOptions>()}:{nameof(DbUpdateOptions.ShortTransactions)}", shortTransactions);
                 if (skipRecompute)
-                    configurationBuilder.AddKeyValue(nameof(DbUpdateOptions.SkipRecompute), skipRecompute);
+                    configurationBuilder.AddKeyValue($"{OptionsAttribute.GetConfigurationPath<DbUpdateOptions>()}:{nameof(DbUpdateOptions.SkipRecompute)}", skipRecompute);
             });
 
             var assemblyFiles = LegacyUtilities.GetRuntimeAssembliesDelegate(configuration).Invoke(); // Using same assembly locations as the generated application runtime.

@@ -73,19 +73,17 @@ namespace Rhetos.Deployment
         {
 			var configurationItems = new List<(string Path, string Value)>();
 
-			configurationItems.Add((nameof(RhetosAppOptions.RhetosRuntimePath),
+			configurationItems.Add(($"{OptionsAttribute.GetConfigurationPath<RhetosAppOptions>()}:{nameof(RhetosAppOptions.RhetosRuntimePath)}",
 				FilesUtility.AbsoluteToRelativePath(_rhetosBuildEnvironment.ProjectFolder, _rhetosTargetEnvironment.TargetPath)));
 
-			configurationItems.Add((nameof(RhetosAppOptions.AssetsFolder),
+			configurationItems.Add(($"{OptionsAttribute.GetConfigurationPath<RhetosAppOptions>()}:{nameof(RhetosAppOptions.AssetsFolder)}",
 				FilesUtility.AbsoluteToRelativePath(_rhetosBuildEnvironment.ProjectFolder, _rhetosTargetEnvironment.TargetAssetsFolder)));
 
 			if (!string.IsNullOrEmpty(_buildOptions.DatabaseLanguage))
-				configurationItems.Add((nameof(RhetosAppOptions.DatabaseLanguage), _buildOptions.DatabaseLanguage));
-
-			string legacyPathsConfigurationPath = typeof(LegacyPathsOptions).GetCustomAttribute<OptionsAttribute>().ConfigurationPath;
+				configurationItems.Add(($"{OptionsAttribute.GetConfigurationPath<RhetosAppOptions>()}:{nameof(RhetosAppOptions.DatabaseLanguage)}", _buildOptions.DatabaseLanguage));
 
 			if (_buildOptions.BuildResourcesFolder)
-				configurationItems.Add(($"{legacyPathsConfigurationPath}:{nameof(LegacyPathsOptions.ResourcesFolder)}",
+				configurationItems.Add(($"{OptionsAttribute.GetConfigurationPath<LegacyPathsOptions>()}:{nameof(LegacyPathsOptions.ResourcesFolder)}",
 					FilesUtility.AbsoluteToRelativePath(_rhetosBuildEnvironment.ProjectFolder, _legacyPathsOptions.ResourcesFolder)));
 
 			return configurationItems.Where(item => item.Value != null);

@@ -121,7 +121,7 @@ FROM
             var missingProperties = missingImplementations.Select(subim => subim.Property).Where(supp => !subtypeProperties.Any(subp => subp.Name == supp.Name));
             var missingPropertiesToAdd = missingProperties.Select(missing => DslUtility.CreatePassiveClone(missing, conceptInfo.IsSubtypeOf.Subtype)).ToList();
 
-            if (!_commonConceptsOptions.Legacy__AutoGeneratePolymorphicProperty && missingProperties.Any())
+            if (!_commonConceptsOptions.AutoGeneratePolymorphicProperty && missingProperties.Any())
             {
                 throw new DslSyntaxException( "The property " + missingProperties.First().GetUserDescription() + 
                     " is not implemented in the polymorphic subtype " + conceptInfo.IsSubtypeOf.Subtype.GetUserDescription() + ". " + 

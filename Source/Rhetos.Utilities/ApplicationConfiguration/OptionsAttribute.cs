@@ -18,6 +18,7 @@
 */
 
 using System;
+using System.Reflection;
 
 namespace Rhetos
 {
@@ -42,5 +43,11 @@ namespace Rhetos
         /// Use <see cref="ConfigurationProvider.ConfigurationPathSeparator"/> as a separator in the path.
         /// </summary>
         public string ConfigurationPath { get; }
+
+        public static string GetConfigurationPath(Type optionsType)
+            => optionsType.GetCustomAttribute<OptionsAttribute>()?.ConfigurationPath ?? "";
+
+        public static string GetConfigurationPath<T>()
+            => GetConfigurationPath(typeof(T));
     }
 }
