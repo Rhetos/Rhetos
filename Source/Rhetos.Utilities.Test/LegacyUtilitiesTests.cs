@@ -26,6 +26,8 @@ namespace Rhetos.Utilities.Test
     [TestClass]
     public class LegacyUtilitiesTests
     {
+#pragma warning disable CS0618 // Type or member is obsolete
+
         [TestMethod]
         public void SqlUtilityWorksCorrectly()
         {
@@ -76,5 +78,7 @@ namespace Rhetos.Utilities.Test
             TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.GeneratedFolder),
                 "Paths property 'GeneratedFolder' is not configured in 'build' environment.");
         }
+
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 }

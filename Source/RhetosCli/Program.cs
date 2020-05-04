@@ -25,8 +25,6 @@ using System;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 
 namespace Rhetos
 {
@@ -155,7 +153,7 @@ namespace Rhetos
                     configurationBuilder.AddKeyValue($"{OptionsAttribute.GetConfigurationPath<DbUpdateOptions>()}:{nameof(DbUpdateOptions.SkipRecompute)}", skipRecompute);
             });
 
-            var assemblyFiles = LegacyUtilities.GetRuntimeAssembliesDelegate(configuration).Invoke(); // Using same assembly locations as the generated application runtime.
+            var assemblyFiles = host.RhetosRuntime.GetRuntimeAssemblies(LogProvider, configuration);
             AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolver.GetResolveEventHandler(assemblyFiles, LogProvider);
 
             var deployment = new ApplicationDeployment(configuration, LogProvider, () => assemblyFiles);

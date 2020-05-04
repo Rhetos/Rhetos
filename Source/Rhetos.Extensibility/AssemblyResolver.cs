@@ -18,7 +18,6 @@
 */
 
 using Rhetos.Logging;
-using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -29,28 +28,6 @@ namespace Rhetos.Extensibility
 {
     public static class AssemblyResolver
     {
-        public static ResolveEventHandler GetResolveEventHandler(IConfiguration configuration, ILogProvider logProvider)
-        {
-            var rhetosAppOptins = configuration.GetOptions<RhetosAppOptions>();
-            var legacyPaths = configuration.GetOptions<LegacyPathsOptions>();
-
-            var searchFolders = new List<string>();
-            searchFolders.Add(rhetosAppOptins.GetAssemblyFolder());
-
-            if (!string.IsNullOrEmpty(legacyPaths.PluginsFolder))
-            {
-                searchFolders.Add(legacyPaths.PluginsFolder); // DeployPackages copies plugins from packages to Plugins folder.
-                searchFolders.Add(rhetosAppOptins.AssetsFolder); // DeployPackages generates runtime libraries in AssetsFolder.
-            }
-
-            var assemblies = searchFolders
-                .SelectMany(folder => Directory.GetFiles(folder, "*.dll", SearchOption.TopDirectoryOnly))
-                .Distinct()
-                .ToList();
-
-            return GetResolveEventHandler(assemblies, logProvider);
-        }
-
         public static ResolveEventHandler GetResolveEventHandler(IEnumerable<string> assemblies, ILogProvider logProvider)
         {
             var logger = logProvider.GetLogger(nameof(AssemblyResolver));
@@ -63,7 +40,7 @@ namespace Rhetos.Extensibility
             foreach (var duplicate in byFilename.Where(dll => dll.paths.Count > 1))
             {
                 var otherPaths = string.Join(", ", duplicate.paths.Skip(1).Select(path => $"'{path}'"));
-                logger.Warning($"Multiple paths for '{duplicate.filename}' found. This causes ambiguous DLL loading and can cause type errors. Loaded: '{duplicate.paths.First()}', ignored: {otherPaths}.");
+                logger.Warning($"Multiple paths for '{duplicate.filename}' are provided. This can cause type errors. Loaded: '{duplicate.paths.First()}', ignored: {otherPaths}.");
             }
 
             var namesToPaths = byFilename.ToDictionary(dll => dll.filename, dll => dll.paths.First(), StringComparer.InvariantCultureIgnoreCase);

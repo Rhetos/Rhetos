@@ -18,64 +18,23 @@
 */
 
 using Rhetos.Utilities;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
 namespace Rhetos
 {
     public static class LegacyUtilities
     {
-#pragma warning disable CS0618 // Type or member is obsolete
         /// <summary>
         /// Use to initialize obsolete static utilities <see cref="Paths"/>, <see cref="ConfigUtility"/>, <see cref="Configuration"/> and <see cref="SqlUtility"/> 
         /// prior to using any of their methods. This will bind those utilities to configuration source compliant with new configuration convention.
         /// </summary>
         public static void Initialize(IConfiguration configuration)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             Paths.Initialize(configuration);
             ConfigUtility.Initialize(configuration);
             SqlUtility.Initialize(configuration);
             Configuration.Initialize(configuration);
-        }
-
-        /// <summary>
-        /// Returns list of assemblies that will be scanned for plugin exports.
-        /// </summary>
-        public static Func<string[]> GetRuntimeAssembliesDelegate(IConfiguration configuration)
-        {
-            var runtimeOptions = configuration.GetOptions<RhetosAppOptions>();
-            var legacyPaths = configuration.GetOptions<LegacyPathsOptions>();
-
-            return () =>
-            {
-                var pluginsPaths = new List<string>();
-
-                if (!string.IsNullOrEmpty(legacyPaths.PluginsFolder))
-                {
-                    // Old build process (DeployPackages) copies plugins from packages to Plugins folder,
-                    // and builds new libraries in AssetsFolder.
-                    // We don't need to scan main AssemblyFolder because it contains only Rhetos framework binaries
-                    // that have no plugins exports, only explicit registrations.
-                    pluginsPaths.Add(legacyPaths.PluginsFolder);
-                    pluginsPaths.Add(runtimeOptions.AssetsFolder);
-                }
-                else
-                {
-                    pluginsPaths.Add(runtimeOptions.GetAssemblyFolder());
-                }
-
-                var assemblyFiles = pluginsPaths
-                    .Where(folder => Directory.Exists(folder)) // Some paths don't exist in certain phases of build and deployment.
-                    .SelectMany(folder => Directory.GetFiles(folder, "*.dll", SearchOption.TopDirectoryOnly))
-                    .Distinct()
-                    .OrderBy(file => file)
-                    .ToArray();
-
-                return assemblyFiles;
-            };
-        }
 #pragma warning restore CS0618 // Type or member is obsolete
+        }
     }
 }

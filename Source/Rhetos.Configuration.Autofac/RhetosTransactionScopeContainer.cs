@@ -43,9 +43,9 @@ namespace Rhetos.Configuration.Autofac
         /// Register custom components that may override system and plugins services.
         /// This is commonly used by utilities and tests that need to override host application's components or register additional plugins.
         /// </param>
-        public RhetosTransactionScopeContainer(Lazy<IContainer> iocContainer, Action<ContainerBuilder> registerCustomComponents = null)
+        public RhetosTransactionScopeContainer(IContainer iocContainer, Action<ContainerBuilder> registerCustomComponents = null)
         {
-            _lifetimeScope = new Lazy<ILifetimeScope>(() => registerCustomComponents != null ? iocContainer.Value.BeginLifetimeScope(registerCustomComponents) : iocContainer.Value.BeginLifetimeScope());
+            _lifetimeScope = new Lazy<ILifetimeScope>(() => registerCustomComponents != null ? iocContainer.BeginLifetimeScope(registerCustomComponents) : iocContainer.BeginLifetimeScope());
         }
 
         public T Resolve<T>()

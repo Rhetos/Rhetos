@@ -22,11 +22,9 @@ using Rhetos;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Utilities;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace CommonConcepts.Test.Helpers
@@ -43,9 +41,13 @@ namespace CommonConcepts.Test.Helpers
         /// The child container represents a single database transaction (unit of work). Its transaction will be rolled back by default, see <see cref="RhetosTransactionScopeContainer.CommitChanges"/>.
         /// </summary>
         public static RhetosProcessContainer Container = new RhetosProcessContainer(
-            applicationFolder: FindRhetosApplicationFolder,
+            applicationFolder: FindRhetosApplicationFolder(),
             addCustomConfiguration: configurationBuilder => configurationBuilder.AddConfigurationManagerConfiguration());
 
+        /// <summary>
+        /// Unit tests can be executed at different disk locations depending on whether they are run at the solution or project level, from Visual Studio or another utility.
+        /// Therefore, instead of simple relative path, this method searches for the main application location.
+        /// </summary>
         private static string FindRhetosApplicationFolder()
         {
             var folder = new DirectoryInfo(Environment.CurrentDirectory);
@@ -78,19 +80,18 @@ namespace CommonConcepts.Test.Helpers
                 && File.Exists(Path.Combine(path, @"bin\Rhetos.Utilities.dll"));
         }
 
-        private static int _checkedForParallelism = 0;
+        private static int _checkedForParallelismThreadCount = 0;
 
         public static void CheckForParallelism(ISqlExecuter sqlExecuter, int requiredNumberOfThreads)
         {
-            if (_checkedForParallelism >= requiredNumberOfThreads)
+            if (_checkedForParallelismThreadCount >= requiredNumberOfThreads)
                 return;
 
-            string sqlDelay01 = "WAITFOR DELAY '00:00:00.100'";
-            var sqls = new[] { sqlDelay01 };
-            sqlExecuter.ExecuteSql(sqls); // Possible cold start.
+            sqlExecuter.ExecuteSql("WAITFOR DELAY '00:00:00.000'"); // Possible cold start.
 
             var sw = Stopwatch.StartNew();
-            Parallel.For(0, requiredNumberOfThreads, x => { sqlExecuter.ExecuteSql(sqls, false); });
+            var queries = new[] { "WAITFOR DELAY '00:00:00.100'" };
+            Parallel.For(0, requiredNumberOfThreads, x => { sqlExecuter.ExecuteSql(queries, false); });
             sw.Stop();
 
             Console.WriteLine($"CheckForParallelism: {sw.ElapsedMilliseconds} ms.");
@@ -101,7 +102,7 @@ namespace CommonConcepts.Test.Helpers
             if (sw.Elapsed.TotalMilliseconds > 190)
                 Assert.Inconclusive($"This test requires {requiredNumberOfThreads} parallel SQL queries. {requiredNumberOfThreads} parallel delays for 100 ms are executed in {sw.ElapsedMilliseconds} ms.");
 
-            _checkedForParallelism = requiredNumberOfThreads;
+            _checkedForParallelismThreadCount = requiredNumberOfThreads;
         }
     }
 }

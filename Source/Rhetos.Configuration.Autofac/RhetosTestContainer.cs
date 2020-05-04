@@ -18,7 +18,6 @@
 */
 
 using Autofac;
-using Rhetos.Extensibility;
 using Rhetos.Utilities;
 using System;
 using System.IO;
@@ -51,9 +50,8 @@ namespace Rhetos.Configuration.Autofac
         /// </param>
         public RhetosTestContainer(bool commitChanges = false, string rhetosServerFolder = null)
         {
-            if (rhetosServerFolder != null)
-                if (!Directory.Exists(rhetosServerFolder))
-                    throw new ArgumentException("The given folder does not exist: " + Path.GetFullPath(rhetosServerFolder) + ".");
+            if (rhetosServerFolder != null && !Directory.Exists(rhetosServerFolder))
+                throw new ArgumentException("The given folder does not exist: " + Path.GetFullPath(rhetosServerFolder) + ".");
 
             _commitChanges = commitChanges;
             _explicitRhetosServerFolder = rhetosServerFolder;
@@ -105,9 +103,8 @@ namespace Rhetos.Configuration.Autofac
                     lock (_containerInitializationLock)
                         if (_rhetosProcessContainer == null)
                         {
-                            _rhetosProcessContainer = new RhetosProcessContainer(SearchForRhetosServerRootFolder, new ConsoleLogProvider(),
+                            _rhetosProcessContainer = new RhetosProcessContainer(SearchForRhetosServerRootFolder(), new ConsoleLogProvider(),
                                 configurationBuilder => configurationBuilder.AddConfigurationManagerConfiguration());
-                            AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolver.GetResolveEventHandler(_rhetosProcessContainer.Configuration, new ConsoleLogProvider());
                         }
                 }
 

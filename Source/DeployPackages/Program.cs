@@ -122,7 +122,7 @@ namespace DeployPackages
             {
                 var build = new ApplicationBuild(configuration, logProvider, () => GetBuildPlugins(Path.Combine(rhetosAppRootPath, "bin", "Plugins")));
                 LegacyUtilities.Initialize(configuration);
-                DeleteObsoleteFiles(logProvider, logger);
+                DeleteObsoleteFiles(rhetosAppRootPath, logProvider, logger);
                 var installedPackages = build.DownloadPackages(deployPackagesOptions.IgnoreDependencies);
                 build.GenerateApplication(installedPackages);
             }
@@ -179,24 +179,24 @@ namespace DeployPackages
         /// Deletes left-over files from old versions of Rhetos framework.
         /// Throws an exception if important data might be lost.
         /// </summary>
-        private static void DeleteObsoleteFiles(ILogProvider logProvider, ILogger logger)
+        private static void DeleteObsoleteFiles(string rhetosAppRootPath, ILogProvider logProvider, ILogger logger)
         {
             var filesUtility = new FilesUtility(logProvider);
 
             var obsoleteFolders = new string[]
             {
-                Path.Combine(Paths.RhetosServerRootPath, "DslScripts"),
-                Path.Combine(Paths.RhetosServerRootPath, "DataMigration"),
+                Path.Combine(rhetosAppRootPath, "DslScripts"),
+                Path.Combine(rhetosAppRootPath, "DataMigration"),
             };
             var obsoleteFolder = obsoleteFolders.FirstOrDefault(folder => Directory.Exists(folder));
             if (obsoleteFolder != null)
-                throw new UserException("Please backup all Rhetos server folders and delete obsolete folder '" + obsoleteFolder + "'. It is no longer used.");
+                throw new UserException($"Please backup all Rhetos server folders and delete obsolete folder '{obsoleteFolder}'. It is no longer used.");
 
             var deleteObsoleteFiles = new string[]
             {
-                Path.Combine(Paths.RhetosServerRootPath, "bin", "ServerDom.cs"),
-                Path.Combine(Paths.RhetosServerRootPath, "bin", "ServerDom.dll"),
-                Path.Combine(Paths.RhetosServerRootPath, "bin", "ServerDom.pdb"),
+                Path.Combine(rhetosAppRootPath, "bin", "ServerDom.cs"),
+                Path.Combine(rhetosAppRootPath, "bin", "ServerDom.dll"),
+                Path.Combine(rhetosAppRootPath, "bin", "ServerDom.pdb"),
             };
 
             foreach (var path in deleteObsoleteFiles)
@@ -215,7 +215,7 @@ namespace DeployPackages
                     .AddConfigurationManagerConfiguration()
                     .AddCommandLineArguments(args, "/"));
 
-            var deployment = new ApplicationDeployment(configuration, logProvider, LegacyUtilities.GetRuntimeAssembliesDelegate(configuration));
+            var deployment = new ApplicationDeployment(configuration, logProvider, () => host.RhetosRuntime.GetRuntimeAssemblies(logProvider, configuration));
             deployment.UpdateDatabase();
             deployment.InitializeGeneratedApplication(host.RhetosRuntime);
             deployment.RestartWebServer(host.ConfigurationFolder);

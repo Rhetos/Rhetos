@@ -26,6 +26,8 @@ using Rhetos.Web;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.IO;
+using System.Linq;
 
 namespace Rhetos
 {
@@ -60,12 +62,33 @@ namespace Rhetos
 
         public IContainer BuildContainer(ILogProvider logProvider, IConfiguration configuration, Action<ContainerBuilder> registerCustomComponents)
         {
-            return BuildContainer(logProvider, configuration, registerCustomComponents, LegacyUtilities.GetRuntimeAssembliesDelegate(configuration));
+            return BuildContainer(logProvider, configuration, registerCustomComponents, () => GetRuntimeAssemblies(logProvider, configuration));
         }
 
-        private IContainer BuildContainer(ILogProvider logProvider, IConfiguration configuration, Action<ContainerBuilder> registerCustomComponents, Func<IEnumerable<string>> getAssembliesDelegate)
+        public string[] GetRuntimeAssemblies(ILogProvider logProvider, IConfiguration configuration)
         {
-            var builder = new RhetosContainerBuilder(configuration, logProvider, getAssembliesDelegate);
+            var rhetosAppOptions = configuration.GetOptions<RhetosAppOptions>();
+            var legacyPaths = configuration.GetOptions<LegacyPathsOptions>();
+
+            if (string.IsNullOrEmpty(legacyPaths.PluginsFolder))
+            {
+                // Application with Rhetos CLI.
+                return Directory.GetFiles(rhetosAppOptions.GetAssemblyFolder(), "*.dll", SearchOption.TopDirectoryOnly);
+            }
+            else
+            {
+                // Application With DeployPackages.
+                return new[] { rhetosAppOptions.GetAssemblyFolder(), legacyPaths.PluginsFolder, rhetosAppOptions.AssetsFolder }
+                    .Where(folder => Directory.Exists(folder))
+                    .SelectMany(folder => Directory.GetFiles(folder, "*.dll", SearchOption.TopDirectoryOnly))
+                    .Distinct()
+                    .ToArray();
+            }
+        }
+
+        private IContainer BuildContainer(ILogProvider logProvider, IConfiguration configuration, Action<ContainerBuilder> registerCustomComponents, Func<IEnumerable<string>> pluginAssemblies)
+        {
+            var builder = new RhetosContainerBuilder(configuration, logProvider, pluginAssemblies);
 
             builder.AddRhetosRuntime();
 

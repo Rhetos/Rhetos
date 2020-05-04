@@ -18,6 +18,7 @@
 */
 
 using Autofac;
+using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Security;
 using Rhetos.Utilities;
@@ -38,12 +39,14 @@ namespace Rhetos.Configuration.Autofac
     /// Each thread should use <see cref="CreateTransactionScope"/> to create its own lifetime-scope child container.
     /// 
     /// RhetosProcessContainer overrides the main application's DI components to use <see cref="ProcessUserInfo"/> and <see cref="ConsoleLogProvider"/> by default.
+    /// It also registers assembly resolver for runtime assemblies from <see cref="IRhetosRuntime.GetRuntimeAssemblies(ILogProvider, IConfiguration)"/>.
     /// </summary>
-    public class RhetosProcessContainer
+    public class RhetosProcessContainer : IDisposable
     {
-        private readonly Lazy<IContainer> _rhetosIocContainer;
         private readonly Lazy<Host> _host;
         private readonly Lazy<IConfiguration> _configuration;
+        private readonly Lazy<IContainer> _rhetosIocContainer;
+        private ResolveEventHandler _assemblyResolveEventHandler = null;
 
         public IConfiguration Configuration => _configuration.Value;
 
@@ -59,14 +62,14 @@ namespace Rhetos.Configuration.Autofac
         /// Register custom components that may override system and plugins services.
         /// This is commonly used by utilities and tests that need to override host application's components or register additional plugins.
         /// </param>
-        public RhetosProcessContainer(Func<string> applicationFolder = null, ILogProvider logProvider = null,
+        public RhetosProcessContainer(string applicationFolder = null, ILogProvider logProvider = null,
             Action<IConfigurationBuilder> addCustomConfiguration = null, Action<ContainerBuilder> registerCustomComponents = null)
         {
             logProvider = logProvider ?? new ConsoleLogProvider();
             if (applicationFolder == null)
-                applicationFolder = () => AppDomain.CurrentDomain.BaseDirectory;
+                applicationFolder = AppDomain.CurrentDomain.BaseDirectory;
 
-            _host = new Lazy<Host>(() => Host.Find(applicationFolder(), logProvider), LazyThreadSafetyMode.ExecutionAndPublication);
+            _host = new Lazy<Host>(() => Host.Find(applicationFolder, logProvider), LazyThreadSafetyMode.ExecutionAndPublication);
             _configuration = new Lazy<IConfiguration>(() => _host.Value.RhetosRuntime.BuildConfiguration(logProvider, _host.Value.ConfigurationFolder, addCustomConfiguration), LazyThreadSafetyMode.ExecutionAndPublication);
             _rhetosIocContainer = new Lazy<IContainer>(() => BuildRhetosProcessContainer(logProvider, registerCustomComponents), LazyThreadSafetyMode.ExecutionAndPublication);
         }
@@ -76,6 +79,11 @@ namespace Rhetos.Configuration.Autofac
             // The values for rhetosRuntime and configuration are resolved before the call to Stopwatch.StartNew
             // so that the performance logging only takes into account the time needed to build the IOC container
             var sw = Stopwatch.StartNew();
+
+            var runtimeAssemblies = _host.Value.RhetosRuntime.GetRuntimeAssemblies(logProvider, _configuration.Value);
+            _assemblyResolveEventHandler = AssemblyResolver.GetResolveEventHandler(runtimeAssemblies, logProvider);
+            AppDomain.CurrentDomain.AssemblyResolve += _assemblyResolveEventHandler;
+
             var iocContainer = _host.Value.RhetosRuntime.BuildContainer(logProvider, _configuration.Value, builder =>
             {
                 // Override runtime IUserInfo plugins. This container is intended to be used in a simple process or unit tests.
@@ -87,15 +95,37 @@ namespace Rhetos.Configuration.Autofac
             return iocContainer;
         }
 
-        public T Resolve<T>() => _rhetosIocContainer.Value.Resolve<T>();
-
         /// <param name="registerCustomComponents">
         /// Register custom components that may override system and plugins services.
         /// This is commonly used by utilities and tests that need to override host application's components or register additional plugins.
         /// </param>
         public RhetosTransactionScopeContainer CreateTransactionScope(Action<ContainerBuilder> registerCustomComponents = null)
         {
-            return new RhetosTransactionScopeContainer(_rhetosIocContainer, registerCustomComponents);
+            return new RhetosTransactionScopeContainer(_rhetosIocContainer.Value, registerCustomComponents);
+        }
+
+        private bool disposed = false; // Standard IDisposable pattern to detect redundant calls.
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed)
+                return;
+
+            if (disposing)
+            {
+                if (_rhetosIocContainer.IsValueCreated)
+                    _rhetosIocContainer.Value.Dispose();
+                if (_assemblyResolveEventHandler != null)
+                    AppDomain.CurrentDomain.AssemblyResolve -= _assemblyResolveEventHandler;
+            }
+
+            disposed = true;
         }
     }
 }
