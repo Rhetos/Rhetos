@@ -37,7 +37,9 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<RhetosAppEnvironment>()).SingleInstance();
             builder.RegisterType<InstalledPackagesProvider>();
             builder.Register(context => context.Resolve<InstalledPackagesProvider>().Load())
+#pragma warning disable CS0618 // Registering obsolete IInstalledPackages for backward compatibility.
                 .As<InstalledPackages>().As<IInstalledPackages>().SingleInstance();
+#pragma warning restore CS0618
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<RhetosAppOptions>())
                 .As<RhetosAppOptions>().As<IAssetsOptions>().SingleInstance();
             builder.RegisterType<DomLoader>().As<IDomainObjectModel>().SingleInstance();

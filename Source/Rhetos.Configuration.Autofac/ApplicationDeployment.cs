@@ -114,9 +114,9 @@ namespace Rhetos
 
         //=====================================================================
 
-        public void RestartWebServer()
+        public void RestartWebServer(string configurationFolder)
         {
-            var configFile = Path.Combine(Paths.RhetosServerRootPath, "Web.config");
+            var configFile = Path.Combine(configurationFolder, "Web.config");
             if (FilesUtility.SafeTouch(configFile))
                 _logger.Info($"Updated {Path.GetFileName(configFile)} modification date to restart server.");
             else

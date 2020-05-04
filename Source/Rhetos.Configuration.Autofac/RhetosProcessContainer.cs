@@ -36,6 +36,8 @@ namespace Rhetos.Configuration.Autofac
     /// RhetosProcessContainer is thread-safe: the main RhetosProcessContainer instance can be reused between threads
     /// to reduce the initialization time, such as plugin discovery and Entity Framework startup.
     /// Each thread should use <see cref="CreateTransactionScope"/> to create its own lifetime-scope child container.
+    /// 
+    /// RhetosProcessContainer overrides the main application's DI components to use <see cref="ProcessUserInfo"/> and <see cref="ConsoleLogProvider"/> by default.
     /// </summary>
     public class RhetosProcessContainer
     {
@@ -53,6 +55,10 @@ namespace Rhetos.Configuration.Autofac
         /// <param name="logProvider">
         /// If not specified, ConsoleLogProvider is used by default.
         /// </param>
+        /// <param name="registerCustomComponents">
+        /// Register custom components that may override system and plugins services.
+        /// This is commonly used by utilities and tests that need to override host application's components or register additional plugins.
+        /// </param>
         public RhetosProcessContainer(Func<string> applicationFolder = null, ILogProvider logProvider = null,
             Action<IConfigurationBuilder> addCustomConfiguration = null, Action<ContainerBuilder> registerCustomComponents = null)
         {
@@ -62,13 +68,13 @@ namespace Rhetos.Configuration.Autofac
 
             _host = new Lazy<Host>(() => Host.Find(applicationFolder(), logProvider), LazyThreadSafetyMode.ExecutionAndPublication);
             _configuration = new Lazy<IConfiguration>(() => _host.Value.RhetosRuntime.BuildConfiguration(logProvider, _host.Value.ConfigurationFolder, addCustomConfiguration), LazyThreadSafetyMode.ExecutionAndPublication);
-            _rhetosIocContainer = new Lazy<IContainer>(() => BuildRhetosContainer(logProvider, registerCustomComponents), LazyThreadSafetyMode.ExecutionAndPublication);
+            _rhetosIocContainer = new Lazy<IContainer>(() => BuildRhetosProcessContainer(logProvider, registerCustomComponents), LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
-        private IContainer BuildRhetosContainer(ILogProvider logProvider, Action<ContainerBuilder> registerCustomComponents)
+        private IContainer BuildRhetosProcessContainer(ILogProvider logProvider, Action<ContainerBuilder> registerCustomComponents)
         {
-            //The values for rhetosRuntime and configuration are resolved before the call to Stopwatch.StartNew
-            //so that the performance logging only takes into account the time needed to build the IOC container
+            // The values for rhetosRuntime and configuration are resolved before the call to Stopwatch.StartNew
+            // so that the performance logging only takes into account the time needed to build the IOC container
             var sw = Stopwatch.StartNew();
             var iocContainer = _host.Value.RhetosRuntime.BuildContainer(logProvider, _configuration.Value, builder =>
             {

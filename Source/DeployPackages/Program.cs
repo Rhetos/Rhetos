@@ -218,7 +218,7 @@ namespace DeployPackages
             var deployment = new ApplicationDeployment(configuration, logProvider, LegacyUtilities.GetRuntimeAssembliesDelegate(configuration));
             deployment.UpdateDatabase();
             deployment.InitializeGeneratedApplication(host.RhetosRuntime);
-            deployment.RestartWebServer();
+            deployment.RestartWebServer(host.ConfigurationFolder);
         }
 
         private static void InteractiveExceptionInfo(Exception e, bool pauseOnError)
