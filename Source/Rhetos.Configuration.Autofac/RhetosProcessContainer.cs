@@ -23,49 +23,59 @@ using Rhetos.Security;
 using Rhetos.Utilities;
 using System;
 using System.Diagnostics;
+using System.Threading;
 
 namespace Rhetos.Configuration.Autofac
 {
+    /// <summary>
+    /// It encapsulates a Dependency Injection container (see 
+    /// <see cref="Host.CreateRhetosContainer(string, ILogProvider, Action{IConfigurationBuilder}, Action{ContainerBuilder})"/>)
+    /// for creating the lifetime-scope sub-containers with <see cref="CreateTransactionScope"/>.
+    /// Use the sub-containers to isolate units of work into separate atomic transactions.
+    /// The sub-containers are thread-safe: the main RhetosProcessContainer instance can be reused between threads to reduce the initialization time, such as plugin discovery and Entity Framework startup.
+    /// </summary>
     public class RhetosProcessContainer
     {
         private readonly Lazy<IContainer> _rhetosIocContainer;
         private readonly Lazy<Host> _host;
         private readonly Lazy<IConfiguration> _configuration;
 
-        public IConfiguration Configuration {
-            get { return _configuration.Value; }
-        }
+        public IConfiguration Configuration => _configuration.Value;
 
-        /// <summary>
-        /// It encapuslates a Dependency Injection container created by calling the method
-        /// <see cref="Host.CreateRhetosContainer(string, ILogProvider, Action{IConfigurationBuilder}, Action{ContainerBuilder})"/>
-        /// with the parameters passed to the constructor.
-        /// </summary>
-        public RhetosProcessContainer(Func<string> findRhetosHostFolder = null, ILogProvider logProvider = null,
+        /// <param name="applicationFolder">
+        /// Folder where the Rhetos configuration file is located (see <see cref="RhetosAppEnvironment.ConfigurationFileName"/>),
+        /// or any subfolder.
+        /// If not specified, the current application's base directory is used by default.
+        /// </param>
+        /// <param name="logProvider">
+        /// If not specified, ConsoleLogProvider is used by default.
+        /// </param>
+        public RhetosProcessContainer(Func<string> applicationFolder = null, ILogProvider logProvider = null,
             Action<IConfigurationBuilder> addCustomConfiguration = null, Action<ContainerBuilder> registerCustomComponents = null)
         {
             logProvider = logProvider ?? new ConsoleLogProvider();
-            if(findRhetosHostFolder == null)
-                findRhetosHostFolder = () => AppDomain.CurrentDomain.BaseDirectory;
+            if (applicationFolder == null)
+                applicationFolder = () => AppDomain.CurrentDomain.BaseDirectory;
 
-            _host = new Lazy<Host>(() => Host.Find(findRhetosHostFolder(), logProvider), true);
-            _configuration = new Lazy<IConfiguration>(() => _host.Value.RhetosRuntime.BuildConfiguration(logProvider, _host.Value.ConfigurationFolder, addCustomConfiguration), true);
+            _host = new Lazy<Host>(() => Host.Find(applicationFolder(), logProvider), LazyThreadSafetyMode.ExecutionAndPublication);
+            _configuration = new Lazy<IConfiguration>(() => _host.Value.RhetosRuntime.BuildConfiguration(logProvider, _host.Value.ConfigurationFolder, addCustomConfiguration), LazyThreadSafetyMode.ExecutionAndPublication);
+            _rhetosIocContainer = new Lazy<IContainer>(() => BuildRhetosContainer(logProvider, registerCustomComponents), LazyThreadSafetyMode.ExecutionAndPublication);
+        }
 
-            _rhetosIocContainer = new Lazy<IContainer>(() => {
-                //The values for rhetosRuntime and configuration are resolved before the call to Stopwatch.StartNew
-                //so that the performance logging only takes into account the time needed to build the ioc container
-                var rhetosRuntime = _host.Value.RhetosRuntime;
-                var configuration = _configuration.Value;
-                var sw = Stopwatch.StartNew();
-                var iocContainer = rhetosRuntime.BuildContainer(logProvider, configuration, (builder) => {
-                    // Override runtime IUserInfo plugins. This container is intended to be used in a simple process or unit tests.
-                    builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();
-                    builder.RegisterType<ConsoleLogProvider>().As<ILogProvider>();
-                    registerCustomComponents?.Invoke(builder);
-                });
-                logProvider.GetLogger("Performance").Write(sw, $"{nameof(RhetosTransactionScopeContainer)}: Built IoC container");
-                return iocContainer;
-            }, true);
+        private IContainer BuildRhetosContainer(ILogProvider logProvider, Action<ContainerBuilder> registerCustomComponents)
+        {
+            //The values for rhetosRuntime and configuration are resolved before the call to Stopwatch.StartNew
+            //so that the performance logging only takes into account the time needed to build the IOC container
+            var sw = Stopwatch.StartNew();
+            var iocContainer = _host.Value.RhetosRuntime.BuildContainer(logProvider, _configuration.Value, builder =>
+            {
+                // Override runtime IUserInfo plugins. This container is intended to be used in a simple process or unit tests.
+                builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();
+                builder.RegisterType<ConsoleLogProvider>().As<ILogProvider>();
+                registerCustomComponents?.Invoke(builder);
+            });
+            logProvider.GetLogger("Performance").Write(sw, $"{nameof(RhetosTransactionScopeContainer)}: Built IoC container");
+            return iocContainer;
         }
 
         public T Resolve<T>() => _rhetosIocContainer.Value.Resolve<T>();
@@ -74,7 +84,7 @@ namespace Rhetos.Configuration.Autofac
         /// Whether database updates (by ORM repositories) will be committed or rollbacked. By default it is set to true.
         /// </param>
         /// <param name="configureContainer">
-        /// Used to customize the trnsaction scope Dependency Injection container. By default it is set to null.
+        /// Used to customize the transaction scope Dependency Injection container. By default it is set to null.
         /// </param>/// 
         public RhetosTransactionScopeContainer CreateTransactionScope(bool commitChanges, Action<ContainerBuilder> configureContainer = null) => new RhetosTransactionScopeContainer(_rhetosIocContainer, commitChanges, configureContainer);
     }
