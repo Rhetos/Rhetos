@@ -28,24 +28,38 @@ namespace Rhetos.Configuration.Autofac
     /// </summary>
     public class RhetosTransactionScopeContainer : IDisposable
     {
-        private readonly bool _commitChanges;
+        private bool _commitChanges = false;
         private readonly Lazy<ILifetimeScope> _lifetimeScope;
 
+        /// <summary>
+        /// Encapsulates a Dependency Injection container which scope is the same as the scope of the database transaction.
+        /// Note that the changes in database will be rolled back by default.
+        /// To commit changes to database, call <see cref="CommitChanges"/> at the end of the 'using' block.
+        /// </summary>
         /// <param name="iocContainer">
         /// The Dependency Injection container used to create the transaction scope container.
         /// </param>
-        /// <param name="commitChanges">
-        /// Whether database updates (by ORM repositories) will be committed or rollbacked when Dispose is called.
+        /// <param name="registerCustomComponents">
+        /// Register custom components that may override system and plugins services.
+        /// This is commonly used by utilities and tests that need to override host application's components or register additional plugins.
         /// </param>
-        public RhetosTransactionScopeContainer(Lazy<IContainer> iocContainer, bool commitChanges, Action<ContainerBuilder> registerCustomComponents = null)
+        public RhetosTransactionScopeContainer(Lazy<IContainer> iocContainer, Action<ContainerBuilder> registerCustomComponents = null)
         {
-            _commitChanges = commitChanges;
             _lifetimeScope = new Lazy<ILifetimeScope>(() => registerCustomComponents != null ? iocContainer.Value.BeginLifetimeScope(registerCustomComponents) : iocContainer.Value.BeginLifetimeScope());
         }
 
         public T Resolve<T>()
         {
             return _lifetimeScope.Value.Resolve<T>();
+        }
+
+        /// <summary>
+        /// The changes are not committed immediately, they will be committed on DI container disposal.
+        /// Call this method at the end of the 'using' block to mark the current database transaction to be committed.
+        /// </summary>
+        public void CommitChanges()
+        {
+            _commitChanges = true;
         }
 
         private bool disposed = false; // Standard IDisposable pattern to detect redundant calls.

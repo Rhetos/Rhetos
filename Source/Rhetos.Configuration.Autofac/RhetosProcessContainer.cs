@@ -89,12 +89,13 @@ namespace Rhetos.Configuration.Autofac
 
         public T Resolve<T>() => _rhetosIocContainer.Value.Resolve<T>();
 
-        /// <param name="commitChanges">
-        /// Whether database updates (by ORM repositories) will be committed or rollbacked. By default it is set to true.
-        /// </param>
         /// <param name="registerCustomComponents">
-        /// Used to customize the transaction scope Dependency Injection container. By default it is set to null.
-        /// </param>/// 
-        public RhetosTransactionScopeContainer CreateTransactionScope(bool commitChanges, Action<ContainerBuilder> registerCustomComponents = null) => new RhetosTransactionScopeContainer(_rhetosIocContainer, commitChanges, registerCustomComponents);
+        /// Register custom components that may override system and plugins services.
+        /// This is commonly used by utilities and tests that need to override host application's components or register additional plugins.
+        /// </param>
+        public RhetosTransactionScopeContainer CreateTransactionScope(Action<ContainerBuilder> registerCustomComponents = null)
+        {
+            return new RhetosTransactionScopeContainer(_rhetosIocContainer, registerCustomComponents);
+        }
     }
 }

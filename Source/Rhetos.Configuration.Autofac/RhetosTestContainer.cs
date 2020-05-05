@@ -112,7 +112,9 @@ namespace Rhetos.Configuration.Autofac
                         }
                 }
 
-                _rhetosTransactionScope = _rhetosProcessContainer.CreateTransactionScope(_commitChanges, InitializeSession);
+                _rhetosTransactionScope = _rhetosProcessContainer.CreateTransactionScope(InitializeSession);
+                if (_commitChanges)
+                    _rhetosTransactionScope.CommitChanges();
             }
         }
 
