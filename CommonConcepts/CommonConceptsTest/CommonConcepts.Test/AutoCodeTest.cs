@@ -17,19 +17,18 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
+using CommonConcepts.Test.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Configuration.Autofac;
-using Rhetos.Utilities;
+using Rhetos.Dom.DefaultConcepts;
 using Rhetos.TestCommon;
-using System.Threading.Tasks;
+using Rhetos.Utilities;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
-using System.Collections.Concurrent;
+using System.Threading.Tasks;
 
 namespace CommonConcepts.Test
 {
@@ -54,7 +53,7 @@ namespace CommonConcepts.Test
                 });
         }
 
-        private static void TestSimple(RhetosTestContainer container, Common.DomRepository repository, string format, string expectedCode)
+        private static void TestSimple(Common.DomRepository repository, string format, string expectedCode)
         {
             Guid id = Guid.NewGuid();
             repository.TestAutoCode.Simple.Insert(new[] { new TestAutoCode.Simple { ID = id, Code = format } });
@@ -64,7 +63,7 @@ namespace CommonConcepts.Test
             Assert.AreEqual(expectedCode, generatedCode);
         }
 
-        private static void TestIntAutoCode(RhetosTestContainer container, Common.DomRepository repository, int? input, int expectedCode)
+        private static void TestIntAutoCode(Common.DomRepository repository, int? input, int expectedCode)
         {
             Guid id = Guid.NewGuid();
             repository.TestAutoCode.IntegerAutoCode.Insert(new[] { new TestAutoCode.IntegerAutoCode { ID = id, Code = input } });
@@ -74,7 +73,7 @@ namespace CommonConcepts.Test
             Assert.AreEqual(expectedCode, generatedCode);
         }
 
-        private static void TestDoubleAutoCode(RhetosTestContainer container, Common.DomRepository repository, string formatA, string formatB, string expectedCodes)
+        private static void TestDoubleAutoCode(Common.DomRepository repository, string formatA, string formatB, string expectedCodes)
         {
             Guid id = Guid.NewGuid();
             repository.TestAutoCode.DoubleAutoCode.Insert(new[] { new TestAutoCode.DoubleAutoCode { ID = id, CodeA = formatA, CodeB = formatB } });
@@ -86,7 +85,7 @@ namespace CommonConcepts.Test
             Assert.AreEqual(expectedCodes, generatedCodes);
         }
 
-        private static void TestDoubleAutoCodeWithGroup(RhetosTestContainer container, Common.DomRepository repository, string group, string formatA, string formatB, string expectedCodes)
+        private static void TestDoubleAutoCodeWithGroup(Common.DomRepository repository, string group, string formatA, string formatB, string expectedCodes)
         {
             Guid id = Guid.NewGuid();
             repository.TestAutoCode.DoubleAutoCodeWithGroup.Insert(new[] { new TestAutoCode.DoubleAutoCodeWithGroup { ID = id, Grouping = group, CodeA = formatA, CodeB = formatB } });
@@ -98,7 +97,7 @@ namespace CommonConcepts.Test
             Assert.AreEqual(expectedCodes, generatedCodes);
         }
 
-        private static void TestDoubleIntegerAutoCodeWithGroup(RhetosTestContainer container, Common.DomRepository repository, int group, int? codeA, int? codeB, string expectedCodes)
+        private static void TestDoubleIntegerAutoCodeWithGroup(Common.DomRepository repository, int group, int? codeA, int? codeB, string expectedCodes)
         {
             Guid id = Guid.NewGuid();
             repository.TestAutoCode.IntegerAutoCodeForEach.Insert(new[] {
@@ -119,19 +118,19 @@ namespace CommonConcepts.Test
                 DeleteOldData(container);
                 var repository = container.Resolve<Common.DomRepository>();
 
-                TestSimple(container, repository, "+", "1");
-                TestSimple(container, repository, "+", "2");
-                TestSimple(container, repository, "+", "3");
-                TestSimple(container, repository, "9", "9");
-                TestSimple(container, repository, "+", "10");
-                TestSimple(container, repository, "+", "11");
-                TestSimple(container, repository, "AB+", "AB1");
-                TestSimple(container, repository, "X", "X");
-                TestSimple(container, repository, "X+", "X1");
-                TestSimple(container, repository, "AB007", "AB007");
-                TestSimple(container, repository, "AB+", "AB008");
-                TestSimple(container, repository, "AB999", "AB999");
-                TestSimple(container, repository, "AB+", "AB1000");
+                TestSimple(repository, "+", "1");
+                TestSimple(repository, "+", "2");
+                TestSimple(repository, "+", "3");
+                TestSimple(repository, "9", "9");
+                TestSimple(repository, "+", "10");
+                TestSimple(repository, "+", "11");
+                TestSimple(repository, "AB+", "AB1");
+                TestSimple(repository, "X", "X");
+                TestSimple(repository, "X+", "X1");
+                TestSimple(repository, "AB007", "AB007");
+                TestSimple(repository, "AB+", "AB008");
+                TestSimple(repository, "AB999", "AB999");
+                TestSimple(repository, "AB+", "AB1000");
             }
         }
 
@@ -181,14 +180,14 @@ namespace CommonConcepts.Test
                 DeleteOldData(container);
                 var repository = container.Resolve<Common.DomRepository>();
 
-                TestSimple(container, repository, "ab+", "ab1");
-                TestSimple(container, repository, "ab+", "ab2");
-                TestSimple(container, repository, "ab+", "ab3");
-                TestSimple(container, repository, "ab++++", "ab0004");
-                TestSimple(container, repository, "c+", "c1");
-                TestSimple(container, repository, "+", "1");
-                TestSimple(container, repository, "+", "2");
-                TestSimple(container, repository, "ab+", "ab0005");
+                TestSimple(repository, "ab+", "ab1");
+                TestSimple(repository, "ab+", "ab2");
+                TestSimple(repository, "ab+", "ab3");
+                TestSimple(repository, "ab++++", "ab0004");
+                TestSimple(repository, "c+", "c1");
+                TestSimple(repository, "+", "1");
+                TestSimple(repository, "+", "2");
+                TestSimple(repository, "ab+", "ab0005");
             }
         }
 
@@ -200,19 +199,19 @@ namespace CommonConcepts.Test
                 DeleteOldData(container);
                 var repository = container.Resolve<Common.DomRepository>();
 
-                TestDoubleAutoCode(container, repository, "+", "+", "1,1");
-                TestDoubleAutoCode(container, repository, "+", "4", "2,4");
-                TestDoubleAutoCode(container, repository, "+", "+", "3,5");
-                TestDoubleAutoCode(container, repository, "9", "+", "9,6");
-                TestDoubleAutoCode(container, repository, "+", "11", "10,11");
-                TestDoubleAutoCode(container, repository, "+", "+", "11,12");
-                TestDoubleAutoCode(container, repository, "AB+", "+", "AB1,13");
-                TestDoubleAutoCode(container, repository, "AB+", "X", "AB2,X");
-                TestDoubleAutoCode(container, repository, "AB+", "X+", "AB3,X1");
-                TestDoubleAutoCode(container, repository, "AB008", "X+", "AB008,X2");
-                TestDoubleAutoCode(container, repository, "AB+", "+", "AB009,14");
-                TestDoubleAutoCode(container, repository, "+", "AB9999", "12,AB9999");
-                TestDoubleAutoCode(container, repository, "AB+", "AB+", "AB010,AB10000");
+                TestDoubleAutoCode(repository, "+", "+", "1,1");
+                TestDoubleAutoCode(repository, "+", "4", "2,4");
+                TestDoubleAutoCode(repository, "+", "+", "3,5");
+                TestDoubleAutoCode(repository, "9", "+", "9,6");
+                TestDoubleAutoCode(repository, "+", "11", "10,11");
+                TestDoubleAutoCode(repository, "+", "+", "11,12");
+                TestDoubleAutoCode(repository, "AB+", "+", "AB1,13");
+                TestDoubleAutoCode(repository, "AB+", "X", "AB2,X");
+                TestDoubleAutoCode(repository, "AB+", "X+", "AB3,X1");
+                TestDoubleAutoCode(repository, "AB008", "X+", "AB008,X2");
+                TestDoubleAutoCode(repository, "AB+", "+", "AB009,14");
+                TestDoubleAutoCode(repository, "+", "AB9999", "12,AB9999");
+                TestDoubleAutoCode(repository, "AB+", "AB+", "AB010,AB10000");
             }
         }
 
@@ -224,13 +223,13 @@ namespace CommonConcepts.Test
                 DeleteOldData(container);
                 var repository = container.Resolve<Common.DomRepository>();
 
-                TestIntAutoCode(container, repository, 0, 1);
-                TestIntAutoCode(container, repository, 10, 10);
-                TestIntAutoCode(container, repository, 0, 11);
-                TestIntAutoCode(container, repository, 99, 99);
-                TestIntAutoCode(container, repository, 0, 100);
-                TestIntAutoCode(container, repository, 0, 101);
-                TestIntAutoCode(container, repository, 0, 102);
+                TestIntAutoCode(repository, 0, 1);
+                TestIntAutoCode(repository, 10, 10);
+                TestIntAutoCode(repository, 0, 11);
+                TestIntAutoCode(repository, 99, 99);
+                TestIntAutoCode(repository, 0, 100);
+                TestIntAutoCode(repository, 0, 101);
+                TestIntAutoCode(repository, 0, 102);
             }
         }
 
@@ -242,8 +241,8 @@ namespace CommonConcepts.Test
                 DeleteOldData(container);
                 var repository = container.Resolve<Common.DomRepository>();
 
-                TestIntAutoCode(container, repository, null, 1);
-                TestIntAutoCode(container, repository, null, 2);
+                TestIntAutoCode(repository, null, 1);
+                TestIntAutoCode(repository, null, 2);
             }
         }
 
@@ -255,21 +254,21 @@ namespace CommonConcepts.Test
                 DeleteOldData(container);
                 var repository = container.Resolve<Common.DomRepository>();
 
-                TestDoubleAutoCodeWithGroup(container, repository, "1", "+", "+", "1,1");
-                TestDoubleAutoCodeWithGroup(container, repository, "1", "+", "4", "2,4");
-                TestDoubleAutoCodeWithGroup(container, repository, "2", "+", "+", "3,1");
-                TestDoubleAutoCodeWithGroup(container, repository, "1", "9", "+", "9,5");
-                TestDoubleAutoCodeWithGroup(container, repository, "2", "+", "11", "10,11");
-                TestDoubleAutoCodeWithGroup(container, repository, "1", "+", "+", "11,6");
-                TestDoubleAutoCodeWithGroup(container, repository, "1", "AB+", "+", "AB1,7");
-                TestDoubleAutoCodeWithGroup(container, repository, "1", "AB+", "X", "AB2,X");
-                TestDoubleAutoCodeWithGroup(container, repository, "2", "AB+", "X09", "AB3,X09");
-                TestDoubleAutoCodeWithGroup(container, repository, "2", "AB+", "X+", "AB4,X10");
-                TestDoubleAutoCodeWithGroup(container, repository, "1", "AB+", "X+", "AB5,X1");
-                TestDoubleAutoCodeWithGroup(container, repository, "1", "AB008", "X+", "AB008,X2");
-                TestDoubleAutoCodeWithGroup(container, repository, "1", "AB+", "+", "AB009,8");
-                TestDoubleAutoCodeWithGroup(container, repository, "1", "+", "AB9999", "12,AB9999");
-                TestDoubleAutoCodeWithGroup(container, repository, "1", "AB+", "AB+", "AB010,AB10000");
+                TestDoubleAutoCodeWithGroup(repository, "1", "+", "+", "1,1");
+                TestDoubleAutoCodeWithGroup(repository, "1", "+", "4", "2,4");
+                TestDoubleAutoCodeWithGroup(repository, "2", "+", "+", "3,1");
+                TestDoubleAutoCodeWithGroup(repository, "1", "9", "+", "9,5");
+                TestDoubleAutoCodeWithGroup(repository, "2", "+", "11", "10,11");
+                TestDoubleAutoCodeWithGroup(repository, "1", "+", "+", "11,6");
+                TestDoubleAutoCodeWithGroup(repository, "1", "AB+", "+", "AB1,7");
+                TestDoubleAutoCodeWithGroup(repository, "1", "AB+", "X", "AB2,X");
+                TestDoubleAutoCodeWithGroup(repository, "2", "AB+", "X09", "AB3,X09");
+                TestDoubleAutoCodeWithGroup(repository, "2", "AB+", "X+", "AB4,X10");
+                TestDoubleAutoCodeWithGroup(repository, "1", "AB+", "X+", "AB5,X1");
+                TestDoubleAutoCodeWithGroup(repository, "1", "AB008", "X+", "AB008,X2");
+                TestDoubleAutoCodeWithGroup(repository, "1", "AB+", "+", "AB009,8");
+                TestDoubleAutoCodeWithGroup(repository, "1", "+", "AB9999", "12,AB9999");
+                TestDoubleAutoCodeWithGroup(repository, "1", "AB+", "AB+", "AB010,AB10000");
             }
         }
 
@@ -281,12 +280,12 @@ namespace CommonConcepts.Test
                 var repository = container.Resolve<Common.DomRepository>();
                 repository.TestAutoCode.IntegerAutoCodeForEach.Delete(repository.TestAutoCode.IntegerAutoCodeForEach.Query());
 
-                TestDoubleIntegerAutoCodeWithGroup(container, repository, 1, 0, 0, "1,1");
-                TestDoubleIntegerAutoCodeWithGroup(container, repository, 1, 5, 0, "5,2");
-                TestDoubleIntegerAutoCodeWithGroup(container, repository, 1, 0, 0, "6,3");
-                TestDoubleIntegerAutoCodeWithGroup(container, repository, 2, 8, 0, "8,1");
-                TestDoubleIntegerAutoCodeWithGroup(container, repository, 2, 0, 0, "9,2");
-                TestDoubleIntegerAutoCodeWithGroup(container, repository, 1, 0, 0, "10,4");
+                TestDoubleIntegerAutoCodeWithGroup(repository, 1, 0, 0, "1,1");
+                TestDoubleIntegerAutoCodeWithGroup(repository, 1, 5, 0, "5,2");
+                TestDoubleIntegerAutoCodeWithGroup(repository, 1, 0, 0, "6,3");
+                TestDoubleIntegerAutoCodeWithGroup(repository, 2, 8, 0, "8,1");
+                TestDoubleIntegerAutoCodeWithGroup(repository, 2, 0, 0, "9,2");
+                TestDoubleIntegerAutoCodeWithGroup(repository, 1, 0, 0, "10,4");
             }
         }
 
@@ -298,17 +297,17 @@ namespace CommonConcepts.Test
                 var repository = container.Resolve<Common.DomRepository>();
                 repository.TestAutoCode.IntegerAutoCodeForEach.Delete(repository.TestAutoCode.IntegerAutoCodeForEach.Query());
 
-                TestDoubleIntegerAutoCodeWithGroup(container, repository, 1, null, null, "1,1");
-                TestDoubleIntegerAutoCodeWithGroup(container, repository, 1, 5, null, "5,2");
-                TestDoubleIntegerAutoCodeWithGroup(container, repository, 1, null, null, "6,3");
-                TestDoubleIntegerAutoCodeWithGroup(container, repository, 2, 8, null, "8,1");
-                TestDoubleIntegerAutoCodeWithGroup(container, repository, 2, null, null, "9,2");
-                TestDoubleIntegerAutoCodeWithGroup(container, repository, 1, null, null, "10,4");
+                TestDoubleIntegerAutoCodeWithGroup(repository, 1, null, null, "1,1");
+                TestDoubleIntegerAutoCodeWithGroup(repository, 1, 5, null, "5,2");
+                TestDoubleIntegerAutoCodeWithGroup(repository, 1, null, null, "6,3");
+                TestDoubleIntegerAutoCodeWithGroup(repository, 2, 8, null, "8,1");
+                TestDoubleIntegerAutoCodeWithGroup(repository, 2, null, null, "9,2");
+                TestDoubleIntegerAutoCodeWithGroup(repository, 1, null, null, "10,4");
             }
         }
 
         private static void TestGroup<TEntity, TGroup>(
-            RhetosTestContainer container, IQueryableRepository<IEntity> entityRepository,
+            IQueryableRepository<IEntity> entityRepository,
             TGroup group, string format, string expectedCode)
                 where TEntity : class, IEntity, new()
         {
@@ -349,43 +348,43 @@ namespace CommonConcepts.Test
                 DeleteOldData(container);
                 var repository = container.Resolve<Common.DomRepository>();
 
-                TestGroup<TestAutoCode.IntGroup, int>(container, repository.TestAutoCode.IntGroup, 500, "+", "1");
-                TestGroup<TestAutoCode.IntGroup, int>(container, repository.TestAutoCode.IntGroup, 500, "+", "2");
-                TestGroup<TestAutoCode.IntGroup, int>(container, repository.TestAutoCode.IntGroup, 600, "+", "1");
-                TestGroup<TestAutoCode.IntGroup, int>(container, repository.TestAutoCode.IntGroup, 600, "A+", "A1");
-                TestGroup<TestAutoCode.IntGroup, int>(container, repository.TestAutoCode.IntGroup, 600, "A+", "A2");
+                TestGroup<TestAutoCode.IntGroup, int>(repository.TestAutoCode.IntGroup, 500, "+", "1");
+                TestGroup<TestAutoCode.IntGroup, int>(repository.TestAutoCode.IntGroup, 500, "+", "2");
+                TestGroup<TestAutoCode.IntGroup, int>(repository.TestAutoCode.IntGroup, 600, "+", "1");
+                TestGroup<TestAutoCode.IntGroup, int>(repository.TestAutoCode.IntGroup, 600, "A+", "A1");
+                TestGroup<TestAutoCode.IntGroup, int>(repository.TestAutoCode.IntGroup, 600, "A+", "A2");
 
-                TestGroup<TestAutoCode.BoolGroup, bool>(container, repository.TestAutoCode.BoolGroup, false, "+", "1");
-                TestGroup<TestAutoCode.BoolGroup, bool>(container, repository.TestAutoCode.BoolGroup, false, "+", "2");
-                TestGroup<TestAutoCode.BoolGroup, bool>(container, repository.TestAutoCode.BoolGroup, true, "+", "1");
-                TestGroup<TestAutoCode.BoolGroup, bool>(container, repository.TestAutoCode.BoolGroup, true, "A+", "A1");
-                TestGroup<TestAutoCode.BoolGroup, bool>(container, repository.TestAutoCode.BoolGroup, true, "A+", "A2");
+                TestGroup<TestAutoCode.BoolGroup, bool>(repository.TestAutoCode.BoolGroup, false, "+", "1");
+                TestGroup<TestAutoCode.BoolGroup, bool>(repository.TestAutoCode.BoolGroup, false, "+", "2");
+                TestGroup<TestAutoCode.BoolGroup, bool>(repository.TestAutoCode.BoolGroup, true, "+", "1");
+                TestGroup<TestAutoCode.BoolGroup, bool>(repository.TestAutoCode.BoolGroup, true, "A+", "A1");
+                TestGroup<TestAutoCode.BoolGroup, bool>(repository.TestAutoCode.BoolGroup, true, "A+", "A2");
 
-                TestGroup<TestAutoCode.StringGroup, string>(container, repository.TestAutoCode.StringGroup, "x", "+", "1");
-                TestGroup<TestAutoCode.StringGroup, string>(container, repository.TestAutoCode.StringGroup, "x", "+", "2");
-                TestGroup<TestAutoCode.StringGroup, string>(container, repository.TestAutoCode.StringGroup, "y", "+", "1");
-                TestGroup<TestAutoCode.StringGroup, string>(container, repository.TestAutoCode.StringGroup, "y", "A+", "A1");
-                TestGroup<TestAutoCode.StringGroup, string>(container, repository.TestAutoCode.StringGroup, "y", "A+", "A2");
+                TestGroup<TestAutoCode.StringGroup, string>(repository.TestAutoCode.StringGroup, "x", "+", "1");
+                TestGroup<TestAutoCode.StringGroup, string>(repository.TestAutoCode.StringGroup, "x", "+", "2");
+                TestGroup<TestAutoCode.StringGroup, string>(repository.TestAutoCode.StringGroup, "y", "+", "1");
+                TestGroup<TestAutoCode.StringGroup, string>(repository.TestAutoCode.StringGroup, "y", "A+", "A1");
+                TestGroup<TestAutoCode.StringGroup, string>(repository.TestAutoCode.StringGroup, "y", "A+", "A2");
 
                 var simple1 = new TestAutoCode.Simple { ID = Guid.NewGuid(), Code = "1" };
                 var simple2 = new TestAutoCode.Simple { ID = Guid.NewGuid(), Code = "2" };
                 repository.TestAutoCode.Simple.Insert(new[] { simple1, simple2 });
 
-                TestGroup<TestAutoCode.ReferenceGroup, TestAutoCode.Simple>(container, repository.TestAutoCode.ReferenceGroup, simple1, "+", "1");
-                TestGroup<TestAutoCode.ReferenceGroup, TestAutoCode.Simple>(container, repository.TestAutoCode.ReferenceGroup, simple1, "+", "2");
-                TestGroup<TestAutoCode.ReferenceGroup, TestAutoCode.Simple>(container, repository.TestAutoCode.ReferenceGroup, simple2, "+", "1");
-                TestGroup<TestAutoCode.ReferenceGroup, TestAutoCode.Simple>(container, repository.TestAutoCode.ReferenceGroup, simple2, "A+", "A1");
-                TestGroup<TestAutoCode.ReferenceGroup, TestAutoCode.Simple>(container, repository.TestAutoCode.ReferenceGroup, simple2, "A+", "A2");
+                TestGroup<TestAutoCode.ReferenceGroup, TestAutoCode.Simple>(repository.TestAutoCode.ReferenceGroup, simple1, "+", "1");
+                TestGroup<TestAutoCode.ReferenceGroup, TestAutoCode.Simple>(repository.TestAutoCode.ReferenceGroup, simple1, "+", "2");
+                TestGroup<TestAutoCode.ReferenceGroup, TestAutoCode.Simple>(repository.TestAutoCode.ReferenceGroup, simple2, "+", "1");
+                TestGroup<TestAutoCode.ReferenceGroup, TestAutoCode.Simple>(repository.TestAutoCode.ReferenceGroup, simple2, "A+", "A1");
+                TestGroup<TestAutoCode.ReferenceGroup, TestAutoCode.Simple>(repository.TestAutoCode.ReferenceGroup, simple2, "A+", "A2");
 
                 var grouping1 = new TestAutoCode.Grouping { ID = Guid.NewGuid(), Code = "1" };
                 var grouping2 = new TestAutoCode.Grouping { ID = Guid.NewGuid(), Code = "2" };
                 repository.TestAutoCode.Grouping.Insert(new[] { grouping1, grouping2 });
 
-                TestGroup<TestAutoCode.ShortReferenceGroup, TestAutoCode.Grouping>(container, repository.TestAutoCode.ShortReferenceGroup, grouping1, "+", "1");
-                TestGroup<TestAutoCode.ShortReferenceGroup, TestAutoCode.Grouping>(container, repository.TestAutoCode.ShortReferenceGroup, grouping1, "+", "2");
-                TestGroup<TestAutoCode.ShortReferenceGroup, TestAutoCode.Grouping>(container, repository.TestAutoCode.ShortReferenceGroup, grouping2, "+", "1");
-                TestGroup<TestAutoCode.ShortReferenceGroup, TestAutoCode.Grouping>(container, repository.TestAutoCode.ShortReferenceGroup, grouping2, "A+", "A1");
-                TestGroup<TestAutoCode.ShortReferenceGroup, TestAutoCode.Grouping>(container, repository.TestAutoCode.ShortReferenceGroup, grouping2, "A+", "A2");
+                TestGroup<TestAutoCode.ShortReferenceGroup, TestAutoCode.Grouping>(repository.TestAutoCode.ShortReferenceGroup, grouping1, "+", "1");
+                TestGroup<TestAutoCode.ShortReferenceGroup, TestAutoCode.Grouping>(repository.TestAutoCode.ShortReferenceGroup, grouping1, "+", "2");
+                TestGroup<TestAutoCode.ShortReferenceGroup, TestAutoCode.Grouping>(repository.TestAutoCode.ShortReferenceGroup, grouping2, "+", "1");
+                TestGroup<TestAutoCode.ShortReferenceGroup, TestAutoCode.Grouping>(repository.TestAutoCode.ShortReferenceGroup, grouping2, "A+", "A1");
+                TestGroup<TestAutoCode.ShortReferenceGroup, TestAutoCode.Grouping>(repository.TestAutoCode.ShortReferenceGroup, grouping2, "A+", "A2");
             }
         }
 
@@ -448,19 +447,19 @@ namespace CommonConcepts.Test
                 DeleteOldData(container);
                 var repository = container.Resolve<Common.DomRepository>();
 
-                TestSimple(container, repository, "+", "1");
-                TestSimple(container, repository, "+", "2");
-                TestSimple(container, repository, "++++", "0003");
-                TestSimple(container, repository, "+", "0004");
-                TestSimple(container, repository, "++", "0005");
-                TestSimple(container, repository, "AB+", "AB1");
-                TestSimple(container, repository, "X", "X");
-                TestSimple(container, repository, "X+", "X1");
-                TestSimple(container, repository, "AB007", "AB007");
-                TestSimple(container, repository, "AB+", "AB008");
-                TestSimple(container, repository, "AB999", "AB999");
-                TestSimple(container, repository, "AB+", "AB1000");
-                TestSimple(container, repository, "AB++++++", "AB001001");
+                TestSimple(repository, "+", "1");
+                TestSimple(repository, "+", "2");
+                TestSimple(repository, "++++", "0003");
+                TestSimple(repository, "+", "0004");
+                TestSimple(repository, "++", "0005");
+                TestSimple(repository, "AB+", "AB1");
+                TestSimple(repository, "X", "X");
+                TestSimple(repository, "X+", "X1");
+                TestSimple(repository, "AB007", "AB007");
+                TestSimple(repository, "AB+", "AB008");
+                TestSimple(repository, "AB999", "AB999");
+                TestSimple(repository, "AB+", "AB1000");
+                TestSimple(repository, "AB++++++", "AB001001");
             }
         }
 
@@ -472,20 +471,20 @@ namespace CommonConcepts.Test
                 DeleteOldData(container);
                 var repository = container.Resolve<Common.DomRepository>();
 
-                TestSimple(container, repository, "+++", "001");
-                TestSimple(container, repository, "+", "002");
+                TestSimple(repository, "+++", "001");
+                TestSimple(repository, "+", "002");
 
-                TestSimple(container, repository, "AB99", "AB99");
-                TestSimple(container, repository, "AB++", "AB100");
+                TestSimple(repository, "AB99", "AB99");
+                TestSimple(repository, "AB++", "AB100");
 
-                TestSimple(container, repository, "AB999", "AB999");
-                TestSimple(container, repository, "AB++++++", "AB001000");
+                TestSimple(repository, "AB999", "AB999");
+                TestSimple(repository, "AB++++++", "AB001000");
 
-                TestSimple(container, repository, "B999", "B999");
-                TestSimple(container, repository, "B++", "B1000");
+                TestSimple(repository, "B999", "B999");
+                TestSimple(repository, "B++", "B1000");
 
-                TestSimple(container, repository, "C500", "C500");
-                TestSimple(container, repository, "C++", "C501");
+                TestSimple(repository, "C500", "C500");
+                TestSimple(repository, "C++", "C501");
             }
         }
 
@@ -497,17 +496,17 @@ namespace CommonConcepts.Test
                 DeleteOldData(container);
                 var repository = container.Resolve<Common.DomRepository>();
 
-                TestSimple(container, repository, "002", "002");
-                TestSimple(container, repository, "55", "55");
-                TestSimple(container, repository, "+", "56");
+                TestSimple(repository, "002", "002");
+                TestSimple(repository, "55", "55");
+                TestSimple(repository, "+", "56");
 
-                TestSimple(container, repository, "A002", "A002");
-                TestSimple(container, repository, "A55", "A55");
-                TestSimple(container, repository, "A++", "A56");
+                TestSimple(repository, "A002", "A002");
+                TestSimple(repository, "A55", "A55");
+                TestSimple(repository, "A++", "A56");
 
-                TestSimple(container, repository, "C100", "C100");
-                TestSimple(container, repository, "C99", "C99");
-                TestSimple(container, repository, "C+", "C101");
+                TestSimple(repository, "C100", "C100");
+                TestSimple(repository, "C99", "C99");
+                TestSimple(repository, "C+", "C101");
             }
         }
 
@@ -682,7 +681,7 @@ namespace CommonConcepts.Test
 
             using (var container = new RhetosTestContainer(true))
             {
-                CheckForParallelism(container.Resolve<ISqlExecuter>(), threadCount);
+                RhetosProcessHelper.CheckForParallelism(container.Resolve<ISqlExecuter>(), threadCount);
                 DeleteOldData(container);
             }
 
@@ -774,7 +773,7 @@ namespace CommonConcepts.Test
             using (var container = new RhetosTestContainer(true))
             {
                 var sqlExecuter = container.Resolve<ISqlExecuter>();
-                CheckForParallelism(sqlExecuter, threadCount);
+                RhetosProcessHelper.CheckForParallelism(sqlExecuter, threadCount);
                 DeleteOldData(container);
 
                 coldStartInsert(container.Resolve<Common.ExecutionContext>());
@@ -819,29 +818,6 @@ namespace CommonConcepts.Test
                 Console.WriteLine("Exception " + x + ": " + exceptions[x] + ".");
             return exceptions;
         }
-
-        private void CheckForParallelism(ISqlExecuter sqlExecuter, int requiredNumberOfThreads)
-        {
-            string sqlDelay01 = "WAITFOR DELAY '00:00:00.100'";
-            var sqls = new[] { sqlDelay01 };
-            sqlExecuter.ExecuteSql(sqls); // Possible cold start.
-
-            var sw = Stopwatch.StartNew();
-            Parallel.For(0, requiredNumberOfThreads, x => { sqlExecuter.ExecuteSql(sqls, false); });
-            sw.Stop();
-
-            Console.WriteLine("CheckForParallelism: " + sw.ElapsedMilliseconds + " ms.");
-
-            if (sw.ElapsedMilliseconds < 50)
-                Assert.Fail("Delay is unexpectedly short: " + sw.ElapsedMilliseconds);
-
-            if (sw.Elapsed.TotalMilliseconds > 190)
-                Assert.Inconclusive(string.Format(
-                    "This test requires {0} parallel SQL queries. {0} parallel delays for 100 ms are executed in {1} ms.",
-                    requiredNumberOfThreads,
-                    sw.ElapsedMilliseconds));
-        }
-
 
         /// <summary>
         /// There is no need to lock all inserts. It should be allowed to insert different groups in parallel.
