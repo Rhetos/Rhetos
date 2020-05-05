@@ -62,7 +62,7 @@ namespace CommonConcepts.Test
                 {
                     var context = container.Resolve<Common.ExecutionContext>();
                     context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id1 });
-                    throw new FrameworkException(nameof(RollbackByDefault)); // The exception is not handled within transaction scope.
+                    throw new FrameworkException(nameof(RollbackByDefault)); // The exception that is not handled within transaction scope.
 #pragma warning disable CS0162 // Unreachable code detected
                     container.CommitChanges();
 #pragma warning restore CS0162 // Unreachable code detected
@@ -120,7 +120,7 @@ namespace CommonConcepts.Test
             using (var container = RhetosProcessHelper.Container.CreateTransactionScope())
             {
                 RhetosProcessHelper.CheckForParallelism(container.Resolve<ISqlExecuter>(), threadCount);
-                
+
                 var context = container.Resolve<Common.ExecutionContext>();
                 initialCount = context.Repository.TestEntity.BaseEntity.Query().Count();
             }

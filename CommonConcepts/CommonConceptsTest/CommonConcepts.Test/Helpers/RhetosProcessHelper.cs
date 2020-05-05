@@ -22,9 +22,11 @@ using Rhetos;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Utilities;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CommonConcepts.Test.Helpers
@@ -66,18 +68,23 @@ namespace CommonConcepts.Test.Helpers
             if (folder.Name == "Rhetos" && IsValidRhetosServerDirectory(folder.FullName))
                 return folder.FullName;
 
-            throw new FrameworkException("Cannot locate a valid Rhetos server's folder from '" + Environment.CurrentDirectory + "'. Unexpected folder '" + folder.FullName + "'.");
+            throw new FrameworkException($"Cannot locate a valid Rhetos server's folder from '{Environment.CurrentDirectory}'. Unexpected folder '{folder.FullName}'.");
         }
 
         private static bool IsValidRhetosServerDirectory(string path)
         {
-            return
-                File.Exists(Path.Combine(path, @"Web.config"))
+            // Heuristics for recognizing Source\Rhetos project folder.
+            return File.Exists(Path.Combine(path, @"Web.config"))
                 && File.Exists(Path.Combine(path, @"bin\Rhetos.Utilities.dll"));
         }
 
+        private static int _checkedForParallelism = 0;
+
         public static void CheckForParallelism(ISqlExecuter sqlExecuter, int requiredNumberOfThreads)
         {
+            if (_checkedForParallelism >= requiredNumberOfThreads)
+                return;
+
             string sqlDelay01 = "WAITFOR DELAY '00:00:00.100'";
             var sqls = new[] { sqlDelay01 };
             sqlExecuter.ExecuteSql(sqls); // Possible cold start.
@@ -86,16 +93,15 @@ namespace CommonConcepts.Test.Helpers
             Parallel.For(0, requiredNumberOfThreads, x => { sqlExecuter.ExecuteSql(sqls, false); });
             sw.Stop();
 
-            Console.WriteLine("CheckForParallelism: " + sw.ElapsedMilliseconds + " ms.");
+            Console.WriteLine($"CheckForParallelism: {sw.ElapsedMilliseconds} ms.");
 
             if (sw.ElapsedMilliseconds < 50)
-                Assert.Fail("Delay is unexpectedly short: " + sw.ElapsedMilliseconds);
+                Assert.Fail($"Delay is unexpectedly short: {sw.ElapsedMilliseconds}");
 
             if (sw.Elapsed.TotalMilliseconds > 190)
-                Assert.Inconclusive(string.Format(
-                    "This test requires {0} parallel SQL queries. {0} parallel delays for 100 ms are executed in {1} ms.",
-                    requiredNumberOfThreads,
-                    sw.ElapsedMilliseconds));
+                Assert.Inconclusive($"This test requires {requiredNumberOfThreads} parallel SQL queries. {requiredNumberOfThreads} parallel delays for 100 ms are executed in {sw.ElapsedMilliseconds} ms.");
+
+            _checkedForParallelism = requiredNumberOfThreads;
         }
     }
 }
