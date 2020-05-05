@@ -142,11 +142,7 @@ namespace Rhetos.Extensibility
         {
             var stopwatch = Stopwatch.StartNew();
 
-            var assemblies = findAssemblies()
-                .Select(path => (Path: path, Name: Path.GetFileName(path)))
-                .Where(file => !_ignoreAssemblyFiles.Contains(file.Name) && !_ignoreAssemblyPrefixes.Any(prefix => file.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
-                .Select(file => Path.GetFullPath(file.Path))
-                .Distinct().ToList();
+            var assemblies = findAssemblies().Select(path => Path.GetFullPath(path)).Distinct().ToList();
 
             foreach (var assembly in assemblies)
                 if (!File.Exists(assembly))
@@ -161,6 +157,15 @@ namespace Rhetos.Extensibility
         private MultiDictionary<string, PluginInfo> LoadPlugins(List<string> assemblyPaths)
         {
             var stopwatch = Stopwatch.StartNew();
+
+            assemblyPaths = assemblyPaths
+                .Where(file =>
+                {
+                    string fileName = Path.GetFileName(file);
+                    return !_ignoreAssemblyFiles.Contains(fileName)
+                        && !_ignoreAssemblyPrefixes.Any(prefix => fileName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
+                })
+                .ToList();
 
             lock (_pluginsCacheLock) // Reading and updating cache files should not be done in parallel.
             {
