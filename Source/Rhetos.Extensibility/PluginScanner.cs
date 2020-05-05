@@ -42,6 +42,7 @@ namespace Rhetos.Extensibility
         private static readonly object _pluginsCacheLock = new object();
         private readonly HashSet<string> _ignoreAssemblyFiles;
         private readonly string[] _ignoreAssemblyPrefixes;
+        private readonly ILogProvider _logProvider;
 
         /// <summary>
         /// It searches for type implementations in the provided list of assemblies.
@@ -59,6 +60,7 @@ namespace Rhetos.Extensibility
             var ignoreList = pluginScannerOptions.PredefinedIgnoreAssemblyFiles.Concat(pluginScannerOptions.IgnoreAssemblyFiles ?? Array.Empty<string>()).Distinct().ToList();
             _ignoreAssemblyFiles = new HashSet<string>(ignoreList.Where(name => !name.EndsWith("*")), StringComparer.OrdinalIgnoreCase);
             _ignoreAssemblyPrefixes = ignoreList.Where(name => name.EndsWith("*")).Select(name => name.Trim('*')).ToArray();
+            _logProvider = logProvider;
         }
 
         /// <summary>
@@ -86,7 +88,7 @@ namespace Rhetos.Extensibility
         private MultiDictionary<string, PluginInfo> GetPluginsByExport(Func<IEnumerable<string>> findAssemblies)
         {
             var assemblies = ListAssemblies(findAssemblies);
-            var resolver = CreateAssemblyResolveDelegate(assemblies);
+            var resolver = AssemblyResolver.GetResolveEventHandler(assemblies, _logProvider);
             MultiDictionary<string, PluginInfo> plugins = null;
             try
             {
@@ -106,36 +108,6 @@ namespace Rhetos.Extensibility
                 AppDomain.CurrentDomain.AssemblyResolve -= resolver;
             }
             return plugins;
-        }
-
-        private ResolveEventHandler CreateAssemblyResolveDelegate(List<string> assemblies)
-        {
-            var byFilename = assemblies
-                .GroupBy(Path.GetFileName)
-                .Select(group => new {filename = group.Key, paths = group.OrderBy(path => path.Length).ThenBy(path => path).ToList()})
-                .ToList();
-
-            foreach (var duplicate in byFilename.Where(dll => dll.paths.Count > 1))
-            {
-                var otherPaths = string.Join(", ", duplicate.paths.Skip(1).Select(path => $"'{path}'"));
-                _logger.Warning($"Multiple paths for '{duplicate.filename}' found. This causes ambiguous DLL loading and can cause type errors. Loaded: '{duplicate.paths.First()}', ignored: {otherPaths}.");
-            }
-
-            var namesToPaths = byFilename.ToDictionary(dll => dll.filename, dll => dll.paths.First(), StringComparer.InvariantCultureIgnoreCase);
-
-            return (sender, args) => LoadAssemblyFromSpecifiedPaths(args, namesToPaths);
-        }
-
-        private Assembly LoadAssemblyFromSpecifiedPaths(ResolveEventArgs args, Dictionary<string, string> namesToPaths)
-        {
-            var filename = $"{new AssemblyName(args.Name).Name}.dll";
-            if (namesToPaths.TryGetValue(filename, out var path))
-            {
-                _logger.Trace(() => $"Custom resolver found assembly '{args.Name}' at '{path}'.");
-                return Assembly.LoadFrom(path);
-            }
-
-            return null;
         }
 
         private List<string> ListAssemblies(Func<IEnumerable<string>> findAssemblies)

@@ -18,12 +18,11 @@
 */
 
 using Autofac;
+using Rhetos.Extensibility;
 using Rhetos.Utilities;
 using System;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Collections.Generic;
 
 namespace Rhetos.Configuration.Autofac
 {
@@ -108,7 +107,7 @@ namespace Rhetos.Configuration.Autofac
                         {
                             _rhetosProcessContainer = new RhetosProcessContainer(SearchForRhetosServerRootFolder, new ConsoleLogProvider(),
                                 configurationBuilder => configurationBuilder.AddConfigurationManagerConfiguration());
-                            AppDomain.CurrentDomain.AssemblyResolve += new AssemblyResolver(_rhetosProcessContainer.Configuration).SearchForAssembly;
+                            AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolver.GetResolveEventHandler(_rhetosProcessContainer.Configuration, new ConsoleLogProvider());
                         }
                 }
 
@@ -151,37 +150,6 @@ namespace Rhetos.Configuration.Autofac
                 return folder.FullName;
 
             throw new FrameworkException("Cannot locate a valid Rhetos server's folder from '" + Environment.CurrentDirectory + "'. Unexpected folder '" + folder.FullName + "'.");
-        }
-
-        private class AssemblyResolver
-        {
-            private readonly List<string> _searchFolders;
-
-            public AssemblyResolver(IConfiguration configuration)
-            {
-                var rhetosAppOptins = configuration.GetOptions<RhetosAppOptions>();
-                var legacyPaths = configuration.GetOptions<LegacyPathsOptions>();
-                _searchFolders = new[]
-                {
-                    legacyPaths.BinFolder ?? rhetosAppOptins.GetAssemblyFolder(),
-                    legacyPaths.PluginsFolder,
-                    rhetosAppOptins.AssetsFolder,
-                }
-                    .Where(folder => !string.IsNullOrEmpty(folder))
-                    .Distinct()
-                    .ToList();
-            }
-
-            public Assembly SearchForAssembly(object sender, ResolveEventArgs args)
-            {
-                foreach (var folder in _searchFolders)
-                {
-                    string pluginAssemblyPath = Path.Combine(folder, new AssemblyName(args.Name).Name + ".dll");
-                    if (File.Exists(pluginAssemblyPath))
-                        return Assembly.LoadFrom(pluginAssemblyPath);
-                }
-                return null;
-            }
         }
     }
 }

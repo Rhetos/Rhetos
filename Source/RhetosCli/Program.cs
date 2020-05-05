@@ -18,6 +18,7 @@
 */
 
 using Rhetos.Dsl;
+using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
@@ -131,7 +132,8 @@ namespace Rhetos
                 .AddJsonFile(Path.Combine(projectRootPath, RhetosBuildEnvironment.ConfigurationFileName), optional: true)
                 .Build();
 
-            AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(rhetosProjectContent.RhetosProjectAssets.Assemblies.ToArray());
+            var assemblyFiles = rhetosProjectContent.RhetosProjectAssets.Assemblies;
+            AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolver.GetResolveEventHandler(assemblyFiles, LogProvider);
 
             var build = new ApplicationBuild(configuration, LogProvider, () => rhetosProjectContent.RhetosProjectAssets.Assemblies);
             build.ReportLegacyPluginsFolders(rhetosProjectContent.RhetosProjectAssets.InstalledPackages);
@@ -154,29 +156,11 @@ namespace Rhetos
             });
 
             var assemblyFiles = LegacyUtilities.GetRuntimeAssembliesDelegate(configuration).Invoke(); // Using same assembly locations as the generated application runtime.
-            AppDomain.CurrentDomain.AssemblyResolve += GetSearchForAssemblyDelegate(assemblyFiles);
+            AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolver.GetResolveEventHandler(assemblyFiles, LogProvider);
 
             var deployment = new ApplicationDeployment(configuration, LogProvider, () => assemblyFiles);
             deployment.UpdateDatabase();
             deployment.InitializeGeneratedApplication(host.RhetosRuntime);
-        }
-
-        private ResolveEventHandler GetSearchForAssemblyDelegate(params string[] assemblyList)
-        {
-            return new ResolveEventHandler((object sender, ResolveEventArgs args) =>
-            {
-                // TODO: Review if loadedAssembly is needed.
-                var loadedAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetName().Name == new AssemblyName(args.Name).Name);
-                if (loadedAssembly != null)
-                    return loadedAssembly;
-
-                foreach (var assembly in assemblyList.Where(x => Path.GetFileNameWithoutExtension(x) == new AssemblyName(args.Name).Name))
-                {
-                    if (File.Exists(assembly))
-                        return Assembly.LoadFrom(assembly);
-                }
-                return null;
-            });
         }
     }
 }
