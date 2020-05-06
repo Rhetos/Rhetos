@@ -153,7 +153,7 @@ namespace Rhetos
                     configurationBuilder.AddKeyValue($"{OptionsAttribute.GetConfigurationPath<DbUpdateOptions>()}:{nameof(DbUpdateOptions.SkipRecompute)}", skipRecompute);
             });
 
-            var assemblyFiles = host.RhetosRuntime.GetRuntimeAssemblies(LogProvider, configuration);
+            var assemblyFiles = AssemblyResolver.GetRuntimeAssemblies(configuration);
             AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolver.GetResolveEventHandler(assemblyFiles, LogProvider);
 
             var deployment = new ApplicationDeployment(configuration, LogProvider, () => assemblyFiles);

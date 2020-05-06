@@ -52,12 +52,12 @@ namespace Rhetos.Utilities
 
         public bool AuthorizationAddUnregisteredPrincipals { get; set; } = false;
 
-        public string GetAssemblyFolder()
-        {
-            if (string.IsNullOrEmpty(RhetosRuntimePath))
-                return null;
-            else
-                return Path.GetDirectoryName(RhetosRuntimePath);
-        }
+        /// <summary>
+        /// Locations of application's runtime assemblies (probing paths), required for plugin discovery
+        /// and assembly resolver in external applications such as CLI utilities and tests.
+        /// If not specified, Rhetos will try to automatically detect folders based on application's configuration.
+        /// </summary>
+        [AbsolutePathOption]
+        public string[] AssemblyFolders { get; set; }
     }
 }

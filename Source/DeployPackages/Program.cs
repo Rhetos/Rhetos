@@ -18,6 +18,7 @@
 */
 
 using Rhetos;
+using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
@@ -215,7 +216,7 @@ namespace DeployPackages
                     .AddConfigurationManagerConfiguration()
                     .AddCommandLineArguments(args, "/"));
 
-            var deployment = new ApplicationDeployment(configuration, logProvider, () => host.RhetosRuntime.GetRuntimeAssemblies(logProvider, configuration));
+            var deployment = new ApplicationDeployment(configuration, logProvider, () => AssemblyResolver.GetRuntimeAssemblies(configuration));
             deployment.UpdateDatabase();
             deployment.InitializeGeneratedApplication(host.RhetosRuntime);
             deployment.RestartWebServer(host.ConfigurationFolder);

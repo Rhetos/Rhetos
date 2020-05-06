@@ -18,6 +18,7 @@
 */
 
 using Rhetos.Logging;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -28,6 +29,39 @@ namespace Rhetos.Extensibility
 {
     public static class AssemblyResolver
     {
+        public static string[] GetRuntimeAssemblies(IConfiguration configuration)
+        {
+            var rhetosAppOptions = configuration.GetOptions<RhetosAppOptions>();
+            var legacyPaths = configuration.GetOptions<LegacyPathsOptions>();
+            string runtimeAssemblyFolder = !string.IsNullOrEmpty(rhetosAppOptions.RhetosRuntimePath)
+                ? Path.GetDirectoryName(rhetosAppOptions.RhetosRuntimePath) : null;
+
+            IEnumerable<string> searchFolders;
+
+            if (rhetosAppOptions.AssemblyFolders != null && rhetosAppOptions.AssemblyFolders.Length > 0)
+            {
+                searchFolders = rhetosAppOptions.AssemblyFolders;
+            }
+            else if (string.IsNullOrEmpty(legacyPaths.PluginsFolder))
+            {
+                // Application with Rhetos CLI.
+                searchFolders = new[] { runtimeAssemblyFolder };
+            }
+            else
+            {
+                // Application With DeployPackages.
+                searchFolders = new[] { runtimeAssemblyFolder, legacyPaths.PluginsFolder, rhetosAppOptions.AssetsFolder };
+            }
+
+            var foundAssemblies = searchFolders
+                .Where(folder => Directory.Exists(folder))
+                .SelectMany(folder => Directory.GetFiles(folder, "*.dll", SearchOption.TopDirectoryOnly));
+
+            return new[] { rhetosAppOptions.RhetosRuntimePath }.Concat(foundAssemblies)
+                .Distinct()
+                .ToArray();
+        }
+
         public static ResolveEventHandler GetResolveEventHandler(IEnumerable<string> assemblies, ILogProvider logProvider)
         {
             var logger = logProvider.GetLogger(nameof(AssemblyResolver));

@@ -70,10 +70,13 @@ namespace Rhetos.Extensibility
         {
             var rhetosBuildEnvironment = configuration.GetOptions<RhetosBuildEnvironment>();
             var rhetosAppOptions = configuration.GetOptions<RhetosAppOptions>();
-            string cacheFolder = rhetosBuildEnvironment?.CacheFolder ?? rhetosAppOptions?.GetAssemblyFolder();
+            string runtimeAssemblyFolder = !string.IsNullOrEmpty(rhetosAppOptions.RhetosRuntimePath)
+                ? Path.GetDirectoryName(rhetosAppOptions.RhetosRuntimePath) : null;
+
+            string cacheFolder = rhetosBuildEnvironment.CacheFolder ?? runtimeAssemblyFolder;
             if (cacheFolder == null)
                 throw new FrameworkException($"Missing configuration settings for build ({OptionsAttribute.GetConfigurationPath<RhetosBuildEnvironment>()}:{nameof(RhetosBuildEnvironment.CacheFolder)})" +
-                    $" or runtime ({OptionsAttribute.GetConfigurationPath<RhetosAppOptions>()}:{nameof(RhetosAppOptions.GetAssemblyFolder)}).");
+                    $" or runtime ({OptionsAttribute.GetConfigurationPath<RhetosAppOptions>()}:{nameof(RhetosAppOptions.RhetosRuntimePath)}).");
             return cacheFolder;
         }
 

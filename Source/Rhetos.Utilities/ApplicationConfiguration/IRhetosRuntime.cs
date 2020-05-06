@@ -50,10 +50,5 @@ namespace Rhetos
         /// This is commonly used by utilities and tests that need to override host application's components or register additional plugins.
         /// </param>
         IContainer BuildContainer(ILogProvider logProvider, IConfiguration configuration, Action<ContainerBuilder> registerCustomComponents);
-
-        /// <summary>
-        /// Returns paths of application's runtime assemblies. It is required for plugin discovery and assembly resolver in external applications such as CLI utilities and tests.
-        /// </summary>
-        string[] GetRuntimeAssemblies(ILogProvider logProvider, IConfiguration configuration);
     }
 }

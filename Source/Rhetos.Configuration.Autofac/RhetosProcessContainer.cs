@@ -29,17 +29,17 @@ using System.Threading;
 namespace Rhetos.Configuration.Autofac
 {
     /// <summary>
-    /// It encapsulates a Dependency Injection container (see 
-    /// <see cref="Host.CreateRhetosContainer(string, ILogProvider, Action{IConfigurationBuilder}, Action{ContainerBuilder})"/>)
-    /// for creating the lifetime-scope child containers with <see cref="CreateTransactionScope"/>.
+    /// It encapsulates a Dependency Injection container (see <see cref="Host.CreateRhetosContainer"/>)
+    /// for creating the lifetime-scope child containers with <see cref="CreateTransactionScope(Action{ContainerBuilder})"/>.
     /// Use the child containers to isolate units of work into separate atomic transactions.
     /// 
     /// RhetosProcessContainer is thread-safe: the main RhetosProcessContainer instance can be reused between threads
     /// to reduce the initialization time, such as plugin discovery and Entity Framework startup.
-    /// Each thread should use <see cref="CreateTransactionScope"/> to create its own lifetime-scope child container.
+    /// Each thread should use <see cref="CreateTransactionScope(Action{ContainerBuilder})"/> to create its own lifetime-scope child container.
     /// 
-    /// RhetosProcessContainer overrides the main application's DI components to use <see cref="ProcessUserInfo"/> and <see cref="ConsoleLogProvider"/> by default.
-    /// It also registers assembly resolver for runtime assemblies from <see cref="IRhetosRuntime.GetRuntimeAssemblies(ILogProvider, IConfiguration)"/>.
+    /// RhetosProcessContainer overrides the main application's DI components to use <see cref="ProcessUserInfo"/>
+    /// and <see cref="ConsoleLogProvider"/> by default.
+    /// It also registers assembly resolver for runtime assemblies.
     /// </summary>
     public class RhetosProcessContainer : IDisposable
     {
@@ -80,7 +80,7 @@ namespace Rhetos.Configuration.Autofac
             // so that the performance logging only takes into account the time needed to build the IOC container
             var sw = Stopwatch.StartNew();
 
-            var runtimeAssemblies = _host.Value.RhetosRuntime.GetRuntimeAssemblies(logProvider, _configuration.Value);
+            var runtimeAssemblies = AssemblyResolver.GetRuntimeAssemblies(_configuration.Value);
             _assemblyResolveEventHandler = AssemblyResolver.GetResolveEventHandler(runtimeAssemblies, logProvider);
             AppDomain.CurrentDomain.AssemblyResolve += _assemblyResolveEventHandler;
 
