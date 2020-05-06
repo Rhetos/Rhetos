@@ -47,12 +47,10 @@ namespace Rhetos.Extensibility
         /// <summary>
         /// It searches for type implementations in the provided list of assemblies.
         /// </summary>
-        /// <param name="findAssemblies">The findAssemblies function should return a list of DLL file paths that will be searched for plugins when invoking the method <see cref="FindPlugins"/></param>
-        public PluginScanner(Func<IEnumerable<string>> findAssemblies, string cacheFolder, ILogProvider logProvider, PluginScannerOptions pluginScannerOptions)
+        /// <param name="pluginAssemblies">List of DLL file paths that will be searched for plugins when invoking the method <see cref="FindPlugins"/>.</param>
+        public PluginScanner(IEnumerable<string> pluginAssemblies, string cacheFolder, ILogProvider logProvider, PluginScannerOptions pluginScannerOptions)
         {
-            _pluginsByExport = new Lazy<MultiDictionary<string, PluginInfo>>(
-                () => GetPluginsByExport(findAssemblies),
-                LazyThreadSafetyMode.ExecutionAndPublication);
+            _pluginsByExport = new Lazy<MultiDictionary<string, PluginInfo>>(() => GetPluginsByExport(pluginAssemblies), LazyThreadSafetyMode.ExecutionAndPublication);
             _pluginScannerCache = new PluginScannerCache(cacheFolder, logProvider, new FilesUtility(logProvider));
             _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _logger = logProvider.GetLogger(GetType().Name);
@@ -88,19 +86,27 @@ namespace Rhetos.Extensibility
             return _pluginsByExport.Value.Get(pluginInterface.FullName);
         }
 
-        private MultiDictionary<string, PluginInfo> GetPluginsByExport(Func<IEnumerable<string>> findAssemblies)
+        private MultiDictionary<string, PluginInfo> GetPluginsByExport(IEnumerable<string> pluginAssemblies)
         {
-            var assemblies = ListAssemblies(findAssemblies);
-            var resolver = AssemblyResolver.GetResolveEventHandler(assemblies, _logProvider);
+            List<string> assemblyPaths = pluginAssemblies.Select(path => Path.GetFullPath(path)).Distinct().ToList();
+
+            foreach (var assembly in assemblyPaths)
+                if (!File.Exists(assembly))
+                    throw new FrameworkException($"{nameof(PluginScanner)}: The given assembly file path does not exist: '{assembly}'.");
+                else
+                    _logger.Trace(() => $"Searching for plugins in '{assembly}'");
+
+            var resolver = AssemblyResolver.GetResolveEventHandler(assemblyPaths, _logProvider);
+
             MultiDictionary<string, PluginInfo> plugins = null;
             try
             {
                 AppDomain.CurrentDomain.AssemblyResolve += resolver;
-                plugins = LoadPlugins(assemblies);
+                plugins = LoadPlugins(assemblyPaths);
             }
             catch (Exception ex)
             {
-                string typeLoadReport = CsUtility.ReportTypeLoadException(ex, "Cannot load plugins.", assemblies);
+                string typeLoadReport = CsUtility.ReportTypeLoadException(ex, "Cannot load plugins.", assemblyPaths);
                 if (typeLoadReport != null)
                     throw new FrameworkException(typeLoadReport, ex);
                 else
@@ -113,34 +119,24 @@ namespace Rhetos.Extensibility
             return plugins;
         }
 
-        private List<string> ListAssemblies(Func<IEnumerable<string>> findAssemblies)
-        {
-            var stopwatch = Stopwatch.StartNew();
-
-            var assemblies = findAssemblies().Select(path => Path.GetFullPath(path)).Distinct().ToList();
-
-            foreach (var assembly in assemblies)
-                if (!File.Exists(assembly))
-                    throw new FrameworkException($"{nameof(PluginScanner)}: The given assembly file path does not exist: '{assembly}'.");
-                else
-                    _logger.Trace(() => $"Searching for plugins in '{assembly}'");
-
-            _performanceLogger.Write(stopwatch, $"Listed assemblies ({assemblies.Count}).");
-            return assemblies;
-        }
-
         private MultiDictionary<string, PluginInfo> LoadPlugins(List<string> assemblyPaths)
         {
             var stopwatch = Stopwatch.StartNew();
 
+            int ignoredFileCount = 0;
             assemblyPaths = assemblyPaths
                 .Where(file =>
                 {
                     string fileName = Path.GetFileName(file);
-                    return !_ignoreAssemblyFiles.Contains(fileName)
-                        && !_ignoreAssemblyPrefixes.Any(prefix => fileName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
+                    bool ignored = _ignoreAssemblyFiles.Contains(fileName)
+                        || _ignoreAssemblyPrefixes.Any(prefix => fileName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
+                    if (ignored)
+                        ignoredFileCount++;
+                    return !ignored;
                 })
                 .ToList();
+            if (ignoredFileCount > 0)
+                _logger.Trace($"Ignored {ignoredFileCount} assemblies based on {nameof(PluginScannerOptions)}.");
 
             lock (_pluginsCacheLock) // Reading and updating cache files should not be done in parallel.
             {

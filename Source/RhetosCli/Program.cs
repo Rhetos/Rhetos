@@ -130,12 +130,12 @@ namespace Rhetos
                 .AddJsonFile(Path.Combine(projectRootPath, RhetosBuildEnvironment.ConfigurationFileName), optional: true)
                 .Build();
 
-            var assemblyFiles = rhetosProjectContent.RhetosProjectAssets.Assemblies;
-            AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolver.GetResolveEventHandler(assemblyFiles, LogProvider);
+            var projectAssets = rhetosProjectContent.RhetosProjectAssets;
+            AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolver.GetResolveEventHandler(projectAssets.Assemblies, LogProvider);
 
-            var build = new ApplicationBuild(configuration, LogProvider, () => rhetosProjectContent.RhetosProjectAssets.Assemblies);
-            build.ReportLegacyPluginsFolders(rhetosProjectContent.RhetosProjectAssets.InstalledPackages);
-            build.GenerateApplication(rhetosProjectContent.RhetosProjectAssets.InstalledPackages);
+            var build = new ApplicationBuild(configuration, LogProvider, projectAssets.Assemblies, projectAssets.InstalledPackages);
+            build.ReportLegacyPluginsFolders();
+            build.GenerateApplication();
         }
 
         private void DbUpdate(DirectoryInfo applicationFolder, bool shortTransactions, bool skipRecompute)
@@ -156,7 +156,7 @@ namespace Rhetos
             var assemblyFiles = AssemblyResolver.GetRuntimeAssemblies(configuration);
             AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolver.GetResolveEventHandler(assemblyFiles, LogProvider);
 
-            var deployment = new ApplicationDeployment(configuration, LogProvider, () => assemblyFiles);
+            var deployment = new ApplicationDeployment(configuration, LogProvider);
             deployment.UpdateDatabase();
             deployment.InitializeGeneratedApplication(host.RhetosRuntime);
         }

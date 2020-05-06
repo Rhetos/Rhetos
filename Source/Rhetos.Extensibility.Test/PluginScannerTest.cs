@@ -36,8 +36,8 @@ namespace Rhetos.Extensibility.Test
         [TestMethod]
         public void AnalyzeAndReportTypeLoadException()
         {
-            IEnumerable<string> findAssemblies() => new[] { GetIncompatibleAssemblyPath() };
-            var pluginsScanner = new PluginScanner(findAssemblies, ".", new ConsoleLogProvider(), new PluginScannerOptions());
+            var incompatibleAssemblies = new[] { GetIncompatibleAssemblyPath() };
+            var pluginsScanner = new PluginScanner(incompatibleAssemblies, ".", new ConsoleLogProvider(), new PluginScannerOptions());
 
             TestUtility.ShouldFail<FrameworkException>(
                 () => pluginsScanner.FindPlugins(typeof(IGenerator)),

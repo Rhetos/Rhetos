@@ -21,7 +21,6 @@ using Autofac;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;
-using System;
 using System.Collections.Generic;
 
 namespace Rhetos
@@ -40,7 +39,7 @@ namespace Rhetos
         /// <see cref="LegacyUtilities"/> will also be initialized with the given configuration.
         /// </summary>
         /// <param name="pluginAssemblies">List of assemblies (DLL file paths) that will be used for plugins search when using the <see cref="ContainerBuilderPluginRegistration"/></param>
-        public RhetosContainerBuilder(IConfiguration configuration, ILogProvider logProvider, Func<IEnumerable<string>> pluginAssemblies)
+        public RhetosContainerBuilder(IConfiguration configuration, ILogProvider logProvider, IEnumerable<string> pluginAssemblies)
         {
             this.RegisterInstance(configuration);
 

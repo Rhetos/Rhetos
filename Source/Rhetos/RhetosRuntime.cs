@@ -25,7 +25,6 @@ using Rhetos.Security;
 using Rhetos.Utilities;
 using Rhetos.Web;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
 
 namespace Rhetos
@@ -61,11 +60,7 @@ namespace Rhetos
 
         public IContainer BuildContainer(ILogProvider logProvider, IConfiguration configuration, Action<ContainerBuilder> registerCustomComponents)
         {
-            return BuildContainer(logProvider, configuration, registerCustomComponents, () => AssemblyResolver.GetRuntimeAssemblies(configuration));
-        }
-
-        private IContainer BuildContainer(ILogProvider logProvider, IConfiguration configuration, Action<ContainerBuilder> registerCustomComponents, Func<IEnumerable<string>> pluginAssemblies)
-        {
+            var pluginAssemblies = AssemblyResolver.GetRuntimeAssemblies(configuration);
             var builder = new RhetosContainerBuilder(configuration, logProvider, pluginAssemblies);
 
             builder.AddRhetosRuntime();

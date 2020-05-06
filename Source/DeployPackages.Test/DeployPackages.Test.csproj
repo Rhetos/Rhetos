@@ -49,7 +49,6 @@
     </Compile>
     <Compile Include="AutofacConfigurationTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RhetosRuntimeAccessor.cs" />
     <Compile Include="TestWebSecurity.cs" />
     <Compile Include="TestWebSecurityModule.cs" />
   </ItemGroup>

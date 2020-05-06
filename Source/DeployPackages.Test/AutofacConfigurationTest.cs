@@ -28,21 +28,20 @@ using System.Collections.Generic;
 using System.Linq;
 using Rhetos.Deployment;
 using System.IO;
+using Rhetos.Extensibility;
 
 namespace DeployPackages.Test
 {
     [TestClass]
     public class AutofacConfigurationTest
     {
-        private readonly IConfiguration _configuration;
-
-        public AutofacConfigurationTest()
+        public IConfiguration GetBuildConfiguration()
         {
             string rhetosAppRootPath = AppDomain.CurrentDomain.BaseDirectory;
 
             // This code is mostly copied from DeployPackages build-time configuration.
 
-            _configuration = new ConfigurationBuilder()
+            var configuration = new ConfigurationBuilder()
                 .AddOptions(new RhetosBuildEnvironment
                 {
                     ProjectFolder = rhetosAppRootPath,
@@ -57,13 +56,61 @@ namespace DeployPackages.Test
                     PluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins"),
                     ResourcesFolder = Path.Combine(rhetosAppRootPath, "Resources"),
                 })
+                .AddOptions(new LegacyPathsOptions
+                {
+                    BinFolder = Path.Combine(rhetosAppRootPath, "bin"),
+                    PluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins"),
+                    ResourcesFolder = Path.Combine(rhetosAppRootPath, "Resources"),
+                })
                 .AddKeyValue($"{OptionsAttribute.GetConfigurationPath<BuildOptions>()}:{nameof(BuildOptions.GenerateAppSettings)}", false)
                 .AddKeyValue($"{OptionsAttribute.GetConfigurationPath<BuildOptions>()}:{nameof(BuildOptions.BuildResourcesFolder)}", true)
                 .AddWebConfiguration(rhetosAppRootPath)
                 .AddConfigurationManagerConfiguration()
                 .Build();
 
-            LegacyUtilities.Initialize(_configuration);
+            LegacyUtilities.Initialize(configuration);
+
+            return configuration;
+        }
+
+        public IConfiguration GetRuntimeConfiguration()
+        {
+            string rhetosAppRootPath = AppDomain.CurrentDomain.BaseDirectory;
+            string currentAssemblyPath = GetType().Assembly.Location;
+            var allOtherAssemblies = Directory.GetFiles(Path.GetDirectoryName(currentAssemblyPath), "*.dll")
+                .Except(new[] { currentAssemblyPath })
+                .Select(path => Path.GetFileName(path))
+                .ToList();
+
+            // Simulating common run-time configuration of application with DeployPackages.
+
+            var configuration = new ConfigurationBuilder()
+                .AddOptions(new RhetosAppEnvironment
+                {
+                    ApplicationRootFolder = rhetosAppRootPath
+                })
+                .AddOptions(new RhetosAppOptions
+                {
+                    RhetosRuntimePath = currentAssemblyPath,
+                })
+                .AddOptions(new PluginScannerOptions
+                {
+                    // Ignore other MEF plugins from assemblies that might get bundled in the same testing output folder.
+                    IgnoreAssemblyFiles = allOtherAssemblies
+                })
+                .AddOptions(new LegacyPathsOptions
+                {
+                    BinFolder = Path.Combine(rhetosAppRootPath, "bin"),
+                    PluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins"),
+                    ResourcesFolder = Path.Combine(rhetosAppRootPath, "Resources"),
+                })
+                .AddWebConfiguration(rhetosAppRootPath)
+                .AddConfigurationManagerConfiguration()
+                .Build();
+
+            LegacyUtilities.Initialize(configuration);
+
+            return configuration;
         }
 
         private IEnumerable<string> PluginsFromThisAssembly()
@@ -74,7 +121,8 @@ namespace DeployPackages.Test
         [TestMethod]
         public void CorrectOptionsAddedByKeyValue()
         {
-            var buildOptions = _configuration.GetOptions<BuildOptions>();
+            var configuration = GetBuildConfiguration();
+            var buildOptions = configuration.GetOptions<BuildOptions>();
             Assert.AreEqual(false, buildOptions.GenerateAppSettings);
             Assert.AreEqual(true, buildOptions.BuildResourcesFolder);
         }
@@ -82,8 +130,9 @@ namespace DeployPackages.Test
         [TestMethod]
         public void CorrectRegistrationsBuildTime()
         {
-            var build = new ApplicationBuild(_configuration, new NLogProvider(), PluginsFromThisAssembly);
-            var builder = build.CreateBuildComponentsContainer(new InstalledPackages());
+            var configuration = GetBuildConfiguration();
+            var build = new ApplicationBuild(configuration, new NLogProvider(), PluginsFromThisAssembly(), new InstalledPackages());
+            var builder = build.CreateBuildComponentsContainer();
 
             using (var container = builder.Build())
             {
@@ -100,7 +149,8 @@ namespace DeployPackages.Test
         [TestMethod]
         public void CorrectRegistrationsDbUpdate()
         {
-            var deployment = new ApplicationDeployment(_configuration, new NLogProvider(), PluginsFromThisAssembly);
+            var configuration = GetRuntimeConfiguration();
+            var deployment = new ApplicationDeployment(configuration, new NLogProvider());
             var builder = deployment.CreateDbUpdateComponentsContainer();
 
             using (var container = builder.Build())
@@ -117,9 +167,10 @@ namespace DeployPackages.Test
         [TestMethod]
         public void CorrectRegistrationsRuntimeWithInitialization()
         {
-            var deployment = new ApplicationDeployment(_configuration, new NLogProvider(), null);
+            var configuration = GetRuntimeConfiguration();
+            var deployment = new ApplicationDeployment(configuration, new NLogProvider());
 
-            using (var container = new RhetosRuntimeAccessor(false).BuildContainer(new NLogProvider(), _configuration, deployment.AddAppInitializationComponents, PluginsFromThisAssembly))
+            using (var container = new RhetosRuntime(isHost: false).BuildContainer(new NLogProvider(), configuration, deployment.AddAppInitializationComponents))
             {
                 var registrationsDump = DumpSortedRegistrations(container);
                 System.Diagnostics.Trace.WriteLine(registrationsDump);
@@ -134,7 +185,8 @@ namespace DeployPackages.Test
         [TestMethod]
         public void CorrectRegistrationsServerRuntime()
         {
-            using (var container = new RhetosRuntimeAccessor(true).BuildContainer(new NLogProvider(), _configuration, null, PluginsFromThisAssembly))
+            var configuration = GetRuntimeConfiguration();
+            using (var container = new RhetosRuntime(isHost: true).BuildContainer(new NLogProvider(), configuration, null))
             {
                 var registrationsDump = DumpSortedRegistrations(container);
                 System.Diagnostics.Trace.WriteLine(registrationsDump);

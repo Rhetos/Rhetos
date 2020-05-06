@@ -597,7 +597,7 @@ namespace Rhetos.Utilities.Test
             Func<string, IConfiguration> buildWithJson = jsonText => new ConfigurationBuilder().Add(new JsonSource(jsonText)).Build();
 
             TestUtility.ShouldFail(() => buildWithJson("{"), "Error reading JObject from JsonReader");
-            TestUtility.ShouldFail<FrameworkException>(() => buildWithJson("{\"array\": [] }"), "JSON token type Array is not allowed");
+            TestUtility.ShouldFail<FrameworkException>(() => buildWithJson("{\"array\": null }"), "JSON token type Null is not allowed");
         }
 
         private class TestOptions

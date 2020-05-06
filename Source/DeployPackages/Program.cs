@@ -18,6 +18,7 @@
 */
 
 using Rhetos;
+using Rhetos.Deployment;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;
@@ -84,24 +85,24 @@ namespace DeployPackages
             var logger = logProvider.GetLogger("DeployPackages");
 
             var configurationBuilder = new ConfigurationBuilder()
-                   .AddOptions(new RhetosBuildEnvironment
-                   {
-                       ProjectFolder = rhetosAppRootPath,
-                       OutputAssemblyName = null,
-                       CacheFolder = Path.Combine(rhetosAppRootPath, "GeneratedFilesCache"),
-                       GeneratedAssetsFolder = Path.Combine(rhetosAppRootPath, "bin", "Generated"),
-                       GeneratedSourceFolder = null,
-                   })
-                   .AddOptions(new LegacyPathsOptions
-                   {
-                       BinFolder = Path.Combine(rhetosAppRootPath, "bin"),
-                       PluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins"),
-                       ResourcesFolder = Path.Combine(rhetosAppRootPath, "Resources"),
-                   })
-                   .AddKeyValue($"{OptionsAttribute.GetConfigurationPath<BuildOptions>()}:{nameof(BuildOptions.GenerateAppSettings)}", false)
-                   .AddKeyValue($"{OptionsAttribute.GetConfigurationPath<BuildOptions>()}:{nameof(BuildOptions.BuildResourcesFolder)}", true)
-                   .AddWebConfiguration(rhetosAppRootPath)
-                   .AddConfigurationManagerConfiguration();
+                .AddOptions(new RhetosBuildEnvironment
+                {
+                    ProjectFolder = rhetosAppRootPath,
+                    OutputAssemblyName = null,
+                    CacheFolder = Path.Combine(rhetosAppRootPath, "GeneratedFilesCache"),
+                    GeneratedAssetsFolder = Path.Combine(rhetosAppRootPath, "bin", "Generated"),
+                    GeneratedSourceFolder = null,
+                })
+                .AddOptions(new LegacyPathsOptions
+                {
+                    BinFolder = Path.Combine(rhetosAppRootPath, "bin"),
+                    PluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins"),
+                    ResourcesFolder = Path.Combine(rhetosAppRootPath, "Resources"),
+                })
+                .AddKeyValue($"{OptionsAttribute.GetConfigurationPath<BuildOptions>()}:{nameof(BuildOptions.GenerateAppSettings)}", false)
+                .AddKeyValue($"{OptionsAttribute.GetConfigurationPath<BuildOptions>()}:{nameof(BuildOptions.BuildResourcesFolder)}", true)
+                .AddWebConfiguration(rhetosAppRootPath)
+                .AddConfigurationManagerConfiguration();
 
             var argsByPath = args
                 .Select(arg => (arg, configurationPath: _validArguments.TryGetValue(arg, out var argInfo) ? argInfo.configurationPath : ""))
@@ -121,11 +122,14 @@ namespace DeployPackages
 
             if (!deployPackagesOptions.DatabaseOnly)
             {
-                var build = new ApplicationBuild(configuration, logProvider, () => GetBuildPlugins(Path.Combine(rhetosAppRootPath, "bin", "Plugins")));
                 LegacyUtilities.Initialize(configuration);
                 DeleteObsoleteFiles(rhetosAppRootPath, logProvider, logger);
-                var installedPackages = build.DownloadPackages(deployPackagesOptions.IgnoreDependencies);
-                build.GenerateApplication(installedPackages);
+
+                var installedPackages = DownloadPackages(deployPackagesOptions.IgnoreDependencies, logProvider, logger);
+
+                var pluginAssemblies = Directory.GetFiles(Path.Combine(rhetosAppRootPath, "bin", "Plugins"), "*.dll", SearchOption.TopDirectoryOnly);
+                var build = new ApplicationBuild(configuration, logProvider, pluginAssemblies, installedPackages);
+                build.GenerateApplication();
             }
             else
             {
@@ -133,11 +137,6 @@ namespace DeployPackages
                 logger.Info("Skipped download packages (DeployDatabaseOnly).");
                 logger.Info("Skipped code generators (DeployDatabaseOnly).");
             }
-        }
-
-        private static IEnumerable<string> GetBuildPlugins(string pluginsFolder)
-        {
-            return Directory.GetFiles(pluginsFolder, "*.dll", SearchOption.TopDirectoryOnly);
         }
 
         /// <summary>
@@ -174,6 +173,16 @@ namespace DeployPackages
             Console.WriteLine("Command-line arguments:");
             foreach (var argument in _validArguments)
                 Console.WriteLine($"{argument.Key.PadRight(20)} {argument.Value.description}");
+        }
+
+        public static InstalledPackages DownloadPackages(bool ignoreDependencies, ILogProvider logProvider, ILogger logger)
+        {
+            logger.Info("Getting packages.");
+            var config = new DeploymentConfiguration(logProvider);
+            var packageDownloaderOptions = new PackageDownloaderOptions { IgnorePackageDependencies = ignoreDependencies };
+            var packageDownloader = new PackageDownloader(config, logProvider, packageDownloaderOptions);
+            var installedPackages = packageDownloader.GetPackages();
+            return installedPackages;
         }
 
         /// <summary>
@@ -216,7 +225,7 @@ namespace DeployPackages
                     .AddConfigurationManagerConfiguration()
                     .AddCommandLineArguments(args, "/"));
 
-            var deployment = new ApplicationDeployment(configuration, logProvider, () => AssemblyResolver.GetRuntimeAssemblies(configuration));
+            var deployment = new ApplicationDeployment(configuration, logProvider);
             deployment.UpdateDatabase();
             deployment.InitializeGeneratedApplication(host.RhetosRuntime);
             deployment.RestartWebServer(host.ConfigurationFolder);

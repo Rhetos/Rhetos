@@ -35,33 +35,25 @@ namespace Rhetos
         private readonly ILogger _logger;
         private readonly IConfiguration _configuration;
         private readonly ILogProvider _logProvider;
-        private readonly Func<IEnumerable<string>> _pluginAssemblies;
+        private readonly IEnumerable<string> _pluginAssemblies;
+        private readonly InstalledPackages _installedPackages;
 
         /// <param name="pluginAssemblies">List of assemblies (DLL file paths) that will be scanned for plugins.</param>
-        public ApplicationBuild(IConfiguration configuration, ILogProvider logProvider, Func<IEnumerable<string>> pluginAssemblies)
+        public ApplicationBuild(IConfiguration configuration, ILogProvider logProvider, IEnumerable<string> pluginAssemblies, InstalledPackages installedPackages)
         {
             _logger = logProvider.GetLogger(GetType().Name);
             _configuration = configuration;
             _logProvider = logProvider;
             _pluginAssemblies = pluginAssemblies;
-        }
-
-        public InstalledPackages DownloadPackages(bool ignoreDependencies)
-        {
-            _logger.Info("Getting packages.");
-            var config = new DeploymentConfiguration(_logProvider);
-            var packageDownloaderOptions = new PackageDownloaderOptions { IgnorePackageDependencies = ignoreDependencies };
-            var packageDownloader = new PackageDownloader(config, _logProvider, packageDownloaderOptions);
-            var installedPackages = packageDownloader.GetPackages();
-            return installedPackages;
+            _installedPackages = installedPackages;
         }
 
         /// <summary>
         /// Rhetos CLI does not support legacy Rhetos packages with libraries locates in Plugins subfolder.
         /// </summary>
-        public void ReportLegacyPluginsFolders(InstalledPackages installedPackages)
+        public void ReportLegacyPluginsFolders()
         {
-            var legacyLibraries = installedPackages.Packages.SelectMany(
+            var legacyLibraries = _installedPackages.Packages.SelectMany(
                     package => package.ContentFiles
                         .Where(file => file.InPackagePath.StartsWith(@"Plugins\") && file.InPackagePath.EndsWith(".dll"))
                         .Select(file => (Package: package, File: file)));
@@ -73,12 +65,12 @@ namespace Rhetos
                     string.Join(", ", legacyLibraries.Select(library => library.Package.Id).Distinct()) + ".");
         }
 
-        public void GenerateApplication(InstalledPackages installedPackages)
+        public void GenerateApplication()
         {
             _logger.Info("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
 
-            var builder = CreateBuildComponentsContainer(installedPackages);
+            var builder = CreateBuildComponentsContainer();
 
             using (var container = builder.Build())
             {
@@ -90,7 +82,7 @@ namespace Rhetos
             }
         }
 
-        internal RhetosContainerBuilder CreateBuildComponentsContainer(InstalledPackages installedPackages)
+        internal RhetosContainerBuilder CreateBuildComponentsContainer()
         {
             var builder = new RhetosContainerBuilder(_configuration, _logProvider, _pluginAssemblies);
             builder.RegisterModule(new CoreModule());
@@ -99,7 +91,7 @@ namespace Rhetos
             builder.AddPluginModules();
             builder.RegisterType<NullUserInfo>().As<IUserInfo>(); // Override runtime IUserInfo plugins. This container should not execute the application's business features.
 #pragma warning disable CS0618 // Registering obsolete IInstalledPackages for backward compatibility.
-            builder.RegisterInstance(installedPackages).As<IInstalledPackages>().As<InstalledPackages>();
+            builder.RegisterInstance(_installedPackages).As<IInstalledPackages>().As<InstalledPackages>();
 #pragma warning restore CS0618
             return builder;
         }

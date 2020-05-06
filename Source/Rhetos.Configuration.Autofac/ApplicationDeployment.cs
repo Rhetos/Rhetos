@@ -37,15 +37,12 @@ namespace Rhetos
         private readonly ILogger _logger;
         private readonly IConfiguration _configuration;
         private readonly ILogProvider _logProvider;
-        private readonly Func<IEnumerable<string>> _pluginAssemblies;
 
-        /// <param name="pluginAssemblies">List of assemblies (DLL file paths) that will be scanned for plugins.</param>
-        public ApplicationDeployment(IConfiguration configuration, ILogProvider logProvider, Func<IEnumerable<string>> pluginAssemblies)
+        public ApplicationDeployment(IConfiguration configuration, ILogProvider logProvider)
         {
             _logger = logProvider.GetLogger(GetType().Name);
             _configuration = configuration;
             _logProvider = logProvider;
-            _pluginAssemblies = pluginAssemblies;
         }
 
         //=====================================================================
@@ -69,7 +66,7 @@ namespace Rhetos
 
         internal RhetosContainerBuilder CreateDbUpdateComponentsContainer()
         {
-            var builder = new RhetosContainerBuilder(_configuration, _logProvider, _pluginAssemblies);
+            var builder = new RhetosContainerBuilder(_configuration, _logProvider, AssemblyResolver.GetRuntimeAssemblies(_configuration));
             builder.RegisterModule(new CoreModule());
             builder.RegisterModule(new DbUpdateModule());
             builder.AddPluginModules();

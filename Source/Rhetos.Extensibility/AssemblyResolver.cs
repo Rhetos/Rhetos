@@ -33,8 +33,10 @@ namespace Rhetos.Extensibility
         {
             var rhetosAppOptions = configuration.GetOptions<RhetosAppOptions>();
             var legacyPaths = configuration.GetOptions<LegacyPathsOptions>();
-            string runtimeAssemblyFolder = !string.IsNullOrEmpty(rhetosAppOptions.RhetosRuntimePath)
-                ? Path.GetDirectoryName(rhetosAppOptions.RhetosRuntimePath) : null;
+
+            if (string.IsNullOrEmpty(rhetosAppOptions.RhetosRuntimePath))
+                throw new FrameworkException($"Run-time configuration option '{nameof(RhetosAppOptions)}.{nameof(RhetosAppOptions.RhetosRuntimePath)}' is not provided.");
+            string runtimeAssemblyFolder = Path.GetDirectoryName(rhetosAppOptions.RhetosRuntimePath);
 
             IEnumerable<string> searchFolders;
 

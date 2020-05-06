@@ -118,7 +118,7 @@ namespace Rhetos
 
         private static IRhetosRuntime CreateRhetosRuntimeInstance(ILogProvider logProvider, string rhetosRuntimePath)
         {
-            var pluginScanner = new PluginScanner(() => new[] { rhetosRuntimePath }, Path.GetDirectoryName(rhetosRuntimePath), logProvider, new PluginScannerOptions());
+            var pluginScanner = new PluginScanner(new[] { rhetosRuntimePath }, Path.GetDirectoryName(rhetosRuntimePath), logProvider, new PluginScannerOptions());
             var rhetosRuntimeTypes = pluginScanner.FindPlugins(typeof(IRhetosRuntime)).Select(x => x.Type).ToList();
 
             if (rhetosRuntimeTypes.Count == 0)

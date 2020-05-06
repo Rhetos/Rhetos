@@ -86,7 +86,8 @@ namespace Rhetos.Configuration.Autofac
 
             var iocContainer = _host.Value.RhetosRuntime.BuildContainer(logProvider, _configuration.Value, builder =>
             {
-                // Override runtime IUserInfo plugins. This container is intended to be used in a simple process or unit tests.
+                // Override runtime IUserInfo plugins. This container is intended to be used in unit tests or
+                // in a process that is executed directly by user, usually by developer or administrator.
                 builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();
                 builder.RegisterType<ConsoleLogProvider>().As<ILogProvider>();
                 registerCustomComponents?.Invoke(builder);
