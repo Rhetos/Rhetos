@@ -168,6 +168,8 @@ namespace Rhetos.Utilities.Test
 
         public class PocoOptions
         {
+            public string[] ArrayOfStrings { get; set; } = new[] { "defaultString" };
+            public string[] ArrayOfStringsDefault { get; set; } = new[] { "defaultString" };
             public string StringProp { get; set; } = "defaultString";
             public string StringProp2 { get; set; } = "defaultString";
             public int IntProp { get; set; } = 100;
@@ -196,6 +198,8 @@ namespace Rhetos.Utilities.Test
                 .AddKeyValue("App:DoubleValueObject", "3.16")
                 .AddKeyValue("App:EnumValueString", "ValueA")
                 .AddKeyValue("App:EnumValueObject", TestEnum.ValueB)
+                .AddKeyValue("App:ArrayOfStrings:0", "A")
+                .AddKeyValue("App:ArrayOfStrings:1", "B")
                 .Build();
 
             TestUtility.ShouldFail<FrameworkException>(() => provider.GetOptions<PocoOptions>("App", true), "requires all members");
@@ -210,6 +214,8 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual(3.16, options.DoubleValueObject);
             Assert.AreEqual(TestEnum.ValueA, options.EnumValueString);
             Assert.AreEqual(TestEnum.ValueB, options.EnumValueObject);
+            Assert.AreEqual("A, B", TestUtility.Dump(options.ArrayOfStrings));
+            Assert.AreEqual("defaultString", TestUtility.Dump(options.ArrayOfStringsDefault));
         }
 
         [TestMethod]
@@ -527,6 +533,7 @@ namespace Rhetos.Utilities.Test
 
             Assert.AreEqual(3, provider.GetValue("Prop", 0));
             Assert.AreEqual("SectionPropValue", provider.GetValue("SectionProp", "", "Section"));
+            Assert.AreEqual("One, Two", TestUtility.Dump(provider.GetValue<string[]>("Array")));
         }
 
         [TestMethod]

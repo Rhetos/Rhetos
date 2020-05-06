@@ -141,6 +141,18 @@ namespace Rhetos
                     : entry.Value;
                 return true;
             }
+            else if (_configurationValues.ContainsKey($"{configurationKey}:0"))
+            {
+                var entries = new List<string>();
+                int index = 0;
+                while (TryGetConfigurationValue(index.ToString(), out var arrayElement, configurationKey, convertRelativePath))
+                {
+                    entries.Add((string)arrayElement);
+                    index++;
+                }
+                result = entries.ToArray();
+                return true;
+            }
             else
             {
                 result = null;

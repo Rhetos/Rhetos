@@ -39,36 +39,43 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
             var reader = new JsonTextReader(new StringReader(_jsonText));
             reader.DateParseHandling = DateParseHandling.None;
             var parsedJson = JObject.Load(reader);
-            return GetKeysFromObject(parsedJson, "");
+            var jsonOptions = new Dictionary<string, ConfigurationValue>();
+            AddKeysFromObject(jsonOptions, parsedJson, "");
+            return jsonOptions;
         }
 
-        private static readonly JTokenType[] _allowedJTokenTypes = { JTokenType.Boolean, JTokenType.String, JTokenType.Integer, JTokenType.Float, JTokenType.Object };
+        private static readonly JTokenType[] _scalarJTokenTypes = { JTokenType.Boolean, JTokenType.String, JTokenType.Integer, JTokenType.Float };
 
-        private Dictionary<string, ConfigurationValue> GetKeysFromObject(JObject jObject, string path)
+        private void AddKeysFromObject(Dictionary<string, ConfigurationValue> jsonOptions, JObject jObject, string path)
         {
-            var jsonOptions = new Dictionary<string, ConfigurationValue>();
-
             foreach (var keyValue in jObject)
+                AddKeysFromToken(jsonOptions, keyValue.Value, Combine(path, keyValue.Key));
+        }
+
+        private void AddKeysFromToken(Dictionary<string, ConfigurationValue> jsonOptions, JToken jToken, string path)
+        {
+            if (jToken.Type == JTokenType.Object)
             {
-                var fullKey = string.IsNullOrEmpty(path)
-                    ? keyValue.Key
-                    : $"{path}{ConfigurationProvider.ConfigurationPathSeparator}{keyValue.Key}";
-
-                if (!_allowedJTokenTypes.Contains(keyValue.Value.Type))
-                    throw new FrameworkException($"JSON token type {keyValue.Value.Type} is not allowed at '{fullKey}', value '{keyValue.Value}'.");
-
-                if (keyValue.Value.Type == JTokenType.Object)
-                {
-                    var childOptions = GetKeysFromObject(keyValue.Value as JObject, fullKey);
-                    foreach (var pair in childOptions) jsonOptions.Add(pair.Key, pair.Value);
-                }
-                else
-                {
-                    jsonOptions.Add(fullKey, new ConfigurationValue(keyValue.Value.ToString(), this));
-                }
+                AddKeysFromObject(jsonOptions, (JObject)jToken, path);
             }
+            else if (_scalarJTokenTypes.Contains(jToken.Type))
+            {
+                jsonOptions.Add(path, new ConfigurationValue(jToken.ToString(), this));
+            }
+            else if (jToken is JArray jArray)
+            {
+                for (int i = 0; i < jArray.Count; i++)
+                    AddKeysFromToken(jsonOptions, jArray[i], Combine(path, i.ToString()));
+            }
+            else
+            {
+                throw new FrameworkException($"JSON token type {jToken.Type} is not allowed at '{path}', value '{jToken}'.");
+            }
+        }
 
-            return jsonOptions;
+        public string Combine(string path, string key)
+        {
+            return string.IsNullOrEmpty(path) ? key : $"{path}{ConfigurationProvider.ConfigurationPathSeparator}{key}";
         }
     }
 }
