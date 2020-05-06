@@ -24,18 +24,15 @@ using System;
 namespace Rhetos.Configuration.Autofac
 {
     /// <summary>
-    /// Encapsulates a Dependency Injection container which scope is the same as the scope of the database transaction.
+    /// Dependency Injection container which scope is the same as the scope of the database transaction, for executing a single unit of work.
+    /// Note that the changes in database will be rolled back by default.
+    /// To commit changes to database, call <see cref="CommitChanges"/> at the end of the 'using' block.
     /// </summary>
     public class RhetosTransactionScopeContainer : IDisposable
     {
         private bool _commitChanges = false;
         private readonly Lazy<ILifetimeScope> _lifetimeScope;
 
-        /// <summary>
-        /// Encapsulates a Dependency Injection container which scope is the same as the scope of the database transaction.
-        /// Note that the changes in database will be rolled back by default.
-        /// To commit changes to database, call <see cref="CommitChanges"/> at the end of the 'using' block.
-        /// </summary>
         /// <param name="iocContainer">
         /// The Dependency Injection container used to create the transaction scope container.
         /// </param>

@@ -50,8 +50,8 @@ $rhetosBuildSettings =
     "Build": {
       "GenerateAppSettings": true,
       "BuildResourcesFolder": true
-    } 
-  } 
+    }
+  }
 }
 '@
 Set-Content -Path $rhetosBuildSettingsPath -Value $rhetosBuildSettings -NoNewline
