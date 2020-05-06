@@ -86,6 +86,8 @@ namespace Rhetos.Dom.DefaultConcepts
         private readonly string ModelSnippet =
 $@"namespace System.Linq
 {{
+    #pragma warning disable
+
     {StandardNamespacesSnippet}
 
     public static class QueryExtensions
@@ -129,12 +131,16 @@ $@"namespace System.Linq
             }}
         }}
     }}
+
+    #pragma warning restore
 }}
 ";
 
         private readonly string OrmSnippet =
 $@"namespace Common
 {{
+    #pragma warning disable
+
     {StandardNamespacesSnippet}
     using Autofac;
     {ModuleCodeGenerator.CommonUsingTag}
@@ -201,12 +207,16 @@ $@"namespace Common
             System.Data.Entity.DbConfiguration.SetConfiguration(this);
         }}
     }}
+
+    #pragma warning restore
 }}
 ";
 
         private readonly string RepositoriesSnippet =
 $@"namespace Common
 {{
+    #pragma warning disable
+
     {StandardNamespacesSnippet}
     using Autofac;
     {ModuleCodeGenerator.CommonUsingTag}
@@ -442,6 +452,8 @@ $@"namespace Common
     }}
 
     {ModuleCodeGenerator.CommonNamespaceMembersTag}
+
+    #pragma warning restore
 }}
 ";
     }

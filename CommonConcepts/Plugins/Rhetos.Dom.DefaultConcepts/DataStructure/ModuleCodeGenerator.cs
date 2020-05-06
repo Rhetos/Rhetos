@@ -55,24 +55,34 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.InsertCodeToFile(
 $@"namespace {info.Name}
 {{
+    #pragma warning disable
+
     {DomInitializationCodeGenerator.StandardNamespacesSnippet}
 
     {UsingTag.Evaluate(info)}
 
     {NamespaceMembersTag.Evaluate(info)}
+
+    #pragma warning restore
 }}
 
 namespace Common.Queryable
 {{
+    #pragma warning disable
+
     {DomInitializationCodeGenerator.StandardNamespacesSnippet}
 
     {CommonQueryableMemebersTag.Evaluate(info)}
+
+    #pragma warning restore
 }}
 ", $"{DomAssemblies.Model}\\{info.Name}{DomAssemblies.Model}");
 
             codeBuilder.InsertCodeToFile(
 $@"namespace {info.Name}._Helper
 {{
+    #pragma warning disable
+
     {DomInitializationCodeGenerator.StandardNamespacesSnippet}
 
     {UsingTag.Evaluate(info)}
@@ -90,6 +100,8 @@ $@"namespace {info.Name}._Helper
     }}
 
     {HelperNamespaceMembersTag.Evaluate(info)}
+
+    #pragma warning restore
 }}
 
 ", $"{DomAssemblies.Repositories}\\{info.Name}{DomAssemblies.Repositories}");
