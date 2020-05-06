@@ -54,11 +54,10 @@
 
 void Main()
 {
-    ConsoleLogger.MinLevel = EventType.Info; // Use "Trace" for more detailed log.
-    var rhetosServerPath = Path.GetDirectoryName(Util.CurrentQueryPath);
-    Directory.SetCurrentDirectory(rhetosServerPath);
-    // Set commitChanges parameter to COMMIT or ROLLBACK the data changes.
-    using (var container = new RhetosTestContainer(commitChanges: false))
+	string applicationFolder = Path.GetDirectoryName(Util.CurrentQueryPath);
+	ConsoleLogger.MinLevel = EventType.Info; // Use EventType.Trace for more detailed log.
+	
+	using (var container = RhetosProcessContainer.CreateTransactionScope(applicationFolder))
     {
         var context = container.Resolve<Common.ExecutionContext>();
         var repository = context.Repository;
@@ -86,5 +85,7 @@ void Main()
             .Dump("Common.Principal log");
             
         Console.WriteLine("Done.");
+		
+		//container.CommitChanges(); // Database transaction is rolled back by default.
     }
 }

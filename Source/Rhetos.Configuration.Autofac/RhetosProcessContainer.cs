@@ -95,6 +95,10 @@ namespace Rhetos.Configuration.Autofac
             return iocContainer;
         }
 
+        /// <summary>
+        /// This method creates a thread-safe lifetime scope DI container to isolate unit of work in a separate database transaction.
+        /// To commit changes to database, call <see cref="RhetosTransactionScopeContainer.CommitChanges"/> at the end of the 'using' block.
+        /// </summary>
         /// <param name="registerCustomComponents">
         /// Register custom components that may override system and plugins services.
         /// This is commonly used by utilities and tests that need to override host application's components or register additional plugins.
@@ -104,7 +108,52 @@ namespace Rhetos.Configuration.Autofac
             return new RhetosTransactionScopeContainer(_rhetosIocContainer.Value, registerCustomComponents);
         }
 
-        private bool disposed = false; // Standard IDisposable pattern to detect redundant calls.
+        #region Static helper for singleton RhetosProcessContainer. Useful optimization for LINQPad scripts that reuse the external static instance after recompiling the script.
+
+        private static RhetosProcessContainer _singleContainer = null;
+        private static string _singleContainerApplicationFolder = null;
+        private static object _singleContainerLock = new object();
+
+        /// <summary>
+        /// This method creates a thread-safe lifetime scope DI container to isolate unit of work in a separate database transaction.
+        /// To commit changes to database, call <see cref="RhetosTransactionScopeContainer.CommitChanges"/> at the end of the 'using' block.
+        /// 
+        /// In most cases it is preferred to use a <see cref="RhetosProcessContainer"/> instance instead of this static method, for better control over the DI container.
+        /// The static method is useful in some special cases, for example to optimize LINQPad scripts that can reuse the external static instance
+        /// after recompiling the script.
+        /// </summary>
+        /// <param name="applicationFolder">
+        /// Folder where the Rhetos configuration file is located (see <see cref="RhetosAppEnvironment.ConfigurationFileName"/>),
+        /// or any subfolder.
+        /// If not specified, the current application's base directory is used by default.
+        /// </param>
+        /// <param name="registerCustomComponents">
+        /// Register custom components that may override system and plugins services.
+        /// This is commonly used by utilities and tests that need to override host application's components or register additional plugins.
+        /// </param>
+        public static RhetosTransactionScopeContainer CreateTransactionScope(string applicationFolder = null, Action<ContainerBuilder> registerCustomComponents = null)
+        {
+            if (_singleContainer == null)
+                lock (_singleContainerLock)
+                    if (_singleContainer == null)
+                    {
+                        _singleContainerApplicationFolder = applicationFolder;
+                        _singleContainer = new RhetosProcessContainer(applicationFolder);
+                    }
+
+            if (_singleContainerApplicationFolder != applicationFolder)
+                throw new FrameworkException($"Static {nameof(RhetosProcessContainer)}.{nameof(CreateTransactionScope)} cannot be used for different" +
+                    $" application contexts: Provided folder 1: '{_singleContainerApplicationFolder}', folder 2: '{applicationFolder}'." +
+                    $" Use a {nameof(RhetosProcessContainer)} instances instead.");
+
+            return _singleContainer.CreateTransactionScope(registerCustomComponents);
+        }
+
+        #endregion
+
+        #region Standard IDisposable pattern
+
+        private bool disposed = false;
 
         public void Dispose()
         {
@@ -127,5 +176,7 @@ namespace Rhetos.Configuration.Autofac
 
             disposed = true;
         }
+
+        #endregion
     }
 }
