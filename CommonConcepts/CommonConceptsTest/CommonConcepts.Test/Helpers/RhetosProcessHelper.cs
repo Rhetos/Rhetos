@@ -40,9 +40,7 @@ namespace CommonConcepts.Test.Helpers
         /// The CreateTransactionScope() method and the created child container are thread safe.
         /// The child container represents a single database transaction (unit of work). Its transaction will be rolled back by default, see <see cref="RhetosTransactionScopeContainer.CommitChanges"/>.
         /// </summary>
-        public static RhetosProcessContainer Container = new RhetosProcessContainer(
-            applicationFolder: FindRhetosApplicationFolder(),
-            addCustomConfiguration: configurationBuilder => configurationBuilder.AddConfigurationManagerConfiguration());
+        public static RhetosProcessContainer Container = new RhetosProcessContainer(FindRhetosApplicationFolder());
 
         /// <summary>
         /// Unit tests can be executed at different disk locations depending on whether they are run at the solution or project level, from Visual Studio or another utility.

@@ -6,8 +6,8 @@
 $sourceFolder = "$PSScriptRoot\projectFiles"
 $project = (Get-Project)
 $projectFolder = (Get-Item $project.FullName).DirectoryName
-"Target project: $project"
 "Source folder: $sourceFolder"
+"Target project: $($project.Name)"
 
 Copy-Item -Path "$sourceFolder\Web.config" -Destination $projectFolder -Force
 Copy-Item -Path "$sourceFolder\Rhetos Server DOM.linq" -Destination $projectFolder -Force
