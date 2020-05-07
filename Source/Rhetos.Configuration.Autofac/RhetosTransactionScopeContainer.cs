@@ -21,7 +21,7 @@ using Autofac;
 using Rhetos.Persistence;
 using System;
 
-namespace Rhetos.Configuration.Autofac
+namespace Rhetos
 {
     /// <summary>
     /// Dependency Injection container which scope is the same as the scope of the database transaction, for executing a single unit of work.

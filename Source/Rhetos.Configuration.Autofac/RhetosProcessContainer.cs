@@ -26,7 +26,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 
-namespace Rhetos.Configuration.Autofac
+namespace Rhetos
 {
     /// <summary>
     /// It encapsulates a Dependency Injection container (see <see cref="Host.CreateRhetosContainer"/>)
@@ -81,7 +81,7 @@ namespace Rhetos.Configuration.Autofac
             var sw = Stopwatch.StartNew();
 
             var runtimeAssemblies = AssemblyResolver.GetRuntimeAssemblies(_configuration.Value);
-            _assemblyResolveEventHandler = AssemblyResolver.GetResolveEventHandler(runtimeAssemblies, logProvider);
+            _assemblyResolveEventHandler = AssemblyResolver.GetResolveEventHandler(runtimeAssemblies, logProvider, false);
             AppDomain.CurrentDomain.AssemblyResolve += _assemblyResolveEventHandler;
 
             var iocContainer = _host.Value.RhetosRuntime.BuildContainer(logProvider, _configuration.Value, builder =>
