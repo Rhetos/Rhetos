@@ -96,7 +96,7 @@ namespace Rhetos.Extensibility
                 else
                     _logger.Trace(() => $"Searching for plugins in '{assembly}'");
 
-            var resolver = AssemblyResolver.GetResolveEventHandler(assemblyPaths, _logProvider);
+            var resolver = AssemblyResolver.GetResolveEventHandler(assemblyPaths, _logProvider, false);
 
             MultiDictionary<string, PluginInfo> plugins = null;
             try

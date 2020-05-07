@@ -131,7 +131,7 @@ namespace Rhetos
                 .Build();
 
             var projectAssets = rhetosProjectContent.RhetosProjectAssets;
-            AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolver.GetResolveEventHandler(projectAssets.Assemblies, LogProvider);
+            AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolver.GetResolveEventHandler(projectAssets.Assemblies, LogProvider, true);
 
             var build = new ApplicationBuild(configuration, LogProvider, projectAssets.Assemblies, projectAssets.InstalledPackages);
             build.ReportLegacyPluginsFolders();
@@ -154,7 +154,7 @@ namespace Rhetos
             });
 
             var assemblyFiles = AssemblyResolver.GetRuntimeAssemblies(configuration);
-            AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolver.GetResolveEventHandler(assemblyFiles, LogProvider);
+            AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolver.GetResolveEventHandler(assemblyFiles, LogProvider, true);
 
             var deployment = new ApplicationDeployment(configuration, LogProvider);
             deployment.UpdateDatabase();
