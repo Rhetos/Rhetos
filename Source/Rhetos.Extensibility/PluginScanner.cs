@@ -228,7 +228,7 @@ namespace Rhetos.Extensibility
             var requestedFile = new FileInfo(requestedPath);
             var actualFile = new FileInfo(actualPath);
 
-            if (requestedFile.Length != actualFile.Length || !requestedFile.LastWriteTimeUtc.Equals(actualFile.LastWriteTimeUtc))
+            if (requestedFile.Length != actualFile.Length) // Ignoring difference in LastWriteTime to avoid spamming with false negatives, because many tools that manage the assemblies unfortunately modify the time (NuGet restore and ASP.NET Shadow Copying, e.g.).
                 _logger.Warning($"Assembly at requested path '{requestedPath}' is not the same as loaded assembly at '{actualPath}'. This can cause issues with types.");
             else
                 _logger.Trace($"Same assembly loaded from '{actualPath}' instead of '{requestedPath}'.");

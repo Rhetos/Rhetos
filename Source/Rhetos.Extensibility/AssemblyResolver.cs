@@ -76,7 +76,7 @@ namespace Rhetos.Extensibility
             foreach (var duplicate in byFilename.Where(dll => dll.paths.Count > 1))
             {
                 var otherPaths = string.Join(", ", duplicate.paths.Skip(1).Select(path => $"'{path}'"));
-                logger.Warning($"Multiple paths for '{duplicate.filename}' are provided. This can cause type errors. Loaded: '{duplicate.paths.First()}', ignored: {otherPaths}.");
+                logger.Warning($"Multiple files for '{duplicate.filename}' are provided. This can cause type errors. Loaded: '{duplicate.paths.First()}', ignored: {otherPaths}.");
             }
 
             var namesToPaths = byFilename.ToDictionary(dll => dll.filename, dll => dll.paths.First(), StringComparer.InvariantCultureIgnoreCase);
