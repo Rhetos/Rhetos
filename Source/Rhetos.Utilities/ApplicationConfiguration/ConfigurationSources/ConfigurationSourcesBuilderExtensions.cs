@@ -24,7 +24,6 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Rhetos.Utilities.ApplicationConfiguration;
 
 namespace Rhetos
 {
@@ -78,7 +77,7 @@ namespace Rhetos
             // Normalize path for better error handling and more robust configuration.
             configurationFolder = Path.GetFullPath(Path.Combine(configurationFolder, "."));
 
-            builder.AddKeyValue($"{OptionsAttribute.GetConfigurationPath<RhetosAppEnvironment>()}:{nameof(RhetosAppEnvironment.ApplicationRootFolder)}", configurationFolder);
+            builder.AddKeyValue(ConfigurationProvider.GetKey((RhetosAppEnvironment o) => o.ApplicationRootFolder), configurationFolder);
 
             // Main run-time configuration file.
             builder.AddJsonFile(Path.Combine(configurationFolder, RhetosAppEnvironment.ConfigurationFileName), optional: true);

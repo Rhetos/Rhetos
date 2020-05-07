@@ -85,8 +85,8 @@ namespace DeployPackages
                     PluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins"),
                     ResourcesFolder = Path.Combine(rhetosAppRootPath, "Resources"),
                 })
-                .AddKeyValue($"{OptionsAttribute.GetConfigurationPath<BuildOptions>()}:{nameof(BuildOptions.GenerateAppSettings)}", false)
-                .AddKeyValue($"{OptionsAttribute.GetConfigurationPath<BuildOptions>()}:{nameof(BuildOptions.BuildResourcesFolder)}", true)
+                .AddKeyValue(ConfigurationProvider.GetKey((BuildOptions o) => o.GenerateAppSettings), false)
+                .AddKeyValue(ConfigurationProvider.GetKey((BuildOptions o) => o.BuildResourcesFolder), true)
                 .AddWebConfiguration(rhetosAppRootPath)
                 .AddConfigurationManagerConfiguration()
                 .AddCommandLineArgumentsWithConfigurationPaths(args);

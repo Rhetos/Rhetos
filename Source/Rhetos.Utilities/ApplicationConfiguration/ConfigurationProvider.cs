@@ -26,6 +26,7 @@ using System.Linq;
 using System.Reflection;
 using Rhetos.Utilities.ApplicationConfiguration;
 using Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources;
+using System.Linq.Expressions;
 
 namespace Rhetos
 {
@@ -214,6 +215,19 @@ namespace Rhetos
             return value
                 .Replace(".", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator)
                 .Replace(",", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator);
+        }
+
+        /// <summary>
+        /// Returns the expected configuration key with full path, for the given option.
+        /// </summary>
+        public static string GetKey<TOptions, TProperty>(Expression<Func<TOptions, TProperty>> propertySelector)
+        {
+            string path = OptionsAttribute.GetConfigurationPath<TOptions>();
+            string propertyKey = ((MemberExpression)propertySelector.Body).Member.Name;
+            if (string.IsNullOrEmpty(path))
+                return propertyKey;
+            else
+                return path + ConfigurationPathSeparator + propertyKey;
         }
 
         [Obsolete("Use GetValue or GetOptions instead")]

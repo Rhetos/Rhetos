@@ -17,8 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Options("CommonConcepts")]
@@ -33,5 +31,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// Option is a part of legacy design/configuration.
         /// </summary>
         public bool CascadeDeleteInDatabase { get; set; } = false;
+
+        public bool CompilerWarningsInGeneratedCode { get; set; } = false;
     }
 }

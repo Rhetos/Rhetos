@@ -22,6 +22,7 @@ using Rhetos.Dsl;
 using Rhetos.Extensibility;
 using Rhetos.Processing;
 using Rhetos.Utilities;
+using System;
 using System.ComponentModel.Composition;
 
 namespace Rhetos.Dom.DefaultConcepts
@@ -36,10 +37,12 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly string QueryExtensionsMembersTag = "/*QueryExtensionsMembers*/";
 
         private readonly RhetosBuildEnvironment _buildEnvironment;
+        private readonly CommonConceptsOptions _commonConceptsOptions;
 
-        public DomInitializationCodeGenerator(RhetosBuildEnvironment buildEnvironment)
+        public DomInitializationCodeGenerator(RhetosBuildEnvironment buildEnvironment, CommonConceptsOptions commonConceptsOptions)
         {
             _buildEnvironment = buildEnvironment;
+            _commonConceptsOptions = commonConceptsOptions;
         }
 
         public static readonly string StandardNamespacesSnippet =
@@ -54,9 +57,9 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            codeBuilder.InsertCodeToFile(ModelSnippet, $"{DomAssemblies.Model}\\QueryExtensions");
-            codeBuilder.InsertCodeToFile(OrmSnippet, string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder) ? DomAssemblies.Orm.ToString() : "EntityFrameworkContext");
-            codeBuilder.InsertCodeToFile(RepositoriesSnippet, DomAssemblies.Repositories.ToString());
+            codeBuilder.InsertCodeToFile(GetModelSnippet(), $"{DomAssemblies.Model}\\QueryExtensions");
+            codeBuilder.InsertCodeToFile(GetOrmSnippet(), string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder) ? DomAssemblies.Orm.ToString() : "EntityFrameworkContext");
+            codeBuilder.InsertCodeToFile(GetRepositoriesSnippet(), DomAssemblies.Repositories.ToString());
 
             codeBuilder.InsertCode("this.Configuration.UseDatabaseNullSemantics = _rhetosAppOptions.EntityFrameworkUseDatabaseNullSemantics;\r\n            ", EntityFrameworkContextInitializeTag);
 
@@ -83,12 +86,20 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.AddReferencesFromDependency(typeof(ICommandInfo)); // Used from ApplyFiltersOnClientRead.
         }
 
-        private readonly string ModelSnippet =
+        public static string DisableWarnings(CommonConceptsOptions commonConceptsOptions)
+        {
+            return commonConceptsOptions.CompilerWarningsInGeneratedCode ? "" : $"#pragma warning disable // See configuration setting {ConfigurationProvider.GetKey((CommonConceptsOptions o) => o.CompilerWarningsInGeneratedCode)}.\r\n\r\n    ";
+        }
+
+        public static string RestoreWarnings(CommonConceptsOptions commonConceptsOptions)
+        {
+            return commonConceptsOptions.CompilerWarningsInGeneratedCode ? "" : $"\r\n\r\n    #pragma warning restore // See configuration setting {ConfigurationProvider.GetKey((CommonConceptsOptions o) => o.CompilerWarningsInGeneratedCode)}.";
+        }
+
+        private string GetModelSnippet() =>
 $@"namespace System.Linq
 {{
-    #pragma warning disable
-
-    {StandardNamespacesSnippet}
+    {DisableWarnings(_commonConceptsOptions)}{StandardNamespacesSnippet}
 
     public static class QueryExtensions
     {{
@@ -111,12 +122,9 @@ $@"namespace System.Linq
         public static void LoadSimpleObjects<TEntity>(ref IEnumerable<TEntity> items)
             where TEntity: class, IEntity
         {{
-            var query = items as IQueryable<IQueryableEntity<TEntity>>;
-            var navigationItems = items as IEnumerable<IQueryableEntity<TEntity>>;
-
-            if (query != null)
+            if (items is IQueryable<IQueryableEntity<TEntity>> query)
                 items = query.GenericToSimple<TEntity>().ToList(); // The IQueryable function allows ORM optimizations.
-            else if (navigationItems != null)
+            else if (items is IEnumerable<IQueryableEntity<TEntity>> navigationItems)
                 items = navigationItems.Select(item => item.ToSimple()).ToList();
             else
             {{
@@ -130,18 +138,14 @@ $@"namespace System.Linq
                 }}
             }}
         }}
-    }}
-
-    #pragma warning restore
+    }}{RestoreWarnings(_commonConceptsOptions)}
 }}
 ";
 
-        private readonly string OrmSnippet =
+        private string GetOrmSnippet() =>
 $@"namespace Common
 {{
-    #pragma warning disable
-
-    {StandardNamespacesSnippet}
+    {DisableWarnings(_commonConceptsOptions)}{StandardNamespacesSnippet}
     using Autofac;
     {ModuleCodeGenerator.CommonUsingTag}
 
@@ -206,18 +210,14 @@ $@"namespace Common
 
             System.Data.Entity.DbConfiguration.SetConfiguration(this);
         }}
-    }}
-
-    #pragma warning restore
+    }}{RestoreWarnings(_commonConceptsOptions)}
 }}
 ";
 
-        private readonly string RepositoriesSnippet =
+        private string GetRepositoriesSnippet() =>
 $@"namespace Common
 {{
-    #pragma warning disable
-
-    {StandardNamespacesSnippet}
+    {DisableWarnings(_commonConceptsOptions)}{StandardNamespacesSnippet}
     using Autofac;
     {ModuleCodeGenerator.CommonUsingTag}
 
@@ -451,9 +451,7 @@ $@"namespace Common
         }}
     }}
 
-    {ModuleCodeGenerator.CommonNamespaceMembersTag}
-
-    #pragma warning restore
+    {ModuleCodeGenerator.CommonNamespaceMembersTag}{RestoreWarnings(_commonConceptsOptions)}
 }}
 ";
     }

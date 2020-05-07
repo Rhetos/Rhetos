@@ -37,6 +37,12 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly CsTag<ModuleInfo> RepositoryMembersTag = "RepositoryMembers";
         public static readonly CsTag<ModuleInfo> HelperNamespaceMembersTag = "HelperNamespaceMembers";
         public static readonly CsTag<ModuleInfo> CommonQueryableMemebersTag = "CommonQueryableMemebers";
+        private readonly CommonConceptsOptions _commonConceptsOptions;
+
+        public ModuleCodeGenerator(CommonConceptsOptions commonConceptsOptions)
+        {
+            _commonConceptsOptions = commonConceptsOptions;
+        }
 
         private static string ModuleRepositoryInCommonRepositorySnippet(ModuleInfo info)
         {
@@ -55,35 +61,25 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.InsertCodeToFile(
 $@"namespace {info.Name}
 {{
-    #pragma warning disable
-
-    {DomInitializationCodeGenerator.StandardNamespacesSnippet}
+    {DomInitializationCodeGenerator.DisableWarnings(_commonConceptsOptions)}{DomInitializationCodeGenerator.StandardNamespacesSnippet}
 
     {UsingTag.Evaluate(info)}
 
-    {NamespaceMembersTag.Evaluate(info)}
-
-    #pragma warning restore
+    {NamespaceMembersTag.Evaluate(info)}{DomInitializationCodeGenerator.RestoreWarnings(_commonConceptsOptions)}
 }}
 
 namespace Common.Queryable
 {{
-    #pragma warning disable
+    {DomInitializationCodeGenerator.DisableWarnings(_commonConceptsOptions)}{DomInitializationCodeGenerator.StandardNamespacesSnippet}
 
-    {DomInitializationCodeGenerator.StandardNamespacesSnippet}
-
-    {CommonQueryableMemebersTag.Evaluate(info)}
-
-    #pragma warning restore
+    {CommonQueryableMemebersTag.Evaluate(info)}{DomInitializationCodeGenerator.RestoreWarnings(_commonConceptsOptions)}
 }}
 ", $"{DomAssemblies.Model}\\{info.Name}{DomAssemblies.Model}");
 
             codeBuilder.InsertCodeToFile(
 $@"namespace {info.Name}._Helper
 {{
-    #pragma warning disable
-
-    {DomInitializationCodeGenerator.StandardNamespacesSnippet}
+    {DomInitializationCodeGenerator.DisableWarnings(_commonConceptsOptions)}{DomInitializationCodeGenerator.StandardNamespacesSnippet}
 
     {UsingTag.Evaluate(info)}
 
@@ -99,9 +95,7 @@ $@"namespace {info.Name}._Helper
         {RepositoryMembersTag.Evaluate(info)}
     }}
 
-    {HelperNamespaceMembersTag.Evaluate(info)}
-
-    #pragma warning restore
+    {HelperNamespaceMembersTag.Evaluate(info)}{DomInitializationCodeGenerator.RestoreWarnings(_commonConceptsOptions)}
 }}
 
 ", $"{DomAssemblies.Repositories}\\{info.Name}{DomAssemblies.Repositories}");
