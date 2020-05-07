@@ -17,7 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Autofac;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;
@@ -29,33 +28,6 @@ namespace Rhetos
 {
     public class Host
     {
-        /// <summary>
-        /// Helper method that creates a run-time Dependency Injection container for Rhetos application.
-        /// It bundles Rhetos runtime location (<see cref="Host.Find"/>),
-        /// configuration (<see cref="IRhetosRuntime.BuildConfiguration"/>)
-        /// and DI registration (<see cref="IRhetosRuntime.BuildContainer"/>).
-        /// If you need more control over the system configuration, use these methods directly instead.
-        /// </summary>
-        /// <param name="applicationFolder">
-        /// Folder where the Rhetos configuration file is located (see <see cref="RhetosAppEnvironment.ConfigurationFileName"/>),
-        /// or any subfolder.
-        /// If not specified, the current application's base directory is used by default.
-        /// </param>
-        /// <param name="logProvider">
-        /// If not specified, ConsoleLogProvider is used by default.
-        /// </param>
-        /// <returns>Dependency Injection container for Rhetos runtime.</returns>
-        public static IContainer CreateRhetosContainer(string applicationFolder = null, ILogProvider logProvider = null,
-            Action<IConfigurationBuilder> addCustomConfiguration = null, Action<ContainerBuilder> registerCustomComponents = null)
-        {
-            applicationFolder = applicationFolder ?? AppDomain.CurrentDomain.BaseDirectory;
-            logProvider = logProvider ?? new ConsoleLogProvider();
-
-            var host = Find(applicationFolder, logProvider);
-            var configuration = host.RhetosRuntime.BuildConfiguration(logProvider, host.ConfigurationFolder, addCustomConfiguration);
-            return host.RhetosRuntime.BuildContainer(logProvider, configuration, registerCustomComponents);
-        }
-
         public IRhetosRuntime RhetosRuntime { get; private set; }
 
         public string ConfigurationFolder { get; private set; }
