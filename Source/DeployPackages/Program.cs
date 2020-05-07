@@ -19,11 +19,9 @@
 
 using Rhetos;
 using Rhetos.Deployment;
-using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -31,18 +29,6 @@ namespace DeployPackages
 {
     public static class Program
     {
-        private readonly static Dictionary<string, (string description, string configurationPath)> _validArguments
-            = new Dictionary<string, (string info, string configurationPath)>(StringComparer.InvariantCultureIgnoreCase)
-        {
-            { "/StartPaused", ("Use for debugging with Visual Studio (Attach to Process).", OptionsAttribute.GetConfigurationPath<DeployPackagesOptions>()) },
-            { "/Debug", ("Generates unoptimized dlls (ServerDom.*.dll, e.g.) for debugging.", OptionsAttribute.GetConfigurationPath<BuildOptions>()) },
-            { "/NoPause", ("Don't pause on error. Use this switch for build automation.", OptionsAttribute.GetConfigurationPath<DeployPackagesOptions>()) },
-            { "/IgnoreDependencies", ("Allow installing incompatible versions of Rhetos packages.", OptionsAttribute.GetConfigurationPath<DeployPackagesOptions>()) },
-            { "/ShortTransactions", ("Commit transaction after creating or dropping each database object.", OptionsAttribute.GetConfigurationPath<DbUpdateOptions>()) },
-            { "/DatabaseOnly", ("Keep old plugins and files in bin\\Generated.", OptionsAttribute.GetConfigurationPath<DeployPackagesOptions>()) },
-            { "/SkipRecompute", ("Skip automatic update of computed data with KeepSynchronized.", OptionsAttribute.GetConfigurationPath<DbUpdateOptions>()) }
-        };
-
         public static int Main(string[] args)
         {
             var logProvider = new NLogProvider();
@@ -53,7 +39,7 @@ namespace DeployPackages
 
             try
             {
-                if (!ValidateArguments(args))
+                if (!DeployPackagesArguments.ValidateArguments(args))
                     return 1;
 
                 string rhetosAppRootPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".."));
@@ -102,15 +88,8 @@ namespace DeployPackages
                 .AddKeyValue($"{OptionsAttribute.GetConfigurationPath<BuildOptions>()}:{nameof(BuildOptions.GenerateAppSettings)}", false)
                 .AddKeyValue($"{OptionsAttribute.GetConfigurationPath<BuildOptions>()}:{nameof(BuildOptions.BuildResourcesFolder)}", true)
                 .AddWebConfiguration(rhetosAppRootPath)
-                .AddConfigurationManagerConfiguration();
-
-            var argsByPath = args
-                .Select(arg => (arg, configurationPath: _validArguments.TryGetValue(arg, out var argInfo) ? argInfo.configurationPath : ""))
-                .GroupBy(arg => arg.configurationPath)
-                .Select(grouped => (configurationPath: grouped.Key, args: grouped.Select(arg => arg.arg).ToArray()));
-
-            foreach (var argGroup in argsByPath)
-                configurationBuilder.AddCommandLineArguments(argGroup.args, "/", argGroup.configurationPath);
+                .AddConfigurationManagerConfiguration()
+                .AddCommandLineArgumentsWithConfigurationPaths(args);
 
             var configuration = configurationBuilder.Build();
 
@@ -149,30 +128,6 @@ namespace DeployPackages
 
             Console.WriteLine("Press any key to continue . . .");
             Console.ReadKey(true);
-        }
-
-        private static bool ValidateArguments(string[] args)
-        {
-            if (args.Contains("/?"))
-            {
-                ShowHelp();
-                return false;
-            }
-
-            var invalidArgument = args.FirstOrDefault(arg => !_validArguments.Keys.Contains(arg));
-            if (invalidArgument != null)
-            {
-                ShowHelp();
-                throw new FrameworkException($"Unexpected command-line argument: '{invalidArgument}'.");
-            }
-            return true;
-        }
-
-        private static void ShowHelp()
-        {
-            Console.WriteLine("Command-line arguments:");
-            foreach (var argument in _validArguments)
-                Console.WriteLine($"{argument.Key.PadRight(20)} {argument.Value.description}");
         }
 
         public static InstalledPackages DownloadPackages(bool ignoreDependencies, ILogProvider logProvider, ILogger logger)
@@ -223,7 +178,7 @@ namespace DeployPackages
             var configuration = host.RhetosRuntime
                 .BuildConfiguration(logProvider, host.ConfigurationFolder, configurationBuilder => configurationBuilder
                     .AddConfigurationManagerConfiguration()
-                    .AddCommandLineArguments(args, "/"));
+                    .AddCommandLineArgumentsWithConfigurationPaths(args));
 
             var deployment = new ApplicationDeployment(configuration, logProvider);
             deployment.UpdateDatabase();
