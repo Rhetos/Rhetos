@@ -57,7 +57,7 @@ void Main()
 	string applicationFolder = Path.GetDirectoryName(Util.CurrentQueryPath);
 	ConsoleLogger.MinLevel = EventType.Info; // Use EventType.Trace for more detailed log.
 	
-	using (var container = RhetosProcessContainer.CreateTransactionScope(applicationFolder))
+	using (var container = ProcessContainer.CreateTransactionScopeContainer(applicationFolder))
     {
         var context = container.Resolve<Common.ExecutionContext>();
         var repository = context.Repository;

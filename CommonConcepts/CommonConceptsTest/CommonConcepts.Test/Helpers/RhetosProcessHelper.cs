@@ -17,9 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Autofac;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos;
-using Rhetos.Configuration.Autofac;
 using Rhetos.Utilities;
 using System;
 using System.Diagnostics;
@@ -35,16 +35,23 @@ namespace CommonConcepts.Test.Helpers
     public static class RhetosProcessHelper
     {
         /// <summary>
-        /// Shared DI container to be reused between tests, to reduce initialization time for each test.
-        /// Each test should create a child container with 'RhetosProcessHelper.Container.CreateTransactionScope()' to start a 'using' block.
-        /// The CreateTransactionScope() method and the created child container are thread safe.
-        /// The child container represents a single database transaction (unit of work). Its transaction will be rolled back by default, see <see cref="RhetosTransactionScopeContainer.CommitChanges"/>.
+        /// Creates a thread-safe lifetime scope DI container to isolate unit of work in a separate database transaction.
+        /// To commit changes to database, call <see cref="TransactionScopeContainer.CommitChanges"/> at the end of the 'using' block.
         /// </summary>
-        public static RhetosProcessContainer Container = new RhetosProcessContainer(FindRhetosApplicationFolder());
+        public static TransactionScopeContainer CreateTransactionScopeContainer(Action<ContainerBuilder> registerCustomComponents = null)
+        {
+            return ProcessContainer.CreateTransactionScopeContainer(registerCustomComponents);
+        }
+
+        /// <summary>
+        /// Shared DI container to be reused between tests, to reduce initialization time for each test.
+        /// Each test should create a child container with <see cref="CreateTransactionScopeContainer"/> to start a 'using' block.
+        /// </summary>
+        public static ProcessContainer ProcessContainer = new ProcessContainer(FindRhetosApplicationFolder());
 
         /// <summary>
         /// Unit tests can be executed at different disk locations depending on whether they are run at the solution or project level, from Visual Studio or another utility.
-        /// Therefore, instead of simple relative path, this method searches for the main application location.
+        /// Therefore, instead of providing a simple relative path, this method searches for the main application location.
         /// </summary>
         private static string FindRhetosApplicationFolder()
         {

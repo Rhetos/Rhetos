@@ -28,7 +28,7 @@ namespace Rhetos
     /// Note that the changes in database will be rolled back by default.
     /// To commit changes to database, call <see cref="CommitChanges"/> at the end of the 'using' block.
     /// </summary>
-    public class RhetosTransactionScopeContainer : IDisposable
+    public class TransactionScopeContainer : IDisposable
     {
         private bool _commitChanges = false;
         private readonly Lazy<ILifetimeScope> _lifetimeScope;
@@ -40,7 +40,7 @@ namespace Rhetos
         /// Register custom components that may override system and plugins services.
         /// This is commonly used by utilities and tests that need to override host application's components or register additional plugins.
         /// </param>
-        public RhetosTransactionScopeContainer(IContainer iocContainer, Action<ContainerBuilder> registerCustomComponents = null)
+        public TransactionScopeContainer(IContainer iocContainer, Action<ContainerBuilder> registerCustomComponents = null)
         {
             _lifetimeScope = new Lazy<ILifetimeScope>(() => registerCustomComponents != null ? iocContainer.BeginLifetimeScope(registerCustomComponents) : iocContainer.BeginLifetimeScope());
         }

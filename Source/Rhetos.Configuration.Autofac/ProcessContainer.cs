@@ -29,19 +29,17 @@ using System.Threading;
 namespace Rhetos
 {
     /// <summary>
-    /// It encapsulates a Dependency Injection container (see <see cref="Host.CreateRhetosContainer"/>)
-    /// for creating the lifetime-scope child containers with <see cref="CreateTransactionScope(Action{ContainerBuilder})"/>.
-    /// Use the child containers to isolate units of work into separate atomic transactions.
+    /// Helper class for creating a run-time Dependency Injection container for Rhetos application.
+    /// It creates lifetime-scope child containers that isolate units of work into separate atomic transactions.
     /// 
-    /// RhetosProcessContainer is thread-safe: the main RhetosProcessContainer instance can be reused between threads
+    /// This class is thread-safe: a single instance can be reused between threads
     /// to reduce the initialization time, such as plugin discovery and Entity Framework startup.
-    /// Each thread should use <see cref="CreateTransactionScope(Action{ContainerBuilder})"/> to create its own lifetime-scope child container.
+    /// Each thread should call <see cref="CreateTransactionScopeContainer(Action{ContainerBuilder})"/> to create its own lifetime-scope child container.
     /// 
-    /// RhetosProcessContainer overrides the main application's DI components to use <see cref="ProcessUserInfo"/>
-    /// and <see cref="ConsoleLogProvider"/> by default.
-    /// It also registers assembly resolver for runtime assemblies.
+    /// <see cref="ProcessContainer"/> overrides the main application's DI components to use <see cref="ProcessUserInfo"/>
+    /// and <see cref="ConsoleLogProvider"/>. It also registers assembly resolver for the main application's assemblies.
     /// </summary>
-    public class RhetosProcessContainer : IDisposable
+    public class ProcessContainer : IDisposable
     {
         private readonly Lazy<Host> _host;
         private readonly Lazy<IConfiguration> _configuration;
@@ -62,7 +60,7 @@ namespace Rhetos
         /// Register custom components that may override system and plugins services.
         /// This is commonly used by utilities and tests that need to override host application's components or register additional plugins.
         /// </param>
-        public RhetosProcessContainer(string applicationFolder = null, ILogProvider logProvider = null,
+        public ProcessContainer(string applicationFolder = null, ILogProvider logProvider = null,
             Action<IConfigurationBuilder> addCustomConfiguration = null, Action<ContainerBuilder> registerCustomComponents = null)
         {
             logProvider = logProvider ?? new ConsoleLogProvider();
@@ -71,10 +69,10 @@ namespace Rhetos
 
             _host = new Lazy<Host>(() => Host.Find(applicationFolder, logProvider), LazyThreadSafetyMode.ExecutionAndPublication);
             _configuration = new Lazy<IConfiguration>(() => _host.Value.RhetosRuntime.BuildConfiguration(logProvider, _host.Value.ConfigurationFolder, addCustomConfiguration), LazyThreadSafetyMode.ExecutionAndPublication);
-            _rhetosIocContainer = new Lazy<IContainer>(() => BuildRhetosProcessContainer(logProvider, registerCustomComponents), LazyThreadSafetyMode.ExecutionAndPublication);
+            _rhetosIocContainer = new Lazy<IContainer>(() => BuildProcessContainer(logProvider, registerCustomComponents), LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
-        private IContainer BuildRhetosProcessContainer(ILogProvider logProvider, Action<ContainerBuilder> registerCustomComponents)
+        private IContainer BuildProcessContainer(ILogProvider logProvider, Action<ContainerBuilder> registerCustomComponents)
         {
             // The values for rhetosRuntime and configuration are resolved before the call to Stopwatch.StartNew
             // so that the performance logging only takes into account the time needed to build the IOC container
@@ -92,34 +90,34 @@ namespace Rhetos
                 builder.RegisterType<ConsoleLogProvider>().As<ILogProvider>();
                 registerCustomComponents?.Invoke(builder);
             });
-            logProvider.GetLogger("Performance").Write(sw, $"{nameof(RhetosTransactionScopeContainer)}: Built IoC container");
+            logProvider.GetLogger("Performance").Write(sw, $"{nameof(TransactionScopeContainer)}: Built IoC container");
             return iocContainer;
         }
 
         /// <summary>
         /// This method creates a thread-safe lifetime scope DI container to isolate unit of work in a separate database transaction.
-        /// To commit changes to database, call <see cref="RhetosTransactionScopeContainer.CommitChanges"/> at the end of the 'using' block.
+        /// To commit changes to database, call <see cref="TransactionScopeContainer.CommitChanges"/> at the end of the 'using' block.
         /// </summary>
         /// <param name="registerCustomComponents">
         /// Register custom components that may override system and plugins services.
         /// This is commonly used by utilities and tests that need to override host application's components or register additional plugins.
         /// </param>
-        public RhetosTransactionScopeContainer CreateTransactionScope(Action<ContainerBuilder> registerCustomComponents = null)
+        public TransactionScopeContainer CreateTransactionScopeContainer(Action<ContainerBuilder> registerCustomComponents = null)
         {
-            return new RhetosTransactionScopeContainer(_rhetosIocContainer.Value, registerCustomComponents);
+            return new TransactionScopeContainer(_rhetosIocContainer.Value, registerCustomComponents);
         }
 
-        #region Static helper for singleton RhetosProcessContainer. Useful optimization for LINQPad scripts that reuse the external static instance after recompiling the script.
+        #region Static helper for singleton ProcessContainer. Useful optimization for LINQPad scripts that reuse the external static instance after recompiling the script.
 
-        private static RhetosProcessContainer _singleContainer = null;
+        private static ProcessContainer _singleContainer = null;
         private static string _singleContainerApplicationFolder = null;
         private static object _singleContainerLock = new object();
 
         /// <summary>
         /// This method creates a thread-safe lifetime scope DI container to isolate unit of work in a separate database transaction.
-        /// To commit changes to database, call <see cref="RhetosTransactionScopeContainer.CommitChanges"/> at the end of the 'using' block.
+        /// To commit changes to database, call <see cref="TransactionScopeContainer.CommitChanges"/> at the end of the 'using' block.
         /// 
-        /// In most cases it is preferred to use a <see cref="RhetosProcessContainer"/> instance instead of this static method, for better control over the DI container.
+        /// In most cases it is preferred to use a <see cref="ProcessContainer"/> instance instead of this static method, for better control over the DI container.
         /// The static method is useful in some special cases, for example to optimize LINQPad scripts that can reuse the external static instance
         /// after recompiling the script.
         /// </summary>
@@ -132,22 +130,22 @@ namespace Rhetos
         /// Register custom components that may override system and plugins services.
         /// This is commonly used by utilities and tests that need to override host application's components or register additional plugins.
         /// </param>
-        public static RhetosTransactionScopeContainer CreateTransactionScope(string applicationFolder = null, Action<ContainerBuilder> registerCustomComponents = null)
+        public static TransactionScopeContainer CreateTransactionScopeContainer(string applicationFolder = null, Action<ContainerBuilder> registerCustomComponents = null)
         {
             if (_singleContainer == null)
                 lock (_singleContainerLock)
                     if (_singleContainer == null)
                     {
                         _singleContainerApplicationFolder = applicationFolder;
-                        _singleContainer = new RhetosProcessContainer(applicationFolder);
+                        _singleContainer = new ProcessContainer(applicationFolder);
                     }
 
             if (_singleContainerApplicationFolder != applicationFolder)
-                throw new FrameworkException($"Static {nameof(RhetosProcessContainer)}.{nameof(CreateTransactionScope)} cannot be used for different" +
+                throw new FrameworkException($"Static {nameof(ProcessContainer)}.{nameof(CreateTransactionScopeContainer)} cannot be used for different" +
                     $" application contexts: Provided folder 1: '{_singleContainerApplicationFolder}', folder 2: '{applicationFolder}'." +
-                    $" Use a {nameof(RhetosProcessContainer)} instances instead.");
+                    $" Use a {nameof(ProcessContainer)} instances instead.");
 
-            return _singleContainer.CreateTransactionScope(registerCustomComponents);
+            return _singleContainer.CreateTransactionScopeContainer(registerCustomComponents);
         }
 
         #endregion

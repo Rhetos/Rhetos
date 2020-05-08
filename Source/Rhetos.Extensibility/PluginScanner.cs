@@ -42,7 +42,6 @@ namespace Rhetos.Extensibility
         private static readonly object _pluginsCacheLock = new object();
         private readonly HashSet<string> _ignoreAssemblyFiles;
         private readonly string[] _ignoreAssemblyPrefixes;
-        private readonly ILogProvider _logProvider;
 
         /// <summary>
         /// It searches for type implementations in the provided list of assemblies.
@@ -58,7 +57,6 @@ namespace Rhetos.Extensibility
             var ignoreList = pluginScannerOptions.PredefinedIgnoreAssemblyFiles.Concat(pluginScannerOptions.IgnoreAssemblyFiles ?? Array.Empty<string>()).Distinct().ToList();
             _ignoreAssemblyFiles = new HashSet<string>(ignoreList.Where(name => !name.EndsWith("*")), StringComparer.OrdinalIgnoreCase);
             _ignoreAssemblyPrefixes = ignoreList.Where(name => name.EndsWith("*")).Select(name => name.Trim('*')).ToArray();
-            _logProvider = logProvider;
         }
 
         /// <summary>
@@ -96,12 +94,9 @@ namespace Rhetos.Extensibility
                 else
                     _logger.Trace(() => $"Searching for plugins in '{assembly}'");
 
-            var resolver = AssemblyResolver.GetResolveEventHandler(assemblyPaths, _logProvider, false);
-
             MultiDictionary<string, PluginInfo> plugins = null;
             try
             {
-                AppDomain.CurrentDomain.AssemblyResolve += resolver;
                 plugins = LoadPlugins(assemblyPaths);
             }
             catch (Exception ex)
@@ -111,10 +106,6 @@ namespace Rhetos.Extensibility
                     throw new FrameworkException(typeLoadReport, ex);
                 else
                     ExceptionsUtility.Rethrow(ex);
-            }
-            finally
-            {
-                AppDomain.CurrentDomain.AssemblyResolve -= resolver;
             }
             return plugins;
         }

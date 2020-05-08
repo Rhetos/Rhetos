@@ -68,7 +68,7 @@ namespace Rhetos.Utilities
 
         public static string BinFolder => AbsolutePathOrError(_binFolder, "BinFolder");
 
-        [Obsolete("If generating and reading assets files use IAssetsOptions.AssetsFolder instead. If used within SearchForAssembly, migrate to Host.CreateRhetosContainer instead.")]
+        [Obsolete("If generating and reading assets files use IAssetsOptions.AssetsFolder instead. If used within SearchForAssembly, migrate to Rhetos.ProcessContainer instead.")]
         public static string GeneratedFolder => AbsolutePathOrError(_generatedFolder, "GeneratedFolder");
 
         public static string PluginsFolder => AbsolutePathOrError(_pluginsFolder, "PluginsFolder");

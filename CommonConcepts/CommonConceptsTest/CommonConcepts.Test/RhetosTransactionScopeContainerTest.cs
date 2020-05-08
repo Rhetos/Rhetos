@@ -37,14 +37,14 @@ namespace CommonConcepts.Test
         {
             var id1 = Guid.NewGuid();
 
-            using (var container = RhetosProcessHelper.Container.CreateTransactionScope())
+            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
                 context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id1 });
                 container.CommitChanges();
             }
 
-            using (var container = RhetosProcessHelper.Container.CreateTransactionScope())
+            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
                 Assert.IsTrue(context.Repository.TestEntity.BaseEntity.Query(new[] { id1 }).Any());
@@ -58,7 +58,7 @@ namespace CommonConcepts.Test
 
             try
             {
-                using (var container = RhetosProcessHelper.Container.CreateTransactionScope())
+                using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
                 {
                     var context = container.Resolve<Common.ExecutionContext>();
                     context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id1 });
@@ -73,7 +73,7 @@ namespace CommonConcepts.Test
                 Console.WriteLine($"{ex.GetType().Name}: {ex.Message}");
             }
 
-            using (var container = RhetosProcessHelper.Container.CreateTransactionScope())
+            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
                 Assert.IsFalse(context.Repository.TestEntity.BaseEntity.Query(new[] { id1 }).Any());
@@ -91,7 +91,7 @@ namespace CommonConcepts.Test
 
             try
             {
-                using (var container = RhetosProcessHelper.Container.CreateTransactionScope())
+                using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
                 {
                     container.CommitChanges(); // CommitChanges is incorrectly places at this position.
                     var context = container.Resolve<Common.ExecutionContext>();
@@ -104,7 +104,7 @@ namespace CommonConcepts.Test
                 Console.WriteLine($"{ex.GetType().Name}: {ex.Message}");
             }
 
-            using (var container = RhetosProcessHelper.Container.CreateTransactionScope())
+            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
                 Assert.IsTrue(context.Repository.TestEntity.BaseEntity.Query(new[] { id1 }).Any()); // The transaction is committed because of incorrect implementation pattern above.
@@ -117,7 +117,7 @@ namespace CommonConcepts.Test
             const int threadCount = 2;
 
             int initialCount;
-            using (var container = RhetosProcessHelper.Container.CreateTransactionScope())
+            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
             {
                 RhetosProcessHelper.CheckForParallelism(container.Resolve<ISqlExecuter>(), threadCount);
 
@@ -129,7 +129,7 @@ namespace CommonConcepts.Test
 
             Parallel.For(0, threadCount, thread =>
             {
-                using (var container = RhetosProcessHelper.Container.CreateTransactionScope())
+                using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
                 {
                     var context = container.Resolve<Common.ExecutionContext>();
 

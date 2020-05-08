@@ -26,7 +26,7 @@ using System.Linq;
 namespace Rhetos.Configuration.Autofac
 {
     /// <summary>
-    /// RhetosTestContainer is a legacy wrapper around <see cref="RhetosProcessContainer"/> and <see cref="RhetosTransactionScopeContainer"/>.
+    /// RhetosTestContainer is a legacy wrapper around <see cref="ProcessContainer"/> and <see cref="TransactionScopeContainer"/>.
     /// For new projects use those classes directly.
     /// Inherit this class and override virtual functions to customize it.
     /// </summary>
@@ -34,12 +34,12 @@ namespace Rhetos.Configuration.Autofac
     {
         // Global:
         private static object _containerInitializationLock = new object();
-        private static RhetosProcessContainer _rhetosProcessContainer;
+        private static ProcessContainer _processContainer;
 
         // Instance per test or session:
         protected bool _commitChanges;
         protected string _explicitRhetosServerFolder;
-        protected RhetosTransactionScopeContainer _rhetosTransactionScope;
+        protected TransactionScopeContainer _rhetosTransactionScope;
         public event Action<ContainerBuilder> InitializeSession;
 
         /// <param name="commitChanges">
@@ -98,17 +98,17 @@ namespace Rhetos.Configuration.Autofac
         {
             if (_rhetosTransactionScope == null)
             {
-                if (_rhetosProcessContainer == null)
+                if (_processContainer == null)
                 {
                     lock (_containerInitializationLock)
-                        if (_rhetosProcessContainer == null)
+                        if (_processContainer == null)
                         {
-                            _rhetosProcessContainer = new RhetosProcessContainer(SearchForRhetosServerRootFolder(), new ConsoleLogProvider(),
+                            _processContainer = new ProcessContainer(SearchForRhetosServerRootFolder(), new ConsoleLogProvider(),
                                 configurationBuilder => configurationBuilder.AddConfigurationManagerConfiguration());
                         }
                 }
 
-                _rhetosTransactionScope = _rhetosProcessContainer.CreateTransactionScope(InitializeSession);
+                _rhetosTransactionScope = _processContainer.CreateTransactionScopeContainer(InitializeSession);
                 if (_commitChanges)
                     _rhetosTransactionScope.CommitChanges();
             }

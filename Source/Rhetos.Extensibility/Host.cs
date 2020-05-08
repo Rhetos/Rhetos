@@ -23,6 +23,7 @@ using Rhetos.Utilities;
 using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 
 namespace Rhetos
 {
@@ -90,17 +91,27 @@ namespace Rhetos
 
         private static IRhetosRuntime CreateRhetosRuntimeInstance(ILogProvider logProvider, string rhetosRuntimePath)
         {
-            var pluginScanner = new PluginScanner(new[] { rhetosRuntimePath }, Path.GetDirectoryName(rhetosRuntimePath), logProvider, new PluginScannerOptions());
-            var rhetosRuntimeTypes = pluginScanner.FindPlugins(typeof(IRhetosRuntime)).Select(x => x.Type).ToList();
+            var assemblyResolver = AssemblyResolver.GetResolveEventHandler(new[] { rhetosRuntimePath }, logProvider, true);
+            AppDomain.CurrentDomain.AssemblyResolve += assemblyResolver;
 
-            if (rhetosRuntimeTypes.Count == 0)
-                throw new FrameworkException($"No implementation of interface {nameof(IRhetosRuntime)} found with Export attribute.");
+            try
+            {
+                var pluginScanner = new PluginScanner(new[] { rhetosRuntimePath }, Path.GetDirectoryName(rhetosRuntimePath), logProvider, new PluginScannerOptions());
+                var rhetosRuntimeTypes = pluginScanner.FindPlugins(typeof(IRhetosRuntime)).Select(x => x.Type).ToList();
 
-            if (rhetosRuntimeTypes.Count > 1)
-                throw new FrameworkException($"Found multiple implementation of the type {nameof(IRhetosRuntime)}.");
+                if (rhetosRuntimeTypes.Count == 0)
+                    throw new FrameworkException($"No implementation of interface {nameof(IRhetosRuntime)} found with Export attribute.");
 
-            var rhetosRuntimeInstance = (IRhetosRuntime)Activator.CreateInstance(rhetosRuntimeTypes.Single());
-            return rhetosRuntimeInstance;
+                if (rhetosRuntimeTypes.Count > 1)
+                    throw new FrameworkException($"Found multiple implementation of the type {nameof(IRhetosRuntime)}.");
+
+                var rhetosRuntimeInstance = (IRhetosRuntime)Activator.CreateInstance(rhetosRuntimeTypes.Single());
+                return rhetosRuntimeInstance;
+            }
+            finally
+            {
+                AppDomain.CurrentDomain.AssemblyResolve -= assemblyResolver;
+            }
         }
     }
 }
