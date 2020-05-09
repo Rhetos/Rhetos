@@ -29,15 +29,15 @@ using System.Threading;
 namespace Rhetos
 {
     /// <summary>
-    /// Helper class for creating a run-time Dependency Injection container for Rhetos application.
-    /// It creates lifetime-scope child containers that isolate units of work into separate atomic transactions.
-    /// 
-    /// This class is thread-safe: a single instance can be reused between threads
-    /// to reduce the initialization time, such as plugin discovery and Entity Framework startup.
-    /// Each thread should call <see cref="CreateTransactionScopeContainer(Action{ContainerBuilder})"/> to create its own lifetime-scope child container.
-    /// 
+    /// <see cref="ProcessContainer"/> is a helper class for accessing the generated application object model in unit tests and command-line utilities.
+    /// This class is thread-safe: a single instance can be reused between threads to reduce the initialization time
+    /// (Entity Framework startup and plugin discovery).
+    /// For each unit of work, call <see cref="CreateTransactionScopeContainer(Action{ContainerBuilder})"/> to create
+    /// a lifetime-scope dependency injection container.
+    /// Each child container uses its own database transaction that is either committed or rolled back
+    /// when the instance is disposed, making data changes atomic.
     /// <see cref="ProcessContainer"/> overrides the main application's DI components to use <see cref="ProcessUserInfo"/>
-    /// and <see cref="ConsoleLogProvider"/>. It also registers assembly resolver for the main application's assemblies.
+    /// and <see cref="ConsoleLogProvider"/>. It also registers assembly resolver to access the main application's assemblies.
     /// </summary>
     public class ProcessContainer : IDisposable
     {

@@ -7,7 +7,7 @@
 1. Rhetos has migrated to new configuration and DI container initialization design.
    Custom utility applications (executables and other tools) that use Rhetos application
    libraries will need to be updated.
-   * Follow the **instructions** at [Upgrading custom utility applications to Rhetos 4.0](https://github.com/Rhetos/Rhetos/wiki/Upgrading-custom-utility-applications-to-Rhetos-40).
+   * Follow the **instructions** at [Upgrading custom utility applications to Rhetos 4.0](https://github.com/Rhetos/Rhetos/wiki/Upgrading-custom-utility-applications-to-Rhetos-4).
 2. Class `Rhetos.Configuration.Autofac.SecurityModuleConfiguration` no longer exists.
    * **Delete** attributes `[ExportMetadata(MefProvider.DependsOn, typeof(Rhetos.Configuration.Autofac.SecurityModuleConfiguration))]`
      and ``[ExportMetadata(MefProvider.DependsOn, typeof(SecurityModuleConfiguration))]`` from your code.

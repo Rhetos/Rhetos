@@ -30,6 +30,7 @@ namespace Rhetos.Configuration.Autofac
     /// For new projects use those classes directly.
     /// Inherit this class and override virtual functions to customize it.
     /// </summary>
+    [Obsolete("Use Rhetos.ProcessContainer instead.")]
     public class RhetosTestContainer : IDisposable
     {
         // Global:
