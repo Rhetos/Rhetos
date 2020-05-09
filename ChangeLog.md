@@ -87,10 +87,16 @@
 * Verifying and updating EntityFramework ProviderManifestToken on each runtime startup. This allows different versions of SQL Server in build and testing environment (local SQL Server, Azure SQL, ...).
 * Bugfix: `DeployPackages /DatabaseOnly` requires packages source available (PackagesCache or source folder) to update the database. If an application was built with packages included directly from source folder, it could not be deployed with DatabaseOnly switch.
 * Bugfix: Trace logging fails on some server commands because of result types unsupported by XML serializer (e.g. ODataGenerator).
+* Low-level concept *CascadeDeleteInDatabase*, for implementing on-delete-cascade in database
+  on specific FK constraint (Reference, UniqueReference and Extends).
+  It should be rarely used because deleting records directly in database circumvents
+  any business logic implemented in the application, related to those records.
+* Homepage snippets can now use IUserInfo and other DI lifetime scope components.
 * Migrated most of the Rhetos framework libraries to .NET Standard 2.0.
+* ProcessContainer is a successor to RhetosTestContainer with cleaner lifetime and transaction handling. See examples in [Upgrading custom utility applications to Rhetos 4.0](https://github.com/Rhetos/Rhetos/wiki/Upgrading-custom-utility-applications-to-Rhetos-4) and in "Rhetos Server DOM.linq" script.
 * Logging modified database objects information by default. This will help with analysis of deployment performance issues.
 * Formatting DSL syntax errors in canonical format (file and position) for better integration with MSBuild and other tools.
-* Updated Rhetos framework C# language to 7.3. Framework development now requires Visual Studio 2017 v15.7 or later (available since May 2018).
+* Updated Rhetos framework C# language to 7.3. Framework development now requires Visual Studio 2017 v15.7 or later.
 * Minor performance improvements of DeployPackages and application start-up.
 
 ## 3.1.0 (TO BE RELEASED)
