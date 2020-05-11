@@ -40,7 +40,7 @@ namespace Rhetos.Extensibility
 
             IEnumerable<string> searchFolders;
 
-            if (rhetosAppOptions.AssemblyFolders != null && rhetosAppOptions.AssemblyFolders.Length > 0)
+            if (rhetosAppOptions.AssemblyFolders != null && rhetosAppOptions.AssemblyFolders.Any())
             {
                 searchFolders = rhetosAppOptions.AssemblyFolders;
             }

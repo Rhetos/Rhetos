@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System.Collections.Generic;
 using System.IO;
 
 namespace Rhetos.Utilities
@@ -58,6 +59,6 @@ namespace Rhetos.Utilities
         /// If not specified, Rhetos will try to automatically detect folders based on application's configuration.
         /// </summary>
         [AbsolutePathOption]
-        public string[] AssemblyFolders { get; set; }
+        public IEnumerable<string> AssemblyFolders { get; set; }
     }
 }
