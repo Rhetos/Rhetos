@@ -168,8 +168,8 @@ namespace Rhetos.Utilities.Test
 
         public class PocoOptions
         {
-            public string[] ArrayOfStrings { get; set; } = new[] { "defaultString" };
-            public string[] ArrayOfStringsDefault { get; set; } = new[] { "defaultString" };
+            public IEnumerable<string> ArrayOfStrings { get; set; } = new[] { "defaultString" };
+            public IEnumerable<string> ArrayOfStringsDefault { get; set; } = new[] { "defaultString" };
             public string StringProp { get; set; } = "defaultString";
             public string StringProp2 { get; set; } = "defaultString";
             public int IntProp { get; set; } = 100;
@@ -777,6 +777,50 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual("value1", configuration.GetValue<string>("path.key"));
             Assert.AreEqual("value1", configuration.GetValue<string>("path:key"));
             Assert.AreEqual("value2", configuration.GetValue<string>("path__key"));
+        }
+
+        [TestMethod]
+        public void SupportLegacyKeysNewOnly()
+        {
+            var configuration = new ConfigurationBuilder()
+                .AddKeyValue("Rhetos:AppSecurity:AllClaimsForUsers", "newValue")
+                .AddKeyValue("Rhetos:ConfigurationProvider:SupportLegacyKeys", "true")
+                .Build();
+
+            Assert.AreEqual("newValue", configuration.GetValue<string>("Rhetos:AppSecurity:AllClaimsForUsers"));
+        }
+
+        [TestMethod]
+        public void SupportLegacyKeysOldOnly()
+        {
+            var configuration = new ConfigurationBuilder()
+                .AddKeyValue("Security.AllClaimsForUsers", "oldValue")
+                .AddKeyValue("Rhetos:ConfigurationProvider:SupportLegacyKeys", "true")
+                .Build();
+
+            Assert.AreEqual("oldValue", configuration.GetValue<string>("Rhetos:AppSecurity:AllClaimsForUsers"));
+        }
+
+        [TestMethod]
+        public void SupportLegacyKeysNoSupportByDefault()
+        {
+            var configuration = new ConfigurationBuilder()
+                .AddKeyValue("Security.AllClaimsForUsers", "oldValue")
+                .Build();
+
+            Assert.AreEqual(null, configuration.GetValue<string>("Rhetos:AppSecurity:AllClaimsForUsers"));
+        }
+
+        [TestMethod]
+        public void SupportLegacyKeysNewKeyOverridesOld()
+        {
+            var configuration = new ConfigurationBuilder()
+                .AddKeyValue("Rhetos:AppSecurity:AllClaimsForUsers", "newValue")
+                .AddKeyValue("Security.AllClaimsForUsers", "oldValue")
+                .AddKeyValue("Rhetos:ConfigurationProvider:SupportLegacyKeys", "true")
+                .Build();
+
+            Assert.AreEqual("newValue", configuration.GetValue<string>("Rhetos:AppSecurity:AllClaimsForUsers"));
         }
     }
 }

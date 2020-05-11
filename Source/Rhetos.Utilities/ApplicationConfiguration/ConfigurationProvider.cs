@@ -35,6 +35,7 @@ namespace Rhetos
         public static readonly string ConfigurationPathSeparator = ":";
         public static readonly string ConfigurationPathSeparatorAlternative = ".";
         private readonly Dictionary<string, ConfigurationValue> _configurationValues;
+        private readonly ConfigurationProviderOptions _configurationProviderOptions;
 
         public IEnumerable<string> AllKeys => _configurationValues.Keys;
 
@@ -42,6 +43,7 @@ namespace Rhetos
         {
             _configurationValues = configurationValues
                 .ToDictionary(pair => pair.Key, pair => pair.Value, new ConfigurationKeyComparer());
+            _configurationProviderOptions = GetOptions<ConfigurationProviderOptions>();
         }
 
         public T GetOptions<T>(string configurationPath = "", bool requireAllMembers = false) where T : class
@@ -134,12 +136,14 @@ namespace Rhetos
 
             if (_configurationValues.TryGetValue(configurationKey, out var entry))
             {
-                string GetBaseFolder() => (entry.ConfigurationSource as IConfigurationSourceFolder)?.SourceFolder
-                                 ?? AppDomain.CurrentDomain.BaseDirectory;
-
-                result = convertRelativePath && entry.Value is string stringValue
-                    ? Path.GetFullPath(Path.Combine(GetBaseFolder(), stringValue))
-                    : entry.Value;
+                result = GetConfigurationEntryValue(convertRelativePath, entry);
+                return true;
+            }
+            else if (_configurationProviderOptions?.SupportLegacyKeys == true
+                && ConfigurationProviderOptions.LegacyKeysMapping.ContainsKey(configurationKey)
+                && _configurationValues.TryGetValue(ConfigurationProviderOptions.LegacyKeysMapping[configurationKey], out var legacyKeyEntry))
+            {
+                result = GetConfigurationEntryValue(convertRelativePath, legacyKeyEntry);
                 return true;
             }
             else if (_configurationValues.ContainsKey($"{configurationKey}:0"))
@@ -159,6 +163,18 @@ namespace Rhetos
                 result = null;
                 return false;
             }
+        }
+
+        private static object GetConfigurationEntryValue(bool convertRelativePath, ConfigurationValue entry)
+        {
+            if (convertRelativePath && entry.Value is string stringValue)
+            {
+                string baseFolder= (entry.ConfigurationSource as IConfigurationSourceFolder)?.SourceFolder
+                    ?? AppDomain.CurrentDomain.BaseDirectory;
+                return Path.GetFullPath(Path.Combine(baseFolder, stringValue));
+            }
+            else
+                return entry.Value;
         }
 
         private T Convert<T>(object value, string forKeyDebugInfo)

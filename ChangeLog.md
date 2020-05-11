@@ -15,22 +15,40 @@
    namespace to System.Linq.
    * **Add** `using System.Linq;` in custom source file with compiler error
      `'IQueryable<X>' does not contain a definition for 'ToSimple'`.
-4. Some legacy settings are turned off by default. When upgrading application to Rhetos v4,
+4. Configuration keys have been changed for some of the existing options, to allow better extensibility.
+   * **Update** the following settings keys in *Web.config* file and in all **other config files** that contain the `appSettings` element,
+     or **enable** legacy keys by adding `<add key="Rhetos:ConfigurationProvider:SupportLegacyKeys" value="True" />`.
+     * AssemblyGenerator.ErrorReportLimit => Rhetos:Build:AssemblyGeneratorErrorReportLimit
+     * AuthorizationAddUnregisteredPrincipals => Rhetos:App:AuthorizationAddUnregisteredPrincipals
+     * AuthorizationCacheExpirationSeconds => Rhetos:App:AuthorizationCacheExpirationSeconds
+     * BuiltinAdminOverride => Rhetos:AppSecurity:BuiltinAdminOverride
+     * CommonConcepts.Debug.SortConcepts => Rhetos:Build:InitialConceptsSort
+     * CommonConcepts.Legacy.AutoGeneratePolymorphicProperty => CommonConcepts:AutoGeneratePolymorphicProperty
+     * CommonConcepts.Legacy.CascadeDeleteInDatabase => CommonConcepts:CascadeDeleteInDatabase
+     * DataMigration.SkipScriptsWithWrongOrder => Rhetos:DbUpdate:DataMigrationSkipScriptsWithWrongOrder
+     * EntityFramework.UseDatabaseNullSemantics => Rhetos:App:EntityFrameworkUseDatabaseNullSemantics
+     * Security.AllClaimsForUsers => Rhetos:AppSecurity:AllClaimsForUsers
+     * Security.LookupClientHostname => Rhetos:AppSecurity:LookupClientHostname
+     * SqlCommandTimeout => Rhetos:Database:SqlCommandTimeout
+     * SqlExecuter.MaxJoinedScriptCount => Rhetos:SqlTransactionBatches:MaxJoinedScriptCount
+     * SqlExecuter.MaxJoinedScriptSize => Rhetos:SqlTransactionBatches:MaxJoinedScriptSize
+     * SqlExecuter.ReportProgressMs => Rhetos:SqlTransactionBatches:ReportProgressMs
+5. Some legacy settings are turned off by default. When upgrading application to Rhetos v4,
    make sure to use the following setting values *web.config* file.
    For each setting key, if it was already specified in *web.config*, **keep the old value**.
    If you did not have it specified, **add** the backward-compatible value provided here:
-   * `<add key="DataMigration.SkipScriptsWithWrongOrder" value="True" />`
-   * `<add key="CommonConcepts.Legacy.AutoGeneratePolymorphicProperty" value="True" />`
-   * `<add key="CommonConcepts.Legacy.CascadeDeleteInDatabase" value="True" />`
-   * `<add key="EntityFramework.UseDatabaseNullSemantics" value="False" />`
-5. Updated Rhetos.TestCommon.dll to new MSTest libraries (MSTest).
+   * `<add key="Rhetos:DbUpdate:DataMigrationSkipScriptsWithWrongOrder" value="True" />`
+   * `<add key="CommonConcepts:AutoGeneratePolymorphicProperty" value="True" />`
+   * `<add key="CommonConcepts:CascadeDeleteInDatabase" value="True" />`
+   * `<add key="Rhetos:App:EntityFrameworkUseDatabaseNullSemantics" value="False" />`
+6. Updated Rhetos.TestCommon.dll to new MSTest libraries (MSTest).
    Old unit test projects that reference Rhetos.TestCommon may fail with error CS0433:
    `The type 'TestMethodAttribute' exists in both 'Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' and 'Microsoft.VisualStudio.TestPlatform.TestFramework, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'`.
    * To solve this error, in the unit test project **remove the reference** to
      `Microsoft.VisualStudio.QualityTools.UnitTestFramework` and **add NuGet packages**
      MSTest.TestAdapter and MSTest.TestFramework, or create a new Unit Test Project
      from scratch (MSTest on .NET Framework) and copy the tests from the old one.
-6. Partial concept sorting enabled by default. This might cause build or deployment
+7. Partial concept sorting enabled by default. This might cause build or deployment
    to fail if the existing project or a plugin package has an issue of missing
    dependencies between concepts, that was not detected earlier.
    * Missing dependencies can cause an error on database update because of incorrect order
@@ -41,15 +59,15 @@
      and [database object](https://github.com/Rhetos/Rhetos/wiki/Database-objects#dependencies-between-database-objects),
      or **suppress** this issues by disabling the concept sorting in Web.config:
      `<add key="InitialConceptsSort" value="None" />`.
-7. [BuiltinAdminOverride](https://github.com/Rhetos/Rhetos/wiki/Basic-permissions#suppressing-permissions-in-a-development-environment)
+8. [BuiltinAdminOverride](https://github.com/Rhetos/Rhetos/wiki/Basic-permissions#suppressing-permissions-in-a-development-environment)
    option is not enabled by default. This might affect testing in development
    environment if permission-checking was intentionally suppressed.
-   * Recommended new setup process for development environment is to **configure**
-     `Security.AllClaimsForUsers` in `ExternalAppSettings.config`
+   * Recommended setup for development environment is to **configure**
+     `Rhetos:AppSecurity:AllClaimsForUsers` in `ExternalAppSettings.config`
      (see [Suppressing permissions in a development environment](https://github.com/Rhetos/Rhetos/wiki/Basic-permissions#suppressing-permissions-in-a-development-environment)),
      or enable BuiltinAdminOverride for backward-compatibility in Web.config:
-     `<add key="BuiltinAdminOverride" value="True" />`.
-8. ProcessUserInfo no longer supports BuiltinAdminOverride configuration option.
+     `<add key="Rhetos:AppSecurity:BuiltinAdminOverride" value="True" />`.
+9. ProcessUserInfo no longer supports BuiltinAdminOverride configuration option.
    This might affect unit tests or custom utilities that directly use
    Rhetos.Processing.IProcessingEngine.
    * Add the required permissions for the system account that runs the test or utility application.
