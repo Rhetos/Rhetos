@@ -32,7 +32,7 @@ namespace Rhetos.Utilities.Test
     {
         public SqlUtilityTest()
         {
-            var configuration = new ConfigurationBuilder()
+            var configuration = new ConfigurationBuilder(new ConsoleLogProvider())
                 .AddConfigurationManagerConfiguration()
                 .Build();
 

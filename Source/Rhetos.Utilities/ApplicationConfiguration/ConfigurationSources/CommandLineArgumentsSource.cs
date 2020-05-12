@@ -45,5 +45,10 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
             return argsTrimmed
                 .ToDictionary(arg => arg, _ => new ConfigurationValue(true, this));
         }
+
+        public override string ToString()
+        {
+            return "Command line arguments";
+        }
     }
 }

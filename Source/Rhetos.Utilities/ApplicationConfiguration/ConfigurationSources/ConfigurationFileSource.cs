@@ -19,7 +19,6 @@
 
 using System.Collections.Generic;
 using System.Configuration;
-using System.IO;
 using System.Linq;
 
 namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
@@ -47,6 +46,11 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
             return new DotNetConfigurationSource(appSettings, connectionStrings)
                 .Load()
                 .ToDictionary(entry => entry.Key, entry => new ConfigurationValue(entry.Value.Value, this));
+        }
+
+        public override string ToString()
+        {
+            return $"Configuration file '{configuration.FilePath}'";
         }
     }
 }

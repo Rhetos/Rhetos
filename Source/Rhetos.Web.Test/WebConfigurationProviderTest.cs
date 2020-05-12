@@ -20,6 +20,7 @@
 using System;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos.Utilities;
 
 namespace Rhetos.Web.Test
 {
@@ -32,7 +33,7 @@ namespace Rhetos.Web.Test
         {
             var rootPath = AppDomain.CurrentDomain.BaseDirectory;
             System.Diagnostics.Trace.WriteLine($"Using {rootPath} as rootPath.");
-            var provider = new ConfigurationBuilder()
+            var provider = new ConfigurationBuilder(new ConsoleLogProvider())
                 .AddWebConfiguration(rootPath)
                 .Build();
 

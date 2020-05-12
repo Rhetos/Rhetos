@@ -17,16 +17,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Logging;
 using Rhetos.Utilities;
+using Rhetos.Utilities.ApplicationConfiguration;
+using Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using Rhetos.Utilities.ApplicationConfiguration;
-using Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Rhetos
 {
@@ -36,14 +37,45 @@ namespace Rhetos
         public static readonly string ConfigurationPathSeparatorAlternative = ".";
         private readonly Dictionary<string, ConfigurationValue> _configurationValues;
         private readonly ConfigurationProviderOptions _configurationProviderOptions;
+        private readonly ILogger _logger;
 
         public IEnumerable<string> AllKeys => _configurationValues.Keys;
 
-        public ConfigurationProvider(IDictionary<string, ConfigurationValue> configurationValues)
+        public ConfigurationProvider(IDictionary<string, ConfigurationValue> configurationValues, ILogProvider logProvider)
         {
             _configurationValues = configurationValues
                 .ToDictionary(pair => pair.Key, pair => pair.Value, new ConfigurationKeyComparer());
             _configurationProviderOptions = GetOptions<ConfigurationProviderOptions>();
+            _logger = logProvider.GetLogger(GetType().Name);
+
+            if (_configurationProviderOptions.LegacyKeysSupport == LegacyKeysSupport.Error)
+            {
+                var legacyKeysReport = ReportLegacyKeys();
+                foreach (var message in legacyKeysReport)
+                    _logger.Error(message);
+                if (legacyKeysReport.Any())
+                    throw new FrameworkException(legacyKeysReport.First());
+            }
+            else if (_configurationProviderOptions.LegacyKeysWarning)
+            {
+                foreach (var message in ReportLegacyKeys())
+                    _logger.Warning(message);
+            }
+        }
+
+        private List<string> ReportLegacyKeys()
+        {
+            var newKeysByOld = ConfigurationProviderOptions.LegacyKeysMapping.ToMultiDictionary(mapping => mapping.Value, mapping => mapping.Key);
+            return _configurationValues
+                .Select(entry => new
+                {
+                    OldKey = entry.Key,
+                    entry.Value.ConfigurationSource,
+                    NewKeys = newKeysByOld.GetValueOrDefault(entry.Key)
+                })
+                .Where(entry => entry.NewKeys != null)
+                .Select(entry => $"Please update the obsolete configuration key in {entry.ConfigurationSource}. Change '{entry.OldKey}' to '{string.Join(" or ", entry.NewKeys)}'.")
+                .ToList();
         }
 
         public T GetOptions<T>(string configurationPath = "", bool requireAllMembers = false) where T : class
@@ -139,7 +171,7 @@ namespace Rhetos
                 result = GetConfigurationEntryValue(convertRelativePath, entry);
                 return true;
             }
-            else if (_configurationProviderOptions?.SupportLegacyKeys == true
+            else if (_configurationProviderOptions?.LegacyKeysSupport == LegacyKeysSupport.Convert
                 && ConfigurationProviderOptions.LegacyKeysMapping.ContainsKey(configurationKey)
                 && _configurationValues.TryGetValue(ConfigurationProviderOptions.LegacyKeysMapping[configurationKey], out var legacyKeyEntry))
             {

@@ -34,7 +34,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void AllKeys()
         {
-            var provider = new ConfigurationBuilder()
+            var provider = new ConfigurationBuilder(new ConsoleLogProvider())
                 .AddKeyValue("App:TestSection:StringValue", "hello")
                 .AddKeyValue("RootValue", "world")
                 .Build();
@@ -47,17 +47,17 @@ namespace Rhetos.Utilities.Test
         public void ThrowsOnInvalidKeys()
         {
             {
-                var builder = new ConfigurationBuilder()
+                var builder = new ConfigurationBuilder(new ConsoleLogProvider())
                     .AddKeyValue("  ", "ble");
                 TestUtility.ShouldFail<FrameworkException>(() => builder.Build(), "empty or null configuration key");
             }
             {
-                var builder = new ConfigurationBuilder()
+                var builder = new ConfigurationBuilder(new ConsoleLogProvider())
                     .AddKeyValue("", "ble");
                 TestUtility.ShouldFail<FrameworkException>(() => builder.Build(), "empty or null configuration key");
             }
             {
-                var builder = new ConfigurationBuilder()
+                var builder = new ConfigurationBuilder(new ConsoleLogProvider())
                     .AddKeyValue(null, "ble");
                 TestUtility.ShouldFail<ArgumentNullException>(() => builder.Build());
             }
@@ -66,7 +66,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void OldDotConventionInvariance()
         {
-            var provider = new ConfigurationBuilder()
+            var provider = new ConfigurationBuilder(new ConsoleLogProvider())
                 .AddConfigurationManagerConfiguration()
                 .Build();
 
@@ -76,7 +76,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void GetByPathAndName()
         {
-            var provider = new ConfigurationBuilder()
+            var provider = new ConfigurationBuilder(new ConsoleLogProvider())
                 .AddKeyValue("App:TestSection:StringValue", "Hello")
                 .AddKeyValue("App.TestSection.StringValue", "Hello2")
                 .AddKeyValue("RootValue", "world")
@@ -105,7 +105,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void ImplicitDefaults()
         {
-            var provider = new ConfigurationBuilder()
+            var provider = new ConfigurationBuilder(new ConsoleLogProvider())
                 .AddKeyValue("App:TestSection:StringValue", "hello")
                 .Build();
 
@@ -119,7 +119,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void EnumBindingIsVerbose()
         {
-            var provider = new ConfigurationBuilder()
+            var provider = new ConfigurationBuilder(new ConsoleLogProvider())
                 .AddKeyValue("EnumValue", "hello")
                 .Build();
 
@@ -135,7 +135,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void CorrectlyHandleTypes()
         {
-            var provider = new ConfigurationBuilder()
+            var provider = new ConfigurationBuilder(new ConsoleLogProvider())
                 .AddKeyValue("StringValue", "hello")
                 .AddKeyValue("IntValue", 5)
                 .AddKeyValue("BoolValue", true)
@@ -186,7 +186,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void CorrectlyBindsOptions()
         {
-            var provider = new ConfigurationBuilder()
+            var provider = new ConfigurationBuilder(new ConsoleLogProvider())
                 .AddKeyValue("App:StringProp", "stringConfigured")
                 .AddKeyValue("StringProp2", "stringConfigured")
                 .AddKeyValue("App:IntProp", "5")
@@ -222,7 +222,7 @@ namespace Rhetos.Utilities.Test
         public void FailsBindOnConversion()
         {
             {
-                var provider = new ConfigurationBuilder()
+                var provider = new ConfigurationBuilder(new ConsoleLogProvider())
                     .AddKeyValue("App:EnumValueString", "ValueC")
                     .Build();
 
@@ -230,7 +230,7 @@ namespace Rhetos.Utilities.Test
             }
 
             {
-                var provider = new ConfigurationBuilder()
+                var provider = new ConfigurationBuilder(new ConsoleLogProvider())
                     .AddKeyValue("App:IntProp", "120_not_int")
                     .Build();
 
@@ -241,7 +241,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void BindsFields()
         {
-            var provider = new ConfigurationBuilder()
+            var provider = new ConfigurationBuilder(new ConsoleLogProvider())
                 .AddKeyValue("JustAField", 1337)
                 .Build();
 
@@ -258,7 +258,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void CorrectlyRequiresAllMembers()
         {
-            var provider = new ConfigurationBuilder()
+            var provider = new ConfigurationBuilder(new ConsoleLogProvider())
                 .AddKeyValue("opt1", "1")
                 .AddKeyValue("section:opt1", "101")
                 .AddKeyValue("section:opt2", "102")
@@ -275,7 +275,7 @@ namespace Rhetos.Utilities.Test
         [DeploymentItem("ConnectionStrings.config")]
         public void ConfigurationManagerSource()
         {
-            var provider = new ConfigurationBuilder()
+            var provider = new ConfigurationBuilder(new ConsoleLogProvider())
                 .AddConfigurationManagerConfiguration()
                 .Build();
 
@@ -288,7 +288,7 @@ namespace Rhetos.Utilities.Test
         [DeploymentItem("ConnectionStrings.config")]
         public void BindsConnectionStringOptions()
         {
-            var provider = new ConfigurationBuilder()
+            var provider = new ConfigurationBuilder(new ConsoleLogProvider())
                 .AddConfigurationManagerConfiguration()
                 .Build();
 
@@ -301,7 +301,7 @@ namespace Rhetos.Utilities.Test
         [DeploymentItem("TestCfg.config")]
         public void ConfigurationFileSource()
         {
-            var provider = new ConfigurationBuilder()
+            var provider = new ConfigurationBuilder(new ConsoleLogProvider())
                 .AddConfigurationFile("TestCfg.config")
                 .Build();
 
@@ -321,7 +321,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void IgnoresNonSettable()
         {
-            var provider = new ConfigurationBuilder()
+            var provider = new ConfigurationBuilder(new ConsoleLogProvider())
                 .AddKeyValue("opt", 11)
                 .AddKeyValue("optPrivate", 12)
                 .AddKeyValue("optReadOnlyField", 13)
@@ -349,7 +349,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void ThrowsOnNoConstructor()
         {
-            var provider = new ConfigurationBuilder()
+            var provider = new ConfigurationBuilder(new ConsoleLogProvider())
                 .Build();
 
             TestUtility.ShouldFail<MissingMethodException>(() => provider.GetOptions<PocoConstructor>(), "No parameterless constructor");
@@ -364,7 +364,7 @@ namespace Rhetos.Utilities.Test
         public void BindsPropertyWithFullPath()
         {
             {
-                var provider = new ConfigurationBuilder()
+                var provider = new ConfigurationBuilder(new ConsoleLogProvider())
                     .AddKeyValue("section:a:option1", 42)
                     .Build();
 
@@ -372,7 +372,7 @@ namespace Rhetos.Utilities.Test
             }
 
             {
-                var provider = new ConfigurationBuilder()
+                var provider = new ConfigurationBuilder(new ConsoleLogProvider())
                     .AddKeyValue("option1", 42)
                     .Build();
 
@@ -380,7 +380,7 @@ namespace Rhetos.Utilities.Test
             }
 
             {
-                var provider = new ConfigurationBuilder()
+                var provider = new ConfigurationBuilder(new ConsoleLogProvider())
                     .AddKeyValue("section:a:option1", "notInt")
                     .Build();
 
@@ -394,7 +394,7 @@ namespace Rhetos.Utilities.Test
         public void PropertyBindingSupportsMultipleSpecialChars()
         {
             {
-                var provider = new ConfigurationBuilder()
+                var provider = new ConfigurationBuilder(new ConsoleLogProvider())
                     .AddKeyValue("section:a:option1", 43)
                     .Build();
 
@@ -402,7 +402,7 @@ namespace Rhetos.Utilities.Test
             }
 
             {
-                var provider = new ConfigurationBuilder()
+                var provider = new ConfigurationBuilder(new ConsoleLogProvider())
                     .AddKeyValue("Section__a__Option1", 44)
                     .Build();
 
@@ -410,7 +410,7 @@ namespace Rhetos.Utilities.Test
             }
 
             {
-                var provider = new ConfigurationBuilder()
+                var provider = new ConfigurationBuilder(new ConsoleLogProvider())
                     .AddKeyValue("SECTION.A.Option1", 44)
                     .Build();
 
@@ -422,7 +422,7 @@ namespace Rhetos.Utilities.Test
         public void PropertyBindingFailsOnMultipleMatches()
         {
             {
-                var provider = new ConfigurationBuilder()
+                var provider = new ConfigurationBuilder(new ConsoleLogProvider())
                     .AddKeyValue("section:a:option1", 45)
                     .AddKeyValue("Section__a__Option1", 46)
                     .Build();
@@ -431,7 +431,7 @@ namespace Rhetos.Utilities.Test
             }
 
             {
-                var provider = new ConfigurationBuilder()
+                var provider = new ConfigurationBuilder(new ConsoleLogProvider())
                     .AddKeyValue("section.a.option1", 47)
                     .AddKeyValue("Section__a__Option1", 48)
                     .Build();
@@ -440,7 +440,7 @@ namespace Rhetos.Utilities.Test
             }
 
             {
-                var provider = new ConfigurationBuilder()
+                var provider = new ConfigurationBuilder(new ConsoleLogProvider())
                     .AddKeyValue("section:a:option1", 49)
                     .AddKeyValue("Section.a.Option1", 50)
                     .Build();
@@ -449,7 +449,7 @@ namespace Rhetos.Utilities.Test
             }
 
             {
-                var provider = new ConfigurationBuilder()
+                var provider = new ConfigurationBuilder(new ConsoleLogProvider())
                     .AddKeyValue("section.a.option1", 49)
                     .AddKeyValue("Section:a:Option1", 50)
                     .Build();
@@ -458,7 +458,7 @@ namespace Rhetos.Utilities.Test
             }
 
             {
-                var provider = new ConfigurationBuilder()
+                var provider = new ConfigurationBuilder(new ConsoleLogProvider())
                     .AddKeyValue("section:a:option1", 51)
                     .AddKeyValue("Section.a.Option1", 52)
                     .AddKeyValue("Section__a__Option1", 53)
@@ -471,7 +471,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void CommandLineArguments()
         {
-            var provider = new ConfigurationBuilder()
+            var provider = new ConfigurationBuilder(new ConsoleLogProvider())
                 .AddCommandLineArguments(new [] { "/option1", "/Option2", "-option3" }, "/")
                 .Build();
 
@@ -486,7 +486,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void CommandLineArgumentsPath()
         {
-            var provider = new ConfigurationBuilder()
+            var provider = new ConfigurationBuilder(new ConsoleLogProvider())
                 .AddCommandLineArguments(new[] { "-option1", "/Option2", "/option3" }, "-", "TestSection")
                 .Build();
 
@@ -500,7 +500,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void CommandLineArgumentsSkipEmpty()
         {
-            var provider = new ConfigurationBuilder()
+            var provider = new ConfigurationBuilder(new ConsoleLogProvider())
                 .AddCommandLineArguments(new [] { "/", "/  ", "/help" }, "/")
                 .Build();
 
@@ -515,7 +515,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void UnsupportedMemberType()
         {
-            var provider = new ConfigurationBuilder()
+            var provider = new ConfigurationBuilder(new ConsoleLogProvider())
                 .AddKeyValue("UnsupportedProperty", "123")
                 .Build();
 
@@ -527,7 +527,7 @@ namespace Rhetos.Utilities.Test
         [DeploymentItem("JsonConfigurationFile.json")]
         public void JsonConfigurationCorrect()
         {
-            var provider = new ConfigurationBuilder()
+            var provider = new ConfigurationBuilder(new ConsoleLogProvider())
                 .Add(new JsonFileSource("JsonConfigurationFile.json"))
                 .Build();
 
@@ -539,7 +539,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void JsonFileNotFoundThrows()
         {
-            var builder = new ConfigurationBuilder()
+            var builder = new ConfigurationBuilder(new ConsoleLogProvider())
                 .Add(new JsonFileSource("NonExistant.json"));
 
             TestUtility.ShouldFail<FileNotFoundException>(() => builder.Build(), "NonExistant.json");
@@ -549,7 +549,7 @@ namespace Rhetos.Utilities.Test
         [DeploymentItem("JsonConfigurationFile_Invalid.json")]
         public void InvalidJsonFileThrows()
         {
-            var builder = new ConfigurationBuilder()
+            var builder = new ConfigurationBuilder(new ConsoleLogProvider())
                 .Add(new JsonFileSource("JsonConfigurationFile_Invalid.json"));
 
             TestUtility.ShouldFail<FrameworkException>(() => builder.Build(), "Error parsing JSON contents", "JsonConfigurationFile_Invalid.json");
@@ -576,7 +576,7 @@ namespace Rhetos.Utilities.Test
     ""DateTimeAsString"": ""2019-12-01T15:34:50.7962010Z""
 }";
 
-            var provider = new ConfigurationBuilder()
+            var provider = new ConfigurationBuilder(new ConsoleLogProvider())
                 .Add(new JsonSource(jsonText))
                 .Build();
 
@@ -594,7 +594,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void JsonErrorsThrow()
         {
-            Func<string, IConfiguration> buildWithJson = jsonText => new ConfigurationBuilder().Add(new JsonSource(jsonText)).Build();
+            Func<string, IConfiguration> buildWithJson = jsonText => new ConfigurationBuilder(new ConsoleLogProvider()).Add(new JsonSource(jsonText)).Build();
 
             TestUtility.ShouldFail(() => buildWithJson("{"), "Error reading JObject from JsonReader");
             TestUtility.ShouldFail<FrameworkException>(() => buildWithJson("{\"array\": null }"), "JSON token type Null is not allowed");
@@ -629,7 +629,7 @@ namespace Rhetos.Utilities.Test
         public void AddOptions()
         {
             var options = new TestOptions();
-            var configuration = new ConfigurationBuilder()
+            var configuration = new ConfigurationBuilder(new ConsoleLogProvider())
                 .AddOptions(options)
                 .Build();
             Assert.AreEqual("PublicField:3, PublicProperty:4, PublicPropertyGetter:6, PublicPropertyInt:5, PublicPropertyNull:",
@@ -640,7 +640,7 @@ namespace Rhetos.Utilities.Test
         public void AddOptionsWithPrefix()
         {
             var options = new TestOptions();
-            var configuration = new ConfigurationBuilder()
+            var configuration = new ConfigurationBuilder(new ConsoleLogProvider())
                 .AddOptions(options, "p")
                 .Build();
             Assert.AreEqual("p:PublicField:3, p:PublicProperty:4, p:PublicPropertyGetter:6, p:PublicPropertyInt:5, p:PublicPropertyNull:",
@@ -658,7 +658,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void KeyValueSourceConvertingPaths()
         {
-            var configuration = new ConfigurationBuilder()
+            var configuration = new ConfigurationBuilder(new ConsoleLogProvider())
                 .AddKeyValue("Path", "relative\\test.json")
                 .AddKeyValue("PathConvert", "relative\\testc.json")
                 .Build();
@@ -674,7 +674,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void JsonFileSourceConvertsPaths()
         {
-            var configuration = new ConfigurationBuilder()
+            var configuration = new ConfigurationBuilder(new ConsoleLogProvider())
                 .AddJsonFile("JsonConfigurationFile.json")
                 .Build();
 
@@ -689,7 +689,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void ConfigurationManagerSourceConvertsPaths()
         {
-            var configuration = new ConfigurationBuilder()
+            var configuration = new ConfigurationBuilder(new ConsoleLogProvider())
                 .AddConfigurationManagerConfiguration()
                 .Build();
 
@@ -704,7 +704,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void EmptyRelativeFolder()
         {
-            var configuration = new ConfigurationBuilder()
+            var configuration = new ConfigurationBuilder(new ConsoleLogProvider())
                 .Add(new KeyValuesSource(new[] {new KeyValuePair<string, object>("PathConvert", "")}))
                 .Build();
 
@@ -720,7 +720,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void DifferentSourcesOverrides()
         {
-            var configurationBuilder = new ConfigurationBuilder()
+            var configurationBuilder = new ConfigurationBuilder(new ConsoleLogProvider())
                 .AddConfigurationManagerConfiguration();
 
             {
@@ -758,7 +758,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void ResolvesMixedPathOption()
         {
-            var configuration = new ConfigurationBuilder()
+            var configuration = new ConfigurationBuilder(new ConsoleLogProvider())
                 .AddConfigurationManagerConfiguration()
                 .Build();
 
@@ -769,7 +769,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void DoubleUnderscoreNotInvariant()
         {
-            var configuration = new ConfigurationBuilder()
+            var configuration = new ConfigurationBuilder(new ConsoleLogProvider())
                 .AddKeyValue("path.key", "value1")
                 .AddKeyValue("path__key", "value2")
                 .Build();
@@ -782,9 +782,9 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void SupportLegacyKeysNewOnly()
         {
-            var configuration = new ConfigurationBuilder()
+            var configuration = new ConfigurationBuilder(new ConsoleLogProvider())
+                .AddKeyValue("Rhetos:ConfigurationProvider:LegacyKeysSupport", "Convert")
                 .AddKeyValue("Rhetos:AppSecurity:AllClaimsForUsers", "newValue")
-                .AddKeyValue("Rhetos:ConfigurationProvider:SupportLegacyKeys", "true")
                 .Build();
 
             Assert.AreEqual("newValue", configuration.GetValue<string>("Rhetos:AppSecurity:AllClaimsForUsers"));
@@ -793,9 +793,9 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void SupportLegacyKeysOldOnly()
         {
-            var configuration = new ConfigurationBuilder()
+            var configuration = new ConfigurationBuilder(new ConsoleLogProvider())
+                .AddKeyValue("Rhetos:ConfigurationProvider:LegacyKeysSupport", "Convert")
                 .AddKeyValue("Security.AllClaimsForUsers", "oldValue")
-                .AddKeyValue("Rhetos:ConfigurationProvider:SupportLegacyKeys", "true")
                 .Build();
 
             Assert.AreEqual("oldValue", configuration.GetValue<string>("Rhetos:AppSecurity:AllClaimsForUsers"));
@@ -804,7 +804,8 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void SupportLegacyKeysNoSupportByDefault()
         {
-            var configuration = new ConfigurationBuilder()
+            var configuration = new ConfigurationBuilder(new ConsoleLogProvider())
+                .AddKeyValue("Rhetos:ConfigurationProvider:LegacyKeysSupport", "Ignore")
                 .AddKeyValue("Security.AllClaimsForUsers", "oldValue")
                 .Build();
 
@@ -814,13 +815,25 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void SupportLegacyKeysNewKeyOverridesOld()
         {
-            var configuration = new ConfigurationBuilder()
+            var configuration = new ConfigurationBuilder(new ConsoleLogProvider())
+                .AddKeyValue("Rhetos:ConfigurationProvider:LegacyKeysSupport", "Convert")
                 .AddKeyValue("Rhetos:AppSecurity:AllClaimsForUsers", "newValue")
                 .AddKeyValue("Security.AllClaimsForUsers", "oldValue")
-                .AddKeyValue("Rhetos:ConfigurationProvider:SupportLegacyKeys", "true")
                 .Build();
 
             Assert.AreEqual("newValue", configuration.GetValue<string>("Rhetos:AppSecurity:AllClaimsForUsers"));
+        }
+
+        [TestMethod]
+        public void SupportLegacyKeysError()
+        {
+            TestUtility.ShouldFail<FrameworkException>(
+                () => new ConfigurationBuilder(new ConsoleLogProvider())
+                    .AddKeyValue("Rhetos:ConfigurationProvider:LegacyKeysSupport", "Error")
+                    .AddKeyValue("Security.AllClaimsForUsers", "oldValue")
+                    .Build(),
+                "Rhetos:AppSecurity:AllClaimsForUsers",
+                "Security.AllClaimsForUsers");
         }
     }
 }

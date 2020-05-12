@@ -80,7 +80,7 @@ namespace Rhetos.DatabaseGenerator.Test
 
         public ConceptApplicationRepositoryTest()
         {
-            var configuration = new ConfigurationBuilder()
+            var configuration = new ConfigurationBuilder(new ConsoleLogProvider())
                 .AddConfigurationManagerConfiguration()
                 .Build();
             LegacyUtilities.Initialize(configuration);

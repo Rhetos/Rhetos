@@ -55,5 +55,10 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
                 throw new FrameworkException($"Error parsing JSON contents from '{_filePath}'.", e);
             }
         }
+
+        public override string ToString()
+        {
+            return $"JSON file '{_filePath}'";
+        }
     }
 }

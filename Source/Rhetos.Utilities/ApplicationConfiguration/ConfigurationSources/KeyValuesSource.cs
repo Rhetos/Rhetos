@@ -35,5 +35,10 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
         {
             return keyValuePairs.ToDictionary(pair => pair.Key, pair => new ConfigurationValue(pair.Value,this));
         }
+
+        public override string ToString()
+        {
+            return GetType().Name;
+        }
     }
 }

@@ -17,7 +17,7 @@
      `'IQueryable<X>' does not contain a definition for 'ToSimple'`.
 4. Configuration keys have been changed for some of the existing options, to allow better extensibility.
    * **Update** the following settings keys in *Web.config* file and in all **other config files** that contain the `appSettings` element,
-     or **enable** legacy keys by adding `<add key="Rhetos:ConfigurationProvider:SupportLegacyKeys" value="True" />`.
+     or **enable** legacy keys by adding `<add key="Rhetos:ConfigurationProvider:LegacyKeysSupport" value="Convert" />`.
      * AssemblyGenerator.ErrorReportLimit => Rhetos:Build:AssemblyGeneratorErrorReportLimit
      * AuthorizationAddUnregisteredPrincipals => Rhetos:App:AuthorizationAddUnregisteredPrincipals
      * AuthorizationCacheExpirationSeconds => Rhetos:App:AuthorizationCacheExpirationSeconds

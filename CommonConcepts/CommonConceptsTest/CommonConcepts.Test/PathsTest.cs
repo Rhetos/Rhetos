@@ -37,7 +37,7 @@ namespace CommonConcepts.Test
                 rootPath = rhetos.GetDefaultRhetosServerRootFolder();
             Console.WriteLine($"rootPath: {rootPath}");
 
-            var configurationProvider = new ConfigurationBuilder()
+            var configurationProvider = new ConfigurationBuilder(new ConsoleLogProvider())
                 .AddOptions(new RhetosAppEnvironment
                 {
                     ApplicationRootFolder = rootPath,

@@ -111,6 +111,9 @@ namespace Rhetos
 
         //=====================================================================
 
+        /// <summary>
+        /// Forces restart of the web application, to avoid using old version of application's DLLs from ASP.NET cache (Shadow Copying Assemblies).
+        /// </summary>
         public void RestartWebServer(string configurationFolder)
         {
             var configFile = Path.Combine(configurationFolder, "Web.config");

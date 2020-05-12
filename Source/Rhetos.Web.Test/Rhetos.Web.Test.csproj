@@ -54,6 +54,10 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Rhetos.Logging.Interfaces\Rhetos.Logging.Interfaces.csproj">
+      <Project>{bb7e5668-1b43-4fce-a832-444cc57fee80}</Project>
+      <Name>Rhetos.Logging.Interfaces</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rhetos.Utilities\Rhetos.Utilities.csproj">
       <Project>{71e63722-57bc-41df-9ff5-57ecc67e4bc1}</Project>
       <Name>Rhetos.Utilities</Name>

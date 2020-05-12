@@ -29,7 +29,13 @@ namespace Rhetos
         /// Allow old configuration files to work with new Rhetos applications (v4.0+),
         /// without updating configuration keys in the .config files.
         /// </summary>
-        public bool SupportLegacyKeys { get; set; } = false;
+        public LegacyKeysSupport LegacyKeysSupport { get; set; } = LegacyKeysSupport.Error;
+
+        /// <summary>
+        /// Report warnings if legacy keys are found in configuration.
+        /// It is enabled by default on build and database update, but disabled on application runtime to avoid spamming the log.
+        /// </summary>
+        public bool LegacyKeysWarning { get; set; } = false;
 
         /// <summary>
         /// Old configuration keys, indexed by new key.
@@ -53,4 +59,24 @@ namespace Rhetos
             { "Rhetos:SqlTransactionBatches:ReportProgressMs", "SqlExecuter.ReportProgressMs" },
         };
     }
+
+    public enum LegacyKeysSupport
+    {
+        /// <summary>
+        /// Legacy keys support is disabled.
+        /// </summary>
+        Ignore,
+
+        /// <summary>
+        /// Legacy keys are automatically converted to new configuration keys,
+        /// so that the new Rhetos applications (v4.0+) can use old configuration files.
+        /// </summary>
+        Convert,
+
+        /// <summary>
+        /// Legacy keys support is disabled.
+        /// If any legacy key is found in configuration, an error will be raised.
+        /// </summary>
+        Error
+    };
 }

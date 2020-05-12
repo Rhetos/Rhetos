@@ -31,7 +31,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void SqlUtilityWorksCorrectly()
         {
-            var configuration = new ConfigurationBuilder()
+            var configuration = new ConfigurationBuilder(new ConsoleLogProvider())
                 .AddConfigurationManagerConfiguration()
                 .Build();
             LegacyUtilities.Initialize(configuration);
@@ -44,7 +44,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void PathsOnNullEnvironment()
         {
-            var configuration = new ConfigurationBuilder().Build();
+            var configuration = new ConfigurationBuilder(new ConsoleLogProvider()).Build();
             Paths.Initialize(configuration);
 
             TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.RhetosServerRootPath),
@@ -58,7 +58,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void PathsOnRuntimelEnvironment()
         {
-            var configurationBuilder = new ConfigurationBuilder();
+            var configurationBuilder = new ConfigurationBuilder(new ConsoleLogProvider());
             configurationBuilder.AddOptions(new RhetosAppEnvironment { ApplicationRootFolder = "." });
             Paths.Initialize(configurationBuilder.Build());
 
@@ -70,7 +70,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void PathsOnBuildEnvironment()
         {
-            var configurationBuilder = new ConfigurationBuilder();
+            var configurationBuilder = new ConfigurationBuilder(new ConsoleLogProvider());
             configurationBuilder.AddOptions(new RhetosBuildEnvironment { ProjectFolder = "." });
             Paths.Initialize(configurationBuilder.Build());
 

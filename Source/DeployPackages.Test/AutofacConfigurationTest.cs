@@ -41,7 +41,7 @@ namespace DeployPackages.Test
 
             // This code is mostly copied from DeployPackages build-time configuration.
 
-            var configuration = new ConfigurationBuilder()
+            var configuration = new ConfigurationBuilder(new ConsoleLogProvider())
                 .AddOptions(new RhetosBuildEnvironment
                 {
                     ProjectFolder = rhetosAppRootPath,
@@ -84,7 +84,7 @@ namespace DeployPackages.Test
 
             // Simulating common run-time configuration of application with DeployPackages.
 
-            var configuration = new ConfigurationBuilder()
+            var configuration = new ConfigurationBuilder(new ConsoleLogProvider())
                 .AddOptions(new RhetosAppEnvironment
                 {
                     ApplicationRootFolder = rhetosAppRootPath

@@ -77,5 +77,10 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
         {
             return string.IsNullOrEmpty(path) ? key : $"{path}{ConfigurationProvider.ConfigurationPathSeparator}{key}";
         }
+
+        public override string ToString()
+        {
+            return GetType().Name;
+        }
     }
 }

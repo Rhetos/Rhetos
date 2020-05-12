@@ -17,7 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
@@ -45,6 +44,20 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
             return new DotNetConfigurationSource(appSettings, connectionStrings)
                 .Load()
                 .ToDictionary(entry => entry.Key, entry => new ConfigurationValue(entry.Value.Value, this));
+        }
+
+        public override string ToString()
+        {
+            string exeConfigFile = null;
+            try
+            {
+                exeConfigFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None).FilePath;
+            }
+            catch
+            {
+            }
+
+            return $"Default application's configuration, probably {exeConfigFile ?? "Web.config or applications .config file"}";
         }
     }
 }

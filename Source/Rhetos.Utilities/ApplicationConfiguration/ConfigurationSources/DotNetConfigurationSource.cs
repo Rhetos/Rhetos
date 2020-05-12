@@ -17,7 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.Collections.Generic;
 using System.Configuration;
 
@@ -54,6 +53,11 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
                 }
 
             return settings;
+        }
+
+        public override string ToString()
+        {
+            return GetType().Name;
         }
     }
 }

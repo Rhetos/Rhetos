@@ -70,7 +70,7 @@ namespace DeployPackages
         {
             var logger = logProvider.GetLogger("DeployPackages");
 
-            var configurationBuilder = new ConfigurationBuilder()
+            var configurationBuilder = new ConfigurationBuilder(logProvider)
                 .AddOptions(new RhetosBuildEnvironment
                 {
                     ProjectFolder = rhetosAppRootPath,
@@ -88,6 +88,7 @@ namespace DeployPackages
                 .AddKeyValue(ConfigurationProvider.GetKey((BuildOptions o) => o.GenerateAppSettings), false)
                 .AddKeyValue(ConfigurationProvider.GetKey((BuildOptions o) => o.BuildResourcesFolder), true)
                 .AddWebConfiguration(rhetosAppRootPath)
+                .AddKeyValue(ConfigurationProvider.GetKey((ConfigurationProviderOptions o) => o.LegacyKeysWarning), true)
                 .AddConfigurationManagerConfiguration()
                 .AddCommandLineArgumentsWithConfigurationPaths(args);
 
@@ -177,6 +178,7 @@ namespace DeployPackages
             var host = Host.Find(AppDomain.CurrentDomain.BaseDirectory, logProvider);
             var configuration = host.RhetosRuntime
                 .BuildConfiguration(logProvider, host.ConfigurationFolder, configurationBuilder => configurationBuilder
+                    .AddKeyValue(ConfigurationProvider.GetKey((ConfigurationProviderOptions o) => o.LegacyKeysWarning), true)
                     .AddConfigurationManagerConfiguration()
                     .AddCommandLineArgumentsWithConfigurationPaths(args));
 

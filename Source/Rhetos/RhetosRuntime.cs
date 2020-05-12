@@ -43,7 +43,7 @@ namespace Rhetos
 
         public IConfiguration BuildConfiguration(ILogProvider logProvider, string configurationFolder, Action<IConfigurationBuilder> addCustomConfiguration)
         {
-            var configurationBuilder = new ConfigurationBuilder();
+            var configurationBuilder = new ConfigurationBuilder(logProvider);
 
             // Main application configuration (usually Web.config).
             if (_isHost)

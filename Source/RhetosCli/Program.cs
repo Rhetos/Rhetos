@@ -117,7 +117,7 @@ namespace Rhetos
                     $" Visual Studio integration runs it automatically from Rhetos NuGet package tools folder." +
                     $" You can run it manually from Package Manager Console, since the tools folder it is included in PATH.");
 
-            var configuration = new ConfigurationBuilder()
+            var configuration = new ConfigurationBuilder(LogProvider)
                 .AddOptions(rhetosProjectContent.RhetosBuildEnvironment)
                 .AddOptions(rhetosProjectContent.RhetosTargetEnvironment)
                 .AddOptions(new LegacyPathsOptions
@@ -126,6 +126,7 @@ namespace Rhetos
                     PluginsFolder = null, // Rhetos CLI does not manage plugin libraries directly, they are provided by NuGet.
                     ResourcesFolder = Path.Combine(projectRootPath, "Resources"), // Currently supporting old plugins by default.
                 })
+                .AddKeyValue(ConfigurationProvider.GetKey((ConfigurationProviderOptions o) => o.LegacyKeysWarning), true)
                 .AddConfigurationManagerConfiguration()
                 .AddJsonFile(Path.Combine(projectRootPath, RhetosBuildEnvironment.ConfigurationFileName), optional: true)
                 .Build();
@@ -144,8 +145,9 @@ namespace Rhetos
 
             var configuration = host.RhetosRuntime.BuildConfiguration(LogProvider, host.ConfigurationFolder, configurationBuilder =>
             {
-                configurationBuilder.AddConfigurationManagerConfiguration();
                 configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((DatabaseOptions o) => o.SqlCommandTimeout), 0);
+                configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((ConfigurationProviderOptions o) => o.LegacyKeysWarning), true);
+                configurationBuilder.AddConfigurationManagerConfiguration();
                 configurationBuilder.AddJsonFile(Path.Combine(host.ConfigurationFolder, DbUpdateOptions.ConfigurationFileName), optional: true);
                 if (shortTransactions)
                     configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((DbUpdateOptions o) => o.ShortTransactions), shortTransactions);

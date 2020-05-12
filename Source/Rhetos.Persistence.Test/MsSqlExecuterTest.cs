@@ -54,7 +54,7 @@ namespace Rhetos.Persistence.Test
         [TestInitialize]
         public void ChecklDatabaseAvailability()
         {
-            var configuration = new ConfigurationBuilder()
+            var configuration = new ConfigurationBuilder(new ConsoleLogProvider())
                 .AddConfigurationManagerConfiguration()
                 .Build();
             LegacyUtilities.Initialize(configuration);

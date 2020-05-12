@@ -40,7 +40,7 @@ namespace Rhetos
         public static Host Find(string applicationFolder, ILogProvider logProvider)
         {
             var configurationFolder = FindConfiguration(applicationFolder);
-            string rhetosRuntimePath = LoadRhetosRuntimePath(configurationFolder);
+            string rhetosRuntimePath = LoadRhetosRuntimePath(configurationFolder, logProvider);
             IRhetosRuntime rhetosRuntimeInstance = CreateRhetosRuntimeInstance(logProvider, rhetosRuntimePath);
 
             return new Host
@@ -75,10 +75,10 @@ namespace Rhetos
             return configurationDirectory.FullName;
         }
 
-        private static string LoadRhetosRuntimePath(string configurationFolder)
+        private static string LoadRhetosRuntimePath(string configurationFolder, ILogProvider logProvider)
         {
             string configurationFile = Path.Combine(configurationFolder, RhetosAppEnvironment.ConfigurationFileName);
-            var configuration = new ConfigurationBuilder()
+            var configuration = new ConfigurationBuilder(logProvider)
                 .AddJsonFile(configurationFile)
                 .Build();
 
