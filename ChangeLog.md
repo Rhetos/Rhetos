@@ -1,6 +1,6 @@
 ﻿# Rhetos release notes
 
-## 4.0.0 (TO BE RELEASED)
+## 4.0.0 (2020-05-14)
 
 ### Breaking changes
 
@@ -58,7 +58,7 @@
      to [custom concepts](https://github.com/Rhetos/Rhetos/wiki/Rhetos-concept-development#dependency-between-code-generators)
      and [database object](https://github.com/Rhetos/Rhetos/wiki/Database-objects#dependencies-between-database-objects),
      or **suppress** this issues by disabling the concept sorting in Web.config:
-     `<add key="InitialConceptsSort" value="None" />`.
+     `<add key="Rhetos:Build:InitialConceptsSort" value="None" />`.
 8. [BuiltinAdminOverride](https://github.com/Rhetos/Rhetos/wiki/Basic-permissions#suppressing-permissions-in-a-development-environment)
    option is not enabled by default. This might affect testing in development
    environment if permission-checking was intentionally suppressed.
@@ -70,20 +70,20 @@
 9. ProcessUserInfo no longer supports BuiltinAdminOverride configuration option.
    This might affect unit tests or custom utilities that directly use
    Rhetos.Processing.IProcessingEngine.
-   * Add the required permissions for the system account that runs the test or utility application.
-   * Alternatively, the test or utility can register NullAuthorizationProvider to DI container,
-     if they need to override end-user permissions checking.
+   * Add the required permissions for the system account that runs the utility application.
+   * Alternatively, a unit test can register NullAuthorizationProvider to DI container,
+     if it needs to override end-user permissions checking.
      For example, if using RhetosTestContainer add
      `container.InitializeSession += builder.RegisterType<Rhetos.Security.NullAuthorizationProvider>().As<IAuthorizationProvider>();`
 
 ### New features
 
 * **Rhetos CLI and MSBuild integration**
+  * Rhetos CLI (rhetos.exe) is a successor to DeployPackages. The old build process with DeployPackages.exe still works.
   * It allows custom source code to be developed and compiled side-by-side with generated
     C# source code in the same Rhetos application.
   * New Rhetos application are created and developed as standard web application in Visual Studio
     by adding Rhetos NuGet packages. Currently only WCF applications are supported.
-  * Rhetos CLI (rhetos.exe) is a successor to DeployPackages. The old build process with DeployPackages.exe still works.
   * To migrate an existing Rhetos application to new build process follow the instructions at
     [Migrating from DeployPackages to Rhetos CLI](https://github.com/Rhetos/Rhetos/wiki/Migrating-from-DeployPackages-to-Rhetos-CLI).
 * **Rhetos.MSBuild** NuGet package for integration with MSBuild and Visual Studio.
@@ -114,13 +114,9 @@
 * ProcessContainer is a successor to RhetosTestContainer with cleaner lifetime and transaction handling. See examples in [Upgrading custom utility applications to Rhetos 4.0](https://github.com/Rhetos/Rhetos/wiki/Upgrading-custom-utility-applications-to-Rhetos-4) and in "Rhetos Server DOM.linq" script.
 * Logging modified database objects information by default. This will help with analysis of deployment performance issues.
 * Formatting DSL syntax errors in canonical format (file and position) for better integration with MSBuild and other tools.
+* Rhetos NuGet package was missing System.ComponentModel.Composition dependency.
 * Updated Rhetos framework C# language to 7.3. Framework development now requires Visual Studio 2017 v15.7 or later.
 * Minor performance improvements of DeployPackages and application start-up.
-
-## 3.1.0 (TO BE RELEASED)
-
-### New features
-
 * DSL syntax: ConceptParentAttribute for explicit specification of parent property for
   nested and recursive concepts. Fists property is assumed to be parent concept by default,
   unless ConceptParentAttribute is used.
@@ -134,15 +130,10 @@
     `ShortString Demo.School Name;`.
     New version makes it more clear that ShortString contains 2 parameters:
     entity (`Demo.School`) and property name (`Name`).
-
-### Internal improvements
-
 * Bugfix: Optimized "Contains" query with GroupBy and subquery results with
   `EntityCommandExecutionException: An error occurred while executing the command definition.`
   with inner exception
   `IndexOutOfRangeException: Invalid index -1 for this SqlParameterCollection with Count=0.` (issue #278)
-* Bugfix: Downgrade from Rhetos 4.0 results with SQL error:
-  `Cannot find the object "Rhetos.DatabaseGeneratorAppliedConcept" because it does not exist or you do not have permissions.`
 * Bugfix: KeepSynchronized metadata tracking can result with syntax error in
   *ServerDom.Repositories.cs* depending on concept ordering.
 
