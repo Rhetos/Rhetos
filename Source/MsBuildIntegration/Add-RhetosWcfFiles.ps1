@@ -10,9 +10,11 @@ $projectFolder = (Get-Item $project.FullName).DirectoryName
 "Target project: $($project.Name)"
 
 Copy-Item -Path "$sourceFolder\Web.config" -Destination $projectFolder -Force
-Copy-Item -Path "$sourceFolder\Rhetos Server DOM.linq" -Destination $projectFolder -Force
-Copy-Item -Path "$sourceFolder\Rhetos Server SOAP.linq" -Destination $projectFolder -Force
 Copy-Item -Path "$sourceFolder\Template.ConnectionStrings.config" -Destination $projectFolder -Force
+
+[void]( New-Item "$projectFolder\LinqPad" -Type Directory -Force )
+Copy-Item -Path "$sourceFolder\Rhetos Server DOM.linq" -Destination "$projectFolder\LinqPad" -Force
+Copy-Item -Path "$sourceFolder\Rhetos Server SOAP.linq" -Destination "$projectFolder\LinqPad" -Force
 
 $project.ProjectItems.AddFromFileCopy("$sourceFolder\RhetosService.svc") > $null
 $project.ProjectItems.AddFromFileCopy("$sourceFolder\Global.asax") > $null
@@ -29,12 +31,14 @@ function ReplaceText
 $assemblyName = $project.Properties["AssemblyName"].Value
 ReplaceText "$projectFolder\RhetosService.svc" ", Rhetos" ", $assemblyName"
 
-ReplaceText "$projectFolder\Rhetos Server DOM.linq" "bin\\Plugins\\" "bin\"
-ReplaceText "$projectFolder\Rhetos Server SOAP.linq" "bin\\Plugins\\" "bin\"
-ReplaceText "$projectFolder\Rhetos Server DOM.linq" "bin\\Generated\\ServerDom.Model.dll" "bin\$assemblyName.dll"
-ReplaceText "$projectFolder\Rhetos Server SOAP.linq" "bin\\Generated\\ServerDom.Model.dll" "bin\$assemblyName.dll"
-ReplaceText "$projectFolder\Rhetos Server SOAP.linq" "ServerDom.Model" "$assemblyName"
-ReplaceText "$projectFolder\Rhetos Server SOAP.linq" "localhost/Rhetos" "ENTER-APPLICATION-URL-HERE"
+ReplaceText "$projectFolder\LinqPad\Rhetos Server DOM.linq" "bin\\Plugins\\" "bin\"
+ReplaceText "$projectFolder\LinqPad\Rhetos Server SOAP.linq" "bin\\Plugins\\" "bin\"
+ReplaceText "$projectFolder\LinqPad\Rhetos Server DOM.linq" "bin\\Generated\\ServerDom.Model.dll" "bin\$assemblyName.dll"
+ReplaceText "$projectFolder\LinqPad\Rhetos Server SOAP.linq" "bin\\Generated\\ServerDom.Model.dll" "bin\$assemblyName.dll"
+ReplaceText "$projectFolder\LinqPad\Rhetos Server SOAP.linq" "ServerDom.Model" "$assemblyName"
+ReplaceText "$projectFolder\LinqPad\Rhetos Server SOAP.linq" "localhost/Rhetos" "ENTER-APPLICATION-URL-HERE"
+ReplaceText "$projectFolder\LinqPad\Rhetos Server DOM.linq" "bin\\" "..\bin\"
+ReplaceText "$projectFolder\LinqPad\Rhetos Server SOAP.linq" "bin\\" "..\bin\"
 
 $rhetosAppSettingsPath = "$projectFolder\rhetos-app.settings.json"
 if (!(Test-Path -Path $rhetosAppSettingsPath)) {
