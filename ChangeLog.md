@@ -1,5 +1,11 @@
 ﻿# Rhetos release notes
 
+## 3.0.2 (TO BE RELEASED)
+
+### Internal improvements
+
+* Bugfix: Downgrade from Rhetos 4.0 results with SQL error: `Cannot find the object "Rhetos.DatabaseGeneratorAppliedConcept" because it does not exist or you do not have permissions.`
+
 ## 3.0.1 (2019-11-22)
 
 ### Internal improvements
