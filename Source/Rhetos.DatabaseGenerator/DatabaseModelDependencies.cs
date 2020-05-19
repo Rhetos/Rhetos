@@ -39,7 +39,7 @@ namespace Rhetos.DatabaseGenerator
         public DatabaseModelDependencies(ILogProvider logProvider)
         {
             _logger = logProvider.GetLogger(GetType().Name);
-            _performanceLogger = logProvider.GetLogger("Performance");
+            _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
         }
 
         public List<CodeGeneratorDependency> ExtractCodeGeneratorDependencies(
@@ -63,7 +63,7 @@ namespace Rhetos.DatabaseGenerator
                 .Select(dependency => Tuple.Create(dependency, conceptInfo)));
             var dependencies = ConceptDependencyToCodeGeneratorsDependency(conceptInfoDependencies, codeGenerators);
 
-            _performanceLogger.Write(stopwatch, $"{nameof(DatabaseModelDependencies)}.{nameof(ExtractDependenciesFromConceptInfos)}.");
+            _performanceLogger.Write(stopwatch, nameof(ExtractDependenciesFromConceptInfos));
             _logger.Trace(() => ReportDependencies("Direct or indirect IConceptInfo reference", dependencies));
             return dependencies;
         }
@@ -119,7 +119,7 @@ namespace Rhetos.DatabaseGenerator
 
             dependencies = dependencies.Distinct().ToList();
 
-            _performanceLogger.Write(stopwatch, $"{nameof(DatabaseModelDependencies)}.{nameof(ExtractDependenciesFromMefPluginMetadata)}.");
+            _performanceLogger.Write(stopwatch, nameof(ExtractDependenciesFromMefPluginMetadata));
             _logger.Trace(() => ReportDependencies("MefPlugin DependsOn", dependencies));
 
             return dependencies;

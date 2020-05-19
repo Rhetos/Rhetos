@@ -39,7 +39,7 @@ namespace Rhetos.Dsl
             DslContainer dslContainer,
             IAssetsOptions assetsOptions)
         {
-            _performanceLogger = logProvider.GetLogger("Performance");
+            _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _dslContainer = dslContainer;
             _rhetosEnvironment = assetsOptions;
         }
@@ -86,7 +86,7 @@ namespace Rhetos.Dsl
                         var loadedConcepts = LoadConcepts();
                         _dslContainer.AddNewConceptsAndReplaceReferences(loadedConcepts);
 
-                        _performanceLogger.Write(sw, "DslModelFile.Initialize (" + _dslContainer.Concepts.Count() + " concepts).");
+                        _performanceLogger.Write(sw, "Initialize (" + _dslContainer.Concepts.Count() + " concepts).");
                         _initialized = true;
                     }
         }
@@ -98,7 +98,7 @@ namespace Rhetos.Dsl
             var sw = Stopwatch.StartNew();
 
             CsUtility.Materialize(ref concepts);
-            _performanceLogger.Write(sw, "DslModelFile.SaveConcepts: Materialize.");
+            _performanceLogger.Write(sw, "SaveConcepts: Materialize.");
 
             var serializerSettings = new JsonSerializerSettings
             {
@@ -109,10 +109,10 @@ namespace Rhetos.Dsl
             };
 
             string serializedConcepts = JsonConvert.SerializeObject(concepts, serializerSettings);
-            _performanceLogger.Write(sw, "DslModelFile.SaveConcepts: Serialize.");
+            _performanceLogger.Write(sw, "SaveConcepts: Serialize.");
 
             File.WriteAllText(DslModelFilePath, serializedConcepts, Encoding.UTF8);
-            _performanceLogger.Write(sw, "DslModelFile.SaveConcepts: Write.");
+            _performanceLogger.Write(sw, "SaveConcepts: Write.");
         }
 
         private string DslModelFilePath => Path.Combine(_rhetosEnvironment.AssetsFolder, DslModelFileName);
@@ -131,7 +131,7 @@ namespace Rhetos.Dsl
             };
 
             var concepts = (IEnumerable<IConceptInfo>)JsonConvert.DeserializeObject(serializedConcepts, serializerSettings);
-            _performanceLogger.Write(sw, "DslModelFile.Load.");
+            _performanceLogger.Write(sw, "Load.");
             return concepts;
         }
     }

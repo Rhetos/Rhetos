@@ -52,7 +52,7 @@ namespace Rhetos.Deployment
             _deploymentConfiguration = deploymentConfiguration;
             _logProvider = logProvider;
             _logger = logProvider.GetLogger("Packages");
-            _performanceLogger = logProvider.GetLogger("Performance");
+            _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _options = options;
             _filesUtility = new FilesUtility(logProvider);
             _packagesCacheFolder = Path.Combine(Paths.RhetosServerRootPath, "PackagesCache");
@@ -100,7 +100,7 @@ namespace Rhetos.Deployment
 
             binFileSyncer.UpdateDestination();
 
-            _performanceLogger.Write(sw, "PackageDownloader.GetPackages.");
+            _performanceLogger.Write(sw, "GetPackages.");
 
             return new InstalledPackages { Packages = installedPackages };
         }
@@ -473,7 +473,7 @@ namespace Rhetos.Deployment
 
             var package = packages.FirstOrDefault();
 
-            _performanceLogger.Write(sw, () => $"PackageDownloader: {(package == null ? "Did not find" : "Found")} the NuGet package {request.ReportIdVersionsRange()} at {source.ProcessedLocation}.");
+            _performanceLogger.Write(sw, () => $"{(package == null ? "Did not find" : "Found")} the NuGet package {request.ReportIdVersionsRange()} at {source.ProcessedLocation}.");
             if (package == null)
                 return null;
 
@@ -487,7 +487,7 @@ namespace Rhetos.Deployment
             packageManager.LocalRepository.PackageSaveMode = PackageSaveModes.Nuspec;
 
             packageManager.InstallPackage(package, ignoreDependencies: true, allowPrereleaseVersions: true);
-            _performanceLogger.Write(sw, () => "PackageDownloader: Installed NuGet package " + request.Id + ".");
+            _performanceLogger.Write(sw, () => "Installed NuGet package " + request.Id + ".");
 
             string targetFolder = packageManager.PathResolver.GetInstallPath(package);
 
@@ -552,7 +552,7 @@ namespace Rhetos.Deployment
             foreach (var folder in obsoletePackages)
                 _filesUtility.SafeDeleteDirectory(folder);
 
-            _performanceLogger.Write(sw, "PackageDownloader.DeleteObsoletePackages");
+            _performanceLogger.Write(sw, "DeleteObsoletePackages");
         }
     }
 }

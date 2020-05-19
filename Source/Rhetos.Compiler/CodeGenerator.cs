@@ -37,7 +37,7 @@ namespace Rhetos.Compiler
             ILogProvider logProvider,
             IDslModel dslModel)
         {
-            _performanceLogger = logProvider.GetLogger("Performance");
+            _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _logger = logProvider.GetLogger("CodeGenerator");
             _dslModel = dslModel;
         }
@@ -94,7 +94,7 @@ namespace Rhetos.Compiler
                     }
                 }
 
-            _performanceLogger.Write(stopwatch, "CodeGenerator: Code generated.");
+            _performanceLogger.Write(stopwatch, "Code generated.");
             return codeBuilder;
         }
     }

@@ -56,7 +56,7 @@ namespace Rhetos.Persistence
             _connectionString = connectionString;
             _userInfo = userInfo;
             _logger = logProvider.GetLogger("MsSqlExecuter");
-            _performanceLogger = logProvider.GetLogger("Performance");
+            _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _persistenceTransaction = persistenceTransaction;
         }
 
@@ -242,7 +242,7 @@ namespace Rhetos.Persistence
         private void LogPerformanceIssue(Stopwatch sw, string sql)
         {
             if (sw.Elapsed >= LoggerHelper.SlowEvent) // Avoid flooding the performance trace log.
-                _performanceLogger.Write(sw, () => "MsSqlExecuter: " + sql.Limit(50000, true));
+                _performanceLogger.Write(sw, () => sql.Limit(50000, true));
             else
                 sw.Restart(); // _performanceLogger.Write would restart the stopwatch.
         }

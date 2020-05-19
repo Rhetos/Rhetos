@@ -45,7 +45,7 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
 
         public EntityFrameworkMetadata(RhetosAppOptions rhetosAppOptions, ILogProvider logProvider, ConnectionString connectionString)
         {
-            _performanceLogger = logProvider.GetLogger("Performance");
+            _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _logger = logProvider.GetLogger(nameof(EntityFrameworkMetadata));
             _rhetosAppOptions = rhetosAppOptions;
             _connectionString = connectionString;
@@ -65,7 +65,7 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
                             SetProviderManifestTokenIfNeeded(sw, modelFilesPath);
 
                             _metadataWorkspace = new MetadataWorkspace(modelFilesPath, new Assembly[] { });
-                            _performanceLogger.Write(sw, $"{nameof(EntityFrameworkMetadata)}: Load EDM files.");
+                            _performanceLogger.Write(sw, "Load EDM files.");
 
                             _initialized = true;
                         }
@@ -81,7 +81,7 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
             var ssdlFile = modelFilesPath.Single(path => path.EndsWith(".ssdl"));
             string ssdlFirstLine = ReadFirstLine(ssdlFile);
             var existingManifestToken = _manifestTokenRegex.Match(ssdlFirstLine).Groups["token"];
-            _performanceLogger.Write(sw, $@"{nameof(EntityFrameworkMetadata)}: Checked if ProviderManifestToken is set.");
+            _performanceLogger.Write(sw, "Checked if ProviderManifestToken is set.");
 
             if (!existingManifestToken.Success)
                 throw new FrameworkException($"Cannot find ProviderManifestToken attribute in '{ssdlFile}'.");
@@ -99,7 +99,7 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
                     + ssdlFirstLine.Substring(existingManifestToken.Index + existingManifestToken.Length);
                 File.WriteAllLines(ssdlFile, lines, Encoding.UTF8);
 
-                _performanceLogger.Write(sw, $@"{nameof(EntityFrameworkMetadata)}: Initialized {Path.GetFileName(ssdlFile)}.");
+                _performanceLogger.Write(sw, $"Initialized {Path.GetFileName(ssdlFile)}.");
             }
         }
 

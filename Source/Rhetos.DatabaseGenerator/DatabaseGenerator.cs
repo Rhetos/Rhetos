@@ -53,7 +53,7 @@ namespace Rhetos.DatabaseGenerator
             _conceptApplicationRepository = conceptApplicationRepository;
             _logger = logProvider.GetLogger(GetType().Name);
             _changesLogger = logProvider.GetLogger("DatabaseGeneratorChanges");
-            _performanceLogger = logProvider.GetLogger("Performance");
+            _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _dbUpdateOptions = dbUpdateOptions;
             _databaseModel = databaseModel;
         }
@@ -65,31 +65,31 @@ namespace Rhetos.DatabaseGenerator
             var stopwatch = Stopwatch.StartNew();
 
             var oldApplications = _conceptApplicationRepository.Load();
-            _performanceLogger.Write(stopwatch, "DatabaseGenerator: Loaded old concept applications.");
+            _performanceLogger.Write(stopwatch, "Loaded old concept applications.");
 
             var newApplications = ConceptApplication.FromDatabaseObjects(_databaseModel.DatabaseObjects);
-            _performanceLogger.Write(stopwatch, "DatabaseGenerator: Got new concept applications.");
+            _performanceLogger.Write(stopwatch, "Got new concept applications.");
 
             MatchAndComputeNewApplicationIds(oldApplications, newApplications);
-            _performanceLogger.Write(stopwatch, "DatabaseGenerator: Match new and old concept applications.");
+            _performanceLogger.Write(stopwatch, "Match new and old concept applications.");
 
             ConceptApplication.CheckKeyUniqueness(newApplications, "generated, after matching");
-            _performanceLogger.Write(stopwatch, "DatabaseGenerator: Verify new concept applications' integrity.");
+            _performanceLogger.Write(stopwatch, "Verify new concept applications' integrity.");
             newApplications = TrimEmptyApplications(newApplications);
-            _performanceLogger.Write(stopwatch, "DatabaseGenerator: Removed unused concept applications.");
+            _performanceLogger.Write(stopwatch, "Removed unused concept applications.");
 
             List<ConceptApplication> toBeRemoved;
             List<ConceptApplication> toBeInserted;
             CalculateApplicationsToBeRemovedAndInserted(oldApplications, newApplications, out toBeRemoved, out toBeInserted);
-            _performanceLogger.Write(stopwatch, "DatabaseGenerator: Analyzed differences in database structure.");
+            _performanceLogger.Write(stopwatch, "Analyzed differences in database structure.");
 
             ApplyChangesToDatabase(oldApplications, newApplications, toBeRemoved, toBeInserted);
-            _performanceLogger.Write(stopwatch, "DatabaseGenerator: Applied changes to database.");
+            _performanceLogger.Write(stopwatch, "Applied changes to database.");
 
             VerifyIntegrity();
-            _performanceLogger.Write(stopwatch, "DatabaseGenerator: Verified integrity of saved concept applications metadata.");
+            _performanceLogger.Write(stopwatch, "Verified integrity of saved concept applications metadata.");
 
-            _performanceLogger.Write(stopwatchTotal, "DatabaseGenerator.UpdateDatabaseStructure");
+            _performanceLogger.Write(stopwatchTotal, "UpdateDatabaseStructure");
         }
 
         private static void MatchAndComputeNewApplicationIds(List<ConceptApplication> oldApplications, List<ConceptApplication> newApplications)
@@ -213,16 +213,16 @@ namespace Rhetos.DatabaseGenerator
             var sqlScripts = new List<string>(estimatedNumberOfQueries);
 
             sqlScripts.AddRange(ApplyChangesToDatabase_Remove(toBeRemoved, oldApplications));
-            _performanceLogger.Write(stopwatch, "DatabaseGenerator.ApplyChangesToDatabase: Prepared SQL scripts for removing concept applications.");
+            _performanceLogger.Write(stopwatch, "ApplyChangesToDatabase: Prepared SQL scripts for removing concept applications.");
 
             sqlScripts.AddRange(ApplyChangesToDatabase_Unchanged(toBeInserted, newApplications, oldApplications));
-            _performanceLogger.Write(stopwatch, "DatabaseGenerator.ApplyChangesToDatabase: Prepared SQL scripts for updating unchanged concept applications' metadata.");
+            _performanceLogger.Write(stopwatch, "ApplyChangesToDatabase: Prepared SQL scripts for updating unchanged concept applications' metadata.");
 
             sqlScripts.AddRange(ApplyChangesToDatabase_Insert(toBeInserted, newApplications));
-            _performanceLogger.Write(stopwatch, "DatabaseGenerator.ApplyChangesToDatabase: Prepared SQL scripts for inserting concept applications.");
+            _performanceLogger.Write(stopwatch, "ApplyChangesToDatabase: Prepared SQL scripts for inserting concept applications.");
 
             _sqlTransactionBatches.Execute(sqlScripts.Select(sql => new SqlTransactionBatches.SqlScript { Sql = sql, IsBatch = false, Name = null }));
-            _performanceLogger.Write(stopwatch, $"DatabaseGenerator.ApplyChangesToDatabase: Executed {sqlScripts.Where(sql => !string.IsNullOrEmpty(sql)).Count()} SQL scripts.");
+            _performanceLogger.Write(stopwatch, $"ApplyChangesToDatabase: Executed {sqlScripts.Where(sql => !string.IsNullOrEmpty(sql)).Count()} SQL scripts.");
         }
 
         private List<string> ApplyChangesToDatabase_Remove(List<ConceptApplication> toBeRemoved, List<ConceptApplication> oldApplications)

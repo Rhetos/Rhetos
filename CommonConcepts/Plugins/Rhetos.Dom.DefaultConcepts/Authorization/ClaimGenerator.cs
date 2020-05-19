@@ -46,7 +46,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             _claimProviders = claimProviders;
             _dslModel = dslModel;
-            _performanceLogger = logProvider.GetLogger("Performance");
+            _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _claimsLogger = logProvider.GetLogger("ClaimGenerator Claims");
             _claimRepository = claimRepository;
         }
@@ -61,7 +61,7 @@ namespace Rhetos.Dom.DefaultConcepts
             var stopwatch = Stopwatch.StartNew();
 
             var newClaims = GetNewActiveClaims();
-            _performanceLogger.Write(stopwatch, "ClaimGenerator.Generate: Generate new claims.");
+            _performanceLogger.Write(stopwatch, "Generate new claims.");
 
             _claimRepository.InsertOrUpdateOrDeleteOrDeactivate(
                 newClaims,
@@ -77,7 +77,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 new DeactivateInsteadOfDelete(), // This is a filter on Common.Claim's repository, see ClaimRepositoryCodeGenerator.
                 LogSummary);
             
-            _performanceLogger.Write(stopwatch, "ClaimGenerator.Generate: Save claims.");
+            _performanceLogger.Write(stopwatch, "Save claims.");
         }
 
         protected IEnumerable<ICommonClaim> GetNewActiveClaims()

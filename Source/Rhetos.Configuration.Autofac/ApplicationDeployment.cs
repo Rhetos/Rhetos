@@ -56,8 +56,8 @@ namespace Rhetos
 
             using (var container = builder.Build())
             {
-                var performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
-                performanceLogger.Write(stopwatch, "DeployPackages.Program: Modules and plugins registered.");
+                var performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance." + GetType().Name);
+                performanceLogger.Write(stopwatch, "Modules and plugins registered.");
                 ContainerBuilderPluginRegistration.LogRegistrationStatistics("Generating application", container, _logProvider);
 
                 container.Resolve<DatabaseDeployment>().UpdateDatabase();
@@ -85,10 +85,10 @@ namespace Rhetos
 
             using (var container = rhetosRuntime.BuildContainer(_logProvider, _configuration, AddAppInitializationComponents))
             {
-                var performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance");
+                var performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance." + GetType().Name);
                 var initializers = ApplicationInitialization.GetSortedInitializers(container);
 
-                performanceLogger.Write(stopwatch, "DeployPackages.Program: New modules and plugins registered.");
+                performanceLogger.Write(stopwatch, "New modules and plugins registered.");
                 ContainerBuilderPluginRegistration.LogRegistrationStatistics("Initializing application", container, _logProvider);
 
                 if (!initializers.Any())

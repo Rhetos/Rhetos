@@ -52,7 +52,7 @@ namespace Rhetos.DatabaseGenerator
             RhetosBuildEnvironment rhetosBuildEnvironment,
             IPluginsContainer<IConceptDataMigration> plugins)
         {
-            _performanceLogger = logProvider.GetLogger("Performance");
+            _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _logger = logProvider.GetLogger(GetType().Name);
             _dslModel = dslModel;
             _plugins = plugins;
@@ -80,7 +80,7 @@ namespace Rhetos.DatabaseGenerator
                     }
                 }
 
-            _performanceLogger.Write(stopwatch, "ConceptDataMigrationGenerator: Scripts generated.");
+            _performanceLogger.Write(stopwatch, "Scripts generated.");
 
             string serializedConcepts = JsonConvert.SerializeObject(codeBuilder.GetDataMigrationScripts(), Formatting.Indented);
             File.WriteAllText(Path.Combine(_rhetosBuildEnvironment.GeneratedAssetsFolder, ConceptDataMigrationScriptsFileName), serializedConcepts, Encoding.UTF8);

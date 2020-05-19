@@ -39,7 +39,7 @@ namespace Rhetos.Dom
         public DomLoader(ILogProvider logProvider, RhetosAppOptions rhetosAppOptions)
         {
             _logger = logProvider.GetLogger("DomLoader");
-            _performanceLogger = logProvider.GetLogger("Performance");
+            _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _rhetosAppOptions = rhetosAppOptions;
         }
 
@@ -70,7 +70,7 @@ namespace Rhetos.Dom
                     if (assembly == null)
                         throw new FrameworkException($"Failed to load assembly '{name}'.");
                     loaded.Add(assembly);
-                    _performanceLogger.Write(sw, "DomLoader.LoadObjectModel " + name);
+                    _performanceLogger.Write(sw, "LoadObjectModel " + name);
                 }
                 return loaded;
             }

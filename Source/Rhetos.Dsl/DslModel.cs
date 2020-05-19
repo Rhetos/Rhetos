@@ -57,7 +57,7 @@ namespace Rhetos.Dsl
             BuildOptions buildOptions)
         {
             _dslParser = dslParser;
-            _performanceLogger = logProvider.GetLogger("Performance");
+            _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _logger = logProvider.GetLogger("DslModel");
             _evaluatorsOrderLogger = logProvider.GetLogger("MacroEvaluatorsOrder");
             _initializedDslContainer = new Lazy<DslContainer>(() => Initialize(dslContainer));
@@ -86,7 +86,7 @@ namespace Rhetos.Dsl
 
             var swFirstAdd = Stopwatch.StartNew();
             dslContainer.AddNewConceptsAndReplaceReferences(parsedConcepts);
-            _performanceLogger.Write(swFirstAdd, $"DslModel.Initialize: First AddNewConceptsAndReplaceReferences ({dslContainer.Concepts.Count()} concepts).");
+            _performanceLogger.Write(swFirstAdd, $"Initialize: First AddNewConceptsAndReplaceReferences ({dslContainer.Concepts.Count()} concepts).");
 
             ExpandMacroConcepts(dslContainer);
             dslContainer.ReportErrorForUnresolvedConcepts();
@@ -95,7 +95,7 @@ namespace Rhetos.Dsl
             ReportObsoleteConcepts(dslContainer);
             _dslModelFile.SaveConcepts(dslContainer.Concepts);
 
-            _performanceLogger.Write(swTotal, $"DslModel.Initialize ({dslContainer.Concepts.Count()} concepts).");
+            _performanceLogger.Write(swTotal, $"Initialize ({dslContainer.Concepts.Count()} concepts).");
             return dslContainer;
         }
 
@@ -130,7 +130,7 @@ namespace Rhetos.Dsl
             var macroEvaluators = ListMacroEvaluators(recommendedMacroOrder);
             var macroStopwatches = macroEvaluators.ToDictionary(macro => macro.Name, macro => new Stopwatch());
             var createdTypesInIteration = new List<CreatedTypesInIteration>(dslContainer.Concepts.Count() * 5);
-            _performanceLogger.Write(sw, "DslModel.ExpandMacroConcepts initialization ("
+            _performanceLogger.Write(sw, "ExpandMacroConcepts initialization ("
                 + macroEvaluators.Count + " evaluators, "
                 + dslContainer.Concepts.Count() + " parsed concepts resolved, "
                 + dslContainer.UnresolvedConceptsCount() + " unresolved).");
@@ -180,7 +180,7 @@ namespace Rhetos.Dsl
 
                 lastResolvedConceptTimeByIteration.Add(lastResolvedConceptTime);
 
-                _performanceLogger.Write(sw, "DslModel.ExpandMacroConcepts iteration " + iteration + " ("
+                _performanceLogger.Write(sw, "ExpandMacroConcepts iteration " + iteration + " ("
                     + iterationCreatedConcepts.Count + " new concepts, "
                     + dslContainer.UnresolvedConceptsCount() + " left unresolved).");
 
@@ -191,11 +191,11 @@ namespace Rhetos.Dsl
             SaveMacroEvaluationOrder(lastResolvedConceptTimeByMacro);
 
             foreach (var macroStopwatch in macroStopwatches.OrderByDescending(msw => msw.Value.Elapsed.TotalSeconds).Take(5))
-                _performanceLogger.Write(macroStopwatch.Value, () => "DslModel.ExpandMacroConcepts total time for " + macroStopwatch.Key + ".");
+                _performanceLogger.Write(macroStopwatch.Value, () => "ExpandMacroConcepts total time for " + macroStopwatch.Key + ".");
 
             _logger.Trace(() => LogCreatedTypesInIteration(createdTypesInIteration));
 
-            _performanceLogger.Write(swTotal, "DslModel.ExpandMacroConcepts.");
+            _performanceLogger.Write(swTotal, "ExpandMacroConcepts.");
         }
 
         private string LogCreatedConcepts(DslContainer dslContainer, IEnumerable<IConceptInfo> macroCreatedConcepts, DslContainer.AddNewConceptsReport newConceptsReport)
@@ -350,9 +350,9 @@ namespace Rhetos.Dsl
             }
 
             foreach (var validationStopwatch in validationStopwatches.OrderByDescending(vsw => vsw.Value.Elapsed.TotalSeconds).Take(3))
-                _performanceLogger.Write(validationStopwatch.Value, () => "DslModel.CheckSemantics total time for " + validationStopwatch.Key.Name + ".");
+                _performanceLogger.Write(validationStopwatch.Value, () => "CheckSemantics total time for " + validationStopwatch.Key.Name + ".");
 
-            _performanceLogger.Write(sw, "DslModel.CheckSemantics");
+            _performanceLogger.Write(sw, "CheckSemantics");
         }
 
         private void ReportObsoleteConcepts(DslContainer dslContainer)

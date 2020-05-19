@@ -37,7 +37,7 @@ namespace Rhetos.DatabaseGenerator
             ILogProvider logProvider,
             IAssetsOptions assetsOptions)
         {
-            _performanceLogger = logProvider.GetLogger("Performance");
+            _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _databaseModelFilePath = Path.Combine(assetsOptions.AssetsFolder, DatabaseModelFileName);
         }
 
@@ -46,10 +46,10 @@ namespace Rhetos.DatabaseGenerator
             var stopwatch = Stopwatch.StartNew();
 
             string serializedModel = JsonConvert.SerializeObject(databaseModel, JsonSerializerSettings);
-            _performanceLogger.Write(stopwatch, $"{nameof(DatabaseModelFile)}.{nameof(Save)}: Serialize.");
+            _performanceLogger.Write(stopwatch, $"{nameof(Save)}: Serialize.");
 
             File.WriteAllText(_databaseModelFilePath, serializedModel, Encoding.UTF8);
-            _performanceLogger.Write(stopwatch, $"{nameof(DatabaseModelFile)}.{nameof(Save)}: Write.");
+            _performanceLogger.Write(stopwatch, $"{nameof(Save)}: Write.");
         }
 
         public DatabaseModel Load()
@@ -67,7 +67,7 @@ namespace Rhetos.DatabaseGenerator
                     " Please check that the build has completed successfully before updating the database.", ex);
             }
             var databaseModel = JsonConvert.DeserializeObject<DatabaseModel>(serializedModel, JsonSerializerSettings);
-            _performanceLogger.Write(stopwatch, $"{nameof(DatabaseModelFile)}.{nameof(Load)}.");
+            _performanceLogger.Write(stopwatch, $"{nameof(Load)}.");
 
             return databaseModel;
         }

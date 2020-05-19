@@ -56,7 +56,7 @@ namespace Rhetos.Security
             _claimProviders = claimProviders;
             _authorizationProvider = authorizationProvider;
             _logger = logProvider.GetLogger(GetType().Name);
-            _performanceLogger = logProvider.GetLogger("Performance");
+            _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _allClaimsForUsers = FromConfigAllClaimsForUsers();
             _localizer = localizer;
         }
@@ -94,7 +94,7 @@ namespace Rhetos.Security
             }
 
             var authorizations = _authorizationProvider.GetAuthorizations(_userInfo, requiredClaims);
-            _performanceLogger.Write(sw, "AuthorizationManager.GetAuthorizations");
+            _performanceLogger.Write(sw, "GetAuthorizations");
             return authorizations;
         }
 
@@ -121,11 +121,11 @@ namespace Rhetos.Security
             var sw = Stopwatch.StartNew();
 
             IList<Claim> requiredClaims = GetRequiredClaims(commandInfos);
-            _performanceLogger.Write(sw, "AuthorizationManager.Authorize requiredClaims");
+            _performanceLogger.Write(sw, "Authorize requiredClaims");
 
             var claimsAuthorization = requiredClaims.Zip(GetAuthorizations(requiredClaims), (claim, authorized) => new { claim, authorized });
             var unauthorized = claimsAuthorization.FirstOrDefault(ca => !ca.authorized);
-            _performanceLogger.Write(sw, "AuthorizationManager.Authorize unauthorizedClaim");
+            _performanceLogger.Write(sw, "Authorize unauthorizedClaim");
 
             if (unauthorized != null)
             {

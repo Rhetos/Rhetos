@@ -90,7 +90,7 @@ namespace Rhetos
                 builder.RegisterType<ConsoleLogProvider>().As<ILogProvider>();
                 registerCustomComponents?.Invoke(builder);
             });
-            logProvider.GetLogger("Performance").Write(sw, $"{nameof(TransactionScopeContainer)}: Built IoC container");
+            logProvider.GetLogger("Performance." + GetType().Name).Write(sw, $"Built IoC container");
             return iocContainer;
         }
 

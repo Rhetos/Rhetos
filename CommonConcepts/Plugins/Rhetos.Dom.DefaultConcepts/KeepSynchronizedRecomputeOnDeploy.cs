@@ -49,7 +49,7 @@ namespace Rhetos.Dom.DefaultConcepts
             IDslModel dslModel)
         {
             _genericRepositories = genericRepositories;
-            _performanceLogger = logProvider.GetLogger("Performance");
+            _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _logger = logProvider.GetLogger("KeepSynchronizedRecomputeOnDeploy");
             _currentKeepSynchronizedMetadata = currentKeepSynchronizedMetadata;
             _dbUpdateOptions = dbUpdateOptions;
@@ -72,7 +72,7 @@ namespace Rhetos.Dom.DefaultConcepts
             IEnumerable<IKeepSynchronizedMetadata> toInsert, toUpdate, toDelete;
             keepSyncRepos.Diff(oldItems, _currentKeepSynchronizedMetadata, new SameRecord(), SameValue, Assign, out toInsert, out toUpdate, out toDelete);
 
-            _performanceLogger.Write(sw, () => nameof(KeepSynchronizedRecomputeOnDeploy) + ": Load metadata.");
+            _performanceLogger.Write(sw, () => "Load metadata.");
 
             foreach (var compute in toInsert.Concat(toUpdate))
             {
@@ -92,12 +92,12 @@ namespace Rhetos.Dom.DefaultConcepts
                 {
                     _logger.Warning(() => $"Recomputing {compute.Target} from {compute.Source}.");
                     _genericRepositories.GetGenericRepository(compute.Target).RecomputeFrom(compute.Source);
-                    _performanceLogger.Write(sw, () => $"{nameof(KeepSynchronizedRecomputeOnDeploy)}: {compute.Target} from {compute.Source}.");
+                    _performanceLogger.Write(sw, () => $"{compute.Target} from {compute.Source}.");
                 }
             }
 
             keepSyncRepos.Save(toInsert, toUpdate, toDelete);
-            _performanceLogger.Write(sw, () => nameof(KeepSynchronizedRecomputeOnDeploy) + ": Save metadata.");
+            _performanceLogger.Write(sw, () => "Save metadata.");
         }
 
         private class SameRecord : IComparer<IKeepSynchronizedMetadata>

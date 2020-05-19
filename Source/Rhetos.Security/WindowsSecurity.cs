@@ -44,7 +44,7 @@ namespace Rhetos.Security
         public WindowsSecurity(ILogProvider logProvider, AppSecurityOptions appSecurityOptions)
         {
             _logger = logProvider.GetLogger(GetType().Name);
-            _performanceLogger = logProvider.GetLogger("Performance");
+            _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _appSecurityOptions = appSecurityOptions;
         }
 
@@ -92,7 +92,7 @@ namespace Rhetos.Security
             if (string.IsNullOrEmpty(name))
                 name = endpointInfo.Address + " port " + endpointInfo.Port;
 
-            _performanceLogger.Write(stopwatch, "DomainPrincipalProvider.GetClientWorkstation");
+            _performanceLogger.Write(stopwatch, "GetClientWorkstation");
             _logger.Trace(() => "Workstation: " + name + ".");
             return name;
         }
@@ -208,7 +208,7 @@ namespace Rhetos.Security
             else
                 _logger.Trace(() => string.Format("Account name '{0}' not found on Active Directory for domain '{1}'.", accountName, Environment.UserDomainName));
 
-            _performanceLogger.Write(stopwatch, "DomainPrincipalProvider.GetIdentityMembership() done.");
+            _performanceLogger.Write(stopwatch, "GetIdentityMembership() done.");
             return userNestedMembership;
         }
 

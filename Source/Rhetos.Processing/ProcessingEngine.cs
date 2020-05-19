@@ -65,7 +65,7 @@ namespace Rhetos.Processing
             _commandRepository = commandRepository;
             _commandObservers = commandObservers;
             _logger = logProvider.GetLogger("ProcessingEngine");
-            _performanceLogger = logProvider.GetLogger("Performance");
+            _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _requestLogger = logProvider.GetLogger("ProcessingEngine Request");
             _commandsLogger = logProvider.GetLogger("ProcessingEngine Commands");
             _commandsResultLogger = logProvider.GetLogger("ProcessingEngine CommandsResult");
@@ -147,7 +147,7 @@ namespace Rhetos.Processing
                     foreach (var commandObeserver in commandObserversForThisCommand)
                     {
                         commandObeserver.BeforeExecute(commandInfo);
-                        _performanceLogger.Write(stopwatch, () => "ProcessingEngine: CommandObeserver.BeforeExecute " + commandObeserver.GetType().FullName);
+                        _performanceLogger.Write(stopwatch, () => "CommandObeserver.BeforeExecute " + commandObeserver.GetType().FullName);
                     }
 
                     CommandResult commandResult;
@@ -157,7 +157,7 @@ namespace Rhetos.Processing
                     }
                     finally
                     {
-                        _performanceLogger.Write(stopwatch, () => "ProcessingEngine: Command executed (" + commandImplementation + ": " + commandInfo + ").");
+                        _performanceLogger.Write(stopwatch, () => "Command executed (" + commandImplementation + ": " + commandInfo + ").");
                     }
                     _logger.Trace("Execution result message: {0}", commandResult.Message);
 
@@ -165,7 +165,7 @@ namespace Rhetos.Processing
                         foreach (var commandObeserver in commandObserversForThisCommand)
                         {
                             commandObeserver.AfterExecute(commandInfo, commandResult);
-                            _performanceLogger.Write(stopwatch, () => "ProcessingEngine: CommandObeserver.AfterExecute " + commandObeserver.GetType().FullName);
+                            _performanceLogger.Write(stopwatch, () => "CommandObeserver.AfterExecute " + commandObeserver.GetType().FullName);
                         }
 
                     commandResults.Add(commandResult);

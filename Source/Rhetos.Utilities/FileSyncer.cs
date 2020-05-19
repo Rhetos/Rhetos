@@ -41,7 +41,7 @@ namespace Rhetos.Utilities
         public FileSyncer(ILogProvider logProvider)
         {
             _logger = logProvider.GetLogger(GetType().Name);
-            _performanceLogger = logProvider.GetLogger("Performance");
+            _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _filesUtility = new FilesUtility(logProvider);
         }
 
@@ -146,7 +146,7 @@ namespace Rhetos.Utilities
             _filesByDestination.Clear();
 
             var report = new StringBuilder(100);
-            report.Append("FileSyncer.UpdateDestination ").Append(countDestination).Append(" destinations");
+            report.Append("UpdateDestination ").Append(countDestination).Append(" destinations");
             if (countMoved > 0)
                 report.Append($", {countMoved} moved");
             if (countCopied > 0)

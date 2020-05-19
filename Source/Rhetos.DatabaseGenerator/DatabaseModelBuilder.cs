@@ -49,7 +49,7 @@ namespace Rhetos.DatabaseGenerator
             _plugins = plugins;
             _dslModel = dslModel;
             _logger = logProvider.GetLogger(GetType().Name);
-            _performanceLogger = logProvider.GetLogger("Performance");
+            _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _databaseModelDependencies = databaseModelDependencies;
         }
 
@@ -58,10 +58,10 @@ namespace Rhetos.DatabaseGenerator
             var stopwatch = Stopwatch.StartNew();
 
             var codeGenerators = CreateCodeGenerators();
-            _performanceLogger.Write(stopwatch, $"{nameof(DatabaseModelBuilder)}.{nameof(CreateDatabaseModel)}: Created database objects from plugins.");
+            _performanceLogger.Write(stopwatch, $"{nameof(CreateDatabaseModel)}: Created database objects from plugins.");
 
             var codeGeneratorDependencies = _databaseModelDependencies.ExtractCodeGeneratorDependencies(codeGenerators, _plugins);
-            _performanceLogger.Write(stopwatch, $"{nameof(DatabaseModelBuilder)}.{nameof(CreateDatabaseModel)}: Computed dependencies.");
+            _performanceLogger.Write(stopwatch, $"{nameof(CreateDatabaseModel)}: Computed dependencies.");
 
             ComputeCreateAndRemoveQuery(
                 codeGenerators,
@@ -70,7 +70,7 @@ namespace Rhetos.DatabaseGenerator
                 out var createQueryByCodeGenerator,
                 out var removeQueryByCodeGenerator,
                 out var sqlScriptDependencies);
-            _performanceLogger.Write(stopwatch, $"{nameof(DatabaseModelBuilder)}.{nameof(CreateDatabaseModel)}: Generated SQL queries for new database objects.");
+            _performanceLogger.Write(stopwatch, $"{nameof(CreateDatabaseModel)}: Generated SQL queries for new database objects.");
 
             var allDependencies = codeGeneratorDependencies.Concat(sqlScriptDependencies);
             var databaseObjects = ConstructDatabaseObjects(codeGenerators, createQueryByCodeGenerator, removeQueryByCodeGenerator, allDependencies);
@@ -79,7 +79,7 @@ namespace Rhetos.DatabaseGenerator
             if (duplicate != null)
                 throw new FrameworkException($"Duplicate generated database object: {duplicate.Key}, count {duplicate.Count()}.");
 
-            _performanceLogger.Write(stopwatch, $"{nameof(DatabaseModelBuilder)}.{nameof(CreateDatabaseModel)}: Created database objects.");
+            _performanceLogger.Write(stopwatch, $"{nameof(CreateDatabaseModel)}: Created database objects.");
             return new DatabaseModel { DatabaseObjects = databaseObjects };
         }
 

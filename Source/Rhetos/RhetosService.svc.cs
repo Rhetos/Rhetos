@@ -45,7 +45,7 @@ namespace Rhetos
         {
             _processingEngine = processingEngine;
             _commands = commands;
-            _performanceLogger = logProvider.GetLogger("Performance");
+            _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _xmlUtility = xmlUtility;
         }
 
@@ -63,7 +63,7 @@ namespace Rhetos
                 if (commands == null || commands.Length == 0)
                     return new ServerProcessingResult { SystemMessage = "Commands missing", Success = false };
 
-                _performanceLogger.Write(stopwatch, "RhetosService.Execute: Server initialization done.");
+                _performanceLogger.Write(stopwatch, "Execute: Server initialization done.");
 
                 var processingCommandsOrError = Deserialize(commands);
                 if (processingCommandsOrError.IsError)
@@ -74,21 +74,21 @@ namespace Rhetos
                     };
                 var processingCommands = processingCommandsOrError.Value;
 
-                _performanceLogger.Write(stopwatch, "RhetosService.Execute: Commands deserialized.");
+                _performanceLogger.Write(stopwatch, "Execute: Commands deserialized.");
 
                 var result = _processingEngine.Execute(processingCommands);
 
-                _performanceLogger.Write(stopwatch, "RhetosService.Execute: Commands executed.");
+                _performanceLogger.Write(stopwatch, "Execute: Commands executed.");
 
                 var convertedResult = ConvertResult(result);
 
-                _performanceLogger.Write(stopwatch, "RhetosService.Execute: Result converted.");
+                _performanceLogger.Write(stopwatch, "Execute: Result converted.");
 
                 return convertedResult;
             }
             finally
             {
-                _performanceLogger.Write(totalTime, $"RhetosService: Executed {string.Join(",", commands.Select(c => c.CommandName))}.");
+                _performanceLogger.Write(totalTime, $"Executed {string.Join(",", commands.Select(c => c.CommandName))}.");
             }
         }
 

@@ -58,7 +58,7 @@ namespace Rhetos.Persistence
         {
             _plugins = plugins;
             _codeGenerator = codeGenerator;
-            _performanceLogger = logProvider.GetLogger("Performance");
+            _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _rhetosBuildEnvironment = rhetosBuildEnvironment;
         }
 
@@ -79,7 +79,7 @@ namespace Rhetos.Persistence
                 File.WriteAllText(filePath, clearedXml, Encoding.UTF8);
             }
 
-            _performanceLogger.Write(sw, "EntityFrameworkMappingGenerator.GenerateMapping");
+            _performanceLogger.Write(sw, "GenerateMapping");
         }
 
         private class InitialSnippet : IConceptCodeGenerator

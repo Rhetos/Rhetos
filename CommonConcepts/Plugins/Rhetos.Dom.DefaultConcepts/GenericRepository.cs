@@ -21,8 +21,6 @@ using Autofac.Features.Indexed;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Logging;
-using Rhetos.Persistence;
-using Rhetos.Processing.DefaultCommands;
 using Rhetos.Utilities;
 using System;
 using System.Collections;
@@ -30,7 +28,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -82,7 +79,7 @@ namespace Rhetos.Dom.DefaultConcepts
             _repositoryName = "GenericRepository(" + EntityName + ")";
 
             _logger = parameters.LogProvider.GetLogger(_repositoryName);
-            _performanceLogger = parameters.LogProvider.GetLogger("Performance");
+            _performanceLogger = parameters.LogProvider.GetLogger("Performance." + _repositoryName);
             _genericFilterHelper = parameters.GenericFilterHelper;
 
             _repository = new Lazy<IRepository>(() => InitializeRepository(parameters.Repositories));
@@ -167,10 +164,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             var query = items as IQueryable<TEntityInterface>;
             if (query == null && items != null)
-                throw new FrameworkException(string.Format(
-                    "{0} does not implement a query method or a filter with parameter {1} than returns an IQueryable. There is an IEnumerable loader of filter implemented, so try using the Load function instead of the Query function.",
-                    EntityName,
-                    parameterType.FullName));
+                throw new FrameworkException($"{EntityName} does not implement a query method or a filter with parameter {parameterType.FullName} than returns an IQueryable. There is an IEnumerable loader of filter implemented, so try using the Load function instead of the Query function.");
 
             return query;
         }
@@ -367,9 +361,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 }
             }
 
-            throw new FrameworkException(string.Format(
-                "{0} does not implement a loader, a query or a filter with parameter {1}.",
-                EntityName, parameterType.FullName));
+            throw new FrameworkException($"{EntityName} does not implement a loader, a query or a filter with parameter {parameterType.FullName}.");
         }
 
         private IEnumerable<TEntityInterface> ExecuteGenericFilter(IEnumerable<FilterCriteria> genericFilter, bool preferQuery, IEnumerable<TEntityInterface> items = null)
@@ -386,9 +378,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     items = FilterOrQuery(items, filter.Parameter, filter.FilterType);
 
                 if (items == null)
-                    throw new FrameworkException(string.Format(
-                        "{0}'s loader or filter result is null. ParameterType = '{1}', Parameter.ToString = '{2}'.",
-                        EntityName, filter.FilterType.FullName, filter.Parameter.ToString()));
+                    throw new FrameworkException($"{EntityName}'s loader or filter result is null. ParameterType = '{filter.FilterType.FullName}', Parameter.ToString = '{filter.Parameter.ToString()}'.");
             }
 
             return items ?? Read(null, typeof(FilterAll), preferQuery: preferQuery);
@@ -546,9 +536,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 return items.Where(item => ((List<Guid>)parameter).Contains(item.ID));
             }
 
-            string errorMessage = string.Format(
-                "{0} does not implement a filter with parameter {1}.",
-                EntityName, parameterType.FullName);
+            string errorMessage = $"{EntityName} does not implement a filter with parameter {parameterType.FullName}.";
 
             if (Reflection.RepositoryLoadWithParameterMethod(parameterType) != null)
             {
@@ -782,21 +770,18 @@ namespace Rhetos.Dom.DefaultConcepts
             // Initialize new items:
 
             CsUtility.Materialize(ref newItems);
-            _performanceLogger.Write(stopwatch, () => string.Format("{0}.InsertOrUpdateOrDelete: Initialize new items ({1})",
-                _repositoryName, newItems.Count()));
+            _performanceLogger.Write(stopwatch, () => $"InsertOrUpdateOrDelete: Initialize new items ({newItems.Count()})");
 
             // Load old items:
 
             IEnumerable<TEntityInterface> oldItems = this.Load(filterLoad);
-            _performanceLogger.Write(stopwatch, () => string.Format("{0}.InsertOrUpdateOrDelete: Load old items ({1})",
-                _repositoryName, oldItems.Count()));
+            _performanceLogger.Write(stopwatch, () => $"InsertOrUpdateOrDelete: Load old items ({oldItems.Count()})");
 
             // Compare new and old items:
 
             IEnumerable<TEntityInterface> toInsert, toUpdate, toDelete;
             Diff(oldItems, newItems, sameRecord, sameValue, assign, out toInsert, out toUpdate, out toDelete);
-            _performanceLogger.Write(stopwatch, () => string.Format("{0}.InsertOrUpdateOrDelete: Diff ({1} new items, {2} old items, {3} to insert, {4} to update, {5} to delete)",
-                _repositoryName, newItems.Count(), oldItems.Count(), toInsert.Count(), toUpdate.Count(), toDelete.Count()));
+            _performanceLogger.Write(stopwatch, () => $"InsertOrUpdateOrDelete: Diff ({newItems.Count()} new items, {oldItems.Count()} old items, {toInsert.Count()} to insert, {toUpdate.Count()} to update, {toDelete.Count()} to delete)");
 
             // Modify old items to match new items:
 
@@ -808,8 +793,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 CsUtility.Materialize(ref toDelete);
             }
             Save(toInsert, toUpdate, toDelete);
-            _performanceLogger.Write(stopwatch, () => string.Format("{0}.InsertOrUpdateOrDelete: Save ({1} new items, {2} old items, {3} to insert, {4} to update, {5} to delete)",
-                _repositoryName, newItems.Count(), oldItems.Count(), toInsert.Count(), toUpdate.Count(), toDelete.Count()));
+            _performanceLogger.Write(stopwatch, () => $"InsertOrUpdateOrDelete: Save ({newItems.Count()} new items, {oldItems.Count()} old items, {toInsert.Count()} to insert, {toUpdate.Count()} to update, {toDelete.Count()} to delete)");
         }
 
         /// <param name="sameRecord">Compare key properties, determining the records that should be inserted or deleted.
@@ -853,21 +837,18 @@ namespace Rhetos.Dom.DefaultConcepts
             foreach (var newItem in newItems.Cast<IDeactivatable>())
                 if (newItem.Active == null)
                     newItem.Active = true;
-            _performanceLogger.Write(stopwatch, () => string.Format("{0}.InsertOrUpdateOrDeleteOrDeactivate: Initialize new items ({1})",
-                _repositoryName, newItems.Count()));
+            _performanceLogger.Write(stopwatch, () => $"InsertOrUpdateOrDeleteOrDeactivate: Initialize new items ({newItems.Count()})");
 
             // Load old items:
 
             IEnumerable<TEntityInterface> oldItems = this.Load(filterLoad);
-            _performanceLogger.Write(stopwatch, () => string.Format("{0}.InsertOrUpdateOrDeleteOrDeactivate: Load old items ({1})",
-                _repositoryName, oldItems.Count()));
+            _performanceLogger.Write(stopwatch, () => $"InsertOrUpdateOrDeleteOrDeactivate: Load old items ({oldItems.Count()})");
 
             // Compare new and old items:
 
             IEnumerable<TEntityInterface> toInsert, toUpdate, toDelete;
             Diff(oldItems, newItems, sameRecord, sameValue, assign, out toInsert, out toUpdate, out toDelete);
-            _performanceLogger.Write(stopwatch, () => string.Format("{0}.InsertOrUpdateOrDeleteOrDeactivate: Diff ({1} new items, {2} old items, {3} to insert, {4} to update, {5} to delete)",
-                _repositoryName, newItems.Count(), oldItems.Count(), toInsert.Count(), toUpdate.Count(), toDelete.Count()));
+            _performanceLogger.Write(stopwatch, () => $"InsertOrUpdateOrDeleteOrDeactivate: Diff ({newItems.Count()} new items, {oldItems.Count()} old items, {toInsert.Count()} to insert, {toUpdate.Count()} to update, {toDelete.Count()} to delete)");
 
             // Deactivate some items instead of deleting:
 
@@ -886,12 +867,9 @@ namespace Rhetos.Dom.DefaultConcepts
                     toDelete = Reflection.ToListOfEntity(toDelete.Where(item => !toDeactivateIndex.Contains(item)));
                 }
                 if (toDelete.Count() + toDeactivate.Count() != oldDeleteCount)
-                    throw new FrameworkException(string.Format(
-                        "Invalid number of items to deactivate for '{0}'."
-                            + " Verify if the deactivation filter ({1}) on that data structure returns a valid subset of the given items."
-                            + " {2} items to remove: {3} items to deactivate and {4} items remaining to delete (should be {5}).",
-                        _repositoryName, filterDeactivateDeleted.GetType().FullName,
-                        oldDeleteCount, toDeactivate.Count(), toDelete.Count(), oldDeleteCount - toDeactivate.Count()));
+                    throw new FrameworkException($"Invalid number of items to deactivate for '{_repositoryName}'." +
+                        $" Verify if the deactivation filter ({filterDeactivateDeleted.GetType().FullName}) on that data structure returns a valid subset of the given items." +
+                        $" {oldDeleteCount} items to remove: {toDeactivate.Count()} items to deactivate and {toDelete.Count()} items remaining to delete (should be {oldDeleteCount - toDeactivate.Count()}).");
 
                 // Update the items to deactivate (unless already deactivated):
                 var activeToDeactivate = toDeactivate.Cast<IDeactivatable>().Where(item => item.Active == null || item.Active == true).ToList();
@@ -900,8 +878,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 Reflection.AddRange(toUpdate, Reflection.CastAsEntity(activeToDeactivate));
                 activeToDeactivateCount = activeToDeactivate.Count;
             }
-            _performanceLogger.Write(stopwatch, () => string.Format("{0}.InsertOrUpdateOrDeleteOrDeactivate: Deactivate ({1} to deactivate, {2} already deactivated)",
-                _repositoryName, activeToDeactivateCount, toDeactivate.Count() - activeToDeactivateCount));
+            _performanceLogger.Write(stopwatch, () => $"InsertOrUpdateOrDeleteOrDeactivate: Deactivate ({activeToDeactivateCount} to deactivate, {toDeactivate.Count() - activeToDeactivateCount} already deactivated)");
 
             // Modify old items to match new items:
 
@@ -913,8 +890,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 CsUtility.Materialize(ref toDelete);
             }
             Save(toInsert, toUpdate, toDelete);
-            _performanceLogger.Write(stopwatch, () => string.Format("{0}.InsertOrUpdateOrDeleteOrDeactivate: Save ({1} new items, {2} old items, {3} to insert, {4} to update, {5} to delete)",
-                _repositoryName, newItems.Count(), oldItems.Count(), toInsert.Count(), toUpdate.Count(), toDelete.Count()));
+            _performanceLogger.Write(stopwatch, () => $"InsertOrUpdateOrDeleteOrDeactivate: Save ({newItems.Count()} new items, {oldItems.Count()} old items, {toInsert.Count()} to insert, {toUpdate.Count()} to update, {toDelete.Count()} to delete)");
         }
 
         private class InstanceComparer : IEqualityComparer<TEntityInterface>
@@ -937,9 +913,7 @@ namespace Rhetos.Dom.DefaultConcepts
             var recomputeMethod = Reflection.RepositoryRecomputeFromMethod(source);
 
             if (recomputeMethod == null)
-                throw new FrameworkException(string.Format(
-                    "{0}'s repository does not implement the method to recompute from {1} ({2}).",
-                    EntityName, source, Reflection.RepositoryRecomputeFromMethodName(source)));
+                throw new FrameworkException($"{EntityName}'s repository does not implement the method to recompute from {source} ({Reflection.RepositoryRecomputeFromMethodName(source)}).");
 
             object newItems = recomputeMethod.InvokeEx(_repository.Value, filterLoad, null);
             return (IEnumerable<TEntityInterface>)newItems;

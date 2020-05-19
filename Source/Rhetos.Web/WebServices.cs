@@ -47,7 +47,7 @@ namespace Rhetos.Web
         {
             _services = services;
             _logger = logProvider.GetLogger(GetType().Name);
-            _performanceLogger = logProvider.GetLogger("Performance");
+            _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
         }
 
         /// <summary>

@@ -340,7 +340,7 @@ namespace CommonConcepts.Test
             }
         }
 
-        private static readonly Regex FindRecomputesRegex = new Regex(@"GenericRepository\((?<module>.+)\.(?<entity>.+)\)\.InsertOrUpdateOrDelete: Diff \((?<new>.+) new items, (?<old>.+) old items, (?<ins>.+) to insert, (?<upd>.+) to update, (?<del>.+) to delete\)");
+        private static readonly Regex FindRecomputesRegex = new Regex(@"GenericRepository\((?<module>.+)\.(?<entity>.+)\).*InsertOrUpdateOrDelete: Diff \((?<new>.+) new items, (?<old>.+) old items, (?<ins>.+) to insert, (?<upd>.+) to update, (?<del>.+) to delete\)");
 
         private List<string> FindRecomputes(List<string> log)
         {

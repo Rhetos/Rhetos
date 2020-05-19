@@ -47,7 +47,7 @@ namespace Rhetos.Compiler
             BuildOptions buildOptions, RhetosBuildEnvironment buildEnvironment,
             FilesUtility filesUtility, ISourceWriter sourceWriter)
         {
-            _performanceLogger = logProvider.GetLogger("Performance");
+            _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _logger = logProvider.GetLogger("AssemblyGenerator");
             _buildOptions = buildOptions;
             _errorReportLimit = buildOptions.AssemblyGeneratorErrorReportLimit;
@@ -109,10 +109,10 @@ namespace Rhetos.Compiler
                     throw new FrameworkException($"AssemblyGenerator: RestoreCachedFiles failed to create the assembly file ({dllName}).");
 
                 generatedAssembly = Assembly.LoadFrom(outputAssemblyPath);
-                _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Assembly from cache ({dllName}).");
+                _performanceLogger.Write(stopwatch, $"Assembly from cache ({dllName}).");
 
                 FailOnTypeLoadErrors(generatedAssembly, outputAssemblyPath, registeredReferences);
-                _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Report errors ({dllName}).");
+                _performanceLogger.Write(stopwatch, $"Report errors ({dllName}).");
             }
             else
             {
@@ -139,7 +139,7 @@ namespace Rhetos.Compiler
                     var resources = manifestResources.Select(x => new ResourceDescription(x.Name, () => File.OpenRead(x.Path), x.IsPublic));
                     var options = new EmitOptions(debugInformationFormat: DebugInformationFormat.PortablePdb, pdbFilePath: pdbPath);
                     var emitResult = compilation.Emit(dllStream, pdbStream, manifestResources: resources, options: options);
-                    _performanceLogger.Write(stopwatch, $"AssemblyGenerator: CSharpCompilation.Create ({dllName}).");
+                    _performanceLogger.Write(stopwatch, $"CSharpCompilation.Create ({dllName}).");
 
                     ReportWarnings(emitResult, outputAssemblyPath);
                     FailOnCompilerErrors(emitResult, sourceCode, sourcePath, outputAssemblyPath);
@@ -150,11 +150,11 @@ namespace Rhetos.Compiler
                     generatedAssembly = Assembly.LoadFrom(outputAssemblyPath);
 
                     FailOnTypeLoadErrors(generatedAssembly, outputAssemblyPath, registeredReferences);
-                    _performanceLogger.Write(stopwatch, $"AssemblyGenerator: Report errors ({dllName}).");
+                    _performanceLogger.Write(stopwatch, $"Report errors ({dllName}).");
                 }
 
                 SaveFilesToCache(sourcePath, outputAssemblyPath, pdbPath, sourceHash);
-                _performanceLogger.Write(stopwatch, $@"{nameof(AssemblyGenerator)}: Save files to cache.");
+                _performanceLogger.Write(stopwatch, "Save files to cache.");
             }
 
             return generatedAssembly;

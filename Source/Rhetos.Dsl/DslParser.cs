@@ -41,7 +41,7 @@ namespace Rhetos.Dsl
         {
             _tokenizer = tokenizer;
             _conceptInfoPlugins = conceptInfoPlugins;
-            _performanceLogger = logProvider.GetLogger("Performance");
+            _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _logger = logProvider.GetLogger("DslParser");
             _keywordsLogger = logProvider.GetLogger("DslParser.Keywords");
             _legacySyntax = buildOptions.DslSyntaxExcessDotInKey;
@@ -121,7 +121,7 @@ namespace Rhetos.Dsl
                 parser.OnMemberRead += _onMemberRead;
                 return (IConceptParser) parser;
             }, StringComparer.OrdinalIgnoreCase);
-            _performanceLogger.Write(stopwatch, "DslParser.CreateGenericParsers.");
+            _performanceLogger.Write(stopwatch, "CreateGenericParsers.");
             return result;
         }
 
@@ -151,7 +151,7 @@ namespace Rhetos.Dsl
                     tokenReader.SkipEndOfFile();
             }
 
-            _performanceLogger.Write(stopwatch, "DslParser.ExtractConcepts (" + newConcepts.Count + " concepts).");
+            _performanceLogger.Write(stopwatch, "ExtractConcepts (" + newConcepts.Count + " concepts).");
 
             if (context.Count > 0)
             {
@@ -351,7 +351,7 @@ namespace Rhetos.Dsl
         {
             var stopwatch = Stopwatch.StartNew();
             var newConcepts = AlternativeInitialization.InitializeNonparsableProperties(parsedConcepts, _logger);
-            _performanceLogger.Write(stopwatch, "DslParser.InitializeAlternativeInitializationConcepts (" + newConcepts.Count() + " new concepts created).");
+            _performanceLogger.Write(stopwatch, "InitializeAlternativeInitializationConcepts (" + newConcepts.Count() + " new concepts created).");
             return newConcepts;
         }
     }

@@ -51,7 +51,7 @@ namespace Rhetos
 
             _webServices = AutofacServiceHostFactory.Container.Resolve<WebServices>();
 
-            var _performanceLogger = logProvider.GetLogger("Performance");
+            var _performanceLogger = logProvider.GetLogger("Performance." + nameof(Global));
             _performanceLogger.Write(stopwatch, "Application configured.");
         }
 

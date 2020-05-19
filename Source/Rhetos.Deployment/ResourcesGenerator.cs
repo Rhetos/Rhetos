@@ -46,7 +46,7 @@ namespace Rhetos.Deployment
             _logProvider = logProvider;
             _buildOptions = buildOptions;
             _logger = logProvider.GetLogger(GetType().Name);
-            _performanceLogger = logProvider.GetLogger("Performance");
+            _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
         }
 
         public void Generate()
@@ -89,7 +89,7 @@ namespace Rhetos.Deployment
             _logger.Info($"Copying {resourceFiles.Count} resource files.");
             _fileSyncer.UpdateDestination();
 
-            _performanceLogger.Write(stopwatch, "ResourcesGenerator.");
+            _performanceLogger.Write(stopwatch, "Resources generated.");
         }
 
         private string SimplifyPackageName(string packageId)

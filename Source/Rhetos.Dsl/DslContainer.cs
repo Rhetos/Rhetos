@@ -79,7 +79,7 @@ namespace Rhetos.Dsl
 
         public DslContainer(ILogProvider logProvider, IPluginsContainer<IDslModelIndex> dslModelIndexPlugins)
         {
-            _performanceLogger = logProvider.GetLogger("Performance");
+            _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _logger = logProvider.GetLogger("DslContainer");
             _dslModelIndexes = dslModelIndexPlugins.GetPlugins().ToList();
             _dslModelIndexesByType = _dslModelIndexes.ToDictionary(index => index.GetType());
@@ -313,8 +313,8 @@ namespace Rhetos.Dsl
 
         public void ReportErrorForUnresolvedConcepts()
         {
-            _performanceLogger.Write(_addConceptsStopwatch, "DslContainer.AddNewConceptsAndReplaceReferences total time.");
-            _performanceLogger.Write(_validateDuplicateStopwatch, "DslContainer.ValidateNewConceptSameAsExisting total time.");
+            _performanceLogger.Write(_addConceptsStopwatch, "AddNewConceptsAndReplaceReferences total time.");
+            _performanceLogger.Write(_validateDuplicateStopwatch, "ValidateNewConceptSameAsExisting total time.");
 
             var unresolvedConcepts = _unresolvedConceptsByReference.SelectMany(ucbr => ucbr.Value);
             if (unresolvedConcepts.Any())
@@ -384,7 +384,7 @@ namespace Rhetos.Dsl
                 };
 
                 _resolvedConcepts.Sort(sortComparison[initialSort]);
-                _performanceLogger.Write(sw, $"DslContainer.SortReferencesBeforeUsingConcept: Initial sort by {initialSort}.");
+                _performanceLogger.Write(sw, $"SortReferencesBeforeUsingConcept: Initial sort by {initialSort}.");
             }
 
             List<IConceptInfo> sortedList = new List<IConceptInfo>(_resolvedConcepts.Count);
@@ -399,7 +399,7 @@ namespace Rhetos.Dsl
                 throw new FrameworkException(string.Format("Unexpected inner state: sortedList.Count {0} != concepts.Count {1}.", sortedList.Count, _resolvedConcepts.Count));
             _resolvedConcepts.Clear();
             _resolvedConcepts.AddRange(sortedList);
-            _performanceLogger.Write(sw, "DslContainer.SortReferencesBeforeUsingConcept.");
+            _performanceLogger.Write(sw, "SortReferencesBeforeUsingConcept.");
         }
 
         private static void AddReferencesBeforeConcept(IConceptInfo concept, List<IConceptInfo> sortedList, Dictionary<IConceptInfo, bool> processed)
