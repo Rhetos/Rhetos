@@ -114,7 +114,7 @@ namespace Rhetos
             if (commands.Any(c => c == null))
                 return ValueOrError.CreateError("Null command sent.");
 
-            var commandsWithType = commands.Select(c => 
+            var commandsWithType = commands.Select(c =>
                 {
                     Type commandType = null;
                     if (_commandsByName.TryGetValue(c.CommandName, out ICommandInfo command))

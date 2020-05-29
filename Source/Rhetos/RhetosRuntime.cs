@@ -47,12 +47,12 @@ namespace Rhetos
 
             // Main application configuration (usually Web.config).
             if (_isHost)
-                configurationBuilder.AddConfigurationManagerConfiguration(); 
+                configurationBuilder.AddConfigurationManagerConfiguration();
             else
                 configurationBuilder.AddWebConfiguration(configurationFolder);
 
             // Rhetos runtime configuration JSON files.
-            configurationBuilder.AddRhetosAppEnvironment(configurationFolder); 
+            configurationBuilder.AddRhetosAppEnvironment(configurationFolder);
 
             addCustomConfiguration?.Invoke(configurationBuilder);
             return configurationBuilder.Build();
