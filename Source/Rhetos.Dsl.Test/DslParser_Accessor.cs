@@ -48,7 +48,7 @@ namespace Rhetos.Dsl.Test
 
         public IConceptInfo ParseNextConcept(TokenReader tokenReader, Stack<IConceptInfo> context, MultiDictionary<string, IConceptParser> conceptParsers)
         {
-            return Invoke<IConceptInfo>("ParseNextConcept", tokenReader, context, conceptParsers);
+            return Invoke<dynamic>("ParseNextConcept", tokenReader, context, conceptParsers).Item1;
         }
     }
 }
