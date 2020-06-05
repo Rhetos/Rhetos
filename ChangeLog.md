@@ -1,6 +1,6 @@
 ﻿# Rhetos release notes
 
-## 3.1.0 (TO BE RELEASED)
+## 3.1.0 (2020-06-05)
 
 ### New features
 
