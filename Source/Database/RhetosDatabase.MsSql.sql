@@ -691,5 +691,7 @@ WHERE
 	SerializedInfo IS NOT NULL
 	OR ConceptImplementationVersion IS NOT NULL;
 
+-- The "DslScript" table should be dropped, but there is an issue in older versions of Rhetos framework (1.0.0 - 3.0.x),
+-- that would cause downgrade to fail. See https://github.com/Rhetos/Rhetos/issues/353 for more info.
 IF OBJECT_ID(N'Rhetos.DslScript') IS NOT NULL
-	DROP TABLE Rhetos.DslScript;
+	TRUNCATE TABLE Rhetos.DslScript;
