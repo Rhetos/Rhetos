@@ -97,26 +97,31 @@
 ### Internal improvements
 
 * Added summaries to all DSL concepts in CommonConcepts. They are displayed in Rhetos DSL IntelliSense for Visual Studio.
-* Better support for anonymous access and testing with new security option [Security.AllClaimsForAnonymous](https://github.com/Rhetos/Rhetos/wiki/Basic-permissions#suppressing-permissions-in-a-development-environment).
-* Rhetos configuration can be extended with [custom options classes](https://github.com/Rhetos/Rhetos/wiki/Configuration-management#configuring-application-from-code).
-* New logging level: *Warning*. Simplified logging rules settings in Web.config.
-* ConnectionStrings.config no longer needs to be a separate file in the 'bin' folder. It is recommended to use a separate file, but place it in the application root folder, to avoid deleting it when rebuilding bin folder. Note that its location must be specified in Web.config file.
+* ProcessContainer is a successor to RhetosTestContainer with cleaner lifetime and transaction handling. See examples in [Upgrading custom utility applications to Rhetos 4.0](https://github.com/Rhetos/Rhetos/wiki/Upgrading-custom-utility-applications-to-Rhetos-4) and in "Rhetos Server DOM.linq" script.
+* Better support for anonymous access and testing with new security option [Rhetos:AppSecurity:AllClaimsForAnonymous](https://github.com/Rhetos/Rhetos/wiki/Basic-permissions#suppressing-permissions-in-a-development-environment).
+* Database update is logging modified database objects information by default. This will help with analysis of deployment performance issues.
+* Bugfix: `DeployPackages /DatabaseOnly` requires packages source available to update the database (PackagesCache or source folders). If the application was built with packages included directly from source folder, it could not be deployed with DatabaseOnly switch.
+* Bugfix: Trace logging fails on some server commands because of result types unsupported by XML serializer (e.g. ODataGenerator).
+* Bugfix: Optimized "Contains" query with GroupBy and subquery results with
+  `EntityCommandExecutionException: An error occurred while executing the command definition.`
+  with inner exception
+  `IndexOutOfRangeException: Invalid index -1 for this SqlParameterCollection with Count=0.` (issue #278)
+* Bugfix: KeepSynchronized metadata tracking can result with syntax error in
+  *ServerDom.Repositories.cs* depending on concept ordering.
+* Rhetos configuration can be extended with [custom options classes](https://github.com/Rhetos/Rhetos/wiki/Configuration-management#reading-configuration-with-custom-options-classes).
+* ConnectionStrings.config no longer needs to be a separate file in the 'bin' folder. It is still recommended to use a separate file, but place it in the application root folder, to avoid deleting it when rebuilding bin folder. Note that its location must be specified in Web.config file.
 * Removed Rhetos-specific database providerName from connection string.
 * Verifying and updating EntityFramework ProviderManifestToken on each runtime startup. This allows different versions of SQL Server in build and testing environment (local SQL Server, Azure SQL, ...).
-* Bugfix: `DeployPackages /DatabaseOnly` requires packages source available (PackagesCache or source folder) to update the database. If an application was built with packages included directly from source folder, it could not be deployed with DatabaseOnly switch.
-* Bugfix: Trace logging fails on some server commands because of result types unsupported by XML serializer (e.g. ODataGenerator).
+* New logging level: *Warning*. Simplified logging rules in Web.config.
 * Low-level concept *CascadeDeleteInDatabase*, for implementing on-delete-cascade in database
   on specific FK constraint (Reference, UniqueReference and Extends).
   It should be rarely used because deleting records directly in database circumvents
   any business logic implemented in the application, related to those records.
 * Homepage snippets can now use IUserInfo and other DI lifetime scope components.
 * Migrated most of the Rhetos framework libraries to .NET Standard 2.0.
-* ProcessContainer is a successor to RhetosTestContainer with cleaner lifetime and transaction handling. See examples in [Upgrading custom utility applications to Rhetos 4.0](https://github.com/Rhetos/Rhetos/wiki/Upgrading-custom-utility-applications-to-Rhetos-4) and in "Rhetos Server DOM.linq" script.
-* Logging modified database objects information by default. This will help with analysis of deployment performance issues.
 * Formatting DSL syntax errors in canonical format (file and position) for better integration with MSBuild and other tools.
 * Rhetos NuGet package was missing System.ComponentModel.Composition dependency.
 * Updated Rhetos framework C# language to 7.3. Framework development now requires Visual Studio 2017 v15.7 or later.
-* Minor performance improvements of DeployPackages and application start-up.
 * DSL syntax: ConceptParentAttribute for explicit specification of parent property for
   nested and recursive concepts. Fists property is assumed to be parent concept by default,
   unless ConceptParentAttribute is used.
@@ -130,12 +135,7 @@
     `ShortString Demo.School Name;`.
     New version makes it more clear that ShortString contains 2 parameters:
     entity (`Demo.School`) and property name (`Name`).
-* Bugfix: Optimized "Contains" query with GroupBy and subquery results with
-  `EntityCommandExecutionException: An error occurred while executing the command definition.`
-  with inner exception
-  `IndexOutOfRangeException: Invalid index -1 for this SqlParameterCollection with Count=0.` (issue #278)
-* Bugfix: KeepSynchronized metadata tracking can result with syntax error in
-  *ServerDom.Repositories.cs* depending on concept ordering.
+* Minor performance improvements of DeployPackages and application start-up.
 
 ## 3.0.1 (2019-11-22)
 
