@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Threading;
 
@@ -103,6 +104,9 @@ namespace DeployPackages
 
         private static void DownloadPackages(ILogger logger, Arguments arguments)
         {
+            // See https://devblogs.microsoft.com/nuget/deprecating-tls-1-0-and-1-1-on-nuget-org/
+            ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
+
             var obsoleteFolders = new string[] { Path.Combine(Paths.RhetosServerRootPath, "DslScripts"), Path.Combine(Paths.RhetosServerRootPath, "DataMigration") };
             var obsoleteFolder = obsoleteFolders.FirstOrDefault(folder => Directory.Exists(folder));
             if (obsoleteFolder != null)
