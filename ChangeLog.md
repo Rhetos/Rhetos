@@ -102,12 +102,6 @@
 * Database update is logging modified database objects information by default. This will help with analysis of deployment performance issues.
 * Bugfix: `DeployPackages /DatabaseOnly` requires packages source available to update the database (PackagesCache or source folders). If the application was built with packages included directly from source folder, it could not be deployed with DatabaseOnly switch.
 * Bugfix: Trace logging fails on some server commands because of result types unsupported by XML serializer (e.g. ODataGenerator).
-* Bugfix: Optimized "Contains" query with GroupBy and subquery results with
-  `EntityCommandExecutionException: An error occurred while executing the command definition.`
-  with inner exception
-  `IndexOutOfRangeException: Invalid index -1 for this SqlParameterCollection with Count=0.` (issue #278)
-* Bugfix: KeepSynchronized metadata tracking can result with syntax error in
-  *ServerDom.Repositories.cs* depending on concept ordering.
 * Rhetos configuration can be extended with [custom options classes](https://github.com/Rhetos/Rhetos/wiki/Configuration-management#reading-configuration-with-custom-options-classes).
 * ConnectionStrings.config no longer needs to be a separate file in the 'bin' folder. It is still recommended to use a separate file, but place it in the application root folder, to avoid deleting it when rebuilding bin folder. Note that its location must be specified in Web.config file.
 * Removed Rhetos-specific database providerName from connection string.
@@ -122,9 +116,14 @@
 * Formatting DSL syntax errors in canonical format (file and position) for better integration with MSBuild and other tools.
 * Rhetos NuGet package was missing System.ComponentModel.Composition dependency.
 * Updated Rhetos framework C# language to 7.3. Framework development now requires Visual Studio 2017 v15.7 or later.
-* DSL syntax: ConceptParentAttribute for explicit specification of parent property for
-  nested and recursive concepts. Fists property is assumed to be parent concept by default,
-  unless ConceptParentAttribute is used.
+* Minor performance improvements of DeployPackages and application start-up.
+
+## 3.1.0 (2020-06-05)
+
+### New features
+
+* DSL syntax: ConceptParentAttribute, for explicit specification of parent property for nested and recursive concepts.
+  The first property is assumed to be parent concept by default, unless ConceptParentAttribute is used.
   **Recursive concepts** must use ConceptParentAttribute.
 * DSL syntax: Dot is required as a parameter separator *only* for referenced concepts.
   In previous versions, dot was also required as a separator before key properties
@@ -135,7 +134,17 @@
     `ShortString Demo.School Name;`.
     New version makes it more clear that ShortString contains 2 parameters:
     entity (`Demo.School`) and property name (`Name`).
-* Minor performance improvements of DeployPackages and application start-up.
+
+### Internal improvements
+
+* Bugfix: Optimized "Contains" query with GroupBy and subquery results with
+  `EntityCommandExecutionException: An error occurred while executing the command definition.`
+  with inner exception
+  `IndexOutOfRangeException: Invalid index -1 for this SqlParameterCollection with Count=0.` (issue #278)
+* Bugfix: Downgrade from Rhetos 4.0 results with SQL error:
+  `Cannot find the object "Rhetos.DatabaseGeneratorAppliedConcept" because it does not exist or you do not have permissions.`
+* Bugfix: KeepSynchronized metadata tracking can result with syntax error in
+  *ServerDom.Repositories.cs* depending on concept ordering.
 
 ## 3.0.1 (2019-11-22)
 
