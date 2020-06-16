@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 
 namespace DeployPackages
@@ -149,6 +150,9 @@ namespace DeployPackages
         {
             if (!arguments.DeployDatabaseOnly)
             {
+                // See https://devblogs.microsoft.com/nuget/deprecating-tls-1-0-and-1-1-on-nuget-org/
+                ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
+
                 logger.Trace("Getting packages.");
                 var config = new DeploymentConfiguration(DeploymentUtility.InitializationLogProvider);
                 var packageDownloaderOptions = new PackageDownloaderOptions { IgnorePackageDependencies = arguments.IgnorePackageDependencies };
