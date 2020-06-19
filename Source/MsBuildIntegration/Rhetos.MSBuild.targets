@@ -71,7 +71,7 @@
         <Copy SourceFiles="$(_PluginScannerCachePath)" Retries="$(CopyRetryCount)" RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
             DestinationFiles="$(TargetDir)\PluginScanner.json" 
             SkipUnchangedFiles="True"
-            Condition="!Exists('$(TargetDir)\PluginScanner.json')">
+            Condition="!Exists('$(TargetDir)\PluginScanner.json') And Exists('$(_PluginScannerCachePath)')">
         </Copy>
     </Target>
 
