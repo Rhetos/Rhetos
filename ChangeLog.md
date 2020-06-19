@@ -1,5 +1,11 @@
 ﻿# Rhetos release notes
 
+## 4.0.1 (2020-06-19)
+
+### Internal improvements
+
+* Bugfix: Downgrade from Rhetos v4.0.0 to previous versions fails with SqlException on *DatabaseGeneratorAppliedConcept* table (issue #353).
+
 ## 4.0.0 (2020-05-14)
 
 ### Breaking changes
