@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Compiler;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -32,6 +33,8 @@ namespace Rhetos.Dsl.DefaultConcepts
         public static readonly string FilterName = "Common.RowPermissionsReadItems";
         public static readonly string PermissionsExpressionName = "GetRowPermissionsReadExpression";
 
+        public static readonly CsTag<RowPermissionsReadInfo> ReadFilterModifySourceTag = "ReadFilterModifySource";
+
         public string SimplifiedExpression { get; set; }
 
         public IEnumerable<string> DeclareNonparsableProperties()
@@ -42,7 +45,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
         {
             Parameter = FilterName;
-            Expression = RowPermissionsInfo.CreateComposableFilterSnippet(PermissionsExpressionName, Source);
+            Expression = RowPermissionsInfo.CreateComposableFilterSnippet(PermissionsExpressionName, Source, ReadFilterModifySourceTag.Evaluate(this));
             createdConcepts = null;
         }
 

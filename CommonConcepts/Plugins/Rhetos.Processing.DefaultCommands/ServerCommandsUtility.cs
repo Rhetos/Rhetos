@@ -19,6 +19,7 @@
 
 using Rhetos.Dom;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
@@ -167,9 +168,15 @@ namespace Rhetos.Processing.DefaultCommands
                     .Select(applyFilter => new FilterCriteria { Filter = applyFilter.FilterName })
                     .ToList();
 
+                var rowPermissionReadFilter = newFilters.FirstOrDefault(x => x.Filter == RowPermissionsReadInfo.FilterName);
+                if (rowPermissionReadFilter != null)
+                {
+                    newFilters = new List<FilterCriteria>() { rowPermissionReadFilter }.Concat(newFilters.Where(x => x.Filter != RowPermissionsReadInfo.FilterName)).ToList();
+                }
+
                 _logger.Trace(() => "AutoApplyFilters: " + string.Join(", ", newFilters.Select(f => f.Filter)));
 
-                commandInfo.Filters = commandInfo.Filters.Concat(newFilters).ToArray();
+                commandInfo.Filters = newFilters.Concat(commandInfo.Filters).ToArray();
             }
         }
 

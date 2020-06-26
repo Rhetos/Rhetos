@@ -172,5 +172,88 @@ namespace Rhetos.Dom.DefaultConcepts
                 && !string.IsNullOrEmpty(guids)
                 && guids.Split(',').Select(guid => new Guid(guid)).Contains(id.Value);
         }
+
+        public static IQueryable<TQueryable> SomeWhere<TQueryable, TExpressionParameter>(this IQueryable<TQueryable> q, Expression<Func<TExpressionParameter, bool>> expression)
+        {
+            var newExpression = new ReplacePathWithPropertyVisitor<TExpressionParameter, TQueryable>(expression, typeof(TExpressionParameter).Name + "Item").NewExpression;
+            return q.Where(newExpression);
+        }
+
+        public class ReplacePathWithPropertyVisitor<TFrom, TTo> : ExpressionVisitor
+        {
+            private readonly Expression<Func<TFrom, bool>> expression;
+            private readonly ParameterExpression newParameter;
+            private readonly ParameterExpression oldParameter;
+            private readonly List<Tuple<string, string>> aliases;
+
+            public Expression<Func<TTo, bool>> NewExpression
+            {
+                get
+                {
+                    var newBody = Visit(expression.Body);
+                    return Expression.Lambda<Func<TTo, bool>>(newBody, newParameter);
+                }
+            }
+
+            public ReplacePathWithPropertyVisitor(Expression<Func<TFrom, bool>> expression, string parameterName)
+            {
+                this.expression = expression;
+                this.aliases = typeof(TTo).GetProperties().Where(x => x.Name != "Item").Select(x => new Tuple<string, string>(GetPathFromPropertyName(x.Name), x.Name)).ToList();
+                this.oldParameter = expression.Parameters.Single();
+                this.newParameter = Expression.Parameter(typeof(TTo), parameterName);
+            }
+
+            private string GetPathFromPropertyName(string fieldName)
+            {
+                return fieldName.Remove(0, 5).Replace('_', '.');
+            }
+
+            protected override Expression VisitMember(MemberExpression node)
+            {
+                var nextNode = node as Expression;
+                var list = new List<string>();
+
+                ParameterExpression parameter = null;
+                while (nextNode != null)
+                {
+                    if (nextNode is MemberExpression)
+                    {
+                        list.Add((nextNode as MemberExpression).Member.Name);
+                        nextNode = (nextNode as MemberExpression).Expression;
+                    }
+                    else if (nextNode.NodeType == ExpressionType.Parameter)
+                    {
+                        parameter = nextNode as ParameterExpression;
+                        break;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+                if (parameter != null)
+                {
+                    var path = string.Join(".", Enumerable.Reverse(list));
+                    var alias = aliases.FirstOrDefault(x => x.Item1 == path);
+                    if (alias != null)
+                    {
+                        return Expression.MakeMemberAccess(this.newParameter, typeof(TTo).GetMember(alias.Item2).Single());
+                    }
+                }
+
+                return base.VisitMember(node);
+            }
+
+            protected override Expression VisitParameter(ParameterExpression node)
+            {
+                if (node == oldParameter)
+                {
+                    return Expression.MakeMemberAccess(this.newParameter, typeof(TTo).GetMember("Item").Single());
+                }
+
+                return base.VisitParameter(node);
+            }
+        }
     }
 }

@@ -45,14 +45,15 @@ namespace Rhetos.Dsl.DefaultConcepts
             return newConcepts;
         }
 
-        public static string CreateComposableFilterSnippet(string permissionExpressionName, DataStructureInfo dataStructure)
+        public static string CreateComposableFilterSnippet(string permissionExpressionName, DataStructureInfo dataStructure, string modifiySourceTag = "")
         {
             return string.Format(
             @"(source, repository, parameter, context) => 
                 {{
                     var filterExpression = {0}(source, repository, context);
+                    {3}
                     return FilterExpression<Common.Queryable.{1}_{2}>.OptimizedWhere(source, filterExpression);
-                }}", permissionExpressionName, dataStructure.Module.Name, dataStructure.Name);
+                }}", permissionExpressionName, dataStructure.Module.Name, dataStructure.Name, modifiySourceTag);
         }
     }
 }

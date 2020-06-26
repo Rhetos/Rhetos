@@ -168,6 +168,7 @@
     <Compile Include="RowPermissions\RowPermissionsInheritReadSameMemberCodeGenerator.cs" />
     <Compile Include="RowPermissions\RowPermissionsInheritExtensionWriteCodeGenerator.cs" />
     <Compile Include="RowPermissions\RowPermissionsInheritWriteSameMemberCodeGenerator.cs" />
+    <Compile Include="RowPermissions\RowPermissionsPluginableFiltersCodeGenerator.cs" />
     <Compile Include="RowPermissions\RowPermissionsRuleDenyCodeGenerator.cs" />
     <Compile Include="RowPermissions\RowPermissionsRuleAllowCodeGenerator.cs" />
     <Compile Include="RowPermissions\RowPermissionsRuleDenyReadCodeGenerator.cs" />

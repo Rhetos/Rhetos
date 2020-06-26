@@ -22,6 +22,7 @@ using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using System.ComponentModel.Composition;
+using System.Linq;
 
 namespace Rhetos.Processing.DefaultCommands
 {
@@ -75,24 +76,7 @@ namespace Rhetos.Processing.DefaultCommands
         {
             if (readCommand.Filters != null && readCommand.Filters.Length > 0)
             {
-                int lastRowPermissionFilter = -1;
-                for (int f = readCommand.Filters.Length - 1; f >= 0; f--)
-                    if (GenericFilterHelper.EqualsSimpleFilter(readCommand.Filters[f], RowPermissionsReadInfo.FilterName))
-                    {
-                        lastRowPermissionFilter = f;
-                        break;
-                    }
-
-                if (lastRowPermissionFilter >= 0)
-                    if (lastRowPermissionFilter == readCommand.Filters.Length - 1)
-                    {
-                        _logger.Trace(() => string.Format("(DataStructure:{0}) Last filter is '{1}', skipping RowPermissionsRead validation.",
-                            readCommand.DataSource, RowPermissionsReadInfo.FilterName));
-                        return true;
-                    }
-                    else
-                        _logger.Trace(() => string.Format("(DataStructure:{0}) Warning: Improve performance by moving filter '{1}' to last position, in order to skip RowPermissionsRead validation.",
-                            readCommand.DataSource, RowPermissionsReadInfo.FilterName));
+                return readCommand.Filters.Any(x => GenericFilterHelper.EqualsSimpleFilter(x, RowPermissionsReadInfo.FilterName));
             }
 
             return false;

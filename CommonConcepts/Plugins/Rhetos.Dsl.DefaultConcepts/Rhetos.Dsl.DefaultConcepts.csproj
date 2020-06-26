@@ -191,6 +191,7 @@
     <Compile Include="DataStructure\Writing\LoadOldItemsTakeInfo.cs" />
     <Compile Include="DataStructure\Writing\OnSaveValidateInfo.cs" />
     <Compile Include="RowPermissions\AutoInheritRowPermissionsInfo.cs" />
+    <Compile Include="RowPermissions\RowPermissionsDslUtility.cs" />
     <Compile Include="RowPermissions\RowPermissionsInheritExtensionReadInfo.cs" />
     <Compile Include="RowPermissions\RowPermissionsInheritExtensionMacro.cs" />
     <Compile Include="RowPermissions\RowPermissionsInheritReadSameMemberInfo.cs" />
