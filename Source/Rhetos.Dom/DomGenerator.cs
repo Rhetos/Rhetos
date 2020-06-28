@@ -58,7 +58,7 @@ namespace Rhetos.Dom
         public void Generate()
         {
             var sourceFiles = _codeGenerator.ExecutePluginsToFiles(_pluginRepository, "/*", "*/", null);
-
+            
             if (!string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder))
             {
                 foreach (var sourceFile in sourceFiles)

@@ -151,16 +151,23 @@ $@"namespace Common
 
     public class EntityFrameworkContext : System.Data.Entity.DbContext, Rhetos.Persistence.IPersistenceCache
     {{
+        private static bool _mappingViewCacheAssigned = false;
         private readonly Rhetos.Utilities.RhetosAppOptions _rhetosAppOptions;
 
         public EntityFrameworkContext(
             Rhetos.Persistence.IPersistenceTransaction persistenceTransaction,
             Rhetos.Dom.DefaultConcepts.Persistence.EntityFrameworkMetadata metadata,
             EntityFrameworkConfiguration entityFrameworkConfiguration, // EntityFrameworkConfiguration is provided as an IoC dependency for EntityFrameworkContext in order to initialize the global DbConfiguration before using DbContext.
-            Rhetos.Utilities.RhetosAppOptions rhetosAppOptions)
+            Rhetos.Utilities.RhetosAppOptions rhetosAppOptions,
+            Rhetos.Persistence.IEfMappingViewCacheFactory efMappingViewCacheFactory)
             : base(new System.Data.Entity.Core.EntityClient.EntityConnection(metadata.MetadataWorkspace, persistenceTransaction.Connection), false)
         {{
-            _rhetosAppOptions = rhetosAppOptions; 
+            _rhetosAppOptions = rhetosAppOptions;
+            if (!_mappingViewCacheAssigned)
+            {{
+                efMappingViewCacheFactory.RegisterFactoryForContext(this);
+                _mappingViewCacheAssigned = true;
+            }}
             Initialize();
             Database.UseTransaction(persistenceTransaction.Transaction);
         }}

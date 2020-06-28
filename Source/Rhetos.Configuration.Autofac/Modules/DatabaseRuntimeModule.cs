@@ -18,6 +18,7 @@
 */
 
 using Autofac;
+using Rhetos.Persistence;
 using Rhetos.Utilities;
 
 namespace Rhetos.Configuration.Autofac.Modules
@@ -30,6 +31,8 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.RegisterType(DatabaseTypes.GetSqlExecuterType(SqlUtility.DatabaseLanguage)).As<ISqlExecuter>().InstancePerLifetimeScope();
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<SqlTransactionBatchesOptions>()).InstancePerLifetimeScope();
             builder.RegisterType<SqlTransactionBatches>().InstancePerLifetimeScope();
+            builder.RegisterType<EfMappingViewsFileStore>().As<IEfMappingViewsStore>().SingleInstance().PreserveExistingDefaults();
+            builder.RegisterType<EfMappingViewCacheFactory>().As<IEfMappingViewCacheFactory>().SingleInstance().PreserveExistingDefaults();
 
             base.Load(builder);
         }
