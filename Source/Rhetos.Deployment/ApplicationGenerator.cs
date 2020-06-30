@@ -24,7 +24,9 @@ using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Rhetos.Deployment
 {
@@ -55,6 +57,7 @@ namespace Rhetos.Deployment
 
         public void ExecuteGenerators()
         {
+            var sw = Stopwatch.StartNew();
             _filesUtility.EmptyDirectory(_buildEnvironment.GeneratedAssetsFolder);
             _filesUtility.SafeCreateDirectory(_buildEnvironment.CacheFolder); // Cache is not deleted between builds.
             if(!string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder))
@@ -62,14 +65,33 @@ namespace Rhetos.Deployment
 
             CheckDslModelErrors();
 
-            var generators = GetSortedGenerators();
-            foreach (var generator in generators)
+            var generatorBatches = GetGeneratorBatches();
+            foreach (var generatorBatch in generatorBatches)
             {
-                _logger.Info("Executing " + generator.GetType().Name + ".");
-                generator.Generate();
+                _logger.Info($"Executing generator batch (parallel={generatorBatch.parallel}): {string.Join(",", generatorBatch.batch.Select(GetGeneratorName))}.");
+
+                void ExecuteGenerator(IGenerator generator)
+                {
+                    _logger.Info("Executing " + generator.GetType().Name + ".");
+                    generator.Generate();
+                }
+
+                if (generatorBatch.parallel)
+                {
+                    Parallel.ForEach(generatorBatch.batch, ExecuteGenerator);
+                }
+                else
+                {
+                    foreach (var generator in generatorBatch.batch)
+                        ExecuteGenerator(generator);
+                }
             }
-            if (!generators.Any())
-                _logger.Info("No additional generators.");
+
+            var totalGeneratorCount = generatorBatches.Sum(a => a.batch.Count);
+            if (totalGeneratorCount == 0)
+                _logger.Info("No application generators found.");
+            else
+                _logger.Info($"Executed {totalGeneratorCount} application generators in {sw.ElapsedMilliseconds:#,0} ms.");
 
             if(!string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder))
                 _sourceWriter.CleanUp();
@@ -86,6 +108,24 @@ namespace Rhetos.Deployment
             _logger.Info("Application model has " + dslModelConceptsCount + " statements.");
         }
 
+        private static readonly string[] _priorityGenerators = new[] { "Rhetos.Dom.DomGenerator", "Rhetos.Deployment.ResourcesGenerator" };
+        
+        private IList<(IList<IGenerator> batch, bool parallel)> GetGeneratorBatches()
+        {
+            var remainingGenerators = GetSortedGenerators();
+            var priorityBatch = remainingGenerators.Where(a => _priorityGenerators.Contains(GetGeneratorName(a))).ToList();
+            remainingGenerators = remainingGenerators.Except(priorityBatch).ToList();
+            var noDependencyBatch = remainingGenerators.Where(a => a.Dependencies == null || !a.Dependencies.Any()).ToList();
+            remainingGenerators = remainingGenerators.Except(noDependencyBatch).ToList();
+
+            return new List<(IList<IGenerator> batch, bool parallel)>()
+            {
+                (priorityBatch, true),
+                (noDependencyBatch, true),
+                (remainingGenerators, false)
+            };
+        }
+
         private IList<IGenerator> GetSortedGenerators()
         {
             // The plugins in the container are sorted by their dependencies defined in ExportMetadata attribute (static typed):
@@ -94,7 +134,7 @@ namespace Rhetos.Deployment
             // Additional sorting by loosely-typed dependencies from the Dependencies property:
             var generatorNames = generators.Select(GetGeneratorName).ToList();
 
-            MoveToFront(generatorNames, new[] { "Rhetos.Dom.DomGenerator", "Rhetos.Deployment.ResourcesGenerator" } );
+            MoveToFront(generatorNames, _priorityGenerators);
 
             var dependencies = generators.Where(gen => gen.Dependencies != null)
                 .SelectMany(gen => gen.Dependencies.Select(dependsOn => Tuple.Create(dependsOn, GetGeneratorName(gen))))
