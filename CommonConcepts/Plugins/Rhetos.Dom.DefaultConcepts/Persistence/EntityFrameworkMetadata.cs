@@ -17,10 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System;
 using Rhetos.Logging;
 using Rhetos.Persistence;
 using Rhetos.Utilities;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Data.Entity.Core.Metadata.Edm;
 using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
@@ -33,45 +35,51 @@ using System.Text.RegularExpressions;
 
 namespace Rhetos.Dom.DefaultConcepts.Persistence
 {
-    public class EntityFrameworkMetadata
+    public class EntityFrameworkMetadata : IMetadataWorkspaceFileLoader
     {
         private readonly ILogger _performanceLogger;
         private readonly ILogger _logger;
-        private MetadataWorkspace _metadataWorkspace;
-        private bool _initialized;
-        private readonly object _initializationLock = new object();
         private readonly RhetosAppOptions _rhetosAppOptions;
         private readonly ConnectionString _connectionString;
+        private readonly EfMappingViewCacheFactory _efMappingViewCacheFactory;
 
-        public EntityFrameworkMetadata(RhetosAppOptions rhetosAppOptions, ILogProvider logProvider, ConnectionString connectionString)
+        private readonly Lazy<MetadataWorkspace> _initializedMetadataWorkspace;
+
+        public MetadataWorkspace MetadataWorkspace => _initializedMetadataWorkspace.Value;
+
+        // we need to inject DbCofiguration here in order to globally initialize configuration before doing any operations
+        // on EF objects
+        public EntityFrameworkMetadata(RhetosAppOptions rhetosAppOptions, ILogProvider logProvider, ConnectionString connectionString,
+            EfMappingViewCacheFactory efMappingViewCacheFactory, DbConfiguration dbConfiguration)
         {
             _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _logger = logProvider.GetLogger(nameof(EntityFrameworkMetadata));
             _rhetosAppOptions = rhetosAppOptions;
             _connectionString = connectionString;
+            _efMappingViewCacheFactory = efMappingViewCacheFactory;
+
+            _initializedMetadataWorkspace = new Lazy<MetadataWorkspace>(CreateAndInitializeMetadataWorkspace);
         }
 
-        public MetadataWorkspace MetadataWorkspace
+        private MetadataWorkspace CreateAndInitializeMetadataWorkspace()
         {
-            get
-            {
-                if (!_initialized)
-                    lock (_initializationLock)
-                        if (!_initialized)
-                        {
-                            var sw = Stopwatch.StartNew();
+            var metadataWorkspace = LoadFromFiles();
+            _efMappingViewCacheFactory.RegisterFactoryForWorkspace(metadataWorkspace);
 
-                            var modelFilesPath = EntityFrameworkMapping.ModelFiles.Select(fileName => Path.Combine(_rhetosAppOptions.AssetsFolder, fileName)).ToList();
-                            SetProviderManifestTokenIfNeeded(sw, modelFilesPath);
+            return metadataWorkspace;
+        }
 
-                            _metadataWorkspace = new MetadataWorkspace(modelFilesPath, new Assembly[] { });
-                            _performanceLogger.Write(sw, "Load EDM files.");
+        public MetadataWorkspace LoadFromFiles()
+        {
+            var sw = Stopwatch.StartNew();
 
-                            _initialized = true;
-                        }
+            var modelFilesPath = EntityFrameworkMapping.ModelFiles.Select(fileName => Path.Combine(_rhetosAppOptions.AssetsFolder, fileName)).ToList();
+            SetProviderManifestTokenIfNeeded(sw, modelFilesPath);
 
-                return _metadataWorkspace;
-            }
+            var metadataWorkspace = new MetadataWorkspace(modelFilesPath, new Assembly[] { });
+            _performanceLogger.Write(sw, "Load EDM files.");
+
+            return metadataWorkspace;
         }
 
         private void SetProviderManifestTokenIfNeeded(Stopwatch sw, List<string> modelFilesPath)

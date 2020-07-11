@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity.Core.Common.EntitySql;
+using System.Data.Entity.Core.Metadata.Edm;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -9,7 +11,7 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Persistence
 {
-    public class EfMappingViewsFileStore : IEfMappingViewsStore
+    public class EfMappingViewsFileStore
     {
         private static readonly string _viewCacheFilename = "EfMappingGeneratedViews.json";
         private readonly RhetosAppOptions _rhetosAppOptions;

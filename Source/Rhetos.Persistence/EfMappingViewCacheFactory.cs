@@ -15,17 +15,17 @@ using Rhetos.Logging;
 
 namespace Rhetos.Persistence
 {
-    public class EfMappingViewCacheFactory : DbMappingViewCacheFactory, IEfMappingViewCacheFactory
+    public class EfMappingViewCacheFactory : DbMappingViewCacheFactory
     {
         private readonly ILogger _log;
-        private readonly IEfMappingViewsStore _mappingViewsStore;
+        private readonly EfMappingViewsFileStore _mappingViewsFileStore;
         private readonly Lazy<EfMappingViewCache> _viewCache;
 
-        public EfMappingViewCacheFactory(IEfMappingViewsStore mappingViewsStore, ILogProvider logProvider)
+        public EfMappingViewCacheFactory(EfMappingViewsFileStore mappingViewsFileStore, ILogProvider logProvider)
         {
-            _mappingViewsStore = mappingViewsStore;
+            _mappingViewsFileStore = mappingViewsFileStore;
             _log = logProvider.GetLogger(nameof(EfMappingViewCacheFactory));
-            _viewCache = new Lazy<EfMappingViewCache>(() => CreateEfMappingViewCache());
+            _viewCache = new Lazy<EfMappingViewCache>(CreateEfMappingViewCache);
         }
         
         public override DbMappingViewCache Create(string conceptualModelContainerName, string storeModelContainerName)
@@ -35,7 +35,7 @@ namespace Rhetos.Persistence
 
         private EfMappingViewCache CreateEfMappingViewCache()
         {
-            var views = _mappingViewsStore.Load();
+            var views = _mappingViewsFileStore.Load();
             if (views == null)
             {
                 _log.Warning(() => $"Pre-generated mapping views not found. This will result in slower startup performance.");
@@ -45,17 +45,12 @@ namespace Rhetos.Persistence
             return new EfMappingViewCache(views);
         }
 
-        public void RegisterFactoryForContext(IPersistenceCache persistenceCache)
+        public void RegisterFactoryForWorkspace(MetadataWorkspace metadataWorkspace)
         {
-            if (!(persistenceCache is DbContext dbContext))
-            {
-                throw new FrameworkException($"Unable to register {nameof(DbMappingViewCacheFactory)} to context of type {persistenceCache.GetType().Name}. Expected type {nameof(DbContext)}.");
-            }
-
-            var objectContext = ((IObjectContextAdapter)dbContext).ObjectContext;
-            var storageMappingItemCollection = (StorageMappingItemCollection)objectContext.MetadataWorkspace.GetItemCollection(DataSpace.CSSpace);
+            var storageMappingItemCollection = (StorageMappingItemCollection)metadataWorkspace.GetItemCollection(DataSpace.CSSpace);
             storageMappingItemCollection.MappingViewCacheFactory = this;
-            _log.Trace(() => $"Registered {nameof(EfMappingViewCacheFactory)} to {persistenceCache.GetType().Name} context object.");
+
+            _log.Trace(() => $"Registered {nameof(EfMappingViewCacheFactory)} to {nameof(MetadataWorkspace)}.");
         }
     }
 }
