@@ -5,8 +5,8 @@ using System.Text;
 
 namespace Rhetos.Persistence
 {
-    public interface IMetadataWorkspaceFileLoader
+    public interface IMetadataWorkspaceFileProvider
     {
-        MetadataWorkspace LoadFromFiles();
+        MetadataWorkspace MetadataWorkspace { get; }
     }
 }

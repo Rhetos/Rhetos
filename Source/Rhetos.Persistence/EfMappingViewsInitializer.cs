@@ -1,35 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Data.Entity;
+﻿using System.Collections.Generic;
 using System.Data.Entity.Core.Mapping;
 using System.Data.Entity.Core.Metadata.Edm;
-using System.Data.Entity.Infrastructure;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using Newtonsoft.Json;
-using Rhetos.Extensibility;
 using Rhetos.Logging;
-using Rhetos.Utilities;
 
 namespace Rhetos.Persistence
 {
     public class EfMappingViewsInitializer
     {
-        public IEnumerable<string> Dependencies => null;
-
         private readonly EfMappingViewsFileStore _efMappingViewsFileStore;
-        private readonly ILogger _log;
+        private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
-        private readonly IMetadataWorkspaceFileLoader _metadataWorkspaceFileLoader;
+        private readonly IMetadataWorkspaceFileProvider _metadataWorkspaceFileProvider;
 
-        public EfMappingViewsInitializer(EfMappingViewsFileStore efMappingViewsFileStore, IMetadataWorkspaceFileLoader metadataWorkspaceFileLoader, ILogProvider logProvider)
+        public EfMappingViewsInitializer(EfMappingViewsFileStore efMappingViewsFileStore, IMetadataWorkspaceFileProvider metadataWorkspaceFileProvider, ILogProvider logProvider)
         {
             _efMappingViewsFileStore = efMappingViewsFileStore;
-            _log = logProvider.GetLogger(nameof(EfMappingViewsInitializer));
+            _logger = logProvider.GetLogger(nameof(EfMappingViewsInitializer));
             _performanceLogger = logProvider.GetLogger("Performance." + nameof(EfMappingViewsInitializer));
-            _metadataWorkspaceFileLoader = metadataWorkspaceFileLoader;
+            _metadataWorkspaceFileProvider = metadataWorkspaceFileProvider;
         }
 
         public void Initialize()
@@ -41,7 +31,7 @@ namespace Rhetos.Persistence
         {
             var sw = Stopwatch.StartNew();
 
-            var mappingCollection = (StorageMappingItemCollection)_metadataWorkspaceFileLoader.LoadFromFiles().GetItemCollection(DataSpace.CSSpace);
+            var mappingCollection = (StorageMappingItemCollection)_metadataWorkspaceFileProvider.MetadataWorkspace.GetItemCollection(DataSpace.CSSpace);
 
             var hash = mappingCollection.ComputeMappingHashValue();
             _performanceLogger.Write(sw, () => $"Calculate hash for current model.");
@@ -49,7 +39,7 @@ namespace Rhetos.Persistence
 
             if (!string.IsNullOrEmpty(currentViewCache?.Hash) && currentViewCache.Hash == hash)
             {
-                _log.Trace(() => $"Hash not changed. View cache is valid. Skipping generation.");
+                _logger.Trace(() => $"Hash not changed. View cache is valid. Skipping generation.");
                 return;
             }
 
@@ -57,6 +47,10 @@ namespace Rhetos.Persistence
             var errors = new List<EdmSchemaError>();
             var newViews = mappingCollection.GenerateViews(errors)
                 .ToDictionary(a => EfMappingViewCache.GetExtentKey(a.Key), a => a.Value.EntitySql);
+
+            foreach (var edmSchemaError in errors)
+                _logger.Warning(() => $"{edmSchemaError}");
+
             var newViewCache = new EfMappingViews() {Hash = hash, Views = newViews};
             _performanceLogger.Write(sw, () => $"Generated new views. Old hash != new hash ('{currentViewCache?.Hash}' != '{hash}').");
 
