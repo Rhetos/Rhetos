@@ -54,7 +54,10 @@ namespace Rhetos
         /// If not specified, the current application's base directory is used by default.
         /// </param>
         /// <param name="logProvider">
-        /// If not specified, ConsoleLogProvider is used by default.
+        /// If not specified, <see cref="ConsoleLogProvider"/> is used by default.
+        /// The specified <paramref name="logProvider"/> will be used during initialization of configuration and dependency injection container.
+        /// Note that this log provider is not registered to DI container by default;
+        /// customize run-time logging with <paramref name="registerCustomComponents"/>.
         /// </param>
         /// <param name="registerCustomComponents">
         /// Register custom components that may override system and plugins services.
@@ -101,6 +104,10 @@ namespace Rhetos
         /// <param name="registerCustomComponents">
         /// Register custom components that may override system and plugins services.
         /// This is commonly used by utilities and tests that need to override host application's components or register additional plugins.
+        /// <para>
+        /// Note that the transaction-scope component registration might not affect singleton components.
+        /// Customize the behavior of singleton components in <see cref="ProcessContainer"/> constructor.
+        /// </para>
         /// </param>
         public TransactionScopeContainer CreateTransactionScopeContainer(Action<ContainerBuilder> registerCustomComponents = null)
         {
@@ -111,15 +118,16 @@ namespace Rhetos
 
         private static ProcessContainer _singleContainer = null;
         private static string _singleContainerApplicationFolder = null;
-        private static object _singleContainerLock = new object();
+        private static readonly object _singleContainerLock = new object();
 
         /// <summary>
         /// This method creates a thread-safe lifetime scope DI container to isolate unit of work in a separate database transaction.
         /// To commit changes to database, call <see cref="TransactionScopeContainer.CommitChanges"/> at the end of the 'using' block.
-        /// 
+        /// <para>
         /// In most cases it is preferred to use a <see cref="ProcessContainer"/> instance instead of this static method, for better control over the DI container.
         /// The static method is useful in some special cases, for example to optimize LINQPad scripts that can reuse the external static instance
         /// after recompiling the script.
+        /// </para>
         /// </summary>
         /// <param name="applicationFolder">
         /// Folder where the Rhetos configuration file is located (see <see cref="RhetosAppEnvironment.ConfigurationFileName"/>),
@@ -129,6 +137,10 @@ namespace Rhetos
         /// <param name="registerCustomComponents">
         /// Register custom components that may override system and plugins services.
         /// This is commonly used by utilities and tests that need to override host application's components or register additional plugins.
+        /// <para>
+        /// Note that the transaction-scope component registration might not affect singleton components.
+        /// Customize the behavior of singleton components in <see cref="ProcessContainer"/> constructor.
+        /// </para>
         /// </param>
         public static TransactionScopeContainer CreateTransactionScopeContainer(string applicationFolder = null, Action<ContainerBuilder> registerCustomComponents = null)
         {

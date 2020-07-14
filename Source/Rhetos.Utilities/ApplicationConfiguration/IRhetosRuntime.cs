@@ -33,6 +33,9 @@ namespace Rhetos
         /// <summary>
         /// Initializes configuration settings for Rhetos application.
         /// </summary>
+        /// <param name="logProvider">
+        /// The specified <paramref name="logProvider"/> will be used while building the configuration.
+        /// </param>
         /// <param name="addCustomConfiguration">
         /// Add or override configuration settings.
         /// This is commonly used by utilities and tests that need to customize the host application's settings.
@@ -45,6 +48,9 @@ namespace Rhetos
         /// <summary>
         /// Creates Dependency Injections container for Rhetos application.
         /// </summary>
+        /// <param name="logProvider">
+        /// The specified <paramref name="logProvider"/> will be used while building the dependency injection container.
+        /// </param>
         /// <param name="registerCustomComponents">
         /// Register custom components that may override system and plugins services.
         /// This is commonly used by utilities and tests that need to override host application's components or register additional plugins.

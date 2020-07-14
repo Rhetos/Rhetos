@@ -39,6 +39,10 @@ namespace Rhetos
         /// <param name="registerCustomComponents">
         /// Register custom components that may override system and plugins services.
         /// This is commonly used by utilities and tests that need to override host application's components or register additional plugins.
+        /// <para>
+        /// Note that the transaction-scope component registration might not affect singleton components.
+        /// Customize the behavior of singleton components in <see cref="ProcessContainer"/> constructor.
+        /// </para>
         /// </param>
         public TransactionScopeContainer(IContainer iocContainer, Action<ContainerBuilder> registerCustomComponents = null)
         {
