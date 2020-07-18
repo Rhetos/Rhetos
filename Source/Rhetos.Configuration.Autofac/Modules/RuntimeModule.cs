@@ -45,6 +45,8 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.RegisterType<DomLoader>().As<IDomainObjectModel>().SingleInstance();
             builder.RegisterType<PersistenceTransaction>().As<IPersistenceTransaction>().InstancePerLifetimeScope();
             builder.RegisterType<DslModelFile>().As<IDslModel>().SingleInstance();
+            builder.RegisterType<EfMappingViewsFileStore>().SingleInstance().PreserveExistingDefaults();
+            builder.RegisterType<EfMappingViewCacheFactory>().SingleInstance().PreserveExistingDefaults();
             builder.RegisterModule(new DatabaseRuntimeModule());
 
             var pluginRegistration = builder.GetPluginRegistration();

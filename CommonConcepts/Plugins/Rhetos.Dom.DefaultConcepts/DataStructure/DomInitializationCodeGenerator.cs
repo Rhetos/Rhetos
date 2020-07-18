@@ -156,11 +156,11 @@ $@"namespace Common
         public EntityFrameworkContext(
             Rhetos.Persistence.IPersistenceTransaction persistenceTransaction,
             Rhetos.Dom.DefaultConcepts.Persistence.EntityFrameworkMetadata metadata,
-            EntityFrameworkConfiguration entityFrameworkConfiguration, // EntityFrameworkConfiguration is provided as an IoC dependency for EntityFrameworkContext in order to initialize the global DbConfiguration before using DbContext.
+            System.Data.Entity.DbConfiguration entityFrameworkConfiguration, // EntityFrameworkConfiguration is provided as an IoC dependency for EntityFrameworkContext in order to initialize the global DbConfiguration before using DbContext.
             Rhetos.Utilities.RhetosAppOptions rhetosAppOptions)
             : base(new System.Data.Entity.Core.EntityClient.EntityConnection(metadata.MetadataWorkspace, persistenceTransaction.Connection), false)
         {{
-            _rhetosAppOptions = rhetosAppOptions; 
+            _rhetosAppOptions = rhetosAppOptions;
             Initialize();
             Database.UseTransaction(persistenceTransaction.Transaction);
         }}
@@ -328,7 +328,9 @@ $@"namespace Common
         protected override void Load(Autofac.ContainerBuilder builder)
         {{
             builder.RegisterType<DomRepository>().InstancePerLifetimeScope();
-            builder.RegisterType<EntityFrameworkConfiguration>().SingleInstance();
+            builder.RegisterType<EntityFrameworkConfiguration>()
+                .As<System.Data.Entity.DbConfiguration>()
+                .SingleInstance();
             builder.RegisterType<EntityFrameworkContext>()
                 .As<EntityFrameworkContext>()
                 .As<System.Data.Entity.DbContext>()
