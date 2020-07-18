@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Rhetos.Persistence;
 
 namespace Rhetos
 {
@@ -85,6 +86,10 @@ namespace Rhetos
 
             using (var container = rhetosRuntime.BuildContainer(_logProvider, _configuration, AddAppInitializationComponents))
             {
+                _logger.Info("Initializing EfMappingViews.");
+                var efMappingViewsInitializer = container.Resolve<EfMappingViewsInitializer>();
+                efMappingViewsInitializer.Initialize();
+
                 var performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance." + GetType().Name);
                 var initializers = ApplicationInitialization.GetSortedInitializers(container);
 

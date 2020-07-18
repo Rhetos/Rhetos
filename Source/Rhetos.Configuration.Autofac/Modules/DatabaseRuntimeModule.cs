@@ -18,6 +18,7 @@
 */
 
 using Autofac;
+using Rhetos.Persistence;
 using Rhetos.Utilities;
 
 namespace Rhetos.Configuration.Autofac.Modules
