@@ -26,18 +26,19 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Rhetos.Deployment
 {
     public class ApplicationGenerator
     {
+        private readonly ILogProvider _logProvider;
         private readonly ILogger _logger;
         private readonly IDslModel _dslModel;
         private readonly IPluginsContainer<IGenerator> _generatorsContainer;
         private readonly RhetosBuildEnvironment _buildEnvironment;
         private readonly FilesUtility _filesUtility;
         private readonly ISourceWriter _sourceWriter;
+        private readonly BuildOptions _buildOptions;
 
         public ApplicationGenerator(
             ILogProvider logProvider,
@@ -45,14 +46,17 @@ namespace Rhetos.Deployment
             IPluginsContainer<IGenerator> generatorsContainer,
             RhetosBuildEnvironment buildEnvironment,
             FilesUtility filesUtility,
-            ISourceWriter sourceWriter)
+            ISourceWriter sourceWriter,
+            BuildOptions buildOptions)
         {
+            _logProvider = logProvider;
             _logger = logProvider.GetLogger(GetType().Name);
             _dslModel = dslModel;
             _generatorsContainer = generatorsContainer;
             _buildEnvironment = buildEnvironment;
             _filesUtility = filesUtility;
             _sourceWriter = sourceWriter;
+            _buildOptions = buildOptions;
         }
 
         public void ExecuteGenerators()
@@ -65,36 +69,65 @@ namespace Rhetos.Deployment
 
             CheckDslModelErrors();
 
-            var generatorBatches = GetGeneratorBatches();
-            foreach (var generatorBatch in generatorBatches)
-            {
-                _logger.Info($"Executing generator batch (parallel={generatorBatch.parallel}): {string.Join(",", generatorBatch.batch.Select(GetGeneratorName))}.");
+            var generators = _generatorsContainer.GetPlugins().ToArray();
+            var job = PrepareGeneratorsJob(generators);
 
-                void ExecuteGenerator(IGenerator generator)
-                {
-                    _logger.Info("Executing " + generator.GetType().Name + ".");
-                    generator.Generate();
-                }
+            _logger.Info(() => $"Starting parallel execution of {generators.Length} generators.");
+            if (_buildOptions.MaxExecuteGeneratorsParallelism > 0)
+                _logger.Info(() => $"Using max {_buildOptions.MaxExecuteGeneratorsParallelism} degree of parallelism from configuration.");
 
-                if (generatorBatch.parallel)
-                {
-                    Parallel.ForEach(generatorBatch.batch, ExecuteGenerator);
-                }
-                else
-                {
-                    foreach (var generator in generatorBatch.batch)
-                        ExecuteGenerator(generator);
-                }
-            }
-
-            var totalGeneratorCount = generatorBatches.Sum(a => a.batch.Count);
-            if (totalGeneratorCount == 0)
-                _logger.Info("No application generators found.");
-            else
-                _logger.Info($"Executed {totalGeneratorCount} application generators in {sw.ElapsedMilliseconds:#,0} ms.");
+            job.RunAllTasks(_buildOptions.MaxExecuteGeneratorsParallelism);
+            _logger.Info(() => $"Executed {generators.Length} application generators in {sw.ElapsedMilliseconds:#,0} ms.");
 
             if(!string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder))
                 _sourceWriter.CleanUp();
+        }
+
+        private ParallelTopologicalJob PrepareGeneratorsJob(IEnumerable<IGenerator> generators)
+        {
+            var additionalDependencies = ParseAdditionalDependencies();
+
+            var job = new ParallelTopologicalJob(_logProvider);
+            foreach (var generator in generators)
+            {
+                var dependencies = generator.Dependencies ?? Enumerable.Empty<string>();
+                var generatorName = GetGeneratorName(generator);
+                if (additionalDependencies.TryGetValue(generatorName, out var additionForGenerator))
+                    dependencies = dependencies.Concat(additionForGenerator);
+
+                job.AddTask(generatorName, () =>
+                {
+                    _logger.Info(() => $"Starting generator '{generatorName}'.");
+                    generator.Generate();
+                }, dependencies);
+            }
+
+            return job;
+        }
+
+        private Dictionary<string, List<string>> ParseAdditionalDependencies()
+        {
+            var parsedDependencies = new Dictionary<string, List<string>>();
+
+            if (_buildOptions.AdditionalGeneratorDependencies == null || _buildOptions.AdditionalGeneratorDependencies.Count() == 0)
+                return parsedDependencies;
+
+            var pairs = new List<(string name, string dependency)>();
+            foreach (var entry in _buildOptions.AdditionalGeneratorDependencies)
+            {
+                var parts = entry.Split(new[] {':'}, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length != 2)
+                    throw new InvalidOperationException($"Invalid entry '{entry}' in {nameof(BuildOptions)}.{nameof(BuildOptions.AdditionalGeneratorDependencies)} configuration key."
+                        + " Expected \"<GeneratorName>:<GeneratorDependencyName>\" format.");
+
+                pairs.Add((parts[0], parts[1]));
+            }
+
+            _logger.Info(() => $"Parsed {pairs.Count} additional generator dependencies from configuration.");
+
+            return pairs
+                .GroupBy(pair => pair.name)
+                .ToDictionary(group => group.Key, group => group.Select(pair => pair.dependency).ToList());
         }
 
         /// <summary>
@@ -103,72 +136,12 @@ namespace Rhetos.Deployment
         /// </summary>
         private void CheckDslModelErrors()
         {
-            _logger.Info("Parsing DSL scripts.");
+            _logger.Info(() => "Parsing DSL scripts.");
             int dslModelConceptsCount = _dslModel.Concepts.Count();
-            _logger.Info("Application model has " + dslModelConceptsCount + " statements.");
+            _logger.Info(() => $"Application model has {dslModelConceptsCount} statements.");
         }
 
-        private static readonly string[] _priorityGenerators = new[] { "Rhetos.Dom.DomGenerator", "Rhetos.Deployment.ResourcesGenerator" };
-        
-        private IList<(IList<IGenerator> batch, bool parallel)> GetGeneratorBatches()
-        {
-            var remainingGenerators = GetSortedGenerators();
-            var priorityBatch = remainingGenerators.Where(a => _priorityGenerators.Contains(GetGeneratorName(a))).ToList();
-            remainingGenerators = remainingGenerators.Except(priorityBatch).ToList();
-            var noDependencyBatch = remainingGenerators.Where(a => a.Dependencies == null || !a.Dependencies.Any()).ToList();
-            remainingGenerators = remainingGenerators.Except(noDependencyBatch).ToList();
-
-            return new List<(IList<IGenerator> batch, bool parallel)>()
-            {
-                (priorityBatch, true),
-                (noDependencyBatch, true),
-                (remainingGenerators, false)
-            };
-        }
-
-        private IList<IGenerator> GetSortedGenerators()
-        {
-            // The plugins in the container are sorted by their dependencies defined in ExportMetadata attribute (static typed):
-            var generators = _generatorsContainer.GetPlugins().ToArray();
-
-            // Additional sorting by loosely-typed dependencies from the Dependencies property:
-            var generatorNames = generators.Select(GetGeneratorName).ToList();
-
-            MoveToFront(generatorNames, _priorityGenerators);
-
-            var dependencies = generators.Where(gen => gen.Dependencies != null)
-                .SelectMany(gen => gen.Dependencies.Select(dependsOn => Tuple.Create(dependsOn, GetGeneratorName(gen))))
-                .ToList();
-            Graph.TopologicalSort(generatorNames, dependencies);
-
-            foreach (var missingDependency in dependencies.Where(dep => !generatorNames.Contains(dep.Item1)))
-                _logger.Warning($"Missing dependency '{missingDependency.Item1}' for application generator '{missingDependency.Item2}'.");
-
-            Graph.SortByGivenOrder(generators, generatorNames, GetGeneratorName);
-
-            return generators;
-        }
-
-        /// <summary>
-        /// For backward compatibility, some generators are manually placed at the beginning,
-        /// because before Rhetos v4.0 those generators where executed explicitly before IGenerator plugins,
-        /// and other plugins did not need to specify dependency to them.
-        /// </summary>
-        private static void MoveToFront(List<string> generatorNames, string[] priorityGenerators)
-        {
-            foreach (string generator in priorityGenerators)
-            {
-                var indexofDomgenerator = generatorNames.IndexOf(generator);
-                if (indexofDomgenerator == -1)
-                    throw new FrameworkException($@"Could not find Generator of type {generator}");
-                generatorNames.RemoveAt(indexofDomgenerator);
-                generatorNames.Insert(0, generator);
-            }
-        }
-
-        private static string GetGeneratorName(IGenerator gen)
-        {
-            return gen.GetType().FullName;
-        }
+        private static string GetGeneratorName(IGenerator generator) =>
+            generator.GetType().FullName;
     }
 }

@@ -18,6 +18,7 @@
 */
 
 using System;
+using System.Collections.Generic;
 
 namespace Rhetos.Utilities
 {
@@ -43,6 +44,16 @@ namespace Rhetos.Utilities
         /// Option is a part of legacy design/configuration.
         /// </summary>
         public int AssemblyGeneratorErrorReportLimit { get; set; } = 5;
+
+        /// <summary>
+        /// Specifies maximum number of parallel threads while executing generators. 0 = unlimited.
+        /// </summary>
+        public int MaxExecuteGeneratorsParallelism { get; set; } = 0;
+
+        /// <summary>
+        /// List of key/value pairs specifying additional dependencies for generators. Each entry is formatted as "GeneratorName:GeneratorDependencyName";
+        /// </summary>
+        public IEnumerable<string> AdditionalGeneratorDependencies { get; set; }
     }
 
     /// <summary>

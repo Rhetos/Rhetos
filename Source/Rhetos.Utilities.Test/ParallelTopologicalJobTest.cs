@@ -1,10 +1,12 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Rhetos.TestCommon;
 
 namespace Rhetos.Utilities.Test
 {
@@ -12,86 +14,139 @@ namespace Rhetos.Utilities.Test
     public class ParallelTopologicalJobTest
     {
         [TestMethod]
-        public void TestTrivial()
+        public void ThrowOnDuplicateId()
         {
             var job = new ParallelTopologicalJob(new ConsoleLogProvider())
-                .AddTask("1", () =>
-                {
-                    Task.Delay(100).Wait();
-                    Console.WriteLine("o1");
-                }, Enumerable.Empty<string>())
-                .AddTask("2", () => Console.WriteLine("o2"), Enumerable.Empty<string>())
-                .AddTask("3", () => Console.WriteLine("o3"), new[] {"1"})
-                .AddTask("4", () => Console.WriteLine("o4"), new[] {"4"})
-                .AddTask("5", () => Console.WriteLine("o5"), new[] {"4"});
+                .AddTask("a", () => { });
 
-
-            job.RunAllTasks();
+            TestUtility.ShouldFail<InvalidOperationException>(() => job.AddTask("a", () => { }), "has already been added");
         }
 
         [TestMethod]
-        public void TestTrivial2()
+        public void SimpleDependency()
         {
-            var job = new ParallelTopologicalJob(new ConsoleLogProvider())
-                .AddTask("1", () =>
-                {
-                    Task.Delay(100).Wait();
-                    Console.WriteLine("o1");
-                }, Enumerable.Empty<string>())
-                .AddTask("2", () =>
-                {
-                    Console.WriteLine("o2");
-                    throw new InvalidOperationException("ble");
-                }, Enumerable.Empty<string>())
-                .AddTask("3", () => Console.WriteLine("o3"), new[] {"1"});
+            var result = new ConcurrentQueue<string>();
 
+            var job = new ParallelTopologicalJob(new ConsoleLogProvider())
+                .AddTask("a", () =>
+                {
+                    Task.Delay(50).Wait();
+                    result.Enqueue("a");
+                })
+                .AddTask("b", () => result.Enqueue("b"), new [] {"a"})
+                .AddTask("c", () => result.Enqueue("c"));
 
             job.RunAllTasks();
+            Assert.AreEqual("cab", string.Concat(result));
         }
 
         [TestMethod]
-        public void TestTrivial3()
+        public void ConfigureConcurrency()
         {
+            var result = new ConcurrentQueue<string>();
             var job = new ParallelTopologicalJob(new ConsoleLogProvider())
-                .AddTask("1", () =>
+                .AddTask("a", () =>
+                {
+                    Task.Delay(50).Wait();
+                    result.Enqueue("a");
+                })
+                .AddTask("b", () => result.Enqueue("b"))
+                .AddTask("c", () => result.Enqueue("c"), new[] { "a" });
+
+            job.RunAllTasks(0);
+            Assert.AreEqual("bac", string.Concat(result));
+
+            result = new ConcurrentQueue<string>();
+            job.RunAllTasks(1);
+            Assert.AreEqual("abc", string.Concat(result));
+        }
+
+
+        [TestMethod]
+        public void StopOnException()
+        {
+            var result = new ConcurrentQueue<string>();
+
+            var job = new ParallelTopologicalJob(new ConsoleLogProvider())
+                .AddTask("a", () =>
+                {
+                    Task.Delay(50).Wait();
+                    result.Enqueue("a");
+                })
+                .AddTask("b", () =>
+                {
+                    result.Enqueue("b");
+                    throw new InvalidOperationException("Test exception");
+                })
+                .AddTask("c", () => result.Enqueue("c"), new[] {"a"});
+
+
+            var e = TestUtility.ShouldFail<AggregateException>(() => job.RunAllTasks());
+            TestUtility.AssertContains(e.InnerException.Message, "Test exception");
+
+            Assert.AreEqual("ab", string.Concat(result.OrderBy(a => a)));
+        }
+
+        [TestMethod]
+        public void CorrectlyCancels()
+        {
+            var result = new ConcurrentQueue<string>();
+            var job = new ParallelTopologicalJob(new ConsoleLogProvider())
+                .AddTask("a", () =>
                 {
                     Task.Delay(100).Wait();
-                    Console.WriteLine("o1");
-                }, Enumerable.Empty<string>())
-                .AddTask("2", () =>
-                {
-                    Console.WriteLine("o2");
-                    throw new InvalidOperationException("ble");
-                }, Enumerable.Empty<string>())
-                .AddTask("3", () => Console.WriteLine("o3"), new[] { "1" });
+                    result.Enqueue("a");
+                })
+                .AddTask("b", () => result.Enqueue("b"))
+                .AddTask("c", () => result.Enqueue("c"), new[] { "a" });
 
 
             var cancellationTokenSource = new CancellationTokenSource();
             var task = Task.Run(() => job.RunAllTasks(0, cancellationTokenSource.Token));
             Task.Delay(50).Wait();
             cancellationTokenSource.Cancel();
-            task.Wait();
-            Console.WriteLine(task.Exception);
+            var e = TestUtility.ShouldFail<AggregateException>(() => task.Wait());
+            Assert.IsTrue(e.InnerException is OperationCanceledException);
+
+            // only b completes immediately after cancellation
+            Assert.AreEqual("b", string.Concat(result));
+
+            Task.Delay(100).Wait();
+            // a should complete also, since it has been started prior to cancellation
+            Assert.AreEqual("ba", string.Concat(result));
         }
 
         [TestMethod]
-        public void TestTrivial4()
+        public void ComplexDependencies()
         {
-            var job = new ParallelTopologicalJob(new ConsoleLogProvider())
-                .AddTask("1", () =>
-                {
-                    Task.Delay(100).Wait();
-                    Console.WriteLine("o1");
-                }, Enumerable.Empty<string>())
-                .AddTask("2", () =>
-                {
-                    Console.WriteLine("o2");
-                }, Enumerable.Empty<string>())
-                .AddTask("3", () => Console.WriteLine("o3"), new[] { "1" });
+            var result = new ConcurrentQueue<string>();
 
-            job.RunAllTasks(2);
+            var job = new ParallelTopologicalJob(new ConsoleLogProvider())
+                .AddTask("a", () => result.Enqueue("a"), new[] {"c", "d", "e"})
+                .AddTask("b", () => result.Enqueue("b"), new[] {"c", "d", "e"})
+                .AddTask("c", () => result.Enqueue("c"), new[] {"d", "e"})
+                .AddTask("d", () => result.Enqueue("d"), new[] {"e"})
+                .AddTask("e", () => result.Enqueue("e"));
+
+            job.RunAllTasks();
+            var sequence = string.Concat(result);
+            Assert.IsTrue(sequence == "edcab" || sequence == "edcba");
         }
 
-    }
+        [TestMethod]
+        public void UnresolvableDependencies()
+        {
+            var result = new ConcurrentQueue<string>();
 
+            var job = new ParallelTopologicalJob(new ConsoleLogProvider())
+                .AddTask("a", () => result.Enqueue("a"), new[] { "c", "d", "e" })
+                .AddTask("b", () => result.Enqueue("b"), new[] { "c", "d", "e" })
+                .AddTask("c", () => result.Enqueue("c"), new[] { "d", "e" })
+                .AddTask("d", () => result.Enqueue("d"), new[] { "a" })
+                .AddTask("e", () => result.Enqueue("e"));
+
+            TestUtility.ShouldFail<InvalidOperationException>(() => job.RunAllTasks(), "Unable to resolve required task dependencies");
+            Assert.AreEqual("e", string.Concat(result));
+        }
+    }
 }
