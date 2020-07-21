@@ -50,57 +50,59 @@ namespace Rhetos.Utilities
         public void RunAllTasks(int maxDegreeOfParallelism = -1, CancellationToken cancellationToken = default)
         {
             var sw = Stopwatch.StartNew();
-            var startedTasks = new Dictionary<string, Task>();
-            var completedTasks = new ConcurrentBag<string>();
 
-            while (true)
+            var runningTasks = new Dictionary<string, Task>();
+            var completedTasks = new Dictionary<string, Task>();
+            var anyFaulted = false;
+
+            while (completedTasks.Count < _tasks.Count)
             {
-                Task.Delay(1, cancellationToken).Wait(cancellationToken);
-                cancellationToken.ThrowIfCancellationRequested();
+                var maxNewTasksAllowed = maxDegreeOfParallelism > 0
+                    ? maxDegreeOfParallelism - runningTasks.Count
+                    : _tasks.Count;
 
-                // capture the state of completed tasks for further processing
-                var resolvedDependencies = new HashSet<string>(completedTasks);
-
-                // check for faulted tasks, if any, continue until all started are completed
-                if (startedTasks.Values.Any(task => task.IsFaulted))
+                // start new eligible tasks
+                if (maxNewTasksAllowed > 0 && !anyFaulted)
                 {
-                    if (startedTasks.Values.All(task => task.IsCompleted))
+                    var eligibleTasks = _tasks.Where(task =>
+                            !runningTasks.ContainsKey(task.Id)
+                            && !completedTasks.ContainsKey(task.Id)
+                            && task.Dependencies.All(dependency => completedTasks.ContainsKey(dependency)))
+                        .Take(maxNewTasksAllowed)
+                        .ToList();
+
+                    if (runningTasks.Count == 0 && eligibleTasks.Count == 0)
                     {
-                        _logger.Trace(() => $"Aborted further execution due to task errors.");
-                        break;
-                    }
-                    continue;
-                }
-
-                // are we all done?
-                if (resolvedDependencies.Count == _tasks.Count)
-                    break;
-
-                if (maxDegreeOfParallelism > 0 && startedTasks.Values.Count(task => !task.IsCompleted) >= maxDegreeOfParallelism)
-                    continue;
-
-                var firstAvailable = _tasks
-                    .FirstOrDefault(task => !startedTasks.ContainsKey(task.Id) && task.Dependencies.All(dependency => resolvedDependencies.Contains(dependency)));
-
-                if (firstAvailable == null)
-                {
-                    // no new tasks are available, but all started are completed
-                    if (resolvedDependencies.Count == startedTasks.Count)
-                    {
-                        var invalidTasks = _tasks.Where(task => !startedTasks.ContainsKey(task.Id));
+                        var invalidTasks = _tasks.Where(task => !completedTasks.ContainsKey(task.Id));
                         var invalidTaskReasons = invalidTasks
                             .Select(task => $"task '{task.Id}' requires {task.DependenciesInfo()}");
                         throw new InvalidOperationException($"Unable to resolve required task dependencies ({string.Join("; ", invalidTaskReasons)}).");
                     }
+
+                    foreach (var eligibleTask in eligibleTasks)
+                        runningTasks.Add(eligibleTask.Id, Task.Run(() => RunSingleTask(eligibleTask), cancellationToken));
                 }
-                else
+
+                Task.WaitAny(runningTasks.Values.ToArray(), cancellationToken);
+
+                // collect some of the completed tasks and process them
+                // due to race condition further processing might miss some completed tasks - they will be handled in the next iteration
+                var newlyCompletedTasks = runningTasks
+                    .Where(a => a.Value.IsCompleted)
+                    .ToList();
+
+                foreach (var task in newlyCompletedTasks)
                 {
-                    var newTask = Task.Run(() => RunSingleTask(firstAvailable, completedTasks));
-                    startedTasks.Add(firstAvailable.Id, newTask);
+                    completedTasks.Add(task.Key, task.Value);
+                    runningTasks.Remove(task.Key);
                 }
+
+                anyFaulted = completedTasks.Values.Any(task => task.IsFaulted);
+                if (anyFaulted && runningTasks.Count == 0)
+                    break;
             }
 
-            ThrowIfAnyTaskErrors(startedTasks);
+            ThrowIfAnyTaskErrors(completedTasks);
             _performanceLogger.Write(sw, () => $"Executed {_tasks.Count} tasks.");
         }
 
@@ -115,17 +117,14 @@ namespace Rhetos.Utilities
                 throw new AggregateException(errors);
         }
 
-        private void RunSingleTask(JobTask task, ConcurrentBag<string> completedTasks)
+        private void RunSingleTask(JobTask task)
         {
-            _logger.Trace(() => $"Starting '{task.Id}', dependencies: {task.DependenciesInfo()}.");
-
             var sw = Stopwatch.StartNew();
+            _logger.Trace(() => $"Starting '{task.Id}', dependencies: {task.DependenciesInfo()}.");
 
             task.Action();
 
             _performanceLogger.Write(sw, () => $"Task '{task.Id}' completed.");
-            _logger.Trace(() => $"'{task.Id}' completed.");
-            completedTasks.Add(task.Id);
         }
     }
 }

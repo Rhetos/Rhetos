@@ -24,7 +24,6 @@ using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 namespace Rhetos.Deployment
@@ -61,7 +60,6 @@ namespace Rhetos.Deployment
 
         public void ExecuteGenerators()
         {
-            var sw = Stopwatch.StartNew();
             _filesUtility.EmptyDirectory(_buildEnvironment.GeneratedAssetsFolder);
             _filesUtility.SafeCreateDirectory(_buildEnvironment.CacheFolder); // Cache is not deleted between builds.
             if(!string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder))
@@ -82,36 +80,84 @@ namespace Rhetos.Deployment
                 _sourceWriter.CleanUp();
         }
 
-        private ParallelTopologicalJob PrepareGeneratorsJob(IEnumerable<IGenerator> generators)
+        private ParallelTopologicalJob PrepareGeneratorsJob(IList<IGenerator> generators)
         {
-            var additionalDependencies = ParseAdditionalDependencies();
+            var allDependencies = ResolveDependencies(generators);
+            var validDependencies = FilterInvalidDependencies(generators, allDependencies);
 
             var job = new ParallelTopologicalJob(_logProvider);
             foreach (var generator in generators)
             {
-                var dependencies = generator.Dependencies ?? Enumerable.Empty<string>();
                 var generatorName = GetGeneratorName(generator);
-                if (additionalDependencies.TryGetValue(generatorName, out var additionForGenerator))
-                    dependencies = dependencies.Concat(additionForGenerator);
+                validDependencies.TryGetValue(generatorName, out var generatorDependencies);
 
                 job.AddTask(generatorName, () =>
                 {
                     _logger.Info(() => $"Starting generator '{generatorName}'.");
                     generator.Generate();
-                }, dependencies);
+                }, generatorDependencies ?? new List<string>());
             }
 
             return job;
         }
 
-        private Dictionary<string, List<string>> ParseAdditionalDependencies()
+        private Dictionary<string, List<string>> ResolveDependencies(IList<IGenerator> generators)
         {
-            var parsedDependencies = new Dictionary<string, List<string>>();
+            var explicitDependencies = generators
+                .Where(generator => generator.Dependencies != null)
+                .SelectMany(generator => generator.Dependencies.Select(dependency => (name: GetGeneratorName(generator), dependency)));
+
+            var mefDependencies = generators
+                .Select(generator => (name: GetGeneratorName(generator), dependency: _generatorsContainer.GetMetadata(generator, MefProvider.DependsOn)?.FullName))
+                .Where(pair => pair.dependency != null);
+            
+            var configurationDependencies = ParseAdditionalDependenciesFromConfiguration();
+
+            var allPairs = explicitDependencies
+                .Concat(mefDependencies)
+                .Concat(configurationDependencies);
+
+            return allPairs
+                .GroupBy(pair => pair.name)
+                .ToDictionary(group => group.Key, group => group.Select(pair => pair.dependency).ToList());
+        }
+
+        private Dictionary<string, List<string>> FilterInvalidDependencies(IList<IGenerator> generators, Dictionary<string, List<string>> dependencies)
+        {
+            var validGenerators = new HashSet<string>(generators.Select(GetGeneratorName));
+            var validDependencies = new Dictionary<string, List<string>>();
+
+            foreach (var generatorDependencies in dependencies)
+            {
+                if (validGenerators.Contains(generatorDependencies.Key))
+                {
+                    var invalidDependenciesForName = generatorDependencies.Value
+                        .Where(dependency => !validGenerators.Contains(dependency))
+                        .ToList();
+
+                    if (invalidDependenciesForName.Any())
+                    {
+                        string InvalidDependenciesInfo() => string.Join(", ", invalidDependenciesForName.Select(dependency => $"'{dependency}'"));
+                        _logger.Warning(() => $"Invalid dependencies specified for generator '{generatorDependencies.Key}': {InvalidDependenciesInfo()}");
+                    }
+                    validDependencies.Add(generatorDependencies.Key, generatorDependencies.Value.Except(invalidDependenciesForName).ToList());
+                }
+                else
+                {
+                    _logger.Warning(() => $"Invalid generator name '{generatorDependencies.Key}' encountered in generator dependencies.");
+                }
+            }
+
+            return validDependencies;
+        }
+
+        private List<(string name, string dependency)> ParseAdditionalDependenciesFromConfiguration()
+        {
+            var pairs = new List<(string name, string dependency)>();
 
             if (_buildOptions.AdditionalGeneratorDependencies == null || _buildOptions.AdditionalGeneratorDependencies.Count() == 0)
-                return parsedDependencies;
+                return pairs;
 
-            var pairs = new List<(string name, string dependency)>();
             foreach (var entry in _buildOptions.AdditionalGeneratorDependencies)
             {
                 var parts = entry.Split(new[] {':'}, StringSplitOptions.RemoveEmptyEntries);
@@ -122,11 +168,9 @@ namespace Rhetos.Deployment
                 pairs.Add((parts[0], parts[1]));
             }
 
-            _logger.Info(() => $"Parsed {pairs.Count} additional generator dependencies from configuration.");
+            _logger.Trace(() => $"Parsed {pairs.Count} additional generator dependencies from configuration.");
 
-            return pairs
-                .GroupBy(pair => pair.name)
-                .ToDictionary(group => group.Key, group => group.Select(pair => pair.dependency).ToList());
+            return pairs;
         }
 
         /// <summary>

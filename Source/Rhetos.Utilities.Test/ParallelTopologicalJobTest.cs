@@ -94,7 +94,7 @@ namespace Rhetos.Utilities.Test
             var job = new ParallelTopologicalJob(new ConsoleLogProvider())
                 .AddTask("a", () =>
                 {
-                    Task.Delay(100).Wait();
+                    Task.Delay(200).Wait();
                     result.Enqueue("a");
                 })
                 .AddTask("b", () => result.Enqueue("b"))
@@ -111,7 +111,7 @@ namespace Rhetos.Utilities.Test
             // only b completes immediately after cancellation
             Assert.AreEqual("b", string.Concat(result));
 
-            Task.Delay(100).Wait();
+            Task.Delay(200).Wait();
             // a should complete also, since it has been started prior to cancellation
             Assert.AreEqual("ba", string.Concat(result));
         }
