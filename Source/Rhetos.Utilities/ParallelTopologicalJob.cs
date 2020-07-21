@@ -66,7 +66,7 @@ namespace Rhetos.Utilities
                 {
                     if (startedTasks.Values.All(task => task.IsCompleted))
                     {
-                        _logger.Error(() => $"Aborted further execution due to task errors.");
+                        _logger.Trace(() => $"Aborted further execution due to task errors.");
                         break;
                     }
                     continue;
@@ -118,17 +118,12 @@ namespace Rhetos.Utilities
         private void RunSingleTask(JobTask task, ConcurrentBag<string> completedTasks)
         {
             _logger.Trace(() => $"Starting '{task.Id}', dependencies: {task.DependenciesInfo()}.");
-            try
-            {
-                var sw = Stopwatch.StartNew();
-                task.Action();
-                _performanceLogger.Write(sw, () => $"Task '{task.Id}' completed.");
-            }
-            catch (Exception e)
-            {
-                _logger.Error(() => $"Error during invocation of task '{task.Id}': {e}.");
-                throw;
-            }
+
+            var sw = Stopwatch.StartNew();
+
+            task.Action();
+
+            _performanceLogger.Write(sw, () => $"Task '{task.Id}' completed.");
             _logger.Trace(() => $"'{task.Id}' completed.");
             completedTasks.Add(task.Id);
         }

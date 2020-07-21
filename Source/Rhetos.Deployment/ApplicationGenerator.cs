@@ -72,12 +72,11 @@ namespace Rhetos.Deployment
             var generators = _generatorsContainer.GetPlugins().ToArray();
             var job = PrepareGeneratorsJob(generators);
 
-            _logger.Info(() => $"Starting parallel execution of {generators.Length} generators.");
+            _logger.Trace(() => $"Starting parallel execution of {generators.Length} generators.");
             if (_buildOptions.MaxExecuteGeneratorsParallelism > 0)
                 _logger.Info(() => $"Using max {_buildOptions.MaxExecuteGeneratorsParallelism} degree of parallelism from configuration.");
 
             job.RunAllTasks(_buildOptions.MaxExecuteGeneratorsParallelism);
-            _logger.Info(() => $"Executed {generators.Length} application generators in {sw.ElapsedMilliseconds:#,0} ms.");
 
             if(!string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder))
                 _sourceWriter.CleanUp();
@@ -117,8 +116,8 @@ namespace Rhetos.Deployment
             {
                 var parts = entry.Split(new[] {':'}, StringSplitOptions.RemoveEmptyEntries);
                 if (parts.Length != 2)
-                    throw new InvalidOperationException($"Invalid entry '{entry}' in {nameof(BuildOptions)}.{nameof(BuildOptions.AdditionalGeneratorDependencies)} configuration key."
-                        + " Expected \"<GeneratorName>:<GeneratorDependencyName>\" format.");
+                    throw new InvalidOperationException($"Invalid entry '{entry}' in {OptionsAttribute.GetConfigurationPath<BuildOptions>()}:{nameof(BuildOptions.AdditionalGeneratorDependencies)} configuration key."
+                        + " Expected \"<GeneratorTypeFullName>:<GeneratorDependencyTypeFullName>\" format.");
 
                 pairs.Add((parts[0], parts[1]));
             }
