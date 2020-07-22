@@ -148,5 +148,22 @@ namespace Rhetos.Utilities.Test
             TestUtility.ShouldFail<InvalidOperationException>(() => job.RunAllTasks(), "Unable to resolve required task dependencies");
             Assert.AreEqual("e", string.Concat(result));
         }
+
+        [TestMethod]
+        public void UnresolvableDependenciesLongCycle()
+        {
+            var result = new ConcurrentQueue<string>();
+
+            var job = new ParallelTopologicalJob(new ConsoleLogProvider())
+                .AddTask("a", () => result.Enqueue("a"), new[] { "b" })
+                .AddTask("b", () => result.Enqueue("b"), new[] { "c" })
+                .AddTask("c", () => result.Enqueue("c"), new[] { "d" })
+                .AddTask("d", () => result.Enqueue("d"), new[] { "a" });
+
+            TestUtility.ShouldFail<InvalidOperationException>(() => job.RunAllTasks(),
+                "Unable to resolve required task dependencies",
+                "'a'", "'b'", "'c'", "'d'");
+            Assert.AreEqual("", string.Concat(result));
+        }
     }
 }
