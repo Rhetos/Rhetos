@@ -90,30 +90,41 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void CorrectlyCancels()
         {
+            var lockAStart = new SemaphoreSlim(0, 1);
+            var lockAFinished = new SemaphoreSlim(0, 1);
+            var lockBFinished = new SemaphoreSlim(0, 1);
+
             var result = new ConcurrentQueue<string>();
             var job = new ParallelTopologicalJob(new ConsoleLogProvider())
                 .AddTask("a", () =>
                 {
-                    Task.Delay(200).Wait();
-                    result.Enqueue("a");
+                    result.Enqueue("a1");
+                    lockAStart.Wait();
+                    result.Enqueue("a2");
+                    lockAFinished.Release();
                 })
-                .AddTask("b", () => result.Enqueue("b"))
+                .AddTask("b", () =>
+                {
+                    result.Enqueue("b");
+                    lockBFinished.Release();
+                })
                 .AddTask("c", () => result.Enqueue("c"), new[] { "a" });
-
 
             var cancellationTokenSource = new CancellationTokenSource();
             var task = Task.Run(() => job.RunAllTasks(0, cancellationTokenSource.Token));
-            Task.Delay(50).Wait();
+
+            lockBFinished.Wait(); // Wait for "b" to finish.
             cancellationTokenSource.Cancel();
             var e = TestUtility.ShouldFail<AggregateException>(() => task.Wait());
             Assert.IsTrue(e.InnerException is OperationCanceledException);
 
             // only b completes immediately after cancellation
-            Assert.AreEqual("b", string.Concat(result));
+            Assert.AreEqual("a1b", string.Concat(result));
+            lockAStart.Release(); // Allow "a" to run now.
 
-            Task.Delay(200).Wait();
             // a should complete also, since it has been started prior to cancellation
-            Assert.AreEqual("ba", string.Concat(result));
+            lockAFinished.Wait(); // Wait for "a" to finish.
+            Assert.AreEqual("a1ba2", string.Concat(result));
         }
 
         [TestMethod]
