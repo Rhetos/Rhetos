@@ -106,12 +106,15 @@ namespace Rhetos.Deployment
             var explicitDependencies = generators
                 .Where(generator => generator.Dependencies != null)
                 .SelectMany(generator => generator.Dependencies.Select(dependency => (name: GetGeneratorName(generator), dependency)));
+            Log("Explicit dependencies", explicitDependencies);
 
             var mefDependencies = generators
                 .Select(generator => (name: GetGeneratorName(generator), dependency: _generatorsContainer.GetMetadata(generator, MefProvider.DependsOn)?.FullName))
                 .Where(pair => pair.dependency != null);
-            
+            Log("MEF dependencies", mefDependencies);
+
             var configurationDependencies = ParseAdditionalDependenciesFromConfiguration();
+            Log("Configuration dependencies", configurationDependencies);
 
             var allPairs = explicitDependencies
                 .Concat(mefDependencies)
@@ -119,7 +122,12 @@ namespace Rhetos.Deployment
 
             return allPairs
                 .GroupBy(pair => pair.name)
-                .ToDictionary(group => group.Key, group => group.Select(pair => pair.dependency).ToList());
+                .ToDictionary(group => group.Key, group => group.Select(pair => pair.dependency).Distinct().ToList());
+        }
+
+        private void Log(string title, IEnumerable<(string name, string dependency)> dependencies)
+        {
+            _logger.Trace(() => $"{title}: {string.Join(", ", dependencies.Select(d => $"{d.name} -> {d.dependency}"))}.");
         }
 
         private Dictionary<string, List<string>> FilterInvalidDependencies(IList<IGenerator> generators, Dictionary<string, List<string>> dependencies)
@@ -138,7 +146,7 @@ namespace Rhetos.Deployment
                     if (invalidDependenciesForName.Any())
                     {
                         string InvalidDependenciesInfo() => string.Join(", ", invalidDependenciesForName.Select(dependency => $"'{dependency}'"));
-                        _logger.Warning(() => $"Invalid dependencies specified for generator '{generatorDependencies.Key}': {InvalidDependenciesInfo()}");
+                        _logger.Warning(() => $"Invalid dependencies specified for generator '{generatorDependencies.Key}': {InvalidDependenciesInfo()}.");
                     }
                     validDependencies.Add(generatorDependencies.Key, generatorDependencies.Value.Except(invalidDependenciesForName).ToList());
                 }
@@ -155,7 +163,7 @@ namespace Rhetos.Deployment
         {
             var pairs = new List<(string name, string dependency)>();
 
-            if (_buildOptions.AdditionalGeneratorDependencies == null || _buildOptions.AdditionalGeneratorDependencies.Count() == 0)
+            if (_buildOptions.AdditionalGeneratorDependencies == null || !_buildOptions.AdditionalGeneratorDependencies.Any())
                 return pairs;
 
             foreach (var entry in _buildOptions.AdditionalGeneratorDependencies)
@@ -167,8 +175,6 @@ namespace Rhetos.Deployment
 
                 pairs.Add((parts[0], parts[1]));
             }
-
-            _logger.Trace(() => $"Parsed {pairs.Count} additional generator dependencies from configuration.");
 
             return pairs;
         }
