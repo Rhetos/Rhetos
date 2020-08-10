@@ -28,7 +28,8 @@ namespace Rhetos
     {
         public static void PrintErrorSummary(Exception ex)
         {
-            while (ex is DependencyResolutionException && ex.InnerException != null)
+            while ((ex is DependencyResolutionException || ex is AggregateException)
+                && ex.InnerException != null)
                 ex = ex.InnerException;
 
             Console.WriteLine();
