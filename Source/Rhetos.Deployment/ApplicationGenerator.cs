@@ -24,6 +24,7 @@ using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Rhetos.Deployment
@@ -32,6 +33,7 @@ namespace Rhetos.Deployment
     {
         private readonly ILogProvider _logProvider;
         private readonly ILogger _logger;
+        private readonly ILogger _performanceLogger;
         private readonly IDslModel _dslModel;
         private readonly IPluginsContainer<IGenerator> _generatorsContainer;
         private readonly RhetosBuildEnvironment _buildEnvironment;
@@ -50,6 +52,7 @@ namespace Rhetos.Deployment
         {
             _logProvider = logProvider;
             _logger = logProvider.GetLogger(GetType().Name);
+            _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _dslModel = dslModel;
             _generatorsContainer = generatorsContainer;
             _buildEnvironment = buildEnvironment;
@@ -74,9 +77,11 @@ namespace Rhetos.Deployment
             if (_buildOptions.MaxExecuteGeneratorsParallelism > 0)
                 _logger.Info(() => $"Using max {_buildOptions.MaxExecuteGeneratorsParallelism} degree of parallelism from configuration.");
 
+            var sw = Stopwatch.StartNew();
             job.RunAllTasks(_buildOptions.MaxExecuteGeneratorsParallelism);
+            _performanceLogger.Write(sw, () => $"Executed {generators.Length} generators.");
 
-            if(!string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder))
+            if (!string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder))
                 _sourceWriter.CleanUp();
         }
 
@@ -93,8 +98,10 @@ namespace Rhetos.Deployment
 
                 job.AddTask(generatorName, () =>
                 {
-                    _logger.Info(() => $"Starting generator '{generatorName}'.");
+                    _logger.Info(() => $"Starting {generatorName}.");
+                    var sw = Stopwatch.StartNew();
                     generator.Generate();
+                    _performanceLogger.Write(sw, () => $"{generatorName} completed.");
                 }, generatorDependencies ?? new List<string>());
             }
 

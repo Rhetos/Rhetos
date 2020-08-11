@@ -20,7 +20,6 @@
 using Rhetos.Logging;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -48,12 +47,10 @@ namespace Rhetos.Utilities
 
         private readonly List<JobTask> _tasks = new List<JobTask>();
         private readonly ILogger _logger;
-        private readonly ILogger _performanceLogger;
 
         public ParallelJob(ILogProvider logProvider)
         {
             _logger = logProvider.GetLogger(nameof(ParallelJob));
-            _performanceLogger = logProvider.GetLogger("Performance." + nameof(ParallelJob));
         }
 
         public ParallelJob AddTask(string id, Action action, IEnumerable<string> dependencies = null)
@@ -134,12 +131,8 @@ namespace Rhetos.Utilities
 
         private void RunSingleTask(JobTask task)
         {
-            var sw = Stopwatch.StartNew();
-            _logger.Trace(() => $"Starting '{task.Id}', dependencies: {task.DependenciesInfo()}.");
-
+            _logger.Trace(() => $"Starting task '{task.Id}', dependencies: {task.DependenciesInfo()}.");
             task.Action();
-
-            _performanceLogger.Write(sw, () => $"Task '{task.Id}' completed.");
         }
     }
 }
