@@ -30,12 +30,12 @@ using Rhetos.TestCommon;
 namespace Rhetos.Utilities.Test
 {
     [TestClass]
-    public class ParallelTopologicalJobTest
+    public class ParallelJobTest
     {
         [TestMethod]
         public void ThrowOnDuplicateId()
         {
-            var job = new ParallelTopologicalJob(new ConsoleLogProvider())
+            var job = new ParallelJob(new ConsoleLogProvider())
                 .AddTask("a", () => { });
 
             TestUtility.ShouldFail<InvalidOperationException>(() => job.AddTask("a", () => { }), "has already been added");
@@ -46,7 +46,7 @@ namespace Rhetos.Utilities.Test
         {
             var result = new ConcurrentQueue<string>();
 
-            var job = new ParallelTopologicalJob(new ConsoleLogProvider())
+            var job = new ParallelJob(new ConsoleLogProvider())
                 .AddTask("a", () =>
                 {
                     Task.Delay(50).Wait();
@@ -63,7 +63,7 @@ namespace Rhetos.Utilities.Test
         public void ConfigureConcurrency()
         {
             var result = new ConcurrentQueue<string>();
-            var job = new ParallelTopologicalJob(new ConsoleLogProvider())
+            var job = new ParallelJob(new ConsoleLogProvider())
                 .AddTask("a", () =>
                 {
                     Task.Delay(50).Wait();
@@ -86,7 +86,7 @@ namespace Rhetos.Utilities.Test
         {
             var result = new ConcurrentQueue<string>();
 
-            var job = new ParallelTopologicalJob(new ConsoleLogProvider())
+            var job = new ParallelJob(new ConsoleLogProvider())
                 .AddTask("a", () =>
                 {
                     Task.Delay(50).Wait();
@@ -114,7 +114,7 @@ namespace Rhetos.Utilities.Test
             var lockBFinished = new SemaphoreSlim(0, 1);
 
             var result = new ConcurrentQueue<string>();
-            var job = new ParallelTopologicalJob(new ConsoleLogProvider())
+            var job = new ParallelJob(new ConsoleLogProvider())
                 .AddTask("a", () =>
                 {
                     result.Enqueue("a1");
@@ -151,7 +151,7 @@ namespace Rhetos.Utilities.Test
         {
             var result = new ConcurrentQueue<string>();
 
-            var job = new ParallelTopologicalJob(new ConsoleLogProvider())
+            var job = new ParallelJob(new ConsoleLogProvider())
                 .AddTask("a", () => result.Enqueue("a"), new[] {"c", "d", "e"})
                 .AddTask("b", () => result.Enqueue("b"), new[] {"c", "d", "e"})
                 .AddTask("c", () => result.Enqueue("c"), new[] {"d", "e"})
@@ -168,7 +168,7 @@ namespace Rhetos.Utilities.Test
         {
             var result = new ConcurrentQueue<string>();
 
-            var job = new ParallelTopologicalJob(new ConsoleLogProvider())
+            var job = new ParallelJob(new ConsoleLogProvider())
                 .AddTask("a", () => result.Enqueue("a"), new[] { "c", "d", "e" })
                 .AddTask("b", () => result.Enqueue("b"), new[] { "c", "d", "e" })
                 .AddTask("c", () => result.Enqueue("c"), new[] { "d", "e" })
@@ -184,7 +184,7 @@ namespace Rhetos.Utilities.Test
         {
             var result = new ConcurrentQueue<string>();
 
-            var job = new ParallelTopologicalJob(new ConsoleLogProvider())
+            var job = new ParallelJob(new ConsoleLogProvider())
                 .AddTask("a", () => result.Enqueue("a"), new[] { "b" })
                 .AddTask("b", () => result.Enqueue("b"), new[] { "c" })
                 .AddTask("c", () => result.Enqueue("c"), new[] { "d" })

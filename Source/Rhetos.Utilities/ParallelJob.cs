@@ -27,7 +27,7 @@ using System.Threading.Tasks;
 
 namespace Rhetos.Utilities
 {
-    public class ParallelTopologicalJob
+    public class ParallelJob
     {
         private class JobTask
         {
@@ -50,13 +50,13 @@ namespace Rhetos.Utilities
         private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
 
-        public ParallelTopologicalJob(ILogProvider logProvider)
+        public ParallelJob(ILogProvider logProvider)
         {
-            _logger = logProvider.GetLogger(nameof(ParallelTopologicalJob));
-            _performanceLogger = logProvider.GetLogger("Performance." + nameof(ParallelTopologicalJob));
+            _logger = logProvider.GetLogger(nameof(ParallelJob));
+            _performanceLogger = logProvider.GetLogger("Performance." + nameof(ParallelJob));
         }
 
-        public ParallelTopologicalJob AddTask(string id, Action action, IEnumerable<string> dependencies = null)
+        public ParallelJob AddTask(string id, Action action, IEnumerable<string> dependencies = null)
         {
             if (_tasks.Any(task => task.Id == id))
                 throw new InvalidOperationException($"Task with id '{id}' has already been added to the job.");

@@ -57,7 +57,7 @@
     <Compile Include="MsSqlUtilityTest.cs" />
     <Compile Include="NoLocalizerTest.cs" />
     <Compile Include="OracleSqlExecuterTest.cs" />
-    <Compile Include="ParallelTopologicalJobTest.cs" />
+    <Compile Include="ParallelJobTest.cs" />
     <Compile Include="ScriptPositionReportingTest.cs" />
     <Compile Include="SqlTransactionBatchesTests.cs" />
     <Compile Include="SqlTransactionBatchTest.cs" />

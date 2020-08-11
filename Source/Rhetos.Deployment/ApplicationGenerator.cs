@@ -80,12 +80,12 @@ namespace Rhetos.Deployment
                 _sourceWriter.CleanUp();
         }
 
-        private ParallelTopologicalJob PrepareGeneratorsJob(IList<IGenerator> generators)
+        private ParallelJob PrepareGeneratorsJob(IList<IGenerator> generators)
         {
             var allDependencies = ResolveDependencies(generators);
             var validDependencies = FilterInvalidDependencies(generators, allDependencies);
 
-            var job = new ParallelTopologicalJob(_logProvider);
+            var job = new ParallelJob(_logProvider);
             foreach (var generator in generators)
             {
                 var generatorName = GetGeneratorName(generator);
