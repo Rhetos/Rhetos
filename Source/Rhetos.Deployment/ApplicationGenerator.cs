@@ -126,10 +126,11 @@ namespace Rhetos.Deployment
             var generatorsNames = new HashSet<string>(generators.Select(GetGeneratorName));
             var legacyDependencies = new[]
             {
-                // Dependencies for backward compatibility of official plugins. "Rhetos.Dom.DomGenerator" was an implicit dependency of all generators before Rhetos v4.1.
+                // Dependencies for backward compatibility of official plugins. "DomGenerator" and "ResourcesGenerator" were implicit dependencies of all generators before Rhetos v4.1.
                 (name: "Rhetos.LegacyRestGenerator.LegacyRestGenerator", dependency: "Rhetos.Dom.DomGenerator"),
                 (name: "Rhetos.ODataGenerator.ODataGenerator", dependency: "Rhetos.Dom.DomGenerator"),
                 (name: "Rhetos.RestGenerator.RestGenerator", dependency: "Rhetos.Dom.DomGenerator"),
+                (name: "Angular2ModelGenerator.Angular2ModelGenerator", dependency: "Rhetos.Deployment.ResourcesGenerator"),
             }.Where(d => generatorsNames.Contains(d.name) && generatorsNames.Contains(d.dependency));
             Log("Legacy dependencies", legacyDependencies);
 
