@@ -162,9 +162,9 @@ namespace Rhetos.Utilities
         {
             Dictionary<string, List<string>> duplicatesByTarget =_filesByDestination
                 .SelectMany(destination => destination.Value)
-                .GroupBy(copyFile => copyFile.Target)
+                .GroupBy(copyFile => Path.GetFullPath(copyFile.Target).ToLower())
                 .Where(group => group.Count() > 1)
-                .ToDictionary(group => group.Key, group => group.Select(copyFile => copyFile.File).ToList());
+                .ToDictionary(group => group.First().Target, group => group.Select(copyFile => copyFile.File).ToList());
 
             var ignoreFiles = new HashSet<string>();
             foreach (var group in duplicatesByTarget)
