@@ -79,7 +79,7 @@ namespace Rhetos.Deployment
 
             var sw = Stopwatch.StartNew();
             job.RunAllTasks(_buildOptions.MaxExecuteGeneratorsParallelism);
-            _performanceLogger.Write(sw, () => $"Executed {generators.Length} generators.");
+            _logger.Info($"Executed {generators.Length} generators in {sw.Elapsed.TotalSeconds:N2} seconds."); // Not using _performanceLogger to avoid warnings on long build duration. The warnings make sense only for subcomponents.
 
             if (!string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder))
                 _sourceWriter.CleanUp();
