@@ -94,7 +94,7 @@ namespace Rhetos.Compiler
                     }
                 }
 
-            _performanceLogger.Write(stopwatch, "Code generated.");
+            _performanceLogger.Write(stopwatch, $"Code generated for {typeof(TPlugin).FullName}.");
             return codeBuilder;
         }
     }
