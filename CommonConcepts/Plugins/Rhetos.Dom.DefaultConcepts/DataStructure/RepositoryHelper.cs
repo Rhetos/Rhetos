@@ -83,27 +83,31 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.InsertCode(registerRepository, ModuleCodeGenerator.CommonAutofacConfigurationMembersTag);
         }
         
-        public static void GenerateReadableRepository(DataStructureInfo info, ICodeBuilder codeBuilder, string loadFunctionBody)
+        public static void GenerateReadableRepository(DataStructureInfo info, ICodeBuilder codeBuilder, string loadFunctionBody = null)
         {
             GenerateRepository(info, codeBuilder);
 
             string module = info.Module.Name;
             string entity = info.Name;
 
-            string repositoryReadFunctionsSnippet = $@"[Obsolete(""Use Load() or Query() method."")]
+            if (loadFunctionBody != null)
+            {
+                string repositoryReadFunctionsSnippet = $@"[Obsolete(""Use Load() or Query() method."")]
         public override global::{module}.{entity}[] All()
         {{
             {loadFunctionBody}
         }}
 
         ";
-            codeBuilder.InsertCode(repositoryReadFunctionsSnippet, RepositoryMembers, info);
+                codeBuilder.InsertCode(repositoryReadFunctionsSnippet, RepositoryMembers, info);
+            }
+
             codeBuilder.InsertCode($"Common.ReadableRepositoryBase<{module}.{entity}>", OverrideBaseTypeTag, info);
         }
 
-        public static void GenerateQueryableRepository(DataStructureInfo info, ICodeBuilder codeBuilder, string queryFunctionBody, string loadFunctionBody = null)
+        public static void GenerateQueryableRepository(DataStructureInfo info, ICodeBuilder codeBuilder, string queryFunctionBody = null, string loadFunctionBody = null)
         {
-            GenerateReadableRepository(info, codeBuilder, loadFunctionBody ?? "return Query().ToSimple().ToArray();");
+            GenerateReadableRepository(info, codeBuilder, loadFunctionBody);
 
             string module = info.Module.Name;
             string entity = info.Name;
@@ -119,8 +123,16 @@ namespace Rhetos.Dom.DefaultConcepts
 
         ";
                 codeBuilder.InsertCode(repositoryQueryFunctionsSnippet, RepositoryMembers, info);
-                codeBuilder.InsertCode($"Common.QueryableRepositoryBase<Common.Queryable.{module}_{entity}, {module}.{entity}>", OverrideBaseTypeTag, info);
             }
+
+            codeBuilder.InsertCode($"Common.QueryableRepositoryBase<Common.Queryable.{module}_{entity}, {module}.{entity}>", OverrideBaseTypeTag, info);
+            GenerateQueryableConversionMethods(info, codeBuilder);
+        }
+
+        public static void GenerateQueryableConversionMethods(DataStructureInfo info, ICodeBuilder codeBuilder)
+        {
+            string module = info.Module.Name;
+            string entity = info.Name;
 
             string snippetToSimpleObjectsConversion = $@"/// <summary>Converts the objects with navigation properties to simple objects with primitive properties.</summary>
         public static IQueryable<{module}.{entity}> ToSimple(this IQueryable<Common.Queryable.{module}_{entity}> query)

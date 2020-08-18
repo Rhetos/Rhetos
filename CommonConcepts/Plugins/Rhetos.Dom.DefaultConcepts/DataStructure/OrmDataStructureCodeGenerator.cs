@@ -39,16 +39,14 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (DataStructureInfo)conceptInfo;
-            var orm = info as IOrmDataStructure;
-
-            if (orm != null)
+            if (info is IOrmDataStructure)
             {
                 string module = info.Module.Name;
                 string entity = info.Name;
 
                 DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, $"EntityBase<{module}.{entity}>", typeof(EntityBase<>), info);
 
-                RepositoryHelper.GenerateQueryableRepository(info, codeBuilder, QuerySnippet(info));
+                RepositoryHelper.GenerateQueryableRepository(info, codeBuilder);
                 codeBuilder.InsertCode($"Common.OrmRepositoryBase<Common.Queryable.{module}_{entity}, {module}.{entity}>", RepositoryHelper.OverrideBaseTypeTag, info);
 
                 codeBuilder.InsertCode(
@@ -56,13 +54,6 @@ namespace Rhetos.Dom.DefaultConcepts
                         info.Module.Name, info.Name),
                     DomInitializationCodeGenerator.EntityFrameworkContextMembersTag);
             }
-        }
-
-        protected static string QuerySnippet(DataStructureInfo info)
-        {
-            return string.Format(
-                @"return _executionContext.EntityFrameworkContext.{0}_{1}.AsNoTracking();",
-                info.Module.Name, info.Name);
         }
     }
 }

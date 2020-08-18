@@ -43,7 +43,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
             return compute_Function(_domRepository{DataStructureUtility.ComputationAdditionalParametersArgumentTag.Evaluate(info)});";
 
-            RepositoryHelper.GenerateQueryableRepository(info, codeBuilder, null, loadFunctionBodySnippet);
+            RepositoryHelper.GenerateReadableRepository(info, codeBuilder, loadFunctionBodySnippet);
+            RepositoryHelper.GenerateQueryableConversionMethods(info, codeBuilder);
 
             DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, $"EntityBase<{info.Module.Name}.{info.Name}>", typeof(EntityBase<>), info);
         }

@@ -420,12 +420,23 @@ $@"namespace Common
             var query = _executionContext.GenericRepository(typeof(TEntity).FullName).Query(parameter, parameterType);
             return (IQueryable<TQueryableEntity>)query;
         }}
+
+        [Obsolete(""Use Load() or Query() method."")]
+        public override TEntity[] All()
+        {{
+            return Query().GenericToSimple<TEntity>().ToArray();
+        }}
     }}
 
     public abstract class OrmRepositoryBase<TQueryableEntity, TEntity> : QueryableRepositoryBase<TQueryableEntity, TEntity>
         where TEntity : class, IEntity
         where TQueryableEntity : class, IEntity, TEntity, IQueryableEntity<TEntity>
     {{
+        public override IQueryable<TQueryableEntity> Query()
+        {{
+            return _executionContext.EntityFrameworkContext.Set<TQueryableEntity>().AsNoTracking();
+        }}
+
         public IQueryable<TQueryableEntity> Filter(IQueryable<TQueryableEntity> query, IEnumerable<Guid> ids)
         {{
             if (!(ids is System.Collections.IList))
