@@ -35,6 +35,10 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly string EntityFrameworkContextInitializeTag = "/*EntityFrameworkContextInitialize*/";
         public static readonly string EntityFrameworkConfigurationTag = "/*EntityFrameworkConfiguration*/";
         public static readonly string QueryExtensionsMembersTag = "/*QueryExtensionsMembers*/";
+        public static readonly string RepositoryBaseMembersTag = "/*RepositoryBaseMembers*/";
+        public static readonly string ReadableRepositoryBaseMembersTag = "/*ReadableRepositoryBaseMembers*/";
+        public static readonly string QueryableRepositoryBaseMembersTag = "/*QueryableRepositoryBaseMembers*/";
+        public static readonly string OrmRepositoryBaseMembersTag = "/*OrmRepositoryBaseMembers*/";
 
         private readonly RhetosBuildEnvironment _buildEnvironment;
         private readonly CommonConceptsOptions _commonConceptsOptions;
@@ -349,6 +353,8 @@ $@"namespace Common
     {{
         protected Common.DomRepository _domRepository;
         protected Common.ExecutionContext _executionContext;
+
+        {RepositoryBaseMembersTag}
     }}
 
     public abstract class ReadableRepositoryBase<TEntity> : RepositoryBase, IReadableRepository<TEntity>
@@ -376,6 +382,8 @@ $@"namespace Common
         {{
             return All();
         }}
+
+        {ReadableRepositoryBaseMembersTag}
     }}
 
     public abstract class QueryableRepositoryBase<TQueryableEntity, TEntity> : ReadableRepositoryBase<TEntity>, IQueryableRepository<TQueryableEntity, TEntity>
@@ -426,6 +434,8 @@ $@"namespace Common
         {{
             return Query().GenericToSimple<TEntity>().ToArray();
         }}
+
+        {QueryableRepositoryBaseMembersTag}
     }}
 
     public abstract class OrmRepositoryBase<TQueryableEntity, TEntity> : QueryableRepositoryBase<TQueryableEntity, TEntity>
@@ -462,6 +472,8 @@ $@"namespace Common
                     return query.Where(item => idsQuery.Contains(item.ID));
             }}
         }}
+
+        {OrmRepositoryBaseMembersTag}
     }}
 
     {ModuleCodeGenerator.CommonNamespaceMembersTag}{RestoreWarnings(_commonConceptsOptions)}
