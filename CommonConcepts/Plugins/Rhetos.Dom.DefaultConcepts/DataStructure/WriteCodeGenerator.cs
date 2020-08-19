@@ -51,7 +51,7 @@ namespace Rhetos.Dom.DefaultConcepts
         protected static string MemberFunctionsSnippet(WriteInfo info)
         {
             return string.Format(
-        @"public void Save(IEnumerable<{0}.{1}> insertedNew, IEnumerable<{0}.{1}> updatedNew, IEnumerable<{0}.{1}> deletedIds, bool checkUserPermissions = false)
+        @"public virtual void Save(IEnumerable<{0}.{1}> insertedNew, IEnumerable<{0}.{1}> updatedNew, IEnumerable<{0}.{1}> deletedIds, bool checkUserPermissions = false)
         {{
             Rhetos.Utilities.CsUtility.Materialize(ref insertedNew);
             Rhetos.Utilities.CsUtility.Materialize(ref updatedNew);
