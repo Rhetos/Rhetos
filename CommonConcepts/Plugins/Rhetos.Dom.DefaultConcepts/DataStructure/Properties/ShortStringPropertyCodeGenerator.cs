@@ -17,16 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rhetos.Dsl.DefaultConcepts;
-using System.Globalization;
-using System.ComponentModel.Composition;
-using Rhetos.Extensibility;
-using Rhetos.Dsl;
 using Rhetos.Compiler;
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Extensibility;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -47,21 +42,20 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private string LimitStringLengthOnSaveSnippet(PropertyInfo info)
         {
-            return string.Format(
-            @"{{
-                var invalidItem = insertedNew.Concat(updatedNew).Where(newItem => newItem.{2} != null && newItem.{2}.Length > {3}).FirstOrDefault();
-                if (invalidItem != null)
-                    throw new Rhetos.UserException(
-                        ""Maximum length of property {{0}} is {{1}}."",
-                        new[] {{ ""{1}.{2}"", ""{3}"" }},
-                        ""DataStructure:{0}.{1},ID:"" + invalidItem.ID.ToString() + "",Property:{2}"",
-                        null);
-            }}
-            ",
-                    info.DataStructure.Module.Name,
-                    info.DataStructure.Name,
-                    info.Name,
-                    ShortStringPropertyInfo.MaxLength);
+            return $@"foreach (var newItem in insertedNew.Concat(updatedNew))
+                {nameof(ShortStringPropertyCodeGenerator)}.{nameof(CheckMaxLength)}(newItem.{info.Name}, newItem, ""{info.DataStructure.Module.Name}"", ""{info.DataStructure.Name}"", ""{info.Name}"");
+
+            ";
+        }
+
+        public static void CheckMaxLength(string propertyValue, IEntity invalidItem, string moduleName, string entityName, string propertyName)
+        {
+            if (propertyValue != null && propertyValue.Length > ShortStringPropertyInfo.MaxLength)
+                throw new UserException(
+                    "Maximum length of property {0} is {1}.",
+                    new object[] { $"{entityName}.{propertyName}", ShortStringPropertyInfo.MaxLength },
+                    $"DataStructure:{moduleName}.{entityName},ID:{invalidItem.ID},Property:{propertyName}",
+                    null);
         }
     }
 }
