@@ -30,10 +30,10 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(DefaultValueInfo))]
     public class DefaultValueCodeGenerator : IConceptCodeGenerator
     {
-        /// <summary>Inserted code can use enumerables "insertedNew", "updatedNew" and "deletedIds" but without navigation properties, because they are not binded to ORM.
-        /// Set bool variable setDefaultValue to false if you don't want default value to be assigned to a property
+        /// <summary>
+        /// Inserted code should be formatted "if (...) ... else".
         /// </summary>
-        public static readonly CsTag<DataStructureInfo> DefaultValueValidationTag = "Item DefaultValuetValidation";
+        public static readonly CsTag<DefaultValueInfo> DefaultValueOverrideTag = new CsTag<DefaultValueInfo>("DefaultValueOverride", TagType.Reverse);
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
@@ -44,18 +44,15 @@ namespace Rhetos.Dom.DefaultConcepts
         private string GenerateFuncAndCallForProperty(DefaultValueInfo info)
         {
             var propertyName = info.Property is ReferencePropertyInfo ? info.Property.Name + "ID" : info.Property.Name;
-            return $@"
-            {{
-                var defaultValueFunc_{propertyName} = Function<{info.Property.DataStructure.FullName}>.Create({info.Expression});
+            return $@"{{
+                var defaultValue_{propertyName} = Function<{info.Property.DataStructure.FullName}>.Create({info.Expression});
 
-                foreach (var _item in insertedNew)
-                {{
-                    bool setDefaultValue_{propertyName} = _item.{propertyName} == null;
-                    {DefaultValueValidationTag.Evaluate(info.Property.DataStructure)}
-                    if (setDefaultValue_{propertyName})
-                        _item.{propertyName} = defaultValueFunc_{propertyName}(_item);
-                }}
+                foreach (var item in insertedNew)
+                    {DefaultValueOverrideTag.Evaluate(info)}
+                    if (item.{propertyName} == null)
+                        item.{propertyName} = defaultValue_{propertyName}(item);
             }}
+
             ";
         }
     }
