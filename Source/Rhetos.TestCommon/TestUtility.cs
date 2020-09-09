@@ -141,7 +141,8 @@ namespace Rhetos.TestCommon
             var actualLines = actual.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
 
             for (int line = 0; line < Math.Min(expectedLines.Length, actualLines.Length); line++)
-                Assert.AreEqual(expectedLines[line], actualLines[line], "Line " + (line + 1) + "." + (message != null ? " " + message : ""));
+                if (!string.Equals(expectedLines[line], actualLines[line], StringComparison.Ordinal))
+                    Assert.Fail($"Line {line + 1} is different.\r\nExpected: <{expectedLines[line]}>.\r\nActual:   <{actualLines[line]}>.{(message != null ? "\r\n" + message : "")}");
 
             if (actualLines.Length != expectedLines.Length)
                 Assert.Fail("Given text has " + actualLines.Length + " lines instead of " + expectedLines.Length + ".");
