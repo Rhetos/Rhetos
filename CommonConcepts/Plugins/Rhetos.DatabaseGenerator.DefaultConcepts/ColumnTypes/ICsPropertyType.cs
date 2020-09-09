@@ -19,26 +19,28 @@
 
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
-using System;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
-    public interface IDatabaseColumnType<out T> : IConceptMetadataExtension<T> where T : PropertyInfo
+    /// <summary>
+    /// Interface for metadata plugins that provides C# type for a property.
+    /// </summary>
+    public interface ICsPropertyType<out T> : IConceptMetadataExtension<T> where T : PropertyInfo
     {
-        string ColumnType { get; }
+        /// <summary>
+        /// Returns the C# type for the specified property.
+        /// </summary>
+        string GetCsPropertyType(PropertyInfo concept);
     }
 
-    public static class DatabaseColumnTypeHelper
+    public static class CsPropertyTypeHelper
     {
-        public static string GetColumnType(this ConceptMetadata conceptMetadata, PropertyInfo property)
+        /// <summary>
+        /// Returns the C# type for the specified property.
+        /// </summary>
+        public static string GetCsPropertyType(this ConceptMetadata conceptMetadata, PropertyInfo property)
         {
-            return conceptMetadata.Get<IDatabaseColumnType<PropertyInfo>>(property.GetType())?.ColumnType;
-        }
-
-        [Obsolete("This method will not support concepts with configurable types. Use GetColumnType with PropertyInfo argument instead.")]
-        public static string GetColumnType(this ConceptMetadata conceptMetadata, Type propertyType)
-        {
-            return conceptMetadata.Get<IDatabaseColumnType<PropertyInfo>>(propertyType)?.ColumnType;
+            return conceptMetadata.Get<ICsPropertyType<PropertyInfo>>(property.GetType())?.GetCsPropertyType(property);
         }
     }
 }
