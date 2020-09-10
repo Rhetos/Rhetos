@@ -17,34 +17,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// Used for setting the default property values when inserting a new record.
+    /// An aggregate concept for all DefaultValue concepts on a singe data structure.
     /// </summary>
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("DefaultValue")]
-    public class DefaultValueInfo : IConceptInfo, IAlternativeInitializationConcept
+    public class DefaultValuesInfo : IConceptInfo
     {
         [ConceptKey]
-        public PropertyInfo Property { get; set; }
-
-        public string Expression { get; set; }
-
-        public DefaultValuesInfo Dependency_DefaultValues { get; set; }
-
-        public IEnumerable<string> DeclareNonparsableProperties()
-        {
-            return new[] { "Dependency_DefaultValues" };
-        }
-
-        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
-        {
-            Dependency_DefaultValues = new DefaultValuesInfo { DataStructure = Property.DataStructure };
-            createdConcepts = new IConceptInfo[] { Dependency_DefaultValues };
-        }
+        public DataStructureInfo DataStructure { get; set; }
     }
 }

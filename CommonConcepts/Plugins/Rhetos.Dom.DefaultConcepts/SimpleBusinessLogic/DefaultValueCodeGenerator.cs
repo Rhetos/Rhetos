@@ -30,7 +30,7 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(DefaultValueInfo))]
     public class DefaultValueCodeGenerator : IConceptCodeGenerator
     {
-        public static readonly CsTag<DefaultValueInfo> DefaultValueOverrideTag = new CsTag<DefaultValueInfo>("DefaultValueOverride", TagType.Reverse);
+        public static readonly CsTag<DefaultValueInfo> DefaultValueAndConditionTag = new CsTag<DefaultValueInfo>("DefaultValueAndCondition", TagType.Reverse);
         private readonly ConceptMetadata _conceptMetadata;
 
         public DefaultValueCodeGenerator(ConceptMetadata conceptMetadata)
@@ -43,7 +43,7 @@ namespace Rhetos.Dom.DefaultConcepts
             var info = (DefaultValueInfo)conceptInfo;
             string propertyName = info.Property is ReferencePropertyInfo ? info.Property.Name + "ID" : info.Property.Name;
 
-            var parsedExpression = new ParsedExpression(info.Expression, new[] { info.Property.DataStructure.FullName }, conceptInfo);
+            var parsedExpression = new ParsedExpression(info.Expression, new[] { info.Property.DataStructure.FullName }, info);
 
             string getDefaultValue;
             if (parsedExpression.ResultLiteral != null)
@@ -54,8 +54,8 @@ namespace Rhetos.Dom.DefaultConcepts
             {
                 string csPropertyType = _conceptMetadata.GetCsPropertyType(info.Property);
                 if (string.IsNullOrEmpty(csPropertyType))
-                    throw new DslSyntaxException(conceptInfo, $"{info.Property.GetKeywordOrTypeName()} is not supported" +
-                        $" for {conceptInfo.GetKeywordOrTypeName()}, because it does not provide concept metadata for C# property type.");
+                    throw new DslSyntaxException(info, $"{info.Property.GetKeywordOrTypeName()} is not supported" +
+                        $" for {info.GetKeywordOrTypeName()}, because it does not provide concept metadata for C# property type.");
 
                 string defaultValueMethod =
                     $@"private {csPropertyType} DefaultValue_{propertyName}{parsedExpression.MethodParametersAndBody}
@@ -67,16 +67,11 @@ namespace Rhetos.Dom.DefaultConcepts
             }
 
 
-            string saveCode = $@"foreach (var item in insertedNew)
-            {{
-                {DefaultValueOverrideTag.Evaluate(info)}
-                if (item.{propertyName} == null)
+            string setDefaultValue = $@"if (item.{propertyName} == null {DefaultValueAndConditionTag.Evaluate(info)})
                     item.{propertyName} = {getDefaultValue};
-            }}
+                ";
 
-            ";
-
-            codeBuilder.InsertCode(saveCode, WritableOrmDataStructureCodeGenerator.InitializationTag, info.Property.DataStructure);
+            codeBuilder.InsertCode(setDefaultValue, DefaultValuesCodeGenerator.SetDefaultValueTag, info.Dependency_DefaultValues);
         }
     }
 }
