@@ -378,9 +378,19 @@ $@"namespace Common
         public abstract TEntity[] All();
 
         [Obsolete(""Use Load() or Query() method."")]
-        public TEntity[] Filter(FilterAll filterAll)
+        public TEntity[] Load(FilterAll filterAll)
         {{
             return All();
+        }}
+
+        [Obsolete(""Use Load(parameter) method instead."")]
+        public TEntity[] Filter<T>(T parameter)
+        {{
+            var items = Load(parameter, typeof(T));
+            if (items is TEntity[] itemsArray)
+                return itemsArray;
+            else
+                return items.ToArray();
         }}
 
         {ReadableRepositoryBaseMembersTag}
@@ -391,7 +401,7 @@ $@"namespace Common
         where TQueryableEntity : class, IEntity, TEntity, IQueryableEntity<TEntity>
     {{
         [Obsolete(""Use Load(ids) or Query(ids) method."")]
-        public TEntity[] Filter(IEnumerable<Guid> ids)
+        public TEntity[] Load(IEnumerable<Guid> ids)
         {{
             if (!(ids is System.Collections.IList))
                 ids = ids.ToList();

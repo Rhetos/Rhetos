@@ -438,7 +438,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             if (!exists)
             {
-                method = RepositoryType.GetMethod("Filter", new Type[] { parameterType }); // TODO: Rename Filter with a single argument to Load
+                method = RepositoryType.GetMethod("Load", new Type[] { parameterType });
                 _repositoryLoadWithParameterMethod.Add(parameterType, method);
             }
 

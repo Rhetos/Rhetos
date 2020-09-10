@@ -49,7 +49,7 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string FilterImplementationSnippet(EntityHistoryAllPropertiesInfo info)
         {
             return string.Format(
-        @"public global::{0}.{1}[] Filter(System.DateTime parameter)
+        @"public global::{0}.{1}[] Load(System.DateTime parameter)
         {{
             var sql = ""SELECT * FROM {2}.{3}(@p0)"";
             var query = _executionContext.EntityFrameworkContext.Database.SqlQuery<{0}.{1}>(sql, parameter);

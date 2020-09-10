@@ -88,7 +88,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             return string.Format(@"(repository, parameter) =>
 	        {{
-                Guid[] references = repository.{2}.{3}.Filter(parameter).Select(item => item.ID).ToArray();
+                Guid[] references = repository.{2}.{3}.Load(parameter).Select(item => item.ID).ToArray();
 
 			    const int BufferSize = 1000;
 			    int n = references.Count();

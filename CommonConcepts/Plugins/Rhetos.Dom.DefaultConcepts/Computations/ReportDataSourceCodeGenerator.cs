@@ -46,7 +46,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return string.Format(@"
 	        {{
                 var dataSourceRepositiory = _domRepository.{1};
-                var data = dataSourceRepositiory.Filter(parameter);
+                var data = dataSourceRepositiory.Load(parameter);
                 var order = {2};
 	            reportData.Add(order, data);
             }}

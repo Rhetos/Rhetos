@@ -240,17 +240,17 @@ namespace Rhetos.Dsl.DefaultConcepts
                     throw new Rhetos.UserException(""Inserting into History is not allowed because property EntityID is not set."");
             
             Guid[] distinctEntityIDs = insertedNew.Union(updatedNew).Select(x => x.EntityID.Value).Distinct().ToArray();
-            Guid[] existingEntities = _domRepository.{1}.{0}.Filter(distinctEntityIDs).Select(x => x.ID).ToArray();
+            Guid[] existingEntities = _domRepository.{1}.{0}.Load(distinctEntityIDs).Select(x => x.ID).ToArray();
             Guid nonExistentEntityID = distinctEntityIDs.Except(existingEntities).FirstOrDefault();
             if (nonExistentEntityID != default(Guid))
                 throw new Rhetos.UserException(""Insert or update of History is not allowed because there is no entity with EntityID: {{0}}"", new[] {{ nonExistentEntityID.ToString() }}, null, null);
             
             // INSERT
             insertedEnt.AddRange(insertedNew
-                .Where(newItem => _domRepository.{1}.{0}.Filter(new[]{{newItem.EntityID.Value}}).SingleOrDefault().ActiveSince < newItem.ActiveSince)
+                .Where(newItem => _domRepository.{1}.{0}.Load(new[]{{newItem.EntityID.Value}}).SingleOrDefault().ActiveSince < newItem.ActiveSince)
                 .ToArray());
             insertedHist.AddRange(insertedNew
-                .Where(newItem => _domRepository.{1}.{0}.Filter(new[]{{newItem.EntityID.Value}}).SingleOrDefault().ActiveSince >= newItem.ActiveSince)
+                .Where(newItem => _domRepository.{1}.{0}.Load(new[]{{newItem.EntityID.Value}}).SingleOrDefault().ActiveSince >= newItem.ActiveSince)
                 .ToArray());
 
             // UPDATE
@@ -264,17 +264,17 @@ namespace Rhetos.Dsl.DefaultConcepts
                 
             // DELETE
             deletedHist.AddRange(deletedIds
-                .Where(item => _domRepository.{1}.{0}_Changes.Filter(new[]{{item.ID}}).Any())
+                .Where(item => _domRepository.{1}.{0}_Changes.Load(new[]{{item.ID}}).Any())
                 .ToArray());
                 
             var deletingHistIds = deletedHist.Select(hist => hist.ID).ToArray();
             deletedEnt.AddRange(deletedIds
-                .Where(item => _domRepository.{1}.{0}.Filter(new[]{{item.ID}}).Any())
+                .Where(item => _domRepository.{1}.{0}.Load(new[]{{item.ID}}).Any())
                 .Where(item => !(_domRepository.{1}.{0}_Changes.Query().Any(hist => hist.Entity.ID == item.ID && !deletingHistIds.Contains(hist.ID))))
                 .ToArray());
 
             var histBackup = deletedIds
-                .Where(item => _domRepository.{1}.{0}.Filter(new[]{{item.ID}}).Any())
+                .Where(item => _domRepository.{1}.{0}.Load(new[]{{item.ID}}).Any())
                 .Where(item => _domRepository.{1}.{0}_Changes.Query().Any(hist => hist.Entity.ID == item.ID && !deletingHistIds.Contains(hist.ID)))
                 .Select(item => _domRepository.{1}.{0}_History.Query()
                         .Where(fh => fh.Entity.ID == item.ID && fh.ID != item.ID && !deletingHistIds.Contains(fh.ID))
@@ -296,20 +296,20 @@ namespace Rhetos.Dsl.DefaultConcepts
                     }}),
                 updateHist.Select(item =>
                     {{
-                        var ret = _domRepository.{1}.{0}_Changes.Filter(new [] {{ item.ID }}).Single();{2}
+                        var ret = _domRepository.{1}.{0}_Changes.Load(new [] {{ item.ID }}).Single();{2}
                         return ret;
                     }}),
-                _domRepository.{1}.{0}_Changes.Filter(deletedHist.Select(de => de.ID)));
+                _domRepository.{1}.{0}_Changes.Load(deletedHist.Select(de => de.ID)));
 
             var updateCurrentAndAddHistory = insertedEnt.Select(item =>
                 {{
-                    var ret = _domRepository.{1}.{0}.Filter(new [] {{ item.EntityID.Value }}).Single();{2}
+                    var ret = _domRepository.{1}.{0}.Load(new [] {{ item.EntityID.Value }}).Single();{2}
                     return ret;
                 }});
             var updateCurrentItemsOnly = new Common.DontTrackHistory<{1}.{0}>();
             updateCurrentItemsOnly.AddRange(updateEnt.Select(item =>
                 {{
-                    var ret = _domRepository.{1}.{0}.Filter(new [] {{ item.EntityID.Value }}).Single();{2}
+                    var ret = _domRepository.{1}.{0}.Load(new [] {{ item.EntityID.Value }}).Single();{2}
                     return ret;
                 }}));
             _domRepository.{1}.{0}.Save(null, updateCurrentAndAddHistory, deletedEnt.Select(de => new {1}.{0} {{ ID = de.EntityID.Value }}));
