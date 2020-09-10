@@ -58,17 +58,24 @@ Module Test9
 	}
 	
 	SqlQueryable ComputeDocumentCreationInfo
-		"SELECT d.ID, Rank = (SELECT COUNT(*) FROM Test9.Document), Datum = GETDATE() FROM Test9.Document d"
+		"SELECT d.ID, Rank = (SELECT COUNT(*) FROM Test9.Document), Datum = GETDATE(), d.Name FROM Test9.Document d"
 	{
 		Extends Test9.Document;
 		Integer Rank;
 		DateTime Datum;
+        ShortString Name;
 	}
 	
 	Persisted DocumentCreationInfo Test9.ComputeDocumentCreationInfo
 	{
 		AllProperties;
 		ComputeForNewBaseItems;
+	}
+
+    Persisted DocumentCreationInfoSaveFilter Test9.ComputeDocumentCreationInfo
+	{
+		AllProperties;
+		ComputeForNewBaseItems 'items => items.Where(item => item.Name.StartsWith("Auto"))';
 	}
 	
 	Entity Part

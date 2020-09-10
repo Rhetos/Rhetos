@@ -190,6 +190,23 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
+        public void ComputeForNewBaseItemsWithSaveFilter()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+
+                var documentUser = new Test9.Document { Name = "UserDoc" };
+                var documentAuto = new Test9.Document { Name = "AutoDoc" };
+                repository.Test9.Document.Insert(new[] { documentUser, documentAuto });
+
+                // The save filter is implemented in DSL script on ComputeForNewBaseItems for documents starting with "Auto".
+                var computed = repository.Test9.DocumentCreationInfoSaveFilter.Load(new[] { documentUser.ID, documentAuto.ID });
+                Assert.AreEqual("AutoDoc", TestUtility.DumpSorted(computed, item => item.Name));
+            }
+        }
+
+        [TestMethod]
         public void KeepSynchronizedSimple()
         {
             using (var container = new RhetosTestContainer())
