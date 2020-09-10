@@ -81,7 +81,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return string.Format(
         @"public void Save(IEnumerable<{0}.{1}> insertedNew, IEnumerable<{0}.{1}> updatedNew, IEnumerable<{0}.{1}> deletedIds, bool checkUserPermissions = false)
         {{
-            if (!DomHelper.CleanUpSaveMethodArguments(ref insertedNew, ref updatedNew, ref deletedIds))
+            if (!DomHelper.InitializeSaveMethodItems(ref insertedNew, ref updatedNew, ref deletedIds))
                 return;
 
             " + ClearContextTag.Evaluate(info) + @"
@@ -91,18 +91,9 @@ namespace Rhetos.Dom.DefaultConcepts
             " + InitializationTag.Evaluate(info) + @"
 
             // Using old data, including lazy loading of navigation properties:
-		    IEnumerable<Common.Queryable.{0}_{1}> deleted;
-		    if(deletedIds.Any())
-                deleted = this.Query(deletedIds.Select(item => item.ID)).ToList();
-            else
-                deleted = new List<Common.Queryable.{0}_{1}>();
-            Rhetos.Utilities.Graph.SortByGivenOrder((List<Common.Queryable.{0}_{1}>)deleted, deletedIds.Select(item => item.ID), item => item.ID);
-		    IEnumerable<Common.Queryable.{0}_{1}> updated;
-		    if(updatedNew.Any())
-                updated = this.Query(updatedNew.Select(item => item.ID)).ToList();
-            else
-                updated = new List<Common.Queryable.{0}_{1}>();
-            Rhetos.Utilities.Graph.SortByGivenOrder((List<Common.Queryable.{0}_{1}>)updated, updatedNew.Select(item => item.ID), item => item.ID);
+
+            IEnumerable<Common.Queryable.{0}_{1}> deleted = DomHelper.LoadOldDataWithNavigationProperties(deletedIds, this);
+            IEnumerable<Common.Queryable.{0}_{1}> updated = DomHelper.LoadOldDataWithNavigationProperties(updatedNew, this);
 
             " + OldDataLoadedTag.Evaluate(info) + @"
 

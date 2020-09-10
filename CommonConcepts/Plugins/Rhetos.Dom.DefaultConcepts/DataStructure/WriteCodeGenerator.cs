@@ -17,16 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rhetos.Dsl.DefaultConcepts;
-using System.Globalization;
-using System.ComponentModel.Composition;
 using Rhetos.Compiler;
-using Rhetos.Extensibility;
 using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Extensibility;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -53,20 +48,8 @@ namespace Rhetos.Dom.DefaultConcepts
             return string.Format(
         @"public void Save(IEnumerable<{0}.{1}> insertedNew, IEnumerable<{0}.{1}> updatedNew, IEnumerable<{0}.{1}> deletedIds, bool checkUserPermissions = false)
         {{
-            Rhetos.Utilities.CsUtility.Materialize(ref insertedNew);
-            Rhetos.Utilities.CsUtility.Materialize(ref updatedNew);
-            Rhetos.Utilities.CsUtility.Materialize(ref deletedIds);
-
-            if (insertedNew == null) insertedNew = Enumerable.Empty<{0}.{1}>();
-            if (updatedNew == null) updatedNew = Enumerable.Empty<{0}.{1}>();
-            if (deletedIds == null) deletedIds = Enumerable.Empty<{0}.{1}>();
-
-            if (insertedNew.Count() == 0 && updatedNew.Count() == 0 && deletedIds.Count() == 0)
+            if (!DomHelper.InitializeSaveMethodItems(ref insertedNew, ref updatedNew, ref deletedIds))
                 return;
-
-            foreach (var item in insertedNew)
-                if (item.ID == Guid.Empty)
-                    item.ID = Guid.NewGuid();
 
             " + WritableOrmDataStructureCodeGenerator.ClearContextTag.Evaluate(info.DataStructure) + @"
 

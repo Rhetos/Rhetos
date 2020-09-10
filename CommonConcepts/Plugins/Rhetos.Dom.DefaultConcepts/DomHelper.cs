@@ -18,6 +18,7 @@
 */
 
 using Rhetos.Persistence;
+using Rhetos.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -37,14 +38,14 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <summary>
         /// Returns true if there are any records to save.
         /// </summary>
-        public static bool CleanUpSaveMethodArguments<TEntity>(ref IEnumerable<TEntity> insertedNew, ref IEnumerable<TEntity> updatedNew, ref IEnumerable<TEntity> deletedIds)
+        public static bool InitializeSaveMethodItems<TEntity>(ref IEnumerable<TEntity> insertedNew, ref IEnumerable<TEntity> updatedNew, ref IEnumerable<TEntity> deletedIds)
             where TEntity : IEntity, new()
         {
             MaterializeItemsToSave(ref insertedNew);
             MaterializeItemsToSave(ref updatedNew);
             MaterializeItemsToDelete(ref deletedIds);
 
-            if (insertedNew.Count() == 0 && updatedNew.Count() == 0 && deletedIds.Count() == 0)
+            if (!insertedNew.Any() && !updatedNew.Any() && !deletedIds.Any())
                 return false;
 
             foreach (var item in insertedNew)
@@ -103,6 +104,16 @@ namespace Rhetos.Dom.DefaultConcepts
                 else
                     throw new FrameworkException(message, saveException);
             }
+        }
+
+        public static IEnumerable<TQueryableEntity> LoadOldDataWithNavigationProperties<TQueryableEntity>(IEnumerable<IEntity> items, IQueryableRepository<TQueryableEntity> repository) where TQueryableEntity : class, IEntity
+        {
+            var loaded = items.Any()
+                ? repository.Query(items.Select(item => item.ID)).ToList()
+                : new List<TQueryableEntity>();
+
+            Graph.SortByGivenOrder(loaded, items.Select(item => item.ID), item => item.ID);
+            return loaded;
         }
     }
 }
