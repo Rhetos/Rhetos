@@ -17,11 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
@@ -32,7 +28,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ComposableFilterBy")]
-    public class ComposableFilterByInfo : IMacroConcept
+    public class ComposableFilterByInfo : IConceptInfo
     {
         [ConceptKey]
         public DataStructureInfo Source { get; set; }
@@ -41,18 +37,5 @@ namespace Rhetos.Dsl.DefaultConcepts
         public string Parameter { get; set; }
 
         public string Expression { get; set; }
-
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
-        {
-            return new[]
-            {
-                new FilterByInfo
-                {
-                    Source = Source,
-                    Parameter = Parameter,
-                    Expression = string.Format(@"(repository, parameter) => repository.{0}.Filter(repository.{0}.Query(), parameter).ToArray()", Source.GetKeyProperties())
-                }
-            };
-        }
     }
 }
