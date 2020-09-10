@@ -63,8 +63,8 @@ namespace Rhetos.Dom.DefaultConcepts
                         + CsUtility.QuotedString(referencedOrmDataStructure.GetOrmSchema() + "." + referencedOrmDataStructure.GetOrmDatabaseObject()) + @", "
                         + CsUtility.QuotedString("ID") + @", "
                         + CsUtility.QuotedString(ReferencePropertyConstraintDatabaseDefinition.GetConstraintName(info)) + @"))
-                    ((Rhetos.UserException)interpretedException).SystemMessage = " + CsUtility.QuotedString(systemMessage) + @";
-                ";
+                        ((Rhetos.UserException)interpretedException).SystemMessage = " + CsUtility.QuotedString(systemMessage) + @";
+                    ";
                     codeBuilder.InsertCode(onEnterInterpretSqlError, WritableOrmDataStructureCodeGenerator.OnDatabaseErrorTag, info.DataStructure);
                 }
 
@@ -74,8 +74,8 @@ namespace Rhetos.Dom.DefaultConcepts
                         + CsUtility.QuotedString(ormDataStructure.GetOrmSchema() + "." + ormDataStructure.GetOrmDatabaseObject()) + @", "
                         + CsUtility.QuotedString(info.GetSimplePropertyName()) + @", "
                         + CsUtility.QuotedString(ReferencePropertyConstraintDatabaseDefinition.GetConstraintName(info)) + @"))
-                    ((Rhetos.UserException)interpretedException).SystemMessage = " + CsUtility.QuotedString(systemMessage) + @";
-                ";
+                        ((Rhetos.UserException)interpretedException).SystemMessage = " + CsUtility.QuotedString(systemMessage) + @";
+                    ";
                     codeBuilder.InsertCode(onDeleteInterpretSqlError, WritableOrmDataStructureCodeGenerator.OnDatabaseErrorTag, info.Referenced);
                 }
             }

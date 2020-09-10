@@ -17,7 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Persistence;
 using Rhetos.Utilities;
 using System;
 using System.Collections;
@@ -25,8 +24,6 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -71,14 +68,72 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             if (items == null)
                 items = Enumerable.Empty<TEntity>();
-            if (items is IQueryable<IEntity>)
+            if (items is IQueryable<IEntity> queryable)
                 // IQueryable Select will generate a better SQL query instead. IEnumerable Select would load all columns.
-                items = ((IQueryable<IEntity>)items).Select(item => new TEntity { ID = item.ID }).ToList();
+                items = queryable.Select(item => new TEntity { ID = item.ID }).ToList();
             else if (!(items is IList))
                 items = items.Select(item => new TEntity { ID = item.ID }).ToList();
         }
 
         public enum SaveOperation { None, Insert, Update, Delete };
+
+        public static void EntityFrameworkOptimizedSave<TEntity, TQueryableEntity>(
+            IEnumerable<TEntity> insertedNew,
+            IEnumerable<TEntity> updatedNew,
+            IEnumerable<TEntity> deletedIds,
+            Func<TEntity, TQueryableEntity> toNavigation,
+            bool checkUserPermissions,
+            DbContext dbContext,
+            ISqlUtility sqlUtility,
+            out SaveOperation saveOperation,
+            out DbUpdateException saveException,
+            out RhetosException interpretedException)
+            where TEntity : class, IEntity
+            where TQueryableEntity : class, IEntity, TEntity
+        {
+            saveOperation = SaveOperation.None;
+            try
+            {
+                if (deletedIds.Any())
+                {
+                    saveOperation = SaveOperation.Delete;
+                    dbContext.Configuration.AutoDetectChangesEnabled = false;
+                    foreach (var item in deletedIds.Select(toNavigation))
+                        dbContext.Entry(item).State = System.Data.Entity.EntityState.Deleted;
+                    dbContext.Configuration.AutoDetectChangesEnabled = true;
+                    dbContext.SaveChanges();
+                }
+
+                if (updatedNew.Any())
+                {
+                    saveOperation = SaveOperation.Update;
+                    dbContext.Configuration.AutoDetectChangesEnabled = false;
+                    foreach (var item in updatedNew.Select(toNavigation))
+                        dbContext.Entry(item).State = System.Data.Entity.EntityState.Modified;
+                    dbContext.Configuration.AutoDetectChangesEnabled = true;
+                    dbContext.SaveChanges();
+                }
+
+                if (insertedNew.Any())
+                {
+                    saveOperation = SaveOperation.Insert;
+                    dbContext.Set<TQueryableEntity>().AddRange(insertedNew.Select(toNavigation));
+                    dbContext.SaveChanges();
+                }
+
+                saveOperation = SaveOperation.None;
+                ((Rhetos.Persistence.IPersistenceCache)dbContext).ClearCache();
+
+                saveException = null;
+                interpretedException = null;
+            }
+            catch (DbUpdateException e)
+            {
+                saveException = e;
+                ThrowIfSavingNonexistentId(saveException, checkUserPermissions, saveOperation);
+                interpretedException = sqlUtility.InterpretSqlException(saveException);
+            }
+        }
 
         public static void ThrowIfSavingNonexistentId(DbUpdateException saveException, bool checkUserPermissions, SaveOperation saveOperation)
         {
@@ -92,12 +147,8 @@ namespace Rhetos.Dom.DefaultConcepts
                 else
                     return;
 
-                if (saveException.Entries != null && saveException.Entries.Count() == 1)
-                {
-                    var entity = saveException.Entries.First().Entity as IEntity;
-                    if (entity != null)
-                        message += " ID=" + entity.ID.ToString();
-                }
+                if (saveException.Entries != null && saveException.Entries.Count() == 1 && saveException.Entries.First().Entity is IEntity entity)
+                    message += " ID=" + entity.ID.ToString();
 
                 if (checkUserPermissions)
                     throw new ClientException(message);
@@ -106,7 +157,20 @@ namespace Rhetos.Dom.DefaultConcepts
             }
         }
 
-        public static IEnumerable<TQueryableEntity> LoadOldDataWithNavigationProperties<TQueryableEntity>(IEnumerable<IEntity> items, IQueryableRepository<TQueryableEntity> repository) where TQueryableEntity : class, IEntity
+        public static void ThrowInterpretedException(bool checkUserPermissions, DbUpdateException saveException, RhetosException interpretedException, ISqlUtility sqlUtility, string tableName)
+        {
+            if (checkUserPermissions)
+                MsSqlUtility.ThrowIfPrimaryKeyErrorOnInsert(interpretedException, tableName);
+            if (interpretedException != null)
+                ExceptionsUtility.Rethrow(interpretedException);
+            var sqlException = sqlUtility.ExtractSqlException(saveException);
+            if (sqlException != null)
+                ExceptionsUtility.Rethrow(sqlException);
+            ExceptionsUtility.Rethrow(saveException);
+        }
+
+        public static IEnumerable<TQueryableEntity> LoadOldDataWithNavigationProperties<TQueryableEntity>(IEnumerable<IEntity> items, IQueryableRepository<TQueryableEntity> repository)
+            where TQueryableEntity : class, IEntity
         {
             var loaded = items.Any()
                 ? repository.Query(items.Select(item => item.ID)).ToList()
