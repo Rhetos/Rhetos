@@ -17,26 +17,25 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// A read method that returns a filtered query for the given source query and the parameter value. 
-    /// The lambda expression returns a subset of a given query:
-    /// <c>(IQueryable&lt;DataStructure&gt; query, repository, parameter) => filtered IQueryable&lt;DataStructure&gt;</c>.
-    /// The parameter type also represents the filter name.
+    /// Base concepts for queryable filters.
+    /// This concepts assumes that there will be a Filter method implemented in the repository class,
+    /// with parameters <c>(IQueryable&lt;DataStructure&gt; query, ParameterType filterParameter)</c>,
+    /// returning subset of data from <c>IQueryable&lt;DataStructure&gt;</c>.
+    /// The <see cref="Parameter"/> property is the filterParameter type;
+    /// it also of represents the filter name.
     /// </summary>
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("ComposableFilterBy")]
-    [Obsolete("Use QueryFilter concepts instead (QueryExpressionFilterInfo).")]
-    public class ComposableFilterByInfo : QueryFilterInfo
+    public class QueryFilterInfo : IConceptInfo
     {
-        /// <summary>
-        /// A lambda expression that returns a subset of a given query with parameter, for example:
-        /// <c>(query, repository, parameter) => query.Where(...)</c>.
-        /// </summary>
-        public string Expression { get; set; }
+        [ConceptKey]
+        public DataStructureInfo Source { get; set; }
+
+        [ConceptKey]
+        public string Parameter { get; set; }
     }
 }
