@@ -21,12 +21,10 @@ using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Processing.DefaultCommands;
 using Rhetos.Utilities;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -407,7 +405,7 @@ namespace Rhetos.Dom.DefaultConcepts
             get
             {
                 if (_repositoryLoadMethod == null)
-                    _repositoryLoadMethod = RepositoryType.GetMethod("All", new Type[] { }); // TODO: Rename All to Load
+                    _repositoryLoadMethod = RepositoryType.GetMethod("Load", new Type[] { });
                 return _repositoryLoadMethod;
             }
         }

@@ -374,13 +374,17 @@ $@"namespace Common
             return (IEnumerable<TEntity>)items;
         }}
 
-        [Obsolete(""Use Load() or Query() method."")]
-        public abstract TEntity[] All();
+        public abstract TEntity[] Load();
 
         [Obsolete(""Use Load() or Query() method."")]
+        public TEntity[] All()
+        {{
+            return Load();
+        }}
+
         public TEntity[] Load(FilterAll filterAll)
         {{
-            return All();
+            return Load();
         }}
 
         [Obsolete(""Use Load(parameter) method instead."")]
@@ -439,8 +443,7 @@ $@"namespace Common
             return (IQueryable<TQueryableEntity>)query;
         }}
 
-        [Obsolete(""Use Load() or Query() method."")]
-        public override TEntity[] All()
+        public override TEntity[] Load()
         {{
             return Query().GenericToSimple<TEntity>().ToArray();
         }}

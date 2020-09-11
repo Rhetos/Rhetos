@@ -92,8 +92,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             if (loadFunctionBody != null)
             {
-                string repositoryReadFunctionsSnippet = $@"[Obsolete(""Use Load() or Query() method."")]
-        public override global::{module}.{entity}[] All()
+                string repositoryReadFunctionsSnippet = $@"public override global::{module}.{entity}[] Load()
         {{
             {loadFunctionBody}
         }}
