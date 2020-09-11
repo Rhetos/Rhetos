@@ -350,6 +350,8 @@ Module TestFilter
 					return source.Where(item => item.Name.StartsWith("str"));
 			}';
 	}
+
+    // ApplyOnClientRead, ApplyFilterOnClientRead:
 	
 	Entity AutoFilter1
 	{
@@ -380,6 +382,18 @@ Module TestFilter
         ItemFilter WithA 'item => item.Name.StartsWith("a")';
 		ApplyFilterOnClientRead 'TestFilter.WithA' 'command => command.Top == 10';
 	}
+    
+    // QueryFilter:
+
+    Entity SimpleItem
+    {
+        ShortString Name;
+        Reference Simple;
+
+        QueryFilter FilterByPrefix '(query, parameter) => { return query.Where(item => item.Simple.Name.StartsWith(parameter.Prefix)); }';
+
+        QueryFilter 'HashSet<string>' '(query, parameter) => query.Where(item => parameter.Contains(item.Name))';
+    }
 }
 
 Module TestFilter2;

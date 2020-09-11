@@ -53,7 +53,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <summary>
         /// Converts code snippets from Expression format to Method format.
         /// </summary>
-        public ParsedExpression(string expression, string[] argumentTypes, IConceptInfo errorContext)
+        public ParsedExpression(string expression, string[] argumentTypes, IConceptInfo errorContext, string insertCode = null)
         {
             _expression = expression;
             _argumentTypes = argumentTypes;
@@ -80,7 +80,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 var parameters = new[] { simpleExpression.Parameter };
                 CheckParameters(parameters);
                 string methodParameters = BuildMethodParameters(parameters);
-                string methodBody = BuildMethodBody(simpleExpression.Body);
+                string methodBody = BuildMethodBody(simpleExpression.Body, insertCode);
                 MethodParametersAndBody = methodParameters + methodBody;
                 ResultLiteral = TryBuildResultLiteral(simpleExpression.Body);
             }
@@ -91,7 +91,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 string methodParameters = parameters.All(p => p.Type != null)
                     ? parenthesizedExpression.ParameterList.ToString()
                     : BuildMethodParameters(parameters);
-                string methodBody = BuildMethodBody(parenthesizedExpression.Body);
+                string methodBody = BuildMethodBody(parenthesizedExpression.Body, insertCode);
                 MethodParametersAndBody = methodParameters + methodBody;
                 ResultLiteral = TryBuildResultLiteral(parenthesizedExpression.Body);
             }
@@ -139,12 +139,24 @@ namespace Rhetos.Dom.DefaultConcepts
             return "(" + string.Join(", ", parameters.Zip(_argumentTypes, (p, at) => $"{at} {p.Identifier.Text}")) + ")";
         }
 
-        private string BuildMethodBody(SyntaxNode body)
+        private string BuildMethodBody(SyntaxNode body, string insertCode)
         {
             if (body.Kind() == SyntaxKind.Block)
-                return "\r\n        " + body.ToString().Trim();
+            {
+                string code = body.ToString().Trim();
+                if (!string.IsNullOrEmpty(insertCode))
+                {
+                    int blockStart = code.IndexOf('{');
+                    if (blockStart < 0)
+                        throw new DslSyntaxException(_errorContext, $"Unable to insert code '{insertCode.Limit(40)}' at the beginning of code block '{code.Limit(40)}'. Cannot detect the block start marker '{{'.");
+                    code = code.Insert(blockStart + 1, insertCode);
+                }
+                return "\r\n        " + code;
+            }
             else
-                return $"\r\n        {{\r\n            return {body.ToString().Trim()};\r\n        }}";
+            {
+                return $"\r\n        {{{insertCode}\r\n            return {body.ToString().Trim()};\r\n        }}";
+            }
         }
 
         private string TryBuildResultLiteral(SyntaxNode body)

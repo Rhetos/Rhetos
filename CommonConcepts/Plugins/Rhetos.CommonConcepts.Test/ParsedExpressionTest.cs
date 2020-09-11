@@ -146,21 +146,74 @@ DslSyntaxException: TestConcept Test: The provided code snippet should be format
         [TestMethod]
         public void FormattingSimpleLambda()
         {
-            string expressionText = "item => item . Name+\r\nitem.Surname";
+            string expressionText = @"item => item . Name+
+item.Surname";
 
             var parsedExpression = new ParsedExpression(expressionText, new[] { "SomeType" }, new TestConcept { Name = "Test" });
             // Place the block under the parameters line to match standard method formatting.
-            Assert.AreEqual("(SomeType item)\r\n        {\r\n            return item . Name+\r\nitem.Surname;\r\n        }", parsedExpression.MethodParametersAndBody);
+            Assert.AreEqual(@"(SomeType item)
+        {
+            return item . Name+
+item.Surname;
+        }", parsedExpression.MethodParametersAndBody);
         }
 
         [TestMethod]
         public void FormattingBlock()
         {
-            string expressionText = "item => {\r\nreturn\titem . Name;\r\n\r\n}";
+            string expressionText = @"item => {
+return	item . Name;
+
+}";
 
             var parsedExpression = new ParsedExpression(expressionText, new[] { "SomeType" }, new TestConcept { Name = "Test" });
             // Keep the original formatting withing the block. Place the block under the parameters line to match formatting of the other expression types.
-            Assert.AreEqual("(SomeType item)\r\n        {\r\nreturn\titem . Name;\r\n\r\n}", parsedExpression.MethodParametersAndBody);
+            Assert.AreEqual(@"(SomeType item)
+        {
+return	item . Name;
+
+}", parsedExpression.MethodParametersAndBody);
+        }
+
+        [TestMethod]
+        public void InsertAdditionalCodeInSimpleLambda()
+        {
+            string expressionText = @"item => item . Name+
+item.Surname";
+
+            var parsedExpression = new ParsedExpression(expressionText, new[] { "SomeType" }, new TestConcept { Name = "Test" }, "/*InsertedCode*/");
+            // Place the block under the parameters line to match standard method formatting.
+            Assert.AreEqual(@"(SomeType item)
+        {/*InsertedCode*/
+            return item . Name+
+item.Surname;
+        }", parsedExpression.MethodParametersAndBody);
+        }
+
+        [TestMethod]
+        public void InsertAdditionalCodeInBlock()
+        {
+            string expressionText = @"item => {
+return	item . Name;
+
+}";
+
+            var parsedExpression = new ParsedExpression(expressionText, new[] { "SomeType" }, new TestConcept { Name = "Test" }, "/*InsertedCode*/");
+            Assert.AreEqual(@"(SomeType item)
+        {/*InsertedCode*/
+return	item . Name;
+
+}", parsedExpression.MethodParametersAndBody);
+        }
+
+        [TestMethod]
+        public void InsertAdditionalCodeInBlock2()
+        {
+            string expressionText = @"item => { return item.Name; }";
+
+            var parsedExpression = new ParsedExpression(expressionText, new[] { "SomeType" }, new TestConcept { Name = "Test" }, "/*InsertedCode*/");
+            Assert.AreEqual(@"(SomeType item)
+        {/*InsertedCode*/ return item.Name; }", parsedExpression.MethodParametersAndBody);
         }
     }
 }
