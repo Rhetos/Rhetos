@@ -107,7 +107,16 @@ namespace Rhetos.Dom.DefaultConcepts
                         memberAccess = Expression.Convert(memberAccess, nullableMemberType);
                     }
 
-                    constant = Expression.Constant(convertedValue, memberAccess.Type);
+                    //If the property is of type Guid? and we know that the parameter has a value we will use the proprty basic type
+                    //so that the generated SQL query will not have parameter null checks 
+                    if (propertyIsNullableValueType == true && convertedValue != null && propertyBasicType == typeof(Guid))
+                    {
+                        constant = Expression.Constant(convertedValue, propertyBasicType);
+                    }
+                    else
+                    {
+                        constant = Expression.Constant(convertedValue, memberAccess.Type);
+                    }
                 }
                 else if (new[] { "startswith", "endswith", "contains", "notcontains" }.Contains(filter.Operation, StringComparer.OrdinalIgnoreCase))
                 {
