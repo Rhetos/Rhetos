@@ -19,19 +19,11 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.CommonConcepts.Test.Mocks;
-using Rhetos.Dom;
 using Rhetos.Dom.DefaultConcepts;
-using Rhetos.Processing.DefaultCommands;
 using Rhetos.TestCommon;
-using Rhetos.Utilities;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Text;
 
 namespace Rhetos.CommonConcepts.Test
 {
@@ -46,14 +38,14 @@ namespace Rhetos.CommonConcepts.Test
 
         class ErrorRepository : IRepository
         {
-            public IEnumerable<SimpleEntity> All()
+            public IEnumerable<SimpleEntity> Load()
             {
-                throw new ApplicationException("fun All");
+                throw new ApplicationException("fun Load");
             }
 
-            public SimpleEntity[] Filter(string parameter)
+            public SimpleEntity[] Load(string parameter)
             {
-                throw new ApplicationException("fun Filter string");
+                throw new ApplicationException("fun Load string");
             }
 
             public IQueryable<SimpleEntity> Query()
@@ -90,9 +82,9 @@ namespace Rhetos.CommonConcepts.Test
         {
             var repos = NewRepos(new ErrorRepository());
 
-            TestError(() => repos.Load(), "fun All", "All");
-            TestError(() => repos.Load(new FilterAll()), "fun All", "All");
-            TestError(() => repos.Load("str"), "fun Filter string", "Filter");
+            TestError(() => repos.Load(), "fun Load", "Load");
+            TestError(() => repos.Load(new FilterAll()), "fun Load", "Load");
+            TestError(() => repos.Load("str"), "fun Load string", "Load");
             TestError(() => repos.Query(), "fun Query", "Query");
             TestError(() => repos.Load(new[] { new FilterCriteria { Property = "Name", Operation = "equal", Value = "abc" } }), "fun Query", "Query");
             TestError(() => repos.Filter(new SimpleEntity[] {}.AsQueryable(), "str"), "fun Filter source string", "Filter");

@@ -198,14 +198,14 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public IEnumerable<TEntityInterface> Read(object parameter, Type parameterType, bool preferQuery)
         {
-            // Use Filter(parameter), Query(parameter) or Filter(Query(), parameter), if any option exists
+            // Use Load(parameter), Query(parameter) or Filter(Query(), parameter), if any of the options exist.
             ReadingOption loaderWithParameter = () =>
                 {
                     var reader = Reflection.RepositoryLoadWithParameterMethod(parameterType);
                     if (reader == null) return null;
                     return () =>
                     {
-                        _logger.Trace(() => "Reading using Filter(" + reader.GetParameters()[0].ParameterType.FullName + ")");
+                        _logger.Trace(() => "Reading using Load(" + reader.GetParameters()[0].ParameterType.FullName + ")");
                         return (IEnumerable<TEntityInterface>)reader.InvokeEx(_repository.Value, parameter);
                     };
                 };
@@ -337,7 +337,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 return Reflection.Where(query, EFExpression.OptimizeContains(filterPredicate));
             }
 
-            // It there is only enumerable filter available, use inefficient loader with in-memory filtering: Filter(All(), parameter)
+            // It there is only enumerable filter available, use inefficient loader with in-memory filtering: Filter(Load(), parameter)
             {
                 var reader = Reflection.RepositoryEnumerableFilterMethod(parameterType);
                 if (reader != null)
@@ -854,7 +854,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             IEnumerable<TEntityInterface> toDeactivate = Filter(toDelete, filterDeactivateDeleted);
             int activeToDeactivateCount = 0;
-            if (toDeactivate.Count() > 0)
+            if (toDeactivate.Any())
             {
                 int oldDeleteCount = toDelete.Count();
 

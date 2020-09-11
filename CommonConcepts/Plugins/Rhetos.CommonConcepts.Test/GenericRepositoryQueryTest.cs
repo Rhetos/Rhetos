@@ -19,19 +19,11 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.CommonConcepts.Test.Mocks;
-using Rhetos.Dom;
 using Rhetos.Dom.DefaultConcepts;
-using Rhetos.Processing.DefaultCommands;
 using Rhetos.TestCommon;
-using Rhetos.Utilities;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Text;
 
 namespace Rhetos.CommonConcepts.Test
 {
@@ -96,7 +88,7 @@ namespace Rhetos.CommonConcepts.Test
                 return new SimpleEntityList { "qa", "qb", "qc" }.AsQueryable();
             }
 
-            public IEnumerable<SimpleEntity> Filter(Parameter2 parameter)
+            public IEnumerable<SimpleEntity> Load(Parameter2 parameter)
             {
                 if (parameter != null) throw new Exception("Parameter null is expected.");
                 return new SimpleEntityList { "l2" };
