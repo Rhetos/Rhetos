@@ -18,12 +18,8 @@
 */
 
 using Autofac.Features.Indexed;
-using Autofac.Features.Metadata;
-using Rhetos.Utilities;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Rhetos.Extensibility
 {
@@ -32,8 +28,8 @@ namespace Rhetos.Extensibility
     /// </summary>
     public class NamedPlugins<TPlugin> : INamedPlugins<TPlugin>
     {
-        private IIndex<string, IEnumerable<TPlugin>> _pluginsByName;
-        private PluginsMetadataCache<TPlugin> _cache;
+        private readonly IIndex<string, IEnumerable<TPlugin>> _pluginsByName;
+        private readonly PluginsMetadataCache<TPlugin> _cache;
 
         public NamedPlugins(IIndex<string, IEnumerable<TPlugin>> pluginsByName, PluginsMetadataCache<TPlugin> cache)
         {
@@ -45,7 +41,12 @@ namespace Rhetos.Extensibility
         {
             IEnumerable<TPlugin> plugins;
             if (_pluginsByName.TryGetValue(name, out plugins))
-                return _cache.RemoveSuppressedPlugins(plugins);
+            {
+                plugins = _cache.RemoveSuppressedPlugins(plugins);
+                if (plugins.Count() > 1)
+                    plugins = plugins.OrderBy(p => p.GetType().Name).ToArray();
+                return plugins;
+            }
             return Enumerable.Empty<TPlugin>();
         }
     }
