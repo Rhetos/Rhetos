@@ -600,6 +600,7 @@ namespace CommonConcepts.Test
 
                 var sqlQuery4 = repository.TestGenericFilter.Child.Query(new FilterCriteria("ParentID", "equals", nullableId)).ToString();
                 TestUtility.AssertNotContains(sqlQuery4, nullableId.Value.ToString());
+                Assert.IsTrue(sqlQuery4.EndsWith("WHERE [Extent1].[ParentID] = @p__linq__0"), "The generated query should not contain parameter null check because we know that the parameter is not a null value.");
             }
         }
 
