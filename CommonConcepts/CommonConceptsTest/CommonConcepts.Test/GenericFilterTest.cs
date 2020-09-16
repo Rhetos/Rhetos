@@ -28,6 +28,7 @@ using System.Linq.Expressions;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Utilities;
 using Rhetos;
+using System.Runtime.InteropServices;
 
 namespace CommonConcepts.Test
 {
@@ -603,22 +604,48 @@ namespace CommonConcepts.Test
             }
         }
 
-
         [TestMethod]
         public void AvoidNullParameterCheckInGeneratedSqlQueryWhenValueInFilterCriteriaIsNotNullTest()
         {
+            Guid? nullableId = Guid.NewGuid();
+            var tests = new (bool UseDatabaseNullSemantics, string Operation, object Value, string expectedSql)[]
+            {
+                (false, "equals", nullableId, "WHERE [Extent1].[ParentID] = @p__linq__0"),
+                (false, "equals", nullableId.Value, "WHERE [Extent1].[ParentID] = @p__linq__0"),
+                (false, "equals", nullableId.Value.ToString(), "WHERE [Extent1].[ParentID] = @p__linq__0"),
+                (true, "equals", nullableId, "WHERE [Extent1].[ParentID] = @p__linq__0"),
+                (true, "equals", nullableId.Value, "WHERE [Extent1].[ParentID] = @p__linq__0"),
+                (true, "equals", nullableId.Value.ToString(), "WHERE [Extent1].[ParentID] = @p__linq__0"),
+                (true, "equals", null, "WHERE [Extent1].[ParentID] IS NULL"),
+
+                // "notequals" is currently not optimized for not-null constant parameter (it is rarely used).
+                (false, "notequals", nullableId, "WHERE  NOT (([Extent1].[ParentID] = @p__linq__0) AND ((CASE WHEN ([Extent1].[ParentID] IS NULL) THEN cast(1 as bit) ELSE cast(0 as bit) END) = (CASE WHEN (@p__linq__0 IS NULL) THEN cast(1 as bit) ELSE cast(0 as bit) END)))"),
+                (false, "notequals", nullableId.Value, "WHERE  NOT (([Extent1].[ParentID] = @p__linq__0) AND ((CASE WHEN ([Extent1].[ParentID] IS NULL) THEN cast(1 as bit) ELSE cast(0 as bit) END) = (CASE WHEN (@p__linq__0 IS NULL) THEN cast(1 as bit) ELSE cast(0 as bit) END)))"),
+                (false, "notequals", nullableId.Value.ToString(), "WHERE  NOT (([Extent1].[ParentID] = @p__linq__0) AND ((CASE WHEN ([Extent1].[ParentID] IS NULL) THEN cast(1 as bit) ELSE cast(0 as bit) END) = (CASE WHEN (@p__linq__0 IS NULL) THEN cast(1 as bit) ELSE cast(0 as bit) END)))"),
+                (true, "notequals", nullableId, "WHERE [Extent1].[ParentID] <> @p__linq__0"),
+                (true, "notequals", nullableId.Value, "WHERE [Extent1].[ParentID] <> @p__linq__0"),
+                (true, "notequals", nullableId.Value.ToString(), "WHERE [Extent1].[ParentID] <> @p__linq__0"),
+                (true, "notequals", null, "WHERE [Extent1].[ParentID] IS NOT NULL"),
+            };
+
             using (var container = new RhetosTestContainer())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
                 var repository = container.Resolve<Common.DomRepository>();
-                context.EntityFrameworkContext.Configuration.UseDatabaseNullSemantics = false;
-                var nullableId = new Nullable<Guid>(Guid.NewGuid());
 
-                var sqlQuery = repository.TestGenericFilter.Child.Query(new FilterCriteria("ParentID", "equals", nullableId)).ToString();
-                Assert.IsTrue(sqlQuery.EndsWith("WHERE [Extent1].[ParentID] = @p__linq__0"), "The generated query should not contain parameter null check because we know that the parameter is not a null value.");
+                var actualReport = new StringBuilder();
+                var expectedReport = new StringBuilder();
+                foreach (var test in tests)
+                {
+                    context.EntityFrameworkContext.Configuration.UseDatabaseNullSemantics = test.UseDatabaseNullSemantics;
+                    string sqlQuery = repository.TestGenericFilter.Child.Query(new FilterCriteria("ParentID", test.Operation, test.Value)).ToString();
+                    string inputDataReport = $"{test.UseDatabaseNullSemantics} {test.Operation} {(test.Value?.GetType().ToString() ?? "null")}";
+                    actualReport.AppendLine($"{inputDataReport} => {sqlQuery.Substring(sqlQuery.IndexOf("WHERE"))}");
+                    expectedReport.AppendLine($"{inputDataReport} => {test.expectedSql}");
+                }
 
-                var sqlQuery2 = repository.TestGenericFilter.Child.Query(new FilterCriteria("ParentID", "equals", nullableId.Value.ToString())).ToString();
-                Assert.IsTrue(sqlQuery2.EndsWith("WHERE [Extent1].[ParentID] = @p__linq__0"), "The generated query should not contain parameter null check because we know that the parameter is not a null value.");
+                Console.WriteLine(actualReport);
+                TestUtility.AssertAreEqualByLine(expectedReport.ToString(), actualReport.ToString());
             }
         }
 
