@@ -50,14 +50,9 @@ namespace Rhetos.Dsl.DefaultConcepts
             createdConcepts = null;
         }
 
-        public new IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            var newConcepts = new List<IConceptInfo>();
-            newConcepts.AddRange(base.CreateNewConcepts(existingConcepts));
-
-            newConcepts.Add(new ComposableFilterUseExecutionContextInfo() { Filter = this });
-
-            return newConcepts;
+            return new[] { new ComposableFilterUseExecutionContextInfo() { Filter = this } };
         }
     }
 }

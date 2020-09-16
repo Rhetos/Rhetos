@@ -71,10 +71,10 @@ namespace Rhetos.Dsl.DefaultConcepts
             return $@"(repository, parameter) =>
 	        {{
                 var baseRepositiory = repository.{info.ReferenceToMe.DataStructure.FullName};
-                Guid[] references = baseRepositiory.Filter(parameter).Select(item => item.{info.ReferenceToMe.Name}ID)
+                Guid[] references = baseRepositiory.Load(parameter).Select(item => item.{info.ReferenceToMe.Name}ID)
                     .Where(reference => reference.HasValue).Select(reference => reference.Value)
                     .Distinct().ToArray();
-                {info.Source.FullName}[] result = repository.{info.Source.FullName}.Filter(references);
+                {info.Source.FullName}[] result = repository.{info.Source.FullName}.Load(references);
 
                 Rhetos.Utilities.Graph.SortByGivenOrder(result, references, item => item.ID);
                 return result;

@@ -91,8 +91,8 @@ namespace Rhetos.Dsl.DefaultConcepts
             return $@"(repository, parameter) =>
             {{
                 var baseRepositiory = repository.{baseDataStructure.FullName};
-                Guid[] references = baseRepositiory.Filter(parameter).Select(item => item.ID).ToArray();
-                {info.Source.FullName}[] result = repository.{info.Source.FullName}.Filter(references);
+                Guid[] references = baseRepositiory.Load(parameter).Select(item => item.ID).ToArray();
+                {info.Source.FullName}[] result = repository.{info.Source.FullName}.Load(references);
 
                 Rhetos.Utilities.Graph.SortByGivenOrder(result, references, item => item.ID);
                 return result;

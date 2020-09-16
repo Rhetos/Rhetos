@@ -35,6 +35,10 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly string EntityFrameworkContextInitializeTag = "/*EntityFrameworkContextInitialize*/";
         public static readonly string EntityFrameworkConfigurationTag = "/*EntityFrameworkConfiguration*/";
         public static readonly string QueryExtensionsMembersTag = "/*QueryExtensionsMembers*/";
+        public static readonly string RepositoryBaseMembersTag = "/*RepositoryBaseMembers*/";
+        public static readonly string ReadableRepositoryBaseMembersTag = "/*ReadableRepositoryBaseMembers*/";
+        public static readonly string QueryableRepositoryBaseMembersTag = "/*QueryableRepositoryBaseMembers*/";
+        public static readonly string OrmRepositoryBaseMembersTag = "/*OrmRepositoryBaseMembers*/";
 
         private readonly RhetosBuildEnvironment _buildEnvironment;
         private readonly CommonConceptsOptions _commonConceptsOptions;
@@ -349,6 +353,8 @@ $@"namespace Common
     {{
         protected Common.DomRepository _domRepository;
         protected Common.ExecutionContext _executionContext;
+
+        {RepositoryBaseMembersTag}
     }}
 
     public abstract class ReadableRepositoryBase<TEntity> : RepositoryBase, IReadableRepository<TEntity>
@@ -368,14 +374,30 @@ $@"namespace Common
             return (IEnumerable<TEntity>)items;
         }}
 
-        [Obsolete(""Use Load() or Query() method."")]
-        public abstract TEntity[] All();
+        public abstract TEntity[] Load();
 
         [Obsolete(""Use Load() or Query() method."")]
-        public TEntity[] Filter(FilterAll filterAll)
+        public TEntity[] All()
         {{
-            return All();
+            return Load();
         }}
+
+        public TEntity[] Load(FilterAll filterAll)
+        {{
+            return Load();
+        }}
+
+        [Obsolete(""Use Load(parameter) method instead."")]
+        public TEntity[] Filter<T>(T parameter)
+        {{
+            var items = Load(parameter, typeof(T));
+            if (items is TEntity[] itemsArray)
+                return itemsArray;
+            else
+                return items.ToArray();
+        }}
+
+        {ReadableRepositoryBaseMembersTag}
     }}
 
     public abstract class QueryableRepositoryBase<TQueryableEntity, TEntity> : ReadableRepositoryBase<TEntity>, IQueryableRepository<TQueryableEntity, TEntity>
@@ -383,7 +405,7 @@ $@"namespace Common
         where TQueryableEntity : class, IEntity, TEntity, IQueryableEntity<TEntity>
     {{
         [Obsolete(""Use Load(ids) or Query(ids) method."")]
-        public TEntity[] Filter(IEnumerable<Guid> ids)
+        public TEntity[] Load(IEnumerable<Guid> ids)
         {{
             if (!(ids is System.Collections.IList))
                 ids = ids.ToList();
@@ -420,12 +442,24 @@ $@"namespace Common
             var query = _executionContext.GenericRepository(typeof(TEntity).FullName).Query(parameter, parameterType);
             return (IQueryable<TQueryableEntity>)query;
         }}
+
+        public override TEntity[] Load()
+        {{
+            return Query().GenericToSimple<TEntity>().ToArray();
+        }}
+
+        {QueryableRepositoryBaseMembersTag}
     }}
 
     public abstract class OrmRepositoryBase<TQueryableEntity, TEntity> : QueryableRepositoryBase<TQueryableEntity, TEntity>
         where TEntity : class, IEntity
         where TQueryableEntity : class, IEntity, TEntity, IQueryableEntity<TEntity>
     {{
+        public override IQueryable<TQueryableEntity> Query()
+        {{
+            return _executionContext.EntityFrameworkContext.Set<TQueryableEntity>().AsNoTracking();
+        }}
+
         public IQueryable<TQueryableEntity> Filter(IQueryable<TQueryableEntity> query, IEnumerable<Guid> ids)
         {{
             if (!(ids is System.Collections.IList))
@@ -451,6 +485,8 @@ $@"namespace Common
                     return query.Where(item => idsQuery.Contains(item.ID));
             }}
         }}
+
+        {OrmRepositoryBaseMembersTag}
     }}
 
     {ModuleCodeGenerator.CommonNamespaceMembersTag}{RestoreWarnings(_commonConceptsOptions)}

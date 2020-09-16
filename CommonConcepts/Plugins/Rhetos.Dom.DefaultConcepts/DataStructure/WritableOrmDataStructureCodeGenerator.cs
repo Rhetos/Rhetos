@@ -81,7 +81,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return string.Format(
         @"public void Save(IEnumerable<{0}.{1}> insertedNew, IEnumerable<{0}.{1}> updatedNew, IEnumerable<{0}.{1}> deletedIds, bool checkUserPermissions = false)
         {{
-            if (!DomHelper.CleanUpSaveMethodArguments(ref insertedNew, ref updatedNew, ref deletedIds))
+            if (!DomHelper.InitializeSaveMethodItems(ref insertedNew, ref updatedNew, ref deletedIds))
                 return;
 
             " + ClearContextTag.Evaluate(info) + @"
@@ -91,70 +91,23 @@ namespace Rhetos.Dom.DefaultConcepts
             " + InitializationTag.Evaluate(info) + @"
 
             // Using old data, including lazy loading of navigation properties:
-		    IEnumerable<Common.Queryable.{0}_{1}> deleted;
-		    if(deletedIds.Any())
-                deleted = this.Query(deletedIds.Select(item => item.ID)).ToList();
-            else
-                deleted = new List<Common.Queryable.{0}_{1}>();
-            Rhetos.Utilities.Graph.SortByGivenOrder((List<Common.Queryable.{0}_{1}>)deleted, deletedIds.Select(item => item.ID), item => item.ID);
-		    IEnumerable<Common.Queryable.{0}_{1}> updated;
-		    if(updatedNew.Any())
-                updated = this.Query(updatedNew.Select(item => item.ID)).ToList();
-            else
-                updated = new List<Common.Queryable.{0}_{1}>();
-            Rhetos.Utilities.Graph.SortByGivenOrder((List<Common.Queryable.{0}_{1}>)updated, updatedNew.Select(item => item.ID), item => item.ID);
+
+            IEnumerable<Common.Queryable.{0}_{1}> deleted = DomHelper.LoadOldDataWithNavigationProperties(deletedIds, this);
+            IEnumerable<Common.Queryable.{0}_{1}> updated = DomHelper.LoadOldDataWithNavigationProperties(updatedNew, this);
 
             " + OldDataLoadedTag.Evaluate(info) + @"
 
             " + ProcessedOldDataTag.Evaluate(info) + @"
 
-            DomHelper.SaveOperation saveOperation = DomHelper.SaveOperation.None;
-            try
             {{
-                if (deletedIds.Count() > 0)
+                DomHelper.EntityFrameworkOptimizedSave(insertedNew, updatedNew, deletedIds, item => item.ToNavigation(), checkUserPermissions, _executionContext.EntityFrameworkContext, _sqlUtility,
+                    out var saveOperation, out var saveException, out var interpretedException);
+
+                if (saveException != null)
                 {{
-                    saveOperation = DomHelper.SaveOperation.Delete;
-                    _executionContext.EntityFrameworkContext.Configuration.AutoDetectChangesEnabled = false;
-                    foreach (var item in deletedIds.Select(item => item.ToNavigation()))
-                        _executionContext.EntityFrameworkContext.Entry(item).State = System.Data.Entity.EntityState.Deleted;
-                    _executionContext.EntityFrameworkContext.Configuration.AutoDetectChangesEnabled = true;
-                    _executionContext.EntityFrameworkContext.SaveChanges();
+                    " + OnDatabaseErrorTag.Evaluate(info) + @"
+                    DomHelper.ThrowInterpretedException(checkUserPermissions, saveException, interpretedException, _sqlUtility, ""{0}.{1}"");
                 }}
-
-                if (updatedNew.Count() > 0)
-                {{
-                    saveOperation = DomHelper.SaveOperation.Update;
-                    _executionContext.EntityFrameworkContext.Configuration.AutoDetectChangesEnabled = false;
-                    foreach (var item in updatedNew.Select(item => item.ToNavigation()))
-                        _executionContext.EntityFrameworkContext.Entry(item).State = System.Data.Entity.EntityState.Modified;
-                    _executionContext.EntityFrameworkContext.Configuration.AutoDetectChangesEnabled = true;
-                    _executionContext.EntityFrameworkContext.SaveChanges();
-                }}
-
-                if (insertedNew.Count() > 0)
-                {{
-                    saveOperation = DomHelper.SaveOperation.Insert;
-                    _executionContext.EntityFrameworkContext.{0}_{1}.AddRange(insertedNew.Select(item => item.ToNavigation()));
-                    _executionContext.EntityFrameworkContext.SaveChanges();
-                }}
-
-                saveOperation = DomHelper.SaveOperation.None;
-                _executionContext.EntityFrameworkContext.ClearCache();
-            }}
-            catch (System.Data.Entity.Infrastructure.DbUpdateException saveException)
-            {{
-                DomHelper.ThrowIfSavingNonexistentId(saveException, checkUserPermissions, saveOperation);
-        		Rhetos.RhetosException interpretedException = _sqlUtility.InterpretSqlException(saveException);
-        		" + OnDatabaseErrorTag.Evaluate(info) + @"
-                if (checkUserPermissions)
-                    Rhetos.Utilities.MsSqlUtility.ThrowIfPrimaryKeyErrorOnInsert(interpretedException, ""{0}.{1}"");
-
-                if (interpretedException != null)
-        			Rhetos.Utilities.ExceptionsUtility.Rethrow(interpretedException);
-                var sqlException = _sqlUtility.ExtractSqlException(saveException);
-                if (sqlException != null)
-                    Rhetos.Utilities.ExceptionsUtility.Rethrow(sqlException);
-                throw;
             }}
 
             deleted = null;

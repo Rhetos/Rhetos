@@ -17,15 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
 using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
+using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.Linq;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -37,23 +35,24 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var info = (DeactivatableInfo)conceptInfo;
 
-            codeBuilder.InsertCode(DefaultSnippet(info), WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.Entity);
+            string saveCode = @"DeactivatableCodeGenerator.SetActiveByDefault(insertedNew, updatedNew, updated);
+
+            ";
+
+            codeBuilder.InsertCode(saveCode, WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.Entity);
             codeBuilder.InsertCode("Rhetos.Dom.DefaultConcepts.IDeactivatable", DataStructureCodeGenerator.InterfaceTag, info.Entity);
             codeBuilder.AddReferencesFromDependency(typeof(IDeactivatable));
         }
 
-        private static string DefaultSnippet(DeactivatableInfo info)
+        public static void SetActiveByDefault(IEnumerable<IDeactivatable> insertedNew, IEnumerable<IDeactivatable> updatedNew, IEnumerable<IDeactivatable> updatedOld)
         {
-            return string.Format(
-            @"foreach (var newItem in insertedNew)
+            foreach (var newItem in insertedNew)
                 if (newItem.Active == null)
                     newItem.Active = true;
 
-            foreach (var change in updatedNew.Zip(updated, (newItem, oldItem) => new {{ newItem, oldItem }}))
+            foreach (var change in updatedNew.Zip(updatedOld, (newItem, oldItem) => new { newItem, oldItem }))
                 if (change.newItem.Active == null)
                     change.newItem.Active = change.oldItem.Active ?? true;
-
-            ");
         }
     }
 }

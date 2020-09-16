@@ -17,36 +17,32 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
 using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(ComputedInfo))]
-    public class ComputedCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(QueryExpressionFilterInfo))]
+    public class QueryExpressionFilterCodeGenerator : IConceptCodeGenerator
     {
+        public static readonly CsTag<QueryExpressionFilterInfo> BeforeFilterTag = "BeforeFilter"; // TODO: Can we use this?
+
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (ComputedInfo)conceptInfo;
+            var info = (QueryExpressionFilterInfo)conceptInfo;
+            string queryableType = $"IQueryable<Common.Queryable.{info.Source.Module.Name}_{info.Source.Name}>";
 
-            string loadFunctionBodySnippet =
-            $@"Func<Common.DomRepository{DataStructureUtility.ComputationAdditionalParametersTypeTag.Evaluate(info)}, global::{info.Module.Name}.{info.Name}[]> compute_Function =
-            {info.Expression};
+            var parsedExpression = new ParsedExpression(info.Expression, new[] { queryableType, info.Parameter }, info, BeforeFilterTag.Evaluate(info));
+            string filterMethod =
+        $@"public {queryableType} Filter{parsedExpression.MethodParametersAndBody}
 
-            return compute_Function(_domRepository{DataStructureUtility.ComputationAdditionalParametersArgumentTag.Evaluate(info)});";
+        ";
 
-            RepositoryHelper.GenerateReadableRepository(info, codeBuilder, loadFunctionBodySnippet);
-            RepositoryHelper.GenerateQueryableConversionMethods(info, codeBuilder);
-
-            DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, $"EntityBase<{info.Module.Name}.{info.Name}>", typeof(EntityBase<>), info);
+            codeBuilder.InsertCode(filterMethod, RepositoryHelper.RepositoryMembers, info.Source);
         }
     }
 }

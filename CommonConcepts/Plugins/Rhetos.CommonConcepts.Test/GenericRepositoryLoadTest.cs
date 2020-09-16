@@ -19,19 +19,13 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.CommonConcepts.Test.Mocks;
-using Rhetos.Dom;
 using Rhetos.Dom.DefaultConcepts;
-using Rhetos.Processing.DefaultCommands;
 using Rhetos.TestCommon;
-using Rhetos.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
-using System.Text;
 
 namespace Rhetos.CommonConcepts.Test
 {
@@ -92,8 +86,8 @@ namespace Rhetos.CommonConcepts.Test
 
         class FilterParameterRepository : IRepository
         {
-            public SimpleEntity[] Filter(IEnumerable<Guid> parameter) { return new[] { new SimpleEntity { Name = "IE Guid" } }; }
-            private SimpleEntity[] Filter(string parameter) { return new[] { new SimpleEntity { Name = "private string" } }; }
+            public SimpleEntity[] Load(IEnumerable<Guid> parameter) { return new[] { new SimpleEntity { Name = "IE Guid" } }; }
+            private SimpleEntity[] Load(string parameter) { return new[] { new SimpleEntity { Name = "private string" } }; }
         }
 
         [TestMethod]
@@ -111,7 +105,7 @@ namespace Rhetos.CommonConcepts.Test
                 typeof(SimpleEntity).FullName,
                 "System.Guid");
 
-            TestUtility.ShouldFail(() => repos.Load("a"), // Filter with a string parameter is a *private* function.
+            TestUtility.ShouldFail(() => repos.Load("a"), // Loader with a string parameter is a *private* function.
                 "does not implement",
                 typeof(SimpleEntity).FullName,
                 "System.string");
@@ -156,13 +150,13 @@ namespace Rhetos.CommonConcepts.Test
 
         class FilterAllRepository : IRepository
         {
-            public IEnumerable<SimpleEntity> Filter(FilterAll parameter) { return new[] { new SimpleEntity { Name = "FilterAll" } }; }
+            public IEnumerable<SimpleEntity> Load(FilterAll parameter) { return new[] { new SimpleEntity { Name = "FilterAll" } }; }
             public IQueryable<SimpleEntity> Query() { return new[] { new SimpleEntity { Name = "Query" } }.AsQueryable(); }
         }
 
         class AllRepository : IRepository
         {
-            public IEnumerable<SimpleEntity> All() { return new[] { new SimpleEntity { Name = "All" } }; }
+            public IEnumerable<SimpleEntity> Load() { return new[] { new SimpleEntity { Name = "Load" } }; }
         }
 
         [TestMethod]
@@ -176,8 +170,8 @@ namespace Rhetos.CommonConcepts.Test
 
             {
                 var repos = NewRepos(new AllRepository());
-                Assert.AreEqual("All", repos.Load().Single().Name);
-                Assert.AreEqual("All", repos.Load(new FilterAll()).Single().Name);
+                Assert.AreEqual("Load", repos.Load().Single().Name);
+                Assert.AreEqual("Load", repos.Load(new FilterAll()).Single().Name);
             }
         }
 
@@ -217,11 +211,11 @@ namespace Rhetos.CommonConcepts.Test
 
         class FilterObjectRepository : IRepository
         {
-            public IEnumerable<SimpleEntity> Filter(object o) { return new[] { new SimpleEntity { Name = "o" } }; }
-            public IEnumerable<SimpleEntity> Filter(string s) { return new[] { new SimpleEntity { Name = "s" } }; }
+            public IEnumerable<SimpleEntity> Load(object o) { return new[] { new SimpleEntity { Name = "o" } }; }
+            public IEnumerable<SimpleEntity> Load(string s) { return new[] { new SimpleEntity { Name = "s" } }; }
 
-            public IEnumerable<SimpleEntity> Filter(IEnumerable<int> p) { return new[] { new SimpleEntity { Name = "ei" } }; }
-            public IEnumerable<SimpleEntity> Filter(int[] p) { return new[] { new SimpleEntity { Name = "ai" } }; }
+            public IEnumerable<SimpleEntity> Load(IEnumerable<int> p) { return new[] { new SimpleEntity { Name = "ei" } }; }
+            public IEnumerable<SimpleEntity> Load(int[] p) { return new[] { new SimpleEntity { Name = "ai" } }; }
         }
 
         [TestMethod]
@@ -257,7 +251,7 @@ namespace Rhetos.CommonConcepts.Test
 
         class ExplicitGenericPropertyFilterRepository : IRepository
         {
-            public IEnumerable<SimpleEntity> Filter(IEnumerable<FilterCriteria> p) { return new[] { new SimpleEntity { Name = "exp" } }; }
+            public IEnumerable<SimpleEntity> Load(IEnumerable<FilterCriteria> p) { return new[] { new SimpleEntity { Name = "exp" } }; }
         }
 
         class ExplicitGenericPropertyFilterRepository2 : IRepository
@@ -373,7 +367,7 @@ namespace Rhetos.CommonConcepts.Test
                 return items.Where(i => i.Name.StartsWith("b"));
             }
 
-            public IEnumerable<SimpleEntity> Filter(NamedFilter parameter)
+            public IEnumerable<SimpleEntity> Load(NamedFilter parameter)
             {
                 AddLog("LP"); // Using loader with parameters ...
                 return new SimpleEntityList { "f1", "f2" };
@@ -385,7 +379,7 @@ namespace Rhetos.CommonConcepts.Test
                 return items.Where(i => i.Name.Contains(parameter.Pattern));
             }
 
-            public IEnumerable<SimpleEntity> Filter(QueryLoaderFilter parameter)
+            public IEnumerable<SimpleEntity> Load(QueryLoaderFilter parameter)
             {
                 AddLog("LP"); // Using loader with parameters ...
                 return new SimpleEntityList { "ql1", "ql2" };
@@ -409,7 +403,7 @@ namespace Rhetos.CommonConcepts.Test
                 return items.Select(item => new SimpleEntity { Name = item.Name + "_qf" });
             }
 
-            public IEnumerable<SimpleEntity> Filter(LoaderParameter parameter)
+            public IEnumerable<SimpleEntity> Load(LoaderParameter parameter)
             {
                 AddLog("LP"); // Using loader with parameters ...
                 return new SimpleEntityList { "lp1", "lp2" };

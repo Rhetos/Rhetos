@@ -66,6 +66,7 @@
     <Compile Include="Mocks\RepositoryMock.cs" />
     <Compile Include="Mocks\TestGenericRepository.cs" />
     <Compile Include="PropertySelectorExpressionTest.cs" />
+    <Compile Include="ParsedExpressionTest.cs" />
     <Compile Include="ReflectionHelperTest.cs" />
     <Compile Include="ReplaceWithReferenceTest.cs" />
     <Compile Include="ServerCommandsUtilityTest.cs" />

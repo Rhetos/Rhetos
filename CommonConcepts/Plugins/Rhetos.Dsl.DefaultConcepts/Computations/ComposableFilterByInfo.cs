@@ -18,41 +18,25 @@
 */
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
     /// A read method that returns a filtered query for the given source query and the parameter value. 
-    /// The lambda expression returns a subset of a given query: (IQueryable&lt;DataStructure&gt; query, repository, parameter) => filtered IQueryable&lt;DataStructure&gt;. 
+    /// The lambda expression returns a subset of a given query:
+    /// <c>(IQueryable&lt;DataStructure&gt; query, repository, parameter) => filtered IQueryable&lt;DataStructure&gt;</c>.
     /// The parameter type also represents the filter name.
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ComposableFilterBy")]
-    public class ComposableFilterByInfo : IMacroConcept
+    [Obsolete("Use QueryFilter concepts instead (QueryExpressionFilterInfo).")]
+    public class ComposableFilterByInfo : QueryFilterInfo
     {
-        [ConceptKey]
-        public DataStructureInfo Source { get; set; }
-
-        [ConceptKey]
-        public string Parameter { get; set; }
-
+        /// <summary>
+        /// A lambda expression that returns a subset of a given query with parameter, for example:
+        /// <c>(query, repository, parameter) => query.Where(...)</c>.
+        /// </summary>
         public string Expression { get; set; }
-
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
-        {
-            return new[]
-            {
-                new FilterByInfo
-                {
-                    Source = Source,
-                    Parameter = Parameter,
-                    Expression = string.Format(@"(repository, parameter) => repository.{0}.Filter(repository.{0}.Query(), parameter).ToArray()", Source.GetKeyProperties())
-                }
-            };
-        }
     }
 }

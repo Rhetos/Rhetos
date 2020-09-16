@@ -750,5 +750,84 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("a1d, b1d", TestUtility.DumpSorted(detail.Filter(detail.Query(), new TestFilter.Composable()).Select(d => d.Parent.Name + d.Name2)));
             }
         }
+
+        //=====================================================================================================
+
+        [TestMethod]
+        public void QueryFilterParemeterDataStructure()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+
+                var parents = new[]
+                {
+                    new TestFilter.Simple { Name = "a0" },
+                    new TestFilter.Simple { Name = "b1" },
+                };
+                repository.TestFilter.Simple.Insert(parents);
+
+                var items = new[]
+                {
+                    new TestFilter.SimpleItem { SimpleID = parents[0].ID, Name = "si0" },
+                    new TestFilter.SimpleItem { SimpleID = parents[0].ID, Name = "si1" },
+                    new TestFilter.SimpleItem { SimpleID = parents[1].ID, Name = "si2" },
+                    new TestFilter.SimpleItem { SimpleID = parents[1].ID, Name = "si3" },
+                };
+                repository.TestFilter.SimpleItem.Insert(items);
+
+                var filter = new TestFilter.FilterByPrefix { Prefix = "a" };
+
+                var ids = items.Select(item => item.ID).ToList();
+                var query = repository.TestFilter.SimpleItem.Query();
+
+                var directFilterImplementation = repository.TestFilter.SimpleItem.Filter(query, filter).Where(item => ids.Contains(item.ID));
+                Assert.AreEqual("si0, si1", TestUtility.DumpSorted(directFilterImplementation, item => item.Name));
+                 
+                var genericWithExplicitFilterType = repository.TestFilter.SimpleItem.Load(filter, filter.GetType()).Where(item => ids.Contains(item.ID));
+                Assert.AreEqual("si0, si1", TestUtility.DumpSorted(genericWithExplicitFilterType, item => item.Name));
+
+                var genericWithImplicitFilterType = repository.TestFilter.SimpleItem.Load(filter).Where(item => ids.Contains(item.ID));
+                Assert.AreEqual("si0, si1", TestUtility.DumpSorted(genericWithImplicitFilterType, item => item.Name));
+
+                var legacyFilterMethod = repository.TestFilter.SimpleItem.Filter(filter).Where(item => ids.Contains(item.ID));
+                Assert.AreEqual("si0, si1", TestUtility.DumpSorted(legacyFilterMethod, item => item.Name));
+            }
+        }
+
+        [TestMethod]
+        public void QueryFilterCustomPareter()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+
+                var items = new[]
+                {
+                    new TestFilter.SimpleItem { Name = "si0" },
+                    new TestFilter.SimpleItem { Name = "si1" },
+                    new TestFilter.SimpleItem { Name = "si2" },
+                    new TestFilter.SimpleItem { Name = "si3" },
+                };
+                repository.TestFilter.SimpleItem.Insert(items);
+
+                var filter = new HashSet<string>(new[] { "si0", "si1" });
+
+                var ids = items.Select(item => item.ID).ToList();
+                var query = repository.TestFilter.SimpleItem.Query();
+
+                var directFilterImplementation = repository.TestFilter.SimpleItem.Filter(query, filter).Where(item => ids.Contains(item.ID));
+                Assert.AreEqual("si0, si1", TestUtility.DumpSorted(directFilterImplementation, item => item.Name));
+
+                var genericWithExplicitFilterType = repository.TestFilter.SimpleItem.Load(filter, filter.GetType()).Where(item => ids.Contains(item.ID));
+                Assert.AreEqual("si0, si1", TestUtility.DumpSorted(genericWithExplicitFilterType, item => item.Name));
+
+                var genericWithImplicitFilterType = repository.TestFilter.SimpleItem.Load(filter).Where(item => ids.Contains(item.ID));
+                Assert.AreEqual("si0, si1", TestUtility.DumpSorted(genericWithImplicitFilterType, item => item.Name));
+
+                var legacyFilterMethod = repository.TestFilter.SimpleItem.Filter(filter).Where(item => ids.Contains(item.ID));
+                Assert.AreEqual("si0, si1", TestUtility.DumpSorted(legacyFilterMethod, item => item.Name));
+            }
+        }
     }
 }

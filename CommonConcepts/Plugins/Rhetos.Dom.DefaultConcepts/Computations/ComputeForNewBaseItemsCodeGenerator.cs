@@ -17,16 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -37,69 +32,38 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (ComputeForNewBaseItemsInfo) conceptInfo;
-
             var baseDS = info.Dependency_Extends.Base;
-            var persistedExtension = info.EntityComputedFrom.Target;
-            var uniqueSuffix = GetUniqueSuffixWithinBase(info);
+            var uniqueSuffix = DslUtility.NameOptionalModule(info.EntityComputedFrom.Source, baseDS.Module)
+                + DslUtility.NameOptionalModule(info.EntityComputedFrom.Target, baseDS.Module);
 
-            codeBuilder.InsertCode(RecomputeForNewItemsSnippet(info, uniqueSuffix), WritableOrmDataStructureCodeGenerator.OnSaveTag1, baseDS);
-            codeBuilder.InsertCode(HelperFunctionSnippet(info, uniqueSuffix), RepositoryHelper.RepositoryMembers, baseDS);
-
+            string saveFilterArgument;
             if (!string.IsNullOrWhiteSpace(info.FilterSaveExpression))
-                codeBuilder.InsertCode(FilterSaveFunction(info, uniqueSuffix), RepositoryHelper.RepositoryMembers, baseDS);
-        }
+            {
+                string saveFilterMethodName = $"FilterSaveComputeForNewBaseItems_{uniqueSuffix}";
+                var extensionDS = info.Dependency_Extends.Extension;
 
-        private static string GetUniqueSuffixWithinBase(ComputeForNewBaseItemsInfo info)
-        {
-            var baseModule = info.Dependency_Extends.Base.Module;
-            return DslUtility.NameOptionalModule(info.EntityComputedFrom.Source, baseModule)
-                + DslUtility.NameOptionalModule(info.EntityComputedFrom.Target, baseModule);
-        }
+                var parsedExpression = new ParsedExpression(info.FilterSaveExpression, new[] { $"IEnumerable<{extensionDS.FullName}>" }, info);
+                string filterSaveMethod = $@"private IEnumerable<{extensionDS.FullName}> {saveFilterMethodName}{parsedExpression.MethodParametersAndBody}
 
-        private static string RecomputeForNewItemsSnippet(ComputeForNewBaseItemsInfo info, string uniqueSuffix)
-        {
-            DataStructureInfo hookOnSave = info.Dependency_Extends.Base;
-            EntityInfo updatePersistedComputation = info.EntityComputedFrom.Target;
+        ";
 
-            return string.Format(
-            @"if (inserted.Count() > 0)
-            {{
-                IEnumerable<{0}.{1}> changedItems = inserted;
-                var filter = _filterComputeForNewBaseItems_{2}(changedItems);
-                _domRepository.{3}.{4}.{6}(filter{5});
-            }}
-            ",
-                hookOnSave.Module.Name,
-                hookOnSave.Name,
-                uniqueSuffix,
-                updatePersistedComputation.Module.Name,
-                updatePersistedComputation.Name,
-                !string.IsNullOrWhiteSpace(info.FilterSaveExpression) ? (", _filterSaveComputeForNewBaseItems_" + uniqueSuffix) : "",
-                EntityComputedFromCodeGenerator.RecomputeFunctionName(info.EntityComputedFrom));
-        }
+                codeBuilder.InsertCode(filterSaveMethod, RepositoryHelper.RepositoryMembers, baseDS);
 
-        private static string HelperFunctionSnippet(ComputeForNewBaseItemsInfo info, string uniqueSuffix)
-        {
-            DataStructureInfo hookOnSave = info.Dependency_Extends.Base;
+                saveFilterArgument = $", {saveFilterMethodName}";
+            }
+            else
+                saveFilterArgument = "";
 
-            return string.Format(
-        @"private static readonly Func<IEnumerable<{0}.{1}>, Guid[]> _filterComputeForNewBaseItems_{2} =
-            changedItems => changedItems.Select(item => item.ID).ToArray();
 
-        ",
-                hookOnSave.Module.Name,
-                hookOnSave.Name,
-                uniqueSuffix);
-        }
+            string callRecomputeOnSave = $@"if (insertedNew.Any())
+                {{
+                    Guid[] insertedIds = insertedNew.Select(item => item.ID).ToArray();
+                    _domRepository.{info.EntityComputedFrom.Target.FullName}.{EntityComputedFromCodeGenerator.RecomputeFunctionName(info.EntityComputedFrom)}(insertedIds{saveFilterArgument});
+                }}
+                ";
 
-        private static string FilterSaveFunction(ComputeForNewBaseItemsInfo info, string uniqueSuffix)
-        {
-            return string.Format(
-        @"private static readonly Func<IEnumerable<{0}.{1}>, IEnumerable<{0}.{1}>> _filterSaveComputeForNewBaseItems_{2} =
-            {3};
+            codeBuilder.InsertCode(callRecomputeOnSave, WritableOrmDataStructureCodeGenerator.OnSaveTag1, baseDS);
 
-        ",
-                info.Dependency_Extends.Extension.Module.Name, info.Dependency_Extends.Extension.Name, uniqueSuffix, info.FilterSaveExpression);
         }
     }
 }

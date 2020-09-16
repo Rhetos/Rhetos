@@ -17,34 +17,25 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// Used for setting the default property values when inserting a new record.
+    /// Base concepts for queryable filters.
+    /// This concepts assumes that there will be a Filter method implemented in the repository class,
+    /// with parameters <c>(IQueryable&lt;DataStructure&gt; query, ParameterType filterParameter)</c>,
+    /// returning subset of data from <c>IQueryable&lt;DataStructure&gt;</c>.
+    /// The <see cref="Parameter"/> property is the filterParameter type;
+    /// it also of represents the filter name.
     /// </summary>
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("DefaultValue")]
-    public class DefaultValueInfo : IConceptInfo, IAlternativeInitializationConcept
+    public class QueryFilterInfo : IConceptInfo
     {
         [ConceptKey]
-        public PropertyInfo Property { get; set; }
+        public DataStructureInfo Source { get; set; }
 
-        public string Expression { get; set; }
-
-        public DefaultValuesInfo Dependency_DefaultValues { get; set; }
-
-        public IEnumerable<string> DeclareNonparsableProperties()
-        {
-            return new[] { "Dependency_DefaultValues" };
-        }
-
-        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
-        {
-            Dependency_DefaultValues = new DefaultValuesInfo { DataStructure = Property.DataStructure };
-            createdConcepts = new IConceptInfo[] { Dependency_DefaultValues };
-        }
+        [ConceptKey]
+        public string Parameter { get; set; }
     }
 }

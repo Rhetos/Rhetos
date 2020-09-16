@@ -19,17 +19,14 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
     /// <summary>
     /// Naming convention:
-    /// Load() returns loaded (materialized) data in a List or an array.
-    /// Query() returns a LINQ query.
-    /// Read() returns loaded data or a linq query, depending on the available repository's functions and the preferQuery parameter.
+    /// Load(...) returns loaded (materialized) data in a List or an array.
+    /// Query(...) returns a LINQ query.
+    /// Read(...) returns loaded data or a LINQ query, depending on the available repository's functions and the preferQuery parameter.
     /// </summary>
     public interface IReadableRepository<out TEntity> : IRepository
         where TEntity : class, IEntity

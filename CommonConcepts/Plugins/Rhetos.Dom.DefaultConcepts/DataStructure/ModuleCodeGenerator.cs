@@ -17,7 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Microsoft.CSharp.RuntimeBinder;
 using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
@@ -102,13 +101,13 @@ $@"namespace {info.Name}._Helper
 
             // Default .NET framework assemblies:
             codeBuilder.AddReferencesFromDependency(typeof(int)); // Includes reference to mscorlib.dll
-            codeBuilder.AddReferencesFromDependency(typeof(Enumerable)); // Includes reference to System.Core.
-            codeBuilder.AddReferencesFromDependency(typeof(ISet<>)); // Includes reference to System.
-            codeBuilder.AddReferencesFromDependency(typeof(RuntimeBinderException)); // Includes reference to Microsoft.CSharp.
-            codeBuilder.AddReferencesFromDependency(typeof(System.Data.Common.DbDataReader)); // Includes reference to System.Data.
-            codeBuilder.AddReferencesFromDependency(typeof(System.Data.DataRowExtensions)); // Includes reference to System.Data.DataSetExtensions.
-            codeBuilder.AddReferencesFromDependency(typeof(System.Xml.Serialization.XmlSerializer)); // Includes reference to System.Xml.
-            codeBuilder.AddReferencesFromDependency(typeof(System.Xml.Linq.XElement)); // Includes reference to System.Xml.Linq.
+            codeBuilder.AddReferencesFromDependency(typeof(Enumerable)); // Includes reference to System.Core, a default reference for new project in Visual Studio.
+            codeBuilder.AddReferencesFromDependency(typeof(ISet<>)); // Includes reference to System, a default reference for new project in Visual Studio.
+            codeBuilder.AddReferencesFromDependency(typeof(Microsoft.CSharp.RuntimeBinder.RuntimeBinderException)); // Includes reference to Microsoft.CSharp, a default reference for new project in Visual Studio.
+            codeBuilder.AddReferencesFromDependency(typeof(System.Data.Common.DbDataReader)); // Includes reference to System.Data, a default reference for new project in Visual Studio.
+            codeBuilder.AddReferencesFromDependency(typeof(System.Data.DataRowExtensions)); // Includes reference to System.Data.DataSetExtensions, a default reference for new project in Visual Studio.
+            codeBuilder.AddReferencesFromDependency(typeof(System.Xml.Serialization.XmlSerializer)); // Includes reference to System.Xml, a default reference for new project in Visual Studio.
+            codeBuilder.AddReferencesFromDependency(typeof(System.Xml.Linq.XElement)); // Includes reference to System.Xml.Linq, a default reference for new project in Visual Studio.
             // Commonly used Rhetos classes:
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Dom.DefaultConcepts.FilterAll)); // Includes reference to Rhetos.Dom.DefaultConcepts.dll
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Extensibility.INamedPlugins<>));

@@ -17,12 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.ComponentModel.Composition;
 using Rhetos.Compiler;
+using Rhetos.DatabaseGenerator.DefaultConcepts;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -30,33 +30,48 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(DefaultValueInfo))]
     public class DefaultValueCodeGenerator : IConceptCodeGenerator
     {
-        /// <summary>Inserted code can use enumerables "insertedNew", "updatedNew" and "deletedIds" but without navigation properties, because they are not binded to ORM.
-        /// Set bool variable setDefaultValue to false if you don't want default value to be assigned to a property
-        /// </summary>
-        public static readonly CsTag<DataStructureInfo> DefaultValueValidationTag = "Item DefaultValuetValidation";
+        public static readonly CsTag<DefaultValueInfo> DefaultValueAndConditionTag = new CsTag<DefaultValueInfo>("DefaultValueAndCondition", TagType.Reverse);
+        private readonly ConceptMetadata _conceptMetadata;
+
+        public DefaultValueCodeGenerator(ConceptMetadata conceptMetadata)
+        {
+            _conceptMetadata = conceptMetadata;
+        }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (DefaultValueInfo)conceptInfo;
-            codeBuilder.InsertCode(GenerateFuncAndCallForProperty(info), WritableOrmDataStructureCodeGenerator.InitializationTag, info.Property.DataStructure);
-        }
+            string propertyName = info.Property is ReferencePropertyInfo ? info.Property.Name + "ID" : info.Property.Name;
 
-        private string GenerateFuncAndCallForProperty(DefaultValueInfo info)
-        {
-            var propertyName = info.Property is ReferencePropertyInfo ? info.Property.Name + "ID" : info.Property.Name;
-            return $@"
-            {{
-                var defaultValueFunc_{propertyName} = Function<{info.Property.DataStructure.FullName}>.Create({info.Expression});
+            var parsedExpression = new ParsedExpression(info.Expression, new[] { info.Property.DataStructure.FullName }, info);
 
-                foreach (var _item in insertedNew)
-                {{
-                    bool setDefaultValue_{propertyName} = _item.{propertyName} == null;
-                    {DefaultValueValidationTag.Evaluate(info.Property.DataStructure)}
-                    if (setDefaultValue_{propertyName})
-                        _item.{propertyName} = defaultValueFunc_{propertyName}(_item);
-                }}
-            }}
-            ";
+            string getDefaultValue;
+            if (parsedExpression.ResultLiteral != null)
+            {
+                getDefaultValue = parsedExpression.ResultLiteral;
+            }
+            else
+            {
+                string csPropertyType = _conceptMetadata.GetCsPropertyType(info.Property);
+                if (string.IsNullOrEmpty(csPropertyType))
+                    throw new DslSyntaxException(info, $"{info.Property.GetKeywordOrTypeName()} is not supported" +
+                        $" for {info.GetKeywordOrTypeName()}, because it does not provide concept metadata for C# property type.");
+
+                string defaultValueMethod =
+                    $@"private {csPropertyType} DefaultValue_{propertyName}{parsedExpression.MethodParametersAndBody}
+
+        ";
+                codeBuilder.InsertCode(defaultValueMethod, RepositoryHelper.RepositoryMembers, info.Property.DataStructure);
+
+                getDefaultValue = $"DefaultValue_{propertyName}(item)";
+            }
+
+
+            string setDefaultValue = $@"if (item.{propertyName} == null {DefaultValueAndConditionTag.Evaluate(info)})
+                    item.{propertyName} = {getDefaultValue};
+                ";
+
+            codeBuilder.InsertCode(setDefaultValue, DefaultValuesCodeGenerator.SetDefaultValueTag, info.Dependency_DefaultValues);
         }
     }
 }
