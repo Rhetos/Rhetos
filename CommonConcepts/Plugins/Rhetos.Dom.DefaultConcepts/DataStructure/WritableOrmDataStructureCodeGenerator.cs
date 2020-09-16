@@ -102,6 +102,7 @@ namespace Rhetos.Dom.DefaultConcepts
             {{
                 DomHelper.EntityFrameworkOptimizedSave(insertedNew, updatedNew, deletedIds, item => item.ToNavigation(), checkUserPermissions, _executionContext.EntityFrameworkContext, _sqlUtility,
                     out var saveOperation, out var saveException, out var interpretedException);
+
                 if (saveException != null)
                 {{
                     " + OnDatabaseErrorTag.Evaluate(info) + @"
