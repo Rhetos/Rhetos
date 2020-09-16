@@ -107,16 +107,7 @@ namespace Rhetos.Dom.DefaultConcepts
                         memberAccess = Expression.Convert(memberAccess, nullableMemberType);
                     }
 
-                    //If the property is of type Guid? and we know that the parameter has a value we will use the proprty basic type
-                    //so that the generated SQL query will not have parameter null checks 
-                    if (propertyIsNullableValueType == true && convertedValue != null && propertyBasicType == typeof(Guid))
-                    {
-                        constant = Expression.Constant(convertedValue, propertyBasicType);
-                    }
-                    else
-                    {
-                        constant = Expression.Constant(convertedValue, memberAccess.Type);
-                    }
+                    constant = Expression.Constant(convertedValue, memberAccess.Type);
                 }
                 else if (new[] { "startswith", "endswith", "contains", "notcontains" }.Contains(filter.Operation, StringComparer.OrdinalIgnoreCase))
                 {
@@ -184,8 +175,16 @@ namespace Rhetos.Dom.DefaultConcepts
                             // Using a different expression instead of the constant, to force Entity Framework to
                             // use query parameter instead of hardcoding the constant value (literal) into the generated query.
                             // Query with parameter will allow cache reuse for both EF LINQ compiler and database SQL compiler.
-                            Expression<Func<object>> idLambda = () => constantIdEquals;
-                            expression = Expression.Equal(memberAccess, Expression.Convert(idLambda.Body, memberAccess.Type));
+                            if (memberAccess.Type == typeof(Guid?))
+                            {
+                                Expression<Func<Guid?>> idLambda = () => constantIdEquals;
+                                expression = Expression.Equal(memberAccess, idLambda.Body);
+                            }
+                            else
+                            {
+                                Expression<Func<Guid>> idLambda = () => constantIdEquals;
+                                expression = Expression.Equal(memberAccess, idLambda.Body);
+                            }
                         }
                         else if (propertyBasicType == typeof(string) && constant.Value != null)
                             expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("EqualsCaseInsensitive"), memberAccess, constant);
