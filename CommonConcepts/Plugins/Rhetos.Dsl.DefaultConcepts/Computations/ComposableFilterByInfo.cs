@@ -30,9 +30,15 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ComposableFilterBy")]
-    [Obsolete("Use QueryFilter concepts instead (QueryExpressionFilterInfo).")]
+    [Obsolete("Use the QueryFilter concept instead (base class QueryFilterInfo).")] // When finding filters in DSL model, the base filter concept should be used.
     public class ComposableFilterByInfo : QueryFilterInfo
     {
+        [Obsolete("Create a QueryFilter concept instead (class QueryFilterExpressionInfo).")] // New filter in code should be created with QueryFilterExpressionInfo.
+        public ComposableFilterByInfo()
+        {
+            // The constructor is here just to add the Obsolete attribute with a messages different from type definition.
+        }
+
         /// <summary>
         /// A lambda expression that returns a subset of a given query with parameter, for example:
         /// <c>(query, repository, parameter) => query.Where(...)</c>.

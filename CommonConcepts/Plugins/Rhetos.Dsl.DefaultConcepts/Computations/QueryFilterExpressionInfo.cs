@@ -22,14 +22,14 @@ using System.ComponentModel.Composition;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// A read method that returns a filtered query for the given source query and the parameter value. 
-    /// The lambda expression returns a subset of a given query:
-    /// <c>(IQueryable&lt;DataStructure&gt; query, parameter) => filtered IQueryable&lt;DataStructure&gt;</c>.
+    /// A read method that returns a filtered query for the given source query and the filter parameter.
+    /// The lambda expression returns a subset of a given query,
+    /// for example: <c>(query, parameter) => query.Where(...)</c>.
     /// The parameter type also represents the filter name.
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("QueryFilter")]
-    public class QueryExpressionFilterInfo : QueryFilterInfo
+    public class QueryFilterExpressionInfo : QueryFilterInfo
     {
         /// <summary>
         /// A lambda expression that returns a subset of a given query with parameter, for example:
