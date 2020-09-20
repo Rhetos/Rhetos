@@ -18,7 +18,6 @@
 */
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
@@ -31,7 +30,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ComposableFilterBy")]
-    [Obsolete("Use the QueryFilter concept instead (class QueryFilterInfo).")] // When finding filters in DSL model, the base filter concept should be used.
+    [Obsolete("Use the QueryFilter concept instead (base class QueryFilterInfo).")] // When finding filters in DSL model, the base filter concept should be used.
     public class ComposableFilterByInfo : QueryFilterInfo
     {
         [Obsolete("Create a QueryFilter concept instead (class QueryFilterExpressionInfo).")] // New filter in code should be created with QueryFilterExpressionInfo.
@@ -45,31 +44,5 @@ namespace Rhetos.Dsl.DefaultConcepts
         /// <c>(query, repository, parameter) => query.Where(...)</c>.
         /// </summary>
         public string Expression { get; set; }
-
-        /// <summary>
-        /// RestGenerator and some other plugin packages generate code for FilterBy filters assuming that it also covers ComposableFilterBy filters.
-        /// Since Rhetos v4.1, ComposableFilterBy does not generate the additional FilterBy repository method.
-        /// An empty FilterBy concept is created for backward compatibility with existing plugin packages; it does not generate the repository method.
-        /// </summary>
-        public static readonly string EmptyFilterByForBackwardCompatibility = "Empty FilterBy for backward compatibility.";
     }
-
-#pragma warning disable CS0618 // Type or member is obsolete
-    [Export(typeof(IConceptMacro))]
-    public class ComposableFilterByMacro : IConceptMacro<ComposableFilterByInfo>
-    {
-        public IEnumerable<IConceptInfo> CreateNewConcepts(ComposableFilterByInfo conceptInfo, IDslModel existingConcepts)
-        {
-            return new[]
-            {
-                new FilterByInfo
-                {
-                    Source = conceptInfo.Source,
-                    Parameter = conceptInfo.Parameter,
-                    Expression = ComposableFilterByInfo.EmptyFilterByForBackwardCompatibility
-                }
-            };
-        }
-    }
-#pragma warning restore CS0618 // Type or member is obsolete
 }
