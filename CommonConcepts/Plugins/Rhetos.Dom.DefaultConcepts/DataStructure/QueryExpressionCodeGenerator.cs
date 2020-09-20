@@ -17,34 +17,29 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rhetos.Dsl.DefaultConcepts;
-using System.Globalization;
-using System.ComponentModel.Composition;
 using Rhetos.Compiler;
-using Rhetos.Extensibility;
 using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Extensibility;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(QueryWithParameterInfo))]
-    public class QueryWithParameterCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(QueryExpressionInfo))]
+    public class QueryExpressionCodeGenerator : IConceptCodeGenerator
     {
-        public static readonly CsTag<QueryWithParameterInfo> BeforeQueryTag = "BeforeQuery";
-        public static readonly CsTag<QueryWithParameterInfo> AfterQueryTag = "AfterQuery";
+        public static readonly CsTag<QueryExpressionInfo> BeforeQueryTag = "BeforeQuery";
+        public static readonly CsTag<QueryExpressionInfo> AfterQueryTag = "AfterQuery";
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (QueryWithParameterInfo)conceptInfo;
+            var info = (QueryExpressionInfo)conceptInfo;
 
             codeBuilder.InsertCode(MemberFunctionsSnippet(info), RepositoryHelper.RepositoryMembers, info.DataStructure);
         }
 
-        private static string MemberFunctionsSnippet(QueryWithParameterInfo info)
+        private static string MemberFunctionsSnippet(QueryExpressionInfo info)
         {
             return string.Format(
         @"public IQueryable<Common.Queryable.{0}_{1}> Query({2} queryParameter)
@@ -59,7 +54,7 @@ namespace Rhetos.Dom.DefaultConcepts
         ",
                 info.DataStructure.Module.Name,
                 info.DataStructure.Name,
-                info.ParameterType,
+                info.Parameter,
                 info.QueryImplementation.Trim(),
                 BeforeQueryTag.Evaluate(info),
                 AfterQueryTag.Evaluate(info));

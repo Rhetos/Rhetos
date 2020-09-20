@@ -17,27 +17,27 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.ComponentModel.Composition;
-using Rhetos.Utilities;
-using Rhetos.Compiler;
-using System.Globalization;
+using System.Linq;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// Low-level concept that adds custom code to be executed before each query.
+    /// A read method that returns a LINQ query for the given parameter value.
+    /// The code snippet should be a lambda expression that returns the query:
+    /// <c>parameter => IQueryable&lt;DataStructureType&gt;</c>.
+    /// The parameter type also represents the filter name.
     /// </summary>
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("BeforeQuery")]
-    public class BeforeQueryWithParameterInfo : IConceptInfo
+    [ConceptKeyword("Query")]
+    public class QueryExpressionInfo : QueryInfo, IValidatedConcept
     {
-        [ConceptKey]
-        public QueryWithParameterInfo QueryWithParameter { get; set; }
+        public string QueryImplementation { get; set; }
 
-        public string CodeSnippet { get; set; }
+        public void CheckSemantics(IDslModel existingConcepts)
+        {
+            if (!Parameter.Contains('.'))
+                throw new DslSyntaxException(this, "ParameterType must be full type name, including Module name for a data structure, or C# namespace for other parameter types.");
+        }
     }
 }

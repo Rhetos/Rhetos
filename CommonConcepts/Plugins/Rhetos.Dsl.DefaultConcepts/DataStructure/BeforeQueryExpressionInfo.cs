@@ -22,24 +22,15 @@ using System.ComponentModel.Composition;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// Base concepts for queryable filters.
-    /// This concept assumes that there will be a <c>Filter</c> method implemented in the repository class,
-    /// with parameters <c>(IQueryable&lt;DataStructureType&gt; query, ParameterType filterParameter)</c>,
-    /// returning a subset of data from the given <c>query</c>.
-    /// The <see cref="Parameter"/> property is the filterParameter type;
-    /// it also of represents the filter name.
+    /// Low-level concept that adds custom code to be executed before each query.
     /// </summary>
     [Export(typeof(IConceptInfo))]
-    public class QueryFilterInfo : IConceptInfo
+    [ConceptKeyword("BeforeQuery")]
+    public class BeforeQueryExpressionInfo : IConceptInfo
     {
         [ConceptKey]
-        public DataStructureInfo Source { get; set; }
+        public QueryExpressionInfo QueryExpression { get; set; }
 
-        /// <summary>
-        /// Parameter type. It can be a DataStructure name or any C# type.
-        /// It also represents the filter name.
-        /// </summary>
-        [ConceptKey]
-        public string Parameter { get; set; }
+        public string CodeSnippet { get; set; }
     }
 }

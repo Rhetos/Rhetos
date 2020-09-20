@@ -17,37 +17,28 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.ComponentModel.Composition;
-using Rhetos.Utilities;
-using Rhetos.Compiler;
-using System.Globalization;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// It is similar to the FilterBy, it just returns a query instead of a simple array.
+    /// Base concept for querying data with provided input parameter.
+    /// This concept assumes that there will be a <c>Query</c> method implemented in the repository class,
+    /// with parameter of a given type (see <see cref="Parameter"/>),
+    /// returning IQueryable of the <see cref="DataStructure"/> type.
+    /// The <see cref="Parameter"/> property also of represents the filter name.
     /// </summary>
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("Query")]
-    public class QueryWithParameterInfo : IValidatedConcept
+    public class QueryInfo : IConceptInfo
     {
         [ConceptKey]
         public DataStructureInfo DataStructure { get; set; }
 
-        /// <summary>FullName of the parameter type.</summary>
+        /// <summary>
+        /// Parameter type. It can be a DataStructure name or any C# type.
+        /// It also represents the filter name.
+        /// </summary>
         [ConceptKey]
-        public string ParameterType { get; set; }
-
-        public string QueryImplementation { get; set; }
-
-        public void CheckSemantics(IDslModel existingConcepts)
-        {
-            if (!ParameterType.Contains('.'))
-                throw new DslSyntaxException(this, "ParameterType must be full type name, including Module name for a data structure, or C# namespace for other parameter types.");
-        }
+        public string Parameter { get; set; }
     }
 }
