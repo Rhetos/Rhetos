@@ -21,11 +21,9 @@ using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
-using Rhetos.Utilities;
-using System;
 using System.ComponentModel.Composition;
-using System.Configuration;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -37,10 +35,12 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly CsTag<ComposableFilterByInfo> AdditionalParametersArgumentTag = "AdditionalParametersArgument";
         public static readonly CsTag<ComposableFilterByInfo> BeforeFilterTag = "BeforeFilter";
         private readonly CommonConceptsOptions _commonConceptsOptions;
+        private readonly IDslModel _dslModel;
 
-        public ComposableFilterByCodeGenerator(CommonConceptsOptions commonConceptsOptions)
+        public ComposableFilterByCodeGenerator(CommonConceptsOptions commonConceptsOptions, IDslModel dslModel)
         {
             _commonConceptsOptions = commonConceptsOptions;
+            _dslModel = dslModel;
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
@@ -77,17 +77,40 @@ namespace Rhetos.Dom.DefaultConcepts
                 + newLine;
 
             var parsedExpression = new ParsedExpression(info.Expression, null, info, BeforeFilterTag.Evaluate(info) + commentedAdditionalArguments);
+            if (parsedExpression.ExpressionParameters.Length < 3)
+                return null;
+
+            string parameterSource = parsedExpression.ExpressionParameters[0].Identifier.Text;
+            string parameterRepository = parsedExpression.ExpressionParameters[1].Identifier.Text;
+            string parameterFilter = parsedExpression.ExpressionParameters[2].Identifier.Text;
+
+            // Trying to remove usage of expression arguments other then input source and filter parameters.
+            var simplifiedMethodBody = parsedExpression.MethodBody;
+            if (_commonConceptsOptions.ComposableFilterByOptimizeRepositoryAndContextUsage)
+            {
+                var repositoryRegex = new Regex($@"\b{parameterRepository}\.");
+                simplifiedMethodBody = repositoryRegex.Replace(simplifiedMethodBody, "_domRepository.");
+
+                if (parsedExpression.ExpressionParameters.Length >= 4
+                    && _dslModel.FindByKey($"{nameof(ComposableFilterUseExecutionContextInfo)} {info.GetKeyProperties()}") != null)
+                {
+                    string parameterContext = parsedExpression.ExpressionParameters[3].Identifier.Text;
+                    if (parameterContext.Contains("context") || parameterContext.Contains("Context"))
+                    {
+                        var contextRegex = new Regex($@"\b{parameterContext}\.");
+                        simplifiedMethodBody = contextRegex.Replace(simplifiedMethodBody, "_executionContext.");
+                    }
+                }
+            }
 
             // Parameters 0 and 2 are standard Filter method parameters: input query and filter type. If no other parameters are used in the expression,
             // the expression can be simplified by transforming it directly to the standard Filter method without using lambda expressions
             // (build performance optimization for C# compiler).
             var nonStandardParameters = parsedExpression.ExpressionParameters.Where((p, index) => index != 0 && index != 2).Select(p => p.Identifier.Text).ToList();
-            if (nonStandardParameters.Any(parameter => parsedExpression.MethodBody.Contains(parameter)) || parsedExpression.ExpressionParameters.Length < 3)
+            if (nonStandardParameters.Any(parameter => simplifiedMethodBody.Contains(parameter)))
                 return null;
-
-            string parameterSource = parsedExpression.ExpressionParameters[0].Identifier.Text;
-            string parameterFilter = parsedExpression.ExpressionParameters[2].Identifier.Text;
-            return $@"public {queryableType} Filter({queryableType} {parameterSource}, {info.Parameter} {parameterFilter}){parsedExpression.MethodBody}
+            else
+                return $@"public {queryableType} Filter({queryableType} {parameterSource}, {info.Parameter} {parameterFilter}){simplifiedMethodBody}
 
         ";
         }

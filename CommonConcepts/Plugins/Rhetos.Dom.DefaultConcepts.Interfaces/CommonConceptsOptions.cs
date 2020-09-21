@@ -40,5 +40,12 @@ namespace Rhetos.Dom.DefaultConcepts
         /// This will make unavailable extending custom parameters by tags AdditionalParametersTypeTag and AdditionalParametersArgumentTag.
         /// </summary>
         public bool ComposableFilterByOptimizeLambda { get; set; } = true;
+
+        /// <summary>
+        /// Allows the optimization from <see cref="ComposableFilterByOptimizeLambda"/> to be applied
+        /// to filters that use repository and context arguments, by rewriting the expression to use
+        /// the corresponding member variables instead of the arguments.
+        /// </summary>
+        public bool ComposableFilterByOptimizeRepositoryAndContextUsage { get; set; } = true;
     }
 }
