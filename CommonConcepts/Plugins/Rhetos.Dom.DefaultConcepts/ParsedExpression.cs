@@ -37,7 +37,11 @@ namespace Rhetos.Dom.DefaultConcepts
         /// The expression parameters and body formatted as a method.
         /// For example, the expression "text => text.Length" with a string argument will result with "(string text) { return text.Length; }" (line breaks and indentation not shown).
         /// </summary>
-        public string MethodParametersAndBody { get; }
+        public string MethodParametersAndBody => MethodParameters != null ? MethodParameters + MethodBody: throw new DslSyntaxException(_errorContext, "The argument types are not provided");
+
+        public string MethodParameters { get; }
+
+        public string MethodBody { get; }
 
         /// <summary>
         /// If the expression's body is a literal value, returns the text representation, otherwise null.
@@ -46,6 +50,8 @@ namespace Rhetos.Dom.DefaultConcepts
         /// </summary>
         public string ResultLiteral { get; }
 
+        public ParameterSyntax[] ExpressionParameters { get; }
+
         private readonly string _expression;
         private readonly string[] _argumentTypes;
         private readonly IConceptInfo _errorContext;
@@ -53,6 +59,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <summary>
         /// Converts code snippets from Expression format to Method format.
         /// </summary>
+        /// <param name="argumentTypes">If null, the generated method parameters will not be available.</param>
         public ParsedExpression(string expression, string[] argumentTypes, IConceptInfo errorContext, string insertCode = null)
         {
             _expression = expression;
@@ -62,10 +69,34 @@ namespace Rhetos.Dom.DefaultConcepts
             // Note: This parser is not intended to detect all errors in the lambda expression. It would be preferred to use the provided expression as it is,
             // and let the C# compiler detect and report the syntax error in the generated code.
 
-            SyntaxTree tree = CSharpSyntaxTree.ParseText(expression, new CSharpParseOptions(kind: SourceCodeKind.Script));
+            SyntaxNode lambdaNode = ParseExpression();
+
+            if (lambdaNode is SimpleLambdaExpressionSyntax simpleExpression)
+            {
+                ExpressionParameters = new[] { simpleExpression.Parameter };
+                MethodParameters = BuildMethodParameters(ExpressionParameters);
+                MethodBody = BuildMethodBody(simpleExpression.Body, insertCode);
+                ResultLiteral = TryBuildResultLiteral(simpleExpression.Body);
+            }
+            else if (lambdaNode is ParenthesizedLambdaExpressionSyntax parenthesizedExpression)
+            {
+                ExpressionParameters = parenthesizedExpression.ParameterList.Parameters.ToArray();
+                MethodParameters = BuildMethodParameters(ExpressionParameters, parenthesizedExpression.ParameterList.ToString());
+                MethodBody = BuildMethodBody(parenthesizedExpression.Body, insertCode);
+                ResultLiteral = TryBuildResultLiteral(parenthesizedExpression.Body);
+            }
+            else
+            {
+                throw new DslSyntaxException(errorContext, $"Unexpected node type '{lambdaNode.Kind()}' in code snippet '{expression.Limit(200)}'.");
+            }
+        }
+
+        private SyntaxNode ParseExpression()
+        {
+            SyntaxTree tree = CSharpSyntaxTree.ParseText(_expression, new CSharpParseOptions(kind: SourceCodeKind.Script));
             var errors = tree.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
             if (errors.Any())
-                throw new DslSyntaxException(errorContext, $"C# syntax error '{errors.First()}' in code snippet '{expression.Limit(200)}'.");
+                throw new DslSyntaxException(_errorContext, $"C# syntax error '{errors.First()}' in code snippet '{_expression.Limit(200)}'.");
 
             var compilationNode = tree.GetCompilationUnitRoot();
             CheckExpectedCodeFormat(compilationNode, SyntaxKind.CompilationUnit, SyntaxKind.GlobalStatement);
@@ -74,31 +105,7 @@ namespace Rhetos.Dom.DefaultConcepts
             var expressionNode = globalNode.ChildNodes().Single();
             CheckExpectedCodeFormat(expressionNode, SyntaxKind.ExpressionStatement, new[] { SyntaxKind.SimpleLambdaExpression, SyntaxKind.ParenthesizedLambdaExpression });// No need to support "delegate" expression format with AnonymousMethodExpressionSyntax.
             var lambdaNode = expressionNode.ChildNodes().Single();
-
-            if (lambdaNode is SimpleLambdaExpressionSyntax simpleExpression)
-            {
-                var parameters = new[] { simpleExpression.Parameter };
-                CheckParameters(parameters);
-                string methodParameters = BuildMethodParameters(parameters);
-                string methodBody = BuildMethodBody(simpleExpression.Body, insertCode);
-                MethodParametersAndBody = methodParameters + methodBody;
-                ResultLiteral = TryBuildResultLiteral(simpleExpression.Body);
-            }
-            else if (lambdaNode is ParenthesizedLambdaExpressionSyntax parenthesizedExpression)
-            {
-                var parameters = parenthesizedExpression.ParameterList.Parameters.ToArray();
-                CheckParameters(parameters);
-                string methodParameters = parameters.All(p => p.Type != null)
-                    ? parenthesizedExpression.ParameterList.ToString()
-                    : BuildMethodParameters(parameters);
-                string methodBody = BuildMethodBody(parenthesizedExpression.Body, insertCode);
-                MethodParametersAndBody = methodParameters + methodBody;
-                ResultLiteral = TryBuildResultLiteral(parenthesizedExpression.Body);
-            }
-            else
-            {
-                throw new DslSyntaxException(errorContext, $"Unexpected node type '{lambdaNode.Kind()}' in code snippet '{expression.Limit(200)}'.");
-            }
+            return lambdaNode;
         }
 
         private void CheckExpectedCodeFormat(SyntaxNode node, SyntaxKind expectedNodeKind, params SyntaxKind[] expectedChildKinds)
@@ -126,17 +133,20 @@ namespace Rhetos.Dom.DefaultConcepts
                     $" Code snippet '{_expression.Limit(200)}' is '{childNodes.Single().Kind()}' instead of '{expectedChildKindsText}'.");
         }
 
-        private void CheckParameters(ParameterSyntax[] parameters)
+        private string BuildMethodParameters(ParameterSyntax[] parameters, string originalParametersDefinition = null)
         {
+            if (_argumentTypes == null)
+                return null;
+
             if (_argumentTypes.Length != parameters.Length)
                 throw new DslSyntaxException(_errorContext, $"The provided code snippet should have {_argumentTypes.Length} parameters instead of {parameters.Length}." +
                     $" Code snippet: '{_expression.Limit(200)}'." +
                     $" Expected parameter types: {string.Join(", ", _argumentTypes)}.");
-        }
 
-        private string BuildMethodParameters(ParameterSyntax[] parameters)
-        {
-            return "(" + string.Join(", ", parameters.Zip(_argumentTypes, (p, at) => $"{at} {p.Identifier.Text}")) + ")";
+            if (parameters.All(p => p.Type != null) && originalParametersDefinition != null)
+                return originalParametersDefinition;
+            else
+                return "(" + string.Join(", ", parameters.Zip(_argumentTypes, (p, at) => $"{at} {p.Identifier.Text}")) + ")";
         }
 
         private string BuildMethodBody(SyntaxNode body, string insertCode)

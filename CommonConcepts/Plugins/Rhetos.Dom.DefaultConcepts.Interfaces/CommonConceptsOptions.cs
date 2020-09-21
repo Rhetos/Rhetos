@@ -33,5 +33,12 @@ namespace Rhetos.Dom.DefaultConcepts
         public bool CascadeDeleteInDatabase { get; set; } = false;
 
         public bool CompilerWarningsInGeneratedCode { get; set; } = false;
+
+        /// <summary>
+        /// Allow converting ComposableFilterBy lambda expression to simple method format,
+        /// if there is no custom parameter added by UseExecutionContext concept.
+        /// This will make unavailable extending custom parameters by tags AdditionalParametersTypeTag and AdditionalParametersArgumentTag.
+        /// </summary>
+        public bool ComposableFilterByOptimizeLambda { get; set; } = true;
     }
 }
