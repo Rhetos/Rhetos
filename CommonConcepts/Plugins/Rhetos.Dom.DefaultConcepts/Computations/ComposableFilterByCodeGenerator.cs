@@ -88,8 +88,8 @@ namespace Rhetos.Dom.DefaultConcepts
             var simplifiedMethodBody = parsedExpression.MethodBody;
             if (_commonConceptsOptions.ComposableFilterByOptimizeRepositoryAndContextUsage)
             {
-                var repositoryRegex = new Regex($@"\b{parameterRepository}\.");
-                simplifiedMethodBody = repositoryRegex.Replace(simplifiedMethodBody, "_domRepository.");
+                var repositoryRegex = new Regex($@"\b{parameterRepository}([\.,\)])");
+                simplifiedMethodBody = repositoryRegex.Replace(simplifiedMethodBody, "_domRepository$1");
 
                 if (parsedExpression.ExpressionParameters.Length >= 4
                     && _dslModel.FindByKey($"{nameof(ComposableFilterUseExecutionContextInfo)} {info.GetKeyProperties()}") != null)
@@ -97,8 +97,8 @@ namespace Rhetos.Dom.DefaultConcepts
                     string parameterContext = parsedExpression.ExpressionParameters[3].Identifier.Text;
                     if (parameterContext.Contains("context") || parameterContext.Contains("Context"))
                     {
-                        var contextRegex = new Regex($@"\b{parameterContext}\.");
-                        simplifiedMethodBody = contextRegex.Replace(simplifiedMethodBody, "_executionContext.");
+                        var contextRegex = new Regex($@"\b{parameterContext}([\.,\)])");
+                        simplifiedMethodBody = contextRegex.Replace(simplifiedMethodBody, "_executionContext$1");
                     }
                 }
             }
@@ -107,7 +107,7 @@ namespace Rhetos.Dom.DefaultConcepts
             // the expression can be simplified by transforming it directly to the standard Filter method without using lambda expressions
             // (build performance optimization for C# compiler).
             var nonStandardParameters = parsedExpression.ExpressionParameters.Where((p, index) => index != 0 && index != 2).Select(p => p.Identifier.Text).ToList();
-            if (nonStandardParameters.Any(parameter => simplifiedMethodBody.Contains(parameter)))
+            if (nonStandardParameters.Any(parameter => new Regex($@"\b{parameter}\b").IsMatch(simplifiedMethodBody)))
                 return null;
             else
                 return $@"public {queryableType} Filter({queryableType} {parameterSource}, {info.Parameter} {parameterFilter}){simplifiedMethodBody}

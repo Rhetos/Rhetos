@@ -51,9 +51,9 @@ namespace Rhetos.Dsl.DefaultConcepts
         public static string CreateComposableFilterSnippet(string permissionExpressionName, DataStructureInfo dataStructure)
         {
             return string.Format(
-            @"(source, repository, parameter, context) => 
+            @"(source, repository, parameter) => 
                 {{
-                    var filterExpression = {0}(source, repository, context);
+                    var filterExpression = {0}(source, repository, _executionContext);
                     return FilterExpression<Common.Queryable.{1}_{2}>.OptimizedWhere(source, filterExpression);
                 }}", permissionExpressionName, dataStructure.Module.Name, dataStructure.Name);
         }

@@ -30,7 +30,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("RowPermissionsWrite")]
-    public class RowPermissionsWriteInfo : ComposableFilterByInfo, IMacroConcept, IAlternativeInitializationConcept
+    public class RowPermissionsWriteInfo : ComposableFilterByInfo, IAlternativeInitializationConcept
     {
         public static readonly string FilterName = "Common.RowPermissionsWriteItems";
         public static readonly string PermissionsExpressionName = "GetRowPermissionsWriteExpression";
@@ -47,11 +47,6 @@ namespace Rhetos.Dsl.DefaultConcepts
             Parameter = FilterName;
             Expression = RowPermissionsInfo.CreateComposableFilterSnippet(PermissionsExpressionName, Source);
             createdConcepts = null;
-        }
-
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
-        {
-            return new[] { new ComposableFilterUseExecutionContextInfo() { Filter = this } };
         }
     }
 }
