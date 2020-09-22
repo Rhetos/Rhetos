@@ -38,7 +38,7 @@ namespace Rhetos.Utilities
             _eventName = eventName;
         }
 
-        public IDisposable TimoutWarning(Func<string> logMessage)
+        public IDisposable PerformanceWarning(Func<string> logMessage)
         {
             return new DelayedAction(_delay, () =>
             {

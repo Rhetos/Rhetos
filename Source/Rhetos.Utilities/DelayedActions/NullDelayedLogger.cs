@@ -26,7 +26,7 @@ namespace Rhetos.Utilities
     /// </summary>
     public class NullDelayedLogger : IDelayedLogger
     {
-        public IDisposable TimoutWarning(Func<string> logMessage)
+        public IDisposable PerformanceWarning(Func<string> logMessage)
         {
             return null;
         }

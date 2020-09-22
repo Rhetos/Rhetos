@@ -103,13 +103,16 @@ namespace Rhetos.Utilities
 
                 Action<int> initializeProgress = scriptIndex =>
                 {
-                    timeoutWarning = _delayedLogger.TimoutWarning(() => $"Executing SQL script:\r\n{sqlScriptDescription(scriptIndex)}\r\n");
+                    timeoutWarning = _delayedLogger.PerformanceWarning(() => $"Executing SQL script:\r\n{sqlScriptDescription(scriptIndex)}\r\n");
                 };
 
                 Action<int> reportProgress = scriptIndex =>
                 {
-                    timeoutWarning.Dispose();
-                    timeoutWarning = null;
+                    if (timeoutWarning != null)
+                    {
+                        timeoutWarning.Dispose();
+                        timeoutWarning = null;
+                    }
 
                     var now = DateTime.Now;
                     int executedCount = previousBatchesCount + scriptIndex + 1;

@@ -24,8 +24,8 @@ namespace Rhetos.Utilities
     /// <summary>
     /// Utility for writing a warning log message if some operation takes too long.
     /// The message is written asynchronously, after a timeout (configurable), before the long operation is completed.
-    /// See usage instructions in <see cref="TimoutWarning"/> method.
-    /// Use <see cref="IDelayedLogProvider"/> from DI to get an instance of <see cref="IDelayedLogger"/>.
+    /// See usage instructions in <see cref="PerformanceWarning"/> method.
+    /// Use <see cref="IDelayedLogProvider"/> from dependency injection, then call <see cref="IDelayedLogProvider.GetLogger"/> to get an instance of <see cref="IDelayedLogger"/>.
     /// </summary>
     public interface IDelayedLogger
     {
@@ -35,12 +35,12 @@ namespace Rhetos.Utilities
         /// The logging is canceled if the IDelayedLogger is disposed before the timeout occurred.
         /// Usage:
         /// <code>
-        /// using (delayedLogger.TimoutWarning(() => "Some message."))
+        /// using (delayedLogger.PerformanceWarning(() => "Some message."))
         /// {
         ///     ... Some code that might take a long time to execute.
         /// }
         /// </code>
         /// </summary>
-        IDisposable TimoutWarning(Func<string> logMessage);
+        IDisposable PerformanceWarning(Func<string> logMessage);
     }
 }

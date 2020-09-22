@@ -179,7 +179,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public IEnumerable<TEntityInterface> Load(object parameter, Type parameterType)
         {
-            using (_delayedLogger.TimoutWarning(() => $"Loading with filter '{parameterType}'."))
+            using (_delayedLogger.PerformanceWarning(() => $"Loading with filter '{parameterType}'."))
             {
                 var items = Read(parameter, parameterType, preferQuery: false);
                 Reflection.MaterializeEntityList(ref items);
@@ -569,7 +569,7 @@ namespace Rhetos.Dom.DefaultConcepts
             if (Reflection.RepositorySaveMethod == null)
                 throw new FrameworkException(EntityName + "'s repository does not implement the Save(IEnumerable<Entity>, ...) method.");
 
-            using (_delayedLogger.TimoutWarning(() => $"Saving: {insertedNew.Count()} to insert, {updatedNew.Count()} to update, {deletedIds.Count()} to delete."))
+            using (_delayedLogger.PerformanceWarning(() => $"Saving: {insertedNew.Count()} to insert, {updatedNew.Count()} to update, {deletedIds.Count()} to delete."))
                 Reflection.RepositorySaveMethod.InvokeEx(_repository.Value,
                     insertedNew != null ? Reflection.CastAsEntity(insertedNew) : null,
                     updatedNew != null ? Reflection.CastAsEntity(updatedNew) : null,
