@@ -44,7 +44,8 @@ namespace Rhetos.CommonConcepts.Test.Mocks
                     Repositories = new Lazy<IIndex<string, IRepository>>(() => new RepositoryIndexMock<TEntityInterface, TEntity>(items)),
                     LogProvider = new ConsoleLogProvider(),
                     GenericFilterHelper = new GenericFilterHelper(new DomainObjectModelMock()),
-                },
+                    DelayedLogProvider = new DelayedLogProvider(new LoggingOptions { DelayedLogTimout = 0 }, null),
+    },
                 new RegisteredInterfaceImplementations { { typeof(TEntityInterface), typeof(TEntity).FullName }})
         {
         }
@@ -57,6 +58,7 @@ namespace Rhetos.CommonConcepts.Test.Mocks
                     Repositories = new Lazy<IIndex<string, IRepository>>(() => new RepositoryIndexMock(typeof(TEntity), repository)),
                     LogProvider = new ConsoleLogProvider(),
                     GenericFilterHelper = new GenericFilterHelper(new DomainObjectModelMock()),
+                    DelayedLogProvider = new DelayedLogProvider(new LoggingOptions { DelayedLogTimout = 0 }, null),
                 },
                 new RegisteredInterfaceImplementations { { typeof(TEntityInterface), typeof(TEntity).FullName } })
         {

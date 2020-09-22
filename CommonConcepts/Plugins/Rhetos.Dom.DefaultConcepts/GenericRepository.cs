@@ -37,6 +37,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public Lazy<IIndex<string, IRepository>> Repositories { get; set; }
         public ILogProvider LogProvider { get; set; }
         public GenericFilterHelper GenericFilterHelper { get; set; }
+        public IDelayedLogProvider DelayedLogProvider { get; set; }
     }
 
     /// <summary>
@@ -59,9 +60,10 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
+        private readonly IDelayedLogger _delayedLogger;
         private readonly GenericFilterHelper _genericFilterHelper;
 
-        private readonly string _repositoryName;
+        private readonly string _genericRepositoryName;
         private readonly Lazy<IRepository> _repository;
 
         public string EntityName { get; private set; }
@@ -76,10 +78,11 @@ namespace Rhetos.Dom.DefaultConcepts
         public GenericRepository(GenericRepositoryParameters parameters, string entityName)
         {
             EntityName = entityName;
-            _repositoryName = "GenericRepository(" + EntityName + ")";
+            _genericRepositoryName = "GenericRepository(" + EntityName + ")";
 
-            _logger = parameters.LogProvider.GetLogger(_repositoryName);
-            _performanceLogger = parameters.LogProvider.GetLogger("Performance." + _repositoryName);
+            _logger = parameters.LogProvider.GetLogger(_genericRepositoryName);
+            _performanceLogger = parameters.LogProvider.GetLogger("Performance." + _genericRepositoryName);
+            _delayedLogger = parameters.DelayedLogProvider.GetLogger(_genericRepositoryName);
             _genericFilterHelper = parameters.GenericFilterHelper;
 
             _repository = new Lazy<IRepository>(() => InitializeRepository(parameters.Repositories));
@@ -176,9 +179,12 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public IEnumerable<TEntityInterface> Load(object parameter, Type parameterType)
         {
-            var items = Read(parameter, parameterType, preferQuery: false);
-            Reflection.MaterializeEntityList(ref items);
-            return items;
+            using (_delayedLogger.TimoutWarning(() => $"Loading with filter '{parameterType}'."))
+            {
+                var items = Read(parameter, parameterType, preferQuery: false);
+                Reflection.MaterializeEntityList(ref items);
+                return items;
+            }
         }
 
         public IEnumerable<TEntityInterface> Load<TParameter>()
@@ -554,20 +560,21 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <summary>
         /// Type casting helper. The type casting of performance-efficient; it will not generate a new list or array or instance.
         /// </summary>
-        public void Save(IEnumerable<TEntityInterface> insertNew, IEnumerable<TEntityInterface> updateNew, IEnumerable<TEntityInterface> deleteIds, bool checkUserPermissions = false)
+        public void Save(IEnumerable<TEntityInterface> insertedNew, IEnumerable<TEntityInterface> updatedNew, IEnumerable<TEntityInterface> deletedIds, bool checkUserPermissions = false)
         {
-            Reflection.MaterializeEntityList(ref insertNew);
-            Reflection.MaterializeEntityList(ref updateNew);
-            Reflection.MaterializeEntityList(ref deleteIds);
+            Reflection.MaterializeEntityList(ref insertedNew);
+            Reflection.MaterializeEntityList(ref updatedNew);
+            Reflection.MaterializeEntityList(ref deletedIds);
 
             if (Reflection.RepositorySaveMethod == null)
                 throw new FrameworkException(EntityName + "'s repository does not implement the Save(IEnumerable<Entity>, ...) method.");
 
-            Reflection.RepositorySaveMethod.InvokeEx(_repository.Value,
-                insertNew != null ? Reflection.CastAsEntity(insertNew) : null,
-                updateNew != null ? Reflection.CastAsEntity(updateNew) : null,
-                deleteIds != null ? Reflection.CastAsEntity(deleteIds) : null,
-                checkUserPermissions);
+            using (_delayedLogger.TimoutWarning(() => $"Saving: {insertedNew.Count()} to insert, {updatedNew.Count()} to update, {deletedIds.Count()} to delete."))
+                Reflection.RepositorySaveMethod.InvokeEx(_repository.Value,
+                    insertedNew != null ? Reflection.CastAsEntity(insertedNew) : null,
+                    updatedNew != null ? Reflection.CastAsEntity(updatedNew) : null,
+                    deletedIds != null ? Reflection.CastAsEntity(deletedIds) : null,
+                    checkUserPermissions);
         }
 
         public void InsertOrReadId<TProperties>(
@@ -867,7 +874,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     toDelete = Reflection.ToListOfEntity(toDelete.Where(item => !toDeactivateIndex.Contains(item)));
                 }
                 if (toDelete.Count() + toDeactivate.Count() != oldDeleteCount)
-                    throw new FrameworkException($"Invalid number of items to deactivate for '{_repositoryName}'." +
+                    throw new FrameworkException($"Invalid number of items to deactivate for '{_genericRepositoryName}'." +
                         $" Verify if the deactivation filter ({filterDeactivateDeleted.GetType().FullName}) on that data structure returns a valid subset of the given items." +
                         $" {oldDeleteCount} items to remove: {toDeactivate.Count()} items to deactivate and {toDelete.Count()} items remaining to delete (should be {oldDeleteCount - toDeactivate.Count()}).");
 

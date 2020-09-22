@@ -27,7 +27,9 @@ namespace Rhetos.Configuration.Autofac.Modules
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterType<NLogProvider>().As<ILogProvider>().InstancePerLifetimeScope();
+            builder.RegisterType<NLogProvider>().As<ILogProvider>().SingleInstance();
+            builder.RegisterType<DelayedLogProvider>().As<IDelayedLogProvider>().SingleInstance();
+            builder.Register(context => context.Resolve<IConfiguration>().GetOptions<LoggingOptions>()).SingleInstance().PreserveExistingDefaults();
             builder.RegisterType<XmlUtility>().SingleInstance();
             builder.RegisterType<FilesUtility>().SingleInstance();
             builder.RegisterType(DatabaseTypes.GetSqlUtilityType(SqlUtility.DatabaseLanguage)).As<ISqlUtility>().InstancePerLifetimeScope();

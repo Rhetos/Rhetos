@@ -127,6 +127,7 @@ namespace Rhetos
                     ResourcesFolder = Path.Combine(projectRootPath, "Resources"), // Currently supporting old plugins by default.
                 })
                 .AddKeyValue(ConfigurationProvider.GetKey((ConfigurationProviderOptions o) => o.LegacyKeysWarning), true)
+                .AddKeyValue(ConfigurationProvider.GetKey((LoggingOptions o) => o.DelayedLogTimout), 60.0)
                 .AddConfigurationManagerConfiguration()
                 .AddJsonFile(Path.Combine(projectRootPath, RhetosBuildEnvironment.ConfigurationFileName), optional: true)
                 .Build();
@@ -147,6 +148,7 @@ namespace Rhetos
             {
                 configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((DatabaseOptions o) => o.SqlCommandTimeout), 0);
                 configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((ConfigurationProviderOptions o) => o.LegacyKeysWarning), true);
+                configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((LoggingOptions o) => o.DelayedLogTimout), 60.0);
                 configurationBuilder.AddConfigurationManagerConfiguration();
                 configurationBuilder.AddJsonFile(Path.Combine(host.ConfigurationFolder, DbUpdateOptions.ConfigurationFileName), optional: true);
                 if (shortTransactions)

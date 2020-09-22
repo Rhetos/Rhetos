@@ -89,6 +89,7 @@ namespace DeployPackages
                 .AddKeyValue(ConfigurationProvider.GetKey((BuildOptions o) => o.BuildResourcesFolder), true)
                 .AddWebConfiguration(rhetosAppRootPath)
                 .AddKeyValue(ConfigurationProvider.GetKey((ConfigurationProviderOptions o) => o.LegacyKeysWarning), true)
+                .AddKeyValue(ConfigurationProvider.GetKey((LoggingOptions o) => o.DelayedLogTimout), 60.0)
                 .AddConfigurationManagerConfiguration()
                 .AddCommandLineArgumentsWithConfigurationPaths(args);
 
@@ -179,6 +180,7 @@ namespace DeployPackages
             var configuration = host.RhetosRuntime
                 .BuildConfiguration(logProvider, host.ConfigurationFolder, configurationBuilder => configurationBuilder
                     .AddKeyValue(ConfigurationProvider.GetKey((ConfigurationProviderOptions o) => o.LegacyKeysWarning), true)
+                    .AddKeyValue(ConfigurationProvider.GetKey((LoggingOptions o) => o.DelayedLogTimout), 60.0)
                     .AddConfigurationManagerConfiguration()
                     .AddCommandLineArgumentsWithConfigurationPaths(args));
 
