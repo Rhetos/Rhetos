@@ -59,7 +59,7 @@ namespace Rhetos.Utilities.Tests
                     MaxJoinedScriptCount = test.Item2,
                     MaxJoinedScriptSize = test.Item3,
                 };
-                var batches = new SqlTransactionBatches(null, options, new ConsoleLogProvider());
+                var batches = new SqlTransactionBatches(null, options, new ConsoleLogProvider(), new DelayedLogProvider(new LoggingOptions { DelayedLogTimout = 0 }, null));
                 var joinedScripts = batches.JoinScripts(test.Item1);
 
                 Assert.AreEqual(

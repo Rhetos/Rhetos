@@ -27,7 +27,7 @@ namespace Rhetos.Utilities
 {
 
     /// <summary>
-    /// This class add additional functionality over ISqlExecuter for executing a batch SQL scripts (custom transaction handling and reporting),
+    /// This class adds additional functionality over ISqlExecuter for executing a batch SQL scripts (custom transaction handling and reporting),
     /// while allowing ISqlExecuter implementations to focus on the database technology.
     /// </summary>
     public class SqlTransactionBatches
@@ -35,12 +35,14 @@ namespace Rhetos.Utilities
         private readonly ISqlExecuter _sqlExecuter;
         private readonly SqlTransactionBatchesOptions _options;
         private readonly ILogger _logger;
+        private readonly IDelayedLogger _delayedLogger;
 
-        public SqlTransactionBatches(ISqlExecuter sqlExecuter, SqlTransactionBatchesOptions options, ILogProvider logProvider)
+        public SqlTransactionBatches(ISqlExecuter sqlExecuter, SqlTransactionBatchesOptions options, ILogProvider logProvider, IDelayedLogProvider delayedLogProvider)
         {
             _sqlExecuter = sqlExecuter;
             _options = options;
             _logger = logProvider.GetLogger(nameof(SqlTransactionBatches));
+            _delayedLogger = delayedLogProvider.GetLogger(nameof(SqlTransactionBatches));
         }
 
         [DebuggerDisplay("{Name ?? CsUtility.Limit(Sql, 100)}")]
@@ -88,10 +90,29 @@ namespace Rhetos.Utilities
 
             foreach (var sqlBatch in sqlBatches)
             {
-                Action<int> reportProgress = currentBatchCount =>
+                IDisposable timeoutWarning = null;
+
+                Func<int, string> sqlScriptDescription = scriptIndex =>
                 {
+                    var script = sqlBatch.Scripts[scriptIndex];
+                    if (!string.IsNullOrEmpty(script.Name))
+                        return script.Name.Trim();
+                    else
+                        return script.Sql.Limit(1000).Trim();
+                };
+
+                Action<int> initializeProgress = scriptIndex =>
+                {
+                    timeoutWarning = _delayedLogger.TimoutWarning(() => $"Executing SQL script:\r\n{sqlScriptDescription(scriptIndex)}\r\n");
+                };
+
+                Action<int> reportProgress = scriptIndex =>
+                {
+                    timeoutWarning.Dispose();
+                    timeoutWarning = null;
+
                     var now = DateTime.Now;
-                    int executedCount = previousBatchesCount + currentBatchCount + 1;
+                    int executedCount = previousBatchesCount + scriptIndex + 1;
 
                     if (now.Subtract(lastReportTime).TotalMilliseconds > _options.ReportProgressMs
                         && executedCount < totalCount) // No need to report progress if the work is done.
@@ -108,7 +129,7 @@ namespace Rhetos.Utilities
                         ? script.Sql
                         : "--Name: " + script.Name.Replace("\r", " ").Replace("\n", " ") + "\r\n" + script.Sql);
 
-                _sqlExecuter.ExecuteSql(scriptsWithName, sqlBatch.UseTransaction, null, reportProgress);
+                _sqlExecuter.ExecuteSql(scriptsWithName, sqlBatch.UseTransaction, initializeProgress, reportProgress);
 
                 previousBatchesCount += sqlBatch.Scripts.Count;
             }

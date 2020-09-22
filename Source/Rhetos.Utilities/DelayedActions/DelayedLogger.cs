@@ -43,7 +43,7 @@ namespace Rhetos.Utilities
             return new DelayedAction(_delay, () =>
             {
                 var startTime = DateTime.Now - _delay; // The current time needs to be resolved immediately, instead of when log entry is processed.
-                _logProvider.GetLogger(_eventName).Warning(() => logMessage() + $" Started at {startTime.TimeOfDay}.");
+                _logProvider.GetLogger(_eventName).Warning(() => $"Long operation started at {startTime:T}. " + logMessage());
             });
         }
     }

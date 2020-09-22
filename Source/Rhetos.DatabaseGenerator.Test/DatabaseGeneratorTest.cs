@@ -82,7 +82,7 @@ namespace Rhetos.DatabaseGenerator.Test
             var databaseModel = new DatabaseModel { DatabaseObjects = newConceptApplications.ToList() };
             var options = new SqlTransactionBatchesOptions { MaxJoinedScriptCount = 1 };
             var sqlExecuter = new MockSqlExecuter();
-            var sqlTransactionBatches = new SqlTransactionBatches(sqlExecuter, options, new ConsoleLogProvider());
+            var sqlTransactionBatches = new SqlTransactionBatches(sqlExecuter, options, new ConsoleLogProvider(), new DelayedLogProvider(new LoggingOptions { DelayedLogTimout = 0 }, null));
 
             IDatabaseGenerator databaseGenerator = new DatabaseGenerator(
                 sqlTransactionBatches,
