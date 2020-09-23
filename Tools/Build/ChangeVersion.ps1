@@ -45,6 +45,8 @@ RegexReplace '*AssemblyInfo.cs' '([\n^]\[assembly: Assembly(File)?Version(Attrib
 RegexReplace '*AssemblyInfo.cs' '([\n^]\[assembly: AssemblyInformationalVersion(Attribute)?\(\").*(\"\)\])' ('${1}' + $fullVersion + '${3}')
 RegexReplace '*.nuspec' '([\n^]\s*\<version\>).*(\<\/version\>\s*)' ('${1}' + $fullVersion + '${2}')
 RegexReplace 'Directory.Build.props' '([\n^]\s*\<InformationalVersion\>).*(\<\/InformationalVersion\>\s*)' ('${1}' + $fullVersion + '${2}')
+RegexReplace 'Directory.Build.props' '([\n^]\s*\<AssemblyVersion\>).*(\<\/AssemblyVersion\>\s*)' ('${1}' + $version + '${2}')
+RegexReplace 'Directory.Build.props' '([\n^]\s*\<FileVersion\>).*(\<\/FileVersion\>\s*)' ('${1}' + $version + '${2}')
 
 # CommonConcepts is developed together with Rhetos framework, so it is expected to match the release version. Difference in patch version (Build) is allowed here.
 If ($Version.Build -gt 0)

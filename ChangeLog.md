@@ -1,5 +1,29 @@
 ﻿# Rhetos release notes
 
+## 4.1.0 (2020-09-23)
+
+### New features
+
+* **QueryFilter** concept, a simpler alternative to ComposableFilterBy.
+
+### Internal improvements
+
+* "Long operation" warning will be reported on deployment if certain operations take longer than a minute (by default).
+  This includes KeepSynchronized on deployment, data-migrations scripts, database updates (dropping a column, e.g.)
+  and other similar scripts (issue #110).
+* Reduced compile time of generated C# source code in repository classes by removing
+  some code duplication and converting some lambda expressions to simple methods.
+* SQL optimization: Removed parameter null check on a generated SQL query when using generic filters to compare
+  a Guid property to parameter value.
+  Applications with EntityFrameworkUseDatabaseNullSemantics set to true (default) had this optimization from before.
+* Improved application start-up performance with Entity Framework View Cache (issue #165).
+* Improved build performance by running code generator in parallel.
+* Bugfix: "File not found" error occurred only on empty build (for example, without the CommonConcepts package).
+* Base concepts for loading and querying data with filters: LoadInfo, QueryInfo, FilterInfo, QueryFilterInfo.
+  Together they represent available filter parameters for reading data with generic filters (FilterCriteria),
+  web API (ReadCommand), and GenericRepository.
+* Performance logger (NLog) configurable by class name.
+
 ## 4.0.1 (2020-06-19)
 
 ### Internal improvements
