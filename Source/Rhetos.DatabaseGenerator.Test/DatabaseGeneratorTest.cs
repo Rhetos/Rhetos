@@ -65,7 +65,7 @@ namespace Rhetos.DatabaseGenerator.Test
 
         /// <summary>
         /// Report contains created and removed concept applications in the mock database.
-        /// It contains metadata changes (ins, upd, del) and object creation scripts.
+        /// It contains metadata changes (insert, update, delete) and object creation scripts.
         /// </summary>
         private
             (string Report,
@@ -84,12 +84,17 @@ namespace Rhetos.DatabaseGenerator.Test
             var sqlExecuter = new MockSqlExecuter();
             var sqlTransactionBatches = new SqlTransactionBatches(sqlExecuter, options, new ConsoleLogProvider(), new DelayedLogProvider(new LoggingOptions { DelayedLogTimout = 0 }, null));
 
+            var databaseAnalysis = new DatabaseAnalysis(
+                conceptApplicationRepository,
+                new ConsoleLogProvider(),
+                databaseModel);
+
             IDatabaseGenerator databaseGenerator = new DatabaseGenerator(
                 sqlTransactionBatches,
                 conceptApplicationRepository,
                 new ConsoleLogProvider(),
                 new DbUpdateOptions { ShortTransactions = false },
-                databaseModel);
+                databaseAnalysis);
 
             databaseGenerator.UpdateDatabaseStructure();
 

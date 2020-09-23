@@ -40,14 +40,14 @@ namespace Rhetos.DatabaseGenerator
         private readonly ILogger _changesLogger;
         private readonly ILogger _performanceLogger;
         private readonly DbUpdateOptions _dbUpdateOptions;
-        private readonly DatabaseModel _databaseModel;
+        private readonly DatabaseAnalysis _databaseAnalysis;
 
         public DatabaseGenerator(
             SqlTransactionBatches sqlTransactionBatches, 
             IConceptApplicationRepository conceptApplicationRepository,
             ILogProvider logProvider,
             DbUpdateOptions dbUpdateOptions,
-            DatabaseModel databaseModel)
+            DatabaseAnalysis databaseAnalysis)
         {
             _sqlTransactionBatches = sqlTransactionBatches;
             _conceptApplicationRepository = conceptApplicationRepository;
@@ -55,7 +55,7 @@ namespace Rhetos.DatabaseGenerator
             _changesLogger = logProvider.GetLogger("DatabaseGeneratorChanges");
             _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _dbUpdateOptions = dbUpdateOptions;
-            _databaseModel = databaseModel;
+            _databaseAnalysis = databaseAnalysis;
         }
 
         public void UpdateDatabaseStructure()
@@ -64,26 +64,13 @@ namespace Rhetos.DatabaseGenerator
             var stopwatchTotal = Stopwatch.StartNew();
             var stopwatch = Stopwatch.StartNew();
 
-            var oldApplications = _conceptApplicationRepository.Load();
-            _performanceLogger.Write(stopwatch, "Loaded old concept applications.");
+            var diff = _databaseAnalysis.Diff();
+            _performanceLogger.Write(stopwatch, "Database diff analysis.");
 
-            var newApplications = ConceptApplication.FromDatabaseObjects(_databaseModel.DatabaseObjects);
-            _performanceLogger.Write(stopwatch, "Got new concept applications.");
+            LogAnalysisResults(diff);
+            _performanceLogger.Write(stopwatch, "Log analysis results.");
 
-            MatchAndComputeNewApplicationIds(oldApplications, newApplications);
-            _performanceLogger.Write(stopwatch, "Match new and old concept applications.");
-
-            ConceptApplication.CheckKeyUniqueness(newApplications, "generated, after matching");
-            _performanceLogger.Write(stopwatch, "Verify new concept applications' integrity.");
-            newApplications = TrimEmptyApplications(newApplications);
-            _performanceLogger.Write(stopwatch, "Removed unused concept applications.");
-
-            List<ConceptApplication> toBeRemoved;
-            List<ConceptApplication> toBeInserted;
-            CalculateApplicationsToBeRemovedAndInserted(oldApplications, newApplications, out toBeRemoved, out toBeInserted);
-            _performanceLogger.Write(stopwatch, "Analyzed differences in database structure.");
-
-            ApplyChangesToDatabase(oldApplications, newApplications, toBeRemoved, toBeInserted);
+            ApplyChangesToDatabase(diff.OldApplications, diff.NewApplications, diff.ToBeRemoved, diff.ToBeInserted);
             _performanceLogger.Write(stopwatch, "Applied changes to database.");
 
             VerifyIntegrity();
@@ -92,106 +79,27 @@ namespace Rhetos.DatabaseGenerator
             _performanceLogger.Write(stopwatchTotal, "UpdateDatabaseStructure");
         }
 
-        private static void MatchAndComputeNewApplicationIds(List<ConceptApplication> oldApplications, List<ConceptApplication> newApplications)
+        private void LogAnalysisResults(DatabaseDiff diff)
         {
-            var oldApplicationIds = oldApplications.ToDictionary(oa => oa.GetConceptApplicationKey(), oa => oa.Id);
-            foreach (var newApp in newApplications) 
-                if (!oldApplicationIds.TryGetValue(newApp.GetConceptApplicationKey(), out newApp.Id))
-                    newApp.Id = Guid.NewGuid();
-        }
+            // Log modified database objects:
 
-        private List<ConceptApplication> TrimEmptyApplications(List<ConceptApplication> newApplications)
-        {
-            var emptyCreateQuery = newApplications.Where(ca => string.IsNullOrWhiteSpace(ca.CreateQuery)).ToList();
-            var emptyCreateHasRemove = emptyCreateQuery.FirstOrDefault(ca => !string.IsNullOrWhiteSpace(ca.RemoveQuery));
-            if (emptyCreateHasRemove != null)
-                throw new FrameworkException("A concept that does not create database objects (CreateDatabaseStructure) cannot remove them (RemoveDatabaseStructure): "
-                    + emptyCreateHasRemove.GetConceptApplicationKey() + ".");
-
-            var removeLeaves = Graph.RemovableLeaves(emptyCreateQuery, ConceptApplication.GetDependencyPairs(newApplications));
-
-            _logger.Trace(() => $"Removing {removeLeaves.Count} empty leaf concept applications:{string.Concat(removeLeaves.Select(l => "\r\n-" + l))}");
-
-            return newApplications.Except(removeLeaves).ToList();
-        }
-
-        private void CalculateApplicationsToBeRemovedAndInserted(
-            IEnumerable<ConceptApplication> oldApplications, IEnumerable<ConceptApplication> newApplications,
-            out List<ConceptApplication> toBeRemoved, out List<ConceptApplication> toBeInserted)
-        {
-            var oldApplicationsByKey = oldApplications.ToDictionary(a => a.GetConceptApplicationKey());
-            var newApplicationsByKey = newApplications.ToDictionary(a => a.GetConceptApplicationKey());
-
-            // Find directly inserted and removed concept applications:
-
-            var directlyRemoved = oldApplicationsByKey.Keys.Except(newApplicationsByKey.Keys).ToList();
-            var directlyInserted = newApplicationsByKey.Keys.Except(oldApplicationsByKey.Keys).ToList();
-
-            foreach (string ca in directlyRemoved)
-                _logger.Trace("Directly removed concept application: " + ca);
-            foreach (string ca in directlyInserted)
-                _logger.Trace("Directly inserted concept application: " + ca);
-            
-            // Find changed concept applications (different create sql query):
-
-            var existingApplications = oldApplicationsByKey.Keys.Intersect(newApplicationsByKey.Keys).ToList();
-            var changedApplications = existingApplications
-                .Where(appKey => !string.Equals(
-                    oldApplicationsByKey[appKey].CreateQuery,
-                    newApplicationsByKey[appKey].CreateQuery,
-                    StringComparison.Ordinal))
-                .ToList();
-
-            foreach (string ca in changedApplications)
-                _changesLogger.Trace(() => $"Changed concept application: {ca}\r\n{ReportDiff(oldApplicationsByKey[ca].CreateQuery, newApplicationsByKey[ca].CreateQuery)}");
-
-            // Find dependent concepts applications to be regenerated:
-
-            var toBeRemovedKeys = directlyRemoved.Union(changedApplications).ToList();
-            var oldDependencies = ConceptApplication.GetDependencyPairs(oldApplications).Select(dep => Tuple.Create(dep.Item1.GetConceptApplicationKey(), dep.Item2.GetConceptApplicationKey()));
-            var dependentRemovedApplications = Graph.IncludeDependents(toBeRemovedKeys, oldDependencies).Except(toBeRemovedKeys);
-
-            var toBeInsertedKeys = directlyInserted.Union(changedApplications).ToList();
-            var newDependencies = ConceptApplication.GetDependencyPairs(newApplications).Select(dep => Tuple.Create(dep.Item1.GetConceptApplicationKey(), dep.Item2.GetConceptApplicationKey()));
-            var dependentInsertedApplications = Graph.IncludeDependents(toBeInsertedKeys, newDependencies).Except(toBeInsertedKeys);
-
-            var refreshDependents = dependentRemovedApplications.Union(dependentInsertedApplications).ToList();
-            toBeRemovedKeys.AddRange(refreshDependents.Intersect(oldApplicationsByKey.Keys));
-            toBeInsertedKeys.AddRange(refreshDependents.Intersect(newApplicationsByKey.Keys));
+            foreach (var changed in diff.ChangedQueries)
+                _changesLogger.Trace(() => $"Changed concept application: {changed.Old.GetConceptApplicationKey()}\r\n" +
+                    $"{ReportDiff(changed.Old.CreateQuery, changed.New.CreateQuery)}");
 
             // Log dependencies for items that need to be refreshed:
 
-            var newDependenciesByDependent = newDependencies.GroupBy(dep => dep.Item2, dep => dep.Item1).ToDictionary(group => group.Key, group => group.ToList());
-            var oldDependenciesByDependent = oldDependencies.GroupBy(dep => dep.Item2, dep => dep.Item1).ToDictionary(group => group.Key, group => group.ToList());
-            var toBeInsertedIndex = new HashSet<string>(toBeInsertedKeys);
-            var toBeRemovedIndex = new HashSet<string>(toBeRemovedKeys);
-            var changedApplicationsIndex = new HashSet<string>(changedApplications);
-            foreach (string ca in refreshDependents.Intersect(newApplicationsByKey.Keys))
-                LogDatabaseChanges(newApplicationsByKey[ca], "Refresh", () =>
+            foreach (var refreshed in diff.Refreshes.GroupBy(r => r.RefreshedConcept, r => (r.Dependency, r.DependencyStatus)))
+                LogDatabaseChanges(refreshed.Key, "Refresh", () =>
+                {
+                    var dependenciesByStatus = refreshed.GroupBy(r => r.DependencyStatus, r => r.Dependency).OrderBy(group => group.Key);
+                    var report = dependenciesByStatus.Select(group =>
                     {
-                        var report = new List<string>();
-                        var refreshBecauseNew = new HashSet<string>(newDependenciesByDependent.GetValueOrEmpty(ca).Intersect(toBeInsertedIndex));
-                        var refreshBecauseOld = new HashSet<string>(oldDependenciesByDependent.GetValueOrEmpty(ca).Intersect(toBeRemovedIndex));
-                        var dependsOnNew = string.Join(", ", refreshBecauseNew.Except(refreshBecauseOld));
-                        var dependsOnOld = string.Join(", ", refreshBecauseOld.Except(refreshBecauseNew));
-                        var dependsOnExisting = refreshBecauseNew.Intersect(refreshBecauseOld);
-                        var dependsOnChanged = string.Join(", ", dependsOnExisting.Intersect(changedApplicationsIndex));
-                        var dependsOnRefreshed = string.Join(", ", dependsOnExisting.Except(changedApplicationsIndex));
-                        if (!string.IsNullOrEmpty(dependsOnNew))
-                            report.Add("It depends on new concepts: " + dependsOnNew + ".");
-                        if (!string.IsNullOrEmpty(dependsOnChanged))
-                            report.Add("It depends on changed concepts: " + dependsOnChanged + ".");
-                        if (!string.IsNullOrEmpty(dependsOnRefreshed))
-                            report.Add("It depends on refreshed concepts: " + dependsOnRefreshed + ".");
-                        if (!string.IsNullOrEmpty(dependsOnOld))
-                            report.Add("It depended on removed concepts: " + dependsOnOld + ".");
-                        return string.Join(" ", report);
+                        var dependencies = string.Join(", ", group.Select(dependency => dependency.GetConceptApplicationKey()));
+                        return $"It depends on {group.Key.ToString().ToLower()} concepts: {dependencies}.";
                     });
-
-            // Result:
-
-            toBeRemoved = toBeRemovedKeys.Select(key => oldApplicationsByKey[key]).ToList();
-            toBeInserted = toBeInsertedKeys.Select(key => newApplicationsByKey[key]).ToList();
+                    return string.Join(" ", report);
+                });
         }
 
         private string ReportDiff(string oldQuery, string newQuery)
@@ -209,7 +117,7 @@ namespace Rhetos.DatabaseGenerator
         {
             var stopwatch = Stopwatch.StartNew();
 
-            int estimatedNumberOfQueries = (toBeRemoved.Count() + toBeInserted.Count()) * 3;
+            int estimatedNumberOfQueries = (toBeRemoved.Count + toBeInserted.Count) * 3;
             var sqlScripts = new List<string>(estimatedNumberOfQueries);
 
             sqlScripts.AddRange(ApplyChangesToDatabase_Remove(toBeRemoved, oldApplications));
@@ -222,7 +130,7 @@ namespace Rhetos.DatabaseGenerator
             _performanceLogger.Write(stopwatch, "ApplyChangesToDatabase: Prepared SQL scripts for inserting concept applications.");
 
             _sqlTransactionBatches.Execute(sqlScripts.Select(sql => new SqlTransactionBatches.SqlScript { Sql = sql, IsBatch = false, Name = null }));
-            _performanceLogger.Write(stopwatch, $"ApplyChangesToDatabase: Executed {sqlScripts.Where(sql => !string.IsNullOrEmpty(sql)).Count()} SQL scripts.");
+            _performanceLogger.Write(stopwatch, $"ApplyChangesToDatabase: Executed {sqlScripts.Count(sql => !string.IsNullOrEmpty(sql))} SQL scripts.");
         }
 
         private List<string> ApplyChangesToDatabase_Remove(List<ConceptApplication> toBeRemoved, List<ConceptApplication> oldApplications)

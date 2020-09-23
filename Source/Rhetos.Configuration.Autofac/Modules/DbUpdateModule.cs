@@ -42,6 +42,7 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.RegisterType<DatabaseModelFile>();
             builder.Register(context => context.Resolve<DatabaseModelFile>().Load()).As<DatabaseModel>().SingleInstance();
             builder.RegisterType<ConceptApplicationRepository>().As<IConceptApplicationRepository>();
+            builder.RegisterType<DatabaseGenerator.DatabaseAnalysis>();
             builder.RegisterType<DatabaseGenerator.DatabaseGenerator>().As<IDatabaseGenerator>();
 
             // Executing data migration from SQL scripts:
