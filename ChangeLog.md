@@ -124,6 +124,12 @@
 * Updated Rhetos framework C# language to 7.3. Framework development now requires Visual Studio 2017 v15.7 or later.
 * Minor performance improvements of DeployPackages and application start-up.
 
+## 3.2.0 (2020-08-20)
+
+### Internal improvements
+
+* Repository Save method is now *virtual*, to allow simpler unit testing mocks.
+
 ## 3.1.0 (2020-06-05)
 
 ### New features

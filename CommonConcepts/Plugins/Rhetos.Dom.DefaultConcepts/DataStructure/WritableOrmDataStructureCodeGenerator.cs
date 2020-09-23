@@ -79,7 +79,7 @@ namespace Rhetos.Dom.DefaultConcepts
         protected static string MemberFunctionsSnippet(DataStructureInfo info)
         {
             return string.Format(
-        @"public void Save(IEnumerable<{0}.{1}> insertedNew, IEnumerable<{0}.{1}> updatedNew, IEnumerable<{0}.{1}> deletedIds, bool checkUserPermissions = false)
+        @"public virtual void Save(IEnumerable<{0}.{1}> insertedNew, IEnumerable<{0}.{1}> updatedNew, IEnumerable<{0}.{1}> deletedIds, bool checkUserPermissions = false)
         {{
             if (!DomHelper.InitializeSaveMethodItems(ref insertedNew, ref updatedNew, ref deletedIds))
                 return;
