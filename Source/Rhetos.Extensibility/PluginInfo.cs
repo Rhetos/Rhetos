@@ -19,11 +19,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Diagnostics;
 
 namespace Rhetos.Extensibility
 {
+    [DebuggerDisplay("{Type}")]
     public class PluginInfo
     {
         public Type Type;
