@@ -78,8 +78,11 @@ namespace Rhetos.Compiler
             if (initialCodeGenerator != null)
                 initialCodeGenerator.GenerateCode(null, codeBuilder);
 
+            var conceptImplementations = _dslModel.GetTypes()
+                .ToDictionary(conceptType => conceptType, conceptType => plugins.GetImplementations(conceptType).ToList());
+
             foreach (var conceptInfo in _dslModel.Concepts)
-                foreach (var plugin in plugins.GetImplementations(conceptInfo.GetType()))
+                foreach (var plugin in conceptImplementations[conceptInfo.GetType()])
                 {
                     try
                     {

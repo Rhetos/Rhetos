@@ -27,6 +27,8 @@ namespace Rhetos.Dsl
     // No need for ExportAttribute, this class is registered manually.
     public class DslModelIndexByType : IDslModelIndex
     {
+        private readonly MultiDictionary<Type, IConceptInfo> _conceptsByType = new MultiDictionary<Type, IConceptInfo>();
+
         public void Add(IConceptInfo concept)
         {
             _conceptsByType.Add(concept.GetType(), concept);
@@ -47,7 +49,10 @@ namespace Rhetos.Dsl
             }
         }
 
-        private readonly MultiDictionary<Type, IConceptInfo> _conceptsByType = new MultiDictionary<Type, IConceptInfo>();
+        public IEnumerable<Type> GetTypes()
+        {
+            return _conceptsByType.Keys;
+        }
     }
 
     public static class DslModelIndexerByTypeExtensions
@@ -68,6 +73,11 @@ namespace Rhetos.Dsl
         public static IEnumerable<IConceptInfo> FindByType(this IDslModel dslModel, Type conceptType, bool includeDerivations)
         {
             return dslModel.GetIndex<DslModelIndexByType>().FindByType(conceptType, includeDerivations);
+        }
+
+        public static IEnumerable<Type> GetTypes(this IDslModel dslModel)
+        {
+            return dslModel.GetIndex<DslModelIndexByType>().GetTypes();
         }
     }
 }
