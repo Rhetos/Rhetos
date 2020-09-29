@@ -69,7 +69,7 @@ namespace Rhetos.Logging
         private static void PerformanceWrite(this ILogger performanceLogger, Stopwatch stopwatch, Func<string> fullMessage)
         {
             if (stopwatch.Elapsed >= SlowEvent)
-                performanceLogger.Warning(fullMessage);
+                performanceLogger.Info(fullMessage);
             else
                 performanceLogger.Trace(fullMessage);
             stopwatch.Restart();

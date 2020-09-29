@@ -88,7 +88,7 @@ namespace Rhetos.Compiler
                     catch (Exception ex)
                     {
                         _logger.Error(ex.ToString());
-                        _logger.Error("Part of the source code that was generated before the exception was thrown is written in the trace log.");
+                        _logger.Info("Part of the source code that was generated before the exception was thrown is written in the trace log.");
                         _logger.Trace(codeBuilder.GeneratedCode);
                         throw;
                     }

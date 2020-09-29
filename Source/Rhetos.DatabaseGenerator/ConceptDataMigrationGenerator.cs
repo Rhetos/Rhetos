@@ -74,7 +74,7 @@ namespace Rhetos.DatabaseGenerator
                     }
                     catch (Exception ex)
                     {
-                        _logger.Error("Part of the source code that was generated before the exception was thrown is written in the trace log.");
+                        _logger.Info("Part of the source code that was generated before the exception was thrown is written in the trace log.");
                         _logger.Trace(codeBuilder.GeneratedCode);
                         throw new FrameworkException($"Error while generating data-migration script for '{conceptInfo.GetUserDescription()}'.", ex);
                     }
