@@ -125,7 +125,9 @@ namespace Rhetos.Utilities
                 .Select(task => task.Exception?.InnerException ?? task.Exception)
                 .ToList();
 
-            if (errors.Any())
+            if (errors.Count == 1)
+                ExceptionsUtility.Rethrow(errors.Single());
+            else if (errors.Count > 1)
                 throw new AggregateException(errors);
         }
 
