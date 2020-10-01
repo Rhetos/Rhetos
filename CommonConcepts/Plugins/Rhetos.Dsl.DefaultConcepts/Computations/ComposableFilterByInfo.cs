@@ -29,7 +29,6 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// The parameter type also represents the filter name.
     /// </summary>
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("ComposableFilterBy")]
     [Obsolete("Use the QueryFilter concept instead (base class QueryFilterInfo).")] // When finding filters in DSL model, the base filter concept should be used.
     public class ComposableFilterByInfo : QueryFilterInfo
     {
