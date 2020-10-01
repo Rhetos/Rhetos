@@ -44,31 +44,22 @@ namespace Rhetos.DatabaseGenerator
         public void Save(DatabaseModel databaseModel)
         {
             var stopwatch = Stopwatch.StartNew();
-
-            string serializedModel = JsonConvert.SerializeObject(databaseModel, JsonSerializerSettings);
-            _performanceLogger.Write(stopwatch, $"{nameof(Save)}: Serialize.");
-
-            File.WriteAllText(_databaseModelFilePath, serializedModel, Encoding.UTF8);
-            _performanceLogger.Write(stopwatch, $"{nameof(Save)}: Write.");
+            JsonUtility.SerializeToFile(databaseModel, _databaseModelFilePath, JsonSerializerSettings);
+            _performanceLogger.Write(stopwatch, $"{nameof(Save)}: Serialize and write.");
         }
 
         public DatabaseModel Load()
         {
             var stopwatch = Stopwatch.StartNew();
 
-            string serializedModel;
-            try
-            {
-                serializedModel = File.ReadAllText(_databaseModelFilePath, Encoding.UTF8);
-            }
-            catch (FileNotFoundException ex)
+            if (!File.Exists(_databaseModelFilePath))
             {
                 throw new FrameworkException("Cannot update database because the database model was not generated." +
-                    " Please check that the build has completed successfully before updating the database.", ex);
+                    " Please check that the build has completed successfully before updating the database.");
             }
-            var databaseModel = JsonConvert.DeserializeObject<DatabaseModel>(serializedModel, JsonSerializerSettings);
-            _performanceLogger.Write(stopwatch, $"{nameof(Load)}.");
 
+            var databaseModel = JsonUtility.DeserializeFromFile<DatabaseModel>(_databaseModelFilePath, JsonSerializerSettings);
+            _performanceLogger.Write(stopwatch, $"{nameof(Load)}.");
             return databaseModel;
         }
 

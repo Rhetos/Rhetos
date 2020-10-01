@@ -51,8 +51,7 @@ namespace Rhetos.Deployment
             var stopwatch = Stopwatch.StartNew();
             if (!File.Exists(_dataMigrationScriptsFilePath))
                 throw new FrameworkException($@"The file '{_dataMigrationScriptsFilePath}' with data-migration scripts is missing. Please check that the build has completed successfully before updating the database.");
-            var serializedConcepts = File.ReadAllText(_dataMigrationScriptsFilePath, Encoding.UTF8);
-            var dataMigrationScripts = JsonConvert.DeserializeObject<DataMigrationScripts>(serializedConcepts);
+            var dataMigrationScripts = JsonUtility.DeserializeFromFile<DataMigrationScripts>(_dataMigrationScriptsFilePath);
             _performanceLogger.Write(stopwatch, $"Loaded {dataMigrationScripts.Scripts.Count} scripts from generated file.");
             return dataMigrationScripts;
         }
@@ -60,8 +59,7 @@ namespace Rhetos.Deployment
         public void Save(DataMigrationScripts dataMigrationScripts)
         {
             var stopwatch = Stopwatch.StartNew();
-            string serializedMigrationScripts = JsonConvert.SerializeObject(dataMigrationScripts, Formatting.Indented);
-            File.WriteAllText(_dataMigrationScriptsFilePath, serializedMigrationScripts, Encoding.UTF8);
+            JsonUtility.SerializeToFile(dataMigrationScripts, _dataMigrationScriptsFilePath, Formatting.Indented);
             _performanceLogger.Write(stopwatch, $"Saved {dataMigrationScripts.Scripts.Count} scripts to generated file.");
         }
     }

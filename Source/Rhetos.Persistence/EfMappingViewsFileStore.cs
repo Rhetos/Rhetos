@@ -44,8 +44,7 @@ namespace Rhetos.Persistence
                 return null;
 
             var sw = Stopwatch.StartNew();
-            var jsonText = File.ReadAllText(_fullCachePath.Value);
-            var views = JsonConvert.DeserializeObject<EfMappingViews>(jsonText);
+            var views = JsonUtility.DeserializeFromFile<EfMappingViews>(_fullCachePath.Value);
             _performanceLogger.Write(sw, () => $"Loaded and deserialized views from '{_fullCachePath.Value}'.");
 
             return views;
@@ -54,8 +53,7 @@ namespace Rhetos.Persistence
         public void Save(EfMappingViews views)
         {
             var sw = Stopwatch.StartNew();
-            var jsonText = JsonConvert.SerializeObject(views);
-            File.WriteAllText(_fullCachePath.Value, jsonText);
+            JsonUtility.SerializeToFile(views, _fullCachePath.Value);
             _performanceLogger.Write(sw, () => $"Serialized and saved views to '{_fullCachePath.Value}'.");
         }
     }

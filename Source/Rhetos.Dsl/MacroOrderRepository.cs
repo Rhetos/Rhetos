@@ -48,8 +48,7 @@ namespace Rhetos.Dsl
         {
             if (File.Exists(_cacheFilePath))
             {
-                var serializedConcepts = File.ReadAllText(_cacheFilePath, Encoding.UTF8);
-                return JsonConvert.DeserializeObject<List<MacroOrder>>(serializedConcepts);
+                return JsonUtility.DeserializeFromFile<List<MacroOrder>>(_cacheFilePath);
             }
             else
             {
@@ -59,8 +58,7 @@ namespace Rhetos.Dsl
 
         public void Save(IEnumerable<MacroOrder> macroOrders)
         {
-            string serializedConcepts = JsonConvert.SerializeObject(macroOrders, Formatting.Indented);
-            File.WriteAllText(_cacheFilePath, serializedConcepts, Encoding.UTF8);
+            JsonUtility.SerializeToFile(macroOrders, _cacheFilePath, Formatting.Indented);
         }
     }
 }

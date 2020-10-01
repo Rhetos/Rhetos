@@ -40,9 +40,7 @@ namespace Rhetos.Deployment
 
         public InstalledPackages Load()
         {
-            string serialized = File.ReadAllText(_packagesFilePath, Encoding.UTF8);
-            var installedPackages = JsonConvert.DeserializeObject<InstalledPackages>(serialized, _serializerSettings);
-
+            var installedPackages = JsonUtility.DeserializeFromFile<InstalledPackages>(_packagesFilePath, _serializerSettings);
             // We are removing the folder path because this is a build feature and any plugin that is trying to use it should get an exception.
             // Package content files are not available at runtime, they are considered as a part of local cache on build machine.
             foreach (var package in installedPackages.Packages)
@@ -56,8 +54,7 @@ namespace Rhetos.Deployment
 
         internal void Save(InstalledPackages installedPackages)
         {
-            string serialized = JsonConvert.SerializeObject(installedPackages, _serializerSettings);
-            File.WriteAllText(_packagesFilePath, serialized, Encoding.UTF8);
+            JsonUtility.SerializeToFile(installedPackages, _packagesFilePath, _serializerSettings);
         }
 
         private static readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings

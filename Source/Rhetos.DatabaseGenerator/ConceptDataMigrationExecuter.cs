@@ -72,8 +72,7 @@ namespace Rhetos.DatabaseGenerator
 
         private GeneratedDataMigrationScripts LoadScripts()
         {
-            var serializedConcepts = File.ReadAllText(Path.Combine(_rhetosAppOptions.AssetsFolder, ConceptDataMigrationGenerator.ConceptDataMigrationScriptsFileName), Encoding.UTF8);
-            return JsonConvert.DeserializeObject<GeneratedDataMigrationScripts>(serializedConcepts);
+            return JsonUtility.DeserializeFromFile<GeneratedDataMigrationScripts>(Path.Combine(_rhetosAppOptions.AssetsFolder, ConceptDataMigrationGenerator.ConceptDataMigrationScriptsFileName));
         }
     }
 }
