@@ -34,6 +34,7 @@ namespace Rhetos.Utilities
         private static string _pluginsFolder;
         private static string _resourcesFolder;
         private static string _environment;
+        private static string[] _domAssemblyFiles;
 
         /// <summary>
         /// Initialize legacy Paths for the Rhetos server.
@@ -60,6 +61,10 @@ namespace Rhetos.Utilities
                 _environment = "run-time";
             else
                 _environment = "unspecified";
+
+            _domAssemblyFiles = string.IsNullOrEmpty(buildEnvironment.GeneratedSourceFolder)
+                ? Enum.GetValues(typeof(DomAssemblies)).Cast<DomAssemblies>().Select(GetDomAssemblyFile).ToArray()
+                : Array.Empty<string>();
         }
 
         public static string RhetosServerRootPath => PathOrError(_rhetosServerRootPath, "RhetosServerRootPath");
@@ -99,7 +104,9 @@ namespace Rhetos.Utilities
 
         /// <summary>
         /// List of the generated DLL files that make the domain object model (ServerDom.*.dll).
+        /// Empty for applications built with Rhetos CLI, as they does not generate the ServerDom assemblies
+        /// (only source, compiled into the main application).
         /// </summary>
-        public static IEnumerable<string> DomAssemblyFiles => Enum.GetValues(typeof(DomAssemblies)).Cast<DomAssemblies>().Select(domAssembly => GetDomAssemblyFile(domAssembly));
+        public static IEnumerable<string> DomAssemblyFiles => _domAssemblyFiles;
     }
 }

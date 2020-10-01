@@ -65,7 +65,7 @@ namespace Rhetos.Deployment
         {
             _filesUtility.EmptyDirectory(_buildEnvironment.GeneratedAssetsFolder);
             _filesUtility.SafeCreateDirectory(_buildEnvironment.CacheFolder); // Cache is not deleted between builds.
-            if(!string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder))
+            if (!string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder))
                 _filesUtility.SafeCreateDirectory(_buildEnvironment.GeneratedSourceFolder); // Obsolete source files will be cleaned later. Keeping the existing files to allowing source change detection in Visual Studio.
 
             CheckDslModelErrors();
@@ -79,7 +79,7 @@ namespace Rhetos.Deployment
 
             var sw = Stopwatch.StartNew();
             job.RunAllTasks(_buildOptions.MaxExecuteGeneratorsParallelism);
-            _logger.Info($"Executed {generators.Length} generators in {sw.Elapsed.TotalSeconds:N2} seconds."); // Not using _performanceLogger to avoid warnings on long build duration. The warnings make sense only for subcomponents.
+            _performanceLogger.Write(sw, $"Executed {generators.Length} generators.");
 
             if (!string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder))
                 _sourceWriter.CleanUp();
@@ -123,15 +123,7 @@ namespace Rhetos.Deployment
             var configurationDependencies = ParseAdditionalDependenciesFromConfiguration();
             Log("Configuration dependencies", configurationDependencies);
 
-            var generatorsNames = new HashSet<string>(generators.Select(GetGeneratorName));
-            var legacyDependencies = new[]
-            {
-                // Dependencies for backward compatibility of official plugins. "DomGenerator" and "ResourcesGenerator" were implicit dependencies of all generators before Rhetos v4.1.
-                (name: "Rhetos.LegacyRestGenerator.LegacyRestGenerator", dependency: "Rhetos.Dom.DomGenerator"),
-                (name: "Rhetos.ODataGenerator.ODataGenerator", dependency: "Rhetos.Dom.DomGenerator"),
-                (name: "Rhetos.RestGenerator.RestGenerator", dependency: "Rhetos.Dom.DomGenerator"),
-                (name: "Angular2ModelGenerator.Angular2ModelGenerator", dependency: "Rhetos.Deployment.ResourcesGenerator"),
-            }.Where(d => generatorsNames.Contains(d.name) && generatorsNames.Contains(d.dependency));
+            var legacyDependencies = GetLegacyDependencies(generators);
             Log("Legacy dependencies", legacyDependencies);
 
             var allPairs = explicitDependencies
@@ -142,6 +134,29 @@ namespace Rhetos.Deployment
             return allPairs
                 .GroupBy(pair => pair.name)
                 .ToDictionary(group => group.Key, group => group.Select(pair => pair.dependency).Distinct().ToList());
+        }
+
+        /// <summary>
+        /// Dependencies for backward compatibility of official plugins.
+        /// "DomGenerator" and "ResourcesGenerator" were implicit dependencies of all generators before Rhetos v4.1.
+        /// </summary>
+        private IEnumerable<(string name, string dependency)> GetLegacyDependencies(IList<IGenerator> generators)
+        {
+            var legacyDependencies = new List<(string name, string dependency)>();
+
+            if (!string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder)) // Using DeployPackages instead of Rhetos CLI.
+                legacyDependencies.AddRange(new[]
+                {
+                    (name: "Rhetos.LegacyRestGenerator.LegacyRestGenerator", dependency: "Rhetos.Dom.DomGenerator"),
+                    (name: "Rhetos.ODataGenerator.ODataGenerator", dependency: "Rhetos.Dom.DomGenerator"),
+                    (name: "Rhetos.RestGenerator.RestGenerator", dependency: "Rhetos.Dom.DomGenerator"),
+                });
+            legacyDependencies.Add((name: "Angular2ModelGenerator.Angular2ModelGenerator", dependency: "Rhetos.Deployment.ResourcesGenerator"));
+
+            var generatorsNames = new HashSet<string>(generators.Select(GetGeneratorName));
+            return legacyDependencies
+                .Where(d => generatorsNames.Contains(d.name) && generatorsNames.Contains(d.dependency))
+                .ToList();
         }
 
         private void Log(string title, IEnumerable<(string name, string dependency)> dependencies)
@@ -187,7 +202,7 @@ namespace Rhetos.Deployment
 
             foreach (var entry in _buildOptions.AdditionalGeneratorDependencies)
             {
-                var parts = entry.Split(new[] {':'}, StringSplitOptions.RemoveEmptyEntries);
+                var parts = entry.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
                 if (parts.Length != 2)
                     throw new InvalidOperationException($"Invalid entry '{entry}' in {OptionsAttribute.GetConfigurationPath<BuildOptions>()}:{nameof(BuildOptions.AdditionalGeneratorDependencies)} configuration key."
                         + " Expected \"<GeneratorTypeFullName>:<GeneratorDependencyTypeFullName>\" format.");
