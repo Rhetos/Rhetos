@@ -100,8 +100,7 @@ namespace Rhetos.Utilities.Test
                 .AddTask("c", () => result.Enqueue("c"), new[] {"a"});
 
 
-            var e = TestUtility.ShouldFail<AggregateException>(() => job.RunAllTasks());
-            TestUtility.AssertContains(e.InnerException.Message, "Test exception");
+            var e = TestUtility.ShouldFail<InvalidOperationException>(() => job.RunAllTasks(), "Test exception");
 
             Assert.AreEqual("ab", string.Concat(result.OrderBy(a => a)));
         }

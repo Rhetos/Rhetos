@@ -26,11 +26,22 @@ namespace Rhetos.DatabaseGenerator.Test
     public class MockDslModel : IDslModel
     {
         public MockDslModel(IEnumerable<IConceptInfo> conceptInfos) { Concepts = conceptInfos; }
+
         public IEnumerable<IConceptInfo> Concepts { get; private set; }
+
         public IConceptInfo FindByKey(string conceptKey) { throw new NotImplementedException(); }
+
         public T GetIndex<T>() where T : IDslModelIndex
         {
-            throw new NotImplementedException();
+            if (typeof(T) == typeof(DslModelIndexByType))
+            {
+                IDslModelIndex index = new DslModelIndexByType();
+                foreach (var concept in Concepts)
+                    index.Add(concept);
+                return (T)index;
+            }
+            else
+                throw new NotImplementedException($"Type '{typeof(T)}' is not supported in this mock.");
         }
     }
 }
