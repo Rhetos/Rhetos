@@ -108,11 +108,8 @@ namespace Rhetos.Dsl
                 Formatting = Formatting.Indented,
             };
 
-            string serializedConcepts = JsonConvert.SerializeObject(concepts, serializerSettings);
-            _performanceLogger.Write(sw, "SaveConcepts: Serialize.");
-
-            File.WriteAllText(DslModelFilePath, serializedConcepts, Encoding.UTF8);
-            _performanceLogger.Write(sw, "SaveConcepts: Write.");
+            JsonUtility.SerializeToFile(concepts, DslModelFilePath, serializerSettings);
+            _performanceLogger.Write(sw, "SaveConcepts: Serialize and write.");
         }
 
         private string DslModelFilePath => Path.Combine(_rhetosEnvironment.AssetsFolder, DslModelFileName);
@@ -121,8 +118,6 @@ namespace Rhetos.Dsl
         {
             var sw = Stopwatch.StartNew();
 
-            string serializedConcepts = File.ReadAllText(DslModelFilePath, Encoding.UTF8);
-
             var serializerSettings = new JsonSerializerSettings
             {
                 PreserveReferencesHandling = PreserveReferencesHandling.All,
@@ -130,7 +125,7 @@ namespace Rhetos.Dsl
                 TypeNameHandling = TypeNameHandling.All,
             };
 
-            var concepts = (IEnumerable<IConceptInfo>)JsonConvert.DeserializeObject(serializedConcepts, serializerSettings);
+            var concepts = JsonUtility.DeserializeFromFile<IEnumerable<IConceptInfo>>(DslModelFilePath, serializerSettings);
             _performanceLogger.Write(sw, "Load.");
             return concepts;
         }
