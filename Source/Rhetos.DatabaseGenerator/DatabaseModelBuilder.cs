@@ -86,9 +86,12 @@ namespace Rhetos.DatabaseGenerator
         private List<CodeGenerator> CreateCodeGenerators()
         {
             var codeGenerators = new List<CodeGenerator>();
+            var conceptImplementations = _dslModel.GetTypes()
+                .ToDictionary(conceptType => conceptType, conceptType => _plugins.GetImplementations(conceptType).ToArray());
+
             foreach (var conceptInfo in _dslModel.Concepts)
             {
-                IConceptDatabaseDefinition[] implementations = _plugins.GetImplementations(conceptInfo.GetType()).ToArray();
+                var implementations = conceptImplementations[conceptInfo.GetType()];
 
                 if (!implementations.Any())
                     implementations = _nullImplementations;
@@ -147,7 +150,7 @@ namespace Rhetos.DatabaseGenerator
                 }
             }
 
-            createQueryByCodeGenerator = ExtractCreateQueries(sqlCodeBuilder.GeneratedCode);
+            createQueryByCodeGenerator = ExtractCreateQueries(sqlCodeBuilder.GenerateCode());
 
             sqlScriptDependencies = _databaseModelDependencies.ConceptDependencyToCodeGeneratorsDependency(
                 createdDependencies.Select(d => Tuple.Create(d.DependsOn, d.Dependent)),

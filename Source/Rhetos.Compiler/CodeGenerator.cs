@@ -20,6 +20,7 @@
 using Rhetos.Dsl;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -49,7 +50,7 @@ namespace Rhetos.Compiler
 
             return new AssemblySource
             {
-                GeneratedCode = codeBuilder.GeneratedCode,
+                GeneratedCode = codeBuilder.GenerateCode(),
                 RegisteredReferences = codeBuilder.RegisteredReferences
             };
         }
@@ -80,22 +81,33 @@ namespace Rhetos.Compiler
 
             var conceptImplementations = _dslModel.GetTypes()
                 .ToDictionary(conceptType => conceptType, conceptType => plugins.GetImplementations(conceptType).ToList());
+            _performanceLogger.Write(stopwatch, $"Get implementations for {typeof(TPlugin).FullName}.");
+
+            var implementationStopwatches = conceptImplementations.SelectMany(ci => ci.Value)
+                .Select(plugin => plugin.GetType())
+                .Distinct()
+                .ToDictionary(pluginType => pluginType, pluginType => new Stopwatch());
 
             foreach (var conceptInfo in _dslModel.Concepts)
                 foreach (var plugin in conceptImplementations[conceptInfo.GetType()])
                 {
                     try
                     {
+                        var implementationStopwatch = implementationStopwatches[plugin.GetType()];
+                        implementationStopwatch.Start();
                         plugin.GenerateCode(conceptInfo, codeBuilder);
+                        implementationStopwatch.Stop();
                     }
-                    catch (Exception ex)
+                    catch (Exception e)
                     {
-                        _logger.Error(ex.ToString());
                         _logger.Info("Part of the source code that was generated before the exception was thrown is written in the trace log.");
-                        _logger.Trace(codeBuilder.GeneratedCode);
-                        throw;
+                        _logger.Trace(() => codeBuilder.GenerateCode());
+                        ExceptionsUtility.Rethrow(e);
                     }
                 }
+
+            foreach (var imp in implementationStopwatches.OrderByDescending(i => i.Value.Elapsed.TotalSeconds).Take(3))
+                _performanceLogger.Write(imp.Value, () => $"{typeof(TPlugin).Name} total time for {imp.Key}.");
 
             _performanceLogger.Write(stopwatch, $"Code generated for {typeof(TPlugin).FullName}.");
             return codeBuilder;

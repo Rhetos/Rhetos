@@ -65,8 +65,11 @@ namespace Rhetos.DatabaseGenerator
 
             var codeBuilder = new DataMigrationScriptBuilder();
 
+            var conceptImplementations = _dslModel.GetTypes()
+                .ToDictionary(conceptType => conceptType, conceptType => _plugins.GetImplementations(conceptType).ToList());
+
             foreach (var conceptInfo in _dslModel.Concepts)
-                foreach (var plugin in _plugins.GetImplementations(conceptInfo.GetType()))
+                foreach (var plugin in conceptImplementations[conceptInfo.GetType()])
                 {
                     try
                     {
@@ -75,7 +78,7 @@ namespace Rhetos.DatabaseGenerator
                     catch (Exception ex)
                     {
                         _logger.Info("Part of the source code that was generated before the exception was thrown is written in the trace log.");
-                        _logger.Trace(codeBuilder.GeneratedCode);
+                        _logger.Trace(() => codeBuilder.GenerateCode());
                         throw new FrameworkException($"Error while generating data-migration script for '{conceptInfo.GetUserDescription()}'.", ex);
                     }
                 }

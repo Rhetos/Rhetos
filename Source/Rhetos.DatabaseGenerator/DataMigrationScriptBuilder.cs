@@ -47,7 +47,7 @@ namespace Rhetos.DatabaseGenerator
 
         public GeneratedDataMigrationScripts GetDataMigrationScripts()
         {
-            var scripts = GeneratedCode.Split(new[] { DataMigrationScriptSplitterTag }, StringSplitOptions.RemoveEmptyEntries);
+            var scripts = GenerateCode().Split(new[] { DataMigrationScriptSplitterTag }, StringSplitOptions.RemoveEmptyEntries);
             int beforeTagPosition = Array.IndexOf(scripts, BeforeDataMigrationTag);
             if (beforeTagPosition == -1)
                 throw new FrameworkException($"Internal error when finding {nameof(BeforeDataMigrationTag)}.");
