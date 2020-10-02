@@ -198,7 +198,7 @@ namespace Rhetos.Dsl
             _performanceLogger.Write(swTotal, "ExpandMacroConcepts.");
         }
 
-        private string LogCreatedConcepts(DslContainer dslContainer, IEnumerable<IConceptInfo> macroCreatedConcepts, DslContainer.AddNewConceptsReport newConceptsReport)
+        private string LogCreatedConcepts(DslContainer dslContainer, IEnumerable<IConceptInfo> macroCreatedConcepts, AddNewConceptsReport newConceptsReport)
         {
             var report = new StringBuilder();
             var newUniqueIndex = new HashSet<string>(newConceptsReport.NewUniqueConcepts.Select(c => c.GetKey()));

@@ -109,14 +109,6 @@ namespace Rhetos.Dsl
 
         #endregion
 
-        public class AddNewConceptsReport
-        {
-            /// <summary>A subset of given new concepts. Some of the returned concepts might not have their references resolved yet.</summary>
-            public List<IConceptInfo> NewUniqueConcepts;
-            /// <summary>May include previously given concepts that have been resolved now.</summary>
-            public List<IConceptInfo> NewlyResolvedConcepts;
-        }
-
         /// <summary>
         /// Updates concept references to reference existing instances from DslModel matched by the concept key.
         /// Returns new unique concepts that did not previously exist in DslModel
@@ -172,7 +164,7 @@ namespace Rhetos.Dsl
                 return true;
             else if (newConcept.GetKey() != existingConcept.GetKey())
                 return false;
-            else if (!newConcept.GetType().IsAssignableFrom(existingConcept.GetType()))
+            else if (!newConcept.GetType().IsInstanceOfType(existingConcept))
                 return false;
             else
             {
@@ -203,16 +195,13 @@ namespace Rhetos.Dsl
             {
                 var value1 = conceptMemeber.GetValue(existingConcept);
                 var value2 = conceptMemeber.GetValue(newConcept);
-                if (value1 == null && value2 == null)
-                    return true;
-                else if (value1 != null && value2 == null)
-                    return false;
-                else if (value1 == null && value2 != null)
-                    return false;
-                else if (!value1.Equals(value2))
+
+                if (value1 == null)
+                    return value2 == null;
+                else if (value2 == null)
                     return false;
                 else
-                    return true;
+                    return value1.Equals(value2);
             }
         }
 
@@ -362,21 +351,25 @@ namespace Rhetos.Dsl
             trail.Add(referencedUnresolvedConcept.Dependant.Key);
             return GetRootUnresolvedConcept(referencedUnresolvedConcept, trail);
         }
-        
+
         /// <summary>
         /// This method sorts concepts so that if concept A references concept B,
         /// in the resulting list B will be positioned somewhere before A.
         /// This will allow code generators to safely assume that the code for referenced concept B
         /// is already generated before the concept A inserts an additional code snippet into it.
         /// </summary>
+        /// <param name="initialSort">
+        /// Initial sorting will reduce variations in the generated application source
+        /// that are created by different macro evaluation order on each deployment.
+        /// </param>
         public void SortReferencesBeforeUsingConcept(InitialConceptsSort initialSort)
         {
             var sw = Stopwatch.StartNew();
 
+            // Initial sort:
+
             if (initialSort != InitialConceptsSort.None)
             {
-                // Initial sorting will reduce variations in the generated application source
-                // that are created by different macro evaluation order on each deployment.
                 var sortComparison = new Dictionary<InitialConceptsSort, Comparison<IConceptInfo>>
                 {
                     { InitialConceptsSort.Key, (a, b) => a.GetKey().CompareTo(b.GetKey()) },
@@ -387,34 +380,62 @@ namespace Rhetos.Dsl
                 _performanceLogger.Write(sw, $"SortReferencesBeforeUsingConcept: Initial sort by {initialSort}.");
             }
 
-            List<IConceptInfo> sortedList = new List<IConceptInfo>(_resolvedConcepts.Count);
-            Dictionary<IConceptInfo, bool> processed = _resolvedConcepts.ToDictionary(ci => ci, ci => false);
+            // Extract dependencies:
 
-            foreach (var concept in _resolvedConcepts.Where(c => c is InitializationConcept))
-                AddReferencesBeforeConcept(concept, sortedList, processed);
-            foreach (var concept in _resolvedConcepts.Where(c => !(c is InitializationConcept)))
-                AddReferencesBeforeConcept(concept, sortedList, processed);
+            var dependencies = new List<(IConceptInfo dependsOn, IConceptInfo dependent)>(_resolvedConcepts.Count);
+            foreach (var concept in _resolvedConcepts)
+                foreach (ConceptMember member in ConceptMembers.Get(concept))
+                    if (member.IsConceptInfo)
+                        dependencies.Add(((IConceptInfo)member.GetValue(concept), concept));
 
-            if (sortedList.Count != _resolvedConcepts.Count)
-                throw new FrameworkException(string.Format("Unexpected inner state: sortedList.Count {0} != concepts.Count {1}.", sortedList.Count, _resolvedConcepts.Count));
+            var dependents = dependencies.ToMultiDictionary(d => d.dependsOn, d => d.dependent);
+            var countOfDependencies = dependencies.GroupBy(d => d.dependent).ToDictionary(group => group.Key, group => group.Count());
+            var conceptsWithoutDependencies = _resolvedConcepts.Where(c => !countOfDependencies.ContainsKey(c)).ToList();
+            conceptsWithoutDependencies = conceptsWithoutDependencies.Where(c => c is InitializationConcept)
+                .Concat(conceptsWithoutDependencies.Where(c => !(c is InitializationConcept)))
+                .ToList();
+            var newWithoutDependencies = new List<IConceptInfo>(conceptsWithoutDependencies.Count / 2);
+
+            // Sort by dependencies:
+
+            var sortedList = new List<IConceptInfo>(_resolvedConcepts.Count);
+
+            while (sortedList.Count < _resolvedConcepts.Count)
+            {
+                if (!conceptsWithoutDependencies.Any())
+                {
+                    var conceptWithLeastDependencies = countOfDependencies.First(cd => cd.Value > 0).Key;
+                    throw new FrameworkException($"Circular dependency on '{conceptWithLeastDependencies.GetUserDescription()}' detected while sorting concepts.");
+                }
+
+                // Using a top-down breadth-first sorting, instead of a recursion, to provide more stable sort.
+                // For example, adding a filter that references an entity should not change the ordering of the entities.
+                newWithoutDependencies.Clear();
+                foreach (var concept in conceptsWithoutDependencies)
+                {
+                    sortedList.Add(concept);
+                    foreach (var dependent in dependents.Get(concept))
+                    {
+                        int remaining = --countOfDependencies[dependent];
+                        if (remaining == 0)
+                            newWithoutDependencies.Add(dependent);
+                    }
+                }
+
+                conceptsWithoutDependencies.Clear();
+                conceptsWithoutDependencies.AddRange(newWithoutDependencies);
+            }
+
+            // Result:
+
+            if (conceptsWithoutDependencies.Any())
+                throw new FrameworkException($"Unexpected internal state: Remaining {conceptsWithoutDependencies.Count} {nameof(conceptsWithoutDependencies)} to resolve.");
+            if (countOfDependencies.Any(c => c.Value != 0))
+                throw new FrameworkException($"Unexpected internal state: Remaining {nameof(countOfDependencies)} != 0.");
+
             _resolvedConcepts.Clear();
             _resolvedConcepts.AddRange(sortedList);
             _performanceLogger.Write(sw, "SortReferencesBeforeUsingConcept.");
-        }
-
-        private static void AddReferencesBeforeConcept(IConceptInfo concept, List<IConceptInfo> sortedList, Dictionary<IConceptInfo, bool> processed)
-        {
-            if (!processed.ContainsKey(concept))
-                throw new FrameworkException(string.Format(
-                    "Unexpected inner state: Referenced concept {0} is not found in list of all concepts.",
-                    concept.GetUserDescription()));
-            if (processed[concept]) // eliminates duplication of referenced concepts and stops circular references from infinite recursion
-                return;
-            processed[concept] = true;
-            foreach (ConceptMember member in ConceptMembers.Get(concept))
-                if (member.IsConceptInfo)
-                    AddReferencesBeforeConcept((IConceptInfo)member.GetValue(concept), sortedList, processed);
-            sortedList.Add(concept);
         }
     }
 }

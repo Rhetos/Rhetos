@@ -21,6 +21,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
@@ -54,12 +55,14 @@ namespace Rhetos.Dsl.Test
             }
         }
 
+        [DebuggerDisplay("C0 {Name}")]
         class C0 : IConceptInfo
         {
             [ConceptKey]
             public string Name { get; set; }
         }
 
+        [DebuggerDisplay("C1 {Name}")]
         class C1 : IConceptInfo
         {
             [ConceptKey]
@@ -67,6 +70,7 @@ namespace Rhetos.Dsl.Test
             public IConceptInfo Ref1 { get; set; }
         }
 
+        [DebuggerDisplay("C2 {Name}")]
         class C2 : IConceptInfo
         {
             [ConceptKey]
@@ -233,14 +237,17 @@ namespace Rhetos.Dsl.Test
             // The expected positions may somewhat change if the sorting algorithm internals change.
             var tests = new List<(InitialConceptsSort SortMethod, List<IConceptInfo> ExpectedResult)>
             {
-                // cInit always goes first. cDependant does not need to move because it is after referenced c1 and c5.
-                ( InitialConceptsSort.None, new List<IConceptInfo> { cInit, c02, c01, cB2, c2Dependant, c03, cB1 } ),
+                // cInit always goes first. cDependant is moved to the end, even though it does not need to be moved
+                // because it is after referenced c01 and cB2. Putting all level 2 concept after level 1,
+                // instead of keeping the initial sort based on dynamic evaluation, should result with
+                // less changes in the final generated code.
+                ( InitialConceptsSort.None, new List<IConceptInfo> { cInit, c02, c01, cB2, c03, cB1, c2Dependant } ),
 
-                // cB2 is pushed before c2Dependant, to respect dependency precedence.
-                ( InitialConceptsSort.Key, new List<IConceptInfo> { cInit, c01, c02, c03, cB2, c2Dependant, cB1 } ),
+                // Keeping the InitialConceptsSort ordering between the concepts of the same level.
+                ( InitialConceptsSort.Key, new List<IConceptInfo> { cInit, c01, c02, c03, cB1, cB2, c2Dependant } ),
 
-                // c01 is pushed before c2Dependant, to respect dependency precedence.
-                ( InitialConceptsSort.KeyDescending, new List<IConceptInfo> { cInit, cB2, cB1, c01, c2Dependant, c03, c02 } ),
+                // Keeping the InitialConceptsSort ordering between the concepts of the same level.
+                ( InitialConceptsSort.KeyDescending, new List<IConceptInfo> { cInit, cB2, cB1, c03, c02, c01, c2Dependant } ),
             };
 
             foreach (var test in tests)
@@ -252,6 +259,51 @@ namespace Rhetos.Dsl.Test
                     TestUtility.Dump(dslContainer.ResolvedConcepts, c => c.GetKey()),
                     $"SortConceptsMethod: {test.SortMethod}");
             }
+        }
+
+        [TestMethod]
+        public void SortingCircular()
+        {
+            // Circular dependencies are not supported in Rhetos,
+            // but this test verifies robustness of the algorithm implementation
+            // and error detection.
+
+            var cA = new C1 { Name = "A" };
+            var cB = new C1 { Name = "B" };
+            cA.Ref1 = cB;
+            cB.Ref1 = cA;
+            var cInit = new InitializationConcept { RhetosVersion = "init" };
+            var cDependant = new C2 { Name = "dep", Ref1 = cA, Ref2 = cB };
+
+            var testData = new List<IConceptInfo> { cDependant, cA, cB, cInit };
+            var dslContainer = new DslContainerAccessor { ResolvedConcepts = testData };
+            TestUtility.ShouldFail<FrameworkException>(
+                () => dslContainer.SortReferencesBeforeUsingConcept(InitialConceptsSort.None),
+                "C1 A");
+        }
+
+        [TestMethod]
+        public void SortInitOnly()
+        {
+            var cInit = new InitializationConcept { RhetosVersion = "init" };
+
+            var testData = new List<IConceptInfo> { cInit };
+            var dslContainer = new DslContainerAccessor { ResolvedConcepts = testData };
+            dslContainer.SortReferencesBeforeUsingConcept(InitialConceptsSort.None);
+            Assert.AreEqual(
+                TestUtility.Dump(testData, c => c.GetKey()),
+                TestUtility.Dump(dslContainer.ResolvedConcepts, c => c.GetKey()));
+        }
+
+        [TestMethod]
+        public void SortEmpty()
+        {
+            var testData = new List<IConceptInfo> { };
+            var dslContainer = new DslContainerAccessor { ResolvedConcepts = testData };
+            dslContainer.SortReferencesBeforeUsingConcept(InitialConceptsSort.None);
+            Assert.AreEqual(
+                TestUtility.Dump(testData, c => c.GetKey()),
+                TestUtility.Dump(dslContainer.ResolvedConcepts, c => c.GetKey()));
         }
     }
 }
