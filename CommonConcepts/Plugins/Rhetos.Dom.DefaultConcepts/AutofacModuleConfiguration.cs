@@ -45,6 +45,7 @@ namespace Rhetos.Dom.DefaultConcepts
             builder.RegisterType<CommonAuthorizationProvider>().As<IAuthorizationProvider>().InstancePerLifetimeScope();
             builder.RegisterType<EntityFrameworkMetadata>().SingleInstance();
             builder.RegisterType<MetadataWorkspaceFileProvider>().As<IMetadataWorkspaceFileProvider>().SingleInstance();
+            builder.RegisterType<EfMappingViewsHash>().As<IEfMappingViewsHash>();
 
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<CommonConceptsOptions>()).SingleInstance();
 

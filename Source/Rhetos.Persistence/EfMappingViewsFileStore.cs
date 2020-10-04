@@ -17,12 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Logging;
+using Rhetos.Utilities;
 using System;
 using System.Diagnostics;
 using System.IO;
-using Newtonsoft.Json;
-using Rhetos.Logging;
-using Rhetos.Utilities;
 
 namespace Rhetos.Persistence
 {

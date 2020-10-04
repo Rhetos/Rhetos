@@ -44,17 +44,24 @@ namespace Rhetos.Configuration.Autofac.Modules
                 .As<RhetosAppOptions>().As<IAssetsOptions>().SingleInstance();
             builder.RegisterType<DomLoader>().As<IDomainObjectModel>().SingleInstance();
             builder.RegisterType<PersistenceTransaction>().As<IPersistenceTransaction>().InstancePerLifetimeScope();
-            builder.RegisterType<DslModelFile>().As<IDslModel>().SingleInstance();
             builder.RegisterType<EfMappingViewsFileStore>().SingleInstance().PreserveExistingDefaults();
             builder.RegisterType<EfMappingViewCacheFactory>().SingleInstance().PreserveExistingDefaults();
             builder.RegisterModule(new DatabaseRuntimeModule());
 
             var pluginRegistration = builder.GetPluginRegistration();
+            AddDsl(builder, pluginRegistration);
             AddSecurity(builder, pluginRegistration);
             AddUtilities(builder, pluginRegistration);
             AddCommandsProcessing(builder, pluginRegistration);
 
             base.Load(builder);
+        }
+
+        private static void AddDsl(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
+        {
+            builder.RegisterType<DslModelFile>().As<IDslModel>().SingleInstance();
+            builder.RegisterType<ConceptMetadata>().SingleInstance();
+            pluginRegistration.FindAndRegisterPlugins<IConceptMetadataExtension>();
         }
 
         private void AddSecurity(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)

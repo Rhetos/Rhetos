@@ -86,6 +86,9 @@ namespace Rhetos
 
             using (var container = rhetosRuntime.BuildContainer(_logProvider, _configuration, AddAppInitializationComponents))
             {
+                // EfMappingViewsInitializer is manually executed before other initializers because of performance issues.
+                // It is needed for most of the initializer to run, but lazy initialization of EfMappingViews on first DbContext usage
+                // is not a good option because of significant hash check duration (it would not be applicable in run-time).
                 _logger.Info("Initializing EfMappingViews.");
                 var efMappingViewsInitializer = container.Resolve<EfMappingViewsInitializer>();
                 efMappingViewsInitializer.Initialize();

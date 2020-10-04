@@ -80,16 +80,16 @@ namespace Rhetos.Configuration.Autofac.Modules
         private void AddDsl(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
         {
             builder.RegisterType<DslModel>().As<IDslModel>().SingleInstance();
+            builder.RegisterType<ConceptMetadata>().SingleInstance();
+            pluginRegistration.FindAndRegisterPlugins<IConceptMetadataExtension>();
             builder.RegisterType<DiskDslScriptLoader>().As<IDslScriptsProvider>().SingleInstance();
             builder.RegisterType<Tokenizer>().SingleInstance();
             builder.RegisterType<DslModelFile>().As<IDslModelFile>().SingleInstance();
             builder.RegisterType<DslParser>().As<IDslParser>();
             builder.RegisterType<MacroOrderRepository>().As<IMacroOrderRepository>();
-            builder.RegisterType<ConceptMetadata>().SingleInstance();
             builder.RegisterType<InitializationConcept>().As<IConceptInfo>(); // This plugin is registered manually because FindAndRegisterPlugins does not scan core Rhetos dlls.
             pluginRegistration.FindAndRegisterPlugins<IConceptInfo>();
             pluginRegistration.FindAndRegisterPlugins<IConceptMacro>(typeof(IConceptMacro<>));
-            pluginRegistration.FindAndRegisterPlugins<IConceptMetadataExtension>();
         }
 
         private void AddPersistence(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)

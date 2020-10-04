@@ -17,12 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Logging;
 using System.Collections.Generic;
 using System.Data.Entity.Core.Mapping;
 using System.Data.Entity.Core.Metadata.Edm;
 using System.Diagnostics;
 using System.Linq;
-using Rhetos.Logging;
 
 namespace Rhetos.Persistence
 {
@@ -32,13 +32,15 @@ namespace Rhetos.Persistence
         private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
         private readonly IMetadataWorkspaceFileProvider _metadataWorkspaceFileProvider;
+        private readonly IEfMappingViewsHash _efMappingViewsHash;
 
-        public EfMappingViewsInitializer(EfMappingViewsFileStore efMappingViewsFileStore, IMetadataWorkspaceFileProvider metadataWorkspaceFileProvider, ILogProvider logProvider)
+        public EfMappingViewsInitializer(EfMappingViewsFileStore efMappingViewsFileStore, IMetadataWorkspaceFileProvider metadataWorkspaceFileProvider, ILogProvider logProvider, IEfMappingViewsHash efMappingViewsHash)
         {
             _efMappingViewsFileStore = efMappingViewsFileStore;
             _logger = logProvider.GetLogger(nameof(EfMappingViewsInitializer));
             _performanceLogger = logProvider.GetLogger("Performance." + nameof(EfMappingViewsInitializer));
             _metadataWorkspaceFileProvider = metadataWorkspaceFileProvider;
+            _efMappingViewsHash = efMappingViewsHash;
         }
 
         public void Initialize()
@@ -51,12 +53,15 @@ namespace Rhetos.Persistence
             var sw = Stopwatch.StartNew();
 
             var mappingCollection = (StorageMappingItemCollection)_metadataWorkspaceFileProvider.MetadataWorkspace.GetItemCollection(DataSpace.CSSpace);
-
             var hash = mappingCollection.ComputeMappingHashValue();
-            _performanceLogger.Write(sw, () => $"Calculate hash for current model.");
-            var currentViewCache = _efMappingViewsFileStore.Load();
+            _performanceLogger.Write(sw, () => $"Calculated hash for current model.");
+            string additionalHash = _efMappingViewsHash.GetAdditionalHash();
+            _performanceLogger.Write(sw, () => $"Calculated additional hash.");
 
-            if (!string.IsNullOrEmpty(currentViewCache?.Hash) && currentViewCache.Hash == hash)
+            var currentViewCache = _efMappingViewsFileStore.Load();
+            if (!string.IsNullOrEmpty(currentViewCache?.Hash)
+                && currentViewCache.Hash == hash
+                && currentViewCache.AdditionalHash == additionalHash)
             {
                 _logger.Trace(() => $"Hash not changed. View cache is valid. Skipping generation.");
                 return;
@@ -70,7 +75,7 @@ namespace Rhetos.Persistence
             foreach (var edmSchemaError in errors)
                 _logger.Warning(() => $"{edmSchemaError}");
 
-            var newViewCache = new EfMappingViews() {Hash = hash, Views = newViews};
+            var newViewCache = new EfMappingViews { Hash = hash, Views = newViews, AdditionalHash = additionalHash };
             _performanceLogger.Write(sw, () => $"Generated new views. Old hash != new hash ('{currentViewCache?.Hash}' != '{hash}').");
 
             _efMappingViewsFileStore.Save(newViewCache);
