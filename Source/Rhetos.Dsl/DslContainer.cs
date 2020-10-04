@@ -404,8 +404,12 @@ namespace Rhetos.Dsl
             {
                 if (!conceptsWithoutDependencies.Any())
                 {
-                    var conceptWithLeastDependencies = countOfDependencies.First(cd => cd.Value > 0).Key;
-                    throw new FrameworkException($"Circular dependency on '{conceptWithLeastDependencies.GetUserDescription()}' detected while sorting concepts.");
+                    var unresolvedConcepts = countOfDependencies.Where(cd => cd.Value > 0).Select(c => c.Key).ToList();
+                    int reportConcepts = 5;
+                    throw new FrameworkException($"Circular dependency detected while sorting concepts." +
+                        $" Unresolved {unresolvedConcepts.Count} concepts:" +
+                        $" {string.Join(", ", unresolvedConcepts.Take(reportConcepts).Select(c => c.GetUserDescription()))}" +
+                        (unresolvedConcepts.Count > reportConcepts ? ", ..." : "."));
                 }
 
                 // Using a top-down breadth-first sorting, instead of a recursion, to provide more stable sort.
