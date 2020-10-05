@@ -144,7 +144,7 @@ namespace Rhetos.Deployment
         {
             var legacyDependencies = new List<(string name, string dependency)>();
 
-            if (!string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder)) // Using DeployPackages instead of Rhetos CLI.
+            if (string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder)) // Using DeployPackages instead of Rhetos CLI. When generating source code only, these plugins do not generate DLLs, so there are no dependencies between them.
                 legacyDependencies.AddRange(new[]
                 {
                     (name: "Rhetos.LegacyRestGenerator.LegacyRestGenerator", dependency: "Rhetos.Dom.DomGenerator"),
