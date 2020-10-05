@@ -90,7 +90,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 }
                 else
                 {
-                    _logger.Warning(() => $"Recomputing {compute.Target} from {compute.Source}.");
+                    _logger.Info(() => $"Recomputing {compute.Target} from {compute.Source}.");
                     _genericRepositories.GetGenericRepository(compute.Target).RecomputeFrom(compute.Source);
                     _performanceLogger.Write(sw, () => $"{compute.Target} from {compute.Source}.");
                 }
