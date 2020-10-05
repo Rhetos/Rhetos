@@ -542,6 +542,8 @@ Module TestSqlFilter
 
 Module TestComputedFrom
 {
+    AutodetectSqlDependencies;
+
     Computed Source 'repository => new[]
         {
             new Source { ID = new Guid("16BB8451-BC22-4B4E-888E-9B5DD2355A61"), Name = "aa", Code = 11 },
@@ -621,7 +623,7 @@ Module TestComputedFrom
 		ComputedFrom TestComputedFrom.ComputedWithAutoCodeSource { AllProperties; ComputeForNewItems; }
 	}
 	
-	SqlQueryable ComputedWithAutoCodeSource "SELECT ID, Comp = 'abc' FROM ComputedWithAutoCode"
+	SqlQueryable ComputedWithAutoCodeSource "SELECT ID, Comp = 'abc' FROM TestComputedFrom.ComputedWithAutoCode"
 	{
 		ShortString Comp;
 	}

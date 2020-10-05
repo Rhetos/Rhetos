@@ -172,6 +172,7 @@ Module Test13
         ShortString Same;
 		
 		SqlDependsOn Test13.Old2;
+		SqlDependsOn Test13.Old1;
 	}
 	
 	Entity Old3
