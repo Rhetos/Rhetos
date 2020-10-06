@@ -96,14 +96,14 @@ namespace Rhetos.Utilities
                 {
                     var script = sqlBatch.Scripts[scriptIndex];
                     if (!string.IsNullOrEmpty(script.Name))
-                        return script.Name.Trim();
+                        return $" '{script.Name.Trim()}'.";
                     else
-                        return script.Sql.Limit(1000).Trim();
+                        return $": {script.Sql.Limit(1000).Trim()}";
                 };
 
                 Action<int> initializeProgress = scriptIndex =>
                 {
-                    timeoutWarning = _delayedLogger.PerformanceWarning(() => $"Executing SQL script:\r\n{sqlScriptDescription(scriptIndex)}\r\n");
+                    timeoutWarning = _delayedLogger.PerformanceWarning(() => $"Executing SQL script{sqlScriptDescription(scriptIndex)}");
                 };
 
                 Action<int> reportProgress = scriptIndex =>
