@@ -24,9 +24,9 @@ namespace Rhetos.Dsl
     public class AddNewConceptsReport
     {
         /// <summary>A subset of given new concepts. Some of the returned concepts might not have their references resolved yet.</summary>
-        public List<IConceptInfo> NewUniqueConcepts { get; set; }
+        public List<IConceptInfo> NewUniqueConcepts { get; set; } = new List<IConceptInfo>();
 
         /// <summary>May include previously given concepts that have been resolved now.</summary>
-        public List<IConceptInfo> NewlyResolvedConcepts { get; set; }
+        public List<IConceptInfo> NewlyResolvedConcepts { get; set; } = new List<IConceptInfo>();
     }
 }

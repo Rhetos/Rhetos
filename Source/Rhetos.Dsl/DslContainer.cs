@@ -117,24 +117,19 @@ namespace Rhetos.Dsl
         public AddNewConceptsReport AddNewConceptsAndReplaceReferences(IEnumerable<IConceptInfo> newConcepts)
         {
             _addConceptsStopwatch.Start();
-            var newUniqueConceptsDesc = new List<ConceptDescription>();
+            var report = new AddNewConceptsReport();
 
             foreach (var conceptDesc in newConcepts.Select(c => new ConceptDescription(c)))
             {
-                ConceptDescription existingConcept;
-
-                if (!_givenConceptsByKey.TryGetValue(conceptDesc.Key, out existingConcept))
+                if (!_givenConceptsByKey.TryGetValue(conceptDesc.Key, out ConceptDescription existingConcept))
                 {
                     _givenConceptsByKey.Add(conceptDesc.Key, conceptDesc);
-                    newUniqueConceptsDesc.Add(conceptDesc);
+                    report.NewlyResolvedConcepts.AddRange(ReplaceReferencesWithFullConcepts(conceptDesc));
+                    report.NewUniqueConcepts.Add(conceptDesc.Concept);
                 }
                 else
                     ValidateNewConceptSameAsExisting(conceptDesc.Concept, existingConcept.Concept);
             }
-
-            var report = new AddNewConceptsReport();
-            report.NewlyResolvedConcepts = ReplaceReferencesWithFullConcepts(newUniqueConceptsDesc);
-            report.NewUniqueConcepts = newUniqueConceptsDesc.Select(desc => desc.Concept).ToList();
 
             _addConceptsStopwatch.Stop();
             return report;
@@ -206,30 +201,24 @@ namespace Rhetos.Dsl
         }
 
         /// <summary>
-        /// Since DSL parser returns stub references, this function replaces each reference with actual instance of the referenced concept.
-        /// Function returns concepts that have newly resolved references.
+        /// Since DSL parser and macro evaluators return stub references, this function replaces each reference with actual instance of the referenced concept.
+        /// The function returns concepts that have newly resolved references.
         /// Note: This method could handle circular dependencies between the concepts, but for simplicity of the implementation this is currently not supported.
         /// </summary>
-        private List<IConceptInfo> ReplaceReferencesWithFullConcepts(IEnumerable<ConceptDescription> newConceptsDesc)
+        private IEnumerable<IConceptInfo> ReplaceReferencesWithFullConcepts(ConceptDescription conceptDesc)
         {
-            var newlyResolved = new List<IConceptInfo>();
+            var references = ConceptMembers.Get(conceptDesc.Concept).Where(member => member.IsConceptInfo)
+                .Select(member => new UnresolvedReference(conceptDesc, member));
 
-            foreach (var conceptDesc in newConceptsDesc)
-            {
-                var references = ConceptMembers.Get(conceptDesc.Concept).Where(member => member.IsConceptInfo)
-                    .Select(member => new UnresolvedReference(conceptDesc, member));
-
-                foreach (var reference in references)
-                    ReplaceReferenceWithFullConceptOrMarkUnresolved(reference);
+            foreach (var reference in references)
+                ReplaceReferenceWithFullConceptOrMarkUnresolved(reference);
                  
-                if (conceptDesc.UnresolvedDependencies == 0)
-                {
-                    newlyResolved.Add(conceptDesc.Concept);
-                    newlyResolved.AddRange(MarkResolvedConcept(conceptDesc));
-                }
+            if (conceptDesc.UnresolvedDependencies == 0)
+            {
+                yield return conceptDesc.Concept;
+                foreach (var resolved in MarkResolvedConcept(conceptDesc))
+                    yield return resolved;
             }
-
-            return newlyResolved;
         }
 
         private void ReplaceReferenceWithFullConceptOrMarkUnresolved(UnresolvedReference reference)
@@ -239,7 +228,7 @@ namespace Rhetos.Dsl
                 string errorMessage = $"Property '{reference.Member.Name}' is not initialized.";
 
                 if (reference.Dependant.Concept is IAlternativeInitializationConcept)
-                    errorMessage = errorMessage + $" Check if the InitializeNonparsableProperties function of IAlternativeInitializationConcept implementation at {reference.Dependant.Concept.GetType().Name} is implemented properly.";
+                    errorMessage += $" Check if the InitializeNonparsableProperties function of IAlternativeInitializationConcept implementation at {reference.Dependant.Concept.GetType().Name} is implemented properly.";
 
                 throw new DslSyntaxException(reference.Dependant.Concept, errorMessage);
             }
