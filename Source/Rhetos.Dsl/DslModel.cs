@@ -89,7 +89,6 @@ namespace Rhetos.Dsl
             _performanceLogger.Write(swFirstAdd, $"Initialize: First AddNewConceptsAndReplaceReferences ({dslContainer.Concepts.Count()} concepts).");
 
             ExpandMacroConcepts(dslContainer);
-            dslContainer.ReportErrorForUnresolvedConcepts();
             CheckSemantics(dslContainer);
             dslContainer.SortReferencesBeforeUsingConcept(_buildOptions.InitialConceptsSort);
             ReportObsoleteConcepts(dslContainer);
@@ -123,9 +122,9 @@ namespace Rhetos.Dsl
 
             int iteration = 0;
             var iterationCreatedConcepts = new List<IConceptInfo>();
-            int lastResolvedConceptTime = 0;
-            var lastResolvedConceptTimeByIteration = new List<int>();
-            var lastResolvedConceptTimeByMacro = new Dictionary<string, int>();
+            int lastNewConceptTime = 0;
+            var lastNewConceptTimeByIteration = new List<int>();
+            var lastNewConceptTimeByMacro = new Dictionary<string, int>();
             var recommendedMacroOrder = _macroOrderRepository.Load().ToDictionary(m => m.EvaluatorName, m => m.EvaluatorOrder);
             var macroEvaluators = ListMacroEvaluators(recommendedMacroOrder);
             var macroStopwatches = macroEvaluators.ToDictionary(macro => macro.Name, macro => new Stopwatch());
@@ -169,8 +168,8 @@ namespace Rhetos.Dsl
                             iterationCreatedConcepts.AddRange(newConceptsReport.NewUniqueConcepts);
 
                             // Optimization analysis:
-                            if (newConceptsReport.NewlyResolvedConcepts.Count > 0)
-                                lastResolvedConceptTimeByMacro[macroEvaluator.Name] = ++lastResolvedConceptTime;
+                            if (newConceptsReport.NewUniqueConcepts.Count > 0)
+                                lastNewConceptTimeByMacro[macroEvaluator.Name] = ++lastNewConceptTime;
                             createdTypesInIteration.AddRange(newConceptsReport.NewUniqueConcepts.Select(nuc =>
                                 new CreatedTypesInIteration { Macro = macroEvaluator.Name, Created = nuc.BaseConceptInfoType().Name, Iteration = iteration }));
                         }
@@ -178,7 +177,7 @@ namespace Rhetos.Dsl
                     macroStopwatches[macroEvaluator.Name].Stop();
                 }
 
-                lastResolvedConceptTimeByIteration.Add(lastResolvedConceptTime);
+                lastNewConceptTimeByIteration.Add(lastNewConceptTime);
 
                 _performanceLogger.Write(sw, "ExpandMacroConcepts iteration " + iteration + " ("
                     + iterationCreatedConcepts.Count + " new concepts, "
@@ -187,13 +186,16 @@ namespace Rhetos.Dsl
             } while (iterationCreatedConcepts.Count > 0);
 
             _evaluatorsOrderLogger.Trace(() => swTotal.Elapsed + "\r\n"
-                + ReportLastEvaluationOrder(lastResolvedConceptTimeByMacro, lastResolvedConceptTimeByIteration));
-            SaveMacroEvaluationOrder(lastResolvedConceptTimeByMacro);
+                + ReportLastEvaluationOrder(lastNewConceptTimeByMacro, lastNewConceptTimeByIteration));
 
             foreach (var macroStopwatch in macroStopwatches.OrderByDescending(msw => msw.Value.Elapsed.TotalSeconds).Take(5))
                 _performanceLogger.Write(macroStopwatch.Value, () => "ExpandMacroConcepts total time for " + macroStopwatch.Key + ".");
 
             _logger.Trace(() => LogCreatedTypesInIteration(createdTypesInIteration));
+
+            dslContainer.ReportErrorForUnresolvedConcepts();
+
+            SaveMacroEvaluationOrder(lastNewConceptTimeByMacro);
 
             _performanceLogger.Write(swTotal, "ExpandMacroConcepts.");
         }
@@ -289,9 +291,9 @@ namespace Rhetos.Dsl
 
         private static HashSet<string> _noRecommendedOrderReported = new HashSet<string>();
 
-        private string ReportLastEvaluationOrder(Dictionary<string, int> lastResolvedConceptTimeByMacro, List<int> lastResolvedConceptTimeByIteration)
+        private string ReportLastEvaluationOrder(Dictionary<string, int> lastNewConceptTimeByMacro, List<int> lastNewConceptTimeByIteration)
         {
-            var orderedMacros = lastResolvedConceptTimeByMacro
+            var orderedMacros = lastNewConceptTimeByMacro
                 .OrderBy(lastEval => lastEval.Value)
                 .Select(lastEval => new { Name = lastEval.Key, Time = lastEval.Value })
                 .ToList();
@@ -299,22 +301,22 @@ namespace Rhetos.Dsl
             var report = new StringBuilder();
 
             int previousIterationTime = 0;
-            for (int i = 0; i < lastResolvedConceptTimeByIteration.Count; i++)
+            for (int i = 0; i < lastNewConceptTimeByIteration.Count; i++)
             {
                 report.AppendLine("Iteration " + (i + 1) + ":");
                 foreach (var evaluator in orderedMacros)
-                    if (evaluator.Time > previousIterationTime && evaluator.Time <= lastResolvedConceptTimeByIteration[i])
+                    if (evaluator.Time > previousIterationTime && evaluator.Time <= lastNewConceptTimeByIteration[i])
                         report.AppendLine(evaluator.Name);
 
-                previousIterationTime = lastResolvedConceptTimeByIteration[i];
+                previousIterationTime = lastNewConceptTimeByIteration[i];
             }
 
             return report.ToString();
         }
 
-        private void SaveMacroEvaluationOrder(Dictionary<string, int> lastResolvedConceptTimeByMacro)
+        private void SaveMacroEvaluationOrder(Dictionary<string, int> lastNewConceptTimeByMacro)
         {
-            var orderedMacros = lastResolvedConceptTimeByMacro.OrderBy(lastEval => lastEval.Value).Select(lastEval => lastEval.Key).ToList();
+            var orderedMacros = lastNewConceptTimeByMacro.OrderBy(lastEval => lastEval.Value).Select(lastEval => lastEval.Key).ToList();
             var macroOrders = orderedMacros.Select((macro, index) => new MacroOrder
                 {
                     EvaluatorName = macro,
