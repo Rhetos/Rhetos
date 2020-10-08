@@ -52,10 +52,10 @@ namespace Rhetos.Dsl
             public readonly string Key;
             public int UnresolvedDependencies;
 
-            public ConceptDescription(IConceptInfo concept)
+            public ConceptDescription(IConceptInfo concept, string key)
             {
                 Concept = concept;
-                Key = concept.GetKey();
+                Key = key;
                 UnresolvedDependencies = 0;
             }
         }
@@ -119,16 +119,18 @@ namespace Rhetos.Dsl
             _addConceptsStopwatch.Start();
             var newUniqueConcepts = new List<IConceptInfo>();
 
-            foreach (var conceptDesc in newConcepts.Select(c => new ConceptDescription(c)))
+            foreach (var concept in newConcepts)
             {
-                if (!_givenConceptsByKey.TryGetValue(conceptDesc.Key, out ConceptDescription existingConcept))
+                string conceptKey = concept.GetKey();
+                if (!_givenConceptsByKey.TryGetValue(conceptKey, out ConceptDescription existingConcept))
                 {
+                    var conceptDesc = new ConceptDescription(concept, conceptKey);
                     _givenConceptsByKey.Add(conceptDesc.Key, conceptDesc);
                     ReplaceReferencesWithFullConcepts(conceptDesc);
                     newUniqueConcepts.Add(conceptDesc.Concept);
                 }
                 else
-                    ValidateNewConceptSameAsExisting(conceptDesc.Concept, existingConcept.Concept);
+                    ValidateNewConceptSameAsExisting(concept, existingConcept.Concept);
             }
 
             _addConceptsStopwatch.Stop();

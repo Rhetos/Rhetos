@@ -186,7 +186,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         }
 
         private static readonly string sqlIdentifier = @"\w+|\[\w+\]|\""\w+\"""; // Use of special characters inside the bracket is not supported. DependsOn can be manually created for such objects.
-        private static readonly string sqlName = string.Format(@"(?<schema>{0})\s*\.\s*(?<name>{0})", sqlIdentifier);
+        private static readonly string sqlName = $@"(?<schema>{sqlIdentifier})\s*\.\s*(?<name>{sqlIdentifier})";
 
         private static readonly Regex simpleUsageRegex = new Regex(@"\b(FROM|JOIN|INTO|MERGE|USING)\s+" + sqlName, RegexOptions.IgnoreCase);
         private static readonly Regex scalarFunctionRegex = new Regex(sqlName + @"\s*\(");

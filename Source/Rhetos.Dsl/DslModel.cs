@@ -160,8 +160,8 @@ namespace Rhetos.Dsl
 
                             var aiCreatedConcepts = AlternativeInitialization.InitializeNonparsableProperties(macroCreatedConcepts, _logger);
 
-                            var newUniqueConcepts = dslContainer.AddNewConceptsAndReplaceReferences(
-                                aiCreatedConcepts.Concat(macroCreatedConcepts));
+                            var newUniqueConcepts = dslContainer.AddNewConceptsAndReplaceReferences(aiCreatedConcepts);
+                            newUniqueConcepts.AddRange(dslContainer.AddNewConceptsAndReplaceReferences(macroCreatedConcepts));
 
                             _logger.Trace(() => LogCreatedConcepts(dslContainer, macroCreatedConcepts, newUniqueConcepts));
 
