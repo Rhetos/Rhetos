@@ -114,25 +114,25 @@ namespace Rhetos.Dsl
         /// Returns new unique concepts that did not previously exist in DslModel
         /// (note that some of the returned concepts might not have their references resolved yet).
         /// </summary>
-        public AddNewConceptsReport AddNewConceptsAndReplaceReferences(IEnumerable<IConceptInfo> newConcepts)
+        public List<IConceptInfo> AddNewConceptsAndReplaceReferences(IEnumerable<IConceptInfo> newConcepts)
         {
             _addConceptsStopwatch.Start();
-            var report = new AddNewConceptsReport();
+            var newUniqueConcepts = new List<IConceptInfo>();
 
             foreach (var conceptDesc in newConcepts.Select(c => new ConceptDescription(c)))
             {
                 if (!_givenConceptsByKey.TryGetValue(conceptDesc.Key, out ConceptDescription existingConcept))
                 {
                     _givenConceptsByKey.Add(conceptDesc.Key, conceptDesc);
-                    report.NewlyResolvedConcepts.AddRange(ReplaceReferencesWithFullConcepts(conceptDesc));
-                    report.NewUniqueConcepts.Add(conceptDesc.Concept);
+                    ReplaceReferencesWithFullConcepts(conceptDesc);
+                    newUniqueConcepts.Add(conceptDesc.Concept);
                 }
                 else
                     ValidateNewConceptSameAsExisting(conceptDesc.Concept, existingConcept.Concept);
             }
 
             _addConceptsStopwatch.Stop();
-            return report;
+            return newUniqueConcepts;
         }
 
         // The new concept is allowed to be a simple version (base class) of the existing concept, even if it is not the same.
@@ -202,23 +202,18 @@ namespace Rhetos.Dsl
 
         /// <summary>
         /// Since DSL parser and macro evaluators return stub references, this function replaces each reference with actual instance of the referenced concept.
-        /// The function returns concepts that have newly resolved references.
         /// Note: This method could handle circular dependencies between the concepts, but for simplicity of the implementation this is currently not supported.
         /// </summary>
-        private IEnumerable<IConceptInfo> ReplaceReferencesWithFullConcepts(ConceptDescription conceptDesc)
+        private void ReplaceReferencesWithFullConcepts(ConceptDescription conceptDesc)
         {
             var references = ConceptMembers.Get(conceptDesc.Concept).Where(member => member.IsConceptInfo)
                 .Select(member => new UnresolvedReference(conceptDesc, member));
 
             foreach (var reference in references)
                 ReplaceReferenceWithFullConceptOrMarkUnresolved(reference);
-                 
+
             if (conceptDesc.UnresolvedDependencies == 0)
-            {
-                yield return conceptDesc.Concept;
-                foreach (var resolved in MarkResolvedConcept(conceptDesc))
-                    yield return resolved;
-            }
+                MarkResolvedConcept(conceptDesc);
         }
 
         private void ReplaceReferenceWithFullConceptOrMarkUnresolved(UnresolvedReference reference)
@@ -244,9 +239,9 @@ namespace Rhetos.Dsl
         }
 
         /// <summary>
-        /// Returns new resolved concepts that were waiting for this concept to be resolved.
+        /// Resolves concepts that were waiting for this concept to be resolved.
         /// </summary>
-        private IEnumerable<IConceptInfo> MarkResolvedConcept(ConceptDescription resolved)
+        private void MarkResolvedConcept(ConceptDescription resolved)
         {
             _logger.Trace(() => "New concept with resolved references: " + resolved.Key);
 
@@ -254,8 +249,6 @@ namespace Rhetos.Dsl
             _resolvedConceptsByKey.Add(resolved.Key, resolved.Concept);
             foreach (var index in _dslModelIndexes)
                 index.Add(resolved.Concept);
-
-            var newlyResolved = new List<IConceptInfo>();
 
             List<UnresolvedReference> unresolvedReferences;
             if (_unresolvedConceptsByReference.TryGetValue(resolved.Key, out unresolvedReferences))
@@ -270,16 +263,11 @@ namespace Rhetos.Dsl
                     unresolved.Member.SetMemberValue(unresolved.Dependant.Concept, resolved.Concept);
 
                     if (--unresolved.Dependant.UnresolvedDependencies == 0)
-                    {
-                        newlyResolved.Add(unresolved.Dependant.Concept);
-                        newlyResolved.AddRange(MarkResolvedConcept(unresolved.Dependant));
-                    }
+                        MarkResolvedConcept(unresolved.Dependant);
                 }
 
                 _unresolvedConceptsByReference.Remove(resolved.Key);
             }
-
-            return newlyResolved;
         }
 
         public int UnresolvedConceptsCount()

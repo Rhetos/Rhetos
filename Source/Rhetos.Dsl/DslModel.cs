@@ -160,17 +160,17 @@ namespace Rhetos.Dsl
 
                             var aiCreatedConcepts = AlternativeInitialization.InitializeNonparsableProperties(macroCreatedConcepts, _logger);
 
-                            var newConceptsReport = dslContainer.AddNewConceptsAndReplaceReferences(
+                            var newUniqueConcepts = dslContainer.AddNewConceptsAndReplaceReferences(
                                 aiCreatedConcepts.Concat(macroCreatedConcepts));
 
-                            _logger.Trace(() => LogCreatedConcepts(dslContainer, macroCreatedConcepts, newConceptsReport));
+                            _logger.Trace(() => LogCreatedConcepts(dslContainer, macroCreatedConcepts, newUniqueConcepts));
 
-                            iterationCreatedConcepts.AddRange(newConceptsReport.NewUniqueConcepts);
+                            iterationCreatedConcepts.AddRange(newUniqueConcepts);
 
                             // Optimization analysis:
-                            if (newConceptsReport.NewUniqueConcepts.Count > 0)
+                            if (newUniqueConcepts.Count > 0)
                                 lastNewConceptTimeByMacro[macroEvaluator.Name] = ++lastNewConceptTime;
-                            createdTypesInIteration.AddRange(newConceptsReport.NewUniqueConcepts.Select(nuc =>
+                            createdTypesInIteration.AddRange(newUniqueConcepts.Select(nuc =>
                                 new CreatedTypesInIteration { Macro = macroEvaluator.Name, Created = nuc.BaseConceptInfoType().Name, Iteration = iteration }));
                         }
                     }
@@ -200,17 +200,12 @@ namespace Rhetos.Dsl
             _performanceLogger.Write(swTotal, "ExpandMacroConcepts.");
         }
 
-        private string LogCreatedConcepts(DslContainer dslContainer, IEnumerable<IConceptInfo> macroCreatedConcepts, AddNewConceptsReport newConceptsReport)
+        private string LogCreatedConcepts(DslContainer dslContainer, IEnumerable<IConceptInfo> macroCreatedConcepts, List<IConceptInfo> newUniqueConcepts)
         {
             var report = new StringBuilder();
-            var newUniqueIndex = new HashSet<string>(newConceptsReport.NewUniqueConcepts.Select(c => c.GetKey()));
-
             LogConcepts(report, "Macro created", macroCreatedConcepts, first: true);
-            LogConcepts(report, "New unique", newConceptsReport.NewUniqueConcepts);
-            LogConcepts(report, "New resolved", newConceptsReport.NewlyResolvedConcepts.Where(c => newUniqueIndex.Contains(c.GetKey())));
-            LogConcepts(report, "Old resolved", newConceptsReport.NewlyResolvedConcepts.Where(c => !newUniqueIndex.Contains(c.GetKey())));
-            LogConcepts(report, "New unresolved", newConceptsReport.NewUniqueConcepts.Where(c => dslContainer.FindByKey(c.GetKey()) == null));
-
+            LogConcepts(report, "New unique", newUniqueConcepts);
+            LogConcepts(report, "New unresolved", newUniqueConcepts.Where(c => dslContainer.FindByKey(c.GetKey()) == null));
             return report.ToString();
         }
 

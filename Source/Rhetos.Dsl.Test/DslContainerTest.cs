@@ -111,16 +111,16 @@ namespace Rhetos.Dsl.Test
             g.Ref1 = h;
             h.Ref1 = g;
 
-            var newConcepts = dslContainer.AddNewConceptsAndReplaceReferences(new IConceptInfo[] { a }).NewUniqueConcepts;
-            Assert.AreEqual("A", TestUtility.DumpSorted(newConcepts, item => ((dynamic)item).Name));
+            var newUniqueConcepts = dslContainer.AddNewConceptsAndReplaceReferences(new IConceptInfo[] { a });
+            Assert.AreEqual("A", TestUtility.DumpSorted(newUniqueConcepts, item => ((dynamic)item).Name));
             Assert.AreEqual("A", TestUtility.DumpSorted(dslContainer.Concepts, item => ((dynamic)item).Name));
 
-            newConcepts = dslContainer.AddNewConceptsAndReplaceReferences(new IConceptInfo[] { i, d, c, b, g, h, i, j, a }).NewUniqueConcepts;
-            Assert.AreEqual("B, C, D, G, H, I, J", TestUtility.DumpSorted(newConcepts, item => ((dynamic)item).Name));
+            newUniqueConcepts = dslContainer.AddNewConceptsAndReplaceReferences(new IConceptInfo[] { i, d, c, b, g, h, i, j, a });
+            Assert.AreEqual("B, C, D, G, H, I, J", TestUtility.DumpSorted(newUniqueConcepts, item => ((dynamic)item).Name));
             Assert.AreEqual("A, B, C", TestUtility.DumpSorted(dslContainer.Concepts, item => ((dynamic)item).Name));
 
-            newConcepts = dslContainer.AddNewConceptsAndReplaceReferences(new IConceptInfo[] { i, d, c, b, g, h, i, j, a }).NewUniqueConcepts;
-            Assert.AreEqual("", TestUtility.DumpSorted(newConcepts, item => ((dynamic)item).Name));
+            newUniqueConcepts = dslContainer.AddNewConceptsAndReplaceReferences(new IConceptInfo[] { i, d, c, b, g, h, i, j, a });
+            Assert.AreEqual("", TestUtility.DumpSorted(newUniqueConcepts, item => ((dynamic)item).Name));
             Assert.AreEqual("A, B, C", TestUtility.DumpSorted(dslContainer.Concepts, item => ((dynamic)item).Name));
 
             var ex = TestUtility.ShouldFail<DslSyntaxException>(
@@ -147,9 +147,8 @@ namespace Rhetos.Dsl.Test
             d.Ref1 = c;
             e.Ref1 = d;
 
-            var report = dslContainer.AddNewConceptsAndReplaceReferences(new IConceptInfo[] { a, b, c, d, e });
-            Assert.AreEqual("A, B, C, D, E", TestUtility.DumpSorted(report.NewUniqueConcepts, item => ((dynamic)item).Name));
-            Assert.AreEqual("A", TestUtility.DumpSorted(report.NewlyResolvedConcepts, item => ((dynamic)item).Name));
+            var newUniqueConcepts = dslContainer.AddNewConceptsAndReplaceReferences(new IConceptInfo[] { a, b, c, d, e });
+            Assert.AreEqual("A, B, C, D, E", TestUtility.DumpSorted(newUniqueConcepts, item => ((dynamic)item).Name));
             Assert.AreEqual("A", TestUtility.DumpSorted(dslContainer.Concepts, item => ((dynamic)item).Name));
 
             var ex = TestUtility.ShouldFail<DslSyntaxException>(
@@ -210,8 +209,8 @@ namespace Rhetos.Dsl.Test
             {
                 if (newConceptsSet.Item4 == null)
                 {
-                    var report = dslContainer.AddNewConceptsAndReplaceReferences(newConceptsSet.Item1);
-                    Assert.AreEqual(newConceptsSet.Item2, TestUtility.DumpSorted(report.NewUniqueConcepts, item => item.GetShortDescription()));
+                    var newUniqueConcepts = dslContainer.AddNewConceptsAndReplaceReferences(newConceptsSet.Item1);
+                    Assert.AreEqual(newConceptsSet.Item2, TestUtility.DumpSorted(newUniqueConcepts, item => item.GetShortDescription()));
                     Assert.AreEqual(newConceptsSet.Item3, TestUtility.DumpSorted(dslContainer.Concepts, item => item.GetShortDescription()));
                 }
                 else
