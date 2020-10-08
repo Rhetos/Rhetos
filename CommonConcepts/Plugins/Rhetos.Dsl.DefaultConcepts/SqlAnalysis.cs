@@ -49,14 +49,14 @@ namespace Rhetos.Dsl.DefaultConcepts
                 foreach (var conceptInfo in conceptsBySqlName.Get(sqlObjectInScript))
                     if (conceptInfo != dependent)
                     {
-                        if (conceptInfo is DataStructureInfo)
-                            newConcepts.Add(new SqlDependsOnDataStructureInfo { Dependent = dependent, DependsOn = (DataStructureInfo)conceptInfo });
-                        else if (conceptInfo is SqlViewInfo)
-                            newConcepts.Add(new SqlDependsOnSqlViewInfo { Dependent = dependent, DependsOn = (SqlViewInfo)conceptInfo });
-                        else if (conceptInfo is SqlFunctionInfo)
-                            newConcepts.Add(new SqlDependsOnSqlFunctionInfo { Dependent = dependent, DependsOn = (SqlFunctionInfo)conceptInfo });
-                        else if (conceptInfo is SqlObjectInfo)
-                            newConcepts.Add(new SqlDependsOnSqlObjectInfo { Dependent = dependent, DependsOn = (SqlObjectInfo)conceptInfo });
+                        if (conceptInfo is DataStructureInfo dataStructure)
+                            newConcepts.Add(new SqlDependsOnDataStructureInfo { Dependent = dependent, DependsOn = dataStructure });
+                        else if (conceptInfo is SqlViewInfo sqlView)
+                            newConcepts.Add(new SqlDependsOnSqlViewInfo { Dependent = dependent, DependsOn = sqlView });
+                        else if (conceptInfo is SqlFunctionInfo sqlFunction)
+                            newConcepts.Add(new SqlDependsOnSqlFunctionInfo { Dependent = dependent, DependsOn = sqlFunction });
+                        else if (conceptInfo is SqlObjectInfo sqlObject)
+                            newConcepts.Add(new SqlDependsOnSqlObjectInfo { Dependent = dependent, DependsOn = sqlObject });
                         else
                             throw new DslSyntaxException(dependent, "Internal error: Unexpected SQL concept type: " + conceptInfo.GetUserDescription() + ".");
                     }
@@ -185,11 +185,11 @@ namespace Rhetos.Dsl.DefaultConcepts
             return '\0';
         }
 
-        private static readonly string sqlIdentifier = @"\w+|\[\w+\]|\""\w+\"""; // Use of special characters inside the bracket is not supported. DependsOn can be manually created for such objects.
+        private static readonly string sqlIdentifier = @"\b\w+\b|\[\w+\]|\""\w+\"""; // Use of special characters inside the bracket is not supported. DependsOn can be manually created for such objects.
         private static readonly string sqlName = $@"(?<schema>{sqlIdentifier})\s*\.\s*(?<name>{sqlIdentifier})";
 
         private static readonly Regex simpleUsageRegex = new Regex(@"\b(FROM|JOIN|INTO|MERGE|USING)\s+" + sqlName, RegexOptions.IgnoreCase);
-        private static readonly Regex scalarFunctionRegex = new Regex(sqlName + @"\s*\(");
+        private static readonly Regex scalarFunctionRegex = new Regex(sqlName + @"\s*\(", RegexOptions.RightToLeft);
         private static readonly Regex crossJoinFromRegex = new Regex(@"\bFROM\b", RegexOptions.IgnoreCase);
         private static readonly Regex crossJoinRegex = new Regex(@",\s*" + sqlName);
         private static readonly Regex identifierRegex = new Regex(sqlIdentifier);
@@ -201,7 +201,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             var sqlObjects = new List<string>();
 
             Extract(sql, sqlObjects, simpleUsageRegex);
-            Extract(sql, sqlObjects, scalarFunctionRegex);
+            Extract(sql, sqlObjects, scalarFunctionRegex, startPosition: sql.Length); // Reverse start position, regarding RegexOptions.RightToLeft option.
 
             var firstFrom = crossJoinFromRegex.Match(sql);
             if (firstFrom.Success)
@@ -212,8 +212,12 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         private static void Extract(string sql, List<string> sqlObjects, Regex regex, int startPosition = 0)
         {
-            foreach (Match match in regex.Matches(sql, startPosition))
-                sqlObjects.Add(RemoveQuotes(match.Groups["schema"].Value) + "." + RemoveQuotes(match.Groups["name"].Value));
+            var matches = regex.Matches(sql, startPosition);
+            for (int m = 0; m < matches.Count; m++)
+            {
+                var groups = matches[m].Groups;
+                sqlObjects.Add(RemoveQuotes(groups["schema"].Value) + "." + RemoveQuotes(groups["name"].Value));
+            }
         }
 
         private static string RemoveQuotes(string name)
