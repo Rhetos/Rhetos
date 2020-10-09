@@ -1,1 +1,0 @@
-upper(SYS_CONTEXT('USERENV','HOST'))

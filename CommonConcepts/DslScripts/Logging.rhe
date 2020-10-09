@@ -1,14 +1,14 @@
 ﻿Module Common
 {
     // Recomended for reading the Log table without locking the other server transactions. Data will include transations that are not yet committed.
-    SqlQueryable LogReader <LogReader.sql>
+    SqlQueryable LogReader <SQL\LogReader.sql>
     {
         AllPropertiesFrom Common.Log;
         SqlDependsOn Common.Log;
     }
     
     // Recomended for reading the LogRelatedItem table without locking the other server transactions. Data will include transations that are not yet committed.
-    SqlQueryable LogRelatedItemReader <LogRelatedItemReader.sql>
+    SqlQueryable LogRelatedItemReader <SQL\LogRelatedItemReader.sql>
     {
         AllPropertiesFrom Common.LogRelatedItem;
         SqlDependsOn Common.LogRelatedItem;
@@ -16,10 +16,10 @@
 
     Entity Log
     {
-        DateTime Created { SqlDefault <Log.Created default.sql>; Required; }
-        ShortString UserName { SqlDefault <Log.UserName default.sql>; Required; }
-        ShortString Workstation { SqlDefault <Log.Workstation default.sql>; Required; }
-        ShortString ContextInfo { SqlDefault <Log.ContextInfo default.sql>; }
+        DateTime Created { SqlDefault <SQL\Log.Created default.sql>; Required; }
+        ShortString UserName { SqlDefault <SQL\Log.UserName default.sql>; Required; }
+        ShortString Workstation { SqlDefault <SQL\Log.Workstation default.sql>; Required; }
+        ShortString ContextInfo { SqlDefault <SQL\Log.ContextInfo default.sql>; }
         ShortString Action { Required; }
         ShortString TableName;
         Guid ItemId { SqlIndex; }
@@ -60,7 +60,7 @@
         DenyUserEdit;
     }
     
-    SqlQueryable RelatedEventsSource <RelatedEvents.sql>
+    SqlQueryable RelatedEventsSource <SQL\RelatedEvents.sql>
     {
         AllPropertiesFrom Common.Log;
         

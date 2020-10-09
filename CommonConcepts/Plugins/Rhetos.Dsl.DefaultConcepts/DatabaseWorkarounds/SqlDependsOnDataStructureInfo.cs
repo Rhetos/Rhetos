@@ -45,11 +45,11 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             var newConcepts = new List<IConceptInfo>();
 
-            if (conceptInfo.DependsOn is PolymorphicInfo)
+            if (conceptInfo.DependsOn is PolymorphicInfo polymorphic)
             {
                 newConcepts.Add(new SqlDependsOnSqlObjectInfo {
                     Dependent = conceptInfo.Dependent,
-                    DependsOn = ((PolymorphicInfo)conceptInfo.DependsOn).GetUnionViewPrototype()
+                    DependsOn = polymorphic.GetUnionViewPrototype()
                 });
             }
 

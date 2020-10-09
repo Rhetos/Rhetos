@@ -12,13 +12,13 @@
         UniqueMultiple 'Entity Property Grouping Prefix' { Clustered; }
     }
     
-    SqlProcedure AutoCodeCacheGetNext <AutoCodeCacheGetNext param.sql> <AutoCodeCacheGetNext body.sql>
+    SqlProcedure AutoCodeCacheGetNext <SQL\AutoCodeCacheGetNext param.sql> <SQL\AutoCodeCacheGetNext body.sql>
     {
         SqlDependsOn Common.AutoCodeCache;
         SqlDependsOnIndex Common.AutoCodeCache.'Entity Property Grouping Prefix';
     }
 
-    SqlProcedure AutoCodeCacheUpdate <AutoCodeCacheUpdate param.sql> <AutoCodeCacheUpdate body.sql>
+    SqlProcedure AutoCodeCacheUpdate <SQL\AutoCodeCacheUpdate param.sql> <SQL\AutoCodeCacheUpdate body.sql>
     {
         SqlDependsOn Common.AutoCodeCache;
         SqlDependsOnIndex Common.AutoCodeCache.'Entity Property Grouping Prefix';
