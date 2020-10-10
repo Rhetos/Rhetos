@@ -17,12 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Utilities;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using Rhetos.Utilities;
 
 namespace Rhetos.Dsl
 {
@@ -33,11 +33,17 @@ namespace Rhetos.Dsl
     /// </summary>
     public static class ConceptMacroUtility
     {
+        // TODO: Remove this utility after implementing new design as described in IConceptMacro.
+
+        private static readonly ConcurrentDictionary<(Type ConceptMacroType, Type ConceptInfoType), List<MethodInfo>> _methodCache
+            = new ConcurrentDictionary<(Type ConceptMacroType, Type ConceptInfoType), List<MethodInfo>>();
+
         public static IEnumerable<IConceptInfo> CreateNewConcepts(this IConceptMacro conceptMacro, IConceptInfo conceptInfo, IDslModel existingConcepts)
         {
             IEnumerable<IConceptInfo> newConcepts = null;
 
-            foreach (var method in GetPluginMethods(conceptMacro, conceptInfo))
+            var methods = _methodCache.GetOrAdd((conceptMacro.GetType(), conceptInfo.GetType()), GetPluginMethods);
+            foreach (var method in methods)
             {
                 var pluginCreatedConcepts = (IEnumerable<IConceptInfo>)method.InvokeEx(conceptMacro, new object[] { conceptInfo, existingConcepts });
 
@@ -50,20 +56,20 @@ namespace Rhetos.Dsl
             return newConcepts;
         }
 
-        private static List<MethodInfo> GetPluginMethods(IConceptMacro conceptMacro, IConceptInfo conceptInfo)
+        private static List<MethodInfo> GetPluginMethods((Type ConceptMacroType, Type ConceptInfoType) key)
         {
-            var methods = conceptMacro.GetType().GetInterfaces()
+            var methods = key.ConceptMacroType.GetInterfaces()
                     .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IConceptMacro<>)
-                        && i.GetGenericArguments().Single().IsAssignableFrom(conceptInfo.GetType()))
+                        && i.GetGenericArguments().Single().IsAssignableFrom(key.ConceptInfoType))
                     .Select(i => i.GetMethod("CreateNewConcepts"))
                     .ToList();
 
             if (methods.Count == 0)
                 throw new FrameworkException(string.Format(
                     "Plugin {0} does not implement generic interface {1} that accepts argument {2}.",
-                    conceptMacro.GetType().FullName,
+                    key.ConceptMacroType.FullName,
                     typeof(IConceptMacro<>).FullName,
-                    conceptInfo.GetType().FullName));
+                    key.ConceptInfoType.FullName));
 
             return methods;
         }
