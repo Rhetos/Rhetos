@@ -37,6 +37,7 @@ namespace Rhetos.Dsl
         /// </summary>
         private class ConceptsIndex : Dictionary<string, Dictionary<Type, Dictionary<string, List<IConceptInfo>>>>
         {
+            // TODO: A better dictionary key would be: 1. value tuple (concept key, property name), 2. concept type. It has 1 level less, and allows simpler Get method for multiple concept types.
             public void Add(string referencedConceptKey, Type conceptType, string referenceName, IConceptInfo concept)
             {
                 Dictionary<Type, Dictionary<string, List<IConceptInfo>>> index2;

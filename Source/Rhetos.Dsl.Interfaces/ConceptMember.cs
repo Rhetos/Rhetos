@@ -19,11 +19,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Reflection;
 using System.Globalization;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Rhetos.Dsl
 {
@@ -88,21 +87,13 @@ namespace Rhetos.Dsl
         {
             if (_setValueFunc == null)
             {
-                PropertyInfo pi;
-                FieldInfo fi;
-
-                Type fieldOrPropertyType = null;
-
-                if ((pi = MemberInfo as PropertyInfo) != null)
+                Type fieldOrPropertyType;
+                if (MemberInfo is PropertyInfo pi)
                     fieldOrPropertyType = pi.PropertyType;
-                else if ((fi = MemberInfo as FieldInfo) != null)
+                else if (MemberInfo is FieldInfo fi)
                     fieldOrPropertyType = fi.FieldType;
                 else
-                    throw new FrameworkException(
-                        string.Format(CultureInfo.InvariantCulture,
-                            "Unexpected member type {0} for member {1}.",
-                                MemberInfo.MemberType,
-                                MemberInfo.Name));
+                    throw new FrameworkException($"Unexpected member type {MemberInfo.MemberType} for member {MemberInfo.Name}.");
 
                 var parameter1 = Expression.Parameter(typeof(IConceptInfo), "x");
                 var parameter2 = Expression.Parameter(typeof(Object), "value");
@@ -149,16 +140,12 @@ namespace Rhetos.Dsl
                 {
                     var parameter = Expression.Parameter(typeof(IConceptInfo), "x");
                     var castParameter = Expression.Convert(parameter, MemberInfo.DeclaringType);
-                    var member = Expression.PropertyOrField(castParameter, MemberInfo.Name);                                                                     //Expression.Convert(member, MemberInfo)
+                    var member = Expression.PropertyOrField(castParameter, MemberInfo.Name);
                     var finalExpression = Expression.Lambda<Func<IConceptInfo, object>>(member, parameter);
                     _getValueFunc = finalExpression.Compile();
                 }
                 else
-                    throw new FrameworkException(
-                        string.Format(CultureInfo.InvariantCulture,
-                            "Unexpected member type {0} for member {1}.",
-                                MemberInfo.MemberType,
-                                MemberInfo.Name));
+                    throw new FrameworkException($"Unexpected member type {MemberInfo.MemberType} for member {MemberInfo.Name}.");
             }
 
             return _getValueFunc(conceptInfo);
