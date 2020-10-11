@@ -42,7 +42,7 @@ namespace Rhetos.Dsl
         public static string GetKey(this IConceptInfo ci)
         {
             if (ci == null)
-                throw new ArgumentNullException();
+                throw new ArgumentNullException(nameof(ci));
 
             return KeyCache.GetValue(ci, CreateKey);
         }
@@ -110,7 +110,7 @@ namespace Rhetos.Dsl
         /// </summary>
         public static string GetFullDescriptionAsBaseConcept(this IConceptInfo ci, Type baseConceptType)
         {
-            if (!baseConceptType.IsAssignableFrom(ci.GetType()))
+            if (!baseConceptType.IsInstanceOfType(ci))
                 throw new FrameworkException($"{baseConceptType} is not assignable from {ci.GetUserDescription()}.");
             StringBuilder desc = new StringBuilder(200);
             desc.Append(baseConceptType.FullName);
@@ -221,19 +221,20 @@ namespace Rhetos.Dsl
 
         private static void AppendMembers(StringBuilder text, IConceptInfo ci, SerializationOptions serializationOptions, bool exceptionOnNullMember = false, Type asBaseConceptType = null)
         {
-            IEnumerable<ConceptMember> members = asBaseConceptType != null ? ConceptMembers.Get(asBaseConceptType) : ConceptMembers.Get(ci);
-            if (serializationOptions == SerializationOptions.KeyMembers)
-                members = members.Where(member => member.IsKey);
-
+            var members = asBaseConceptType != null ? ConceptMembers.Get(asBaseConceptType) : ConceptMembers.Get(ci);
             bool firstMember = true;
-            foreach (ConceptMember member in members)
+            for (int m = 0; m < members.Length; m++)
             {
-                string separator = member.IsKey ? "." : " ";
-                if (!firstMember)
-                    text.Append(separator);
-                firstMember = false;
+                var member = members[m];
+                if (serializationOptions == SerializationOptions.AllMembers || member.IsKey)
+                {
+                    string separator = member.IsKey ? "." : " ";
+                    if (!firstMember)
+                        text.Append(separator);
+                    firstMember = false;
 
-                AppendMember(text, ci, member, exceptionOnNullMember);
+                    AppendMember(text, ci, member, exceptionOnNullMember);
+                }
             }
         }
 
@@ -255,26 +256,38 @@ namespace Rhetos.Dsl
                 AppendMembers(text, value, SerializationOptions.KeyMembers, exceptionOnNullMember);
             }
             else if (member.ValueType == typeof(string))
-                text.Append(SafeDelimit(member.GetValue(ci).ToString()));
+                text.AppendWithQuotesIfNeeded((string)member.GetValue(ci));
             else
                 throw new FrameworkException(string.Format(
                     "IConceptInfo member {0} of type {1} in {2} is not supported.",
                     member.Name, member.ValueType.Name, ci.GetType().Name));
         }
 
-        private static string SafeDelimit(string text)
+        private static void AppendWithQuotesIfNeeded(this StringBuilder text, string s)
         {
-            bool clean = text.All(c => c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == '_');
-            if (clean && text.Length > 0)
-                return text;
-            string quote = (text.Contains('\'') && !text.Contains('\"')) ? "\"" : "\'";
-            return quote + text.Replace(quote, quote + quote) + quote;
+            bool clean = true;
+            for (int i = 0; i < s.Length; i++)
+            {
+                char c = s[i];
+                if (!(c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == '_'))
+                {
+                    clean = false;
+                    break;
+                }
+            }
+            if (clean && s.Length > 0)
+                text.Append(s);
+            else
+            {
+                string quote = (s.Contains("\'") && !s.Contains("\"")) ? "\"" : "\'";
+                text.Append(quote).Append(s.Replace(quote, quote + quote)).Append(quote);
+            }
         }
 
         public static Type BaseConceptInfoType(this IConceptInfo ci)
         {
             Type t = ci.GetType();
-            while (typeof(IConceptInfo).IsAssignableFrom(t.BaseType) && t.BaseType.IsClass)
+            while (typeof(IConceptInfo).IsAssignableFrom(t.BaseType))
                 t = t.BaseType;
             return t;
         }

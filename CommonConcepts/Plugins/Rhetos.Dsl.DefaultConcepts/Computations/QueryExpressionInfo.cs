@@ -36,7 +36,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public void CheckSemantics(IDslModel existingConcepts)
         {
-            if (!Parameter.Contains('.'))
+            if (!Parameter.Contains("."))
                 throw new DslSyntaxException(this, "ParameterType must be full type name, including Module name for a data structure, or C# namespace for other parameter types.");
         }
     }

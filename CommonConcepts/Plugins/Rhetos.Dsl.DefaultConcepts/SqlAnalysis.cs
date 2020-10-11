@@ -69,7 +69,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             var newConcepts = new List<IConceptInfo>();
 
             sqlObjectName = sqlObjectName.Trim();
-            bool function = sqlObjectName.Contains('(');
+            bool function = sqlObjectName.Contains("(");
             if (function)
                 sqlObjectName = sqlObjectName.Substring(0, sqlObjectName.IndexOf('('));
 

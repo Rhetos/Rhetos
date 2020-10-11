@@ -46,12 +46,12 @@ namespace Rhetos.Deployment.Test
             var packagesById = new Dictionary<string, InstalledPackage>(StringComparer.OrdinalIgnoreCase);
             var entries = test.Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
 
-            var allPackageIds = entries.Where(e => !e.Contains('-'))
-                .Concat(entries.Where(e => e.Contains('-')).SelectMany(e => e.Split('-')));
+            var allPackageIds = entries.Where(e => !e.Contains("-"))
+                .Concat(entries.Where(e => e.Contains("-")).SelectMany(e => e.Split('-')));
             foreach (var packageId in allPackageIds.Distinct(StringComparer.OrdinalIgnoreCase))
                 packagesById.Add(packageId, new InstalledPackage(packageId, "0.0", new List<PackageRequest>(), "folder", new PackageRequest(), "source", new List<ContentFile> { }));
 
-            foreach (var dependency in entries.Where(e => e.Contains('-')).Select(e => e.Split('-')))
+            foreach (var dependency in entries.Where(e => e.Contains("-")).Select(e => e.Split('-')))
                 ((List<PackageRequest>)(packagesById[dependency[1]].Dependencies))
                     .Add(new PackageRequest { Id = dependency[0] });
 

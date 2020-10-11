@@ -158,7 +158,7 @@ namespace Rhetos.Deployment
 
         protected static string GetFirstSubfolder(string path)
         {
-            if (path.Contains('\\'))
+            if (path.Contains("\\"))
                 return path.Substring(0, path.IndexOf('\\'));
             return "";
         }

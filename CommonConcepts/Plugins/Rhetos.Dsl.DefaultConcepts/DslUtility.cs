@@ -37,10 +37,10 @@ namespace Rhetos.Dsl.DefaultConcepts
             if (string.IsNullOrWhiteSpace(propertyList))
                 throw new DslSyntaxException(errorHeader.Value + "The list is empty.");
 
-            if (propertyList.Contains(',') || propertyList.Contains(';'))
+            if (propertyList.Contains(",") || propertyList.Contains(";"))
                 throw new DslSyntaxException(errorHeader.Value + "Property names in the list must be separated with spaces.");
 
-            if (propertyList.Contains('.'))
+            if (propertyList.Contains("."))
                 throw new DslSyntaxException(errorHeader.Value + "The list must contain only property names, without data structure or entity names (or dot character).");
 
             // Ensure uniqueness of the concept's key. There should not exists different instances of SqlIndexMultiple that generate same index in database.
