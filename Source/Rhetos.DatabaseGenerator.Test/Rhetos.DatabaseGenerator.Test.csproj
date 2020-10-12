@@ -113,6 +113,10 @@
       <Project>{DDC73F5F-BB0E-4944-92CC-4AC937398499}</Project>
       <Name>Rhetos.Extensibility.Interfaces</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Extensibility.Test\Rhetos.Extensibility.Test.csproj">
+      <Project>{7f9950b3-ccae-4886-9303-297d78559f30}</Project>
+      <Name>Rhetos.Extensibility.Test</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rhetos.Logging.Interfaces\Rhetos.Logging.Interfaces.csproj">
       <Project>{BB7E5668-1B43-4FCE-A832-444CC57FEE80}</Project>
       <Name>Rhetos.Logging.Interfaces</Name>

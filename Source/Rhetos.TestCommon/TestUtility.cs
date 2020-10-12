@@ -73,7 +73,7 @@ namespace Rhetos.TestCommon
             if (patterns.Any(string.IsNullOrEmpty))
                 throw new ArgumentException("Given list of patterns contains an empty string.");
 
-            Console.WriteLine("[AssertContains] Text: '" + text + "'.");
+            Console.WriteLine("[AssertContains] Actual text: '" + text + "'.");
 
             foreach (var pattern in patterns)
             {
@@ -105,7 +105,7 @@ namespace Rhetos.TestCommon
         /// </summary>
         public static void AssertNotContains(string text, string[] patterns, string message = null)
         {
-            Console.WriteLine("[AssertContains] Text: '" + text + "'.");
+            Console.WriteLine("[AssertContains] Actual text: '" + text + "'.");
 
             foreach (var pattern in patterns)
             {

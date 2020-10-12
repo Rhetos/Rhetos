@@ -47,6 +47,9 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Autofac">
+      <HintPath>..\..\packages\Autofac.4.9.4\lib\net45\Autofac.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.VisualStudio.TestPlatform.TestFramework, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\packages\MSTest.TestFramework.2.1.0\lib\net45\Microsoft.VisualStudio.TestPlatform.TestFramework.dll</HintPath>
     </Reference>
@@ -60,8 +63,11 @@
     <Compile Include="..\Rhetos\Properties\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="PluginsMetadataCacheTest.cs" />
     <Compile Include="PluginScannerTest.cs" />
+    <Compile Include="PluginsMetadataList.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StubIndex.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

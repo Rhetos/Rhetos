@@ -20,6 +20,7 @@
 using Autofac.Features.Indexed;
 using Autofac.Features.Metadata;
 using Rhetos.Extensibility;
+using Rhetos.Extensibility.Test;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,53 +44,6 @@ namespace Rhetos.DatabaseGenerator.Test
                 new StubIndex<IConceptDatabaseDefinition>(conceptImplementations));
 
             return new PluginsContainer<IConceptDatabaseDefinition>(plugins, pluginsByImplementation, new PluginsMetadataCache<IConceptDatabaseDefinition>(pluginsWithMetadata, new StubIndex<SuppressPlugin>()));
-        }
-
-        private class StubIndex<TPlugin> : IIndex<Type, IEnumerable<TPlugin>>
-        {
-            private readonly PluginsMetadataList<TPlugin> _pluginsWithMedata;
-
-            public StubIndex(PluginsMetadataList<TPlugin> pluginsWithMedata)
-            {
-                _pluginsWithMedata = pluginsWithMedata;
-            }
-            public StubIndex()
-            {
-                _pluginsWithMedata = new PluginsMetadataList<TPlugin>();
-            }
-            public bool TryGetValue(Type key, out IEnumerable<TPlugin> value)
-            {
-                value = this[key];
-                return true;
-            }
-            public IEnumerable<TPlugin> this[Type key]
-            {
-                get
-                {
-                    return _pluginsWithMedata
-                        .Where(pm => pm.Metadata.Any(metadata => metadata.Key == MefProvider.Implements && (Type)metadata.Value == key))
-                        .Select(pm => pm.Plugin)
-                        .ToArray();
-                }
-            }
-        }
-    }
-
-    public class PluginsMetadataList<TPlugin> : List<(TPlugin Plugin, Dictionary<string, object> Metadata)>
-    {
-        public void Add(TPlugin plugin, Dictionary<string, object> metadata)
-        {
-            Add((plugin, metadata));
-        }
-
-        public void Add(TPlugin plugin)
-        {
-            Add((plugin, new Dictionary<string, object> { }));
-        }
-
-        public void Add(TPlugin plugin, Type implementsConceptInfo)
-        {
-            Add((plugin, new Dictionary<string, object> { { MefProvider.Implements, implementsConceptInfo } }));
         }
     }
 }

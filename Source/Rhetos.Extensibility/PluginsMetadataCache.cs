@@ -53,31 +53,29 @@ namespace Rhetos.Extensibility
         public IEnumerable<TPlugin> SortedByMetadataDependsOnAndRemoveSuppressed(Type cacheKey, IEnumerable<TPlugin> plugins)
         {
             var sortedPlugins = plugins.ToArray();
-
-            List<Type> pluginTypesSorted = _sortedImplementations.GetOrAdd(cacheKey, k => GetSortedPluginTypesByDependency(sortedPlugins));
-            Graph.SortByGivenOrder(sortedPlugins, pluginTypesSorted, plugin => plugin.GetType());
+            if (sortedPlugins.Length > 1)
+            {
+                List<Type> pluginTypesSorted = _sortedImplementations.GetOrAdd(cacheKey, k => GetSortedPluginTypesByDependency(sortedPlugins.Select(p => p.GetType()).ToList()));
+                Graph.SortByGivenOrder(sortedPlugins, pluginTypesSorted, plugin => plugin.GetType());
+            }
 
             return RemoveSuppressedPlugins(sortedPlugins);
         }
 
-        private List<Type> GetSortedPluginTypesByDependency(TPlugin[] plugins)
+        private List<Type> GetSortedPluginTypesByDependency(List<Type> pluginTypes)
         {
-            List<Type> pluginTypesSorted;
-            var dependencies = plugins
-                .Select(plugin => Tuple.Create(GetMetadata(plugin.GetType(), MefProvider.DependsOn), plugin.GetType()))
+            var dependencies = pluginTypes
+                .Select(pluginType => Tuple.Create(GetMetadata(pluginType, MefProvider.DependsOn), pluginType))
                 .Where(dependency => dependency.Item1 != null)
                 .ToArray();
 
-            List<Type> pluginTypesSortedList = plugins.Select(plugin => plugin.GetType()).ToList();
-            Graph.TopologicalSort(pluginTypesSortedList, dependencies);
-
-            pluginTypesSorted = pluginTypesSortedList;
-            return pluginTypesSorted;
+            Graph.TopologicalSort(pluginTypes, dependencies);
+            return pluginTypes;
         }
 
         public IEnumerable<TPlugin> RemoveSuppressedPlugins(IEnumerable<TPlugin> plugins)
         {
-            if (_suppressedPlugins.Count > 0)
+            if (_suppressedPlugins.Count > 0 && plugins.Any(p => _suppressedPlugins.Contains(p.GetType()))) // Optimization: Check if we can return the original argument, since most plugin types are not suppressed.
                 return plugins.Where(p => !_suppressedPlugins.Contains(p.GetType())).ToArray();
             else
                 return plugins;
