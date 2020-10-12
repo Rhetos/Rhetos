@@ -30,7 +30,8 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ComposableFilterBy")]
-    [Obsolete("Use the QueryFilter concept instead (base class QueryFilterInfo).")] // When finding filters in DSL model, the base filter concept should be used.
+    // TODO: Mark obsolete after implementing new concepts with code snippets in partial classes.
+    // [Obsolete("Use the QueryFilter concept instead (base class QueryFilterInfo).")] // When finding filters in DSL model, the base filter concept should be used.
     public class ComposableFilterByInfo : QueryFilterInfo
     {
         [Obsolete("Create a QueryFilter concept instead (class QueryFilterExpressionInfo).")] // New filter in code should be created with QueryFilterExpressionInfo.
