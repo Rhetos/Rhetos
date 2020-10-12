@@ -17,15 +17,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Compiler;
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Extensibility;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
-using System.Text;
-using Rhetos.Compiler;
-using Rhetos.Dsl;
-using Rhetos.Extensibility;
-using Rhetos.Dsl.DefaultConcepts;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
@@ -33,20 +33,40 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(SqlDependsOnPropertyInfo))]
     public class SqlDependsOnPropertyDatabaseDefinition : IConceptDatabaseDefinitionExtension
     {
-        public string CreateDatabaseStructure(IConceptInfo conceptInfo)
+        private readonly Lazy<MultiDictionary<(string, string, string), UniqueMultiplePropertiesInfo>> _uniqueIndexesByFirstProperty;
+
+        public SqlDependsOnPropertyDatabaseDefinition(IDslModel dslModel)
         {
-            return "";
+            _uniqueIndexesByFirstProperty = new Lazy<MultiDictionary<(string, string, string), UniqueMultiplePropertiesInfo>>(
+                () => dslModel.FindByType<UniqueMultiplePropertiesInfo>()
+                    .Where(unique => unique.Dependency_SqlIndex.SqlImplementation())
+                    .ToMultiDictionary(GetFirstProperty, unique => unique));
         }
 
-        public string RemoveDatabaseStructure(IConceptInfo conceptInfo)
+        private (string, string, string) GetFirstProperty(UniqueMultiplePropertiesInfo unique)
         {
-            return "";
+            int separator = unique.PropertyNames.IndexOf(' ');
+            string firstPropertyName = separator >= 0
+                ? unique.PropertyNames.Substring(0, separator)
+                : unique.PropertyNames;
+            return (unique.DataStructure.Module.Name, unique.DataStructure.Name, firstPropertyName);
         }
+
+        public string CreateDatabaseStructure(IConceptInfo conceptInfo) => "";
+
+        public string RemoveDatabaseStructure(IConceptInfo conceptInfo) => "";
 
         public void ExtendDatabaseStructure(IConceptInfo conceptInfo, ICodeBuilder codeBuilder, out IEnumerable<Tuple<IConceptInfo, IConceptInfo>> createdDependencies)
         {
             var info = (SqlDependsOnPropertyInfo) conceptInfo;
-            createdDependencies = new[] {Tuple.Create<IConceptInfo, IConceptInfo>(info.DependsOn, info.Dependent)};
+
+            createdDependencies = new[] { Tuple.Create<IConceptInfo, IConceptInfo>(info.DependsOn, info.Dependent) };
+
+            var property = info.DependsOn;
+            var propertyKey = (property.DataStructure.Module.Name, property.DataStructure.Name, property.Name);
+            if (_uniqueIndexesByFirstProperty.Value.TryGetValue(propertyKey, out var indexes))
+                createdDependencies = createdDependencies.Concat(
+                    indexes.Select(unique => Tuple.Create<IConceptInfo, IConceptInfo>(unique.Dependency_SqlIndex, info.Dependent)));
         }
     }
 }

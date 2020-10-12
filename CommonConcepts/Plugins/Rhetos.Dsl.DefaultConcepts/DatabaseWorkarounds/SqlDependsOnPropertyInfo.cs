@@ -17,16 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// This object should be created in database after the given column is created.
+    /// It states that the parent object should be created in database after the referenced column is created.
+    /// Besides the column, the dependency also includes any unique index on the column, and the unique indexes over multiple columns that start with this column.
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SqlDependsOn")]
@@ -36,26 +33,5 @@ namespace Rhetos.Dsl.DefaultConcepts
         public IConceptInfo Dependent { get; set; }
         [ConceptKey]
         public PropertyInfo DependsOn { get; set; }
-    }
-
-    [Export(typeof(IConceptMacro))]
-    public class SqlDependsOnPropertyMacro : IConceptMacro<SqlDependsOnPropertyInfo>
-    {
-        public IEnumerable<IConceptInfo> CreateNewConcepts(SqlDependsOnPropertyInfo conceptInfo, IDslModel existingConcepts)
-        {
-            return existingConcepts.FindByReference<UniqueMultiplePropertiesInfo>(unique => unique.DataStructure, conceptInfo.DependsOn.DataStructure)
-                .Where(unique => unique.Dependency_SqlIndex.SqlImplementation() && IsFirstIdentifierInList(conceptInfo.DependsOn.Name, unique.PropertyNames))
-                .Select(unique => new SqlDependsOnSqlIndexInfo { Dependent = conceptInfo.Dependent, DependsOn = unique.Dependency_SqlIndex });
-        }
-
-        private static bool IsFirstIdentifierInList(string identifier, string list)
-        {
-            if (!list.StartsWith(identifier))
-                return false;
-            char next = list.Skip(identifier.Length).FirstOrDefault();
-            if (next >= 'a' && next <= 'z' || next >= 'A' && next <= 'Z' || next >= '0' && next <= '9' || next == '_')
-                return false;
-            return true;
-        }
     }
 }
