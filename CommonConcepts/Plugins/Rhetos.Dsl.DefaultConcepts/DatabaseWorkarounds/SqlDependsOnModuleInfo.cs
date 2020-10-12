@@ -17,11 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
-using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
@@ -45,30 +43,9 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             var newConcepts = new List<IConceptInfo>();
 
-            var dependsOnDataStructures = existingConcepts.FindByReference<DataStructureInfo>(item => item.Module, conceptInfo.DependsOn)
+            newConcepts.AddRange(existingConcepts.FindByReference<DataStructureInfo>(item => item.Module, conceptInfo.DependsOn)
                 .Where(item => item != conceptInfo.Dependent)
-                .ToList();
-
-            foreach (var dependsOnDataStructure in dependsOnDataStructures)
-            {
-                newConcepts.AddRange(existingConcepts.FindByReference<PropertyInfo>(p => p.DataStructure, dependsOnDataStructure)
-                    .Where(p => p != conceptInfo.Dependent)
-                    .Select(p => new SqlDependsOnPropertyInfo { Dependent = conceptInfo.Dependent, DependsOn = p }));
-            }
-
-            newConcepts.AddRange(dependsOnDataStructures
                 .Select(item => new SqlDependsOnDataStructureInfo { Dependent = conceptInfo.Dependent, DependsOn = item }));
-
-            return newConcepts;
-        }
-    }
-
-    [Export(typeof(IConceptMacro))]
-    public class SqlDependsOnModuleMacro2 : IConceptMacro<SqlDependsOnModuleInfo>
-    {
-        public IEnumerable<IConceptInfo> CreateNewConcepts(SqlDependsOnModuleInfo conceptInfo, IDslModel existingConcepts)
-        {
-            var newConcepts = new List<IConceptInfo>();
 
             newConcepts.AddRange(existingConcepts.FindByReference<SqlFunctionInfo>(item => item.Module, conceptInfo.DependsOn)
                 .Where(item => item != conceptInfo.Dependent)

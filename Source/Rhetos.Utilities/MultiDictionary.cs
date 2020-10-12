@@ -19,8 +19,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Rhetos.Utilities
 {
@@ -55,17 +53,15 @@ namespace Rhetos.Utilities
                 Add(key, new List<TValue>());
         }
 
-        private static TValue[] EmptyArray = new TValue[] { };
-
         /// <summary>
-        /// Returns empty list is the given key does not exist.
+        /// Returns an empty array if the given key does not exist.
         /// </summary>
         public IEnumerable<TValue> Get(TKey key)
         {
-            List<TValue> list;
-            if (!TryGetValue(key, out list))
-                return EmptyArray;
-            return list;
+            if (TryGetValue(key, out List<TValue> list))
+                return list;
+            else
+                return Array.Empty<TValue>();
         }
     }
 

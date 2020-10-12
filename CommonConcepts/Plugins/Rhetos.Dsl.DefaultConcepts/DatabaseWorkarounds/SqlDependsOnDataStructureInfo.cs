@@ -17,16 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// This object should be created in database after the given table or view, and all its columns, is created.
+    /// It states that the parent object should be created in database after the referenced table or view, including all columns, is created.
+    /// Besides the column, the dependency also includes any unique indexes on the referenced table.
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SqlDependsOn")]
@@ -34,6 +32,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         [ConceptKey]
         public IConceptInfo Dependent { get; set; }
+
         [ConceptKey]
         public DataStructureInfo DependsOn { get; set; }
     }
@@ -43,23 +42,17 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         public IEnumerable<IConceptInfo> CreateNewConcepts(SqlDependsOnDataStructureInfo conceptInfo, IDslModel existingConcepts)
         {
-            var newConcepts = new List<IConceptInfo>();
-
             if (conceptInfo.DependsOn is PolymorphicInfo polymorphic)
-            {
-                newConcepts.Add(new SqlDependsOnSqlObjectInfo {
-                    Dependent = conceptInfo.Dependent,
-                    DependsOn = polymorphic.GetUnionViewPrototype()
-                });
-            }
-
-            newConcepts.AddRange(
-                existingConcepts.FindByReference<PropertyInfo>(p => p.DataStructure, conceptInfo.DependsOn)
-                    .Where(p => p != conceptInfo.Dependent)
-                    .Select(p => new SqlDependsOnPropertyInfo { Dependent = conceptInfo.Dependent, DependsOn = p })
-                    .ToList());
-
-            return newConcepts;
+                return new[]
+                {
+                    new SqlDependsOnSqlObjectInfo
+                    {
+                        Dependent = conceptInfo.Dependent,
+                        DependsOn = polymorphic.GetUnionViewPrototype()
+                    }
+                };
+            else
+                return null;
         }
     }
 }

@@ -17,15 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Compiler;
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Extensibility;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
-using Rhetos.Compiler;
-using Rhetos.Dsl;
-using Rhetos.Extensibility;
-using Rhetos.Dsl.DefaultConcepts;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
@@ -33,20 +32,39 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(SqlDependsOnDataStructureInfo))]
     public class SqlDependsOnDataStructureDatabaseDefinition : IConceptDatabaseDefinitionExtension
     {
-        public string CreateDatabaseStructure(IConceptInfo conceptInfo)
+        private readonly Lazy<MultiDictionary<(string, string), PropertyInfo>> _propertiesByDataStructure;
+        private readonly SqlDependsOnPropertyDatabaseDefinition _propertyDependencies;
+
+        public SqlDependsOnDataStructureDatabaseDefinition(IDslModel dslModel)
         {
-            return "";
+            _propertiesByDataStructure = new Lazy<MultiDictionary<(string, string), PropertyInfo>>(
+                () => dslModel.FindByType<PropertyInfo>()
+                    .ToMultiDictionary(p => (p.DataStructure.Module.Name, p.DataStructure.Name), p => p));
+            _propertyDependencies = new SqlDependsOnPropertyDatabaseDefinition(dslModel);
         }
 
-        public string RemoveDatabaseStructure(IConceptInfo conceptInfo)
-        {
-            return "";
-        }
+        public string CreateDatabaseStructure(IConceptInfo conceptInfo) => "";
+
+        public string RemoveDatabaseStructure(IConceptInfo conceptInfo) => "";
 
         public void ExtendDatabaseStructure(IConceptInfo conceptInfo, ICodeBuilder codeBuilder, out IEnumerable<Tuple<IConceptInfo, IConceptInfo>> createdDependencies)
         {
             var info = (SqlDependsOnDataStructureInfo)conceptInfo;
-            createdDependencies = new[] {Tuple.Create<IConceptInfo, IConceptInfo>(info.DependsOn, info.Dependent)};
+
+            _propertiesByDataStructure.Value.TryGetValue(
+                (info.DependsOn.Module.Name, info.DependsOn.Name),
+                out List<PropertyInfo> properties);
+
+            var newDependencies = new List<Tuple<IConceptInfo, IConceptInfo>>(1 + (properties?.Count ?? 0));
+
+            newDependencies.Add(Tuple.Create<IConceptInfo, IConceptInfo>(info.DependsOn, info.Dependent));
+
+            if (properties != null)
+                foreach (var property in properties)
+                    if (property != info.Dependent)
+                        _propertyDependencies.AddDependencies(newDependencies, property, info.Dependent);
+
+            createdDependencies = newDependencies;
         }
     }
 }

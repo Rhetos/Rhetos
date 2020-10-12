@@ -58,15 +58,21 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 
         public void ExtendDatabaseStructure(IConceptInfo conceptInfo, ICodeBuilder codeBuilder, out IEnumerable<Tuple<IConceptInfo, IConceptInfo>> createdDependencies)
         {
-            var info = (SqlDependsOnPropertyInfo) conceptInfo;
+            var info = (SqlDependsOnPropertyInfo)conceptInfo;
 
-            createdDependencies = new[] { Tuple.Create<IConceptInfo, IConceptInfo>(info.DependsOn, info.Dependent) };
+            var newDependencies = new List<Tuple<IConceptInfo, IConceptInfo>>(1);
+            AddDependencies(newDependencies, info.DependsOn, info.Dependent);
+            createdDependencies = newDependencies;
+        }
 
-            var property = info.DependsOn;
+        public void AddDependencies(List<Tuple<IConceptInfo, IConceptInfo>> newDependencies, PropertyInfo property, IConceptInfo dependent)
+        {
+            newDependencies.Add(Tuple.Create<IConceptInfo, IConceptInfo>(property, dependent));
+
             var propertyKey = (property.DataStructure.Module.Name, property.DataStructure.Name, property.Name);
             if (_uniqueIndexesByFirstProperty.Value.TryGetValue(propertyKey, out var indexes))
-                createdDependencies = createdDependencies.Concat(
-                    indexes.Select(unique => Tuple.Create<IConceptInfo, IConceptInfo>(unique.Dependency_SqlIndex, info.Dependent)));
+                newDependencies.AddRange(
+                    indexes.Select(unique => Tuple.Create<IConceptInfo, IConceptInfo>(unique.Dependency_SqlIndex, dependent)));
         }
     }
 }

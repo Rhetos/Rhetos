@@ -19,6 +19,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Dsl;
+using Rhetos.Extensibility.Test;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;

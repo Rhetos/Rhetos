@@ -17,15 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Compiler;
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Extensibility;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
-using Rhetos.Compiler;
-using Rhetos.Dsl;
-using Rhetos.Extensibility;
-using Rhetos.Dsl.DefaultConcepts;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
@@ -33,20 +31,14 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(SqlDependsOnIDInfo))]
     public class SqlDependsOnIDDatabaseDefinition : IConceptDatabaseDefinitionExtension
     {
-        public string CreateDatabaseStructure(IConceptInfo conceptInfo)
-        {
-            return "";
-        }
+        public string CreateDatabaseStructure(IConceptInfo conceptInfo) => "";
 
-        public string RemoveDatabaseStructure(IConceptInfo conceptInfo)
-        {
-            return "";
-        }
+        public string RemoveDatabaseStructure(IConceptInfo conceptInfo) => "";
 
         public void ExtendDatabaseStructure(IConceptInfo conceptInfo, ICodeBuilder codeBuilder, out IEnumerable<Tuple<IConceptInfo, IConceptInfo>> createdDependencies)
         {
             var info = (SqlDependsOnIDInfo)conceptInfo;
-            createdDependencies = new[] {Tuple.Create<IConceptInfo, IConceptInfo>(info.DependsOn, info.Dependent)};
+            createdDependencies = new[] { Tuple.Create<IConceptInfo, IConceptInfo>(info.DependsOn, info.Dependent) };
         }
     }
 }
