@@ -34,9 +34,7 @@ namespace Rhetos.CommonConcepts.Test
         [TestMethod]
         public void Parsing()
         {
-            // Each test has 2 lines:
-            // 1. INPUT: "Expression / ArgumentTypes"
-            // 2. EXPECTED OUTPUT: "MethodParametersAndBody (simplified) / ResultLiteral (if available)", or Exception.
+            // Input format: "Expression / ArgumentTypes"
             string tests =
 @"
 a v => a.Length / 
@@ -146,7 +144,9 @@ DslSyntaxException: TestConcept Test: The provided code snippet should be format
         [TestMethod]
         public void FormattingSimpleLambda()
         {
-            string expressionText = @"item => item . Name+
+            string expressionText = @"
+item
+ => item . Name+
 item.Surname";
 
             var parsedExpression = new ParsedExpression(expressionText, new[] { "SomeType" }, new TestConcept { Name = "Test" });
@@ -214,6 +214,58 @@ return	item . Name;
             var parsedExpression = new ParsedExpression(expressionText, new[] { "SomeType" }, new TestConcept { Name = "Test" }, "/*InsertedCode*/");
             Assert.AreEqual(@"(SomeType item)
         {/*InsertedCode*/ return item.Name; }", parsedExpression.MethodParametersAndBody);
+        }
+
+        [TestMethod]
+        public void ExpressionsParameters()
+        {
+            // Input format: "Expression / ArgumentTypes"
+            string tests =
+@"
+a => a.Length
+(a, b) => a.Length
+(a, b) => (a + b).Length / List<C> double
+(string a, List<C> b) => (a + b).Length / List<C> double
+(string a, List<C> b) => (a + b).Length
+(string a, b) => (a + b).Length / int double
+";
+            string expected = // Format: MethodParameters / MethodBody / ResultLiteral(if available), or Exception.
+@"
+null-a
+null-a, null-b
+List<C>-a, double-b
+string-a, List<C>-b
+string-a, List<C>-b
+int-a, double-b
+";
+
+            IConceptInfo testConcept = new TestConcept { Name = "Test" };
+
+            var results = new List<string>();
+
+            foreach (var test in tests.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                var testParts = test.Split('/');
+                string expressionText = testParts[0].Trim();
+                string[] argumentTypes = testParts.Length > 1
+                    ? testParts[1].Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Select(argument => argument.Trim()).ToArray()
+                    : null;
+
+                try
+                {
+                    var parsedExpression = new ParsedExpression(expressionText, argumentTypes, testConcept);
+                    results.Add(TestUtility.Dump(parsedExpression.ExpressionParameters, p => $"{p.Type ?? "null"}-{p.Name}"));
+                }
+                catch (Exception e)
+                {
+                    results.Add($"{e.GetType().Name}: {e.Message}");
+                }
+            }
+
+            string report = string.Join("\r\n", results);
+            Console.WriteLine(report.Replace("\"", "\"\""));
+
+            TestUtility.AssertAreEqualByLine(expected.Trim(), report);
         }
     }
 }

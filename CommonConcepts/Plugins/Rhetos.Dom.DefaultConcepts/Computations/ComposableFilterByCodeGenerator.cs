@@ -63,6 +63,9 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.InsertCode(filterMethod, RepositoryHelper.RepositoryMembers, info.Source);
         }
 
+        private static readonly string _suppressAdditionalArgumentsMessage = "// Suppressing additional expression arguments in optimized ComposableFilterBy format"
+            + $" (configuration option {OptionsAttribute.GetConfigurationPath<CommonConceptsOptions>()}:{nameof(CommonConceptsOptions.ComposableFilterByOptimizeLambda)})";
+
         private string GetOptimizedFilterMethod(ComposableFilterByInfo info, string queryableType)
         {
             if (!_commonConceptsOptions.ComposableFilterByOptimizeLambda)
@@ -70,8 +73,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             string newLine = "\r\n            ";
             // Extensions that add new arguments to the expression will be ignored, assuming that the additional arguments are not used in the expression body.
-            string commentedAdditionalArguments = newLine + "// Suppressing additional expression arguments in optimized ComposableFilterBy format"
-                + $" (configuration option {OptionsAttribute.GetConfigurationPath<CommonConceptsOptions>()}:{nameof(CommonConceptsOptions.ComposableFilterByOptimizeLambda)})"
+            string commentedAdditionalArguments = newLine + _suppressAdditionalArgumentsMessage
                 + newLine + "// " + AdditionalParametersArgumentTag.Evaluate(info)
                 + newLine + "// " + AdditionalParametersTypeTag.Evaluate(info)
                 + newLine;
@@ -80,9 +82,9 @@ namespace Rhetos.Dom.DefaultConcepts
             if (parsedExpression.ExpressionParameters.Length < 3)
                 return null;
 
-            string parameterSource = parsedExpression.ExpressionParameters[0].Identifier.Text;
-            string parameterRepository = parsedExpression.ExpressionParameters[1].Identifier.Text;
-            string parameterFilter = parsedExpression.ExpressionParameters[2].Identifier.Text;
+            string parameterSource = parsedExpression.ExpressionParameters[0].Name;
+            string parameterRepository = parsedExpression.ExpressionParameters[1].Name;
+            string parameterFilter = parsedExpression.ExpressionParameters[2].Name;
 
             // Trying to remove usage of expression arguments other then input source and filter parameters.
             var simplifiedMethodBody = parsedExpression.MethodBody;
@@ -94,7 +96,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 if (parsedExpression.ExpressionParameters.Length >= 4
                     && _dslModel.FindByKey($"{nameof(ComposableFilterUseExecutionContextInfo)} {info.GetKeyProperties()}") != null)
                 {
-                    string parameterContext = parsedExpression.ExpressionParameters[3].Identifier.Text;
+                    string parameterContext = parsedExpression.ExpressionParameters[3].Name;
                     if (parameterContext.Contains("context") || parameterContext.Contains("Context"))
                     {
                         var contextRegex = new Regex($@"\b{parameterContext}([\.,\)])");
@@ -106,7 +108,7 @@ namespace Rhetos.Dom.DefaultConcepts
             // Parameters 0 and 2 are standard Filter method parameters: input query and filter type. If no other parameters are used in the expression,
             // the expression can be simplified by transforming it directly to the standard Filter method without using lambda expressions
             // (build performance optimization for C# compiler).
-            var nonStandardParameters = parsedExpression.ExpressionParameters.Where((p, index) => index != 0 && index != 2).Select(p => p.Identifier.Text).ToList();
+            var nonStandardParameters = parsedExpression.ExpressionParameters.Where((p, index) => index != 0 && index != 2).Select(p => p.Name).ToList();
             if (nonStandardParameters.Any(parameter => new Regex($@"\b{parameter}\b").IsMatch(simplifiedMethodBody)))
                 return null;
             else
