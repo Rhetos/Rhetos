@@ -161,14 +161,20 @@ item.Surname;
         [TestMethod]
         public void FormattingBlock()
         {
-            string expressionText = @"item => {
+            string expressionText = @"(string item,
+// Not used:
+int other
+/*commented-out DateTime start*/)
+=> {
 return	item . Name;
 
 }";
 
-            var parsedExpression = new ParsedExpression(expressionText, new[] { "SomeType" }, new TestConcept { Name = "Test" });
+            var parsedExpression = new ParsedExpression(expressionText, new[] { "SomeType", "int" }, new TestConcept { Name = "Test" });
             // Keep the original formatting withing the block. Place the block under the parameters line to match formatting of the other expression types.
-            Assert.AreEqual(@"(SomeType item)
+            Assert.AreEqual(@"(string item,
+// Not used:
+int other)
         {
 return	item . Name;
 

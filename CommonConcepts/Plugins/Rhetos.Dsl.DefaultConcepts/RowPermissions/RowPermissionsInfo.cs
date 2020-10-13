@@ -50,12 +50,11 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public static string CreateComposableFilterSnippet(string permissionExpressionName, DataStructureInfo dataStructure)
         {
-            return string.Format(
-            @"(source, repository, parameter) => 
+            return $@"(source, repository, parameter) => 
                 {{
-                    var filterExpression = {0}(source, repository, _executionContext);
-                    return FilterExpression<Common.Queryable.{1}_{2}>.OptimizedWhere(source, filterExpression);
-                }}", permissionExpressionName, dataStructure.Module.Name, dataStructure.Name);
+                    var filterExpression = {permissionExpressionName}(source, repository, _executionContext);
+                    return FilterExpression<Common.Queryable.{dataStructure.Module.Name}_{dataStructure.Name}>.OptimizedWhere(source, filterExpression);
+                }}";
         }
     }
 }

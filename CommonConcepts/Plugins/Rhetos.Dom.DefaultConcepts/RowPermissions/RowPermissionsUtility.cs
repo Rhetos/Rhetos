@@ -17,34 +17,39 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Dsl.DefaultConcepts;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rhetos.Dsl;
 using Rhetos.Compiler;
+using Rhetos.Dsl.DefaultConcepts;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
     public static class RowPermissionsUtility
     {
-        public static string GetSnippetFilterExpression(RowPermissionsSingleFunctionRuleInfo info, bool allowNotDeny)
+        public static string CreateRuleExpressionMethod(ICodeBuilder codeBuilder, RowPermissionsSingleFunctionRuleInfo info)
         {
-            return string.Format(
-            @"{{
-                // {4}
-				Func<Common.ExecutionContext, Expression<Func<Common.Queryable.{0}_{1}, bool>>> getRuleFilter =
-                    {2};
-				Expression<Func<Common.Queryable.{0}_{1}, bool>> ruleFilter = getRuleFilter.Invoke(executionContext);
-				filterExpression.{3}(ruleFilter);
-			}}
-            ",
-                info.RowPermissionsFilters.DataStructure.Module.Name,
-                info.RowPermissionsFilters.DataStructure.Name,
-                info.FilterExpressionFunction,
-                allowNotDeny ? "Include" : "Exclude",
-                info.Name);
+            var target = info.RowPermissionsFilters.DataStructure;
+            var queryableType = $"Common.Queryable.{target.Module.Name}_{target.Name}";
+
+            string methodName = $"GetRowPermissionsRule_{info.Name}";
+            var methodParameters = new[] { "Common.ExecutionContext" };
+            string additionalParameters = $",\r\n            // Additional parameters for backward compatibility, should be removed in future releases:"
+                + $"\r\n            IQueryable<{queryableType}> items, Common.DomRepository repository";
+            // TODO: Remove additionalParameters in next major release. The lambda expression (code snippet) in row permission concepts has only parameter "context",
+            // but developers sometimes used 'repository' variable from the parent method that was accidentally available in the code snippet.
+            // The additionalParameters will provide all previously available variables to avoid breaking changes in minor release.
+
+            var parsedExpression = new ParsedExpression(info.FilterExpressionFunction, methodParameters, info, additionalParameters: additionalParameters);
+            string filterMethod =
+        $@"private Expression<Func<{queryableType}, bool>> {methodName}{parsedExpression.MethodParametersAndBody}
+
+        ";
+            codeBuilder.InsertCode(filterMethod, RepositoryHelper.RepositoryMembers, target);
+            return methodName;
+        }
+
+        public static string GetSnippetFilterExpression(string methodName, bool allowNotDeny)
+        {
+            return $@"filterExpression.{(allowNotDeny ? "Include" : "Exclude")}({methodName}(executionContext, items, repository));
+            ";
         }
 
         public static string GetInheritSnippet(RowPermissionsInheritFromInfo info, string permissionExpressionName,
@@ -52,21 +57,19 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var source = info.Source;
             var target = info.RowPermissionsFilters.DataStructure;
+            string parameterName = target.Name.Substring(0, 1).ToLower() + target.Name.Substring(1) + "Item";
 
             return
             $@"{{
+                // Inheriting row permissions from {source.Module.Name}.{source.Name}:
                 var sameMembers = new Tuple<string, string>[] {{ {sameMembersTag} }};
-                var parentRepository = executionContext.Repository.{source.Module.Name}.{source.Name};
-                var parentRowPermissionsExpression = {source.Module.Name}._Helper.{source.Name}_Repository.{permissionExpressionName}(parentRepository.Query(), repository, executionContext);
-                var replacedExpression = new ReplaceWithReference<Common.Queryable.{source.Module.Name}_{source.Name}, Common.Queryable.{target.Module.Name}_{target.Name}>(parentRowPermissionsExpression, ""{info.SourceSelector}"" , ""{ParameterName(target)}"", sameMembers {extensionReferenceTag}).NewExpression;
-                filterExpression.Include(replacedExpression);
+                var parentRepository = _domRepository.{source.Module.Name}.{source.Name};
+                var parentRowPermissionsExpression = parentRepository.{permissionExpressionName}(parentRepository.Query(), _domRepository, _executionContext);
+                var replacedExpression = new ReplaceWithReference<Common.Queryable.{source.Module.Name}_{source.Name}, Common.Queryable.{target.Module.Name}_{target.Name}>(
+                    parentRowPermissionsExpression, ""{info.SourceSelector}"" , ""{parameterName}"", sameMembers {extensionReferenceTag});
+                filterExpression.Include(replacedExpression.NewExpression);
             }}
             ";
-        }
-
-        private static string ParameterName(DataStructureInfo target)
-        {
-            return target.Name.Substring(0, 1).ToLower() + target.Name.Substring(1) + "Item";
         }
     }
 }

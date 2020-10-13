@@ -18,13 +18,9 @@
 */
 
 using Rhetos.Compiler;
-using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
@@ -94,20 +90,22 @@ namespace Rhetos.Dsl.DefaultConcepts
             string newFilterExpression;
             string oldFilterExpression = null;
 
-            if (newRowPermissionsFilter is RowPermissionsReadInfo)
+            if (newRowPermissionsFilter is RowPermissionsReadInfo newReadFilter)
             {
                 filterName = RowPermissionsReadInfo.FilterName;
-                newFilterExpression = ((RowPermissionsReadInfo)newRowPermissionsFilter).SimplifiedExpression;
-                if (oldRowPermissions is RowPermissionsReadInfo)
-                    oldFilterExpression = ((RowPermissionsReadInfo)oldRowPermissions).SimplifiedExpression;
+                newFilterExpression = newReadFilter.SimplifiedExpression;
+                if (oldRowPermissions is RowPermissionsReadInfo oldReadFilter)
+                    oldFilterExpression = oldReadFilter.SimplifiedExpression;
             }
-            else
+            else if (newRowPermissionsFilter is RowPermissionsWriteInfo newWriteFilter)
             {
                 filterName = RowPermissionsWriteInfo.FilterName;
-                newFilterExpression = ((RowPermissionsWriteInfo)newRowPermissionsFilter).SimplifiedExpression;
-                if (oldRowPermissions is RowPermissionsWriteInfo)
-                    oldFilterExpression = ((RowPermissionsWriteInfo)oldRowPermissions).SimplifiedExpression;
+                newFilterExpression = newWriteFilter.SimplifiedExpression;
+                if (oldRowPermissions is RowPermissionsWriteInfo oldWriteFilter)
+                    oldFilterExpression = oldWriteFilter.SimplifiedExpression;
             }
+            else
+                throw new InvalidOperationException($"Unexpected {nameof(newRowPermissionsFilter)} type '{newRowPermissionsFilter.GetType()}'.");
 
             if (oldFilterExpression == null || oldFilterExpression != newFilterExpression)
                 throw new DslSyntaxException(conceptInfo, "Cannot use row permissions rules or row permissions inheritance on "

@@ -957,10 +957,10 @@ namespace CommonConcepts.Test
 
                 Assert.AreEqual(
                     @"item => item.Extension_OptimizeExtension.NameE.Contains(""allow"")",
-                    TestRowPermissions._Helper.OptimizeBase_Repository.GetRowPermissionsReadExpression(null, repository, context).ToString());
+                    repository.TestRowPermissions.OptimizeBase.GetRowPermissionsReadExpression(null, repository, context).ToString());
                 Assert.AreEqual(
                     @"optimizeExtensionItem => optimizeExtensionItem.NameE.Contains(""allow"")",
-                    TestRowPermissions._Helper.OptimizeExtension_Repository.GetRowPermissionsReadExpression(null, repository, context).ToString());
+                    repository.TestRowPermissions.OptimizeExtension.GetRowPermissionsReadExpression(null, repository, context).ToString());
 
                 var b1 = new OptimizeBase { NameB = "b1" };
                 var b2 = new OptimizeBase { NameB = "b2" };

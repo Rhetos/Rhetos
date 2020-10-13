@@ -59,16 +59,18 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <summary>May be null if not provided by the caller.</summary>
         private readonly string[] _argumentTypes;
         private readonly IConceptInfo _errorContext;
+        private readonly string _additionalParameters;
 
         /// <summary>
         /// Converts code snippets from Expression format to Method format.
         /// </summary>
         /// <param name="argumentTypes">If null, the generated method parameters will not be available.</param>
-        public ParsedExpression(string expression, string[] argumentTypes, IConceptInfo errorContext, string insertCode = null)
+        public ParsedExpression(string expression, string[] argumentTypes, IConceptInfo errorContext, string insertCode = null, string additionalParameters = null)
         {
             _expression = expression;
             _argumentTypes = argumentTypes;
             _errorContext = errorContext;
+            _additionalParameters = additionalParameters;
 
             // Note: This parser is not intended to detect all errors in the lambda expression. It would be preferred to use the provided expression as it is,
             // and let the C# compiler detect and report the syntax error in the generated code.
@@ -86,7 +88,7 @@ namespace Rhetos.Dom.DefaultConcepts
             {
                 var parametersSyntax = parenthesizedExpression.ParameterList.Parameters.ToArray();
                 ExpressionParameters = BuildExpressionParameters(parametersSyntax);
-                MethodParameters = BuildMethodParameters(parametersSyntax, parenthesizedExpression.ParameterList.ToString());
+                MethodParameters = BuildMethodParameters(parametersSyntax, parenthesizedExpression.ParameterList.Parameters.ToString());
                 MethodBody = BuildMethodBody(parenthesizedExpression.Body, insertCode);
                 ResultLiteral = TryBuildResultLiteral(parenthesizedExpression.Body);
             }
@@ -165,9 +167,9 @@ namespace Rhetos.Dom.DefaultConcepts
                 return null;
 
             if (UseTypesFromExpression(parametersSyntax) && originalParametersDefinition != null)
-                return originalParametersDefinition;
+                return "(" + originalParametersDefinition + (_additionalParameters ?? "") + ")";
             else
-                return "(" + string.Join(", ", parametersSyntax.Zip(_argumentTypes, (p, at) => $"{at} {p.Identifier.Text}")) + ")";
+                return "(" + string.Join(", ", parametersSyntax.Zip(_argumentTypes, (p, at) => $"{at} {p.Identifier.Text}")) + (_additionalParameters ?? "") + ")";
         }
 
         private string BuildMethodBody(SyntaxNode body, string insertCode)
