@@ -17,12 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
@@ -51,10 +47,10 @@ namespace Rhetos.Dsl.DefaultConcepts
         public static string CreateComposableFilterSnippet(string permissionExpressionName, DataStructureInfo dataStructure)
         {
             return $@"(source, repository, parameter) => 
-                {{
-                    var filterExpression = {permissionExpressionName}(source, repository, _executionContext);
-                    return FilterExpression<Common.Queryable.{dataStructure.Module.Name}_{dataStructure.Name}>.OptimizedWhere(source, filterExpression);
-                }}";
+        {{
+            var filterExpression = {permissionExpressionName}(source, repository, _executionContext);
+            return FilterExpression<Common.Queryable.{dataStructure.Module.Name}_{dataStructure.Name}>.OptimizedWhere(source, filterExpression);
+        }}";
         }
     }
 }

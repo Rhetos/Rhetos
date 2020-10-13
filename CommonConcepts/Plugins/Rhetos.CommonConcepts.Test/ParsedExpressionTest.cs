@@ -37,6 +37,7 @@ namespace Rhetos.CommonConcepts.Test
             // Input format: "Expression / ArgumentTypes"
             string tests =
 @"
+a => /*1*/ a /*2*/ / int
 a v => a.Length / 
 (a, b) => (a + b).Length / int double
 (string a, string b) => (a + b).Length / string string
@@ -71,6 +72,7 @@ a; b; /
 ";
             string expected = // Format: MethodParameters / MethodBody / ResultLiteral(if available), or Exception.
 @"
+(int a) { return /*1*/ a; }
 DslSyntaxException: TestConcept Test: C# syntax error '(1,16): error CS1002: ; expected' in code snippet 'a v => a.Length'.
 (int a, double b) { return (a + b).Length; }
 (string a, string b) { return (a + b).Length; }
@@ -85,7 +87,7 @@ DslSyntaxException: TestConcept Test: The provided code snippet should be format
 () { return ""ad""; }/""ad""
 (string a) { return a.Length; }
 (List<Cus[]> a) { return b.Length; }
-(x a) { return b.Length; }
+(x a) { return /*fasd */ b.Length; }
 (x a) { return true; }/true
 (x a) { return a; }
 (x a) { return false; }/false
@@ -146,15 +148,35 @@ DslSyntaxException: TestConcept Test: The provided code snippet should be format
         {
             string expressionText = @"
 item
- => item . Name+
-item.Surname";
+ => //1
+/*2*/
+item . Name+
+item.Surname
+/*3*/";
 
             var parsedExpression = new ParsedExpression(expressionText, new[] { "SomeType" }, new TestConcept { Name = "Test" });
+
             // Place the block under the parameters line to match standard method formatting.
             Assert.AreEqual(@"(SomeType item)
         {
-            return item . Name+
+            return //1
+/*2*/
+item . Name+
 item.Surname;
+        }", parsedExpression.MethodParametersAndBody);
+        }
+
+        [TestMethod]
+        public void FormattingSimpleLambdaWithLineComment()
+        {
+            string expressionText = @"item => item.Name // Comment. \t \t";
+
+            var parsedExpression = new ParsedExpression(expressionText, new[] { "SomeType" }, new TestConcept { Name = "Test" });
+            
+            // The line-comment must not invalidate the semicolon!
+            Assert.AreEqual(@"(SomeType item)
+        {
+            return item.Name;
         }", parsedExpression.MethodParametersAndBody);
         }
 
@@ -171,14 +193,14 @@ return	item . Name;
 }";
 
             var parsedExpression = new ParsedExpression(expressionText, new[] { "SomeType", "int" }, new TestConcept { Name = "Test" });
+
             // Keep the original formatting withing the block. Place the block under the parameters line to match formatting of the other expression types.
             Assert.AreEqual(@"(string item,
 // Not used:
 int other)
         {
-return	item . Name;
-
-}", parsedExpression.MethodParametersAndBody);
+            return	item . Name;
+        }", parsedExpression.MethodParametersAndBody);
         }
 
         [TestMethod]
@@ -207,9 +229,8 @@ return	item . Name;
             var parsedExpression = new ParsedExpression(expressionText, new[] { "SomeType" }, new TestConcept { Name = "Test" }, "/*InsertedCode*/");
             Assert.AreEqual(@"(SomeType item)
         {/*InsertedCode*/
-return	item . Name;
-
-}", parsedExpression.MethodParametersAndBody);
+            return	item . Name;
+        }", parsedExpression.MethodParametersAndBody);
         }
 
         [TestMethod]
@@ -219,7 +240,51 @@ return	item . Name;
 
             var parsedExpression = new ParsedExpression(expressionText, new[] { "SomeType" }, new TestConcept { Name = "Test" }, "/*InsertedCode*/");
             Assert.AreEqual(@"(SomeType item)
-        {/*InsertedCode*/ return item.Name; }", parsedExpression.MethodParametersAndBody);
+        {/*InsertedCode*/
+            return item.Name;
+        }", parsedExpression.MethodParametersAndBody);
+        }
+
+        [TestMethod]
+        public void InsertAdditionalParametersInSimpleLambda()
+        {
+            string expressionText = @"item => item . Name+
+item.Surname";
+
+            var parsedExpression = new ParsedExpression(expressionText, new[] { "SomeType" }, new TestConcept { Name = "Test" }, null, "1\r\n2");
+            // Place the block under the parameters line to match standard method formatting.
+            Assert.AreEqual(@"(SomeType item1
+2)
+        {
+            return item . Name+
+item.Surname;
+        }", parsedExpression.MethodParametersAndBody);
+        }
+
+        [TestMethod]
+        public void InsertAdditionalParametersInParenthesizedBlock()
+        {
+            string expressionText = @"(string item,
+// Not used:
+int other
+/*commented-out DateTime start*/) => {
+
+/*start tag*/
+return	item . Name;
+/*end tag*/
+
+}";
+
+            var parsedExpression = new ParsedExpression(expressionText, new[] { "SomeType", "int" }, new TestConcept { Name = "Test" }, null, "1\r\n2");
+            Assert.AreEqual(@"(string item,
+// Not used:
+int other1
+2)
+        {
+            /*start tag*/
+return	item . Name;
+/*end tag*/
+        }", parsedExpression.MethodParametersAndBody);
         }
 
         [TestMethod]

@@ -64,7 +64,10 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <summary>
         /// Converts code snippets from Expression format to Method format.
         /// </summary>
-        /// <param name="argumentTypes">If null, the generated method parameters will not be available.</param>
+        /// <param name="argumentTypes">
+        /// If null, the generated method parameters will not be available.
+        /// The <paramref name="argumentTypes"/> parameter will be ignored it the <paramref name="expression"/> has explicitly specified argument types.
+        /// </param>
         public ParsedExpression(string expression, string[] argumentTypes, IConceptInfo errorContext, string insertCode = null, string additionalParameters = null)
         {
             _expression = expression;
@@ -88,7 +91,7 @@ namespace Rhetos.Dom.DefaultConcepts
             {
                 var parametersSyntax = parenthesizedExpression.ParameterList.Parameters.ToArray();
                 ExpressionParameters = BuildExpressionParameters(parametersSyntax);
-                MethodParameters = BuildMethodParameters(parametersSyntax, parenthesizedExpression.ParameterList.Parameters.ToString());
+                MethodParameters = BuildMethodParameters(parametersSyntax, parenthesizedExpression.ParameterList);
                 MethodBody = BuildMethodBody(parenthesizedExpression.Body, insertCode);
                 ResultLiteral = TryBuildResultLiteral(parenthesizedExpression.Body);
             }
@@ -159,36 +162,40 @@ namespace Rhetos.Dom.DefaultConcepts
             return parameters;
         }
 
-        private static bool UseTypesFromExpression(ParameterSyntax[] parametersSyntax) => parametersSyntax.All(p => p.Type != null);
+        private static bool UseTypesFromExpression(ParameterSyntax[] parameters) => parameters.All(p => p.Type != null);
 
-        private string BuildMethodParameters(ParameterSyntax[] parametersSyntax, string originalParametersDefinition = null)
+        private string BuildMethodParameters(ParameterSyntax[] parameters, ParameterListSyntax originalParameters = null)
         {
             if (_argumentTypes == null)
                 return null;
 
-            if (UseTypesFromExpression(parametersSyntax) && originalParametersDefinition != null)
-                return "(" + originalParametersDefinition + (_additionalParameters ?? "") + ")";
+            if (UseTypesFromExpression(parameters) && originalParameters != null)
+                return "(" + originalParameters.Parameters.ToFullString().Trim() + (_additionalParameters ?? "") + ")";
             else
-                return "(" + string.Join(", ", parametersSyntax.Zip(_argumentTypes, (p, at) => $"{at} {p.Identifier.Text}")) + (_additionalParameters ?? "") + ")";
+                return "(" + string.Join(", ", parameters.Zip(_argumentTypes, (p, at) => $"{at} {p.Identifier.Text}")) + (_additionalParameters ?? "") + ")";
         }
 
         private string BuildMethodBody(SyntaxNode body, string insertCode)
         {
-            if (body.Kind() == SyntaxKind.Block)
+            if (body is BlockSyntax block)
             {
-                string code = body.ToString().Trim();
-                if (!string.IsNullOrEmpty(insertCode))
-                {
-                    int blockStart = code.IndexOf('{');
-                    if (blockStart < 0)
-                        throw new DslSyntaxException(_errorContext, $"Unable to insert code '{insertCode.Limit(40)}' at the beginning of code block '{code.Limit(40)}'. Cannot detect the block start marker '{{'.");
-                    code = code.Insert(blockStart + 1, insertCode);
-                }
-                return "\r\n        " + code;
+                string code =
+                    block.OpenBraceToken.TrailingTrivia.ToFullString()
+                    + block.Statements.ToFullString()
+                    + block.CloseBraceToken.LeadingTrivia.ToFullString();
+
+                return $"\r\n        {{{insertCode}\r\n            {code.Trim()}\r\n        }}";
             }
             else
             {
-                return $"\r\n        {{{insertCode}\r\n            return {body.ToString().Trim()};\r\n        }}";
+                string code;
+                if (body.Parent is SimpleLambdaExpressionSyntax simpleLambda)
+                    // Trailing trivia is not used, to avoid hiding the semicolon with a line comment.
+                    code = simpleLambda.ArrowToken.TrailingTrivia.ToFullString() + body.GetLeadingTrivia().ToFullString() + body.ToString();
+                else
+                    code = body.ToFullString();
+
+                return $"\r\n        {{{insertCode}\r\n            return {code.Trim()};\r\n        }}";
             }
         }
 
