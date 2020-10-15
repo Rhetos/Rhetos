@@ -26,6 +26,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 
 namespace Rhetos.DatabaseGenerator
 {
@@ -131,7 +132,7 @@ namespace Rhetos.DatabaseGenerator
                 string createQuery = cg.ConceptImplementation.CreateDatabaseStructure(cg.ConceptInfo);
                 if (!string.IsNullOrWhiteSpace(createQuery))
                 {
-                    sqlCodeBuilder.InsertCode(GetCodeGeneratorSeparator(cg.Id));
+                    AddCodeGeneratorSeparator(sqlCodeBuilder, cg.Id);
                     sqlCodeBuilder.InsertCode(createQuery);
                 }
 
@@ -150,7 +151,7 @@ namespace Rhetos.DatabaseGenerator
                 }
             }
 
-            createQueryByCodeGenerator = ExtractCreateQueries(sqlCodeBuilder.GenerateCode());
+            createQueryByCodeGenerator = ExtractCreateQueries(sqlCodeBuilder.GeneratedCodeSegments);
 
             sqlScriptDependencies = _databaseModelDependencies.ConceptDependencyToCodeGeneratorsDependency(
                 createdDependencies.Select(d => Tuple.Create(d.DependsOn, d.Dependent)),
@@ -173,35 +174,63 @@ namespace Rhetos.DatabaseGenerator
         private const string DatabaseObjectSeparatorPrefix = "\r\n--RhetosDatabaseObjectSeparator ";
         private const string DatabaseObjectSeparatorSuffix = "\r\n";
 
-        private static string GetCodeGeneratorSeparator(int codeGeneratorId)
+        private static void AddCodeGeneratorSeparator(CodeBuilder sqlCodeBuilder, int codeGeneratorId)
         {
-            return DatabaseObjectSeparatorPrefix + codeGeneratorId + DatabaseObjectSeparatorSuffix;
+            sqlCodeBuilder.InsertCode(DatabaseObjectSeparatorPrefix);
+            sqlCodeBuilder.InsertCode(codeGeneratorId.ToString());
+            sqlCodeBuilder.InsertCode(DatabaseObjectSeparatorSuffix);
         }
 
-        private static Dictionary<int, string> ExtractCreateQueries(string generatedSqlCode)
+        private static Dictionary<int, string> ExtractCreateQueries(IEnumerable<string> generatedSqlCode)
         {
-            var generatedScripts = generatedSqlCode.Split(new[] { DatabaseObjectSeparatorPrefix }, StringSplitOptions.None).ToList();
-            if (generatedScripts.Count > 0 && generatedScripts[0].Length > 0)
-                throw new FrameworkException($"Unexpected generated script format: The first segment should be empty:\r\n{generatedScripts[0].Limit(200)}");
+            IEnumerator<string> enumerator = generatedSqlCode.GetEnumerator();
+            var createQueries = new Dictionary<int, string>();
 
-            return generatedScripts.Skip(1)
-                .Select(ParseGeneratedScript)
-                .ToDictionary(script => script.CodeGeneratorId, script => script.Sql);
+            var textBeforeFirstQuery = new StringBuilder();
+            while (enumerator.MoveNext())
+            {
+                if (enumerator.Current == DatabaseObjectSeparatorPrefix)
+                    break;
+                textBeforeFirstQuery.Append(enumerator.Current);
+            }
+
+            if (textBeforeFirstQuery.Length > 0)
+                throw new FrameworkException($"Unexpected generated script format: The first segment should be empty:\r\n{textBeforeFirstQuery.ToString().Limit(200)}");
+            if (enumerator.Current != DatabaseObjectSeparatorPrefix)
+                return createQueries;
+
+            while (true)
+            {
+                if (!ParseNextQuery(enumerator, createQueries))
+                    break;
+            }
+            return createQueries;
         }
 
-        private static (int CodeGeneratorId, string Sql) ParseGeneratedScript(string generatedScript)
+        private static bool ParseNextQuery(IEnumerator<string> enumerator, Dictionary<int, string> parsedScripts)
         {
-            int scriptKeyEnd = generatedScript.IndexOf(DatabaseObjectSeparatorSuffix);
-            if (scriptKeyEnd < 0)
-                throw new FrameworkException($"Unexpected generated script format: Missing {nameof(DatabaseObjectSeparatorSuffix)}.");
-            if (scriptKeyEnd == 0)
+            if (!enumerator.MoveNext())
                 throw new FrameworkException($"Unexpected generated script format: Missing script key.");
+            var codeGeneratorId = int.Parse(enumerator.Current);
+            var hasNextElement = enumerator.MoveNext();
+            if(!hasNextElement || enumerator.Current != DatabaseObjectSeparatorSuffix)
+                throw new FrameworkException($"Unexpected generated script format: Missing {nameof(DatabaseObjectSeparatorSuffix)}.");
 
-            return
-            (
-                CodeGeneratorId: int.Parse(generatedScript.Substring(0, scriptKeyEnd)),
-                Sql: generatedScript.Substring(scriptKeyEnd + DatabaseObjectSeparatorSuffix.Length).Trim()
-            );
+            var sqlQuery = new StringBuilder();
+            bool hasNextQuery = false;
+            while (enumerator.MoveNext())
+            {
+                if (enumerator.Current == DatabaseObjectSeparatorPrefix)
+                {
+                    hasNextQuery = true;
+                    break;
+                }
+                else
+                    sqlQuery.Append(enumerator.Current);
+            }
+
+            parsedScripts.Add(codeGeneratorId, sqlQuery.ToString().Trim());
+            return hasNextQuery;
         }
 
         private static List<DatabaseObject> ConstructDatabaseObjects(

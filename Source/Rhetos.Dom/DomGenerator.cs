@@ -57,15 +57,15 @@ namespace Rhetos.Dom
 
         public void Generate()
         {
-            var sourceFiles = _codeGenerator.ExecutePluginsToFiles(_pluginRepository, "/*", "*/", null);
-            
             if (!string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder))
             {
+                var sourceFiles = _codeGenerator.ExecutePluginsToFilesAsCodeSegments(_pluginRepository, "/*", "*/", null);
                 foreach (var sourceFile in sourceFiles)
-                    _sourceWriter.Add(sourceFile.Key + ".cs", sourceFile.Value.GeneratedCode);
+                    _sourceWriter.Add(sourceFile.Key + ".cs", sourceFile.Value);
             }
             else
             {
+                var sourceFiles = _codeGenerator.ExecutePluginsToFiles(_pluginRepository, "/*", "*/", null);
                 var targetAssemblies = sourceFiles
                     .GroupBy(sourceFile => sourceFile.Key.Split('\\').First())
                     .Select(sourceFileGroup => new

@@ -43,6 +43,12 @@ namespace Rhetos.Persistence
 
         public static readonly string StorageModelEntityContainerTag = "<!--StorageModelEntityContainer-->";
 
-        public static readonly string[] ModelFiles = new[] { "ServerDomEdm.csdl", "ServerDomEdm.msl", "ServerDomEdm.ssdl" };
+        public static readonly string ConceptualModelFileName = "ServerDomEdm.csdl";
+
+        public static readonly string StorageModelFileName = "ServerDomEdm.ssdl";
+
+        public static readonly string MappingModelFileName = "ServerDomEdm.msl";
+
+        public static readonly string[] ModelFiles = new[] { ConceptualModelFileName, MappingModelFileName, StorageModelFileName };
     }
 }

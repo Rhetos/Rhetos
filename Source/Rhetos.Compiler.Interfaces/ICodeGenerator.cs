@@ -40,5 +40,12 @@ namespace Rhetos.Compiler
         /// <param name="initialCodeGenerator">Optional. Used to initialize generated AssemblyInfo. It will be called with IConceptInfo argument set to null.</param>
         IDictionary<string, IAssemblySource> ExecutePluginsToFiles<TPlugin>(IPluginsContainer<TPlugin> plugins, string tagOpen, string tagClose, IConceptCodeGenerator initialCodeGenerator)
             where TPlugin : IConceptCodeGenerator;
-    }
+
+        IEnumerable<string> ExecutePluginsAsCodeSegments<TPlugin>(IPluginsContainer<TPlugin> plugins, string tagOpen, string tagClose, IConceptCodeGenerator initialCodeGenerator)
+                    where TPlugin : IConceptCodeGenerator;
+        
+
+        IDictionary<string, IEnumerable<string>> ExecutePluginsToFilesAsCodeSegments<TPlugin>(IPluginsContainer<TPlugin> plugins, string tagOpen, string tagClose, IConceptCodeGenerator initialCodeGenerator)
+            where TPlugin : IConceptCodeGenerator;
+        }
 }

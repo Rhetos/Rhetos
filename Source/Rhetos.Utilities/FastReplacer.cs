@@ -18,6 +18,7 @@
 */
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -212,17 +213,36 @@ namespace Rhetos.Utilities
             return ToString(RootSnippetByFile.Values);
         }
 
+        public IEnumerable<string> GetCodeSegments()
+        {
+            return GetCodeSegments(RootSnippetByFile.Values);
+        }
+
+        public IEnumerable<string> GetCodeSegments(string path)
+        {
+            return GetCodeSegments(new[] { RootSnippetByFile[path] });
+        }
+
         private static string ToString(IEnumerable<FastReplacerSnippet> rootSnippets)
         {
             int totalTextLength = rootSnippets.Sum(rootSnippet => rootSnippet.GetLength());
             var sb = new StringBuilder(totalTextLength);
-            foreach (var rootSnippet in rootSnippets)
-                rootSnippet.ToString(sb);
+            foreach (var segment in GetCodeSegments(rootSnippets))
+                sb.Append(segment);
             if (sb.Length != totalTextLength)
                 throw new InvalidOperationException(string.Format(
                     "Internal error: Calculated total text length ({0}) is different from actual ({1}).",
                     totalTextLength, sb.Length));
             return sb.ToString();
+        }
+
+        private static IEnumerable<string> GetCodeSegments(IEnumerable<FastReplacerSnippet> rootSnippets)
+        {
+            foreach (var rootSnippet in rootSnippets)
+            {
+                foreach (var s in rootSnippet.GetCodeSegments())
+                    yield return s;
+            }
         }
     }
 }
