@@ -77,7 +77,7 @@ namespace Rhetos.Processing.DefaultCommands
                     throw new FrameworkException(
                         $"Row permissions filter error:"
                         + $" Filter {filterType.Name} on {genericRepository.EntityName} returned more items ({allowedItemsCount}) then requested ({itemsIds.Count})."
-                        + $" Possible cause: {genericRepository.EntityName}, or any related view that is uses for its row permissions, returns duplicate IDs.");
+                        + $" Possible cause: {genericRepository.EntityName}, or any related view that is used for its row permissions, returns duplicate IDs.");
             }
 
             return true;

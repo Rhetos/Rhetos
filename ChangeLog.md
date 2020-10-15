@@ -1,5 +1,14 @@
 ﻿# Rhetos release notes
 
+## 4.2.0 (2020-10-26)
+
+### Internal improvements
+
+* Build performance improvements: Various optimizations in different segments of build process, simplified generated code, reduced usage of macro concepts for database object dependencies, reduced unneeded changes in ordering of the generated code.
+* Bugfix: Build sometime fails with EntityCommandCompilationException "The argument type 'X' is not compatible with the property 'Y' of formal type 'Z'.".
+* Reduced logging level for certain build and performance events from *warning* to *info*.
+* A redundant FilterBy is no longer generated for each ComposableFilterBy.
+
 ## 4.1.0 (2020-09-23)
 
 ### New features
