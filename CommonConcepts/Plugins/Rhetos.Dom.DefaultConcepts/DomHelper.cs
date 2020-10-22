@@ -21,8 +21,7 @@ using Rhetos.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
+using System.Data.SqlClient;
 using System.Linq;
 
 namespace Rhetos.Dom.DefaultConcepts
@@ -77,67 +76,48 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public enum SaveOperation { None, Insert, Update, Delete };
 
-        public static void EntityFrameworkOptimizedSave<TEntity, TQueryableEntity>(
+        public static void EntityFrameworkOptimizedSave<TEntity>(
             IEnumerable<TEntity> insertedNew,
             IEnumerable<TEntity> updatedNew,
             IEnumerable<TEntity> deletedIds,
-            Func<TEntity, TQueryableEntity> toNavigation,
+            IPersistanceStorage persistanceStorage,
             bool checkUserPermissions,
-            DbContext dbContext,
             ISqlUtility sqlUtility,
             out SaveOperation saveOperation,
-            out DbUpdateException saveException,
+            out SqlException saveException,
             out RhetosException interpretedException)
             where TEntity : class, IEntity
-            where TQueryableEntity : class, IEntity, TEntity
         {
             saveOperation = SaveOperation.None;
             try
             {
-                if (deletedIds.Any())
-                {
-                    saveOperation = SaveOperation.Delete;
-                    dbContext.Configuration.AutoDetectChangesEnabled = false;
-                    foreach (var item in deletedIds.Select(toNavigation))
-                        dbContext.Entry(item).State = System.Data.Entity.EntityState.Deleted;
-                    dbContext.Configuration.AutoDetectChangesEnabled = true;
-                    dbContext.SaveChanges();
-                }
+                saveOperation = SaveOperation.Delete;
+                var numberOfRowsAffectedDuringDeleteOperation = persistanceStorage.Delete(deletedIds);
+                ThrowIfSavingNonexistentId(numberOfRowsAffectedDuringDeleteOperation, deletedIds, checkUserPermissions, saveOperation);
 
-                if (updatedNew.Any())
-                {
-                    saveOperation = SaveOperation.Update;
-                    dbContext.Configuration.AutoDetectChangesEnabled = false;
-                    foreach (var item in updatedNew.Select(toNavigation))
-                        dbContext.Entry(item).State = System.Data.Entity.EntityState.Modified;
-                    dbContext.Configuration.AutoDetectChangesEnabled = true;
-                    dbContext.SaveChanges();
-                }
+                saveOperation = SaveOperation.Update;
+                var numberOfRowsAffectedDuringUpdateOperation = persistanceStorage.Update(updatedNew);
+                ThrowIfSavingNonexistentId(numberOfRowsAffectedDuringUpdateOperation, updatedNew, checkUserPermissions, saveOperation);
 
-                if (insertedNew.Any())
-                {
-                    saveOperation = SaveOperation.Insert;
-                    dbContext.Set<TQueryableEntity>().AddRange(insertedNew.Select(toNavigation));
-                    dbContext.SaveChanges();
-                }
+                saveOperation = SaveOperation.Insert;
+                var numberOfRowsAffectedDuringInsertOperation = persistanceStorage.Insert(insertedNew);
+                ThrowIfSavingNonexistentId(numberOfRowsAffectedDuringInsertOperation, insertedNew, checkUserPermissions, saveOperation);
 
                 saveOperation = SaveOperation.None;
-                ((Rhetos.Persistence.IPersistenceCache)dbContext).ClearCache();
 
                 saveException = null;
                 interpretedException = null;
             }
-            catch (DbUpdateException e)
+            catch (SqlException e)
             {
                 saveException = e;
-                ThrowIfSavingNonexistentId(saveException, checkUserPermissions, saveOperation);
                 interpretedException = sqlUtility.InterpretSqlException(saveException);
             }
         }
 
-        public static void ThrowIfSavingNonexistentId(DbUpdateException saveException, bool checkUserPermissions, SaveOperation saveOperation)
+        public static void ThrowIfSavingNonexistentId<TEntity>(int affectedNumberOfRows, IEnumerable<TEntity> entities, bool checkUserPermissions, SaveOperation saveOperation) where TEntity : class, IEntity
         {
-            if (saveException.Message.StartsWith("Store update, insert, or delete statement affected an unexpected number of rows (0)."))
+            if (entities.Count() != affectedNumberOfRows)
             {
                 string message;
                 if (saveOperation == SaveOperation.Update)
@@ -147,17 +127,16 @@ namespace Rhetos.Dom.DefaultConcepts
                 else
                     return;
 
-                if (saveException.Entries != null && saveException.Entries.Count() == 1 && saveException.Entries.First().Entity is IEntity entity)
-                    message += " ID=" + entity.ID.ToString();
+                message += string.Join(",", entities.Select(e => " ID=" + e.ID.ToString()));
 
                 if (checkUserPermissions)
                     throw new ClientException(message);
                 else
-                    throw new FrameworkException(message, saveException);
+                    throw new FrameworkException(message);
             }
         }
 
-        public static void ThrowInterpretedException(bool checkUserPermissions, DbUpdateException saveException, RhetosException interpretedException, ISqlUtility sqlUtility, string tableName)
+        public static void ThrowInterpretedException(bool checkUserPermissions, Exception saveException, RhetosException interpretedException, ISqlUtility sqlUtility, string tableName)
         {
             if (checkUserPermissions)
                 MsSqlUtility.ThrowIfPrimaryKeyErrorOnInsert(interpretedException, tableName);

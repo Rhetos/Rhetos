@@ -172,6 +172,7 @@
     <Compile Include="CreatedByTest.cs" />
     <Compile Include="DataMigrationTest.cs" />
     <Compile Include="Helpers\RhetosProcessHelper.cs" />
+    <Compile Include="StorageTest.cs" />
     <Compile Include="RhetosTransactionScopeContainerTest.cs" />
     <Compile Include="HardcodedEntityTest.cs" />
     <Compile Include="Helpers\PrincipalHelper.cs" />

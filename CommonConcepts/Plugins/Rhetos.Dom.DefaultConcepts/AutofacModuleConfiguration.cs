@@ -46,6 +46,7 @@ namespace Rhetos.Dom.DefaultConcepts
             builder.RegisterType<EntityFrameworkMetadata>().SingleInstance();
             builder.RegisterType<MetadataWorkspaceFileProvider>().As<IMetadataWorkspaceFileProvider>().SingleInstance();
             builder.RegisterType<EfMappingViewsHash>().As<IEfMappingViewsHash>();
+            builder.RegisterType<PersistanceStorage>().As<IPersistanceStorage>();
 
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<CommonConceptsOptions>()).SingleInstance();
 

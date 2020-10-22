@@ -38,6 +38,17 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             PropertyInfo info = (PropertyInfo)conceptInfo;
             PropertyHelper.GenerateCodeForType(info, codeBuilder, "byte[]");
+
+            if (info.DataStructure is IWritableOrmDataStructure)
+            {
+                var code = $@"{{
+                var parameter = new SqlParameter("""", System.Data.SqlDbType.VarBinary);
+                parameter.Value = ((object)entity.{info.Name}) ?? System.Data.SqlTypes.SqlBinary.Null;
+                mappings.Add(""{info.Name}"", parameter);
+            }}
+            ";
+                codeBuilder.InsertCode(code, WritableOrmDataStructureCodeGenerator.PersistanceStorageMapperPropertyMappingTag, info.DataStructure);
+            }
         }
     }
 }

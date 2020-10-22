@@ -1,0 +1,31 @@
+Module Storage
+{
+    Entity AllProperties
+    {
+        Binary BinaryProperty;
+        Bool BoolProperty;
+        Date DateProperty;
+        DateTime DateTimeProperty;
+        Decimal DecimalProperty;
+        Guid GuidProperty;
+        Integer IntegerProperty;
+        Money MoneyProperty;
+        ShortString ShortStringProperty;
+        LongString LongStringProperty;
+    }
+
+    Entity Simple
+    {
+        ShortString Name;
+    }
+
+    SqlQueryable DataStructureWithNoSaveMapping
+    "
+        SELECT ID, Name FROM Storage.Simple
+    "
+    {
+        ShortString Name;
+    }
+
+    Entity EntityWithNoProperty;
+}
