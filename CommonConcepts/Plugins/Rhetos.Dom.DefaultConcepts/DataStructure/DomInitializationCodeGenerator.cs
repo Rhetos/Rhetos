@@ -41,11 +41,13 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly string OrmRepositoryBaseMembersTag = "/*OrmRepositoryBaseMembers*/";
 
         private readonly RhetosBuildEnvironment _buildEnvironment;
+        private readonly BuildOptions _buildOptions;
         private readonly CommonConceptsOptions _commonConceptsOptions;
 
-        public DomInitializationCodeGenerator(RhetosBuildEnvironment buildEnvironment, CommonConceptsOptions commonConceptsOptions)
+        public DomInitializationCodeGenerator(RhetosBuildEnvironment buildEnvironment, BuildOptions buildOptions, CommonConceptsOptions commonConceptsOptions)
         {
             _buildEnvironment = buildEnvironment;
+            _buildOptions = buildOptions;
             _commonConceptsOptions = commonConceptsOptions;
         }
 
@@ -86,6 +88,7 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.AddReferencesFromDependency(typeof(System.Data.Entity.Core.Objects.ObjectStateEntry));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Persistence.IPersistenceCache));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Persistence.IPersistenceTransaction));
+            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Persistence.DatabaseSettings));
             codeBuilder.AddReferencesFromDependency(typeof(ApplyFiltersOnClientRead));
             codeBuilder.AddReferencesFromDependency(typeof(ICommandInfo)); // Used from ApplyFiltersOnClientRead.
         }
@@ -236,7 +239,7 @@ $@"namespace Common
 
         {ModuleCodeGenerator.CommonDomRepositoryMembersTag}
     }}
-
+    
     public static class Infrastructure
     {{
         public static readonly RegisteredInterfaceImplementations RegisteredInterfaceImplementations = new RegisteredInterfaceImplementations
@@ -343,6 +346,8 @@ $@"namespace Common
             builder.RegisterType<ExecutionContext>().InstancePerLifetimeScope();
             builder.RegisterInstance(Infrastructure.RegisteredInterfaceImplementations).ExternallyOwned();
             builder.RegisterInstance(Infrastructure.ApplyFiltersOnClientRead).ExternallyOwned();
+            builder.RegisterInstance(new Rhetos.Persistence.DatabaseSettings({_buildOptions.UseLegacyMsSqlDateTime.ToString().ToLowerInvariant()})).ExternallyOwned();
+            
             {ModuleCodeGenerator.CommonAutofacConfigurationMembersTag}
 
             base.Load(builder);

@@ -26,6 +26,7 @@ namespace Rhetos.Utilities
     public class BuildOptions
     {
         public string DatabaseLanguage { get; set; } = "MsSql";
+        public bool UseLegacyMsSqlDateTime { get; set; } = true;
         public bool Debug { get; set; }
         public InitialConceptsSort InitialConceptsSort { get; set; } = InitialConceptsSort.Key;
         public ExcessDotInKey DslSyntaxExcessDotInKey { get; set; } = ExcessDotInKey.Ignore;
