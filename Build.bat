@@ -1,5 +1,5 @@
 SETLOCAL
-SET Version=4.2.0
+SET Version=4.3.0
 SET Prerelease=auto
 
 @SET Config=%1%
