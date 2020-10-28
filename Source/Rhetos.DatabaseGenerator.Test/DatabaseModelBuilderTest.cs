@@ -122,12 +122,12 @@ namespace Rhetos.DatabaseGenerator.Test
             const string createQuery2 = "create query 2";
 
             var sqlCodeBuilder = new CodeBuilder("/*", "*/");
-            sqlCodeBuilder.InsertCode(DatabaseModelBuilderAccessor.GetCodeGeneratorSeparator(ca1.Id));
+            DatabaseModelBuilderAccessor.AddCodeGeneratorSeparator(sqlCodeBuilder, ca1.Id);
             sqlCodeBuilder.InsertCode(createQuery1);
-            sqlCodeBuilder.InsertCode(DatabaseModelBuilderAccessor.GetCodeGeneratorSeparator(ca2.Id));
+            DatabaseModelBuilderAccessor.AddCodeGeneratorSeparator(sqlCodeBuilder, ca2.Id);
             sqlCodeBuilder.InsertCode(createQuery2);
 
-            var createQueries = DatabaseModelBuilderAccessor.ExtractCreateQueries(sqlCodeBuilder.GeneratedCode);
+            var createQueries = DatabaseModelBuilderAccessor.ExtractCreateQueries(sqlCodeBuilder.GeneratedCodeSegments);
             Assert.AreEqual(
                 $"{ca1.Id}:create query 1, {ca2.Id}:create query 2",
                 TestUtility.DumpSorted(createQueries, cq => $"{cq.Key}:{cq.Value}"));
@@ -143,13 +143,13 @@ namespace Rhetos.DatabaseGenerator.Test
 
             var sqlCodeBuilder = new CodeBuilder("/*", "*/");
             sqlCodeBuilder.InsertCode("before first");
-            sqlCodeBuilder.InsertCode(DatabaseModelBuilderAccessor.GetCodeGeneratorSeparator(0));
+            DatabaseModelBuilderAccessor.AddCodeGeneratorSeparator(sqlCodeBuilder, 0);
             sqlCodeBuilder.InsertCode(createQuery1);
-            sqlCodeBuilder.InsertCode(DatabaseModelBuilderAccessor.GetCodeGeneratorSeparator(1));
+            DatabaseModelBuilderAccessor.AddCodeGeneratorSeparator(sqlCodeBuilder, 1);
             sqlCodeBuilder.InsertCode(createQuery2);
 
             TestUtility.ShouldFail<FrameworkException>(
-                () => DatabaseModelBuilderAccessor.ExtractCreateQueries(sqlCodeBuilder.GeneratedCode),
+                () => DatabaseModelBuilderAccessor.ExtractCreateQueries(sqlCodeBuilder.GeneratedCodeSegments),
                 "The first segment should be empty");
         }
 
@@ -158,7 +158,7 @@ namespace Rhetos.DatabaseGenerator.Test
         {
             var sqlCodeBuilder = new CodeBuilder("/*", "*/");
 
-            var createQueries = DatabaseModelBuilderAccessor.ExtractCreateQueries(sqlCodeBuilder.GeneratedCode);
+            var createQueries = DatabaseModelBuilderAccessor.ExtractCreateQueries(sqlCodeBuilder.GeneratedCodeSegments);
             Assert.AreEqual(
                 "",
                 TestUtility.DumpSorted(createQueries, cq => $"{cq.Key}:{cq.Value}"));
@@ -172,7 +172,7 @@ namespace Rhetos.DatabaseGenerator.Test
 
             var newConceptApplications = new List<CodeGenerator>();
             TestUtility.ShouldFail<FrameworkException>(
-                () => DatabaseModelBuilderAccessor.ExtractCreateQueries(sqlCodeBuilder.GeneratedCode),
+                () => DatabaseModelBuilderAccessor.ExtractCreateQueries(sqlCodeBuilder.GeneratedCodeSegments),
                 "The first segment should be empty");
         }
 

@@ -21,9 +21,9 @@ using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace Rhetos.Compiler
 {
@@ -32,7 +32,7 @@ namespace Rhetos.Compiler
         private readonly ILogger _logger;
         private readonly RhetosBuildEnvironment _buildEnvironment;
         private readonly FilesUtility _filesUtility;
-        private readonly ConcurrentDictionary<string, string> _files = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, IEnumerable<string>> _files = new ConcurrentDictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase);
 
         public SourceWriter(RhetosBuildEnvironment buildEnvironment, ILogProvider logProvider, FilesUtility filesUtility)
         {
@@ -41,37 +41,42 @@ namespace Rhetos.Compiler
             _filesUtility = filesUtility;
         }
 
-        public void Add(string relativePath, string content)
+        public void Add(string relativePath, IEnumerable<string> codeSegments)
         {
             string filePath = Path.GetFullPath(Path.Combine(_buildEnvironment.GeneratedSourceFolder, relativePath));
 
             if (!FilesUtility.IsInsideDirectory(filePath, _buildEnvironment.GeneratedSourceFolder))
                 throw new FrameworkException($"Generated source file '{filePath}' should be inside the folder '{_buildEnvironment.GeneratedSourceFolder}'." +
                     $" Provide a simple file name or a relative path for {nameof(ISourceWriter)}.{nameof(ISourceWriter.Add)} method.");
-            
-            _files.AddOrUpdate(filePath, content, ErrorOnUpdate);
+
+            _files.AddOrUpdate(filePath, codeSegments, ErrorOnUpdate);
 
             if (File.Exists(filePath))
             {
-                if (File.ReadAllText(filePath, Encoding.UTF8).Equals(content, StringComparison.Ordinal))
+                if (FilesUtility.IsContentEqual(filePath, codeSegments))
                 {
                     Log("Unchanged", filePath, EventType.Trace);
                 }
                 else
                 {
                     Log("Updating", filePath, EventType.Trace);
-                    WriteFile(content, filePath);
+                    FilesUtility.WriteToFile(filePath, codeSegments);
                 }
             }
             else
             {
                 Log("Creating", filePath, EventType.Info);
                 _filesUtility.SafeCreateDirectory(Path.GetDirectoryName(filePath));
-                WriteFile(content, filePath);
+                FilesUtility.WriteToFile(filePath, codeSegments);
             }
         }
 
-        private string ErrorOnUpdate(string filePath, string oldValue)
+        public void Add(string relativePath, string content)
+        {
+            Add(relativePath, new List<string> { content });
+        }
+
+        private IEnumerable<string> ErrorOnUpdate(string filePath, IEnumerable<string> oldValue)
         {
             var sameFiles = _files.Keys.Where(oldFilePath => string.Equals(filePath, oldFilePath, StringComparison.OrdinalIgnoreCase)); // Robust error reporting, even though only one file is expected.
             string oldFileInfo = (sameFiles.Count() == 1 && string.Equals(sameFiles.Single(), filePath, StringComparison.Ordinal))
@@ -79,18 +84,6 @@ namespace Rhetos.Compiler
                 : $" Previously generated file is '{string.Join(", ", sameFiles)}'.";
 
             throw new FrameworkException($"Multiple code generators are writing the same file '{filePath}'.{oldFileInfo}");
-        }
-
-        private static void WriteFile(string content, string filePath)
-        {
-            using (var fs = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite))
-            {
-                using (var sw = new StreamWriter(fs, Encoding.UTF8))
-                {
-                    sw.Write(content);
-                    fs.SetLength(fs.Position);
-                }
-            }
         }
 
         public void CleanUp()

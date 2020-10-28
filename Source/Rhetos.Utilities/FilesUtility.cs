@@ -19,6 +19,7 @@
 
 using Rhetos.Logging;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -246,6 +247,48 @@ namespace Rhetos.Utilities
             return Path.GetFullPath(Path.Combine(child, "."))
                 .StartsWith(Path.GetFullPath(Path.Combine(parent, ".")),
                     StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static void WriteToFile(string filePath, IEnumerable<string> codeSegments)
+        {
+            using (var fs = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite))
+            {
+                using (var sw = new StreamWriter(fs, Encoding.UTF8))
+                {
+                    foreach (var codeSegment in codeSegments)
+                    {
+                        sw.Write(codeSegment);
+                    }
+
+                    fs.SetLength(fs.Position);
+                }
+            }
+        }
+
+        public static bool IsContentEqual(string filePath, IEnumerable<string> codeSegments)
+        {
+            using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                using (var sr = new StreamReader(fs, Encoding.UTF8))
+                {
+                    foreach (var codeSegment in codeSegments)
+                    {
+                        var buffer = new char[codeSegment.Length];
+                        sr.Read(buffer, 0, codeSegment.Length);
+                        if (codeSegment != new String(buffer))
+                        {
+                            return false;
+                        }
+                    }
+
+                    //If all the code segments match the text in the file we need to make sure that we
+                    //have read till the end of the file and if not that means that the files are different
+                    if (sr.Read() != -1)
+                        return false;
+                }
+            }
+
+            return true;
         }
     }
 }

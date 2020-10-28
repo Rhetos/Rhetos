@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Extensibility;
 using Rhetos.TestCommon;
@@ -32,12 +33,12 @@ namespace Rhetos.DatabaseGenerator.Test
         {
         }
 
-        public static string GetCodeGeneratorSeparator(int codeGeneratorId)
+        public static void AddCodeGeneratorSeparator(CodeBuilder sqlCodeBuilder, int codeGeneratorId)
         {
-            return (string)TestAccessorHelpers.Invoke<DatabaseModelBuilder>("GetCodeGeneratorSeparator", codeGeneratorId);
+            TestAccessorHelpers.Invoke<DatabaseModelBuilder>("AddCodeGeneratorSeparator", sqlCodeBuilder, codeGeneratorId);
         }
 
-        public static Dictionary<int, string> ExtractCreateQueries(string generatedSqlCode)
+        public static Dictionary<int, string> ExtractCreateQueries(IEnumerable<string> generatedSqlCode)
         {
             return (Dictionary<int, string>)TestAccessorHelpers.Invoke<DatabaseModelBuilder>("ExtractCreateQueries", generatedSqlCode);
         }

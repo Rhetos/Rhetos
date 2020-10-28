@@ -55,6 +55,12 @@ namespace Rhetos.Compiler
             };
         }
 
+        public IEnumerable<string> ExecutePluginsAsCodeSegments<TPlugin>(IPluginsContainer<TPlugin> plugins, string tagOpen, string tagClose, IConceptCodeGenerator initialCodeGenerator)
+            where TPlugin : IConceptCodeGenerator
+        {
+            return BuildCode(plugins, tagOpen, tagClose, initialCodeGenerator).GeneratedCodeSegments;
+        }
+
         public IDictionary<string, IAssemblySource> ExecutePluginsToFiles<TPlugin>(IPluginsContainer<TPlugin> plugins, string tagOpen, string tagClose, IConceptCodeGenerator initialCodeGenerator)
             where TPlugin : IConceptCodeGenerator
         {
@@ -68,6 +74,12 @@ namespace Rhetos.Compiler
                         GeneratedCode = codeFile.Value,
                         RegisteredReferences = codeBuilder.RegisteredReferences
                     });
+        }
+
+        public IDictionary<string, IEnumerable<string>> ExecutePluginsToFilesAsCodeSegments<TPlugin>(IPluginsContainer<TPlugin> plugins, string tagOpen, string tagClose, IConceptCodeGenerator initialCodeGenerator)
+            where TPlugin : IConceptCodeGenerator
+        {
+            return BuildCode(plugins, tagOpen, tagClose, initialCodeGenerator).GeneratedCodeSegmentsByFile;
         }
 
         private CodeBuilder BuildCode<TPlugin>(IPluginsContainer<TPlugin> plugins, string tagOpen, string tagClose, IConceptCodeGenerator initialCodeGenerator) where TPlugin : IConceptCodeGenerator

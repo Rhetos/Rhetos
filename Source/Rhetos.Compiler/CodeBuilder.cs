@@ -129,7 +129,11 @@ namespace Rhetos.Compiler
 
         public string GenerateCode() => _code.ToString();
 
+        public IEnumerable<string> GeneratedCodeSegments => _code.GetCodeSegments();
+
         public IDictionary<string, string> GeneratedCodeByFile => _code.GetPaths().ToDictionary(path => path, path => _code.ToString(path));
+
+        public IDictionary<string, IEnumerable<string>> GeneratedCodeSegmentsByFile => _code.GetPaths().ToDictionary(path => path, path => _code.GetCodeSegments(path));
 
         public IEnumerable<string> RegisteredReferences => _references;
     }

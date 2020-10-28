@@ -22,6 +22,7 @@ using Rhetos.TestCommon;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace Rhetos.Utilities.Test
@@ -155,6 +156,25 @@ namespace Rhetos.Utilities.Test
                     foreach (string path1 in groups[g1])
                         foreach (string path2 in groups[g2])
                             Assert.IsFalse(FilesUtility.IsSameDirectory(path1, path2), $"Paths should be different: '{path1}' and '{path2}'.");
+        }
+
+        [TestMethod]
+        public void IsContentEqualTest()
+        {
+            var stringChunks = new[]
+{
+                "chunk 1",
+                "chunk 2",
+                "chunk 3",
+                "chunk 4"
+            };
+            var testPath = Path.GetTempFileName();
+
+            File.WriteAllText(testPath, string.Concat(stringChunks.Take(3)));
+            Assert.IsTrue(FilesUtility.IsContentEqual(testPath, stringChunks.Take(3)));
+            Assert.IsFalse(FilesUtility.IsContentEqual(testPath, stringChunks.Take(2)));
+            Assert.IsFalse(FilesUtility.IsContentEqual(testPath, stringChunks.Take(4)));
+
         }
     }
 }

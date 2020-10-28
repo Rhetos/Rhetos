@@ -17,6 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System.Collections.Generic;
+
 namespace Rhetos.Compiler
 {
     public interface ISourceWriter
@@ -25,6 +27,7 @@ namespace Rhetos.Compiler
         /// Path should be a file name or a relative path inside the generated source folder.
         /// </param>
         void Add(string relativePath, string content);
+        void Add(string relativePath, IEnumerable<string> codeSegments);
         void CleanUp();
     }
 }

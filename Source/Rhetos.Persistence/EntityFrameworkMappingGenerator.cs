@@ -44,7 +44,6 @@ namespace Rhetos.Persistence
     {
         public const string ProviderManifestTokenPlaceholder = "{EntityFrameworkProviderManifestTokenPlaceholder}";  
 
-        private const string _segmentSplitter = "<!--SegmentSplitter-->";
         private readonly ICodeGenerator _codeGenerator;
         private readonly IPluginsContainer<IConceptMapping> _plugins;
         private readonly ILogger _performanceLogger;
@@ -66,19 +65,12 @@ namespace Rhetos.Persistence
         {
             var sw = Stopwatch.StartNew();
 
-            string xml = _codeGenerator.ExecutePlugins(_plugins, "<!--", "-->", new InitialSnippet()).GeneratedCode;
-            string[] segments = xml.Split(new[] { "\r\n" + _segmentSplitter + "\r\n" }, StringSplitOptions.None);
-
-            if (segments.Length != EntityFrameworkMapping.ModelFiles.Length)
-                throw new FrameworkException($"Unexpected number of metadata segments: {segments.Length}, expected {EntityFrameworkMapping.ModelFiles.Length}.");
-            
-            for (int s = 0; s < segments.Count(); s++)
+            var xmls = _codeGenerator.ExecutePluginsToFilesAsCodeSegments(_plugins, "<!--", "-->", new InitialSnippet());
+            foreach (var xml in xmls)
             {
-                string clearedXml = XmlUtility.RemoveComments(segments[s]);
-                string filePath = Path.Combine(_rhetosBuildEnvironment.GeneratedAssetsFolder, EntityFrameworkMapping.ModelFiles[s]);
-                File.WriteAllText(filePath, clearedXml, Encoding.UTF8);
+                string filePath = Path.Combine(_rhetosBuildEnvironment.GeneratedAssetsFolder, xml.Key);
+                FilesUtility.WriteToFile(filePath, xml.Value.Select(s => XmlUtility.RemoveComments(s)));
             }
-
             _performanceLogger.Write(sw, "GenerateMapping");
         }
 
@@ -86,27 +78,26 @@ namespace Rhetos.Persistence
         {
             public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
             {
-                codeBuilder.InsertCode(
-$@"<Schema Namespace=""{EntityFrameworkMapping.ConceptualModelNamespace}"" Alias=""Self"" annotation:UseStrongSpatialTypes=""false"" xmlns:annotation=""http://schemas.microsoft.com/ado/2009/02/edm/annotation"" xmlns:customannotation=""http://schemas.microsoft.com/ado/2013/11/edm/customannotation"" xmlns=""http://schemas.microsoft.com/ado/2009/11/edm"">
+                codeBuilder.InsertCodeToFile($@"<Schema Namespace=""{EntityFrameworkMapping.ConceptualModelNamespace}"" Alias=""Self"" annotation:UseStrongSpatialTypes=""false"" xmlns:annotation=""http://schemas.microsoft.com/ado/2009/02/edm/annotation"" xmlns:customannotation=""http://schemas.microsoft.com/ado/2013/11/edm/customannotation"" xmlns=""http://schemas.microsoft.com/ado/2009/11/edm"">
   {EntityFrameworkMapping.ConceptualModelTag}
   <EntityContainer Name=""EntityFrameworkContext"" customannotation:UseClrTypes=""true"">
     {EntityFrameworkMapping.ConceptualModelEntityContainerTag}
   </EntityContainer>
-</Schema>
-{_segmentSplitter}
-<Mapping Space=""C-S"" xmlns=""http://schemas.microsoft.com/ado/2009/11/mapping/cs"">
+</Schema>", EntityFrameworkMapping.ConceptualModelFileName);
+
+                codeBuilder.InsertCodeToFile($@"<Mapping Space=""C-S"" xmlns=""http://schemas.microsoft.com/ado/2009/11/mapping/cs"">
   {EntityFrameworkMapping.MappingTag}
   <EntityContainerMapping StorageEntityContainer=""CodeFirstDatabase"" CdmEntityContainer=""EntityFrameworkContext"">
     {EntityFrameworkMapping.MappingEntityContainerTag}
   </EntityContainerMapping>
-</Mapping>
-{_segmentSplitter}
-<Schema Namespace=""{EntityFrameworkMapping.StorageModelNamespace}"" Provider=""System.Data.SqlClient"" ProviderManifestToken=""{ProviderManifestTokenPlaceholder}"" Alias=""Self"" xmlns:customannotation=""http://schemas.microsoft.com/ado/2013/11/edm/customannotation"" xmlns=""http://schemas.microsoft.com/ado/2009/11/edm/ssdl"">
+</Mapping>", EntityFrameworkMapping.MappingModelFileName);
+
+                codeBuilder.InsertCodeToFile($@"<Schema Namespace=""{EntityFrameworkMapping.StorageModelNamespace}"" Provider=""System.Data.SqlClient"" ProviderManifestToken=""{ProviderManifestTokenPlaceholder}"" Alias=""Self"" xmlns:customannotation=""http://schemas.microsoft.com/ado/2013/11/edm/customannotation"" xmlns=""http://schemas.microsoft.com/ado/2009/11/edm/ssdl"">
   {EntityFrameworkMapping.StorageModelTag}
   <EntityContainer Name=""CodeFirstDatabase"">
     {EntityFrameworkMapping.StorageModelEntityContainerTag}
   </EntityContainer>
-</Schema>");
+</Schema>", EntityFrameworkMapping.StorageModelFileName);
             }
         }
 

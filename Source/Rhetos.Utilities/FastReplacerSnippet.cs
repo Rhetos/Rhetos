@@ -102,9 +102,9 @@ namespace Rhetos.Utilities
             });
         }
 
-        public void ToString(StringBuilder sb)
+        public IEnumerable<string> GetCodeSegments()
         {
-            InnerSnippets.Sort(delegate(InnerSnippet a, InnerSnippet b)
+            InnerSnippets.Sort(delegate (InnerSnippet a, InnerSnippet b)
             {
                 if (a == b) return 0;
                 if (a.Start != b.Start) return a.Start - b.Start;
@@ -122,11 +122,13 @@ namespace Rhetos.Utilities
                     throw new InvalidOperationException(string.Format(
                         "Internal error: Token is overlapping with a previous token. Overlapping token is from position {0} to {1}, previous token ends at position {2} in snippet \"{3}\".",
                         innerSnippet.Start, innerSnippet.End, lastPosition, Text));
-                sb.Append(Text, lastPosition, innerSnippet.Start - lastPosition);
-                innerSnippet.Snippet.ToString(sb);
+                if(innerSnippet.Start - lastPosition > 0)
+                    yield return Text.Substring(lastPosition, innerSnippet.Start - lastPosition);
+                foreach (var s in innerSnippet.Snippet.GetCodeSegments())
+                    yield return s;
                 lastPosition = innerSnippet.End;
             }
-            sb.Append(Text, lastPosition, Text.Length - lastPosition);
+            yield return Text.Substring(lastPosition, Text.Length - lastPosition);
         }
 
         public int GetLength()
