@@ -300,7 +300,7 @@ DROP VIEW {0}.{1};</value>
     {0} = inserted.{1}</value>
   </data>
   <data name="ModuleDatabaseDefinition_Create" xml:space="preserve">
-    <value>CREATE SCHEMA {0}</value>
+    <value>CREATE SCHEMA {0} AUTHORIZATION dbo</value>
   </data>
   <data name="ModuleDatabaseDefinition_Remove" xml:space="preserve">
     <value>DROP SCHEMA {0}</value>
