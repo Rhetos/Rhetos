@@ -25,7 +25,7 @@ CREATE TABLE Rhetos.DatabaseGeneratorAppliedConcept
 );
 
 IF OBJECT_ID(N'[Rhetos].[DF_DatabaseGeneratorAppliedConcept_LastModified]') IS NULL AND OBJECT_ID(N'[Rhetos].[AppliedConcept]') IS NULL
-ALTER TABLE Rhetos.DatabaseGeneratorAppliedConcept ADD CONSTRAINT DF_DatabaseGeneratorAppliedConcept_LastModified DEFAULT (getdate()) FOR LastModified;
+ALTER TABLE Rhetos.DatabaseGeneratorAppliedConcept ADD CONSTRAINT DF_DatabaseGeneratorAppliedConcept_LastModified DEFAULT (SYSDATETIME()) FOR LastModified;
 
 IF OBJECT_ID(N'[Rhetos].[DF_DatabaseGeneratorAppliedConcept_AppliedBy]') IS NULL AND OBJECT_ID(N'[Rhetos].[AppliedConcept]') IS NULL
 ALTER TABLE Rhetos.DatabaseGeneratorAppliedConcept ADD CONSTRAINT DF_DatabaseGeneratorAppliedConcept_AppliedBy DEFAULT (upper(isnull(suser_sname(),user_name()))) FOR AppliedBy;
@@ -49,7 +49,7 @@ CREATE TABLE Rhetos.DataMigrationScript
 	Tag nvarchar(200) NOT NULL,
 	Path nvarchar(200) NOT NULL,
 	Content nvarchar(max) NOT NULL,
-	DateExecuted datetime NOT NULL CONSTRAINT DF_DataMigrationScript_LastModified DEFAULT (getdate()),
+	DateExecuted datetime NOT NULL CONSTRAINT DF_DataMigrationScript_LastModified DEFAULT (SYSDATETIME()),
 	ExecutedBy nvarchar(200) NULL CONSTRAINT DF_DataMigrationScript_AppliedBy DEFAULT (upper(isnull(suser_sname(),user_name()))),
 	Client nvarchar(200) NULL CONSTRAINT DF_DataMigrationScript_Client DEFAULT (upper(host_name())),
 	Server nvarchar(200) NULL CONSTRAINT DF_DataMigrationScript_Server DEFAULT (upper(@@servername)),

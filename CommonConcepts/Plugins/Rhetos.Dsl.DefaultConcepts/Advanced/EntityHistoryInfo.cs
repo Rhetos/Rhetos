@@ -55,7 +55,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             Dependency_ChangesEntity = new EntityInfo { Module = Entity.Module, Name = Entity.Name + "_Changes" };
             Dependency_HistorySqlQueryable = new SqlQueryableInfo { Module = Entity.Module, Name = Entity.Name + "_History", SqlSource = HistorySqlSnippet() };
-            Dependency_AtTimeSqlFunction = new SqlFunctionInfo { Module = Entity.Module, Name = Entity.Name + "_AtTime", Arguments = "@ContextTime DATETIME", Source = AtTimeSqlSnippet() };
+            Dependency_AtTimeSqlFunction = new SqlFunctionInfo { Module = Entity.Module, Name = Entity.Name + "_AtTime", Arguments = "@ContextTime DATETIME2(3)", Source = AtTimeSqlSnippet() };
             Dependency_Write = new WriteInfo {
                     DataStructure = Dependency_HistorySqlQueryable,
                     SaveImplementation = HistorySaveFunction()
@@ -177,7 +177,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                 @"SELECT
                     ID = entity.ID,
                     EntityID = entity.ID,
-                    ActiveUntil = CAST(NULL AS DateTime){5}
+                    ActiveUntil = CAST(NULL AS DateTime2(3)){5}
                 FROM
                     {0}.{1} entity
 

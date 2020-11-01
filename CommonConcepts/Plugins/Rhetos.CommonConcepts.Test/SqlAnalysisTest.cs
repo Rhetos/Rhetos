@@ -243,7 +243,7 @@ namespace CommonConcepts.Test
                 { "select count(*) from a.b e join c.d(e.f)", "a.b, c.d" },
                 { "select a.b(), c.d from e.f c", "a.b, e.f" },
                 { "select a.b(c.d) from e.f c", "a.b, e.f" },
-                { "select count(*) from a.a, b.b where (a.a.id in select x, y.y(getdate()) from c.c, d.d)", "a.a, b.b, c.c, d.d, y.y" },
+                { "select count(*) from a.a, b.b where (a.a.id in select x, y.y(SYSDATETIME()) from c.c, d.d)", "a.a, b.b, c.c, d.d, y.y" },
 
                 { "select x.x,d.d\r\n(\r\n) from\na.a\njoin\nb.b\r\n,\r\nc.c", "a.a, b.b, c.c, d.d" },
                 { "select a.1, [a].[2]() from [a].[3], [a].[4], a.[5], [a].6, [a.7]", "a.2, a.3, a.4, a.5, a.6" },
@@ -341,9 +341,9 @@ namespace CommonConcepts.Test
                 { "c.d", "SqlDependsOnDataStructureInfo c.d" },
                 { "e.f", "SqlDependsOnSqlViewInfo e.f" },
                 { "g.h", "" },
-                { "g.h(GETDATE())", "SqlDependsOnSqlFunctionInfo g.h" },
+                { "g.h(SYSDATETIME())", "SqlDependsOnSqlFunctionInfo g.h" },
 
-                { "x.y(GETDATE())", "SqlDependsOnSqlFunctionInfo x.y" },
+                { "x.y(SYSDATETIME())", "SqlDependsOnSqlFunctionInfo x.y" },
                 { "x.y", "SqlDependsOnDataStructureInfo x.y, SqlDependsOnSqlViewInfo x.y" },
             };
 
