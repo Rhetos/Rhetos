@@ -25,7 +25,7 @@ CREATE TABLE Rhetos.DatabaseGeneratorAppliedConcept
 );
 
 IF OBJECT_ID(N'[Rhetos].[DF_DatabaseGeneratorAppliedConcept_LastModified]') IS NULL AND OBJECT_ID(N'[Rhetos].[AppliedConcept]') IS NULL
-ALTER TABLE Rhetos.DatabaseGeneratorAppliedConcept ADD CONSTRAINT DF_DatabaseGeneratorAppliedConcept_LastModified DEFAULT (SYSDATETIME()) FOR LastModified;
+ALTER TABLE Rhetos.DatabaseGeneratorAppliedConcept ADD CONSTRAINT DF_DatabaseGeneratorAppliedConcept_LastModified DEFAULT (getdate()) FOR LastModified;
 
 IF OBJECT_ID(N'[Rhetos].[DF_DatabaseGeneratorAppliedConcept_AppliedBy]') IS NULL AND OBJECT_ID(N'[Rhetos].[AppliedConcept]') IS NULL
 ALTER TABLE Rhetos.DatabaseGeneratorAppliedConcept ADD CONSTRAINT DF_DatabaseGeneratorAppliedConcept_AppliedBy DEFAULT (upper(isnull(suser_sname(),user_name()))) FOR AppliedBy;
@@ -49,7 +49,7 @@ CREATE TABLE Rhetos.DataMigrationScript
 	Tag nvarchar(200) NOT NULL,
 	Path nvarchar(200) NOT NULL,
 	Content nvarchar(max) NOT NULL,
-	DateExecuted datetime NOT NULL CONSTRAINT DF_DataMigrationScript_LastModified DEFAULT (SYSDATETIME()),
+	DateExecuted datetime NOT NULL CONSTRAINT DF_DataMigrationScript_LastModified DEFAULT (getdate()),
 	ExecutedBy nvarchar(200) NULL CONSTRAINT DF_DataMigrationScript_AppliedBy DEFAULT (upper(isnull(suser_sname(),user_name()))),
 	Client nvarchar(200) NULL CONSTRAINT DF_DataMigrationScript_Client DEFAULT (upper(host_name())),
 	Server nvarchar(200) NULL CONSTRAINT DF_DataMigrationScript_Server DEFAULT (upper(@@servername)),
@@ -695,3 +695,35 @@ WHERE
 -- that would cause downgrade to fail. See https://github.com/Rhetos/Rhetos/issues/353 for more info.
 IF OBJECT_ID(N'Rhetos.DslScript') IS NOT NULL
 	TRUNCATE TABLE Rhetos.DslScript;
+
+
+-- Migration from datetime to datetime2(3)
+IF EXISTS (
+	SELECT *
+	FROM INFORMATION_SCHEMA.COLUMNS
+	WHERE 
+		TABLE_SCHEMA = N'Rhetos' AND
+		TABLE_NAME = N'AppliedConcept' AND 
+		COLUMN_NAME = N'LastModified' AND
+		DATA_TYPE = N'datetime'
+)
+BEGIN
+	ALTER TABLE Rhetos.AppliedConcept DROP CONSTRAINT DF_AppliedConcept_LastModified;
+    ALTER TABLE Rhetos.AppliedConcept ALTER COLUMN LastModified datetime2(3) NOT NULL
+    ALTER TABLE Rhetos.AppliedConcept ADD CONSTRAINT DF_AppliedConcept_LastModified DEFAULT (sysdatetime()) FOR LastModified;
+END
+
+IF EXISTS (
+	SELECT *
+	FROM INFORMATION_SCHEMA.COLUMNS
+	WHERE 
+		TABLE_SCHEMA = N'Rhetos' AND
+		TABLE_NAME = N'DataMigrationScript' AND 
+		COLUMN_NAME = N'DateExecuted' AND
+		DATA_TYPE = N'datetime'
+)
+BEGIN
+	ALTER TABLE Rhetos.DataMigrationScript DROP CONSTRAINT DF_DataMigrationScript_LastModified;
+    ALTER TABLE Rhetos.DataMigrationScript ALTER COLUMN DateExecuted datetime2(3) NOT NULL
+    ALTER TABLE Rhetos.DataMigrationScript ADD CONSTRAINT DF_DataMigrationScript_LastModified DEFAULT (sysdatetime()) FOR DateExecuted;
+END
