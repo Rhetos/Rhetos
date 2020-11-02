@@ -389,3 +389,4 @@ FodyWeavers.xsd
 /Source/Rhetos/External*.config
 /Source/Rhetos/RhetosAppEnvironment.json
 /.vscode/settings.json
+/CommonConcepts/CommonConcepts.Test/rhetos-app.local.settings.json
