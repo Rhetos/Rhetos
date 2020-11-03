@@ -17,7 +17,7 @@ MSBuild.exe "Rhetos.sln" /target:rebuild /p:Configuration=%Config% /verbosity:mi
 CALL CreateInstallationPackage.bat %Config% /NOPAUSE || GOTO Error0
 
 NuGet restore CommonConceptsTest.sln
-MSBuild.exe CommonConceptsTest.sln /target:rebuild /p:Configuration=Debug /verbosity:minimal || GOTO Error0
+MSBuild.exe CommonConceptsTest.sln /target:restore /p:RestoreForce=True  /target:rebuild /p:Configuration=Debug /verbosity:minimal || GOTO Error0
 
 REM Updating the build version back to "dev" (internal development build), to avoid spamming git history with timestamped prerelease versions.
 PowerShell -ExecutionPolicy ByPass .\Tools\Build\ChangeVersion.ps1 %Version% dev || GOTO Error0
