@@ -35,6 +35,33 @@ namespace DeployPackages.Test
     [TestClass]
     public class AutofacConfigurationTest
     {
+        private class ApplicationDeployment_Accessor : ApplicationDeployment
+        {
+            public ApplicationDeployment_Accessor(IConfiguration configuration, ILogProvider logProvider) : 
+                base(configuration, logProvider){}
+
+            public new RhetosContainerBuilder CreateDbUpdateComponentsContainer()
+            {
+                return base.CreateDbUpdateComponentsContainer();
+            }
+
+            public new void AddAppInitializationComponents(ContainerBuilder builder)
+            {
+                base.AddAppInitializationComponents(builder);
+            }
+        }
+
+        private class ApplicationBuild_Accessor : ApplicationBuild
+        {
+            public ApplicationBuild_Accessor(IConfiguration configuration, ILogProvider logProvider, IEnumerable<string> pluginAssemblies, InstalledPackages installedPackages) : 
+                base(configuration, logProvider, pluginAssemblies, installedPackages){ }
+
+            public new RhetosContainerBuilder CreateBuildComponentsContainer()
+            {
+                return base.CreateBuildComponentsContainer();
+            }
+        }
+
         public IConfiguration GetBuildConfiguration()
         {
             string rhetosAppRootPath = AppDomain.CurrentDomain.BaseDirectory;
@@ -131,7 +158,7 @@ namespace DeployPackages.Test
         public void CorrectRegistrationsBuildTime()
         {
             var configuration = GetBuildConfiguration();
-            var build = new ApplicationBuild(configuration, new NLogProvider(), PluginsFromThisAssembly(), new InstalledPackages());
+            var build = new ApplicationBuild_Accessor(configuration, new NLogProvider(), PluginsFromThisAssembly(), new InstalledPackages());
             var builder = build.CreateBuildComponentsContainer();
 
             using (var container = builder.Build())
@@ -150,7 +177,7 @@ namespace DeployPackages.Test
         public void CorrectRegistrationsDbUpdate()
         {
             var configuration = GetRuntimeConfiguration();
-            var deployment = new ApplicationDeployment(configuration, new NLogProvider());
+            var deployment = new ApplicationDeployment_Accessor(configuration, new NLogProvider());
             var builder = deployment.CreateDbUpdateComponentsContainer();
 
             using (var container = builder.Build())
@@ -168,7 +195,7 @@ namespace DeployPackages.Test
         public void CorrectRegistrationsRuntimeWithInitialization()
         {
             var configuration = GetRuntimeConfiguration();
-            var deployment = new ApplicationDeployment(configuration, new NLogProvider());
+            var deployment = new ApplicationDeployment_Accessor(configuration, new NLogProvider());
 
             using (var container = new RhetosRuntime(isHost: false).BuildContainer(new NLogProvider(), configuration, deployment.AddAppInitializationComponents))
             {

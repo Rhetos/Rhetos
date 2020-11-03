@@ -65,7 +65,7 @@ namespace Rhetos
             }
         }
 
-        internal RhetosContainerBuilder CreateDbUpdateComponentsContainer()
+        protected RhetosContainerBuilder CreateDbUpdateComponentsContainer()
         {
             var builder = new RhetosContainerBuilder(_configuration, _logProvider, AssemblyResolver.GetRuntimeAssemblies(_configuration));
             builder.RegisterModule(new CoreModule());
@@ -111,7 +111,7 @@ namespace Rhetos
             }
         }
 
-        internal void AddAppInitializationComponents(ContainerBuilder builder)
+        protected void AddAppInitializationComponents(ContainerBuilder builder)
         {
             builder.RegisterModule(new AppInitializeModule());
             builder.RegisterType<ProcessUserInfo>().As<IUserInfo>(); // Override runtime IUserInfo plugins. This container is intended to be used in a simple process.

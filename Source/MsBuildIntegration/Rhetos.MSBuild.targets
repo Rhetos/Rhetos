@@ -1,7 +1,7 @@
 <Project>
     <UsingTask AssemblyFile="RhetosVSIntegration.dll" TaskName="RhetosVSIntegration.ResolveRhetosProjectAssets" />
 
-    <Target Name="ResolveRhetosProjectAssets" DependsOnTargets="ResolveNuGetPackageAssets;ResolveAssemblyReferences;ResolveReferences" BeforeTargets="CoreCompile">
+    <Target Name="ResolveRhetosProjectAssets" DependsOnTargets="ResolveLockFileReferences;ResolveAssemblyReferences;ResolveReferences" BeforeTargets="CoreCompile">
         <Message Text="ResolveRhetosProjectAssets" />
         <ResolveRhetosProjectAssets
             ProjectDirectory="$(ProjectDir)."
