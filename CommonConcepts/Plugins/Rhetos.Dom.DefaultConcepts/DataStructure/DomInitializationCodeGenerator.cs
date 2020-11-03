@@ -404,7 +404,6 @@ $@"namespace Common
         where TEntity : class, IEntity
         where TQueryableEntity : class, IEntity, TEntity, IQueryableEntity<TEntity>
     {{
-        [Obsolete(""Use Load(ids) or Query(ids) method."")]
         public TEntity[] Load(IEnumerable<Guid> ids)
         {{
             if (!(ids is System.Collections.IList))
