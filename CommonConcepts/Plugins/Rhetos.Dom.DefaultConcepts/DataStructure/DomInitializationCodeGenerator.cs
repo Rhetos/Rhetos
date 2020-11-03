@@ -76,7 +76,6 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.AddReferencesFromDependency(typeof(System.ComponentModel.Composition.ExportAttribute));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Dom.DefaultConcepts.GenericRepositories));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Logging.ILogProvider));
-            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Security.IWindowsSecurity));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.SqlUtility));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.ExceptionsUtility));
             codeBuilder.AddReferencesFromDependency(typeof(System.Data.Entity.DbContext));
@@ -289,9 +288,6 @@ $@"namespace Common
 
         public Rhetos.Logging.ILogProvider LogProvider {{ get; private set; }}
 
-        protected Lazy<Rhetos.Security.IWindowsSecurity> _windowsSecurity;
-        public Rhetos.Security.IWindowsSecurity WindowsSecurity {{ get {{ return _windowsSecurity.Value; }} }}
-
         public EntityFrameworkContext EntityFrameworkContext {{ get; private set; }}
 
         {ModuleCodeGenerator.ExecutionContextMemberTag}
@@ -304,8 +300,7 @@ $@"namespace Common
             Lazy<Rhetos.Security.IAuthorizationManager> authorizationManager,
             Lazy<Rhetos.Dom.DefaultConcepts.GenericRepositories> genericRepositories,
             Lazy<Common.DomRepository> repository,
-            Rhetos.Logging.ILogProvider logProvider,
-            Lazy<Rhetos.Security.IWindowsSecurity> windowsSecurity{ModuleCodeGenerator.ExecutionContextConstructorArgumentTag},
+            Rhetos.Logging.ILogProvider logProvider{ModuleCodeGenerator.ExecutionContextConstructorArgumentTag},
             EntityFrameworkContext entityFrameworkContext)
         {{
             _persistenceTransaction = persistenceTransaction;
@@ -315,7 +310,6 @@ $@"namespace Common
             _genericRepositories = genericRepositories;
             _repository = repository;
             LogProvider = logProvider;
-            _windowsSecurity = windowsSecurity;
             EntityFrameworkContext = entityFrameworkContext;
             {ModuleCodeGenerator.ExecutionContextConstructorAssignmentTag}
         }}

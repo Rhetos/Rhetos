@@ -67,7 +67,6 @@ namespace Rhetos.Configuration.Autofac.Modules
         private void AddSecurity(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
         {
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<AppSecurityOptions>()).SingleInstance().PreserveExistingDefaults();
-            builder.RegisterType<WindowsSecurity>().As<IWindowsSecurity>().SingleInstance();
             builder.RegisterType<AuthorizationManager>().As<IAuthorizationManager>().InstancePerLifetimeScope();
 
             // Default user authentication and authorization components. Custom plugins may override it by registering their own interface implementations.

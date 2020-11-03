@@ -69,6 +69,7 @@ namespace Rhetos
             {
                 // WCF-specific component registrations.
                 // Can be customized later by plugin modules.
+                builder.RegisterType<WindowsSecurity>().As<IWindowsSecurity>().SingleInstance();
                 builder.RegisterType<WcfWindowsUserInfo>().As<IUserInfo>().InstancePerLifetimeScope();
                 builder.RegisterType<RhetosService>().As<RhetosService>().As<IServerApplication>();
                 builder.RegisterType<Rhetos.Web.GlobalErrorHandler>();

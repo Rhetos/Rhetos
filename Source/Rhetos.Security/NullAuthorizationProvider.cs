@@ -17,18 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.ServiceModel;
-using System.ServiceModel.Channels;
 using Rhetos.Utilities;
 using Rhetos.Logging;
-using System.Text.RegularExpressions;
-using System.Security.Principal;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.DirectoryServices;
 
 namespace Rhetos.Security
 {

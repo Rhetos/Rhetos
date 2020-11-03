@@ -55,6 +55,7 @@
   <ItemGroup>
     <Compile Include="IHomePageSnippet.cs" />
     <Compile Include="IService.cs" />
+    <Compile Include="IWindowsSecurity.cs" />
     <Compile Include="ServerCommandResult.cs" />
     <Compile Include="ServerProcessingResult.cs" />
     <Compile Include="ServerCommandInfo.cs" />
