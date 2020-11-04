@@ -24,6 +24,7 @@
       <dependency id="System.Data.SqlClient" version="4.8.1" />
       <dependency id="System.CodeDom" version="4.7.0" /> <!-- For IAssemblyGenerator legacy method. -->
       <dependency id="Oracle.ManagedDataAccess" version="12.1.24160719" />
+      <dependency id="Microsoft.CodeAnalysis.CSharp" version="3.7.0" />
     </dependencies>
   </metadata>
   <files>
@@ -87,5 +88,14 @@
     <file src="Rhetos.XmlSerialization\bin\Debug\netstandard2.0\Rhetos.XmlSerialization.dll" target="lib\netstandard2.0" />
     <file src="Rhetos.XmlSerialization\bin\Debug\netstandard2.0\Rhetos.XmlSerialization.pdb" target="lib\netstandard2.0" />
     <file src="Rhetos.XmlSerialization\bin\Debug\netstandard2.0\Rhetos.XmlSerialization.xml" target="lib\netstandard2.0" />
+    <file src="Rhetos.Configuration.Autofac\bin\Debug\netstandard2.0\Rhetos.Configuration.Autofac.dll" target="lib\netstandard2.0" />
+    <file src="Rhetos.Configuration.Autofac\bin\Debug\netstandard2.0\Rhetos.Configuration.Autofac.pdb" target="lib\netstandard2.0" />
+    <file src="Rhetos.Configuration.Autofac\bin\Debug\netstandard2.0\Rhetos.Configuration.Autofac.xml" target="lib\netstandard2.0" />
+    <file src="Rhetos.Deployment\bin\Debug\netstandard2.0\Rhetos.Deployment.dll" target="lib\netstandard2.0" />
+    <file src="Rhetos.Deployment\bin\Debug\netstandard2.0\Rhetos.Deployment.pdb" target="lib\netstandard2.0" />
+    <file src="Rhetos.Deployment\bin\Debug\netstandard2.0\Rhetos.Deployment.xml" target="lib\netstandard2.0" />
+    <file src="Rhetos.Deployment.Interfaces\bin\Debug\netstandard2.0\Rhetos.Deployment.Interfaces.dll" target="lib\netstandard2.0" />
+    <file src="Rhetos.Deployment.Interfaces\bin\Debug\netstandard2.0\Rhetos.Deployment.Interfaces.pdb" target="lib\netstandard2.0" />
+    <file src="Rhetos.Deployment.Interfaces\bin\Debug\netstandard2.0\Rhetos.Deployment.Interfaces.xml" target="lib\netstandard2.0" />
   </files>
 </package>

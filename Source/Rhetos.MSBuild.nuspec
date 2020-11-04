@@ -15,8 +15,10 @@
     </dependencies>
     <contentFiles>
       <files include="any/any/rhetos.exe" buildAction="None" copyToOutput="true" />
+      <files include="any/any/rhetos.dll" buildAction="None" copyToOutput="true" />
       <files include="any/any/rhetos.pdb" buildAction="None" copyToOutput="true" />
-      <files include="any/any/rhetos.exe.config" buildAction="None" copyToOutput="true" />
+      <files include="any/any/rhetos.deps.json" buildAction="None" copyToOutput="true" />
+      <files include="any/any/rhetos.runtimeconfig.json" buildAction="None" copyToOutput="true" />
     </contentFiles>
   </metadata>
   <files>
@@ -32,7 +34,9 @@
     <file src="RhetosVSIntegration\bin\Debug\*.pdb" target="build" />
 
     <file src="RhetosCli\bin\Debug\netcoreapp3.1\rhetos.exe" target="contentFiles/any/any" />
+    <file src="RhetosCli\bin\Debug\netcoreapp3.1\rhetos.dll" target="contentFiles/any/any" />
     <file src="RhetosCli\bin\Debug\netcoreapp3.1\rhetos.pdb" target="contentFiles/any/any" />
-    <file src="RhetosCli\bin\Debug\netcoreapp3.1\rhetos.*.json" target="contentFiles/any/any" />
+    <file src="RhetosCli\bin\Debug\netcoreapp3.1\rhetos.deps.json" target="contentFiles/any/any" />
+    <file src="RhetosCli\bin\Debug\netcoreapp3.1\rhetos.runtimeconfig.json" target="contentFiles/any/any" />
   </files>
 </package>
