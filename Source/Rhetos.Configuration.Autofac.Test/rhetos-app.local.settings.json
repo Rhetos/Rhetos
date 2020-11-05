@@ -1,0 +1,8 @@
+{
+    "ConnectionStrings": {
+      "ServerConnectionString": {
+        "ConnectionString": "Server=localhost;Database=RhetosTest;Trusted_Connection=True;",
+        "LA": "Data Source=tcp:localhost;Initial Catalog=RhetosTest;Integrated Security=SSPI;Network Library=dbmslpcn;"
+      }
+    }
+}

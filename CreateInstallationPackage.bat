@@ -12,7 +12,6 @@ IF NOT EXIST Install\NuGet.exe POWERSHELL (New-Object System.Net.WebClient).Down
 
 NuGet.exe pack Source\Rhetos.nuspec -OutputDirectory Install || GOTO Error0
 NuGet.exe pack Source\Rhetos.MSBuild.nuspec -OutputDirectory Install || GOTO Error0
-NuGet.exe pack Source\Rhetos.Wcf.nuspec -OutputDirectory Install || GOTO Error0
 NuGet.exe pack Source\Rhetos.TestCommon.nuspec -OutputDirectory Install || GOTO Error0
 Install\NuGet.exe pack CommonConcepts\Rhetos.CommonConcepts.nuspec -OutputDirectory Install || GOTO Error0
 

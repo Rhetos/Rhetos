@@ -17,17 +17,20 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.Runtime.Serialization;
+using Autofac;
+using Rhetos.Security;
+using Rhetos.Utilities;
+using System.ComponentModel.Composition;
 
-namespace Rhetos
+namespace DeployPackages.Test
 {
-    [DataContract]
-    public class ServerCommandInfo
+    [Export(typeof(Module))]
+    public class TestWebSecurityModule : Module
     {
-        [DataMember]
-        public string CommandName { get; set; }
-
-        [DataMember]
-        public string Data { get; set; }
+        protected override void Load(ContainerBuilder builder)
+        {
+            builder.RegisterType<TestSecurityUserInfo>().As<IUserInfo>();
+            base.Load(builder);
+        }
     }
 }

@@ -7,8 +7,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Deployment", "Deployment", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CommonConcepts", "CommonConcepts", "{2212BF93-7EC1-447E-BF78-8C845E257E88}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{E6D8EA3D-AF0C-412E-B8C5-BDED68BD5700}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{0124322E-2731-48E8-910C-957E37181628}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Utilities", "Source\Rhetos.Utilities\Rhetos.Utilities.csproj", "{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}"
@@ -23,9 +21,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.DatabaseGenerator.In
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Dsl.Interfaces", "Source\Rhetos.Dsl.Interfaces\Rhetos.Dsl.Interfaces.csproj", "{F4ACD412-2782-4191-8708-C7AE99B0CEE9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.DatabaseGenerator.Test", "Source\Rhetos.DatabaseGenerator.Test\Rhetos.DatabaseGenerator.Test.csproj", "{3FC4E5BB-F6A8-4E74-9B22-0181F003551B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.DatabaseGenerator.Test", "Source\Rhetos.DatabaseGenerator.Test\Rhetos.DatabaseGenerator.Test.csproj", "{3FC4E5BB-F6A8-4E74-9B22-0181F003551B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Dsl.Test", "Source\Rhetos.Dsl.Test\Rhetos.Dsl.Test.csproj", "{F54C8A50-8AB5-4F7E-A255-D6645A457E02}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Dsl.Test", "Source\Rhetos.Dsl.Test\Rhetos.Dsl.Test.csproj", "{F54C8A50-8AB5-4F7E-A255-D6645A457E02}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Persistence.Interfaces", "Source\Rhetos.Persistence.Interfaces\Rhetos.Persistence.Interfaces.csproj", "{5E3BBD83-91CB-4FBA-81B2-79A81EC94D70}"
 EndProject
@@ -102,17 +100,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Processing.DefaultCo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Deployment", "Source\Rhetos.Deployment\Rhetos.Deployment.csproj", "{A7328BFA-A009-4F1E-B9A1-B51B2020F45C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Logging.Test", "Source\Rhetos.Logging.Test\Rhetos.Logging.Test.csproj", "{6059035E-D06A-439E-AE7B-D8299DE1CD44}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Logging.Test", "Source\Rhetos.Logging.Test\Rhetos.Logging.Test.csproj", "{6059035E-D06A-439E-AE7B-D8299DE1CD44}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Deployment.Interfaces", "Source\Rhetos.Deployment.Interfaces\Rhetos.Deployment.Interfaces.csproj", "{945537DC-4AF7-4DEF-B73C-07F19229EFE6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Persistence", "Source\Rhetos.Persistence\Rhetos.Persistence.csproj", "{02415B9E-FB00-451D-8B1A-B4A3CE150F2D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Persistence.Test", "Source\Rhetos.Persistence.Test\Rhetos.Persistence.Test.csproj", "{EABE44F4-8ED3-475A-A3E9-E8FD5A187233}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Persistence.Test", "Source\Rhetos.Persistence.Test\Rhetos.Persistence.Test.csproj", "{EABE44F4-8ED3-475A-A3E9-E8FD5A187233}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RhetosCli", "Source\RhetosCli\RhetosCli.csproj", "{13864809-505B-4FE3-B04E-31F9735B5FFC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Extensibility.Test", "Source\Rhetos.Extensibility.Test\Rhetos.Extensibility.Test.csproj", "{7F9950B3-CCAE-4886-9303-297D78559F30}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Extensibility.Test", "Source\Rhetos.Extensibility.Test\Rhetos.Extensibility.Test.csproj", "{7F9950B3-CCAE-4886-9303-297D78559F30}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RhetosVSIntegration", "Source\RhetosVSIntegration\RhetosVSIntegration.csproj", "{18540084-6499-4656-8B38-F4F8FB3D949B}"
 EndProject
@@ -122,11 +120,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Directory.Build.props = Directory.Build.props
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Deployment.Test", "Source\Rhetos.Deployment.Test\Rhetos.Deployment.Test.csproj", "{FFD3FAE3-C83E-4DA7-B2C5-94B2280F39F8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Deployment.Test", "Source\Rhetos.Deployment.Test\Rhetos.Deployment.Test.csproj", "{FFD3FAE3-C83E-4DA7-B2C5-94B2280F39F8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Utilities.Test", "Source\Rhetos.Utilities.Test\Rhetos.Utilities.Test.csproj", "{F98830A4-B9D9-4709-8221-535743244478}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Utilities.Test", "Source\Rhetos.Utilities.Test\Rhetos.Utilities.Test.csproj", "{F98830A4-B9D9-4709-8221-535743244478}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.CommonConcepts.Test", "CommonConcepts\Plugins\Rhetos.CommonConcepts.Test\Rhetos.CommonConcepts.Test.csproj", "{CE6E3553-8FFC-450F-9C52-51383DEEF841}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.CommonConcepts.Test", "CommonConcepts\Plugins\Rhetos.CommonConcepts.Test\Rhetos.CommonConcepts.Test.csproj", "{CE6E3553-8FFC-450F-9C52-51383DEEF841}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Configuration.Autofac.Test", "Source\Rhetos.Configuration.Autofac.Test\Rhetos.Configuration.Autofac.Test.csproj", "{A0FEC8BA-D4FD-48B8-9813-C1CF3C2BD49B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -765,6 +765,24 @@ Global
 		{CE6E3553-8FFC-450F-9C52-51383DEEF841}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{CE6E3553-8FFC-450F-9C52-51383DEEF841}.Release|x86.ActiveCfg = Release|Any CPU
 		{CE6E3553-8FFC-450F-9C52-51383DEEF841}.Release|x86.Build.0 = Release|Any CPU
+		{A0FEC8BA-D4FD-48B8-9813-C1CF3C2BD49B}.CodeAnalysis|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0FEC8BA-D4FD-48B8-9813-C1CF3C2BD49B}.CodeAnalysis|Any CPU.Build.0 = Debug|Any CPU
+		{A0FEC8BA-D4FD-48B8-9813-C1CF3C2BD49B}.CodeAnalysis|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{A0FEC8BA-D4FD-48B8-9813-C1CF3C2BD49B}.CodeAnalysis|Mixed Platforms.Build.0 = Debug|Any CPU
+		{A0FEC8BA-D4FD-48B8-9813-C1CF3C2BD49B}.CodeAnalysis|x86.ActiveCfg = Debug|Any CPU
+		{A0FEC8BA-D4FD-48B8-9813-C1CF3C2BD49B}.CodeAnalysis|x86.Build.0 = Debug|Any CPU
+		{A0FEC8BA-D4FD-48B8-9813-C1CF3C2BD49B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0FEC8BA-D4FD-48B8-9813-C1CF3C2BD49B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0FEC8BA-D4FD-48B8-9813-C1CF3C2BD49B}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{A0FEC8BA-D4FD-48B8-9813-C1CF3C2BD49B}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{A0FEC8BA-D4FD-48B8-9813-C1CF3C2BD49B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A0FEC8BA-D4FD-48B8-9813-C1CF3C2BD49B}.Debug|x86.Build.0 = Debug|Any CPU
+		{A0FEC8BA-D4FD-48B8-9813-C1CF3C2BD49B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0FEC8BA-D4FD-48B8-9813-C1CF3C2BD49B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0FEC8BA-D4FD-48B8-9813-C1CF3C2BD49B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{A0FEC8BA-D4FD-48B8-9813-C1CF3C2BD49B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{A0FEC8BA-D4FD-48B8-9813-C1CF3C2BD49B}.Release|x86.ActiveCfg = Release|Any CPU
+		{A0FEC8BA-D4FD-48B8-9813-C1CF3C2BD49B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -810,6 +828,7 @@ Global
 		{FFD3FAE3-C83E-4DA7-B2C5-94B2280F39F8} = {2D001517-CE8E-4902-8C0A-0EA13C134830}
 		{F98830A4-B9D9-4709-8221-535743244478} = {0124322E-2731-48E8-910C-957E37181628}
 		{CE6E3553-8FFC-450F-9C52-51383DEEF841} = {2212BF93-7EC1-447E-BF78-8C845E257E88}
+		{A0FEC8BA-D4FD-48B8-9813-C1CF3C2BD49B} = {2D001517-CE8E-4902-8C0A-0EA13C134830}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4B8D1BEA-EAAA-484D-B00D-1D23226A5A90}

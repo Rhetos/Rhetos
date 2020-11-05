@@ -17,28 +17,19 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Utilities;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.ServiceModel;
-using System.Text;
-using System.Web;
 
-namespace Rhetos
+namespace DeployPackages.Test
 {
-    /// <summary>
-    /// Initialize plugin web service. Called at run-time.
-    /// </summary>
-    public interface IService // TODO: Rename to IWebServiceInitialization. The name IService causes misunderstandings.
+    public class TestSecurityUserInfo : IUserInfo
     {
-        /// <summary>
-        /// Called only once when initializing the server process (see Global.asax: Application_Start).
-        /// </summary>
-        void Initialize();
+        public bool IsUserRecognized => throw new NotImplementedException();
 
-        /// <summary>
-        /// Called once for each System.Web.HttpApplication instance in the server process (see Global.asax: HttpApplication.Init).
-        /// </summary>
-        void InitializeApplicationInstance(HttpApplication context);
+        public string UserName => throw new NotImplementedException();
+
+        public string Workstation => throw new NotImplementedException();
+
+        public string Report() => throw new NotImplementedException();
     }
 }

@@ -19,37 +19,22 @@
 
 using Autofac;
 using Rhetos.Extensibility;
-using Rhetos.HomePage;
 using Rhetos.Logging;
 using Rhetos.Security;
 using Rhetos.Utilities;
-using Rhetos.Web;
 using System;
 using System.ComponentModel.Composition;
 
-namespace Rhetos
+namespace Rhetos.Configuration.Autofac.Test
 {
     [Export(typeof(IRhetosRuntime))]
     public class RhetosRuntime : IRhetosRuntime
     {
-        private readonly bool _isHost;
-
-        public RhetosRuntime() : this(false) { }
-
-        internal RhetosRuntime(bool isHost)
-        {
-            _isHost = isHost;
-        }
-
         public IConfiguration BuildConfiguration(ILogProvider logProvider, string configurationFolder, Action<IConfigurationBuilder> addCustomConfiguration)
         {
             var configurationBuilder = new ConfigurationBuilder(logProvider);
 
-            // Main application configuration (usually Web.config).
-            if (_isHost)
-                configurationBuilder.AddConfigurationManagerConfiguration();
-            else
-                configurationBuilder.AddWebConfiguration(configurationFolder);
+            configurationBuilder.AddConfigurationManagerConfiguration();
 
             // Rhetos runtime configuration JSON files.
             configurationBuilder.AddRhetosAppEnvironment(configurationFolder);
@@ -64,28 +49,7 @@ namespace Rhetos
             var builder = new RhetosContainerBuilder(configuration, logProvider, pluginAssemblies);
 
             builder.AddRhetosRuntime();
-
-            if (_isHost)
-            {
-                // WCF-specific component registrations.
-                // Can be customized later by plugin modules.
-                builder.RegisterType<WindowsSecurity>().As<IWindowsSecurity>().SingleInstance();
-                builder.RegisterType<WcfWindowsUserInfo>().As<IUserInfo>().InstancePerLifetimeScope();
-                builder.RegisterType<RhetosService>().As<RhetosService>().As<IServerApplication>();
-                builder.RegisterType<Rhetos.Web.GlobalErrorHandler>();
-                builder.RegisterType<WebServices>();
-                builder.GetPluginRegistration().FindAndRegisterPlugins<IService>();
-            }
-
             builder.AddPluginModules();
-
-            if (_isHost)
-            {
-                // HomePageServiceInitializer must be register after other core services and plugins to allow routing overrides.
-                builder.RegisterType<HomePageService>().InstancePerLifetimeScope();
-                builder.RegisterType<HomePageServiceInitializer>().As<IService>();
-                builder.GetPluginRegistration().FindAndRegisterPlugins<IHomePageSnippet>();
-            }
 
             registerCustomComponents?.Invoke(builder);
 
