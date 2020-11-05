@@ -12,12 +12,9 @@
     <tags>Rhetos</tags>
     <dependencies>
       <dependency id="Autofac" version="4.9.4" />
-      <dependency id="Autofac.Wcf" version="4.1.0" />
-      <dependency id="EntityFramework" version="6.1.3" />
-      <dependency id="Microsoft.Web.Xdt" version="2.1.1" />
+      <dependency id="EntityFramework" version="6.4.4" />
       <dependency id="Newtonsoft.Json" version="12.0.2" />
       <dependency id="NLog" version="4.6.7" />
-      <dependency id="NuGet.Core" version="2.14.0" />
       <dependency id="System.ComponentModel.Composition" version="4.7.0" /> <!-- Rhetos plugins use MEF. -->
       <dependency id="System.CommandLine" version="2.0.0-beta1.20071.2" /> <!-- For RhetosCli. -->
       <dependency id="System.Configuration.ConfigurationManager" version="4.7.0" />
@@ -28,74 +25,74 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="Rhetos.Compiler\bin\Debug\netstandard2.0\Rhetos.Compiler.dll" target="lib\netstandard2.0" />
-    <file src="Rhetos.Compiler\bin\Debug\netstandard2.0\Rhetos.Compiler.pdb" target="lib\netstandard2.0" />
-    <file src="Rhetos.Compiler\bin\Debug\netstandard2.0\Rhetos.Compiler.xml" target="lib\netstandard2.0" />
-    <file src="Rhetos.Compiler.Interfaces\bin\Debug\netstandard2.0\Rhetos.Compiler.Interfaces.dll" target="lib\netstandard2.0" />
-    <file src="Rhetos.Compiler.Interfaces\bin\Debug\netstandard2.0\Rhetos.Compiler.Interfaces.pdb" target="lib\netstandard2.0" />
-    <file src="Rhetos.Compiler.Interfaces\bin\Debug\netstandard2.0\Rhetos.Compiler.Interfaces.xml" target="lib\netstandard2.0" />
-    <file src="Rhetos.DatabaseGenerator\bin\Debug\netstandard2.0\Rhetos.DatabaseGenerator.dll" target="lib\netstandard2.0" />
-    <file src="Rhetos.DatabaseGenerator\bin\Debug\netstandard2.0\Rhetos.DatabaseGenerator.pdb" target="lib\netstandard2.0" />
-    <file src="Rhetos.DatabaseGenerator\bin\Debug\netstandard2.0\Rhetos.DatabaseGenerator.xml" target="lib\netstandard2.0" />
-    <file src="Rhetos.DatabaseGenerator.Interfaces\bin\Debug\netstandard2.0\Rhetos.DatabaseGenerator.Interfaces.dll" target="lib\netstandard2.0" />
-    <file src="Rhetos.DatabaseGenerator.Interfaces\bin\Debug\netstandard2.0\Rhetos.DatabaseGenerator.Interfaces.pdb" target="lib\netstandard2.0" />
-    <file src="Rhetos.DatabaseGenerator.Interfaces\bin\Debug\netstandard2.0\Rhetos.DatabaseGenerator.Interfaces.xml" target="lib\netstandard2.0" />    
-    <file src="Rhetos.Dom\bin\Debug\netstandard2.0\Rhetos.Dom.dll" target="lib\netstandard2.0" />
-    <file src="Rhetos.Dom\bin\Debug\netstandard2.0\Rhetos.Dom.pdb" target="lib\netstandard2.0" />
-    <file src="Rhetos.Dom\bin\Debug\netstandard2.0\Rhetos.Dom.xml" target="lib\netstandard2.0" />
-    <file src="Rhetos.Dom.Interfaces\bin\Debug\netstandard2.0\Rhetos.Dom.Interfaces.dll" target="lib\netstandard2.0" />
-    <file src="Rhetos.Dom.Interfaces\bin\Debug\netstandard2.0\Rhetos.Dom.Interfaces.pdb" target="lib\netstandard2.0" />
-    <file src="Rhetos.Dom.Interfaces\bin\Debug\netstandard2.0\Rhetos.Dom.Interfaces.xml" target="lib\netstandard2.0" />
-    <file src="Rhetos.Dsl\bin\Debug\netstandard2.0\Rhetos.Dsl.dll" target="lib\netstandard2.0" />
-    <file src="Rhetos.Dsl\bin\Debug\netstandard2.0\Rhetos.Dsl.pdb" target="lib\netstandard2.0" />
-    <file src="Rhetos.Dsl\bin\Debug\netstandard2.0\Rhetos.Dsl.xml" target="lib\netstandard2.0" />
-    <file src="Rhetos.Dsl.Interfaces\bin\Debug\netstandard2.0\Rhetos.Dsl.Interfaces.dll" target="lib\netstandard2.0" />
-    <file src="Rhetos.Dsl.Interfaces\bin\Debug\netstandard2.0\Rhetos.Dsl.Interfaces.pdb" target="lib\netstandard2.0" />
-    <file src="Rhetos.Dsl.Interfaces\bin\Debug\netstandard2.0\Rhetos.Dsl.Interfaces.xml" target="lib\netstandard2.0" />
-    <file src="Rhetos.Extensibility\bin\Debug\netstandard2.0\Rhetos.Extensibility.dll" target="lib\netstandard2.0" />
-    <file src="Rhetos.Extensibility\bin\Debug\netstandard2.0\Rhetos.Extensibility.pdb" target="lib\netstandard2.0" />
-    <file src="Rhetos.Extensibility\bin\Debug\netstandard2.0\Rhetos.Extensibility.xml" target="lib\netstandard2.0" />
-    <file src="Rhetos.Extensibility.Interfaces\bin\Debug\netstandard2.0\Rhetos.Extensibility.Interfaces.dll" target="lib\netstandard2.0" />
-    <file src="Rhetos.Extensibility.Interfaces\bin\Debug\netstandard2.0\Rhetos.Extensibility.Interfaces.pdb" target="lib\netstandard2.0" />
-    <file src="Rhetos.Extensibility.Interfaces\bin\Debug\netstandard2.0\Rhetos.Extensibility.Interfaces.xml" target="lib\netstandard2.0" />
-    <file src="Rhetos.Logging\bin\Debug\netstandard2.0\Rhetos.Logging.dll" target="lib\netstandard2.0" />
-    <file src="Rhetos.Logging\bin\Debug\netstandard2.0\Rhetos.Logging.pdb" target="lib\netstandard2.0" />
-    <file src="Rhetos.Logging\bin\Debug\netstandard2.0\Rhetos.Logging.xml" target="lib\netstandard2.0" />
-    <file src="Rhetos.Logging.Interfaces\bin\Debug\netstandard2.0\Rhetos.Logging.Interfaces.dll" target="lib\netstandard2.0" />
-    <file src="Rhetos.Logging.Interfaces\bin\Debug\netstandard2.0\Rhetos.Logging.Interfaces.pdb" target="lib\netstandard2.0" />
-    <file src="Rhetos.Logging.Interfaces\bin\Debug\netstandard2.0\Rhetos.Logging.Interfaces.xml" target="lib\netstandard2.0" />
-    <file src="Rhetos.Persistence\bin\Debug\netstandard2.0\Rhetos.Persistence.dll" target="lib\netstandard2.0" />
-    <file src="Rhetos.Persistence\bin\Debug\netstandard2.0\Rhetos.Persistence.pdb" target="lib\netstandard2.0" />
-    <file src="Rhetos.Persistence\bin\Debug\netstandard2.0\Rhetos.Persistence.xml" target="lib\netstandard2.0" />
-    <file src="Rhetos.Persistence.Interfaces\bin\Debug\netstandard2.0\Rhetos.Persistence.Interfaces.dll" target="lib\netstandard2.0" />
-    <file src="Rhetos.Persistence.Interfaces\bin\Debug\netstandard2.0\Rhetos.Persistence.Interfaces.pdb" target="lib\netstandard2.0" />
-    <file src="Rhetos.Persistence.Interfaces\bin\Debug\netstandard2.0\Rhetos.Persistence.Interfaces.xml" target="lib\netstandard2.0" />
-    <file src="Rhetos.Processing\bin\Debug\netstandard2.0\Rhetos.Processing.dll" target="lib\netstandard2.0" />
-    <file src="Rhetos.Processing\bin\Debug\netstandard2.0\Rhetos.Processing.pdb" target="lib\netstandard2.0" />
-    <file src="Rhetos.Processing\bin\Debug\netstandard2.0\Rhetos.Processing.xml" target="lib\netstandard2.0" />
-    <file src="Rhetos.Processing.Interfaces\bin\Debug\netstandard2.0\Rhetos.Processing.Interfaces.dll" target="lib\netstandard2.0" />
-    <file src="Rhetos.Processing.Interfaces\bin\Debug\netstandard2.0\Rhetos.Processing.Interfaces.pdb" target="lib\netstandard2.0" />
-    <file src="Rhetos.Processing.Interfaces\bin\Debug\netstandard2.0\Rhetos.Processing.Interfaces.xml" target="lib\netstandard2.0" />
-    <file src="Rhetos.Security\bin\Debug\netstandard2.0\Rhetos.Security.dll" target="lib\netstandard2.0" />
-    <file src="Rhetos.Security\bin\Debug\netstandard2.0\Rhetos.Security.pdb" target="lib\netstandard2.0" />
-    <file src="Rhetos.Security\bin\Debug\netstandard2.0\Rhetos.Security.xml" target="lib\netstandard2.0" />
-    <file src="Rhetos.Security.Interfaces\bin\Debug\netstandard2.0\Rhetos.Security.Interfaces.dll" target="lib\netstandard2.0" />
-    <file src="Rhetos.Security.Interfaces\bin\Debug\netstandard2.0\Rhetos.Security.Interfaces.pdb" target="lib\netstandard2.0" />
-    <file src="Rhetos.Security.Interfaces\bin\Debug\netstandard2.0\Rhetos.Security.Interfaces.xml" target="lib\netstandard2.0" />
-    <file src="Rhetos.Utilities\bin\Debug\netstandard2.0\Rhetos.Utilities.dll" target="lib\netstandard2.0" />
-    <file src="Rhetos.Utilities\bin\Debug\netstandard2.0\Rhetos.Utilities.pdb" target="lib\netstandard2.0" />
-    <file src="Rhetos.Utilities\bin\Debug\netstandard2.0\Rhetos.Utilities.xml" target="lib\netstandard2.0" />
-    <file src="Rhetos.XmlSerialization\bin\Debug\netstandard2.0\Rhetos.XmlSerialization.dll" target="lib\netstandard2.0" />
-    <file src="Rhetos.XmlSerialization\bin\Debug\netstandard2.0\Rhetos.XmlSerialization.pdb" target="lib\netstandard2.0" />
-    <file src="Rhetos.XmlSerialization\bin\Debug\netstandard2.0\Rhetos.XmlSerialization.xml" target="lib\netstandard2.0" />
-    <file src="Rhetos.Configuration.Autofac\bin\Debug\netstandard2.0\Rhetos.Configuration.Autofac.dll" target="lib\netstandard2.0" />
-    <file src="Rhetos.Configuration.Autofac\bin\Debug\netstandard2.0\Rhetos.Configuration.Autofac.pdb" target="lib\netstandard2.0" />
-    <file src="Rhetos.Configuration.Autofac\bin\Debug\netstandard2.0\Rhetos.Configuration.Autofac.xml" target="lib\netstandard2.0" />
-    <file src="Rhetos.Deployment\bin\Debug\netstandard2.0\Rhetos.Deployment.dll" target="lib\netstandard2.0" />
-    <file src="Rhetos.Deployment\bin\Debug\netstandard2.0\Rhetos.Deployment.pdb" target="lib\netstandard2.0" />
-    <file src="Rhetos.Deployment\bin\Debug\netstandard2.0\Rhetos.Deployment.xml" target="lib\netstandard2.0" />
-    <file src="Rhetos.Deployment.Interfaces\bin\Debug\netstandard2.0\Rhetos.Deployment.Interfaces.dll" target="lib\netstandard2.0" />
-    <file src="Rhetos.Deployment.Interfaces\bin\Debug\netstandard2.0\Rhetos.Deployment.Interfaces.pdb" target="lib\netstandard2.0" />
-    <file src="Rhetos.Deployment.Interfaces\bin\Debug\netstandard2.0\Rhetos.Deployment.Interfaces.xml" target="lib\netstandard2.0" />
+    <file src="Rhetos.Compiler\bin\Debug\netstandard2.1\Rhetos.Compiler.dll" target="lib\netstandard2.1" />
+    <file src="Rhetos.Compiler\bin\Debug\netstandard2.1\Rhetos.Compiler.pdb" target="lib\netstandard2.1" />
+    <file src="Rhetos.Compiler\bin\Debug\netstandard2.1\Rhetos.Compiler.xml" target="lib\netstandard2.1" />
+    <file src="Rhetos.Compiler.Interfaces\bin\Debug\netstandard2.1\Rhetos.Compiler.Interfaces.dll" target="lib\netstandard2.1" />
+    <file src="Rhetos.Compiler.Interfaces\bin\Debug\netstandard2.1\Rhetos.Compiler.Interfaces.pdb" target="lib\netstandard2.1" />
+    <file src="Rhetos.Compiler.Interfaces\bin\Debug\netstandard2.1\Rhetos.Compiler.Interfaces.xml" target="lib\netstandard2.1" />
+    <file src="Rhetos.DatabaseGenerator\bin\Debug\netstandard2.1\Rhetos.DatabaseGenerator.dll" target="lib\netstandard2.1" />
+    <file src="Rhetos.DatabaseGenerator\bin\Debug\netstandard2.1\Rhetos.DatabaseGenerator.pdb" target="lib\netstandard2.1" />
+    <file src="Rhetos.DatabaseGenerator\bin\Debug\netstandard2.1\Rhetos.DatabaseGenerator.xml" target="lib\netstandard2.1" />
+    <file src="Rhetos.DatabaseGenerator.Interfaces\bin\Debug\netstandard2.1\Rhetos.DatabaseGenerator.Interfaces.dll" target="lib\netstandard2.1" />
+    <file src="Rhetos.DatabaseGenerator.Interfaces\bin\Debug\netstandard2.1\Rhetos.DatabaseGenerator.Interfaces.pdb" target="lib\netstandard2.1" />
+    <file src="Rhetos.DatabaseGenerator.Interfaces\bin\Debug\netstandard2.1\Rhetos.DatabaseGenerator.Interfaces.xml" target="lib\netstandard2.1" />    
+    <file src="Rhetos.Dom\bin\Debug\netstandard2.1\Rhetos.Dom.dll" target="lib\netstandard2.1" />
+    <file src="Rhetos.Dom\bin\Debug\netstandard2.1\Rhetos.Dom.pdb" target="lib\netstandard2.1" />
+    <file src="Rhetos.Dom\bin\Debug\netstandard2.1\Rhetos.Dom.xml" target="lib\netstandard2.1" />
+    <file src="Rhetos.Dom.Interfaces\bin\Debug\netstandard2.0\Rhetos.Dom.Interfaces.dll" target="lib\netstandard2.1" />
+    <file src="Rhetos.Dom.Interfaces\bin\Debug\netstandard2.0\Rhetos.Dom.Interfaces.pdb" target="lib\netstandard2.1" />
+    <file src="Rhetos.Dom.Interfaces\bin\Debug\netstandard2.0\Rhetos.Dom.Interfaces.xml" target="lib\netstandard2.1" />
+    <file src="Rhetos.Dsl\bin\Debug\netstandard2.1\Rhetos.Dsl.dll" target="lib\netstandard2.1" />
+    <file src="Rhetos.Dsl\bin\Debug\netstandard2.1\Rhetos.Dsl.pdb" target="lib\netstandard2.1" />
+    <file src="Rhetos.Dsl\bin\Debug\netstandard2.1\Rhetos.Dsl.xml" target="lib\netstandard2.1" />
+    <file src="Rhetos.Dsl.Interfaces\bin\Debug\netstandard2.1\Rhetos.Dsl.Interfaces.dll" target="lib\netstandard2.1" />
+    <file src="Rhetos.Dsl.Interfaces\bin\Debug\netstandard2.1\Rhetos.Dsl.Interfaces.pdb" target="lib\netstandard2.1" />
+    <file src="Rhetos.Dsl.Interfaces\bin\Debug\netstandard2.1\Rhetos.Dsl.Interfaces.xml" target="lib\netstandard2.1" />
+    <file src="Rhetos.Extensibility\bin\Debug\netstandard2.1\Rhetos.Extensibility.dll" target="lib\netstandard2.1" />
+    <file src="Rhetos.Extensibility\bin\Debug\netstandard2.1\Rhetos.Extensibility.pdb" target="lib\netstandard2.1" />
+    <file src="Rhetos.Extensibility\bin\Debug\netstandard2.1\Rhetos.Extensibility.xml" target="lib\netstandard2.1" />
+    <file src="Rhetos.Extensibility.Interfaces\bin\Debug\netstandard2.1\Rhetos.Extensibility.Interfaces.dll" target="lib\netstandard2.1" />
+    <file src="Rhetos.Extensibility.Interfaces\bin\Debug\netstandard2.1\Rhetos.Extensibility.Interfaces.pdb" target="lib\netstandard2.1" />
+    <file src="Rhetos.Extensibility.Interfaces\bin\Debug\netstandard2.1\Rhetos.Extensibility.Interfaces.xml" target="lib\netstandard2.1" />
+    <file src="Rhetos.Logging\bin\Debug\netstandard2.1\Rhetos.Logging.dll" target="lib\netstandard2.1" />
+    <file src="Rhetos.Logging\bin\Debug\netstandard2.1\Rhetos.Logging.pdb" target="lib\netstandard2.1" />
+    <file src="Rhetos.Logging\bin\Debug\netstandard2.1\Rhetos.Logging.xml" target="lib\netstandard2.1" />
+    <file src="Rhetos.Logging.Interfaces\bin\Debug\netstandard2.0\Rhetos.Logging.Interfaces.dll" target="lib\netstandard2.1" />
+    <file src="Rhetos.Logging.Interfaces\bin\Debug\netstandard2.0\Rhetos.Logging.Interfaces.pdb" target="lib\netstandard2.1" />
+    <file src="Rhetos.Logging.Interfaces\bin\Debug\netstandard2.0\Rhetos.Logging.Interfaces.xml" target="lib\netstandard2.1" />
+    <file src="Rhetos.Persistence\bin\Debug\netstandard2.1\Rhetos.Persistence.dll" target="lib\netstandard2.1" />
+    <file src="Rhetos.Persistence\bin\Debug\netstandard2.1\Rhetos.Persistence.pdb" target="lib\netstandard2.1" />
+    <file src="Rhetos.Persistence\bin\Debug\netstandard2.1\Rhetos.Persistence.xml" target="lib\netstandard2.1" />
+    <file src="Rhetos.Persistence.Interfaces\bin\Debug\netstandard2.1\Rhetos.Persistence.Interfaces.dll" target="lib\netstandard2.1" />
+    <file src="Rhetos.Persistence.Interfaces\bin\Debug\netstandard2.1\Rhetos.Persistence.Interfaces.pdb" target="lib\netstandard2.1" />
+    <file src="Rhetos.Persistence.Interfaces\bin\Debug\netstandard2.1\Rhetos.Persistence.Interfaces.xml" target="lib\netstandard2.1" />
+    <file src="Rhetos.Processing\bin\Debug\netstandard2.1\Rhetos.Processing.dll" target="lib\netstandard2.1" />
+    <file src="Rhetos.Processing\bin\Debug\netstandard2.1\Rhetos.Processing.pdb" target="lib\netstandard2.1" />
+    <file src="Rhetos.Processing\bin\Debug\netstandard2.1\Rhetos.Processing.xml" target="lib\netstandard2.1" />
+    <file src="Rhetos.Processing.Interfaces\bin\Debug\netstandard2.1\Rhetos.Processing.Interfaces.dll" target="lib\netstandard2.1" />
+    <file src="Rhetos.Processing.Interfaces\bin\Debug\netstandard2.1\Rhetos.Processing.Interfaces.pdb" target="lib\netstandard2.1" />
+    <file src="Rhetos.Processing.Interfaces\bin\Debug\netstandard2.1\Rhetos.Processing.Interfaces.xml" target="lib\netstandard2.1" />
+    <file src="Rhetos.Security\bin\Debug\netstandard2.1\Rhetos.Security.dll" target="lib\netstandard2.1" />
+    <file src="Rhetos.Security\bin\Debug\netstandard2.1\Rhetos.Security.pdb" target="lib\netstandard2.1" />
+    <file src="Rhetos.Security\bin\Debug\netstandard2.1\Rhetos.Security.xml" target="lib\netstandard2.1" />
+    <file src="Rhetos.Security.Interfaces\bin\Debug\netstandard2.1\Rhetos.Security.Interfaces.dll" target="lib\netstandard2.1" />
+    <file src="Rhetos.Security.Interfaces\bin\Debug\netstandard2.1\Rhetos.Security.Interfaces.pdb" target="lib\netstandard2.1" />
+    <file src="Rhetos.Security.Interfaces\bin\Debug\netstandard2.1\Rhetos.Security.Interfaces.xml" target="lib\netstandard2.1" />
+    <file src="Rhetos.Utilities\bin\Debug\netstandard2.0\Rhetos.Utilities.dll" target="lib\netstandard2.1" />
+    <file src="Rhetos.Utilities\bin\Debug\netstandard2.0\Rhetos.Utilities.pdb" target="lib\netstandard2.1" />
+    <file src="Rhetos.Utilities\bin\Debug\netstandard2.0\Rhetos.Utilities.xml" target="lib\netstandard2.1" />
+    <file src="Rhetos.XmlSerialization\bin\Debug\netstandard2.1\Rhetos.XmlSerialization.dll" target="lib\netstandard2.1" />
+    <file src="Rhetos.XmlSerialization\bin\Debug\netstandard2.1\Rhetos.XmlSerialization.pdb" target="lib\netstandard2.1" />
+    <file src="Rhetos.XmlSerialization\bin\Debug\netstandard2.1\Rhetos.XmlSerialization.xml" target="lib\netstandard2.1" />
+    <file src="Rhetos.Configuration.Autofac\bin\Debug\netstandard2.1\Rhetos.Configuration.Autofac.dll" target="lib\netstandard2.1" />
+    <file src="Rhetos.Configuration.Autofac\bin\Debug\netstandard2.1\Rhetos.Configuration.Autofac.pdb" target="lib\netstandard2.1" />
+    <file src="Rhetos.Configuration.Autofac\bin\Debug\netstandard2.1\Rhetos.Configuration.Autofac.xml" target="lib\netstandard2.1" />
+    <file src="Rhetos.Deployment\bin\Debug\netstandard2.1\Rhetos.Deployment.dll" target="lib\netstandard2.1" />
+    <file src="Rhetos.Deployment\bin\Debug\netstandard2.1\Rhetos.Deployment.pdb" target="lib\netstandard2.1" />
+    <file src="Rhetos.Deployment\bin\Debug\netstandard2.1\Rhetos.Deployment.xml" target="lib\netstandard2.1" />
+    <file src="Rhetos.Deployment.Interfaces\bin\Debug\netstandard2.0\Rhetos.Deployment.Interfaces.dll" target="lib\netstandard2.1" />
+    <file src="Rhetos.Deployment.Interfaces\bin\Debug\netstandard2.0\Rhetos.Deployment.Interfaces.pdb" target="lib\netstandard2.1" />
+    <file src="Rhetos.Deployment.Interfaces\bin\Debug\netstandard2.0\Rhetos.Deployment.Interfaces.xml" target="lib\netstandard2.1" />
   </files>
 </package>

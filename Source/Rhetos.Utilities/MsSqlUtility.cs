@@ -21,7 +21,6 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SqlClient;
-using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -205,9 +204,9 @@ namespace Rhetos.Utilities
             var info = interpretedException.Info;
             return
                 info != null
-                && (info.GetValueOrDefault("Constraint") as string) == "Unique"
-                && (info.GetValueOrDefault("Table") as string) == table
-                && (info.GetValueOrDefault("ConstraintName") as string) == constraintName;
+                && (CsUtility.GetValueOrDefault(info, "Constraint") as string) == "Unique"
+                && (CsUtility.GetValueOrDefault(info, "Table") as string) == table
+                && (CsUtility.GetValueOrDefault(info, "ConstraintName") as string) == constraintName;
         }
 
         public static bool IsReferenceErrorOnInsertUpdate(RhetosException interpretedException, string referencedTable, string referencedColumn, string constraintName)
@@ -217,11 +216,11 @@ namespace Rhetos.Utilities
             var info = interpretedException.Info;
             return
                 info != null
-                && (info.GetValueOrDefault("Constraint") as string) == "Reference"
-                && ((info.GetValueOrDefault("Action") as string) == "INSERT" || (info.GetValueOrDefault("Action") as string) == "UPDATE")
-                && (info.GetValueOrDefault("ReferencedTable") as string) == referencedTable
-                && (info.GetValueOrDefault("ReferencedColumn") as string) == referencedColumn
-                && (info.GetValueOrDefault("ConstraintName") as string) == constraintName;
+                && (CsUtility.GetValueOrDefault(info, "Constraint") as string) == "Reference"
+                && ((CsUtility.GetValueOrDefault(info, "Action") as string) == "INSERT" || (CsUtility.GetValueOrDefault(info, "Action") as string) == "UPDATE")
+                && (CsUtility.GetValueOrDefault(info, "ReferencedTable") as string) == referencedTable
+                && (CsUtility.GetValueOrDefault(info, "ReferencedColumn") as string) == referencedColumn
+                && (CsUtility.GetValueOrDefault(info, "ConstraintName") as string) == constraintName;
         }
 
         public static bool IsReferenceErrorOnDelete(RhetosException interpretedException, string dependentTable, string dependentColumn, string constraintName)
@@ -231,11 +230,11 @@ namespace Rhetos.Utilities
             var info = interpretedException.Info;
             return
                 info != null
-                && (info.GetValueOrDefault("Constraint") as string) == "Reference"
-                && (info.GetValueOrDefault("Action") as string) == "DELETE"
-                && (info.GetValueOrDefault("DependentTable") as string) == dependentTable
-                && (info.GetValueOrDefault("DependentColumn") as string) == dependentColumn
-                && (info.GetValueOrDefault("ConstraintName") as string) == constraintName;
+                && (CsUtility.GetValueOrDefault(info, "Constraint") as string) == "Reference"
+                && (CsUtility.GetValueOrDefault(info, "Action") as string) == "DELETE"
+                && (CsUtility.GetValueOrDefault(info, "DependentTable") as string) == dependentTable
+                && (CsUtility.GetValueOrDefault(info, "DependentColumn") as string) == dependentColumn
+                && (CsUtility.GetValueOrDefault(info, "ConstraintName") as string) == constraintName;
         }
 
         private const string InsertingDuplicateIdMessage = "Inserting a record that already exists in database.";
@@ -244,10 +243,10 @@ namespace Rhetos.Utilities
         {
             if (interpretedException != null
                 && interpretedException.Info != null
-                && (interpretedException.Info.GetValueOrDefault("Constraint") as string) == "Primary key"
-                && (interpretedException.Info.GetValueOrDefault("Table") as string) == tableName)
+                && (CsUtility.GetValueOrDefault(interpretedException.Info, "Constraint") as string) == "Primary key"
+                && (CsUtility.GetValueOrDefault(interpretedException.Info, "Table") as string) == tableName)
             {
-                string pkValue = interpretedException.Info.GetValueOrDefault("DuplicateValue") as string;
+                string pkValue = CsUtility.GetValueOrDefault(interpretedException.Info, "DuplicateValue") as string;
                 throw new ClientException(InsertingDuplicateIdMessage + (pkValue != null ? " ID=" + pkValue : ""));
             }
         }

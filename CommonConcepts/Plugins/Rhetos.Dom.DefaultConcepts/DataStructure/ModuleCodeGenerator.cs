@@ -105,7 +105,6 @@ $@"namespace {info.Name}._Helper
             codeBuilder.AddReferencesFromDependency(typeof(ISet<>)); // Includes reference to System, a default reference for new project in Visual Studio.
             codeBuilder.AddReferencesFromDependency(typeof(Microsoft.CSharp.RuntimeBinder.RuntimeBinderException)); // Includes reference to Microsoft.CSharp, a default reference for new project in Visual Studio.
             codeBuilder.AddReferencesFromDependency(typeof(System.Data.Common.DbDataReader)); // Includes reference to System.Data, a default reference for new project in Visual Studio.
-            codeBuilder.AddReferencesFromDependency(typeof(System.Data.DataRowExtensions)); // Includes reference to System.Data.DataSetExtensions, a default reference for new project in Visual Studio.
             codeBuilder.AddReferencesFromDependency(typeof(System.Xml.Serialization.XmlSerializer)); // Includes reference to System.Xml, a default reference for new project in Visual Studio.
             codeBuilder.AddReferencesFromDependency(typeof(System.Xml.Linq.XElement)); // Includes reference to System.Xml.Linq, a default reference for new project in Visual Studio.
             // Commonly used Rhetos classes:

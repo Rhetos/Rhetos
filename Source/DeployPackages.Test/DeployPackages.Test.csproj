@@ -53,10 +53,6 @@
     <Compile Include="TestWebSecurityModule.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DeployPackages\DeployPackages.csproj">
-      <Project>{db291a1a-bd71-4eea-898a-7b353c7d1ef5}</Project>
-      <Name>DeployPackages</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Rhetos.Configuration.Autofac\Rhetos.Configuration.Autofac.csproj">
       <Project>{759cea3c-1cd0-449c-977e-102ce308f4de}</Project>
       <Name>Rhetos.Configuration.Autofac</Name>
@@ -100,14 +96,6 @@
     <ProjectReference Include="..\Rhetos.Utilities\Rhetos.Utilities.csproj">
       <Project>{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}</Project>
       <Name>Rhetos.Utilities</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rhetos.Web\Rhetos.Web.csproj">
-      <Project>{a334fffd-0400-4fec-bc83-c044072c76a8}</Project>
-      <Name>Rhetos.Web</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rhetos\Rhetos.csproj">
-      <Project>{f395c923-6001-478d-9eff-f28a51f62be4}</Project>
-      <Name>Rhetos</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

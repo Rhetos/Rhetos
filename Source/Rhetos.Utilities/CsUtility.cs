@@ -94,7 +94,7 @@ namespace Rhetos.Utilities
         /// Reads a value from the dictionary or returns default if the dictionary does not contain the key.
         /// This method helps when the TryGetValue() method cannot be called directly with anonymous value type.
         /// </summary>
-        public static TValue GetValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
+        public static TValue GetValueOrDefault<TKey, TValue>(IDictionary<TKey, TValue> dictionary, TKey key)
         {
             TValue value;
             if (dictionary.TryGetValue(key, out value))

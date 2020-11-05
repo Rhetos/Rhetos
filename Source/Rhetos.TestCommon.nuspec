@@ -11,13 +11,13 @@
     <copyright>Copyright Omega software 2013</copyright>
     <tags>Rhetos</tags>
     <dependencies>
-      <dependency id="Rhetos" version="[4.3.0,4.4.0)" />
+      <dependency id="Rhetos" version="[4.3.0-dev,4.4.0)" />
       <dependency id="MSTest.TestFramework" version="2.1.0" />
     </dependencies>
   </metadata>
   <files>
-    <file src="Rhetos.TestCommon\bin\Debug\netstandard2.0\Rhetos.TestCommon.dll" target="lib\netstandard2.0" />
-    <file src="Rhetos.TestCommon\bin\Debug\netstandard2.0\Rhetos.TestCommon.pdb" target="lib\netstandard2.0" />
-    <file src="Rhetos.TestCommon\bin\Debug\netstandard2.0\Rhetos.TestCommon.xml" target="lib\netstandard2.0" />
+    <file src="Rhetos.TestCommon\bin\Debug\netstandard2.1\Rhetos.TestCommon.dll" target="lib\netstandard2.1" />
+    <file src="Rhetos.TestCommon\bin\Debug\netstandard2.1\Rhetos.TestCommon.pdb" target="lib\netstandard2.1" />
+    <file src="Rhetos.TestCommon\bin\Debug\netstandard2.1\Rhetos.TestCommon.xml" target="lib\netstandard2.1" />
   </files>
 </package>

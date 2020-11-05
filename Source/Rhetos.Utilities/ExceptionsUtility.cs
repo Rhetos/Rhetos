@@ -21,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Text;
 
 namespace Rhetos.Utilities
@@ -53,9 +54,7 @@ namespace Rhetos.Utilities
             if (exception == null)
                 throw new ArgumentNullException("exception");
 
-            typeof(Exception).GetMethod("PrepForRemoting", BindingFlags.NonPublic | BindingFlags.Instance)
-                .Invoke(exception, new object[0]);
-            throw exception;
+            ExceptionDispatchInfo.Capture(exception).Throw();
         }
 
         /// <summary>
