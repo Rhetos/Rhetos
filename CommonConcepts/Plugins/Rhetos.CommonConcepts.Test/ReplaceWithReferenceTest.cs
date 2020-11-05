@@ -103,7 +103,7 @@ namespace Rhetos.CommonConcepts.Test
             {
                 Expression<Func<ItemMaster, bool>> exp = a => int.Equals(0, a.id + a.id * Math.Abs(a.id - 2 * a.id));
                 var res = new ReplaceWithReference<ItemMaster, Item>(exp, "master", "b").NewExpression;
-                Assert.AreEqual("b => Equals(Convert(0), Convert((b.master.id + (b.master.id * Abs((b.master.id - (2 * b.master.id)))))))", res.ToString());
+                Assert.AreEqual("b => Equals(Convert(0, Object), Convert((b.master.id + (b.master.id * Abs((b.master.id - (2 * b.master.id))))), Object))", res.ToString());
 
                 // lets try to execute it
                 ItemMaster master = new ItemMaster() { id = 5 };

@@ -169,7 +169,7 @@ namespace Rhetos.Utilities.Test
         internal static SqlException NewSqlException(string message, int number, int level, int state)
         {
             SqlErrorCollection collection = Construct<SqlErrorCollection>();
-            SqlError error = Construct<SqlError>(number, (byte)state, (byte)level, "test server", message, "test procedure", state);
+            SqlError error = Construct<SqlError>(number, (byte)state, (byte)level, "test server", message, "test procedure", state, null);
 
             typeof(SqlErrorCollection)
                 .GetMethod("Add", BindingFlags.NonPublic | BindingFlags.Instance)

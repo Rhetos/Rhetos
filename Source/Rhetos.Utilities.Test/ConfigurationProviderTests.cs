@@ -24,7 +24,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Rhetos.Utilities.ApplicationConfiguration;
 
 namespace Rhetos.Utilities.Test
 {
