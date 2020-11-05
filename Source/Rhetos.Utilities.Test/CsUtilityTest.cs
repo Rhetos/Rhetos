@@ -17,12 +17,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CSharp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
 using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 
@@ -56,25 +59,42 @@ namespace Rhetos.Utilities.Test
                 CsUtility.QuotedString(null));
 
             Console.WriteLine(code);
-            CSharpCodeProvider provider = new CSharpCodeProvider();
-            CompilerResults results = provider.CompileAssemblyFromSource(new CompilerParameters(new string[] { }, "GeneratedQuotedStringAssembly"), code);
-            foreach (CompilerError error in results.Errors)
-                Console.WriteLine(error);
-            Assert.AreEqual(0, results.Errors.Count, "Compiler errors");
 
-            Console.WriteLine("CompiledAssembly: " + results.CompiledAssembly.Location);
-            Type generatedClass = results.CompiledAssembly.GetType("GeneratedModuleQuotedString.C");
+            var syntaxTree = CSharpSyntaxTree.ParseText(code);
+            CSharpCompilation compilation = CSharpCompilation.Create(
+                "GeneratedQuotedStringAssembly",
+                new[] { syntaxTree },
+                new[] { MetadataReference.CreateFromFile(typeof(object).Assembly.Location) },
+                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
+            using (var dllStream = new MemoryStream())
+            using (var pdbStream = new MemoryStream())
             {
-                MethodInfo generatedMethod = generatedClass.GetMethod("F1");
-                string generatedCodeResult = (string)generatedMethod.Invoke(null, new object[] { });
-                Assert.AreEqual(stringConstant, generatedCodeResult);
-            }
+                var emitResult = compilation.Emit(dllStream, pdbStream);
+                if (emitResult.Success)
+                {
+                    var ourAssembly = Assembly.Load(dllStream.ToArray());
 
-            {
-                MethodInfo generatedMethod = generatedClass.GetMethod("F2");
-                string generatedCodeResult = (string)generatedMethod.Invoke(null, new object[] { });
-                Assert.IsNull(generatedCodeResult);
+                    Type generatedClass = ourAssembly.GetType("GeneratedModuleQuotedString.C");
+
+                    {
+                        MethodInfo generatedMethod = generatedClass.GetMethod("F1");
+                        string generatedCodeResult = (string)generatedMethod.Invoke(null, new object[] { });
+                        Assert.AreEqual(stringConstant, generatedCodeResult);
+                    }
+
+                    {
+                        MethodInfo generatedMethod = generatedClass.GetMethod("F2");
+                        string generatedCodeResult = (string)generatedMethod.Invoke(null, new object[] { });
+                        Assert.IsNull(generatedCodeResult);
+                    }
+                }
+                else
+                {
+                    foreach (var error in emitResult.Diagnostics)
+                        Console.WriteLine(error);
+                    Assert.Fail("Compiler errors");
+                }
             }
         }
 
