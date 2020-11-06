@@ -1,0 +1,7 @@
+{
+    "ConnectionStrings": {
+      "ServerConnectionString": {
+        "ConnectionString": "Server=theServer;Database=theDatabse;Trusted_Connection=True;"
+      }
+    }
+}

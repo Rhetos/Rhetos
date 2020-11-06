@@ -18,9 +18,10 @@
     <ProjectReference Include="..\Rhetos.TestCommon\Rhetos.TestCommon.csproj" />
   </ItemGroup>
 
-  <Target Name="CopyCustomContent" AfterTargets="AfterBuild">
+  <Target Name="CopyConfigFiles" AfterTargets="AfterBuild">
     <Copy SourceFiles="App.config" DestinationFiles="$(OutDir)\testhost.dll.config" />
     <Copy SourceFiles="App.config" DestinationFiles="$(OutDir)\testhost.x86.dll.config" />
+    <Copy SourceFiles="..\..\Tools\Configuration\ConnectionStrings.config" DestinationFiles="$(OutDir)\ConnectionStrings.config" />
   </Target>
 
 </Project>

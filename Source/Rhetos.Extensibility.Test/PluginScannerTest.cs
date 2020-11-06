@@ -38,11 +38,10 @@ namespace Rhetos.Extensibility.Test
         {
             var incompatibleAssemblies = new[] { GetIncompatibleAssemblyPath() };
             var pluginsScanner = new PluginScanner(incompatibleAssemblies, ".", new ConsoleLogProvider(), new PluginScannerOptions());
-
             TestUtility.ShouldFail<FrameworkException>(
                 () => pluginsScanner.FindPlugins(typeof(IGenerator)),
                 "Please check if the assembly is missing or has a different version.",
-                "'Rhetos.RestGenerator.dll' throws FileNotFoundException: Could not load file or assembly 'Autofac, Version=3.5.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da' or one of its dependencies. The system cannot find the file specified.");
+                "'Rhetos.RestGenerator.dll' throws FileNotFoundException: Could not load file or assembly 'Rhetos.Compiler.Interfaces, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null'. The system cannot find the file specified.");
         }
 
         private static string GetIncompatibleAssemblyPath()
@@ -51,14 +50,7 @@ namespace Rhetos.Extensibility.Test
             string oldAssemblyPathInRepository = @"packages\Rhetos.RestGenerator.2.1.0\lib\net451\Rhetos.RestGenerator.dll";
             var testFolder = new DirectoryInfo(startingFolder);
 
-            string oldAssemblyPath;
-            do
-            {
-                oldAssemblyPath = Path.Combine(testFolder.FullName, oldAssemblyPathInRepository);
-                Console.WriteLine($"Looking at '{oldAssemblyPath}'.");
-                testFolder = testFolder.Parent;
-            } while (!File.Exists(oldAssemblyPath) && testFolder != null);
-
+            string oldAssemblyPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), @".nuget\packages\rhetos.restgenerator\2.1.0\lib\net451\Rhetos.RestGenerator.dll");
             if (!File.Exists(oldAssemblyPath))
                 Assert.Fail($"Invalid unit test setup: Cannot find '{oldAssemblyPathInRepository}'" +
                     $" starting from '{startingFolder}' or any parent folder. See the test output for more details.");
