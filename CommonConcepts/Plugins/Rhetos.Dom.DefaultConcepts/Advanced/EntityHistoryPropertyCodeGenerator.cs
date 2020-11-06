@@ -46,7 +46,7 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.InsertCode(string.Format(",\r\n							    {0} = olditem.{0}", csPropertyName),
                 EntityHistoryCodeGenerator.ClonePropertiesTag, info.Dependency_EntityHistory);
             codeBuilder.InsertCode(string.Format("\r\n                        ret.{0} = item.{0};", csPropertyName),
-                EntityHistoryInfo.ClonePropertiesTag, info.Dependency_EntityHistory);
+                EntityHistoryMacro.ClonePropertiesTag, info.Dependency_EntityHistory);
         }
     }
 }

@@ -36,7 +36,7 @@ namespace Rhetos.Dom.DefaultConcepts
     public class PropertyEdmxCodeGenerator : ConceptMapping<PropertyInfo>
     {
         private readonly DatabaseSettings _databaseSettings;
-        public PropertyEdmxCodeGenerator(ConceptMetadata conceptMetadata, DatabaseSettings databaseSettings)
+        public PropertyEdmxCodeGenerator(DatabaseSettings databaseSettings)
         {
             _databaseSettings = databaseSettings;
         }

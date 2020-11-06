@@ -19,6 +19,7 @@
 
 using Rhetos.Extensibility;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -29,14 +30,14 @@ namespace Rhetos.Dsl
         /// <summary>
         /// First key is the metadata interface type (inherits IConceptMetadata), second key is the concept type (inherits IConceptInfo).
         /// </summary>
-        private readonly Dictionary<Type, Dictionary<Type, IConceptMetadataExtension>> _metadata;
+        private readonly ConcurrentDictionary<Type, ConcurrentDictionary<Type, IConceptMetadataExtension>> _metadata;
 
         private readonly IPluginsContainer<IConceptMetadataExtension> _plugins;
 
         public ConceptMetadata(IPluginsContainer<IConceptMetadataExtension> plugins)
         {
             _plugins = plugins;
-            _metadata = new Dictionary<Type, Dictionary<Type, IConceptMetadataExtension>>();
+            _metadata = new ConcurrentDictionary<Type, ConcurrentDictionary<Type, IConceptMetadataExtension>>();
         }
 
         public TMetadata Get<TMetadata>(Type conceptType) where TMetadata : IConceptMetadataExtension<IConceptInfo>
@@ -46,29 +47,27 @@ namespace Rhetos.Dsl
 
         public IConceptMetadataExtension Get(Type metadataInterface, Type conceptType)
         {
-            Type expectedMetadataType = typeof(IConceptMetadataExtension<IConceptInfo>);
+            var expectedMetadataType = typeof(IConceptMetadataExtension<IConceptInfo>);
             if (!expectedMetadataType.IsAssignableFrom(metadataInterface))
                 throw new FrameworkException($"{metadataInterface} does not implement {expectedMetadataType}.");
 
             var metadataGenericInterface = metadataInterface.GetGenericTypeDefinition();
 
-            Dictionary<Type, IConceptMetadataExtension> metadataByConceptType;
-            if (!_metadata.TryGetValue(metadataGenericInterface, out metadataByConceptType))
+            var metadataByConceptType = _metadata.GetOrAdd(metadataGenericInterface, type =>
             {
-                metadataByConceptType = GetPluginsForMetadataType(metadataInterface, metadataGenericInterface);
-                _metadata.Add(metadataGenericInterface, metadataByConceptType);
-            }
+                var pluginsDictionary = GetPluginsForMetadataType(metadataInterface, type);
+                return new ConcurrentDictionary<Type, IConceptMetadataExtension>(pluginsDictionary);
+            });
 
-            if (!metadataByConceptType.ContainsKey(conceptType))
+            var result = metadataByConceptType.GetOrAdd(conceptType, type =>
             {
                 var conceptBaseType = TryFindBaseType(conceptType, metadataByConceptType.Select(x => x.Key).ToList());
                 if (conceptBaseType == null)
                     throw new FrameworkException($@"There is no {nameof(IConceptMetadataExtension)} plugin of type {metadataInterface} for concept {conceptType}.");
+                return metadataByConceptType[conceptBaseType];
+            });
 
-                metadataByConceptType.Add(conceptType, metadataByConceptType[conceptBaseType]);
-            }
-
-            return metadataByConceptType[conceptType];
+            return result;
         }
 
         private Dictionary<Type, IConceptMetadataExtension> GetPluginsForMetadataType(Type metadataInterface, Type metadataGenericInterface)

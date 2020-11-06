@@ -1,4 +1,4 @@
-﻿/*
+/*
     Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
@@ -25,6 +25,7 @@ using System.ComponentModel.Composition;
 using Rhetos.Utilities;
 using Rhetos.Compiler;
 using System.Globalization;
+using Rhetos.Persistence;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
@@ -34,58 +35,74 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("History")]
-    public class EntityHistoryInfo : IMacroConcept, IAlternativeInitializationConcept
+    public class EntityHistoryInfo : IAlternativeInitializationConcept
     {
         [ConceptKey]
         public EntityInfo Entity { get; set; }
 
         public EntityInfo Dependency_ChangesEntity { get; set; }
-        public SqlQueryableInfo Dependency_HistorySqlQueryable { get; set; }
-        public SqlFunctionInfo Dependency_AtTimeSqlFunction { get; set; }
-        public WriteInfo Dependency_Write { get; set; }
-        
-        public static readonly CsTag<EntityHistoryInfo> ClonePropertiesTag = "ClonePropertiesRewrite";
 
         public IEnumerable<string> DeclareNonparsableProperties()
         {
-            return new string[] { "Dependency_ChangesEntity", "Dependency_HistorySqlQueryable", "Dependency_AtTimeSqlFunction", "Dependency_Write" };
+            return new string[] { "Dependency_ChangesEntity" };
         }
 
         public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
         {
             Dependency_ChangesEntity = new EntityInfo { Module = Entity.Module, Name = Entity.Name + "_Changes" };
-            Dependency_HistorySqlQueryable = new SqlQueryableInfo { Module = Entity.Module, Name = Entity.Name + "_History", SqlSource = HistorySqlSnippet() };
-            Dependency_AtTimeSqlFunction = new SqlFunctionInfo { Module = Entity.Module, Name = Entity.Name + "_AtTime", Arguments = "@ContextTime DATETIME2(3)", Source = AtTimeSqlSnippet() };
-            Dependency_Write = new WriteInfo {
-                    DataStructure = Dependency_HistorySqlQueryable,
-                    SaveImplementation = HistorySaveFunction()
-                };
 
-            createdConcepts = new IConceptInfo[] { Dependency_ChangesEntity, Dependency_HistorySqlQueryable, Dependency_AtTimeSqlFunction, Dependency_Write };        
+            createdConcepts = new IConceptInfo[] { Dependency_ChangesEntity };
         }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+    }
+
+    [Export(typeof(IConceptMacro))]
+    public class EntityHistoryMacro : IConceptMacro<EntityHistoryInfo>
+    {
+        public static readonly CsTag<EntityHistoryInfo> ClonePropertiesTag = "ClonePropertiesRewrite";
+        private readonly string dateTimeSqlColumnType;
+
+        // TODO: we inject DatabaseSetttings here, but correct solution would be to inject ConceptMetadata and use ConceptMetadata.GetColumnType to fetch SQL type of the column
+        // we can't do that because of circular reference problem between projects and IDatabaseColumnType is not available
+        // needs to be refactored after we rearrange/merge projects and remove circular dependency in question
+        public EntityHistoryMacro(DatabaseSettings databaseSettings)
+        {
+            dateTimeSqlColumnType = databaseSettings.UseLegacyMsSqlDateTime
+                ? "DATETIME"
+                : "DATETIME2(3)";
+        }
+
+        public IEnumerable<IConceptInfo> CreateNewConcepts(EntityHistoryInfo conceptInfo, IDslModel existingConcepts)
         {
             var newConcepts = new List<IConceptInfo>();
 
+            var atTimeSqlFunction = new SqlFunctionInfo { Module = conceptInfo.Entity.Module, Name = conceptInfo.Entity.Name + "_AtTime", Arguments = $"@ContextTime {dateTimeSqlColumnType}", Source = AtTimeSqlSnippet(conceptInfo) };
+            newConcepts.Add(atTimeSqlFunction);
+
+            var historySqlQueryable = new SqlQueryableInfo { Module = conceptInfo.Entity.Module, Name = conceptInfo.Entity.Name + "_History", SqlSource = HistorySqlSnippet(conceptInfo) };
+            newConcepts.Add(historySqlQueryable);
+
+            var write = new WriteInfo { DataStructure = historySqlQueryable, SaveImplementation = HistorySaveFunction(conceptInfo) };
+            newConcepts.Add(write);
+
             // Expand the base entity:
-            var activeSinceProperty = new DateTimePropertyInfo { DataStructure = Entity, Name = "ActiveSince" }; // TODO: SystemRequired, Default 1.1.1900.
+            var activeSinceProperty = new DateTimePropertyInfo { DataStructure = conceptInfo.Entity, Name = "ActiveSince" }; // TODO: SystemRequired, Default 1.1.1900.
             var activeSinceHistory = new EntityHistoryPropertyInfo { Property = activeSinceProperty };
             newConcepts.AddRange(new IConceptInfo[] { activeSinceProperty, activeSinceHistory });
 
             // InvalidData for base entity: it is not allowed to save with ActiveSince older than last one used in History
             var denyFilter = new ComposableFilterByInfo {
                 Parameter = "Common.OlderThanHistoryEntries",
-                Source = Entity,
+                Source = conceptInfo.Entity,
                 Expression = String.Format(
                     @"(items, repository, parameter) => items.Where(item => 
-                                repository.{0}.{1}_Changes.Subquery.Where(his => his.ActiveSince >= item.ActiveSince && his.Entity == item).Count() > 0)", 
-                                Entity.Module.Name, 
-                                Entity.Name) 
+                                repository.{0}.{1}_Changes.Subquery.Where(his => his.ActiveSince >= item.ActiveSince && his.Entity == item).Count() > 0)",
+                                conceptInfo.Entity.Module.Name,
+                                conceptInfo.Entity.Name) 
             };
             var invalidDataValidation = new InvalidDataInfo {
                 FilterType = "Common.OlderThanHistoryEntries", 
-                Source = Entity, 
+                Source = conceptInfo.Entity, 
                 ErrorMessage = "ActiveSince is not allowed to be older than last entry in history."
             };
             newConcepts.AddRange(new IConceptInfo[]
@@ -97,28 +114,28 @@ namespace Rhetos.Dsl.DefaultConcepts
                 });
 
             // Create a new entity for history data:
-            var currentProperty = new ReferencePropertyInfo { DataStructure = Dependency_ChangesEntity, Name = "Entity", Referenced = Entity };
-            var historyActiveSinceProperty = new DateTimePropertyInfo { DataStructure = Dependency_ChangesEntity, Name = activeSinceProperty.Name };
+            var currentProperty = new ReferencePropertyInfo { DataStructure = conceptInfo.Dependency_ChangesEntity, Name = "Entity", Referenced = conceptInfo.Entity };
+            var historyActiveSinceProperty = new DateTimePropertyInfo { DataStructure = conceptInfo.Dependency_ChangesEntity, Name = activeSinceProperty.Name };
             newConcepts.AddRange(new IConceptInfo[] {
                 currentProperty,
                 new ReferenceDetailInfo { Reference = currentProperty },
                 new RequiredPropertyInfo { Property = currentProperty }, // TODO: SystemRequired
-                new PropertyFromInfo { Destination = Dependency_ChangesEntity, Source = activeSinceProperty },
+                new PropertyFromInfo { Destination = conceptInfo.Dependency_ChangesEntity, Source = activeSinceProperty },
                 historyActiveSinceProperty,
-                new UniqueMultiplePropertiesInfo { DataStructure = Dependency_ChangesEntity, PropertyNames = $"{currentProperty.Name} {historyActiveSinceProperty.Name}" }
+                new UniqueMultiplePropertiesInfo { DataStructure = conceptInfo.Dependency_ChangesEntity, PropertyNames = $"{currentProperty.Name} {historyActiveSinceProperty.Name}" }
             });
 
             // InvalidData for history entity: it is not allowed to save with ActiveSince newer than current entity
             var denyFilterHistory = new ComposableFilterByInfo
             {
                 Parameter = "Common.NewerThanCurrentEntry",
-                Source = Dependency_ChangesEntity,
+                Source = conceptInfo.Dependency_ChangesEntity,
                 Expression = @"(items, repository, parameter) => items.Where(item => item.ActiveSince > item.Entity.ActiveSince)"
             };
             var invalidDataValidationHistory = new InvalidDataInfo
             {
                 FilterType = "Common.NewerThanCurrentEntry",
-                Source = Dependency_ChangesEntity,
+                Source = conceptInfo.Dependency_ChangesEntity,
                 ErrorMessage = "ActiveSince of history entry is not allowed to be newer than current entry."
             };
             newConcepts.AddRange(new IConceptInfo[]
@@ -130,31 +147,31 @@ namespace Rhetos.Dsl.DefaultConcepts
                 });
 
             // Create ActiveUntil SqlQueryable:
-            var activeUntilSqlQueryable = new SqlQueryableInfo { Module = Entity.Module, Name = Entity.Name + "_ChangesActiveUntil", SqlSource = ActiveUntilSqlSnippet() };
+            var activeUntilSqlQueryable = new SqlQueryableInfo { Module = conceptInfo.Entity.Module, Name = conceptInfo.Entity.Name + "_ChangesActiveUntil", SqlSource = ActiveUntilSqlSnippet(conceptInfo) };
             newConcepts.AddRange(new IConceptInfo[] {
                 activeUntilSqlQueryable,
                 new DateTimePropertyInfo { DataStructure = activeUntilSqlQueryable, Name = "ActiveUntil" },
-                new SqlDependsOnDataStructureInfo { Dependent = activeUntilSqlQueryable, DependsOn = Dependency_ChangesEntity },
-                new SqlDependsOnDataStructureInfo { Dependent = activeUntilSqlQueryable, DependsOn = Entity },
-                new DataStructureExtendsInfo { Base = Dependency_ChangesEntity, Extension = activeUntilSqlQueryable }
+                new SqlDependsOnDataStructureInfo { Dependent = activeUntilSqlQueryable, DependsOn = conceptInfo.Dependency_ChangesEntity },
+                new SqlDependsOnDataStructureInfo { Dependent = activeUntilSqlQueryable, DependsOn = conceptInfo.Entity },
+                new DataStructureExtendsInfo { Base = conceptInfo.Dependency_ChangesEntity, Extension = activeUntilSqlQueryable }
             });
 
             // Configure History SqlQueryable:
             newConcepts.AddRange(new IConceptInfo[] {
-                new SqlDependsOnDataStructureInfo { Dependent = Dependency_HistorySqlQueryable, DependsOn = Entity },
-                new SqlDependsOnDataStructureInfo { Dependent = Dependency_HistorySqlQueryable, DependsOn = Dependency_ChangesEntity },
-                new SqlDependsOnDataStructureInfo { Dependent = Dependency_HistorySqlQueryable, DependsOn = activeUntilSqlQueryable },
-                new DateTimePropertyInfo { DataStructure = Dependency_HistorySqlQueryable, Name = "ActiveUntil" },
-                new AllPropertiesFromInfo { Source = Dependency_ChangesEntity, Destination = Dependency_HistorySqlQueryable }
+                new SqlDependsOnDataStructureInfo { Dependent = historySqlQueryable, DependsOn = conceptInfo.Entity },
+                new SqlDependsOnDataStructureInfo { Dependent = historySqlQueryable, DependsOn = conceptInfo.Dependency_ChangesEntity },
+                new SqlDependsOnDataStructureInfo { Dependent = historySqlQueryable, DependsOn = activeUntilSqlQueryable },
+                new DateTimePropertyInfo { DataStructure = historySqlQueryable, Name = "ActiveUntil" },
+                new AllPropertiesFromInfo { Source = conceptInfo.Dependency_ChangesEntity, Destination = historySqlQueryable }
             });
 
             // Configure AtTime SqlFunction:
-            newConcepts.Add(new SqlDependsOnDataStructureInfo { Dependent = Dependency_AtTimeSqlFunction, DependsOn = Dependency_HistorySqlQueryable });
+            newConcepts.Add(new SqlDependsOnDataStructureInfo { Dependent = atTimeSqlFunction, DependsOn = historySqlQueryable });
 
             return newConcepts;
         }
 
-        private string ActiveUntilSqlSnippet()
+        private string ActiveUntilSqlSnippet(EntityHistoryInfo conceptInfo)
         {
             return string.Format(
                 @"SELECT
@@ -166,18 +183,18 @@ namespace Rhetos.Dsl.DefaultConcepts
 				                newerVersion.ActiveSince > history.ActiveSince
 	                INNER JOIN {0}.{1} currentItem ON currentItem.ID = history.EntityID
                 GROUP BY history.ID",
-                    SqlUtility.Identifier(Entity.Module.Name),
-                    SqlUtility.Identifier(Entity.Name),
-                    SqlUtility.Identifier(Dependency_ChangesEntity.Name));
+                    SqlUtility.Identifier(conceptInfo.Entity.Module.Name),
+                    SqlUtility.Identifier(conceptInfo.Entity.Name),
+                    SqlUtility.Identifier(conceptInfo.Dependency_ChangesEntity.Name));
         }
 
-        private string HistorySqlSnippet()
+        private string HistorySqlSnippet(EntityHistoryInfo conceptInfo)
         {
             return string.Format(
                 @"SELECT
                     ID = entity.ID,
                     EntityID = entity.ID,
-                    ActiveUntil = CAST(NULL AS DateTime2(3)){5}
+                    ActiveUntil = CAST(NULL AS {6}){5}
                 FROM
                     {0}.{1} entity
 
@@ -190,42 +207,16 @@ namespace Rhetos.Dsl.DefaultConcepts
                 FROM
                     {0}.{2} history
                     LEFT JOIN {0}.{3} au ON au.ID = history.ID",
-                SqlUtility.Identifier(Entity.Module.Name),
-                SqlUtility.Identifier(Entity.Name),
-                SqlUtility.Identifier(Dependency_ChangesEntity.Name),
-                SqlUtility.Identifier(Entity.Name + "_ChangesActiveUntil"),
-                SelectHistoryPropertiesTag.Evaluate(this),
-                SelectEntityPropertiesTag.Evaluate(this));
+                SqlUtility.Identifier(conceptInfo.Entity.Module.Name),
+                SqlUtility.Identifier(conceptInfo.Entity.Name),
+                SqlUtility.Identifier(conceptInfo.Dependency_ChangesEntity.Name),
+                SqlUtility.Identifier(conceptInfo.Entity.Name + "_ChangesActiveUntil"),
+                SelectHistoryPropertiesTag.Evaluate(conceptInfo),
+                SelectEntityPropertiesTag.Evaluate(conceptInfo),
+                dateTimeSqlColumnType);
         }
 
-        private string AtTimeSqlSnippet()
-        {
-            return string.Format(
-                @"RETURNS TABLE
-                AS
-                RETURN
-	                SELECT
-                        ID = history.EntityID,
-                        ActiveUntil,
-                        EntityID = history.EntityID{2}
-                    FROM
-                        {0}.{1} history
-                        INNER JOIN
-                        (
-                            SELECT EntityID, Max_ActiveSince = MAX(ActiveSince)
-                            FROM {0}.{1}
-                            WHERE ActiveSince <= @ContextTime
-                            GROUP BY EntityID
-                        ) last ON last.EntityID = history.EntityID AND last.Max_ActiveSince = history.ActiveSince",
-                    SqlUtility.Identifier(Entity.Module.Name),
-                    SqlUtility.Identifier(Entity.Name + "_History"),
-                    SelectHistoryPropertiesTag.Evaluate(this));
-        }
-
-        public static readonly SqlTag<EntityHistoryInfo> SelectHistoryPropertiesTag = "SelectHistoryProperties";
-        public static readonly SqlTag<EntityHistoryInfo> SelectEntityPropertiesTag = "SelectEntityProperties";
-
-        private string HistorySaveFunction()
+        private string HistorySaveFunction(EntityHistoryInfo conceptInfo)
         {
             return String.Format(@"var updateEnt = new List<{0}_History>();
             var deletedEnt = new List<{0}_History>();
@@ -315,10 +306,38 @@ namespace Rhetos.Dsl.DefaultConcepts
             _domRepository.{1}.{0}.Save(null, updateCurrentAndAddHistory, deletedEnt.Select(de => new {1}.{0} {{ ID = de.EntityID.Value }}));
             _domRepository.{1}.{0}.Save(null, updateCurrentItemsOnly, null);
 
-            ",
-             Entity.Name,
-             Entity.Module.Name,
-             ClonePropertiesTag.Evaluate(this));
+            ", 
+             conceptInfo.Entity.Name,
+             conceptInfo.Entity.Module.Name,
+             ClonePropertiesTag.Evaluate(conceptInfo));
         }
+
+
+        private string AtTimeSqlSnippet(EntityHistoryInfo conceptInfo)
+        {
+            return string.Format(
+                @"RETURNS TABLE
+                AS
+                RETURN
+	                SELECT
+                        ID = history.EntityID,
+                        ActiveUntil,
+                        EntityID = history.EntityID{2}
+                    FROM
+                        {0}.{1} history
+                        INNER JOIN
+                        (
+                            SELECT EntityID, Max_ActiveSince = MAX(ActiveSince)
+                            FROM {0}.{1}
+                            WHERE ActiveSince <= @ContextTime
+                            GROUP BY EntityID
+                        ) last ON last.EntityID = history.EntityID AND last.Max_ActiveSince = history.ActiveSince",
+                    SqlUtility.Identifier(conceptInfo.Entity.Module.Name),
+                    SqlUtility.Identifier(conceptInfo.Entity.Name + "_History"),
+                    SelectHistoryPropertiesTag.Evaluate(conceptInfo));
+        }
+
+        public static readonly SqlTag<EntityHistoryInfo> SelectHistoryPropertiesTag = "SelectHistoryProperties";
+        public static readonly SqlTag<EntityHistoryInfo> SelectEntityPropertiesTag = "SelectEntityProperties";
     }
 }
