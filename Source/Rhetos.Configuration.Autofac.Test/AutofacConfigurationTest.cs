@@ -130,7 +130,7 @@ namespace Rhetos.Configuration.Autofac.Test
                     PluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins"),
                     ResourcesFolder = Path.Combine(rhetosAppRootPath, "Resources"),
                 })
-                .AddRhetosAppEnvironment(rhetosAppRootPath)
+                .AddConfigurationManagerConfiguration()
                 .Build();
 
             LegacyUtilities.Initialize(configuration);

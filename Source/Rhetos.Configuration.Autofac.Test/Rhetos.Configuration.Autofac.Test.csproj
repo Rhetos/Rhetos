@@ -61,7 +61,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="rhetos-app.local.settings.json">
+    <None Update="testhost.x86.dll.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

@@ -29,12 +29,12 @@
     <None Update="TestCfg.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="testhost.x86.dll.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\Tools\Configuration\ConnectionStrings.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
-
-  <Target Name="CopyConfigFiles" AfterTargets="AfterBuild">
-    <Copy SourceFiles="app.config" DestinationFiles="$(OutDir)\testhost.dll.config" />
-    <Copy SourceFiles="app.config" DestinationFiles="$(OutDir)\testhost.x86.dll.config" />
-    <Copy SourceFiles="..\..\Tools\Configuration\ConnectionStrings.config" DestinationFiles="$(OutDir)\ConnectionStrings.config" />
-  </Target>
 
 </Project>
