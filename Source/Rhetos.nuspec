@@ -20,7 +20,7 @@
       <dependency id="System.Configuration.ConfigurationManager" version="4.7.0" />
       <dependency id="System.Data.SqlClient" version="4.8.1" />
       <dependency id="System.CodeDom" version="4.7.0" /> <!-- For IAssemblyGenerator legacy method. -->
-      <dependency id="Oracle.ManagedDataAccess" version="12.1.24160719" />
+      <dependency id="Oracle.ManagedDataAccess.Core" version="2.19.91" />
       <dependency id="Microsoft.CodeAnalysis.CSharp" version="3.7.0" />
     </dependencies>
   </metadata>
