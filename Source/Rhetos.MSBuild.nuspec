@@ -31,8 +31,15 @@
 
     <file src="MsBuildIntegration\Rhetos.MSBuild.targets" target="build" />
     <file src="MsBuildIntegration\Rhetos.MSBuild.props" target="build" />
-    <file src="RhetosVSIntegration\bin\Debug\*.dll" target="build" />
-    <file src="RhetosVSIntegration\bin\Debug\*.pdb" target="build" />
+
+    <file src="RhetosVSIntegration\bin\Debug\netstandard2.0\*.dll" target="build/bin/Debug/netstandard2.0" />
+    <file src="RhetosVSIntegration\bin\Debug\netstandard2.0\*.pdb" target="build/bin/Debug/netstandard2.0" />
+    <file src="RhetosVSIntegration\bin\Debug\netstandard2.0\*.json" target="build/bin/Debug/netstandard2.0" />
+
+
+    <file src="RhetosVSIntegration\bin\Debug\net472\*.dll" target="build/bin/Debug/net472" />
+    <file src="RhetosVSIntegration\bin\Debug\net472\*.pdb" target="build/bin/Debug/nnet472" />
+    <file src="RhetosVSIntegration\bin\Debug\net472\*.config" target="build/bin/Debug/net472" />
 
     <file src="RhetosCli\bin\Debug\netcoreapp3.1\rhetos.exe" target="contentFiles/any/any" />
     <file src="RhetosCli\bin\Debug\netcoreapp3.1\rhetos.dll" target="contentFiles/any/any" />
