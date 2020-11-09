@@ -35,7 +35,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         public DataStructureInfo Source { get; set; }
 
-        public void CheckSemantics(IDslModel existingConcepts)
+        public new void CheckSemantics(IDslModel existingConcepts)
         {
             var properties = existingConcepts.FindByReference<PropertyInfo>(p => p.DataStructure, this);
 

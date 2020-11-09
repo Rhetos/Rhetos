@@ -34,7 +34,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         public ReferencePropertyInfo ReferenceProperty { get; set; }
 
-        public void CheckSemantics(IDslModel existingConcepts)
+        public new void CheckSemantics(IDslModel existingConcepts)
         {
             if (!DslUtility.IsQueryable(DataStructure))
                 throw new DslSyntaxException(this, this.GetKeywordOrTypeName() + " can only be used on a queryable data structure, such as Entity. " + DataStructure.GetKeywordOrTypeName() + " is not queryable.");
