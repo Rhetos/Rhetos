@@ -83,12 +83,15 @@ namespace Rhetos.Compiler
 
         private static void WriteFile(string content, string filePath)
         {
+            // This method tries to keep and update an existing file instead of deleting it and creating a new one,
+            // in order to lessen the effect to any file monitoring service such as Visual Studio.
+            // The previous version of this method, that always created new source files, caused instability in Visual Studio while the generated project was open.
             using (var fs = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite))
             {
                 using (var sw = new StreamWriter(fs, Encoding.UTF8))
                 {
                     sw.Write(content);
-                    fs.SetLength(fs.Position);
+                    fs.SetLength(fs.Position); // Truncates rest of the file, if the previous file version was larger.
                 }
             }
         }
