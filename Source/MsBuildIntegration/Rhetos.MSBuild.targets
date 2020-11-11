@@ -1,10 +1,5 @@
 <Project>
-    <PropertyGroup>
-        <ResolveRhetosProjectAssetsTaskAssembly Condition=" '$(MSBuildRuntimeType)' == 'Core'">.\bin\Debug\netstandard2.0\RhetosVSIntegration.dll</ResolveRhetosProjectAssetsTaskAssembly>
-        <ResolveRhetosProjectAssetsTaskAssembly Condition=" '$(MSBuildRuntimeType)' != 'Core'">.\bin\Debug\net472\RhetosVSIntegration.dll</ResolveRhetosProjectAssetsTaskAssembly>
-    </PropertyGroup>
-
-    <UsingTask AssemblyFile="$(ResolveRhetosProjectAssetsTaskAssembly)" TaskName="RhetosVSIntegration.ResolveRhetosProjectAssets" />
+    <UsingTask AssemblyFile="RhetosVSIntegration.dll" TaskName="RhetosVSIntegration.ResolveRhetosProjectAssets" />
 
     <Target Name="ResolveRhetosProjectAssets" DependsOnTargets="ResolveLockFileReferences;ResolveAssemblyReferences;ResolveReferences" BeforeTargets="CoreCompile">
         <Message Text="ResolveRhetosProjectAssets" />
