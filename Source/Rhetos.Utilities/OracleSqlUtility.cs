@@ -18,9 +18,6 @@
 */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Oracle.ManagedDataAccess.Client;
 
 namespace Rhetos.Utilities
@@ -32,7 +29,7 @@ namespace Rhetos.Utilities
             const int MaxLength = 30;
             if (name.Length > MaxLength)
             {
-                var hashErasedPart = name.Substring(MaxLength - 9).GetHashCode().ToString("X");
+                var hashErasedPart = name.Substring(MaxLength - 9).GetHashCode().ToString("X").PadLeft(8, '0'); ;
                 return name.Substring(0, MaxLength - 9) + "_" + hashErasedPart;
             }
             return name;

@@ -346,7 +346,7 @@ namespace CommonConcepts.Test
                 var repository = container.Resolve<Common.DomRepository>();
 
                 var loaded = repository.TestDatabaseExtensions.Simple.Query().Select(item => item.Code.CastToString()).ToList();
-                Assert.AreEqual("0, 1, 123, -123456789, null", TestUtility.DumpSorted(loaded, str => str ?? "null"));
+                Assert.AreEqual("-123456789, 0, 1, 123, null", TestUtility.DumpSorted(loaded, str => str ?? "null"));
 
                 var filtered = repository.TestDatabaseExtensions.Simple.Query()
                     .Where(item => item.Code.CastToString().StartsWith("1"))
@@ -360,7 +360,7 @@ namespace CommonConcepts.Test
                 var items = testData.Select(code => new TestDatabaseExtensions.Simple { Code = code }).ToList();
 
                 var loaded = items.Select(item => item.Code.CastToString()).ToList();
-                Assert.AreEqual("0, 1, 123, -123456789, null", TestUtility.DumpSorted(loaded, str => str ?? "null"));
+                Assert.AreEqual("-123456789, 0, 1, 123, null", TestUtility.DumpSorted(loaded, str => str ?? "null"));
             }
         }
     }

@@ -137,12 +137,15 @@ namespace Rhetos.Utilities.Test
             Assert.IsTrue(e.InnerException is OperationCanceledException);
 
             // only b completes immediately after cancellation
-            Assert.AreEqual("a1b", string.Concat(result));
+            // it is not important if a1 or b is enqued first because b can start before a
+            Assert.AreEqual("a1b", string.Concat(result.OrderBy(x => x)));
             lockAStart.Release(); // Allow "a" to run now.
 
             // a should complete also, since it has been started prior to cancellation
             lockAFinished.Wait(); // Wait for "a" to finish.
-            Assert.AreEqual("a1ba2", string.Concat(result));
+            // it is not important if a1 or b is enqued first because b can start before a
+            Assert.AreEqual("a1b", string.Concat(result.Take(2).OrderBy(x => x)));
+            Assert.AreEqual("a2", string.Concat(result.Skip(2)));
         }
 
         [TestMethod]

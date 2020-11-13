@@ -37,23 +37,22 @@ namespace Rhetos.Extensibility.Test
         public void AnalyzeAndReportTypeLoadException()
         {
             var incompatibleAssemblies = new[] { GetIncompatibleAssemblyPath() };
+            //TODO: Check if this was the inteneded behaviour from the start
+            var assemblyResolver = AssemblyResolver.GetResolveEventHandler(incompatibleAssemblies, new ConsoleLogProvider(), false);
+            AppDomain.CurrentDomain.AssemblyResolve += assemblyResolver;
             var pluginsScanner = new PluginScanner(incompatibleAssemblies, ".", new ConsoleLogProvider(), new PluginScannerOptions());
             TestUtility.ShouldFail<FrameworkException>(
                 () => pluginsScanner.FindPlugins(typeof(IGenerator)),
                 "Please check if the assembly is missing or has a different version.",
                 "'Rhetos.RestGenerator.dll' throws FileNotFoundException: Could not load file or assembly 'Rhetos.Compiler.Interfaces, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null'. The system cannot find the file specified.");
+            AppDomain.CurrentDomain.AssemblyResolve -= assemblyResolver;
         }
 
         private static string GetIncompatibleAssemblyPath()
         {
-            string startingFolder = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            string oldAssemblyPathInRepository = @"packages\Rhetos.RestGenerator.2.1.0\lib\net451\Rhetos.RestGenerator.dll";
-            var testFolder = new DirectoryInfo(startingFolder);
-
             string oldAssemblyPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), @".nuget\packages\rhetos.restgenerator\2.1.0\lib\net451\Rhetos.RestGenerator.dll");
             if (!File.Exists(oldAssemblyPath))
-                Assert.Fail($"Invalid unit test setup: Cannot find '{oldAssemblyPathInRepository}'" +
-                    $" starting from '{startingFolder}' or any parent folder. See the test output for more details.");
+                Assert.Fail($"Invalid unit test setup: Cannot find the assembly Rhetos.RestGenerator at path '{oldAssemblyPath}'.");
             return oldAssemblyPath;
         }
     }
