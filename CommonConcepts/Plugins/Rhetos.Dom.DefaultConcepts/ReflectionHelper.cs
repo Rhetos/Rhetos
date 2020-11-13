@@ -170,12 +170,10 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public static Type GetPredicateExpressionParameter(Type expressionType)
         {
-            if (!expressionType.IsGenericType) return null;
-            //TODO: Important! Check why in .NET Core this has beeen changed and if this is the right approach
-            if (!expressionType.BaseType.IsGenericType) return null;
-            if (expressionType.BaseType.GetGenericTypeDefinition() != typeof(Expression<>)) return null;
+            var expressionImplementationType = expressionType.GetUnderlyingGenericType(typeof(Expression<>));
+            if (expressionImplementationType == null) return null;
 
-            var funcType = expressionType.GetGenericArguments().First();
+            var funcType = expressionImplementationType.GetGenericArguments().First();
             return GetPredicateFunctionParameter(funcType);
         }
 
