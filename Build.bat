@@ -13,7 +13,7 @@ PowerShell -ExecutionPolicy ByPass .\Tools\Build\ChangeVersion.ps1 %Version% %Pr
 REM NuGet Automatic Package Restore requires "NuGet.exe restore" to be executed before the command-line build.
 WHERE /Q NuGet.exe || ECHO ERROR: Please download the NuGet.exe command line tool. && GOTO Error0
 NuGet.exe restore "Rhetos.sln" -NonInteractive || GOTO Error0
-MSBuild.exe "Rhetos.sln" /target:rebuild /p:Configuration=%Config% /verbosity:minimal /fileLogger || GOTO Error0
+MSBuild.exe "Rhetos.sln" /t:restore /t:rebuild /p:Configuration=%Config% /verbosity:minimal /fileLogger || GOTO Error0
 CALL CreateInstallationPackage.bat %Config% /NOPAUSE || GOTO Error0
 
 REM Updating the build version back to "dev" (internal development build), to avoid spamming git history with timestamped prerelease versions.
