@@ -311,7 +311,7 @@
 * Bugfix: **SqlDependsOn** referencing polymorphic data structure did not create a dependency to the polymorphic's view (issue #98).
 * Cascade delete is executed only in the application layer, not in the database, to prevent bypassing any business rules (issue #90).
   The new behavior can be enabled in *old applications* by setting
-  the [appSettings](https://github.com/Rhetos/Rhetos/blob/master/Source/Rhetos/Web.config) option
+  the [appSettings](https://github.com/Rhetos/Rhetos/blob/v2.1.0/Source/Rhetos/Web.config) option
   "CommonConcepts.Legacy.CascadeDeleteInDatabase" to "False".
 * Minor performance improvements for DSL parser.
 

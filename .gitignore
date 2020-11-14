@@ -372,15 +372,6 @@ FodyWeavers.xsd
 # Local History for Visual Studio Code
 .history/
 
-# Rhetos build results
-/Source/Rhetos/bin/Plugins/
-/Source/Rhetos/bin/Generated/
-/Source/Rhetos/GeneratedFilesCache/
-/Source/Rhetos/Logs/
-/Source/Rhetos/Resources/
-/Source/Rhetos/PackagesCache/
-/Install/
-
 # Rhetos user-specific files
 /.vscode/settings.json
 /Tools/Configuration/rhetos-app.local.settings.json
