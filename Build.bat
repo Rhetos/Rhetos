@@ -11,9 +11,7 @@ PowerShell -ExecutionPolicy ByPass .\Tools\Build\ChangeVersion.ps1 %Version% %Pr
 dotnet build "Rhetos.sln" /target:rebuild /p:Configuration=%Config% /verbosity:minimal /fileLogger || GOTO Error1
 CALL CreateInstallationPackage.bat %Config% || GOTO Error1
 
-dotnet build CommonConceptsTest.sln /target:restore /p:RestoreForce=True  /target:rebuild /p:Configuration=Debug /verbosity:minimal || GOTO Error1
-
-REM Updating the build version back to "dev" (internal development build), to avoid spamming git history with timestamped prerelease versions.
+REM Restoring the build version back to "dev" (internal development build), to avoid spamming git history with timestamped prerelease versions.
 PowerShell -ExecutionPolicy ByPass .\Tools\Build\ChangeVersion.ps1 %Version% dev || GOTO Error0
 
 @REM ================================================
