@@ -1,4 +1,4 @@
-@REM HINT: SET SECOND ARGUMENT TO /NOPAUSE WHEN AUTOMATING THE BUILD.
+SETLOCAL
 
 @SET Config=%1%
 @IF [%1] == [] SET Config=Debug
@@ -16,7 +16,7 @@ dotnet test "Source\Rhetos.Deployment.Test\bin\Debug\net5.0\Rhetos.Deployment.Te
 dotnet test "CommonConcepts\CommonConcepts.Test\bin\Debug\net5.0\CommonConcepts.Test.dll" /Platform:x86 || GOTO Error0
 
 CALL Tools\Build\FindVisualStudio.bat || GOTO Error0
-@REM We are tsestin if the CommonConceptsTest.sln could be restored with the MSBuild command
+@REM We are testing if the CommonConceptsTest.sln could be restored with the MSBuild command
 @REM because the target frameworks used to run custom MSBuild tasks are different when using dotnet cli and MSBuild.exe
 MSBuild.exe CommonConceptsTest.sln /target:restore /p:RestoreForce=True  /target:rebuild /p:Configuration=Debug /verbosity:minimal || GOTO Error0
 
@@ -29,5 +29,4 @@ MSBuild.exe CommonConceptsTest.sln /target:restore /p:RestoreForce=True  /target
 :Error0
 @ECHO.
 @ECHO %~nx0 FAILED.
-@IF /I [%2] NEQ [/NOPAUSE] @PAUSE
 @EXIT /B 1

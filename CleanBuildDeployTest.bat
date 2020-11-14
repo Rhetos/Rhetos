@@ -4,10 +4,8 @@ SETLOCAL
 @IF [%1] == [] SET Config=Debug
 
 CALL Clean.bat || GOTO Error0
-
-CALL Build.bat %Config% /NOPAUSE || GOTO Error0
-
-CALL Test.bat %Config% /NOPAUSE || GOTO Error0
+CALL Build.bat %Config% || GOTO Error0
+CALL Test.bat %Config% || GOTO Error0
 
 @REM ================================================
 

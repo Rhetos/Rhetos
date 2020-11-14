@@ -1,8 +1,10 @@
+SETLOCAL
+
+@SET Config=%1%
+@IF [%1] == [] SET Config=Debug
+
 IF NOT EXIST Install\ MD Install
 DEL /F /S /Q Install\* || GOTO Error0
-
-SET Config=%1%
-IF [%1] == [] SET Config=Debug
 
 NuGet.exe pack Source\Rhetos.nuspec -OutputDirectory Install || GOTO Error0
 NuGet.exe pack Source\Rhetos.MSBuild.nuspec -OutputDirectory Install || GOTO Error0
@@ -18,5 +20,4 @@ NuGet.exe pack CommonConcepts\Rhetos.CommonConcepts.nuspec -OutputDirectory Inst
 :Error0
 @ECHO.
 @ECHO %~nx0 FAILED.
-@IF /I [%2] NEQ [/NOPAUSE] @PAUSE
 @EXIT /B 1

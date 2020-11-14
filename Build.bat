@@ -8,10 +8,10 @@ SET Prerelease=auto
 REM Updating the build version of all projects.
 PowerShell -ExecutionPolicy ByPass .\Tools\Build\ChangeVersion.ps1 %Version% %Prerelease% || GOTO Error0
 
-dotnet build "Rhetos.sln" /target:rebuild /p:Configuration=%Config% /verbosity:minimal /fileLogger || GOTO Error0
-CALL CreateInstallationPackage.bat %Config% /NOPAUSE || GOTO Error0
+dotnet build "Rhetos.sln" /target:rebuild /p:Configuration=%Config% /verbosity:minimal /fileLogger || GOTO Error1
+CALL CreateInstallationPackage.bat %Config% || GOTO Error1
 
-dotnet build CommonConceptsTest.sln /target:restore /p:RestoreForce=True  /target:rebuild /p:Configuration=Debug /verbosity:minimal || GOTO Error0
+dotnet build CommonConceptsTest.sln /target:restore /p:RestoreForce=True  /target:rebuild /p:Configuration=Debug /verbosity:minimal || GOTO Error1
 
 REM Updating the build version back to "dev" (internal development build), to avoid spamming git history with timestamped prerelease versions.
 PowerShell -ExecutionPolicy ByPass .\Tools\Build\ChangeVersion.ps1 %Version% dev || GOTO Error0
@@ -22,8 +22,9 @@ PowerShell -ExecutionPolicy ByPass .\Tools\Build\ChangeVersion.ps1 %Version% dev
 @ECHO %~nx0 SUCCESSFULLY COMPLETED.
 @EXIT /B 0
 
+:Error1
+@PowerShell -ExecutionPolicy ByPass .\Tools\Build\ChangeVersion.ps1 %Version% dev >nul
 :Error0
 @ECHO.
 @ECHO %~nx0 FAILED.
-@IF /I [%2] NEQ [/NOPAUSE] @PAUSE
 @EXIT /B 1
