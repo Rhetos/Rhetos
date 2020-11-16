@@ -1,5 +1,26 @@
 ﻿# Rhetos release notes
 
+## 5.0.0
+
+### Breaking changes
+
+1. Rhetos no longer supports .NET Framework
+2. Removed support for IWindowsSecurity and WindowsSecurity intreface. WindowsSecurity property on ExecutionContext is removed.
+3. Removed CleanupOldData executable
+4. Removed CreateAndSetDatabse executable
+5. Removed CreateIISSite executable
+6. Removed DeployPackages executable
+   * rhetos.exe is replacing DeployPackages.exe
+7. Removed support for Wcf in Rhetos core package. That means that Rhetos.Web assembly is also removed from the Rhetos core package.
+   * probably there will be no support for Wcf in Rhetos 5
+8. Remvoed PackageDonwloader and PackageDonwloaderOptions class because the nuget package managemnt is done by MSBuild or dotnet cli
+9. Removed IHomePageSnippet from the Rhetos core package
+    * The support for IHomePageSnippet will be probably left to a rhetos plugin that will support the ASP.NET Core
+10. Removed IService from the Rhetos core package
+    * a new dessign is needed to support custom services in ASP.NET Core
+11. Removed IServerApplication from Rhetos core package
+12. Removed WcfWindowsUserInfo from Rhetos core package
+
 ## 4.2.0 (2020-10-26)
 
 ### Internal improvements
