@@ -290,5 +290,43 @@ namespace Rhetos.CommonConcepts.Test
             Assert.AreEqual("1, 2", TestUtility.DumpSorted(TestFilter("ID", "In", query.Cast<Guid?>(), items), item => item.Name));
             Assert.AreEqual(4 * items.Count(), queryExecutions);
         }
+
+        [TestMethod]
+        public void EqualsSimpleFilter()
+        {
+            var tests = new (string Filter1, string Filter2, bool ExpectedEqual)[]
+            {
+                ("Common.RowPermissionsReadItems", "Common.RowPermissionsReadItems, Bookstore.Service, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null", true),
+                ("string[]", "string[],", true),
+                ("string[]", "string[],1", true),
+                ("string[]", "string,", false),
+                ("string[]", "string", false),
+                (null, "string", false),
+                (null, "string,", false),
+                (null, "string,1", false),
+                ("", "string", false),
+                ("", "string,", false),
+                ("", "string,1", false),
+            };
+
+            foreach (var test in tests)
+            {
+                var testInfo = $"Testing: {test}";
+                Console.WriteLine(testInfo);
+                Assert.AreEqual(test.ExpectedEqual, GenericFilterHelper.EqualsSimpleFilter(new FilterCriteria { Filter = test.Filter1 }, test.Filter2), testInfo);
+                Assert.AreEqual(test.ExpectedEqual, GenericFilterHelper.EqualsSimpleFilter(new FilterCriteria { Filter = test.Filter2 }, test.Filter1), testInfo);
+                Assert.AreEqual(test.ExpectedEqual, GenericFilterHelper.EqualsSimpleFilter(new FilterCriteria { Filter = test.Filter1, Operation = "Matches" }, test.Filter2), testInfo);
+                Assert.AreEqual(test.ExpectedEqual, GenericFilterHelper.EqualsSimpleFilter(new FilterCriteria { Filter = test.Filter2, Operation = "Matches" }, test.Filter1), testInfo);
+            }
+        }
+
+        [TestMethod]
+        public void EqualsSimpleFilterUnsupported()
+        {
+            const string filterName = "Test.Filter";
+            Assert.IsFalse(GenericFilterHelper.EqualsSimpleFilter(new FilterCriteria { Filter = filterName, Operation = "Matches", Value = "parameter" }, filterName));
+            Assert.IsFalse(GenericFilterHelper.EqualsSimpleFilter(new FilterCriteria { Filter = filterName, Operation = "Matches", Value = "parameter" }, filterName));
+            Assert.IsFalse(GenericFilterHelper.EqualsSimpleFilter(new FilterCriteria { Property = filterName, Operation = "Equals", Value = "Value" }, filterName));
+        }
     }
 }
