@@ -1,5 +1,11 @@
 ﻿# Rhetos release notes
 
+## 3.2.1 (2020-11-19)
+
+### Internal improvements
+
+* Bugfix: Read command with row permissions filter is not be optimized in some situations, resulting with an additional database query.
+
 ## 3.2.0 (2020-08-20)
 
 ### Internal improvements
