@@ -157,7 +157,17 @@
 * Updated Rhetos framework C# language to 7.3. Framework development now requires Visual Studio 2017 v15.7 or later.
 * Minor performance improvements of DeployPackages and application start-up.
 
+## 3.2.1 (2020-11-19)
+
+The changes from this release are not included in versions 4.0.0 - 4.2.0.
+
+### Internal improvements
+
+* Bugfix: Read command with row permissions filter is not be optimized in some situations, resulting with an additional database query.
+
 ## 3.2.0 (2020-08-20)
+
+The changes from this release are not included in versions 4.0.0 - 4.0.1. They are included in 4.1.0 and later.
 
 ### Internal improvements
 
