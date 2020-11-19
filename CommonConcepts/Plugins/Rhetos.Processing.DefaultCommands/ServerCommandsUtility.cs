@@ -24,9 +24,6 @@ using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Text;
 
 namespace Rhetos.Processing.DefaultCommands
 {
@@ -179,81 +176,11 @@ namespace Rhetos.Processing.DefaultCommands
             return query != null ? query.Count() : items.Count();
         }
 
-        private static IEnumerable<T> GetSubset<T>(T[] source, int startIndex, int endIndex)
-        {
-            while (startIndex < endIndex) yield return source[startIndex++];
-        }
-
-        private static IEnumerable<IEnumerable<T>> GetChunks<T>(T[] source, int chunkSize)
-        {
-            int start = 0;
-            while (start < source.Length)
-            {
-                int end = Math.Min(start + chunkSize, source.Length);
-                yield return GetSubset(source, start, end);
-                start += chunkSize;
-            }
-        }
-
         private Guid? FindDuplicate(List<Guid> ids)
         {
             if (ids.Distinct().Count() != ids.Count())
                 return ids.GroupBy(id => id).Where(group => group.Count() > 1).First().Key;
             return null;
         }
-
-        //================================================================
-        #region Sorting and paging
-
-        private IQueryable<T> SortAndPaginate<T>(IQueryable<T> query, ReadCommandInfo commandInfo)
-        {
-            bool pagingIsUsed = commandInfo.Top > 0 || commandInfo.Skip > 0;
-
-            if (pagingIsUsed && (commandInfo.OrderByProperties == null || commandInfo.OrderByProperties.Length == 0))
-                throw new ClientException("Invalid ReadCommand argument: Sort order must be set if paging is used (Top or Skip).");
-
-            if (commandInfo.OrderByProperties != null)
-                foreach (var order in commandInfo.OrderByProperties)
-                    query = Sort(query, order.Property, ascending: !order.Descending);
-
-            if (commandInfo.Skip > 0)
-                query = query.Skip(commandInfo.Skip);
-
-            if (commandInfo.Top > 0)
-                query = query.Take(commandInfo.Top);
-
-            return query;
-        }
-
-        private IQueryable<T> Sort<T>(IQueryable<T> source, string orderByProperty, bool ascending = true)
-        {
-            if (string.IsNullOrEmpty(orderByProperty))
-                return source;
-
-            Type itemType = source.GetType().GetGenericArguments().Single();
-
-            ParameterExpression parameter = Expression.Parameter(itemType, "posting");
-            Expression property = Expression.Property(parameter, orderByProperty);
-            LambdaExpression propertySelector = Expression.Lambda(property, new[] { parameter });
-
-            MethodInfo orderMethod = ascending ? OrderByAscendingMethod : OrderByDescendingMethod;
-            MethodInfo genericOrderMethod = orderMethod.MakeGenericMethod(new[] { itemType, property.Type });
-
-            return (IQueryable<T>)genericOrderMethod.InvokeEx(null, source, propertySelector);
-        }
-
-        private static readonly MethodInfo OrderByAscendingMethod =
-            typeof(Queryable).GetMethods()
-                .Where(method => method.Name == "OrderBy")
-                .Where(method => method.GetParameters().Length == 2)
-                .Single();
-
-        private static readonly MethodInfo OrderByDescendingMethod =
-            typeof(Queryable).GetMethods()
-                .Where(method => method.Name == "OrderByDescending")
-                .Where(method => method.GetParameters().Length == 2)
-                .Single();
-
-        #endregion
     }
 }
