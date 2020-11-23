@@ -7,7 +7,7 @@ namespace Rhetos.Utilities
     public static class TypeExtensions
     {
         /// <summary>
-        /// Returns the underlying genric type with concrete type arguments.
+        /// Returns the underlying generic type with concrete type arguments.
         /// </summary>
         public static Type GetUnderlyingGenericType(this Type type, Type genericType)
         {
