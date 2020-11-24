@@ -29,50 +29,34 @@
         </ItemGroup>
         <WriteLinesToFile Lines="@(RhetosSourceFiles -> '%(FullPath)')" Overwrite="True" WriteOnlyWhenDifferent="True" File="$(BaseIntermediateOutputPath)Rhetos\RhetosGeneratedSourceFiles.txt"/>
     </Target>
-    
-    <Target Name="CopyRhetosFilesToOutput" DependsOnTargets="AddRhetosSourceFiles" AfterTargets="CopyFilesToOutputDirectory">
-        <Message Text="CopyRhetosFilesToOutput" />
 
-        <!--Generated sources-->
-        <Copy SourceFiles="@(RhetosSourceFiles)" Retries="$(CopyRetryCount)" RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
-            DestinationFiles="@(RhetosSourceFiles->'$(TargetDir)RhetosDebugSource\%(RecursiveDir)%(Filename)%(Extension)')" 
-            SkipUnchangedFiles="True">
-            <Output TaskParameter="CopiedFiles" ItemName="_RhetosDebugSourceFiles" />
-        </Copy>
-        <ItemGroup>
-            <_RhetosDebugSourceFilesToDelete Include="$(TargetDir)RhetosDebugSource\**\*.cs" Exclude="@(_RhetosDebugSourceFiles)" />
-        </ItemGroup>
-        <Delete Files="@(_RhetosDebugSourceFilesToDelete)" />
-        <ItemGroup>
-            <FileWrites Include="@(_RhetosDebugSourceFiles)" />
-        </ItemGroup>
+    <PropertyGroup>
+        <AssignTargetPathsDependsOn>
+            $(AssignTargetPathsDependsOn);
+            MarkRhetosGeneratedFilesToCopyToOutput
+        </AssignTargetPathsDependsOn>
+    </PropertyGroup>
 
-        <!--Assets folder-->
+    <Target Name="MarkRhetosGeneratedFilesToCopyToOutput" BeforeTargets="CopyAdditionalFiles;AssignTargetPaths" DependsOnTargets="BuildRhetosApp">
+        <Message Text="MarkRhetosGeneratedFilesToCopyToOutput" />
+
         <ItemGroup>
-            <_RhetosAssetsFilesToCopy Include="obj\Rhetos\RhetosAssets\**" />
-        </ItemGroup>        
-        <Copy SourceFiles="@(_RhetosAssetsFilesToCopy)" Retries="$(CopyRetryCount)" RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
-            DestinationFiles="@(_RhetosAssetsFilesToCopy->'$(TargetDir)RhetosAssets\%(RecursiveDir)%(Filename)%(Extension)')" 
-            SkipUnchangedFiles="True">
-            <Output TaskParameter="CopiedFiles" ItemName="_CopiedRhetosAssetsFiles" />
-        </Copy>
-        <ItemGroup>
-            <_RhetosAssetsFilesToDelete Include="$(RhetosGeneratedAssetsFolder)*" Exclude="@(_CopiedRhetosAssetsFiles)" />
-        </ItemGroup>
-        <Delete Files="@(_RhetosAssetsFilesToDelete)" />
-        <ItemGroup>
-            <FileWrites Include="@(_CopiedRhetosAssetsFiles)" />
+            <RhetosAssets Include="obj\Rhetos\RhetosAssets\**" />
+            <None Include="@(RhetosAssets)" Link="RhetosAssets\%(RecursiveDir)%(Filename)%(Extension)">
+                <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            </None>
+
+            <RhetosDebugSources Include="obj\Rhetos\RhetosSource\**\*.cs" />
+            <None Include="@(RhetosDebugSources)" Link="RhetosDebugSource\%(RecursiveDir)%(Filename)%(Extension)">
+                <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            </None>
+
+            <PluginScannerJson Include="$(BaseIntermediateOutputPath)Rhetos\PluginScanner.json" />
+            <None Include="@(PluginScannerJson)" Link="%(Filename)%(Extension)">
+                <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            </None>
         </ItemGroup>
 
-        <!-- Copy plugin scanner cache -->
-        <PropertyGroup>
-            <_PluginScannerCachePath>$(BaseIntermediateOutputPath)Rhetos\PluginScanner.json</_PluginScannerCachePath>
-        </PropertyGroup>
-        <Copy SourceFiles="$(_PluginScannerCachePath)" Retries="$(CopyRetryCount)" RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
-            DestinationFiles="$(TargetDir)\PluginScanner.json" 
-            SkipUnchangedFiles="True"
-            Condition="!Exists('$(TargetDir)\PluginScanner.json') And Exists('$(_PluginScannerCachePath)')">
-        </Copy>
     </Target>
 
     <Target Name="DeployRhetosApp" DependsOnTargets="BuildRhetosApp;CopyFilesToOutputDirectory" AfterTargets="Build" Condition="'$(RhetosDeploy)'=='True' And Exists('$(RhetosBuildCompleteFile)')"
