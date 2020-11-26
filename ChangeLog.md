@@ -4,22 +4,25 @@
 
 ### Breaking changes
 
-1. Rhetos no longer supports .NET Framework plugins.
-2. Removed support for IWindowsSecurity and WindowsSecurity interface. WindowsSecurity property on ExecutionContext is removed.
+1. Rhetos no longer supports .NET Framework.
+2. Removed WcfWindowsUserInfo, IWindowsSecurity and WindowsSecurity from Rhetos framework. WindowsSecurity property on ExecutionContext is removed.
+   * TODO: These classes might be implemented in a separate plugin package.
 3. Removed CleanupOldData executable
 4. Removed CreateAndSetDatabase executable
 5. Removed CreateIISSite executable
 6. Removed DeployPackages executable
-   * rhetos.exe is replacing DeployPackages.exe
-7. Removed support for WCF in Rhetos core package. That means that Rhetos.Web assembly is also removed from the Rhetos core package.
-   * probably there will be no support for WCF in Rhetos 5
-8. Removed PackageDownloader and PackageDownloaderOptions class because the NuGet package management is done by MSBuild or dotnet cli
-9. Removed IHomePageSnippet from the Rhetos core package
-    * The support for IHomePageSnippet will be probably left to a rhetos plugin that will support the ASP.NET Core
-10. Removed IService from the Rhetos core package
-    * a new design is needed to support custom services in ASP.NET Core
-11. Removed IServerApplication from Rhetos core package
-12. Removed WcfWindowsUserInfo from Rhetos core package
+   * rhetos.exe is replacing DeployPackages.exe, see [Migrating from DeployPackages to Rhetos CLI](https://github.com/Rhetos/Rhetos/wiki/Migrating-from-DeployPackages-to-Rhetos-CLI).
+7. Removed support for WCF in Rhetos framework. That means that Rhetos.Web assembly is also removed from the Rhetos framework.
+8. Removed PackageDownloader and PackageDownloaderOptions class because the NuGet package management is done by MSBuild or dotnet CLI.
+9. Removed IHomePageSnippet from the Rhetos framework
+    * TODO: The support for IHomePageSnippet will be probably left to a rhetos plugin that will support the ASP.NET Core.
+10. Removed IService from the Rhetos framework
+    * TODO: A new design is needed to support custom services in ASP.NET Core.
+11. SOAP API implementation is removed from Rhetos framework (IServerApplication).
+12. Rhetos.TestCommon.dll is moved to a separate NuGet package.
+    * If your build fails with error `......`, add a NuGet package reference to "Rhetos.TestCommon".
+13. Removed LINQPad scripts from the Rhetos framework.
+    * TODO: Implement them in a separate NuGet package.
 
 ## 4.2.0 (2020-10-26)
 
