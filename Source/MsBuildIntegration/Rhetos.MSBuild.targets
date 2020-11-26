@@ -40,31 +40,18 @@
         <WriteLinesToFile Lines="@(RhetosSourceFiles -> '%(FullPath)')" Overwrite="True" WriteOnlyWhenDifferent="True" File="$(BaseIntermediateOutputPath)Rhetos\RhetosGeneratedSourceFiles.txt"/>
     </Target>
 
-    <PropertyGroup>
-        <AssignTargetPathsDependsOn>
-            $(AssignTargetPathsDependsOn);
-            MarkRhetosGeneratedFilesToCopyToOutput
-        </AssignTargetPathsDependsOn>
-    </PropertyGroup>
-
-    <Target Name="MarkRhetosGeneratedFilesToCopyToOutput" BeforeTargets="CopyAdditionalFiles;AssignTargetPaths" DependsOnTargets="BuildRhetosApp">
+    <Target Name="MarkRhetosGeneratedFilesToCopyToOutput" BeforeTargets="AssignTargetPaths" DependsOnTargets="BuildRhetosApp">
         <Message Text="MarkRhetosGeneratedFilesToCopyToOutput" />
 
         <ItemGroup>
             <RhetosAssets Include="obj\Rhetos\RhetosAssets\**" />
-            <None Include="@(RhetosAssets)" Link="RhetosAssets\%(RecursiveDir)%(Filename)%(Extension)">
-                <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            </None>
+            <None Include="@(RhetosAssets)" CopyToOutputDirectory="PreserveNewest" Link="RhetosAssets\%(RecursiveDir)%(Filename)%(Extension)"/>
 
             <RhetosDebugSources Include="obj\Rhetos\RhetosSource\**\*.cs" />
-            <None Include="@(RhetosDebugSources)" Link="RhetosDebugSource\%(RecursiveDir)%(Filename)%(Extension)">
-                <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            </None>
+            <None Include="@(RhetosDebugSources)" CopyToOutputDirectory="PreserveNewest" Link="RhetosDebugSource\%(RecursiveDir)%(Filename)%(Extension)"/>
 
             <PluginScannerJson Include="$(BaseIntermediateOutputPath)Rhetos\PluginScanner.json" />
-            <None Include="@(PluginScannerJson)" Link="%(Filename)%(Extension)">
-                <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            </None>
+            <None Include="@(PluginScannerJson)" CopyToOutputDirectory="PreserveNewest" Link="%(Filename)%(Extension)"/>
         </ItemGroup>
 
     </Target>
