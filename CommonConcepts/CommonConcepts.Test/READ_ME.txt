@@ -6,7 +6,7 @@ To run this project's tests do the following:
     {
         "ConnectionStrings": {
             "ServerConnectionString": {
-                "ConnectionString": "Data Source=Server;Initial Catalog=Database;Integrated Security=SSPI;Network Library=dbmslpcn;"
+                "ConnectionString": "Data Source=Server;Initial Catalog=Database;Integrated Security=SSPI;"
             }
         }
     }

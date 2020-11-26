@@ -1,23 +1,23 @@
 ﻿# Rhetos release notes
 
-## 5.0.0
+## 5.0.0 (TO BE RELEASED)
 
 ### Breaking changes
 
-1. Rhetos no longer supports .NET Framework
-2. Removed support for IWindowsSecurity and WindowsSecurity intreface. WindowsSecurity property on ExecutionContext is removed.
+1. Rhetos no longer supports .NET Framework plugins.
+2. Removed support for IWindowsSecurity and WindowsSecurity interface. WindowsSecurity property on ExecutionContext is removed.
 3. Removed CleanupOldData executable
-4. Removed CreateAndSetDatabse executable
+4. Removed CreateAndSetDatabase executable
 5. Removed CreateIISSite executable
 6. Removed DeployPackages executable
    * rhetos.exe is replacing DeployPackages.exe
-7. Removed support for Wcf in Rhetos core package. That means that Rhetos.Web assembly is also removed from the Rhetos core package.
-   * probably there will be no support for Wcf in Rhetos 5
-8. Remvoed PackageDonwloader and PackageDonwloaderOptions class because the nuget package managemnt is done by MSBuild or dotnet cli
+7. Removed support for WCF in Rhetos core package. That means that Rhetos.Web assembly is also removed from the Rhetos core package.
+   * probably there will be no support for WCF in Rhetos 5
+8. Removed PackageDownloader and PackageDownloaderOptions class because the NuGet package management is done by MSBuild or dotnet cli
 9. Removed IHomePageSnippet from the Rhetos core package
     * The support for IHomePageSnippet will be probably left to a rhetos plugin that will support the ASP.NET Core
 10. Removed IService from the Rhetos core package
-    * a new dessign is needed to support custom services in ASP.NET Core
+    * a new design is needed to support custom services in ASP.NET Core
 11. Removed IServerApplication from Rhetos core package
 12. Removed WcfWindowsUserInfo from Rhetos core package
 
