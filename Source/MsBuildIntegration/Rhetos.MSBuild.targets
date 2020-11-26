@@ -1,13 +1,14 @@
 <Project>
     <UsingTask AssemblyFile="RhetosVSIntegration.dll" TaskName="RhetosVSIntegration.ResolveRhetosProjectAssets" />
 
-    <Target Name="ResolveRhetosInput" BeforeTargets="ResolveRhetosProjectAssets">
-        <Message Text="ResolveRhetosInput" />
+    <Target Name="ResolveRhetosBuildItems" BeforeTargets="ResolveRhetosProjectAssets">
+        <Message Text="ResolveRhetosBuildItems" />
         <ItemGroup>
-            <RhetosInput Include="$(BaseIntermediateOutputPath)project.assets.json" />
-            <RhetosInput Include="rhetos-build.settings.json" />
             <RhetosBuild Include="DslScripts\**\*" />
             <RhetosBuild Include="DataMigration\**\*" />
+        </ItemGroup>
+        <ItemGroup>
+            <UpToDateCheckInput Include="@(RhetosBuild)" />
         </ItemGroup>
     </Target>
 
@@ -24,7 +25,16 @@
             TargetAssetsFolder="$(TargetDir)RhetosAssets" />
     </Target>
 
-    <Target Name="BuildRhetosApp" DependsOnTargets="ResolveRhetosProjectAssets;" BeforeTargets="CoreCompile" Condition="'$(RhetosBuild)'=='True' and $(BuildingProject)=='True'" Inputs="@(RhetosInput);@(RhetosBuild);@(ReferencePath)" Outputs="@(RhetosOutput)">
+    <Target Name="ResolveBuildRhetosAppTargetInput">
+        <Message Text="ResolveBuildRhetosAppTargetInput" /> 
+        <ItemGroup>
+            <RhetosInput Include="$(BaseIntermediateOutputPath)project.assets.json" />
+            <RhetosInput Include="$(BaseIntermediateOutputPath)\Rhetos\rhetos-project.assets.json" />
+            <RhetosInput Include="rhetos-build.settings.json" />
+        </ItemGroup>
+    </Target>
+
+    <Target Name="BuildRhetosApp" DependsOnTargets="ResolveRhetosProjectAssets;ResolveBuildRhetosAppTargetInput" BeforeTargets="CoreCompile" Condition="'$(RhetosBuild)'=='True' and $(BuildingProject)=='True'" Inputs="@(RhetosInput);@(RhetosBuild);@(ReferencePath)" Outputs="@(RhetosOutput)">
         <Message Text="BuildRhetosApp" />
         <Delete Files="$(RhetosBuildCompleteFile)" />
         <Exec Command="&quot;$(RhetosCliExecutablePath)&quot; build &quot;$(ProjectDir).&quot; --msbuild-format" CustomErrorRegularExpression="\[Error\]" CustomWarningRegularExpression="\[Warn\]" />
