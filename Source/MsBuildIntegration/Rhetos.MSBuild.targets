@@ -1,6 +1,16 @@
 <Project>
     <UsingTask AssemblyFile="RhetosVSIntegration.dll" TaskName="RhetosVSIntegration.ResolveRhetosProjectAssets" />
 
+    <Target Name="ResolveRhetosInput" BeforeTargets="ResolveRhetosProjectAssets">
+        <Message Text="ResolveRhetosInput" />
+        <ItemGroup>
+            <RhetosInput Include="$(BaseIntermediateOutputPath)project.assets.json" />
+            <RhetosInput Include="rhetos-build.settings.json" />
+            <RhetosBuild Include="DslScripts\**\*" />
+            <RhetosBuild Include="DataMigration\**\*" />
+        </ItemGroup>
+    </Target>
+
     <Target Name="ResolveRhetosProjectAssets" DependsOnTargets="ResolveLockFileReferences;ResolveAssemblyReferences;ResolveReferences" BeforeTargets="CoreCompile">
         <Message Text="ResolveRhetosProjectAssets" />
         <ResolveRhetosProjectAssets
