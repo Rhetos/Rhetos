@@ -116,9 +116,8 @@ namespace Rhetos.Utilities.Test
             var job = new ParallelJob(new ConsoleLogProvider())
                 .AddTask("a", () =>
                 {
-                    result.Enqueue("a1");
                     lockAStart.Wait();
-                    result.Enqueue("a2");
+                    result.Enqueue("a");
                     lockAFinished.Release();
                 })
                 .AddTask("b", () =>
@@ -136,16 +135,14 @@ namespace Rhetos.Utilities.Test
             var e = TestUtility.ShouldFail<AggregateException>(() => task.Wait());
             Assert.IsTrue(e.InnerException is OperationCanceledException);
 
-            // only b completes immediately after cancellation
-            // it is not important if a1 or b is enqued first because b can start before a
-            Assert.AreEqual("a1b", string.Concat(result.OrderBy(x => x)));
+            // Only "b" should be completed. "a" is waiting for lock, "c" i waiting for "a".
+            Assert.AreEqual("b", TestUtility.Dump(result));
             lockAStart.Release(); // Allow "a" to run now.
 
-            // a should complete also, since it has been started prior to cancellation
+            // "a" is expected to complete also, since it has been started prior to cancellation.
             lockAFinished.Wait(); // Wait for "a" to finish.
-            // it is not important if a1 or b is enqued first because b can start before a
-            Assert.AreEqual("a1b", string.Concat(result.Take(2).OrderBy(x => x)));
-            Assert.AreEqual("a2", string.Concat(result.Skip(2)));
+            Thread.Sleep(50); // Wait a little longer, but "c" should still not start, because it had not started prior to cancellation.
+            Assert.AreEqual("b, a", TestUtility.Dump(result));
         }
 
         [TestMethod]
