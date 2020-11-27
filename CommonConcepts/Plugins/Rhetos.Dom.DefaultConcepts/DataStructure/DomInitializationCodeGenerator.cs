@@ -346,7 +346,7 @@ $@"namespace Common
             builder.RegisterType<ExecutionContext>().InstancePerLifetimeScope();
             builder.RegisterInstance(Infrastructure.RegisteredInterfaceImplementations).ExternallyOwned();
             builder.RegisterInstance(Infrastructure.ApplyFiltersOnClientRead).ExternallyOwned();
-            builder.RegisterInstance(new Rhetos.Persistence.DatabaseSettings({_buildOptions.UseLegacyMsSqlDateTime.ToString().ToLowerInvariant()})).ExternallyOwned();
+            builder.RegisterInstance(new Rhetos.Persistence.DatabaseSettings({_buildOptions.UseLegacyMsSqlDateTime.ToString().ToLowerInvariant()}));
             
             {ModuleCodeGenerator.CommonAutofacConfigurationMembersTag}
 

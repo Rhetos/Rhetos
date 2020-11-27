@@ -72,8 +72,8 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         }
 
         public string ColumnType => _databaseSettings.UseLegacyMsSqlDateTime
-                ? Sql.Get("DateTimePropertyDatabaseDefinition_DataType")
-                : Sql.Get("DateTime2PropertyDatabaseDefinition_DataType");
+                ? Sql.Get("DateTimePropertyDatabaseDefinition_DataType_Legacy")
+                : Sql.Get("DateTimePropertyDatabaseDefinition_DataType");
     }
 
     [Export(typeof(IConceptMetadataExtension))]

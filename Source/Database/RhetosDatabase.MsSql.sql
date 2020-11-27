@@ -709,7 +709,7 @@ IF EXISTS (
 )
 BEGIN
 	ALTER TABLE Rhetos.AppliedConcept DROP CONSTRAINT DF_AppliedConcept_LastModified;
-    ALTER TABLE Rhetos.AppliedConcept ALTER COLUMN LastModified datetime2(3) NOT NULL
+    ALTER TABLE Rhetos.AppliedConcept ALTER COLUMN LastModified datetime2(3) NOT NULL;
     ALTER TABLE Rhetos.AppliedConcept ADD CONSTRAINT DF_AppliedConcept_LastModified DEFAULT (sysdatetime()) FOR LastModified;
 END
 
@@ -724,6 +724,6 @@ IF EXISTS (
 )
 BEGIN
 	ALTER TABLE Rhetos.DataMigrationScript DROP CONSTRAINT DF_DataMigrationScript_LastModified;
-    ALTER TABLE Rhetos.DataMigrationScript ALTER COLUMN DateExecuted datetime2(3) NOT NULL
+    ALTER TABLE Rhetos.DataMigrationScript ALTER COLUMN DateExecuted datetime2(3) NOT NULL;
     ALTER TABLE Rhetos.DataMigrationScript ADD CONSTRAINT DF_DataMigrationScript_LastModified DEFAULT (sysdatetime()) FOR DateExecuted;
 END
