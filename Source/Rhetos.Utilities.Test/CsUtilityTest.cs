@@ -333,5 +333,22 @@ Dictionary`2<List`1<InnerClass[]>, InnerClass>";
             Assert.AreEqual("  a\r\n  b", CsUtility.Indent("a\r\nb", 2));
             Assert.AreEqual("  a\r\n  b", CsUtility.Indent("a\nb", 2));
         }
+
+        [TestMethod]
+        public void GetUnderlyingGenericTypeSubclassOfRawGeneric()
+        {
+            TestUtility.ShouldFail<ArgumentException>(() => CsUtility.GetUnderlyingGenericType(typeof(int), typeof(IEnumerable<>)), "Interfaces are not supported");
+            TestUtility.ShouldFail<ArgumentException>(() => CsUtility.GetUnderlyingGenericType(typeof(int), typeof(System.Collections.ArrayList)), "The type must be a generic type");
+            TestUtility.ShouldFail<ArgumentException>(() => CsUtility.GetUnderlyingGenericType(typeof(int), typeof(List<string>)), "The generic type should not have any type arguments");
+            Assert.IsNull(CsUtility.GetUnderlyingGenericType(typeof(int), typeof(List<>)), "If the method was not able to find a subclass that implements the generic type it will return null.");
+            Assert.AreEqual(typeof(List<string>), CsUtility.GetUnderlyingGenericType(typeof(UnderlyingGenericTypeTestClass1), typeof(List<>)));
+            Assert.AreEqual(typeof(List<string>), CsUtility.GetUnderlyingGenericType(typeof(UnderlyingGenericTypeTestClass2<string>), typeof(List<>)));
+        }
+
+        public class UnderlyingGenericTypeTestClass1 : List<string>
+        { }
+
+        public class UnderlyingGenericTypeTestClass2<T> : List<T>
+        { }
     }
 }

@@ -170,7 +170,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public static Type GetPredicateExpressionParameter(Type expressionType)
         {
-            var expressionImplementationType = expressionType.GetUnderlyingGenericType(typeof(Expression<>));
+            var expressionImplementationType = CsUtility.GetUnderlyingGenericType(expressionType, typeof(Expression<>));
             if (expressionImplementationType == null) return null;
 
             var funcType = expressionImplementationType.GetGenericArguments().First();
