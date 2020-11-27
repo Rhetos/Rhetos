@@ -695,3 +695,35 @@ WHERE
 -- that would cause downgrade to fail. See https://github.com/Rhetos/Rhetos/issues/353 for more info.
 IF OBJECT_ID(N'Rhetos.DslScript') IS NOT NULL
 	TRUNCATE TABLE Rhetos.DslScript;
+
+
+-- Migration from datetime to datetime2(3)
+IF EXISTS (
+	SELECT *
+	FROM INFORMATION_SCHEMA.COLUMNS
+	WHERE 
+		TABLE_SCHEMA = N'Rhetos' AND
+		TABLE_NAME = N'AppliedConcept' AND 
+		COLUMN_NAME = N'LastModified' AND
+		DATA_TYPE = N'datetime'
+)
+BEGIN
+	ALTER TABLE Rhetos.AppliedConcept DROP CONSTRAINT DF_AppliedConcept_LastModified;
+    ALTER TABLE Rhetos.AppliedConcept ALTER COLUMN LastModified datetime2(3) NOT NULL
+    ALTER TABLE Rhetos.AppliedConcept ADD CONSTRAINT DF_AppliedConcept_LastModified DEFAULT (sysdatetime()) FOR LastModified;
+END
+
+IF EXISTS (
+	SELECT *
+	FROM INFORMATION_SCHEMA.COLUMNS
+	WHERE 
+		TABLE_SCHEMA = N'Rhetos' AND
+		TABLE_NAME = N'DataMigrationScript' AND 
+		COLUMN_NAME = N'DateExecuted' AND
+		DATA_TYPE = N'datetime'
+)
+BEGIN
+	ALTER TABLE Rhetos.DataMigrationScript DROP CONSTRAINT DF_DataMigrationScript_LastModified;
+    ALTER TABLE Rhetos.DataMigrationScript ALTER COLUMN DateExecuted datetime2(3) NOT NULL
+    ALTER TABLE Rhetos.DataMigrationScript ADD CONSTRAINT DF_DataMigrationScript_LastModified DEFAULT (sysdatetime()) FOR DateExecuted;
+END

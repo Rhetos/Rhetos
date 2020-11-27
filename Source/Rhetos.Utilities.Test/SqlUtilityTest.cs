@@ -136,7 +136,7 @@ namespace Rhetos.Utilities.Test
         {
             public void ExecuteReader(string command, Action<System.Data.Common.DbDataReader> action)
             {
-                if (command == "SELECT GETDATE()")
+                if (command == "SELECT SYSDATETIME()")
                 {
                     var dataTable = new DataTable("mocktable");
                     dataTable.Columns.Add("column0", typeof(DateTime));

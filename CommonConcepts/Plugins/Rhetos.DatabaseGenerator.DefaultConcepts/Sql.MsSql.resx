@@ -543,4 +543,7 @@ UPDATE {0}.{1} SET {2} = {4} WHERE {2} IS NULL;
 ALTER TABLE {0}.{1} ALTER COLUMN {2} {3} NOT NULL;
     </value>
   </data>
+  <data name="DateTime2PropertyDatabaseDefinition_DataType" xml:space="preserve">
+    <value>DATETIME2(3)</value>
+  </data>
 </root>
