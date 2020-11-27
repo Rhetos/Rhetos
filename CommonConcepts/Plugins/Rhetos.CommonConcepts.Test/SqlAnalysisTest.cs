@@ -17,20 +17,18 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos.TestCommon;
-using Rhetos.Dsl;
-using System.Reflection;
-using System.Text.RegularExpressions;
-using Rhetos;
-using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.CommonConcepts.Test.Mocks;
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.TestCommon;
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Text;
+using System.Text.RegularExpressions;
 
-namespace CommonConcepts.Test
+namespace Rhetos.CommonConcepts.Test
 {
     [TestClass]
     public class SqlAnalysisTest

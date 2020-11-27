@@ -23,6 +23,7 @@
     * If your build fails with error `......`, add a NuGet package reference to "Rhetos.TestCommon".
 13. Removed LINQPad scripts from the Rhetos framework.
     * TODO: Implement them in a separate NuGet package.
+14. TestUtility.DumpSorted may return items in a different order, because the default string comparer is different between .NET Framework and .NET 5.
 
 ## 4.2.0 (2020-10-26)
 

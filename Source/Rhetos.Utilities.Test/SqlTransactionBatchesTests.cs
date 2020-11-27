@@ -21,7 +21,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
 using System.Linq;
 
-namespace Rhetos.Utilities.Tests
+namespace Rhetos.Utilities.Test
 {
     [TestClass()]
     public class SqlTransactionBatchesTests
