@@ -37,7 +37,7 @@ namespace Rhetos.Utilities
         private static Lazy<string[]> _domAssemblyFiles;
 
         /// <summary>
-        /// Initialize legacy Paths for the Rhetos server.
+        /// Initialize legacy Paths for the Rhetos application.
         /// </summary>
         public static void Initialize(IConfiguration configuration)
         {

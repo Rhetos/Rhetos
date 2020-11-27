@@ -18,11 +18,10 @@
 */
 
 using Autofac;
-using Rhetos.Security;
 using Rhetos.Utilities;
 using System.ComponentModel.Composition;
 
-namespace DeployPackages.Test
+namespace Rhetos.Configuration.Autofac.Test
 {
     [Export(typeof(Module))]
     public class TestWebSecurityModule : Module

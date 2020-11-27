@@ -31,7 +31,7 @@ namespace Rhetos.Dsl
     public class InitializationConcept : IConceptInfo
     {
         /// <summary>
-        /// Version of the currently running Rhetos server.
+        /// Rhetos framework version.
         /// Note that it is not compatible with System.Version because Rhetos version may contain
         /// textual pre-release information and build metadata (see Semantic Versioning 2.0.0 for example).
         /// </summary>

@@ -90,7 +90,7 @@ namespace Rhetos.Utilities
 
             if (sqlException.Number == 229 || sqlException.Number == 230)
                 if (sqlException.Message.Contains("permission was denied"))
-                    return new FrameworkException("Rhetos server lacks sufficient database permissions for this operation. Please make sure that Rhetos Server process has db_owner role for the database.", exception);
+                    return new FrameworkException("This application lacks sufficient database permissions for this operation. Please make sure that the application process is run under account that has db_owner role for the database.", exception);
 
             //=========================
             // Detect UNIQUE constraint:
