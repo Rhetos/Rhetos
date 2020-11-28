@@ -20,7 +20,7 @@
 using Rhetos.Utilities;
 using System;
 
-namespace DeployPackages.Test
+namespace Rhetos.Configuration.Autofac.Test
 {
     public class TestSecurityUserInfo : IUserInfo
     {

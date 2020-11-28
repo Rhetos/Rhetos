@@ -71,7 +71,7 @@ namespace Rhetos
                 {
                     OldKey = entry.Key,
                     entry.Value.ConfigurationSource,
-                    NewKeys = Rhetos.Utilities.CsUtility.GetValueOrDefault(newKeysByOld, entry.Key)
+                    NewKeys = newKeysByOld.TryGetValue(entry.Key, out var value) ? value : null
                 })
                 .Where(entry => entry.NewKeys != null)
                 .Select(entry => $"Please update the obsolete configuration key in {entry.ConfigurationSource}. Change '{entry.OldKey}' to '{string.Join(" or ", entry.NewKeys)}'.")

@@ -23,7 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Rhetos.Utilities.Tests
+namespace Rhetos.Utilities.Test
 {
     [TestClass]
     public class DatabaseTimeCacheTest

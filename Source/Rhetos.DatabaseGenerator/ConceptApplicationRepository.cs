@@ -71,7 +71,7 @@ namespace Rhetos.DatabaseGenerator
                 throw new FrameworkException($"Obsolete concept application loaded from database" +
                     $" (Rhetos.ConceptApplication, ID = {SqlUtility.GuidToString(invalidCa.Id)})." +
                     $" The update procedure for old version of the system should include deployment" +
-                    $" with empty DslScritps folder (using old version of Rhetos server and packages)" +
+                    $" with empty DslScripts folder (using old version of Rhetos framework and packages)" +
                     $" to remove old database structure and keep the data.");
 
             return previoslyAppliedConcepts;

@@ -21,7 +21,6 @@ using Autofac;
 using Rhetos.Utilities;
 using System;
 using System.IO;
-using System.Linq;
 
 namespace Rhetos.Configuration.Autofac
 {
@@ -39,23 +38,25 @@ namespace Rhetos.Configuration.Autofac
 
         // Instance per test or session:
         protected bool _commitChanges;
-        protected string _explicitRhetosServerFolder;
+        protected string _applicationFolder;
         protected TransactionScopeContainer _rhetosTransactionScope;
         public event Action<ContainerBuilder> InitializeSession;
 
         /// <param name="commitChanges">
-        /// Whether database updates (by ORM repositories) will be committed or rollbacked.
+        /// Whether database updates (by ORM repositories) will be committed or rolled back.
         /// </param>
-        /// <param name="rhetosServerFolder">
-        /// If not set, the class will try to automatically locate Rhetos server, looking from current directory.
+        /// <param name="applicationFolder">
+        /// Folder where the Rhetos configuration file is located (see <see cref="RhetosAppEnvironment.ConfigurationFileName"/>),
+        /// or any subfolder.
+        /// If not specified, the current application's base directory is used by default.
         /// </param>
-        public RhetosTestContainer(bool commitChanges = false, string rhetosServerFolder = null)
+        public RhetosTestContainer(bool commitChanges = false, string applicationFolder = null)
         {
-            if (rhetosServerFolder != null && !Directory.Exists(rhetosServerFolder))
-                throw new ArgumentException("The given folder does not exist: " + Path.GetFullPath(rhetosServerFolder) + ".");
+            if (applicationFolder != null && !Directory.Exists(applicationFolder))
+                throw new ArgumentException("The given folder does not exist: " + Path.GetFullPath(applicationFolder) + ".");
 
             _commitChanges = commitChanges;
-            _explicitRhetosServerFolder = rhetosServerFolder;
+            _applicationFolder = applicationFolder;
         }
 
         /// <summary>
@@ -88,8 +89,7 @@ namespace Rhetos.Configuration.Autofac
 
             if (disposing)
             {
-                if (_rhetosTransactionScope != null)
-                    _rhetosTransactionScope.Dispose();
+                _rhetosTransactionScope?.Dispose();
             }
 
             disposed = true;
@@ -104,7 +104,7 @@ namespace Rhetos.Configuration.Autofac
                     lock (_containerInitializationLock)
                         if (_processContainer == null)
                         {
-                            _processContainer = new ProcessContainer(SearchForRhetosServerRootFolder(), new ConsoleLogProvider(),
+                            _processContainer = new ProcessContainer(_applicationFolder, new ConsoleLogProvider(),
                                 configurationBuilder => configurationBuilder.AddConfigurationManagerConfiguration());
                         }
                 }
@@ -113,41 +113,6 @@ namespace Rhetos.Configuration.Autofac
                 if (_commitChanges)
                     _rhetosTransactionScope.CommitChanges();
             }
-        }
-
-        private static bool IsValidRhetosServerDirectory(string path)
-        {
-            return
-                File.Exists(Path.Combine(path, @"web.config"))
-                && File.Exists(Path.Combine(path, @"bin\Rhetos.Utilities.dll"));
-        }
-
-        protected string SearchForRhetosServerRootFolder()
-        {
-            if (_explicitRhetosServerFolder != null)
-                return _explicitRhetosServerFolder;
-
-            var folder = new DirectoryInfo(Environment.CurrentDirectory);
-
-            if (IsValidRhetosServerDirectory(folder.FullName))
-                return folder.FullName;
-
-            // Unit testing subfolder.
-            if (folder.Name == "Out")
-                folder = folder.Parent.Parent.Parent;
-
-            // Unit testing at project level, not at solution level. It depends on the way the testing has been started.
-            if (folder.Name == "Debug")
-                folder = folder.Parent.Parent.Parent.Parent.Parent; // Climbing up CommonConcepts\CommonConceptsTest\CommonConcepts.Test\bin\Debug.
-
-            if (folder.GetDirectories().Any(subDir => subDir.Name == "Source"))
-                folder = new DirectoryInfo(Path.Combine(folder.FullName, @".\Source\Rhetos\"));
-
-            // For unit tests, project's source folder name is ".\Source\Rhetos".
-            if (folder.Name == "Rhetos" && IsValidRhetosServerDirectory(folder.FullName))
-                return folder.FullName;
-
-            throw new FrameworkException("Cannot locate a valid Rhetos server's folder from '" + Environment.CurrentDirectory + "'. Unexpected folder '" + folder.FullName + "'.");
         }
     }
 }

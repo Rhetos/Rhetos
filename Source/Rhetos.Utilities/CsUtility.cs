@@ -91,18 +91,6 @@ namespace Rhetos.Utilities
         }
 
         /// <summary>
-        /// Reads a value from the dictionary or returns default if the dictionary does not contain the key.
-        /// This method helps when the TryGetValue() method cannot be called directly with anonymous value type.
-        /// </summary>
-        public static TValue GetValueOrDefault<TKey, TValue>(IDictionary<TKey, TValue> dictionary, TKey key)
-        {
-            TValue value;
-            if (dictionary.TryGetValue(key, out value))
-                return value;
-            return default(TValue);
-        }
-
-        /// <summary>
         /// Reads a value from the dictionary or returns an empty List if the dictionary does not contain the key.
         /// </summary>
         public static List<TValue> GetValueOrEmpty<TKey, TValue>(this IDictionary<TKey, List<TValue>> dictionary, TKey key)
@@ -422,6 +410,31 @@ namespace Rhetos.Utilities
                 return type.Name;
             else
                 return type.Name + "<" + string.Join(", ", type.GetGenericArguments().Select(argumentType => GetShortTypeName(argumentType))) + ">";
+        }
+
+        /// <summary>
+        /// Returns the underlying generic type with concrete type arguments.
+        /// </summary>
+        public static Type GetUnderlyingGenericType(Type type, Type genericType)
+        {
+            if (genericType.IsInterface)
+                throw new ArgumentException("Interfaces are not supported.");
+
+            if (!genericType.IsGenericType)
+                throw new ArgumentException("The type must be a generic type.");
+
+            if (genericType.GenericTypeArguments.Length != 0)
+                throw new ArgumentException("The generic type should not have any type arguments.");
+
+            while (type != null && type != typeof(object))
+            {
+                var cur = type.IsGenericType ? type.GetGenericTypeDefinition() : type;
+                if (genericType == cur)
+                    return type;
+                type = type.BaseType;
+            }
+
+            return null;
         }
     }
 }

@@ -123,40 +123,13 @@ namespace Rhetos.Deployment
             var configurationDependencies = ParseAdditionalDependenciesFromConfiguration();
             Log("Configuration dependencies", configurationDependencies);
 
-            var legacyDependencies = GetLegacyDependencies(generators);
-            Log("Legacy dependencies", legacyDependencies);
-
             var allPairs = explicitDependencies
                 .Concat(mefDependencies)
-                .Concat(configurationDependencies)
-                .Concat(legacyDependencies);
+                .Concat(configurationDependencies);
 
             return allPairs
                 .GroupBy(pair => pair.name)
                 .ToDictionary(group => group.Key, group => group.Select(pair => pair.dependency).Distinct().ToList());
-        }
-
-        /// <summary>
-        /// Dependencies for backward compatibility of official plugins.
-        /// "DomGenerator" and "ResourcesGenerator" were implicit dependencies of all generators before Rhetos v4.1.
-        /// </summary>
-        private IEnumerable<(string name, string dependency)> GetLegacyDependencies(IList<IGenerator> generators)
-        {
-            var legacyDependencies = new List<(string name, string dependency)>();
-
-            if (string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder)) // Using DeployPackages instead of Rhetos CLI. When generating source code only, these plugins do not generate DLLs, so there are no dependencies between them.
-                legacyDependencies.AddRange(new[]
-                {
-                    (name: "Rhetos.LegacyRestGenerator.LegacyRestGenerator", dependency: "Rhetos.Dom.DomGenerator"),
-                    (name: "Rhetos.ODataGenerator.ODataGenerator", dependency: "Rhetos.Dom.DomGenerator"),
-                    (name: "Rhetos.RestGenerator.RestGenerator", dependency: "Rhetos.Dom.DomGenerator"),
-                });
-            legacyDependencies.Add((name: "Angular2ModelGenerator.Angular2ModelGenerator", dependency: "Rhetos.Deployment.ResourcesGenerator"));
-
-            var generatorsNames = new HashSet<string>(generators.Select(GetGeneratorName));
-            return legacyDependencies
-                .Where(d => generatorsNames.Contains(d.name) && generatorsNames.Contains(d.dependency))
-                .ToList();
         }
 
         private void Log(string title, IEnumerable<(string name, string dependency)> dependencies)

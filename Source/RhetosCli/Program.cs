@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Autofac.Core;
 using Rhetos.Dsl;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
@@ -84,7 +85,7 @@ namespace Rhetos
             }
             catch (DslSyntaxException dslException) when (msBuildErrorFormat)
             {
-                DeploymentUtility.PrintCanonicalError(dslException);
+                PrintCanonicalError(dslException);
 
                 // Detailed exception info is logged as additional information, not as an error, to avoid duplicate error reporting.
                 Logger.Info(dslException.ToString());
@@ -100,7 +101,7 @@ namespace Rhetos
                     Logger.Error(typeLoadReport);
 
                 if (Environment.UserInteractive)
-                    DeploymentUtility.PrintErrorSummary(e);
+                    PrintErrorSummary(e);
 
                 return 1;
             }
@@ -163,6 +164,32 @@ namespace Rhetos
             var deployment = new ApplicationDeployment(configuration, LogProvider);
             deployment.UpdateDatabase();
             deployment.InitializeGeneratedApplication(host.RhetosRuntime);
+        }
+
+        public static void PrintErrorSummary(Exception ex)
+        {
+            while ((ex is DependencyResolutionException || ex is AggregateException)
+                && ex.InnerException != null)
+                ex = ex.InnerException;
+
+            Console.WriteLine();
+            Console.WriteLine("=============== ERROR SUMMARY ===============");
+            Console.WriteLine($"{ex.GetType().Name}: {ExceptionsUtility.MessageForLog(ex)}");
+            Console.WriteLine("=============================================");
+            Console.WriteLine();
+            Console.WriteLine("See RhetosCli.log for more information on error. Enable TraceLog in nlog.config for even more details.");
+            Console.WriteLine($"Rhetos CLI location: {System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName}");
+        }
+
+        public static void PrintCanonicalError(DslSyntaxException dslException)
+        {
+            string origin = dslException.FilePosition?.CanonicalOrigin ?? "Rhetos DSL";
+            string canonicalError = $"{origin}: error {dslException.ErrorCode ?? "RH0000"}: {dslException.Message.Replace('\r', ' ').Replace('\n', ' ')}";
+
+            var oldColor = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(canonicalError);
+            Console.ForegroundColor = oldColor;
         }
     }
 }

@@ -70,6 +70,9 @@ namespace Rhetos.TestCommon
         public static void AssertContains(string text, IEnumerable<string> patterns, string message = null, string errorContext = null)
         {
             CsUtility.Materialize(ref patterns);
+            if (patterns == null || !patterns.Any())
+                return;
+
             if (patterns.Any(string.IsNullOrEmpty))
                 throw new ArgumentException("Given list of patterns contains an empty string.");
 
@@ -105,11 +108,14 @@ namespace Rhetos.TestCommon
         /// </summary>
         public static void AssertNotContains(string text, string[] patterns, string message = null)
         {
-            Console.WriteLine("[AssertContains] Actual text: '" + text + "'.");
+            if (patterns == null || !patterns.Any())
+                return;
+
+            Console.WriteLine("[AssertNotContains] Actual text: '" + text + "'.");
 
             foreach (var pattern in patterns)
             {
-                Console.Write("[AssertContains] Looking for pattern '" + pattern + "'.");
+                Console.Write("[AssertNotContains] Looking for pattern '" + pattern + "'.");
 
                 if (text.ToLower().Contains(pattern.ToLower()))
                 {

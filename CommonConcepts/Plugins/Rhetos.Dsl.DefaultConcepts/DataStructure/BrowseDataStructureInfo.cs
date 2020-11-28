@@ -37,6 +37,8 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public new void CheckSemantics(IDslModel existingConcepts)
         {
+            base.CheckSemantics(existingConcepts);
+
             var properties = existingConcepts.FindByReference<PropertyInfo>(p => p.DataStructure, this);
 
             var propertyWithoutSelector = properties

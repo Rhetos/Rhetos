@@ -8,7 +8,7 @@ SET Prerelease=auto
 REM Updating the build version of all projects.
 PowerShell -ExecutionPolicy ByPass .\Tools\Build\ChangeVersion.ps1 %Version% %Prerelease% || GOTO Error0
 
-dotnet build "Rhetos.sln" /target:rebuild /p:Configuration=%Config% /verbosity:minimal /fileLogger || GOTO Error1
+dotnet build "Rhetos.sln" --configuration %Config% || GOTO Error1
 CALL CreateInstallationPackage.bat %Config% || GOTO Error1
 
 REM Restoring the build version back to "dev" (internal development build), to avoid spamming git history with timestamped prerelease versions.

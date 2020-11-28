@@ -27,7 +27,6 @@ using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -51,20 +50,13 @@ namespace CommonConcepts.Test.Helpers
         /// Shared DI container to be reused between tests, to reduce initialization time for each test.
         /// Each test should create a child container with <see cref="CreateTransactionScopeContainer"/> to start a 'using' block.
         /// </summary>
-        public static ProcessContainer ProcessContainer = new ProcessContainer(FindRhetosApplicationFolder());
+        public static readonly ProcessContainer ProcessContainer = new ProcessContainer(FindRhetosApplicationFolder());
 
         /// <summary>
         /// Unit tests can be executed at different disk locations depending on whether they are run at the solution or project level, from Visual Studio or another utility.
         /// Therefore, instead of providing a simple relative path, this method searches for the main application location.
         /// </summary>
         private static string FindRhetosApplicationFolder() => Environment.CurrentDirectory;
-
-        private static bool IsValidRhetosServerDirectory(string path)
-        {
-            // Heuristics for recognizing Source\Rhetos project folder.
-            return File.Exists(Path.Combine(path, @"Web.config"))
-                && File.Exists(Path.Combine(path, @"bin\Rhetos.Utilities.dll"));
-        }
 
         private static int _checkedForParallelismThreadCount = 0;
 

@@ -17,21 +17,18 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Versioning;
-using System.Text;
 
 namespace Rhetos.Utilities
 {
-    public class SystemUtility
+    public static class SystemUtility
     {
         private static string _rhetosVersion = null;
 
         /// <summary>
-        /// Version of the currently running Rhetos server.
+        /// Rhetos framework version.
         /// Note that it is not compatible with System.Version because Rhetos version may contain
         /// textual pre-release information and build metadata (see Semantic Versioning 2.0.0 for example).
         /// </summary>
