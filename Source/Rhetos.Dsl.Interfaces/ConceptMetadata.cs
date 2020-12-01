@@ -27,52 +27,45 @@ namespace Rhetos.Dsl
 {
     public class ConceptMetadata
     {
-        /// <summary>
-        /// First key is the metadata interface type (inherits IConceptMetadata), second key is the concept type (inherits IConceptInfo).
-        /// </summary>
-        private readonly ConcurrentDictionary<Type, ConcurrentDictionary<Type, IConceptMetadataExtension>> _metadata;
-
         private readonly IPluginsContainer<IConceptMetadataExtension> _plugins;
+
+        /// <summary>First key is the metadata interface type (inherits <see cref="IConceptMetadataExtension"/>), second key is the concept type (inherits <see cref="IConceptInfo"/>).</summary>
+        private readonly ConcurrentDictionary<Type, Dictionary<Type, IConceptMetadataExtension>> _pluginsByType = new ConcurrentDictionary<Type, Dictionary<Type, IConceptMetadataExtension>>();
+
+        /// <summary>First key is the metadata interface type (inherits <see cref="IConceptMetadataExtension"/>), second key is the concept type (inherits <see cref="IConceptInfo"/>).</summary>
+        private readonly ConcurrentDictionary<(Type, Type), IConceptMetadataExtension> _pluginsByTypeOrDerivedConcept = new ConcurrentDictionary<(Type, Type), IConceptMetadataExtension>();
 
         public ConceptMetadata(IPluginsContainer<IConceptMetadataExtension> plugins)
         {
             _plugins = plugins;
-            _metadata = new ConcurrentDictionary<Type, ConcurrentDictionary<Type, IConceptMetadataExtension>>();
         }
 
-        public TMetadata Get<TMetadata>(Type conceptType) where TMetadata : IConceptMetadataExtension<IConceptInfo>
+        public TMetadata Get<TMetadata>(Type conceptType)
+            where TMetadata : IConceptMetadataExtension<IConceptInfo>
         {
             return (TMetadata)Get(typeof(TMetadata), conceptType);
         }
 
         public IConceptMetadataExtension Get(Type metadataInterface, Type conceptType)
         {
-            var expectedMetadataType = typeof(IConceptMetadataExtension<IConceptInfo>);
-            if (!expectedMetadataType.IsAssignableFrom(metadataInterface))
-                throw new FrameworkException($"{metadataInterface} does not implement {expectedMetadataType}.");
-
-            var metadataGenericInterface = metadataInterface.GetGenericTypeDefinition();
-
-            var metadataByConceptType = _metadata.GetOrAdd(metadataGenericInterface, type =>
-            {
-                var pluginsDictionary = GetPluginsForMetadataType(metadataInterface, type);
-                return new ConcurrentDictionary<Type, IConceptMetadataExtension>(pluginsDictionary);
-            });
-
-            var result = metadataByConceptType.GetOrAdd(conceptType, type =>
-            {
-                var conceptBaseType = TryFindBaseType(conceptType, metadataByConceptType.Select(x => x.Key).ToList());
-                if (conceptBaseType == null)
-                    throw new FrameworkException($@"There is no {nameof(IConceptMetadataExtension)} plugin of type {metadataInterface} for concept {conceptType}.");
-                return metadataByConceptType[conceptBaseType];
-            });
-
-            return result;
+            return _pluginsByTypeOrDerivedConcept.GetOrAdd((metadataInterface, conceptType), GetConceptMetadataPlugin);
         }
 
-        private Dictionary<Type, IConceptMetadataExtension> GetPluginsForMetadataType(Type metadataInterface, Type metadataGenericInterface)
+        private IConceptMetadataExtension GetConceptMetadataPlugin((Type MetadataInterface, Type ConceptType) key)
         {
-            var metadataByConceptType = new Dictionary<Type, IConceptMetadataExtension>();
+            var expectedMetadataInterface = typeof(IConceptMetadataExtension<IConceptInfo>);
+            if (!expectedMetadataInterface.IsAssignableFrom(key.MetadataInterface))
+                throw new FrameworkException($"{key.MetadataInterface} does not implement {expectedMetadataInterface}.");
+
+            var pluginsByConcept = _pluginsByType.GetOrAdd(key.MetadataInterface, GetAllPluginsForMetadataInterface);
+
+            return FindBaseConceptPlugin(key.ConceptType, pluginsByConcept)
+                ?? throw new FrameworkException($@"There is no {nameof(IConceptMetadataExtension)} plugin of type {key.MetadataInterface} for concept {key.ConceptType}.");
+        }
+
+        private Dictionary<Type, IConceptMetadataExtension> GetAllPluginsForMetadataInterface(Type metadataInterface)
+        {
+            var pluginsByConcept = new Dictionary<Type, IConceptMetadataExtension>();
 
             foreach (var plugin in _plugins.GetPlugins().Where(x => metadataInterface.IsInstanceOfType(x)))
             {
@@ -80,26 +73,24 @@ namespace Rhetos.Dsl
                 var pluginInterface = pluginType.GetInterfaces().Single(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IConceptMetadataExtension<>));
                 var conceptType = pluginInterface.GetGenericArguments().Single();
 
-                if (metadataByConceptType.ContainsKey(conceptType))
-                    throw new FrameworkException($"There are multiple implementations of {metadataGenericInterface.Name} for type {conceptType.Name}:" +
-                        $" '{metadataByConceptType[conceptType].GetType()}' and '{pluginType}'.");
+                if (pluginsByConcept.ContainsKey(conceptType))
+                    throw new FrameworkException($"There are multiple implementations of {metadataInterface.Name} for type {conceptType.Name}:" +
+                        $" '{pluginsByConcept[conceptType].GetType()}' and '{pluginType}'.");
 
-                metadataByConceptType.Add(conceptType, plugin);
+                pluginsByConcept.Add(conceptType, plugin);
             }
 
-            return metadataByConceptType;
+            return pluginsByConcept;
         }
 
-        private static Type TryFindBaseType(Type t, List<Type> allowedTypes)
+        private IConceptMetadataExtension FindBaseConceptPlugin(Type conceptType, Dictionary<Type, IConceptMetadataExtension> pluginsByConcept)
         {
-            var baseType = t.BaseType;
-
-            while (baseType != null && baseType.IsClass)
+            while (conceptType != null)
             {
-                if (allowedTypes.Contains(baseType))
-                    return baseType;
+                if (pluginsByConcept.TryGetValue(conceptType, out var value))
+                    return value;
 
-                baseType = baseType.BaseType;
+                conceptType = conceptType.BaseType;
             }
 
             return null;
