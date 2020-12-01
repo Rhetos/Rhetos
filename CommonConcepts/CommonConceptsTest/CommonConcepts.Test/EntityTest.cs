@@ -22,6 +22,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Logging;
+using Rhetos.Persistence;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
@@ -466,6 +467,49 @@ namespace CommonConcepts.Test
 
                     repository.TestTypes.Simple.Delete(item);
                 }
+            }
+        }
+
+        [TestMethod]
+        public void DateTimeConsistencyTest()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var databaseSettings = container.Resolve<DatabaseSettings>();
+                container.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestTypes.Simple");
+                var repository = container.Resolve<Common.DomRepository>();
+
+                const int tests = 20;
+
+                var report = new List<string>(tests);
+
+                for (int i = 0; i < tests; i++)
+                {
+                    var simples = repository.TestTypes.Simple;
+                    DateTime t0 = DateTime.Now;
+                    var id = Guid.NewGuid();
+                    simples.Insert(new TestTypes.Simple { ID = id, Start = t0 });
+                    DateTime t1 = simples.Load(new[] { id }).Single().Start.Value;
+
+                    // It is not necessary to match t1 == t0, because the database precision may be lower than C#,
+                    // but the data loaded from a database should behave consistently when returning it to the database.
+
+                    string result = (simples.Query(x => x.ID == id && x.Start == t1).Any() ? "eq " : "")
+                        + (simples.Query(x => x.ID == id && x.Start != t1).Any() ? "ne " : "")
+                        + (simples.Query(x => x.ID == id && x.Start <= t1).Any() ? "le " : "")
+                        + (simples.Query(x => x.ID == id && x.Start >= t1).Any() ? "ge " : "")
+                        + (simples.Query(x => x.ID == id && x.Start < t1).Any() ? "lt " : "")
+                        + (simples.Query(x => x.ID == id && x.Start > t1).Any() ? "gt " : "");
+
+                    report.Add(result);
+                }
+
+                string summary = TestUtility.DumpSorted(report.GroupBy(r => r), g => $"{g.Key}({g.Count()})");
+
+                if (databaseSettings.UseLegacyMsSqlDateTime)
+                    Assert.Inconclusive($"EF6 uses 'datetime2' for query parameters even if the database column type is 'datetime'. The mismatch creates errors when comparing values from database to the query parameter: {summary}.");
+                else
+                    Assert.AreEqual($"eq le ge ({tests})", summary);
             }
         }
 
