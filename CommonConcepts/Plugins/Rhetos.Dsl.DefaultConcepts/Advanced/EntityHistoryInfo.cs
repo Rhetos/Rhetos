@@ -17,15 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Compiler;
+using Rhetos.Persistence;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.ComponentModel.Composition;
-using Rhetos.Utilities;
-using Rhetos.Compiler;
-using System.Globalization;
-using Rhetos.Persistence;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
@@ -42,10 +39,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public EntityInfo Dependency_ChangesEntity { get; set; }
 
-        public IEnumerable<string> DeclareNonparsableProperties()
-        {
-            return new string[] { "Dependency_ChangesEntity" };
-        }
+        public IEnumerable<string> DeclareNonparsableProperties() => new[] { "Dependency_ChangesEntity" };
 
         public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
         {
@@ -53,21 +47,23 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             createdConcepts = new IConceptInfo[] { Dependency_ChangesEntity };
         }
-
     }
 
     [Export(typeof(IConceptMacro))]
     public class EntityHistoryMacro : IConceptMacro<EntityHistoryInfo>
     {
         public static readonly CsTag<EntityHistoryInfo> ClonePropertiesTag = "ClonePropertiesRewrite";
-        private readonly string dateTimeSqlColumnType;
+        public static readonly SqlTag<EntityHistoryInfo> SelectHistoryPropertiesTag = "SelectHistoryProperties";
+        public static readonly SqlTag<EntityHistoryInfo> SelectEntityPropertiesTag = "SelectEntityProperties";
+
+        private readonly string _dateTimeSqlColumnType;
 
         // TODO: we inject DatabaseSetttings here, but correct solution would be to inject ConceptMetadata and use ConceptMetadata.GetColumnType to fetch SQL type of the column
         // we can't do that because of circular reference problem between projects and IDatabaseColumnType is not available
         // needs to be refactored after we rearrange/merge projects and remove circular dependency in question
         public EntityHistoryMacro(DatabaseSettings databaseSettings)
         {
-            dateTimeSqlColumnType = databaseSettings.UseLegacyMsSqlDateTime
+            _dateTimeSqlColumnType = databaseSettings.UseLegacyMsSqlDateTime
                 ? "DATETIME"
                 : "DATETIME2(3)";
         }
@@ -76,7 +72,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             var newConcepts = new List<IConceptInfo>();
 
-            var atTimeSqlFunction = new SqlFunctionInfo { Module = conceptInfo.Entity.Module, Name = conceptInfo.Entity.Name + "_AtTime", Arguments = $"@ContextTime {dateTimeSqlColumnType}", Source = AtTimeSqlSnippet(conceptInfo) };
+            var atTimeSqlFunction = new SqlFunctionInfo { Module = conceptInfo.Entity.Module, Name = conceptInfo.Entity.Name + "_AtTime", Arguments = $"@ContextTime {_dateTimeSqlColumnType}", Source = AtTimeSqlSnippet(conceptInfo) };
             newConcepts.Add(atTimeSqlFunction);
 
             var historySqlQueryable = new SqlQueryableInfo { Module = conceptInfo.Entity.Module, Name = conceptInfo.Entity.Name + "_History", SqlSource = HistorySqlSnippet(conceptInfo) };
@@ -86,7 +82,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             newConcepts.Add(write);
 
             // Expand the base entity:
-            var activeSinceProperty = new DateTimePropertyInfo { DataStructure = conceptInfo.Entity, Name = "ActiveSince" }; // TODO: SystemRequired, Default 1.1.1900.
+            var activeSinceProperty = new DateTimePropertyInfo { DataStructure = conceptInfo.Entity, Name = "ActiveSince" }; // TODO: SystemRequired, Default 1.1.1900., after implementing optimization for multiple simple property validations.
             var activeSinceHistory = new EntityHistoryPropertyInfo { Property = activeSinceProperty };
             newConcepts.AddRange(new IConceptInfo[] { activeSinceProperty, activeSinceHistory });
 
@@ -119,7 +115,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             newConcepts.AddRange(new IConceptInfo[] {
                 currentProperty,
                 new ReferenceDetailInfo { Reference = currentProperty },
-                new RequiredPropertyInfo { Property = currentProperty }, // TODO: SystemRequired
+                new RequiredPropertyInfo { Property = currentProperty }, // TODO: SystemRequired, after implementing optimization for multiple simple property validations.
                 new PropertyFromInfo { Destination = conceptInfo.Dependency_ChangesEntity, Source = activeSinceProperty },
                 historyActiveSinceProperty,
                 new UniqueMultiplePropertiesInfo { DataStructure = conceptInfo.Dependency_ChangesEntity, PropertyNames = $"{currentProperty.Name} {historyActiveSinceProperty.Name}" }
@@ -213,7 +209,31 @@ namespace Rhetos.Dsl.DefaultConcepts
                 SqlUtility.Identifier(conceptInfo.Entity.Name + "_ChangesActiveUntil"),
                 SelectHistoryPropertiesTag.Evaluate(conceptInfo),
                 SelectEntityPropertiesTag.Evaluate(conceptInfo),
-                dateTimeSqlColumnType);
+                _dateTimeSqlColumnType);
+        }
+
+        private string AtTimeSqlSnippet(EntityHistoryInfo conceptInfo)
+        {
+            return string.Format(
+                @"RETURNS TABLE
+                AS
+                RETURN
+	                SELECT
+                        ID = history.EntityID,
+                        ActiveUntil,
+                        EntityID = history.EntityID{2}
+                    FROM
+                        {0}.{1} history
+                        INNER JOIN
+                        (
+                            SELECT EntityID, Max_ActiveSince = MAX(ActiveSince)
+                            FROM {0}.{1}
+                            WHERE ActiveSince <= @ContextTime
+                            GROUP BY EntityID
+                        ) last ON last.EntityID = history.EntityID AND last.Max_ActiveSince = history.ActiveSince",
+                    SqlUtility.Identifier(conceptInfo.Entity.Module.Name),
+                    SqlUtility.Identifier(conceptInfo.Entity.Name + "_History"),
+                    SelectHistoryPropertiesTag.Evaluate(conceptInfo));
         }
 
         private string HistorySaveFunction(EntityHistoryInfo conceptInfo)
@@ -311,33 +331,5 @@ namespace Rhetos.Dsl.DefaultConcepts
              conceptInfo.Entity.Module.Name,
              ClonePropertiesTag.Evaluate(conceptInfo));
         }
-
-
-        private string AtTimeSqlSnippet(EntityHistoryInfo conceptInfo)
-        {
-            return string.Format(
-                @"RETURNS TABLE
-                AS
-                RETURN
-	                SELECT
-                        ID = history.EntityID,
-                        ActiveUntil,
-                        EntityID = history.EntityID{2}
-                    FROM
-                        {0}.{1} history
-                        INNER JOIN
-                        (
-                            SELECT EntityID, Max_ActiveSince = MAX(ActiveSince)
-                            FROM {0}.{1}
-                            WHERE ActiveSince <= @ContextTime
-                            GROUP BY EntityID
-                        ) last ON last.EntityID = history.EntityID AND last.Max_ActiveSince = history.ActiveSince",
-                    SqlUtility.Identifier(conceptInfo.Entity.Module.Name),
-                    SqlUtility.Identifier(conceptInfo.Entity.Name + "_History"),
-                    SelectHistoryPropertiesTag.Evaluate(conceptInfo));
-        }
-
-        public static readonly SqlTag<EntityHistoryInfo> SelectHistoryPropertiesTag = "SelectHistoryProperties";
-        public static readonly SqlTag<EntityHistoryInfo> SelectEntityPropertiesTag = "SelectEntityProperties";
     }
 }

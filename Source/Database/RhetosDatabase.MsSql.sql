@@ -695,7 +695,7 @@ WHERE
 -- that would cause downgrade to fail. See https://github.com/Rhetos/Rhetos/issues/353 for more info.
 IF OBJECT_ID(N'Rhetos.DslScript') IS NOT NULL
 	TRUNCATE TABLE Rhetos.DslScript;
-
+GO
 
 -- Migration from datetime to datetime2(3)
 IF EXISTS (
