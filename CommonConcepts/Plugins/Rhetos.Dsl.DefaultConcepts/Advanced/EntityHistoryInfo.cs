@@ -18,7 +18,7 @@
 */
 
 using Rhetos.Compiler;
-using Rhetos.Persistence;
+using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
@@ -61,7 +61,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         // TODO: we inject DatabaseSetttings here, but correct solution would be to inject ConceptMetadata and use ConceptMetadata.GetColumnType to fetch SQL type of the column
         // we can't do that because of circular reference problem between projects and IDatabaseColumnType is not available
         // needs to be refactored after we rearrange/merge projects and remove circular dependency in question
-        public EntityHistoryMacro(DatabaseSettings databaseSettings)
+        public EntityHistoryMacro(CommonConceptsDatabaseSettings databaseSettings)
         {
             _dateTimeSqlColumnType = databaseSettings.UseLegacyMsSqlDateTime
                 ? "DATETIME"

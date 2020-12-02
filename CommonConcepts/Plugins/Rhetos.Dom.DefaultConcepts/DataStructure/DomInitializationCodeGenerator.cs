@@ -41,14 +41,14 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly string OrmRepositoryBaseMembersTag = "/*OrmRepositoryBaseMembers*/";
 
         private readonly RhetosBuildEnvironment _buildEnvironment;
-        private readonly BuildOptions _buildOptions;
         private readonly CommonConceptsOptions _commonConceptsOptions;
+        private readonly CommonConceptsDatabaseSettings _databaseSettings;
 
-        public DomInitializationCodeGenerator(RhetosBuildEnvironment buildEnvironment, BuildOptions buildOptions, CommonConceptsOptions commonConceptsOptions)
+        public DomInitializationCodeGenerator(RhetosBuildEnvironment buildEnvironment, CommonConceptsOptions commonConceptsOptions, CommonConceptsDatabaseSettings databaseSettings)
         {
             _buildEnvironment = buildEnvironment;
-            _buildOptions = buildOptions;
             _commonConceptsOptions = commonConceptsOptions;
+            _databaseSettings = databaseSettings;
         }
 
         public static readonly string StandardNamespacesSnippet =
@@ -88,7 +88,7 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.AddReferencesFromDependency(typeof(System.Data.Entity.Core.Objects.ObjectStateEntry));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Persistence.IPersistenceCache));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Persistence.IPersistenceTransaction));
-            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Persistence.DatabaseSettings));
+            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Dom.DefaultConcepts.CommonConceptsDatabaseSettings));
             codeBuilder.AddReferencesFromDependency(typeof(ApplyFiltersOnClientRead));
             codeBuilder.AddReferencesFromDependency(typeof(ICommandInfo)); // Used from ApplyFiltersOnClientRead.
         }
@@ -330,6 +330,7 @@ $@"namespace Common
     }}
 
     [System.ComponentModel.Composition.Export(typeof(Autofac.Module))]
+    [System.ComponentModel.Composition.ExportMetadata(Rhetos.Extensibility.MefProvider.DependsOn, typeof(Rhetos.Dom.DefaultConcepts.AutofacModuleConfiguration))] // Overrides some registrations from that class.
     public class AutofacModuleConfiguration : Autofac.Module
     {{
         protected override void Load(Autofac.ContainerBuilder builder)
@@ -346,7 +347,8 @@ $@"namespace Common
             builder.RegisterType<ExecutionContext>().InstancePerLifetimeScope();
             builder.RegisterInstance(Infrastructure.RegisteredInterfaceImplementations).ExternallyOwned();
             builder.RegisterInstance(Infrastructure.ApplyFiltersOnClientRead).ExternallyOwned();
-            builder.RegisterInstance(new Rhetos.Persistence.DatabaseSettings({_buildOptions.UseLegacyMsSqlDateTime.ToString().ToLowerInvariant()}));
+            builder.RegisterInstance(new Rhetos.Dom.DefaultConcepts.CommonConceptsDatabaseSettings {{ UseLegacyMsSqlDateTime = {_databaseSettings.UseLegacyMsSqlDateTime.ToString().ToLowerInvariant()} }});
+            builder.Register<CommonConceptsOptions>(context => throw new NotImplementedException($""{{nameof(CommonConceptsOptions)}} is a build-time configuration, not available at run-time.""));
             
             {ModuleCodeGenerator.CommonAutofacConfigurationMembersTag}
 

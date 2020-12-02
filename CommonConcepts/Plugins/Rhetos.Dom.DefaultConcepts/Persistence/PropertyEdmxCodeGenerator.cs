@@ -17,26 +17,20 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Compiler;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Persistence;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rhetos.Dsl.DefaultConcepts;
-using System.Globalization;
 using System.ComponentModel.Composition;
-using Rhetos.Extensibility;
-using Rhetos.Dsl;
-using Rhetos.Compiler;
-using Rhetos.DatabaseGenerator.DefaultConcepts;
-using Rhetos.Persistence;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptMapping))]
     public class PropertyEdmxCodeGenerator : ConceptMapping<PropertyInfo>
     {
-        private readonly DatabaseSettings _databaseSettings;
-        public PropertyEdmxCodeGenerator(DatabaseSettings databaseSettings)
+        private readonly CommonConceptsDatabaseSettings _databaseSettings;
+        public PropertyEdmxCodeGenerator(CommonConceptsDatabaseSettings databaseSettings)
         {
             _databaseSettings = databaseSettings;
         }

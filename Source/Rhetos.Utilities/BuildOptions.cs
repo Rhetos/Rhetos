@@ -17,7 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.Collections.Generic;
 
 namespace Rhetos.Utilities
@@ -26,15 +25,19 @@ namespace Rhetos.Utilities
     public class BuildOptions
     {
         public string DatabaseLanguage { get; set; } = "MsSql";
-        public bool UseLegacyMsSqlDateTime { get; set; } = true;
+
         public bool Debug { get; set; }
+
         public InitialConceptsSort InitialConceptsSort { get; set; } = InitialConceptsSort.Key;
+
         public ExcessDotInKey DslSyntaxExcessDotInKey { get; set; } = ExcessDotInKey.Ignore;
+
         /// <summary>
         /// Copies files from Resources folders, from all included packages, into the Resourced folder of the generated application.
         /// Some common Rhetos packages require this feature enabled.
         /// </summary>
         public bool BuildResourcesFolder { get; set; } = false;
+
         /// <summary>
         /// Creates or updates Rhetos runtime configuration file (<see cref="RhetosAppEnvironment.ConfigurationFileName"/>)
         /// with essential information on application structure.
