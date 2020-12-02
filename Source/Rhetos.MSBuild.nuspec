@@ -27,7 +27,9 @@
     <file src="RhetosCli\bin\Debug\net5.0\*.pdb" target="tools" />
     <file src="RhetosCli\bin\Debug\net5.0\rhetos.exe" target="tools" />
     <file src="RhetosCli\bin\Debug\net5.0\nlog.config" target="tools" />
-    <file src="RhetosCli\bin\Debug\net5.0\rhetos.*.json" target="tools" />
+    <file src="RhetosCli\bin\Debug\net5.0\rhetos.deps.json" target="tools" />
+    <file src="RhetosCli\bin\Debug\net5.0\rhetos.runtimeconfig.json" target="tools" />
+    <file src="RhetosCli\bin\Debug\net5.0\runtimes\**\*" target="tools/runtimes" />
 
     <file src="MsBuildIntegration\Rhetos.MSBuild.targets" target="build" />
     <file src="MsBuildIntegration\Rhetos.MSBuild.props" target="build" />
