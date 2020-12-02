@@ -423,5 +423,20 @@ namespace Rhetos.Utilities
             else
                 return type.Name + "<" + string.Join(", ", type.GetGenericArguments().Select(argumentType => GetShortTypeName(argumentType))) + ">";
         }
+
+        /// <summary>
+        /// Generates identifier based on a string.
+        /// </summary>
+        public static Guid GenerateIdentifier(string s)
+        {
+            Guid id;
+            using (var hashing = System.Security.Cryptography.SHA256.Create())
+            {
+                byte[] inputBytes = Encoding.ASCII.GetBytes(s);
+                byte[] hashBytes = hashing.ComputeHash(inputBytes).Take(16).ToArray();
+                id = new Guid(hashBytes);
+            }
+            return id;
+        }
     }
 }

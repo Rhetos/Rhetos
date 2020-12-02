@@ -17,11 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
-
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
@@ -37,14 +36,27 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public string Name { get; set; }
 
+        public string Identifier { get; set; }
+
         public Guid GetIdentifier()
         {
-            using (var hashing = System.Security.Cryptography.SHA256.Create())
-            {
-                byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(Name);
-                byte[] hashBytes = hashing.ComputeHash(inputBytes).Take(16).ToArray();
-                return new Guid(hashBytes);
-            }
+            //We are calling GetIdentifier in the CreateNewConcepts method but the macro evaluation will happen before the call to CheckSemantics.
+            //So in order the display the message correctly we need to call ParseIdentifier.
+            Guid guid;
+            ParseIdentifier(out guid);
+            return guid;
+        }
+
+        public void CheckSemantics(IDslModel existingConcepts)
+        {
+            ParseIdentifier(out _);
+            DslUtility.ValidateIdentifier(Name, this);
+        }
+
+        private void ParseIdentifier(out Guid guid)
+        {
+            if (!Guid.TryParseExact(Identifier, "D", out guid))
+                throw new DslSyntaxException($"The property '{nameof(Identifier)}' for '{this.GetUserDescription()}' should be in the format '00000000-0000-0000-0000-000000000000', instead it is '{Identifier}'.");
         }
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
@@ -66,10 +78,21 @@ END"
                 new SqlDependsOnSqlFunctionInfo { Dependent = this.HardcodedEntity, DependsOn = sqlFunction },
             };
         }
+    }
 
-        public void CheckSemantics(IDslModel existingConcepts)
+    [Export(typeof(IConceptInfo))]
+    [ConceptKeyword("Entry")]
+    public class EntryWithGeneratedIdentifierInfo : EntryInfo, IAlternativeInitializationConcept
+    {
+        public IEnumerable<string> DeclareNonparsableProperties()
         {
-            DslUtility.ValidateIdentifier(Name, this);
+            return new[] { nameof(Identifier) };
+        }
+
+        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        {
+            createdConcepts = new List<IConceptInfo>();
+            Identifier = CsUtility.GenerateIdentifier(Name).ToString();
         }
     }
 }

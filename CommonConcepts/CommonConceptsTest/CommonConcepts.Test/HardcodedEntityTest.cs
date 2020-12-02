@@ -124,5 +124,18 @@ namespace CommonConcepts.Test
                 Assert.AreEqual(TestHardcodedEntity.SimpleHardcodedEntity.StatusWithoutIntPropertyDefined, repository.TestHardcodedEntity.ReferenceToHardcoded.Query(x => x.ID == implementation2.ID).First().SimpleHardcodedEntityID.Value);
             }
         }
+
+        [TestMethod]
+        public void HardcodedEntityWithCustomEntryIdentidierTest()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+
+                Assert.AreEqual(new Guid("32AA7C09-ECFE-45E9-81B7-CB761D28F351"), repository.TestHardcodedEntity.HardcodedWithCustomIdentifier.Query().Single(x => x.Name == "Entry1").ID);
+                Assert.AreEqual(new Guid("213E77EE-F622-4487-8709-B30D280FB31E"), repository.TestHardcodedEntity.HardcodedWithCustomIdentifier.Query().Single(x => x.Name == "Entry2").ID);
+                Assert.AreEqual(CsUtility.GenerateIdentifier("Entry3"), repository.TestHardcodedEntity.HardcodedWithCustomIdentifier.Query().Single(x => x.Name == "Entry3").ID);
+            }
+        }
     }
 }

@@ -70,4 +70,13 @@ Module TestHardcodedEntity
         LongString Content;
         AutodetectSqlDependencies;
     }
+
+    Hardcoded HardcodedWithCustomIdentifier
+    {
+        Entry Entry1 '32AA7C09-ECFE-45E9-81B7-CB761D28F351';
+
+        Entry Entry2 '213E77EE-F622-4487-8709-B30D280FB31E';
+
+        Entry Entry3;
+    }
 }
