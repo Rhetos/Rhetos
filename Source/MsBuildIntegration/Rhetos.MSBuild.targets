@@ -12,6 +12,7 @@
             IntermediateOutputFolder="$(BaseIntermediateOutputPath)Rhetos"
             TargetPath="$(TargetPath)"
             TargetAssetsFolder="$(TargetDir)RhetosAssets" />
+        <WriteLinesToFile Lines="@(RhetosBuild)" Overwrite="True" WriteOnlyWhenDifferent="True" File="$(RhetosBuildItemsFile)"/>
     </Target>
 
     <Target Name="BuildRhetosApp" DependsOnTargets="ResolveRhetosProjectAssets;" BeforeTargets="CoreCompile" Condition="'$(RhetosBuild)'=='True' and $(BuildingProject)=='True'" Inputs="@(RhetosInput);@(RhetosBuild);@(ReferencePath)" Outputs="@(RhetosOutput)">
