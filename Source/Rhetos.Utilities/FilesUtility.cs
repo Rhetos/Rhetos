@@ -181,7 +181,7 @@ namespace Rhetos.Utilities
                     $" Save the text file as UTF-8.");
 
                 if (tryDefault)
-                    text = File.ReadAllText(path, Encoding.Default);
+                    text = File.ReadAllText(path, CodePagesEncodingProvider.Instance.GetEncoding(System.Globalization.CultureInfo.CurrentCulture.TextInfo.ANSICodePage));
             }
             return text;
         }

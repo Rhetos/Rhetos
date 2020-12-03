@@ -96,39 +96,39 @@ namespace Rhetos.Utilities.Test
 
         //TODO: Encoding.Default on .NET Core is laways UTF8 so we should check if this test is needed
         //and also if the check in FilesUtility.ReadAllText is needed on .NET Core
-        //[TestMethod]
-        //public void ReadAllText_Default()
-        //{
-        //    if (Encoding.Default == Encoding.UTF8)
-        //        Assert.Inconclusive("Default encoding is UTF8.");
+        [TestMethod]
+        public void ReadAllText_Default()
+        {
+            if (Encoding.Default == Encoding.UTF8)
+                Assert.Inconclusive("Default encoding is UTF8.");
 
-        //    var log = new List<string>();
-        //    LogMonitor logMonitor = (eventType, eventName, message) =>
-        //    {
-        //        if (eventName == "FilesUtility" && eventType == Logging.EventType.Warning)
-        //            log.Add($"{message()}");
-        //    };
+            var log = new List<string>();
+            LogMonitor logMonitor = (eventType, eventName, message) =>
+            {
+                if (eventName == "FilesUtility" && eventType == Logging.EventType.Warning)
+                    log.Add($"{message()}");
+            };
 
-        //    var testPath = Path.GetTempFileName();
-        //    string sampleText = "111\r\n¤\r\n333";
-        //    File.WriteAllText(testPath, sampleText, Encoding.Default);
+            var testPath = Path.GetTempFileName();
+            string sampleText = "111\r\n¤\r\n333";
+            File.WriteAllText(testPath, sampleText, CodePagesEncodingProvider.Instance.GetEncoding(System.Globalization.CultureInfo.CurrentCulture.TextInfo.ANSICodePage));
 
-        //    var files = new FilesUtility(new ConsoleLogProvider(logMonitor));
-        //    string readText;
-        //    try
-        //    {
-        //        readText = files.ReadAllText(testPath);
-        //    }
-        //    finally
-        //    {
-        //        File.Delete(testPath);
-        //    }
+            var files = new FilesUtility(new ConsoleLogProvider(logMonitor));
+            string readText;
+            try
+            {
+                readText = files.ReadAllText(testPath);
+            }
+            finally
+            {
+                File.Delete(testPath);
+            }
 
-        //    Assert.AreEqual(sampleText, readText);
-        //    TestUtility.AssertContains(
-        //        TestUtility.Dump(log),
-        //        new[] { "invalid UTF-8 character at line 2", "Reading with default system encoding" });
-        //}
+            Assert.AreEqual(sampleText, readText);
+            TestUtility.AssertContains(
+                TestUtility.Dump(log),
+                new[] { "invalid UTF-8 character at line 2", "Reading with default system encoding" });
+        }
 
         [TestMethod]
         public void IsSameDirectory()
