@@ -18,11 +18,6 @@ dotnet test "CommonConcepts\Plugins\Rhetos.CommonConcepts.Test\bin\Debug\net5.0\
 dotnet build CommonConceptsTest.sln /target:restore /p:RestoreForce=True /target:rebuild /p:Configuration=Debug /verbosity:minimal || GOTO Error0
 dotnet test "CommonConcepts\CommonConcepts.Test\bin\Debug\net5.0\CommonConcepts.Test.dll" || GOTO Error0
 
-CALL Tools\Build\FindVisualStudio.bat || GOTO Error0
-@REM Using MSBuild to test if the CommonConceptsTest.sln could be restored with the MSBuild command
-@REM because the target frameworks used to run custom MSBuild tasks are different when using dotnet cli and MSBuild.exe
-MSBuild.exe CommonConceptsTest.sln /target:restore /p:RestoreForce=True /target:rebuild /p:Configuration=Debug /verbosity:minimal || GOTO Error0
-
 @REM ================================================
 
 @ECHO.
