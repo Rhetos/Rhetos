@@ -1,5 +1,11 @@
 ﻿# Rhetos release notes
 
+## 4.3.0 (TO BE RELEASED)
+
+### Internal improvements
+
+* **DateTime** property concept can create *DateTime2* column type instead of obsolete *DateTime* column type. This feature is currently turned off by default, for backward compatibility. See the wiki article on [Optimized database upgrade](https://github.com/Rhetos/Rhetos/wiki/Migrating-from-DateTime-to-DateTime2) for large databases.
+
 ## 4.2.0 (2020-10-26)
 
 ### Internal improvements
