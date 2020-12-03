@@ -115,7 +115,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     ? $@"    <Property Name=""{propertyInfo.Name}"" Type=""datetime"" Nullable=""true"" />"
                     : $@"    <Property Name=""{propertyInfo.Name}"" Type=""datetime2"" Precision=""3"" Nullable=""true"" />";
             if (typeof(DatePropertyInfo).IsAssignableFrom(propertyInfoType))
-                return $@"    <Property Name=""{propertyInfo.Name}"" Type=""datetime"" Nullable=""true"" />";
+                return $@"    <Property Name=""{propertyInfo.Name}"" Type=""date"" Nullable=""true"" />";
             return "";
         }
 
