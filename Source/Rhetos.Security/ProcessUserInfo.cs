@@ -19,45 +19,21 @@
 
 using Rhetos.Utilities;
 using System;
-using System.Security.Principal;
 
 namespace Rhetos.Security
 {
     /// <summary>
-    /// Used for Rhetos system utilities (DeployPackages.exe, e.g.) when web authentication is not applicable.
+    /// Used for Rhetos system utilities (Rhetos CLI, e.g.) when no other form of authentication is applicable.
     /// </summary>
     public class ProcessUserInfo : IUserInfo
     {
-        private readonly Lazy<WindowsIdentity> _currentUser;
-
-        public ProcessUserInfo()
-        {
-            _currentUser = new Lazy<WindowsIdentity>(() => WindowsIdentity.GetCurrent());
-        }
-
-        #region IUserInfoAdmin interface implementation
-
-        public bool IsUserRecognized => _currentUser.Value != null;
+        public bool IsUserRecognized => true;
 
         /// <summary>Format: "domain\user"</summary>
-        public string UserName
-        {
-            get { CheckIfUserRecognized(); return _currentUser.Value.Name; }
-        }
+        public string UserName => Environment.UserDomainName + @"\" + Environment.UserName;
 
-        public string Workstation
-        {
-            get { CheckIfUserRecognized(); return Environment.MachineName; }
-        }
+        public string Workstation => Environment.MachineName;
 
         public string Report() => UserName + "," + Workstation;
-
-        #endregion
-
-        private void CheckIfUserRecognized()
-        {
-            if (!IsUserRecognized)
-                throw new ClientException("User is not authenticated.");
-        }
     }
 }
