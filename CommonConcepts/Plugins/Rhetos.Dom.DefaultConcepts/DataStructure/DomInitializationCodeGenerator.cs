@@ -347,7 +347,11 @@ $@"namespace Common
             builder.RegisterType<ExecutionContext>().InstancePerLifetimeScope();
             builder.RegisterInstance(Infrastructure.RegisteredInterfaceImplementations).ExternallyOwned();
             builder.RegisterInstance(Infrastructure.ApplyFiltersOnClientRead).ExternallyOwned();
-            builder.RegisterInstance(new Rhetos.Dom.DefaultConcepts.CommonConceptsDatabaseSettings {{ UseLegacyMsSqlDateTime = {_databaseSettings.UseLegacyMsSqlDateTime.ToString().ToLowerInvariant()} }});
+            builder.RegisterInstance(new Rhetos.Dom.DefaultConcepts.CommonConceptsDatabaseSettings
+            {{
+                UseLegacyMsSqlDateTime = {_databaseSettings.UseLegacyMsSqlDateTime.ToString().ToLowerInvariant()},
+                DateTimePrecision = {_databaseSettings.DateTimePrecision},
+            }});
             builder.Register<CommonConceptsOptions>(context => throw new NotImplementedException($""{{nameof(CommonConceptsOptions)}} is a build-time configuration, not available at run-time.""));
             
             {ModuleCodeGenerator.CommonAutofacConfigurationMembersTag}

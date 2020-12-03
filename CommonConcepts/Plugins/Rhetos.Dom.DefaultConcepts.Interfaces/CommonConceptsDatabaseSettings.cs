@@ -34,5 +34,13 @@ namespace Rhetos.Dom.DefaultConcepts
         /// see unit test DateTimeConsistencyTest() in CommonConcepts.Test.
         /// </summary>
         public bool UseLegacyMsSqlDateTime { get; set; } = true;
+
+        /// <summary>
+        /// It is recommended to use precision 3 to avoid round-trip issues with front end
+        /// (for example, JavaScript usually works with time in milliseconds).
+        /// For specific high-precision measurement, a new DSL property concept could be created.
+        /// Also note that SYSDATETIME() in SQL Server typically does not provide higher accuracy then 1 ms.
+        /// </summary>
+        public int DateTimePrecision { get; set; } = 3;
     }
 }

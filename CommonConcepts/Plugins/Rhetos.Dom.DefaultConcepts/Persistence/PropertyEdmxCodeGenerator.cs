@@ -113,7 +113,7 @@ namespace Rhetos.Dom.DefaultConcepts
             if (typeof(DateTimePropertyInfo).IsAssignableFrom(propertyInfoType))
                 return _databaseSettings.UseLegacyMsSqlDateTime
                     ? $@"    <Property Name=""{propertyInfo.Name}"" Type=""datetime"" Nullable=""true"" />"
-                    : $@"    <Property Name=""{propertyInfo.Name}"" Type=""datetime2"" Precision=""3"" Nullable=""true"" />";
+                    : $@"    <Property Name=""{propertyInfo.Name}"" Type=""datetime2"" Precision=""{_databaseSettings.DateTimePrecision}"" Nullable=""true"" />";
             if (typeof(DatePropertyInfo).IsAssignableFrom(propertyInfoType))
                 return $@"    <Property Name=""{propertyInfo.Name}"" Type=""date"" Nullable=""true"" />";
             return "";
