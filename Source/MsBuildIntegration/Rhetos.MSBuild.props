@@ -2,17 +2,11 @@
     <PropertyGroup>
         <RhetosCliExecutablePath>$(MSBuildThisFileDirectory)..\tools\rhetos.exe</RhetosCliExecutablePath>
         <RhetosBuild Condition=" '$(RhetosBuild)'=='' ">True</RhetosBuild>
-        <RhetosDeploy Condition=" '$(RhetosDeploy)'=='' ">True</RhetosDeploy>
+        <RhetosDeploy Condition=" '$(RhetosDeploy)'=='' and ('$(OutputType)' == 'Exe' or '$(OutputType)'=='WinExe') ">True</RhetosDeploy>
         <RhetosBuildCompleteFile>$(BaseIntermediateOutputPath)Rhetos\Rhetos.BuildComplete</RhetosBuildCompleteFile>
         <RhetosDatabaseUpdated>$(BaseIntermediateOutputPath)Rhetos\Rhetos.DatabaseUpdated</RhetosDatabaseUpdated>
         <RhetosGeneratedAssetsFolder Condition=" '$(RhetosGeneratedAssetsFolder)'=='' ">$(TargetDir)RhetosAssets\</RhetosGeneratedAssetsFolder>
     </PropertyGroup>
-    <ItemGroup>
-        <RhetosInput Include="$(BaseIntermediateOutputPath)project.assets.json" />
-        <RhetosInput Include="rhetos-build.settings.json" />
-        <RhetosBuild Include="DslScripts\**\*" />
-        <RhetosBuild Include="DataMigration\**\*" />        
-    </ItemGroup>
     <ItemGroup>
         <!-- RhetosOutput should not include files that are sometimes unchanged on build (because of internal optimizations).
         This would result with MSBuild running RhetosBuild target every time, even if there is nothing to do. -->
