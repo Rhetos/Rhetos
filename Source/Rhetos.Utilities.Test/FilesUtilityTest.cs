@@ -94,8 +94,6 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual("", TestUtility.Dump(log));
         }
 
-        //TODO: Encoding.Default on .NET Core is laways UTF8 so we should check if this test is needed
-        //and also if the check in FilesUtility.ReadAllText is needed on .NET Core
         [TestMethod]
         public void ReadAllText_Default()
         {
