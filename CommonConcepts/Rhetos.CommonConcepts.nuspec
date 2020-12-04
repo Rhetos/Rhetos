@@ -20,23 +20,23 @@
     <file src="Readme.md" target="" />
     <file src="DataMigration\**\*" target="DataMigration" />
     <file src="DslScripts\**\*" target="DslScripts" />
-    <file src="Plugins\Rhetos.Dsl.DefaultConcepts\bin\Debug\net5.0\Rhetos.Dsl.DefaultConcepts.dll" target="lib\net5.0" />
-    <file src="Plugins\Rhetos.Dsl.DefaultConcepts\bin\Debug\net5.0\Rhetos.Dsl.DefaultConcepts.pdb" target="lib\net5.0" />
-    <file src="Plugins\Rhetos.Dsl.DefaultConcepts\bin\Debug\net5.0\Rhetos.Dsl.DefaultConcepts.xml" target="lib\net5.0" />
-    <file src="Plugins\Rhetos.Dom.DefaultConcepts\bin\Debug\net5.0\Rhetos.Dom.DefaultConcepts.dll" target="lib\net5.0" />
-    <file src="Plugins\Rhetos.Dom.DefaultConcepts\bin\Debug\net5.0\Rhetos.Dom.DefaultConcepts.pdb" target="lib\net5.0" />
-    <file src="Plugins\Rhetos.Dom.DefaultConcepts\bin\Debug\net5.0\Rhetos.Dom.DefaultConcepts.xml" target="lib\net5.0" />
-    <file src="Plugins\Rhetos.Dom.DefaultConcepts.Interfaces\bin\Debug\net5.0\Rhetos.Dom.DefaultConcepts.Interfaces.dll" target="lib\net5.0" />
-    <file src="Plugins\Rhetos.Dom.DefaultConcepts.Interfaces\bin\Debug\net5.0\Rhetos.Dom.DefaultConcepts.Interfaces.pdb" target="lib\net5.0" />
-    <file src="Plugins\Rhetos.Dom.DefaultConcepts.Interfaces\bin\Debug\net5.0\Rhetos.Dom.DefaultConcepts.Interfaces.xml" target="lib\net5.0" />
-    <file src="Plugins\Rhetos.DatabaseGenerator.DefaultConcepts\bin\Debug\net5.0\Rhetos.DatabaseGenerator.DefaultConcepts.dll" target="lib\net5.0" />
-    <file src="Plugins\Rhetos.DatabaseGenerator.DefaultConcepts\bin\Debug\net5.0\Rhetos.DatabaseGenerator.DefaultConcepts.pdb" target="lib\net5.0" />
-    <file src="Plugins\Rhetos.DatabaseGenerator.DefaultConcepts\bin\Debug\net5.0\Rhetos.DatabaseGenerator.DefaultConcepts.xml" target="lib\net5.0" />
-    <file src="Plugins\Rhetos.Processing.DefaultCommands\bin\Debug\net5.0\Rhetos.Processing.DefaultCommands.dll" target="lib\net5.0" />
-    <file src="Plugins\Rhetos.Processing.DefaultCommands\bin\Debug\net5.0\Rhetos.Processing.DefaultCommands.pdb" target="lib\net5.0" />
-    <file src="Plugins\Rhetos.Processing.DefaultCommands\bin\Debug\net5.0\Rhetos.Processing.DefaultCommands.xml" target="lib\net5.0" />
-    <file src="Plugins\Rhetos.Processing.DefaultCommands.Interfaces\bin\Debug\net5.0\Rhetos.Processing.DefaultCommands.Interfaces.dll" target="lib\net5.0" />
-    <file src="Plugins\Rhetos.Processing.DefaultCommands.Interfaces\bin\Debug\net5.0\Rhetos.Processing.DefaultCommands.Interfaces.pdb" target="lib\net5.0" />
-    <file src="Plugins\Rhetos.Processing.DefaultCommands.Interfaces\bin\Debug\net5.0\Rhetos.Processing.DefaultCommands.Interfaces.xml" target="lib\net5.0" />
+    <file src="Plugins\Rhetos.Dsl.DefaultConcepts\bin\Debug\netstandard2.1\Rhetos.Dsl.DefaultConcepts.dll" target="lib\netstandard2.1" />
+    <file src="Plugins\Rhetos.Dsl.DefaultConcepts\bin\Debug\netstandard2.1\Rhetos.Dsl.DefaultConcepts.pdb" target="lib\netstandard2.1" />
+    <file src="Plugins\Rhetos.Dsl.DefaultConcepts\bin\Debug\netstandard2.1\Rhetos.Dsl.DefaultConcepts.xml" target="lib\netstandard2.1" />
+    <file src="Plugins\Rhetos.Dom.DefaultConcepts\bin\Debug\netstandard2.1\Rhetos.Dom.DefaultConcepts.dll" target="lib\netstandard2.1" />
+    <file src="Plugins\Rhetos.Dom.DefaultConcepts\bin\Debug\netstandard2.1\Rhetos.Dom.DefaultConcepts.pdb" target="lib\netstandard2.1" />
+    <file src="Plugins\Rhetos.Dom.DefaultConcepts\bin\Debug\netstandard2.1\Rhetos.Dom.DefaultConcepts.xml" target="lib\netstandard2.1" />
+    <file src="Plugins\Rhetos.Dom.DefaultConcepts.Interfaces\bin\Debug\netstandard2.1\Rhetos.Dom.DefaultConcepts.Interfaces.dll" target="lib\netstandard2.1" />
+    <file src="Plugins\Rhetos.Dom.DefaultConcepts.Interfaces\bin\Debug\netstandard2.1\Rhetos.Dom.DefaultConcepts.Interfaces.pdb" target="lib\netstandard2.1" />
+    <file src="Plugins\Rhetos.Dom.DefaultConcepts.Interfaces\bin\Debug\netstandard2.1\Rhetos.Dom.DefaultConcepts.Interfaces.xml" target="lib\netstandard2.1" />
+    <file src="Plugins\Rhetos.DatabaseGenerator.DefaultConcepts\bin\Debug\netstandard2.1\Rhetos.DatabaseGenerator.DefaultConcepts.dll" target="lib\netstandard2.1" />
+    <file src="Plugins\Rhetos.DatabaseGenerator.DefaultConcepts\bin\Debug\netstandard2.1\Rhetos.DatabaseGenerator.DefaultConcepts.pdb" target="lib\netstandard2.1" />
+    <file src="Plugins\Rhetos.DatabaseGenerator.DefaultConcepts\bin\Debug\netstandard2.1\Rhetos.DatabaseGenerator.DefaultConcepts.xml" target="lib\netstandard2.1" />
+    <file src="Plugins\Rhetos.Processing.DefaultCommands\bin\Debug\netstandard2.1\Rhetos.Processing.DefaultCommands.dll" target="lib\netstandard2.1" />
+    <file src="Plugins\Rhetos.Processing.DefaultCommands\bin\Debug\netstandard2.1\Rhetos.Processing.DefaultCommands.pdb" target="lib\netstandard2.1" />
+    <file src="Plugins\Rhetos.Processing.DefaultCommands\bin\Debug\netstandard2.1\Rhetos.Processing.DefaultCommands.xml" target="lib\netstandard2.1" />
+    <file src="Plugins\Rhetos.Processing.DefaultCommands.Interfaces\bin\Debug\netstandard2.1\Rhetos.Processing.DefaultCommands.Interfaces.dll" target="lib\netstandard2.1" />
+    <file src="Plugins\Rhetos.Processing.DefaultCommands.Interfaces\bin\Debug\netstandard2.1\Rhetos.Processing.DefaultCommands.Interfaces.pdb" target="lib\netstandard2.1" />
+    <file src="Plugins\Rhetos.Processing.DefaultCommands.Interfaces\bin\Debug\netstandard2.1\Rhetos.Processing.DefaultCommands.Interfaces.xml" target="lib\netstandard2.1" />
   </files>
 </package>
