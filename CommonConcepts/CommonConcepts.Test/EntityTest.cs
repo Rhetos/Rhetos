@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using CommonConcepts.Test.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Dom.DefaultConcepts;
@@ -470,7 +471,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DateTimeConsistencyTest()
         {
-            using (var container = new RhetosTestContainer())
+            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
             {
                 var databaseSettings = container.Resolve<CommonConceptsDatabaseSettings>();
                 container.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestTypes.Simple");

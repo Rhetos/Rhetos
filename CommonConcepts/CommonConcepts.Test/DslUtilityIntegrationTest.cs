@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using CommonConcepts.Test.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Dsl;
@@ -32,7 +33,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void GetBaseChangesOnDependencyHistory()
         {
-            using (var container = new RhetosTestContainer())
+            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
             {
                 var dslModel = container.Resolve<IDslModel>();
 
