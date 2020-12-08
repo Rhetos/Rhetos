@@ -220,7 +220,10 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             if (dependsOn.Name.EndsWith("_History"))
             {
-                var history = existingConcepts.FindByReference<EntityHistoryInfo>(h => h.Dependency_HistorySqlQueryable, dependsOn).SingleOrDefault();
+                var history = existingConcepts.FindByReference<EntityHistoryPropertyInfo>(h => h.Dependency_HistorySqlQueryable, dependsOn)
+                    .Select(property => property.Dependency_EntityHistory)
+                    .Distinct()
+                    .SingleOrDefault();
                 if (history != null)
                     return new DataStructureInfo[] { history.Entity, history.Dependency_ChangesEntity };
             }

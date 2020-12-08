@@ -19,6 +19,9 @@
 
 namespace Rhetos.Dom.DefaultConcepts
 {
+    /// <summary>
+    /// Build options for Rhetos.CommonConcepts package.
+    /// </summary>
     [Options("CommonConcepts")]
     public class CommonConceptsOptions
     {

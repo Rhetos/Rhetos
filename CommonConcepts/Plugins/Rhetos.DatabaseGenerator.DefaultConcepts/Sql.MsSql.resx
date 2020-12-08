@@ -424,8 +424,11 @@ AS
   <data name="DatePropertyDatabaseDefinition_DataType" xml:space="preserve">
     <value>DATE</value>
   </data>
-  <data name="DateTimePropertyDatabaseDefinition_DataType" xml:space="preserve">
+  <data name="DateTimePropertyDatabaseDefinition_DataType_Legacy" xml:space="preserve">
     <value>DATETIME</value>
+  </data>
+  <data name="DateTimePropertyDatabaseDefinition_DataType" xml:space="preserve">
+    <value>DATETIME2({0})</value>
   </data>
   <data name="DecimalPropertyDatabaseDefinition_DataType" xml:space="preserve">
     <value>DECIMAL(28,10)</value>

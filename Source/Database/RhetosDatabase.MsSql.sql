@@ -89,26 +89,35 @@ END
 GO
 
 IF OBJECT_ID('Rhetos.GetColumnType') IS NULL
-EXEC ('CREATE FUNCTION Rhetos.GetColumnType
+    EXEC ('CREATE FUNCTION Rhetos.GetColumnType (@SchemaName NVARCHAR(256), @TableName NVARCHAR(256), @ColumnName NVARCHAR(256))
+    RETURNS NVARCHAR(256) AS BEGIN; RETURN ''''; END');
+
+GO
+
+ALTER FUNCTION Rhetos.GetColumnType
     (@SchemaName NVARCHAR(256), @TableName NVARCHAR(256), @ColumnName NVARCHAR(256))
 RETURNS NVARCHAR(256)
 AS
 BEGIN
 RETURN
     (SELECT CASE
-        WHEN DATA_TYPE IN (''decimal'', ''numeric'')
-            THEN DATA_TYPE + ''('' + CONVERT(nvarchar(100), NUMERIC_PRECISION) + '', '' + CONVERT(nvarchar(100), NUMERIC_PRECISION_RADIX) + '')''
-        WHEN DATA_TYPE IN (''varbinary'', ''varchar'', ''binary'', ''char'', ''nvarchar'', ''nchar'')
+        WHEN DATA_TYPE IN ('decimal', 'numeric')
+            THEN DATA_TYPE + '(' + CONVERT(nvarchar(100), NUMERIC_PRECISION) + ', ' + CONVERT(nvarchar(100), NUMERIC_PRECISION_RADIX) + ')'
+        WHEN DATA_TYPE IN ('datetime2')
+            THEN DATA_TYPE + '(' + CONVERT(nvarchar(100), DATETIME_PRECISION) + ')'
+        WHEN DATA_TYPE IN ('varbinary', 'varchar', 'binary', 'char', 'nvarchar', 'nchar')
             THEN CASE WHEN CHARACTER_MAXIMUM_LENGTH > 0
-                THEN DATA_TYPE + ''('' + CONVERT(nvarchar(100), CHARACTER_MAXIMUM_LENGTH) + '')''
-                ELSE DATA_TYPE + ''(MAX)''
+                THEN DATA_TYPE + '(' + CONVERT(nvarchar(100), CHARACTER_MAXIMUM_LENGTH) + ')'
+                ELSE DATA_TYPE + '(MAX)'
             END
         ELSE DATA_TYPE END
     FROM
         INFORMATION_SCHEMA.COLUMNS
     WHERE
         TABLE_SCHEMA = @SchemaName AND TABLE_NAME = @TableName AND COLUMN_NAME = @ColumnName)
-END')
+END
+
+GO
 
 IF OBJECT_ID('Rhetos.DataMigrationApply') IS NULL
 	EXEC ('CREATE PROCEDURE Rhetos.DataMigrationApply AS SET NOCOUNT ON RAISERROR (''Procedure creation has not finished.'', 16, 62)')
@@ -695,3 +704,35 @@ WHERE
 -- that would cause downgrade to fail. See https://github.com/Rhetos/Rhetos/issues/353 for more info.
 IF OBJECT_ID(N'Rhetos.DslScript') IS NOT NULL
 	TRUNCATE TABLE Rhetos.DslScript;
+GO
+
+-- Migration from datetime to datetime2(3)
+IF EXISTS (
+	SELECT *
+	FROM INFORMATION_SCHEMA.COLUMNS
+	WHERE 
+		TABLE_SCHEMA = N'Rhetos' AND
+		TABLE_NAME = N'AppliedConcept' AND 
+		COLUMN_NAME = N'LastModified' AND
+		DATA_TYPE = N'datetime'
+)
+BEGIN
+	ALTER TABLE Rhetos.AppliedConcept DROP CONSTRAINT DF_AppliedConcept_LastModified;
+    ALTER TABLE Rhetos.AppliedConcept ALTER COLUMN LastModified datetime2(3) NOT NULL;
+    ALTER TABLE Rhetos.AppliedConcept ADD CONSTRAINT DF_AppliedConcept_LastModified DEFAULT (sysdatetime()) FOR LastModified;
+END
+
+IF EXISTS (
+	SELECT *
+	FROM INFORMATION_SCHEMA.COLUMNS
+	WHERE 
+		TABLE_SCHEMA = N'Rhetos' AND
+		TABLE_NAME = N'DataMigrationScript' AND 
+		COLUMN_NAME = N'DateExecuted' AND
+		DATA_TYPE = N'datetime'
+)
+BEGIN
+	ALTER TABLE Rhetos.DataMigrationScript DROP CONSTRAINT DF_DataMigrationScript_LastModified;
+    ALTER TABLE Rhetos.DataMigrationScript ALTER COLUMN DateExecuted datetime2(3) NOT NULL;
+    ALTER TABLE Rhetos.DataMigrationScript ADD CONSTRAINT DF_DataMigrationScript_LastModified DEFAULT (sysdatetime()) FOR DateExecuted;
+END

@@ -1,4 +1,4 @@
-﻿/*
+/*
     Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
@@ -17,12 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.ComponentModel.Composition;
-using Rhetos.Utilities;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
@@ -37,24 +33,30 @@ namespace Rhetos.Dsl.DefaultConcepts
         public PropertyInfo Property { get; set; }
 
         public EntityHistoryInfo Dependency_EntityHistory { get; set; }
+        public SqlFunctionInfo Dependency_AtTimeSqlFunction { get; set; }
+        public SqlQueryableInfo Dependency_HistorySqlQueryable { get; set; }
+        public WriteInfo Dependency_Write { get; set; }
 
         public IEnumerable<string> DeclareNonparsableProperties()
         {
-            return new[] { "Dependency_EntityHistory" };
+            return new[] { "Dependency_EntityHistory", "Dependency_AtTimeSqlFunction", "Dependency_HistorySqlQueryable", "Dependency_Write" };
         }
 
         public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
         {
             if (!(Property.DataStructure is EntityInfo))
                 throw new DslSyntaxException(this, "History concept may only be used on entity or its property.");
-            Dependency_EntityHistory = new EntityHistoryInfo { Entity = (EntityInfo)this.Property.DataStructure };
+            Dependency_EntityHistory = new EntityHistoryInfo { Entity = (EntityInfo)Property.DataStructure };
+            Dependency_AtTimeSqlFunction = new SqlFunctionInfo { Module = Property.DataStructure.Module, Name = Property.DataStructure.Name + "_AtTime" };
+            Dependency_HistorySqlQueryable = new SqlQueryableInfo { Module = Property.DataStructure.Module, Name = Property.DataStructure.Name + "_History" };
+            Dependency_Write = new WriteInfo { DataStructure = Dependency_HistorySqlQueryable };
+
             createdConcepts = new IConceptInfo[] { Dependency_EntityHistory };
         }
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            return new [] { new PropertyFromInfo { Destination = Dependency_EntityHistory.Dependency_ChangesEntity, Source = Property } };
+            return new[] { new PropertyFromInfo { Destination = Dependency_EntityHistory.Dependency_ChangesEntity, Source = Property } };
         }
-
     }
 }

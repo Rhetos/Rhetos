@@ -17,23 +17,24 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Compiler;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Persistence;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rhetos.Dsl.DefaultConcepts;
-using System.Globalization;
 using System.ComponentModel.Composition;
-using Rhetos.Extensibility;
-using Rhetos.Dsl;
-using Rhetos.Compiler;
-using Rhetos.Persistence;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptMapping))]
     public class PropertyEdmxCodeGenerator : ConceptMapping<PropertyInfo>
     {
+        private readonly CommonConceptsDatabaseSettings _databaseSettings;
+        public PropertyEdmxCodeGenerator(CommonConceptsDatabaseSettings databaseSettings)
+        {
+            _databaseSettings = databaseSettings;
+        }
+
         public override void GenerateCode(PropertyInfo propertyInfo, ICodeBuilder codeBuilder)
         {
             if (propertyInfo.DataStructure is IOrmDataStructure && IsTypeSupported(propertyInfo.GetType()))
@@ -92,7 +93,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return "";
         }
 
-        private static string GetPropertyElementForStorageModel(PropertyInfo propertyInfo)
+        private string GetPropertyElementForStorageModel(PropertyInfo propertyInfo)
         {
             var propertyInfoType = propertyInfo.GetType();
             if (typeof(DecimalPropertyInfo).IsAssignableFrom(propertyInfoType))
@@ -110,9 +111,11 @@ namespace Rhetos.Dom.DefaultConcepts
             if (typeof(GuidPropertyInfo).IsAssignableFrom(propertyInfoType))
                 return $@"    <Property Name=""{propertyInfo.Name}"" Type=""uniqueidentifier"" Nullable=""true"" />";
             if (typeof(DateTimePropertyInfo).IsAssignableFrom(propertyInfoType))
-                return $@"    <Property Name=""{propertyInfo.Name}"" Type=""datetime"" Nullable=""true"" />";
+                return _databaseSettings.UseLegacyMsSqlDateTime
+                    ? $@"    <Property Name=""{propertyInfo.Name}"" Type=""datetime"" Nullable=""true"" />"
+                    : $@"    <Property Name=""{propertyInfo.Name}"" Type=""datetime2"" Precision=""{_databaseSettings.DateTimePrecision}"" Nullable=""true"" />";
             if (typeof(DatePropertyInfo).IsAssignableFrom(propertyInfoType))
-                return $@"    <Property Name=""{propertyInfo.Name}"" Type=""datetime"" Nullable=""true"" />";
+                return $@"    <Property Name=""{propertyInfo.Name}"" Type=""date"" Nullable=""true"" />";
             return "";
         }
 

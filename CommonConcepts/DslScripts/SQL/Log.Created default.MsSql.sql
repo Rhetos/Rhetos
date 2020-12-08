@@ -1,1 +1,1 @@
-getdate()
+SYSDATETIME()

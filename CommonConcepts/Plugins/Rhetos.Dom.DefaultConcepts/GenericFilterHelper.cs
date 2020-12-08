@@ -599,13 +599,25 @@ namespace Rhetos.Dom.DefaultConcepts
 
         /// <summary>
         /// Compares only filters without parameters.
+        /// Note: This method will not detected same filter types if they differ in namespace usage, since <see cref="FilterCriteria.Filter"/>
+        /// should always have full namespace declared (FullName or AssemblyQualifiedName).
         /// </summary>
         public static bool EqualsSimpleFilter(FilterCriteria filter, string filterName)
         {
-            return filter.Filter == filterName
-                && filter.Value == null
-                && (string.IsNullOrEmpty(filter.Operation)
-                    || string.Equals(filter.Operation, GenericFilterHelper.FilterOperationMatches, StringComparison.OrdinalIgnoreCase));
+            return filter.Value == null
+                && (string.IsNullOrEmpty(filter.Operation) || string.Equals(filter.Operation, FilterOperationMatches, StringComparison.OrdinalIgnoreCase))
+                && IsSameType(filter.Filter, filterName);
+        }
+
+        private static bool IsSameType(string t1, string t2)
+        {
+            return !string.IsNullOrEmpty(t1) && !string.IsNullOrEmpty(t2) &&
+                (t1 == t2 || IsShortenedType(t1, t2) || IsShortenedType(t2, t1));
+        }
+
+        private static bool IsShortenedType(string shorter, string longer)
+        {
+            return longer.StartsWith(shorter) && longer.Length > shorter.Length && longer[shorter.Length] == ',';
         }
 
         #endregion

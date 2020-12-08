@@ -53,7 +53,7 @@ namespace Rhetos.Utilities
         public static DateTime GetDatabaseTime(ISqlExecuter sqlExecuter)
         {
             DateTime databaseTime = DateTime.MinValue;
-            sqlExecuter.ExecuteReader("SELECT GETDATE()",
+            sqlExecuter.ExecuteReader("SELECT SYSDATETIME()",
                 reader => databaseTime = reader.GetDateTime(0));
             if (databaseTime == DateTime.MinValue)
                 throw new FrameworkException("Cannot read database server time.");

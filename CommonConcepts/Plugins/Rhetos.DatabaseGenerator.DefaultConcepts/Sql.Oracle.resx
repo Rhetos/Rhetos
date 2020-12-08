@@ -153,6 +153,9 @@ END;</value>
   <data name="DatePropertyDatabaseDefinition_DataType" xml:space="preserve">
     <value>DATE</value>
   </data>
+  <data name="DateTimePropertyDatabaseDefinition_DataType_Legacy" xml:space="preserve">
+    <value>DATE</value>
+  </data>
   <data name="DateTimePropertyDatabaseDefinition_DataType" xml:space="preserve">
     <value>DATE</value>
   </data>

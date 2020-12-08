@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using System.ComponentModel.Composition;
@@ -61,10 +62,16 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [Export(typeof(IConceptMetadataExtension))]
     public class DateTimeDatabaseColumnTypeMetadata : IDatabaseColumnType<DateTimePropertyInfo>
     {
-        public string ColumnType
+        private readonly CommonConceptsDatabaseSettings _databaseSettings;
+
+        public DateTimeDatabaseColumnTypeMetadata(CommonConceptsDatabaseSettings databaseSettings)
         {
-            get { return Sql.Get("DateTimePropertyDatabaseDefinition_DataType"); }
+            _databaseSettings = databaseSettings;
         }
+
+        public string ColumnType => _databaseSettings.UseLegacyMsSqlDateTime
+                ? Sql.Get("DateTimePropertyDatabaseDefinition_DataType_Legacy")
+                : Sql.Format("DateTimePropertyDatabaseDefinition_DataType", _databaseSettings.DateTimePrecision);
     }
 
     [Export(typeof(IConceptMetadataExtension))]

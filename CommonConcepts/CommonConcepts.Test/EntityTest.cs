@@ -17,7 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using CommonConcepts.Test.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Dom.DefaultConcepts;
@@ -28,7 +27,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace CommonConcepts.Test
 {
@@ -162,7 +160,7 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("r1-cr1, r2-cr2", ReportClaims(repository), "initial insert");
 
                 var loaded = repository.TestEntity.Claim.Load().OrderBy(c => c.ClaimResource).ToList();
-                Assert.AreEqual(2, loaded.Count());
+                Assert.AreEqual(2, loaded.Count);
 
                 loaded[1].ClaimResource = "x2";
                 loaded[1].ClaimRight = "xx2";
@@ -189,18 +187,18 @@ namespace CommonConcepts.Test
                     "INSERT INTO TestEntity.BaseEntity (ID, Name) SELECT '0BA6DC94-C146-4E81-B80F-4F5A9D2205E5', 'b'",
                     "INSERT INTO TestEntity.Extension (ID, Title) SELECT '5B08EE49-3FC3-47B7-9E1D-4B162E7CFF00', 'aaa'",
                 });
-                Assert.AreEqual(1, repository.TestEntity.Extension.Query().ToList().Count());
+                Assert.AreEqual(1, repository.TestEntity.Extension.Query().Count());
 
                 var extensions = repository.TestEntity.Extension;
 
                 extensions.Delete(repository.TestEntity.Extension.Query().Where(item => item.ID == new Guid("5B08EE49-3FC3-47B7-9E1D-4B162E7CFF00")));
-                Assert.AreEqual(0, repository.TestEntity.Extension.Query().ToList().Count());
+                Assert.AreEqual(0, repository.TestEntity.Extension.Query().Count());
 
                 extensions.Insert(new TestEntity.Extension { ID = new Guid("0BA6DC94-C146-4E81-B80F-4F5A9D2205E5"), Title = "bbb" });
-                Assert.AreEqual(1, repository.TestEntity.Extension.Query().ToList().Count());
+                Assert.AreEqual(1, repository.TestEntity.Extension.Query().Count());
 
                 extensions.Update(new TestEntity.Extension { ID = new Guid("0BA6DC94-C146-4E81-B80F-4F5A9D2205E5"), Title = "xxx" });
-                Assert.AreEqual(1, repository.TestEntity.Extension.Query().ToList().Count());
+                Assert.AreEqual(1, repository.TestEntity.Extension.Query().Count());
                 Assert.AreEqual("xxx", repository.TestEntity.Extension.Query().Single().Title);
             }
         }
@@ -211,7 +209,7 @@ namespace CommonConcepts.Test
             using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = context.Repository;
 
                 var b = new TestEntity.BaseEntity { ID = Guid.NewGuid(), Name = "b" };
                 var c = new TestEntity.Child { Name = "c", ParentID = b.ID };
@@ -232,7 +230,7 @@ namespace CommonConcepts.Test
             using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = context.Repository;
 
                 var b = new TestEntity.BaseEntity { ID = Guid.NewGuid(), Name = "b" };
                 var c = new TestEntity.Child { Name = "c", ParentID = b.ID };
@@ -254,7 +252,7 @@ namespace CommonConcepts.Test
             using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = context.Repository;
 
                 repository.TestEntity.Child.Delete(repository.TestEntity.Child.Load());
                 repository.TestEntity.BaseEntity.Delete(repository.TestEntity.BaseEntity.Load());
@@ -270,7 +268,7 @@ namespace CommonConcepts.Test
                 repository.TestEntity.Child.Insert(c2);
 
                 var ids = repository.TestEntity.Child.Query().Select(child => child.ID).ToList();
-                Assert.AreEqual(2, ids.Count());
+                Assert.AreEqual(2, ids.Count);
                 Assert.AreNotEqual(default(Guid), ids[0]);
                 Assert.AreNotEqual(default(Guid), ids[1]);
                 Assert.AreNotEqual(ids[0], ids[1]);
@@ -287,7 +285,7 @@ namespace CommonConcepts.Test
             using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = context.Repository;
 
                 var b = new TestEntity.BaseEntity { ID = Guid.NewGuid(), Name = "b" };
                 var c = new TestEntity.Child { Name = "c", ParentID = b.ID };
@@ -315,7 +313,7 @@ namespace CommonConcepts.Test
             using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = context.Repository;
                 repository.TestEntity.BaseEntity.Delete(repository.TestEntity.BaseEntity.Load());
 
                 var b = new TestEntity.BaseEntity { ID = Guid.NewGuid(), Name = "b" };
@@ -336,7 +334,7 @@ namespace CommonConcepts.Test
             using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = context.Repository;
                 repository.TestEntity.BaseEntity.Delete(repository.TestEntity.BaseEntity.Load());
 
                 var b = new TestEntity.BaseEntity { ID = Guid.NewGuid(), Name = "b" };
@@ -466,6 +464,49 @@ namespace CommonConcepts.Test
 
                     repository.TestTypes.Simple.Delete(item);
                 }
+            }
+        }
+
+        [TestMethod]
+        public void DateTimeConsistencyTest()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var databaseSettings = container.Resolve<CommonConceptsDatabaseSettings>();
+                container.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestTypes.Simple");
+                var repository = container.Resolve<Common.DomRepository>();
+
+                const int tests = 20;
+
+                var report = new List<string>(tests);
+
+                for (int i = 0; i < tests; i++)
+                {
+                    var simples = repository.TestTypes.Simple;
+                    DateTime t0 = DateTime.Now;
+                    var id = Guid.NewGuid();
+                    simples.Insert(new TestTypes.Simple { ID = id, Start = t0 });
+                    DateTime t1 = simples.Load(new[] { id }).Single().Start.Value;
+
+                    // It is not necessary to match t1 == t0, because the database precision may be lower than C#,
+                    // but the data loaded from a database should behave consistently when returning it to the database.
+
+                    string result = (simples.Query(x => x.ID == id && x.Start == t1).Any() ? "eq " : "")
+                        + (simples.Query(x => x.ID == id && x.Start != t1).Any() ? "ne " : "")
+                        + (simples.Query(x => x.ID == id && x.Start <= t1).Any() ? "le " : "")
+                        + (simples.Query(x => x.ID == id && x.Start >= t1).Any() ? "ge " : "")
+                        + (simples.Query(x => x.ID == id && x.Start < t1).Any() ? "lt " : "")
+                        + (simples.Query(x => x.ID == id && x.Start > t1).Any() ? "gt " : "");
+
+                    report.Add(result);
+                }
+
+                string summary = TestUtility.DumpSorted(report.GroupBy(r => r), g => $"{g.Key}({g.Count()})");
+
+                if (databaseSettings.UseLegacyMsSqlDateTime)
+                    Assert.Inconclusive($"EF6 uses 'datetime2' for query parameters even if the database column type is 'datetime'. The mismatch creates errors when comparing values from database to the query parameter: {summary}.");
+                else
+                    Assert.AreEqual($"eq le ge ({tests})", summary);
             }
         }
 
@@ -634,7 +675,6 @@ namespace CommonConcepts.Test
                 {
                     container.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestEntity.UniqueEntity");
                     var r = container.Resolve<Common.DomRepository>().TestEntity.UniqueEntity;
-                    var context = container.Resolve<Common.ExecutionContext>();
 
                     var ia = new TestEntity.UniqueEntity { Name = "a", ID = Guid.NewGuid() };
                     var ib = new TestEntity.UniqueEntity { Name = "b", ID = Guid.NewGuid() };
@@ -677,7 +717,6 @@ namespace CommonConcepts.Test
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestEntity.BaseEntity");
                 var repository = container.Resolve<Common.DomRepository>();
-                var context = container.Resolve<Common.ExecutionContext>();
 
                 var b1 = new TestEntity.BaseEntity { Name = "b1" };
                 var b2 = new TestEntity.BaseEntity { Name = "b2" };
