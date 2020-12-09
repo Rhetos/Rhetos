@@ -51,7 +51,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void CreationTime()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestAuditable.Simple" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -67,7 +67,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void CreationTime_Explicit()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestAuditable.Simple" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -115,7 +115,7 @@ namespace CommonConcepts.Test
 
         private static void TestModificationTimeOf(Func<TestAuditable.Simple, DateTime?> propertySelector, string insertData, string updateData, string testInfo)
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestAuditable.Simple",
@@ -207,7 +207,7 @@ namespace CommonConcepts.Test
 
             for (int testRun = 0; testRun < testRuns; testRun++)
             {
-                using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+                using (var container = TestContainer.Create())
                 {
                     var context = container.Resolve<Common.ExecutionContext>();
                     var repository = context.Repository;

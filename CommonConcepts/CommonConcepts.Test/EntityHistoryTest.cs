@@ -96,7 +96,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void MinimalHistoryInsert()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Minimal" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -121,7 +121,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void MinimalHistoryUpdate()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var id1 = Guid.NewGuid();
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
@@ -147,7 +147,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ActiveUntilCheck()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var id1 = Guid.NewGuid();
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
@@ -172,7 +172,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ActiveUntilEditingCurrentVersionActiveFromCheck()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var id1 = Guid.NewGuid();
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
@@ -199,7 +199,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ActiveUntilAsExtensionInHistory()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var id1 = Guid.NewGuid();
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
@@ -224,7 +224,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ActiveUntilInHistory()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var id1 = Guid.NewGuid();
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
@@ -249,7 +249,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryWithInvalidData()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Standard" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -272,7 +272,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryWithReference()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 Guid c1ID = Guid.NewGuid();
                 Guid c2ID = Guid.NewGuid();
@@ -305,7 +305,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryWithAutocode()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.BasicAutocode_Changes;",
@@ -333,7 +333,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryWithUnique()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 Guid c1ID = Guid.NewGuid();
                 Guid c2ID = Guid.NewGuid();
@@ -375,7 +375,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void MinimalHistoryUpdateInvalidActiveSince()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var id1 = Guid.NewGuid();
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
@@ -395,7 +395,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void CrudWithExplicitTime()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -439,7 +439,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InsertFuture()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -455,7 +455,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateFuture()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -475,7 +475,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NormalUpdateIfExistsNewerHistoryEntryDiffBase()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
@@ -497,7 +497,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NormalUpdate()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var id1 = Guid.NewGuid();
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
@@ -515,7 +515,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateWithoutSettingActiveSince()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -539,7 +539,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FastUpdate()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -590,7 +590,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryAtTime()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Standard" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -635,7 +635,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void PartialHistoryAtTime()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -678,7 +678,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryBeforeFirstRecord()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Standard" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -704,7 +704,7 @@ namespace CommonConcepts.Test
 //        [TestMethod]
 //        public void ManualHistoryManagement()
 //        {
-//            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+//            using (var container = TestContainer.Create())
 //            {
 //                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple_Base" });
 //                var repository = container.Resolve<Common.DomRepository>();
@@ -733,7 +733,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InsertHistoryFuture()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -753,7 +753,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateHistoryFuture()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -787,7 +787,7 @@ namespace CommonConcepts.Test
 //        [TestMethod]
 //        public void RequiredBase()
 //        {
-//            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+//            using (var container = TestContainer.Create())
 //            {
 //                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
 //                var repository = container.Resolve<Common.DomRepository>();
@@ -804,7 +804,7 @@ namespace CommonConcepts.Test
 //        [TestMethod]
 //        public void RequiredHistory()
 //        {
-//            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+//            using (var container = TestContainer.Create())
 //            {
 //                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
 //                var repository = container.Resolve<Common.DomRepository>();
@@ -825,7 +825,7 @@ namespace CommonConcepts.Test
 //        [TestMethod]
 //        public void Reference()
 //        {
-//            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+//            using (var container = TestContainer.Create())
 //            {
 //                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
 //                var repository = container.Resolve<Common.DomRepository>();
@@ -848,7 +848,7 @@ namespace CommonConcepts.Test
 //        [TestMethod]
 //        public void SqlIndex()
 //        {
-//            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+//            using (var container = TestContainer.Create())
 //            {
 //                var sql = @"SELECT
 //	i.name, c.name, ic.*
@@ -881,7 +881,7 @@ namespace CommonConcepts.Test
 //        [TestMethod]
 //        public void UniqueBase()
 //        {
-//            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+//            using (var container = TestContainer.Create())
 //            {
 //                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
 //                var repository = container.Resolve<Common.DomRepository>();
@@ -899,7 +899,7 @@ namespace CommonConcepts.Test
 //        [TestMethod]
 //        public void UniqueHistory()
 //        {
-//            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+//            using (var container = TestContainer.Create())
 //            {
 //                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
 //                var repository = container.Resolve<Common.DomRepository>();
@@ -927,7 +927,7 @@ namespace CommonConcepts.Test
 //        [TestMethod]
 //        public void UniqueMultiple()
 //        {
-//            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+//            using (var container = TestContainer.Create())
 //            {
 //                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
 //                var repository = container.Resolve<Common.DomRepository>();
@@ -956,7 +956,7 @@ namespace CommonConcepts.Test
 //        [TestMethod]
 //        public void AutoCodeForEachBase()
 //        {
-//            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+//            using (var container = TestContainer.Create())
 //            {
 //                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
 //                var repository = container.Resolve<Common.DomRepository>();
@@ -992,7 +992,7 @@ namespace CommonConcepts.Test
 //        [Ignore] // Not yet implemented.
 //        public void Detail()
 //        {
-//            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+//            using (var container = TestContainer.Create())
 //            {
 //                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
 //                var repository = container.Resolve<Common.DomRepository>();
@@ -1011,7 +1011,7 @@ namespace CommonConcepts.Test
 //        [Ignore] // Not yet implemented.
 //        public void Detail2()
 //        {
-//            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+//            using (var container = TestContainer.Create())
 //            {
 //                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
 //                var repository = container.Resolve<Common.DomRepository>();
@@ -1045,7 +1045,7 @@ namespace CommonConcepts.Test
 //        [Ignore] // Not yet implemented.
 //        public void Logging()
 //        {
-//            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+//            using (var container = TestContainer.Create())
 //            {
 //                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "TRUNCATE TABLE Common.Log" });
 //                var repository = container.Resolve<Common.DomRepository>();
@@ -1083,7 +1083,7 @@ namespace CommonConcepts.Test
 //        [TestMethod]
 //        public void ItemFilter()
 //        {
-//            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+//            using (var container = TestContainer.Create())
 //            {
 //                var ids = Enumerable.Range(1, 4).Select(x => Guid.NewGuid()).ToArray();
 //                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
@@ -1108,7 +1108,7 @@ namespace CommonConcepts.Test
 //        [Ignore] // Not yet implemented.
 //        public void InvalidData()
 //        {
-//            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+//            using (var container = TestContainer.Create())
 //            {
 //                var ids = Enumerable.Range(1, 3).Select(x => Guid.NewGuid()).ToArray();
 //                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
@@ -1157,7 +1157,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryEditHistorySimple()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
@@ -1183,7 +1183,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryEditHistoryActiveSinceNewerThanActiveItem()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
@@ -1204,7 +1204,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryEditHistoryChangingActiveSinceOK()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
@@ -1231,7 +1231,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryUpdateActiveItemOK()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
@@ -1258,7 +1258,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryUpdateActiveItemActiveSince()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
@@ -1282,7 +1282,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryUpdateActiveItemFailOlderThanLastInHistory()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
@@ -1304,7 +1304,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryDeleteActiveItemReplaceWithHistory()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
@@ -1331,7 +1331,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryDeleteActiveItemOnlyItemInHistory()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var id1 = Guid.NewGuid();
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
@@ -1353,7 +1353,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryDeleteHistoryOnlyItemInHistory()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
@@ -1385,7 +1385,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryDeleteHistoryMiddleInHistory()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
@@ -1420,7 +1420,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryInsertAsActive()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
@@ -1454,7 +1454,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryInsertAsHistory()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
@@ -1491,7 +1491,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryDeleteCurrentItemAndLastInHistory()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
@@ -1525,7 +1525,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryDeleteAllHistory()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
@@ -1551,7 +1551,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryLockProperty()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
@@ -1577,7 +1577,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryLockPropertyAndInvalidData()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();

@@ -36,7 +36,7 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnInsertInteger()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleInteger { Value = 3 };
@@ -47,7 +47,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NormallyInsertInteger()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleInteger { Value = 1 };
@@ -59,7 +59,7 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnUpdate()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleInteger { Value = 1 };
@@ -74,7 +74,7 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnInsertDecimal()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleDecimal { Value = (decimal)3.33 };
@@ -85,7 +85,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NormallyInsertDecimal()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleDecimal { Value = (decimal)2.30 };
@@ -98,7 +98,7 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnInsertMoney()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleMoney { Value = (decimal)3.33 };
@@ -109,7 +109,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NormallyInsertMoney()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleMoney { Value = (decimal)2.30 };
@@ -121,7 +121,7 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnInsertDate()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleDate { Value = new DateTime(2013, 7, 7) };
@@ -132,7 +132,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NormallyInsertDate()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleDate { Value = new DateTime(2013, 7, 3) };
@@ -144,7 +144,7 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnInsertDateTime()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleDateTime { Value = new DateTime(2013, 7, 5, 12, 34, 59) };
@@ -155,7 +155,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NormallyInsertDateTime()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleDateTime { Value = new DateTime(2013, 7, 5, 12, 33, 1) };
@@ -166,7 +166,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NullValue()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleInteger { ID = Guid.NewGuid(), Value = null };

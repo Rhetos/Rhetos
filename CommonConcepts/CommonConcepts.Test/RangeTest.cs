@@ -37,7 +37,7 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnInsert()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleRange { FromValue = 1, ToValue = 0 };
@@ -48,7 +48,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShouldNotThrowUserExceptionOnInsert()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleRange { FromValue = (decimal)1.1, ToValue = (decimal)2.0 };
@@ -59,7 +59,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShouldInsertEntityWithoutRangeTo()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
@@ -77,7 +77,7 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnUpdate()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleRange { FromValue = 1, ToValue = 5 };
@@ -91,7 +91,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShoulInsertNormallyDate()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new DateRangeWithoutDef { FromDate = DateTime.Today, ToDate = DateTime.Today.AddDays(2) };
@@ -102,7 +102,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShoulInsertNormallySameDates()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new DateRangeWithoutDef { FromDate = DateTime.Today, ToDate = DateTime.Today };
@@ -114,7 +114,7 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnUpdateDate()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new DateRangeWithoutDef { FromDate = DateTime.Today, ToDate = DateTime.Today.AddDays(2) };
@@ -128,7 +128,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShoulInsertNormallySameDateTime()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new DateTimeRangeWithoutDef { FromDate = DateTime.Today, ToDate = DateTime.Today };
@@ -140,7 +140,7 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnUpdateDateTime()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new DateTimeRangeWithoutDef { FromDate = DateTime.Today, ToDate = DateTime.Today.AddDays(2) };
@@ -154,7 +154,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShouldInsertNormallyJustOneDate()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new DateRangeWithoutDef { FromDate = DateTime.Today };
@@ -168,7 +168,7 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThrowExceptionIfNotSetRequired()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new DateRangeWithRequired { ToDate = DateTime.Today };

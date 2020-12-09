@@ -18,6 +18,7 @@
 */
 
 using Autofac;
+using CommonConcepts.Test.Helpers;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;
@@ -26,6 +27,10 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos
 {
+    /// <summary>
+    /// Provides basic runtime infrastructure for Rhetos framework: configuration settings and system components registration.
+    /// It is used indirectly by <see cref="TestContainer"/> when creating Rhetos DI container.
+    /// </summary>
     [Export(typeof(IRhetosRuntime))]
     public class RhetosRuntime : IRhetosRuntime
     {

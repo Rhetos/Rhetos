@@ -50,7 +50,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SqlIndexMultipleClustered()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var sqlExecuter = container.Resolve<ISqlExecuter>();
 

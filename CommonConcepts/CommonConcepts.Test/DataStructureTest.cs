@@ -71,7 +71,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Serialization()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var item = new TestDataStructure.SimpleDataStructure2 { SimpleShortString = "abc" };
                 string xml = container.Resolve<XmlUtility>().SerializeToXml(item);
@@ -91,7 +91,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SerializationMustNotDependOnClientOrServerDllName()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var item = new TestDataStructure.SimpleDataStructure2 { SimpleShortString = "abc" };
                 string xml = container.Resolve<XmlUtility>().SerializeToXml(item);
@@ -112,7 +112,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SerializationOfNull()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var item = new TestDataStructure.SimpleDataStructure2 { SimpleShortString = null };
                 string xml = container.Resolve<XmlUtility>().SerializeToXml(item);
@@ -136,7 +136,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SerializationCsStringEncoding()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 foreach (string s in StringoviSaOstalimUnicodeZnakovima)
                 {
@@ -156,7 +156,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SimpleReference()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
@@ -183,7 +183,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SimpleMethod()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 

@@ -99,7 +99,7 @@ namespace CommonConcepts.Test
             if (!propertyFiltersCriteria.Any())
                 return item => true;
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var gfh = container.Resolve<GenericFilterHelper>();
                 var filters = gfh.ToFilterObjects(propertyFiltersCriteria);
@@ -173,7 +173,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterStringOperations()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
@@ -219,7 +219,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterIntOperations()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
@@ -259,7 +259,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterGuidOperations()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var ids = new[] { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]
@@ -321,7 +321,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterDateIn()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
@@ -397,7 +397,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterDateNotIn()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
@@ -447,7 +447,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterNullValues()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var parentId = Guid.NewGuid();
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]
@@ -524,7 +524,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InvalidPropertyNameError()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var childQuery = repository.TestGenericFilter.Child.Query();
@@ -539,7 +539,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void GenericFilterOnLoadedArray()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -568,7 +568,7 @@ namespace CommonConcepts.Test
         FROM [TestGenericFilter].[Simple] AS [Extent2]
         WHERE (N'A' = [Extent2].[Name]) AND ([Extent2].[ID] = [Extent1].[ParentID])
     )";
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var subquery = repository.TestGenericFilter.Simple.Query(item => item.Name == "A").Select(item => item.ID);
@@ -585,7 +585,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void OptimizeEqualsGuidTest()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var id = Guid.NewGuid();
@@ -629,7 +629,7 @@ namespace CommonConcepts.Test
                 (true, "notequals", null, "WHERE [Extent1].[ParentID] IS NOT NULL"),
             };
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
                 var repository = container.Resolve<Common.DomRepository>();
@@ -653,7 +653,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void OptimizeInGuid()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
                 var repository = context.Repository;

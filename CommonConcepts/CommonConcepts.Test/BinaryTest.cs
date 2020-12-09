@@ -36,7 +36,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShouldUploadBinary()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestBinary.E;" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -56,7 +56,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void LargeBinary()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestBinary.E;" });
                 var repository = container.Resolve<Common.DomRepository>();

@@ -36,7 +36,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ValidData()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestRequired.Simple" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -50,7 +50,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NullInteger()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestRequired.Simple" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -62,7 +62,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NullString()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestRequired.Simple" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -74,7 +74,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void EmptyString()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestRequired.Simple" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -86,7 +86,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void BoolProperty()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 repository.TestRequired.Simple2.Delete(repository.TestRequired.Simple2.Load());

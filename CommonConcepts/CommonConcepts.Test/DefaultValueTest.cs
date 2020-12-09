@@ -38,7 +38,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ValuesShouldBeSet()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var ctx = container.Resolve<Common.ExecutionContext>();

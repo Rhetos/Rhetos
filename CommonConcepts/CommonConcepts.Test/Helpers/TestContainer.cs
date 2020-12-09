@@ -33,30 +33,24 @@ using System.Threading.Tasks;
 namespace CommonConcepts.Test.Helpers
 {
     /// <summary>
-    /// Helper class for unit tests.
+    /// Helper class that manages Dependency Injection container for unit tests.
     /// </summary>
-    public static class RhetosProcessHelper
+    public static class TestContainer
     {
         /// <summary>
-        /// Creates a thread-safe lifetime scope DI container to isolate unit of work in a separate database transaction.
+        /// Creates a thread-safe lifetime scope DI container to isolate unit of work with a <b>separate database transaction</b>.
         /// To commit changes to database, call <see cref="TransactionScopeContainer.CommitChanges"/> at the end of the 'using' block.
         /// </summary>
-        public static TransactionScopeContainer CreateTransactionScopeContainer(Action<ContainerBuilder> registerCustomComponents = null)
+        public static TransactionScopeContainer Create(Action<ContainerBuilder> registerCustomComponents = null)
         {
             return ProcessContainer.CreateTransactionScopeContainer(registerCustomComponents);
         }
 
         /// <summary>
         /// Shared DI container to be reused between tests, to reduce initialization time for each test.
-        /// Each test should create a child container with <see cref="CreateTransactionScopeContainer"/> to start a 'using' block.
+        /// Each test should create a child container with <see cref="Create"/> method to start a 'using' block.
         /// </summary>
-        public static readonly ProcessContainer ProcessContainer = new ProcessContainer(FindRhetosApplicationFolder());
-
-        /// <summary>
-        /// Unit tests can be executed at different disk locations depending on whether they are run at the solution or project level, from Visual Studio or another utility.
-        /// Therefore, instead of providing a simple relative path, this method searches for the main application location.
-        /// </summary>
-        private static string FindRhetosApplicationFolder() => Environment.CurrentDirectory;
+        public static readonly ProcessContainer ProcessContainer = new ProcessContainer(Environment.CurrentDirectory);
 
         private static int _checkedForParallelismThreadCount = 0;
 

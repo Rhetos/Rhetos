@@ -36,7 +36,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InsertSimple()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
@@ -56,7 +56,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateSimple()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
@@ -78,7 +78,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InsertReference()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
@@ -100,7 +100,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void BoolProperty()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 repository.TestSystemRequired.Simple2.Delete(repository.TestSystemRequired.Simple2.Load());

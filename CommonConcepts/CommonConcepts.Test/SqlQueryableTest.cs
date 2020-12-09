@@ -35,7 +35,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void QueryableFromRepository()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -52,7 +52,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NotCached()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -75,7 +75,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NotCachedReference()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] {"DELETE FROM TestSqlQueryable.Document;"});
                 var documentRepository = container.Resolve<Common.DomRepository>().TestSqlQueryable.Document;
@@ -94,7 +94,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ReferenceToView()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestDataStructure.ReferenceView;" });
 

@@ -40,7 +40,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void MultipleSources()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestReport.Document" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -87,7 +87,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void CustomReportFile()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestReport.Document" });
                 var repository = container.Resolve<Common.DomRepository>();

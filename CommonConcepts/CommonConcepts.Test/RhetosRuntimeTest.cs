@@ -33,7 +33,7 @@ namespace Rhetos
         [TestMethod]
         public void RuntimeRegistrationsRegressionTest()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var lifetimeScope = (Lazy<ILifetimeScope>)container.GetType()
                     .GetField("_lifetimeScope", BindingFlags.NonPublic | BindingFlags.Instance)

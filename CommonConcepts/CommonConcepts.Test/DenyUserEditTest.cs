@@ -45,7 +45,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void EditableProperty()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
@@ -67,7 +67,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NonEditablePropertyInsert()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
@@ -85,7 +85,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NonEditablePropertyUpdate()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var simpleID = Guid.NewGuid();
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]
@@ -112,7 +112,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NonEditablePropertyUpdateToNullIgnore()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var simpleID = Guid.NewGuid();
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]
@@ -139,7 +139,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NonEditablePropertyUpdateFromNull()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var simpleID = Guid.NewGuid();
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]
@@ -160,7 +160,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NonEditableRefereceInsert()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
@@ -181,7 +181,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NonEditableRefereceInsertGuid()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
@@ -202,7 +202,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HardcodedEntity_Insert()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -215,7 +215,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HardcodedEntity_Delete()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestDenyUserEdit.Hardcoded",
@@ -233,7 +233,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HardcodedEntity_Update()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestDenyUserEdit.Hardcoded",
@@ -252,7 +252,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void AutoInitialized()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var sqlExecuter = container.Resolve<ISqlExecuter>();

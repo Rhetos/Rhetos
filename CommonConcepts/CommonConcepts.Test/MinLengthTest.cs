@@ -37,7 +37,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShouldThowUserExceptionOnInsert()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleMinLength { StringMoreThan2Chars = "." };
@@ -51,7 +51,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShouldNotThrowUserExceptionOnInsert()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleMinLength { StringMoreThan2Chars = ".aaa" };
@@ -62,7 +62,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShouldInsertEntity()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
@@ -78,7 +78,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShouldThowUserExceptionOnUpdate()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleMinLength { StringMoreThan2Chars = "1234" };

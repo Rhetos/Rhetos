@@ -41,7 +41,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DeleteLockedData()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestLockItems.Simple;" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -66,7 +66,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateLockedData()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestLockItems.Simple;" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -95,7 +95,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateTryRemoveLock()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestLockItems.Simple;" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -115,7 +115,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdatePersistentObject()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestLockItems.Simple;" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -139,7 +139,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DeleteModifiedPersistentObject()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestLockItems.Simple;" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -167,7 +167,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ClearCacheKeepsChangedData()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestLockItems.Simple;",
                     "INSERT INTO TestLockItems.Simple (Name) VALUES ('abc locked')" });
@@ -186,7 +186,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void PersistentObjectIgnoredWhenVerifyingOldData()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestLockItems.Simple;",
                     "INSERT INTO TestLockItems.Simple (Name) VALUES ('abc locked')" });
@@ -223,7 +223,7 @@ namespace CommonConcepts.Test
 
         public void UpdateLockedExceptProperty(Action<TestLockItems.Simple2> update, bool updateShouldPass)
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestLockItems.Simple2",

@@ -41,7 +41,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterNoPermissions()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repositories = container.Resolve<Common.DomRepository>();
                 var itemsRepository = repositories.TestRowPermissions.RPRulesItem;
@@ -70,7 +70,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterWithPermissions()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var currentUserName = container.Resolve<IUserInfo>().UserName;
                 var repositories = container.Resolve<Common.DomRepository>();
@@ -108,7 +108,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterOptimizeAllowedAll()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var currentUserName = container.Resolve<IUserInfo>().UserName;
                 var repositories = container.Resolve<Common.DomRepository>();
@@ -146,7 +146,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InheritFrom()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 Level1
                     l1ReadAllow = new Level1() { ID = Guid.NewGuid(), value = 190 },
@@ -214,7 +214,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void RulesWrite()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repositories = container.Resolve<Common.DomRepository>();
                 var emptyRP = repositories.TestRowPermissions.RPWriteRulesEmpty;
@@ -314,7 +314,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void CombinedRules()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var settingsRepos = container.Resolve<GenericRepository<RPCombinedRulesSettings>>();
                 var itemsRepos = container.Resolve<GenericRepository<RPCombinedRulesItems>>();
@@ -370,7 +370,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void AutoInherit()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var names = new[] { "1", "1b", "2", "3", "4" };
                 var itemsE4 = names.Select(name => new TestRowPermissions4.E4 { ID = Guid.NewGuid(), Name4 = name }).ToList();
@@ -402,7 +402,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void AutoInheritInternallyVsFull()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 repository.TestRowPermissionsInheritInternally.ExtensionComplex.Delete(repository.TestRowPermissionsInheritInternally.ExtensionComplex.Query());
@@ -441,7 +441,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SelfReference()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 

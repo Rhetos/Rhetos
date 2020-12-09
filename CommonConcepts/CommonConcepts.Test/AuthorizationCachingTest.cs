@@ -48,7 +48,7 @@ namespace CommonConcepts.Test
         public void InsertTestPermissions()
         {
             DeleteTestPermissions();
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
                 var r = container.Resolve<Common.DomRepository>();
@@ -75,7 +75,7 @@ namespace CommonConcepts.Test
         [TestCleanup]
         public void DeleteTestPermissions()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var c = container.Resolve<Common.ExecutionContext>();
                 var r = container.Resolve<Common.DomRepository>();
@@ -291,9 +291,9 @@ namespace CommonConcepts.Test
         public string TestPermissionsCachingOnChange(Action<Common.ExecutionContext> change, bool[] expectedPermissionsAfterChange, Action<Common.ExecutionContext> init = null)
         {
             var log = new List<string>();
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
-                RhetosProcessHelper.ConfigureLogMonitor(log) +
-                RhetosProcessHelper.ConfigureFakeUser(User1Name)))
+            using (var container = TestContainer.Create(
+                TestContainer.ConfigureLogMonitor(log) +
+                TestContainer.ConfigureFakeUser(User1Name)))
             {   
                 var context = container.Resolve<Common.ExecutionContext>();
                 var authorizationManager = container.Resolve<IAuthorizationManager>();

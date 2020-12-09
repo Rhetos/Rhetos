@@ -38,7 +38,7 @@ namespace CommonConcepts.Test
         {
             var item1ID = Guid.NewGuid();
             var item2ID = Guid.NewGuid();
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 repository.TestAction.ToInsert.Insert(new TestAction.ToInsert { ID = item1ID });
@@ -50,7 +50,7 @@ namespace CommonConcepts.Test
                 TestUtility.AssertContains(exceptionOrigin, new[] { "InsertAndThrowException_Repository", "Execute", "InsertAndThrowException parameters" });
             }
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var toInsertEntityCount = repository.TestAction.ToInsert.Query(x => x.ID == item1ID || x.ID == item2ID).Count();
@@ -61,7 +61,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UseExecutionContext()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var executionContext = container.Resolve<Common.ExecutionContext>();
                 Assert.IsTrue(container.Resolve<IUserInfo>().UserName.Length > 0);
@@ -75,7 +75,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UseObjectsWithCalculatedExtension()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestAction.Simple" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -93,7 +93,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void BeforeAction()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var username = container.Resolve<IUserInfo>().UserName;

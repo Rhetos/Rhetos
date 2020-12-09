@@ -39,8 +39,8 @@ namespace CommonConcepts.Test
         public void OnSaveUpdateAndValidate()
         {
             var log = new List<string>();
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
-                RhetosProcessHelper.ConfigureLogMonitor(log, EventType.Info)))
+            using (var container = TestContainer.Create(
+                TestContainer.ConfigureLogMonitor(log, EventType.Info)))
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestDataStructure.SaveTesterBase" });
 
@@ -87,7 +87,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveMethodInitialization()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestDataStructure.SaveTesterBase" });
 
@@ -110,8 +110,8 @@ namespace CommonConcepts.Test
         public void AutomaticallyDeleteExtensionWithBusinessLogic()
         {
             var log = new List<string>();
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
-                RhetosProcessHelper.ConfigureLogMonitor(log)))
+            using (var container = TestContainer.Create(
+                TestContainer.ConfigureLogMonitor(log)))
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -137,7 +137,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveMethodArgumentValidation()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
 
@@ -153,7 +153,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveMethodOldDataLoaded()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
 

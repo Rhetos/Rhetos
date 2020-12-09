@@ -39,7 +39,7 @@ namespace CommonConcepts.Test
         {
             var ids = new[] { Guid.NewGuid(), Guid.NewGuid() };
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var sqlExecuter = container.Resolve<ISqlExecuter>();
@@ -63,7 +63,7 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("e0, e1", TestUtility.DumpSorted(sqlReport));
             }
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -77,7 +77,7 @@ namespace CommonConcepts.Test
         {
             var ids = new[] { Guid.NewGuid(), Guid.NewGuid() };
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var sqlExecuter = container.Resolve<ISqlExecuter>();
@@ -106,7 +106,7 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("e0, e1", TestUtility.DumpSorted(sqlReport));
             }
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -125,8 +125,8 @@ namespace CommonConcepts.Test
             var itemsIds = items.Select(item => item.ID);
 
             var log = new List<string>();
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
-                RhetosProcessHelper.ConfigureLogMonitor(log)))
+            using (var container = TestContainer.Create(
+                TestContainer.ConfigureLogMonitor(log)))
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var sqlExecuter = container.Resolve<ISqlExecuter>();
@@ -153,7 +153,7 @@ namespace CommonConcepts.Test
                 //Assert.AreEqual("e0, e1, e2, e3", TestUtility.DumpSorted(repository.TestEntity.BaseEntity.Query(itemsIds), item => item.Name));
             }
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 

@@ -91,7 +91,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Insert_Index3()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
@@ -117,7 +117,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Update_Index3()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
@@ -145,7 +145,7 @@ namespace CommonConcepts.Test
 
         private void TestIndexMultipleInsert(string s, int i, int r, bool shouldFail = false)
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
@@ -193,7 +193,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UniqueConstraintInApplication()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 // If a writable ORM data structure is not Entity, the constraint check will be done in the application.
 
@@ -219,8 +219,8 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ProcessingEngineUniqueConstraintError()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
-                RhetosProcessHelper.ConfigureIgnoreClaims()))
+            using (var container = TestContainer.Create(
+                TestContainer.ConfigureIgnoreClaims()))
             {
                 var processingEngine = container.Resolve<IProcessingEngine>();
                 var saveDuplicates = new SaveEntityCommandInfo
@@ -241,7 +241,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ErrorMetadata()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var e = container.Resolve<GenericRepository<TestUnique.E>>();
 

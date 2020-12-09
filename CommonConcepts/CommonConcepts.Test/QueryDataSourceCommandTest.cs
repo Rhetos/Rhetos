@@ -71,7 +71,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Entity()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 InitializeData(container);
 
@@ -83,7 +83,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Ordering()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 InitializeData(container);
 
@@ -100,7 +100,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Paging()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 InitializeData(container);
 
@@ -119,7 +119,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void PagingWithoutOrder()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 InitializeData(container);
 
@@ -137,7 +137,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void GenericFilter()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 InitializeData(container);
 
@@ -153,7 +153,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void GenericFilterWithPaging()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 InitializeData(container);
 
@@ -189,7 +189,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Filter()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestQueryDataStructureCommand.Source;" });
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "a1", "b1", "b2", "c1" }
@@ -217,7 +217,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NullGenericFilter()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var genericRepos = container.Resolve<GenericRepositories>().GetGenericRepository("Common.Claim");
 

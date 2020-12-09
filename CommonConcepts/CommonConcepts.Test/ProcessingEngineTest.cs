@@ -39,9 +39,9 @@ namespace CommonConcepts.Test
         public void LogCommandDescription()
         {
             var log = new List<string>();
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
-                RhetosProcessHelper.ConfigureLogMonitor(log) +
-                RhetosProcessHelper.ConfigureIgnoreClaims()))
+            using (var container = TestContainer.Create(
+                TestContainer.ConfigureLogMonitor(log) +
+                TestContainer.ConfigureIgnoreClaims()))
             {
                 var processingEngine = container.Resolve<IProcessingEngine>();
                 var readPrincipals = new ReadCommandInfo
@@ -76,9 +76,9 @@ namespace CommonConcepts.Test
         public void LogCommandClientErrorDescription()
         {
             var log = new List<string>();
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
-                RhetosProcessHelper.ConfigureLogMonitor(log) +
-                RhetosProcessHelper.ConfigureIgnoreClaims()))
+            using (var container = TestContainer.Create(
+                TestContainer.ConfigureLogMonitor(log) +
+                TestContainer.ConfigureIgnoreClaims()))
             {
                 var processingEngine = container.Resolve<IProcessingEngine>();
                 var saveDuplicates = new SaveEntityCommandInfo
@@ -117,9 +117,9 @@ namespace CommonConcepts.Test
         public void LogCommandServerErrorDescription()
         {
             var log = new List<string>();
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
-                RhetosProcessHelper.ConfigureLogMonitor(log) +
-                RhetosProcessHelper.ConfigureIgnoreClaims()))
+            using (var container = TestContainer.Create(
+                TestContainer.ConfigureLogMonitor(log) +
+                TestContainer.ConfigureIgnoreClaims()))
             {
                 var readCommandError = new ReadCommandInfo() { DataSource = "TestRowPermissions.ErrorData", ReadRecords = true, Filters = new[] { new FilterCriteria("duplicateSecondItem") } };
                 var processingEngine = container.Resolve<IProcessingEngine>();
@@ -206,8 +206,8 @@ namespace CommonConcepts.Test
 
         private TResult Exec<TResult>(ICommandInfo command)
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
-                RhetosProcessHelper.ConfigureIgnoreClaims()))
+            using (var container = TestContainer.Create(
+                TestContainer.ConfigureIgnoreClaims()))
             {
                 var processingEngine = container.Resolve<IProcessingEngine>();
                 var result = processingEngine.Execute(new[] { command });

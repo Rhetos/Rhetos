@@ -58,7 +58,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void TestReadNoRowPermissions()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var gRepository = container.Resolve<GenericRepository<NoRP>>();
                 gRepository.Save(Enumerable.Range(0, 50).Select(a => new NoRP() { value = a }), null, gRepository.Load());
@@ -109,7 +109,7 @@ namespace CommonConcepts.Test
         {
             CancelTestOnSlowServer();
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var gRepository = container.Resolve<GenericRepository<SimpleRP>>();
                 var items = Enumerable.Range(0, 4001).Select(a => new SimpleRP() { ID = Guid.NewGuid(), value = a }).ToList();
@@ -262,7 +262,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void TestReadComplexWithContext()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
                 var currentUserName = context.UserInfo.UserName; 
@@ -408,7 +408,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Browse()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var gr = container.Resolve<GenericRepository<SimpleRP>>();
 
@@ -448,7 +448,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void AutoApplyFilter()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var gr = container.Resolve<GenericRepository<TestRowPermissions.AutoFilter>>();
                 var logFilterQuery = container.Resolve<Common.DomRepository>().Common.Log.Query()
@@ -531,7 +531,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ErrorHandling_SourceHasDuplicateID()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var gr = container.Resolve<GenericRepository<ErrorData>>();
                 var newItems = new[] { "a", "b", "c" }.Select(name => new ErrorData { ID = Guid.NewGuid(), Name = name }).ToList();
@@ -547,8 +547,8 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ErrorHandling_RowPermissionsFilterReturnsDuplicateID()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
-                RhetosProcessHelper.ConfigureIgnoreClaims()))
+            using (var container = TestContainer.Create(
+                TestContainer.ConfigureIgnoreClaims()))
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var readCommand = container.Resolve<IPluginsContainer<ICommandImplementation>>().GetPlugins().OfType<ReadCommand>().Single();
@@ -587,7 +587,7 @@ namespace CommonConcepts.Test
             // we need to use commitChanges == true to validate rollbacks on bad inserts and updates
            
             // initialize and persist
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var gRepository = container.Resolve<GenericRepository<T>>();
                 // clear the repository
@@ -600,7 +600,7 @@ namespace CommonConcepts.Test
             }
 
             // attempt to write test data
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 // construct and execute SaveEntityCommand
                 var saveCommand = new SaveEntityCommandInfo()
@@ -620,7 +620,7 @@ namespace CommonConcepts.Test
             } // closing the scope makes transactions rollback for failed commands
 
             // read final state and cleanup
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var finalRepository = container.Resolve<GenericRepository<T>>();
                 var allData = finalRepository.Load().ToArray();
@@ -711,7 +711,7 @@ namespace CommonConcepts.Test
 
         private void CancelTestOnSlowServer()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
                 var scripts = Enumerable.Range(1, 10).Select(x => $"print {x}");
@@ -738,7 +738,7 @@ namespace CommonConcepts.Test
 
             var items = Enumerable.Range(0, 101).Select(a => new ComplexRP() { ID = Guid.NewGuid(), value = a }).ToArray();
             
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
                 var currentUserName = context.UserInfo.UserName;
@@ -839,8 +839,8 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveInvalidRecordWithPermission_Insert()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
-                RhetosProcessHelper.ConfigureIgnoreClaims()))
+            using (var container = TestContainer.Create(
+                TestContainer.ConfigureIgnoreClaims()))
             {
                 var processingEngine = container.Resolve<IProcessingEngine>();
 
@@ -862,8 +862,8 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveInvalidRecordWithPermission_Update()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
-                RhetosProcessHelper.ConfigureIgnoreClaims()))
+            using (var container = TestContainer.Create(
+                TestContainer.ConfigureIgnoreClaims()))
             {
                 var processingEngine = container.Resolve<IProcessingEngine>();
 
@@ -880,8 +880,8 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveInvalidRecordWithPermission_Delete()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
-                RhetosProcessHelper.ConfigureIgnoreClaims()))
+            using (var container = TestContainer.Create(
+                TestContainer.ConfigureIgnoreClaims()))
             {
                 var processingEngine = container.Resolve<IProcessingEngine>();
 
@@ -898,8 +898,8 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveInvalidRecordWithoutPermission_Insert()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
-                RhetosProcessHelper.ConfigureIgnoreClaims()))
+            using (var container = TestContainer.Create(
+                TestContainer.ConfigureIgnoreClaims()))
             {
                 var processingEngine = container.Resolve<IProcessingEngine>();
 
@@ -921,8 +921,8 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveInvalidRecordWithoutPermission_Update()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
-                RhetosProcessHelper.ConfigureIgnoreClaims()))
+            using (var container = TestContainer.Create(
+                TestContainer.ConfigureIgnoreClaims()))
             {
                 var processingEngine = container.Resolve<IProcessingEngine>();
 
@@ -939,8 +939,8 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveInvalidRecordWithoutPermission_Delete()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
-                RhetosProcessHelper.ConfigureIgnoreClaims()))
+            using (var container = TestContainer.Create(
+                TestContainer.ConfigureIgnoreClaims()))
             {
                 var processingEngine = container.Resolve<IProcessingEngine>();
 
@@ -957,7 +957,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void OptimizeExtension()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
                 var repository = container.Resolve<Common.DomRepository>();
@@ -989,7 +989,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InheritRowPermissionsToQuery()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 

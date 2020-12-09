@@ -72,7 +72,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SimpleHierarchy()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -98,7 +98,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Level()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -116,7 +116,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HierarchyAncestorsDescendants()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -163,7 +163,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SingleRootConstraint()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple2" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -179,7 +179,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ErrorCircularReference1InsertSingleRoot()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple2" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -194,7 +194,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ErrorCircularReference1UpdateSingleRoot()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple2" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -210,7 +210,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void MultipleRoots()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -224,7 +224,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DontFailOnEmpty()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -246,7 +246,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ErrorCircularReference1Insert()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -261,7 +261,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ErrorCircularReference1Update()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -278,7 +278,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ErrorCircularReference2()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -296,7 +296,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ErrorCircularReference4()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -313,7 +313,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Path()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.WithPath" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -335,7 +335,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void LongPath()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 repository.TestHierarchy.WithPath.Delete(repository.TestHierarchy.WithPath.Query());

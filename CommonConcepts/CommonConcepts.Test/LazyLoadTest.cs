@@ -37,7 +37,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void LazyLoadReferenceBaseExtensionLinkedItems()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 repository.TestLazyLoad.Simple.Delete(repository.TestLazyLoad.Simple.Load());
@@ -75,7 +75,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void LinkedItems()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -117,7 +117,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UsableObjectsAfterClearCache()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 repository.TestLazyLoad.Simple.Delete(repository.TestLazyLoad.Simple.Load());
@@ -159,7 +159,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void LoadAndFilterShouldNotReturnNavigationProperties()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var simpleBase = container.Resolve<Common.DomRepository>().TestLazyLoad.SimpleBase;
                 simpleBase.Delete(simpleBase.Load());
@@ -188,7 +188,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void QueryLoaded()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 repository.TestLazyLoad.Simple.Delete(repository.TestLazyLoad.Simple.Load());
@@ -216,7 +216,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void OrmCacheShouldNotLeak()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var sqlExecuter = container.Resolve<ISqlExecuter>();

@@ -41,7 +41,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Simple()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -107,7 +107,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Simple_NoExcessSql()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 CheckColumns(container, "ID, Days, Name", "TestPolymorphic", "Simple1_As_SimpleBase");
                 CheckColumns(container, "ID, Days, Name", "TestPolymorphic", "Simple2_As_SimpleBase");
@@ -143,8 +143,8 @@ namespace CommonConcepts.Test
         public void Simple_Browse()
         {
             foreach (bool useDatabaseNullSemantics in new[] { false, true })
-                using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
-                    RhetosProcessHelper.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
+                using (var container = TestContainer.Create(
+                    TestContainer.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
                 {
                     var repository = container.Resolve<Common.DomRepository>();
 
@@ -181,7 +181,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Empty()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -194,7 +194,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SecondBase()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -227,7 +227,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Dependant_FKConstraintDeleteReferenced()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -251,7 +251,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Dependant_FKConstraintInsert()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -272,7 +272,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Dependant_FKConstraintUpdate()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -294,7 +294,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Dependant_FKConstraintDeleteUniqueReferenced()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -318,7 +318,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void CascadeDeleteDetail()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -343,7 +343,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void CascadeDeleteExtension()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -369,8 +369,8 @@ namespace CommonConcepts.Test
         public void Disjunctive()
         {
             foreach (bool useDatabaseNullSemantics in new[] { false, true })
-                using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
-                    RhetosProcessHelper.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
+                using (var container = TestContainer.Create(
+                    TestContainer.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
                 {
                     var repository = container.Resolve<Common.DomRepository>();
 
@@ -403,8 +403,8 @@ namespace CommonConcepts.Test
         public void MultipleImplementations()
         {
             foreach (bool useDatabaseNullSemantics in new[] { false, true })
-                using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
-                    RhetosProcessHelper.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
+                using (var container = TestContainer.Create(
+                    TestContainer.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
                 {
                     var repository = container.Resolve<Common.DomRepository>();
 
@@ -500,7 +500,7 @@ namespace CommonConcepts.Test
                 -2147483648
             };
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var sqlExecuter = container.Resolve<ISqlExecuter>();
                 
@@ -525,7 +525,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SubtypeInDifferentModule()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repositories = container.Resolve<GenericRepositories>();
 
@@ -544,7 +544,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SpecificComplexSubtype()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repositories = container.Resolve<GenericRepositories>();
 
@@ -593,7 +593,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ReferenceTest()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repositories = container.Resolve<GenericRepositories>();
                 repositories.Delete(repositories.Load<TestPolymorphic.ChildA>());
@@ -616,7 +616,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void WhereTest()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 repository.TestPolymorphic.DeactivatableEntity.Delete(repository.TestPolymorphic.DeactivatableEntity.Query());
@@ -650,7 +650,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterSubtype()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 repository.TestPolymorphic.ComplexImplementationData.Delete(repository.TestPolymorphic.ComplexImplementationData.Load());
@@ -731,7 +731,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void AutomaticPropertySqlDependency()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var dslModel = container.Resolve<IDslModel>();
 
@@ -749,7 +749,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NamedSubtypeWithAutocode()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 repository.TestPolymorphic.OtherFeatures.Delete(repository.TestPolymorphic.OtherFeatures.Load());
@@ -765,7 +765,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Dependencies()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 int? dependencies = null;
                 string checkDependencies =

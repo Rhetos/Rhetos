@@ -64,7 +64,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Query()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 InitializeData(container);
@@ -78,7 +78,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void WritableWithUpdateableView()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 InitializeData(container);
@@ -101,7 +101,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void WritableWithInsteadOfTrigger()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 InitializeData(container);
@@ -127,7 +127,7 @@ namespace CommonConcepts.Test
         {
             try
             {
-                using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+                using (var container = TestContainer.Create())
                 {
                     var repository = container.Resolve<Common.DomRepository>();
                     container.Resolve<ISqlExecuter>().ExecuteSql(new[]
@@ -160,7 +160,7 @@ namespace CommonConcepts.Test
             }
             finally
             {
-                using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+                using (var container = TestContainer.Create())
                     container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM Test13.Old3;",
@@ -173,7 +173,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Filter()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]
@@ -195,7 +195,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void MultipleKeyColumns()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var c1id = Guid.NewGuid();
                 var c2id = Guid.NewGuid();
