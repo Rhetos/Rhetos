@@ -33,7 +33,6 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.RegisterType<XmlUtility>().SingleInstance();
             builder.RegisterType<FilesUtility>().SingleInstance();
             builder.RegisterType(DatabaseTypes.GetSqlUtilityType(SqlUtility.DatabaseLanguage)).As<ISqlUtility>().InstancePerLifetimeScope();
-            builder.Register(context => context.Resolve<IConfiguration>().GetOptions<LegacyPathsOptions>()).SingleInstance().PreserveExistingDefaults();
 
             base.Load(builder);
         }

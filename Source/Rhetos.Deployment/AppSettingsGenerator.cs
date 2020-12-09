@@ -37,20 +37,17 @@ namespace Rhetos.Deployment
     {
         private readonly RhetosBuildEnvironment _rhetosBuildEnvironment;
 		private readonly RhetosTargetEnvironment _rhetosTargetEnvironment;
-		private readonly LegacyPathsOptions _legacyPathsOptions;
 		private readonly ILogger _logger;
 		private readonly BuildOptions _buildOptions;
 
         public AppSettingsGenerator(
 			RhetosBuildEnvironment rhetosBuildEnvironment,
 			RhetosTargetEnvironment rhetosTargetEnvironment,
-			LegacyPathsOptions legacyPathsOptions,
 			ILogProvider logProvider,
 			BuildOptions buildOptions)
         {
             _rhetosBuildEnvironment = rhetosBuildEnvironment;
 			_rhetosTargetEnvironment = rhetosTargetEnvironment;
-			_legacyPathsOptions = legacyPathsOptions;
 			_logger = logProvider.GetLogger(GetType().Name);
 			_buildOptions = buildOptions;
         }
@@ -81,10 +78,6 @@ namespace Rhetos.Deployment
 
 			if (!string.IsNullOrEmpty(_buildOptions.DatabaseLanguage))
 				configurationItems.Add(($"{OptionsAttribute.GetConfigurationPath<RhetosAppOptions>()}:{nameof(RhetosAppOptions.DatabaseLanguage)}", _buildOptions.DatabaseLanguage));
-
-			if (_buildOptions.BuildResourcesFolder)
-				configurationItems.Add(($"{OptionsAttribute.GetConfigurationPath<LegacyPathsOptions>()}:{nameof(LegacyPathsOptions.ResourcesFolder)}",
-					FilesUtility.AbsoluteToRelativePath(_rhetosBuildEnvironment.ProjectFolder, _legacyPathsOptions.ResourcesFolder)));
 
 			return configurationItems.Where(item => item.Value != null);
         }

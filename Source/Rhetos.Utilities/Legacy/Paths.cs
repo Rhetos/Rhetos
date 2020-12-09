@@ -44,16 +44,15 @@ namespace Rhetos.Utilities
             var runtimeEnvironment = configuration.GetOptions<RhetosAppEnvironment>();
             var runtimeOptions = configuration.GetOptions<RhetosAppOptions>();
             var buildEnvironment = configuration.GetOptions<RhetosBuildEnvironment>();
-            var legacyPaths = configuration.GetOptions<LegacyPathsOptions>();
 
             string runtimeAssemblyFolder = !string.IsNullOrEmpty(runtimeOptions.RhetosRuntimePath)
                 ? Path.GetDirectoryName(runtimeOptions.RhetosRuntimePath) : null;
 
             _rhetosServerRootPath = buildEnvironment.ProjectFolder ?? runtimeEnvironment.ApplicationRootFolder;
-            _binFolder = legacyPaths.BinFolder ?? runtimeAssemblyFolder;
+            _binFolder = runtimeAssemblyFolder;
             _generatedFolder = buildEnvironment.GeneratedAssetsFolder ?? runtimeOptions.AssetsFolder;
-            _pluginsFolder = legacyPaths.PluginsFolder ?? runtimeAssemblyFolder;
-            _resourcesFolder = legacyPaths.ResourcesFolder;
+            _pluginsFolder = runtimeAssemblyFolder;
+            _resourcesFolder = _rhetosServerRootPath != null ? Path.Combine(_rhetosServerRootPath, "Resources") : null;
 
             if (buildEnvironment?.ProjectFolder != null)
                 _environment = "build";
