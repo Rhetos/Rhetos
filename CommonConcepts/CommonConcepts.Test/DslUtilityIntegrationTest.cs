@@ -33,7 +33,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void GetBaseChangesOnDependencyHistory()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var dslModel = container.Resolve<IDslModel>();
 

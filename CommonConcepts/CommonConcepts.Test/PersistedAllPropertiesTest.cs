@@ -39,7 +39,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void QueryableFromRepository()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var dslModel = container.Resolve<IDslModel>();
 
@@ -73,7 +73,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void BrowseUsingImplicitlyCreatedProperties()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestAllProperties.Base;" });
 

@@ -47,7 +47,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InsertInvalidData()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestInvalidData.Simple;" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -62,7 +62,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InsertValidAndInvalidData()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestInvalidData.Simple;" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -74,7 +74,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateInvalidData()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestInvalidData.Simple;" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -96,7 +96,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateInvalidDataWithValidInsertAndDelete()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestInvalidData.Simple;" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -120,7 +120,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InsertInvalidDataWithValidUpdateAndDelete()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestInvalidData.Simple;" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -154,7 +154,7 @@ namespace CommonConcepts.Test
 
             foreach (var test in tests)
             {
-                using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+                using (var container = TestContainer.Create())
                 {
                     Console.WriteLine("\r\nInput: " + test.Item1);
                     var simple2 = container.Resolve<Common.DomRepository>().TestInvalidData.Simple2;

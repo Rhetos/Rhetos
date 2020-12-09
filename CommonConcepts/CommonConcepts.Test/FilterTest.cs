@@ -48,7 +48,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterAll()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 Assert.AreEqual("1a, 2b", TestUtility.DumpSorted(repository.Test10.Source.Query(), item => item.i + item.s));
@@ -58,7 +58,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterByIdentities()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var source = repository.Test10.Source.Load().OrderBy(item => item.i).ToArray();
@@ -89,7 +89,7 @@ namespace CommonConcepts.Test
             int oldFilterIds;
             Guid commitCheckId = Guid.NewGuid();
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
                 var filterIdRepos = container.Resolve<GenericRepository<Common.FilterId>>();
@@ -142,7 +142,7 @@ namespace CommonConcepts.Test
                 container.CommitChanges();
             }
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var testRepos = container.Resolve<GenericRepository<Test10.Simple>>();
                 if (testRepos.Query(new[] { commitCheckId }).Count() == 0)
@@ -158,7 +158,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterBy()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.Source;" });
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "a1", "b1", "b2", "c1" }
@@ -176,7 +176,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ComposableFilterBy_CompositionOfTwoFilters()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.Source;" });
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "a1", "b1", "b2", "c1" }
@@ -196,7 +196,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ComposableFilterBy_StandardFilterInterface()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.Source;" });
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "a1", "b1", "b2", "c1" }
@@ -214,7 +214,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ItemFilter()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.Source;" });
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "a1", "b1", "b2", "c1" }
@@ -234,7 +234,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ItemFilter_ExplicitModuleName()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.Source;" });
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "a1", "b1", "b2", "c1" }
@@ -255,7 +255,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterByBase()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.Source" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -274,7 +274,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterByReferencedAndLinkedItems()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.Source" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -297,7 +297,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SimpleComposableFilterCaseInsensitive()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.CombinedFilters" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -334,7 +334,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SimpleComposableFilterGenericFilterReferenced()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.CombinedFilters", "DELETE FROM TestFilter.Simple" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -387,7 +387,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ComposableFilterBrowse()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.CombinedFilters", "DELETE FROM TestFilter.Simple" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -433,7 +433,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ArrayFilterBrowse()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.CombinedFilters", "DELETE FROM TestFilter.Simple" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -463,7 +463,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ComposableFilterWithExecutionContext()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -478,7 +478,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ExternalFilterType()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -536,7 +536,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void AutoFilter_NoEffectOnServerObjectModel()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 repository.TestFilter.AutoFilter1.Delete(repository.TestFilter.AutoFilter1.Query());
@@ -565,7 +565,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void AutoFilter_Simple()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 repository.TestFilter.AutoFilter1.Delete(repository.TestFilter.AutoFilter1.Query());
@@ -602,7 +602,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void AutoFilter_Complex()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 repository.TestFilter.AutoFilter1.Delete(repository.TestFilter.AutoFilter1.Query());
@@ -641,7 +641,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void AutoFilter_NoRedundantAutoFilter()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 repository.TestFilter.AutoFilter1.Delete(repository.TestFilter.AutoFilter1.Query());
@@ -690,7 +690,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void AutoFilter_Where()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 repository.TestFilter.AutoFilter3.Delete(repository.TestFilter.AutoFilter3.Query());
@@ -739,7 +739,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ItemFilterReferenced()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var source = repository.TestFilter.Source;
@@ -760,7 +760,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void QueryFilterParemeterDataStructure()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -802,7 +802,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void QueryFilterCustomPareter()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 

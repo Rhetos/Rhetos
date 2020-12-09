@@ -37,7 +37,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void QuerySimple()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(
                     "DELETE FROM TestEntity.Claim",
@@ -53,7 +53,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void QueryComplex()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -82,7 +82,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ReferencedEntity()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -117,7 +117,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InsertUpdateDelete_TransientInstances()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var claims = repository.TestEntity.Claim;
@@ -144,7 +144,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateDelete_PersistentInstances()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var claims = repository.TestEntity.Claim;
@@ -176,7 +176,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateableExtendedTable()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -207,7 +207,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InsertTransient()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
                 var repository = context.Repository;
@@ -228,7 +228,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateTransient()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
                 var repository = context.Repository;
@@ -250,7 +250,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InsertPersistent()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
                 var repository = context.Repository;
@@ -283,7 +283,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdatePersistent()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
                 var repository = context.Repository;
@@ -311,7 +311,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DeleteInsertSame()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
                 var repository = context.Repository;
@@ -332,7 +332,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DeleteInsertSamePersisted()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
                 var repository = context.Repository;
@@ -355,8 +355,8 @@ namespace CommonConcepts.Test
         public void CascadeDelete()
         {
             var log = new List<string>();
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
-                RhetosProcessHelper.ConfigureLogMonitor(log, EventType.Info)))
+            using (var container = TestContainer.Create(
+                TestContainer.ConfigureLogMonitor(log, EventType.Info)))
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -394,7 +394,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShortStringPropertyBasicRhetosTypeValidation()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestEntity.Principal");
                 var repository = container.Resolve<Common.DomRepository>();
@@ -416,7 +416,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void LargeText()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestEntity.Large");
                 var repository = container.Resolve<Common.DomRepository>();
@@ -448,7 +448,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DateTimeTest()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestTypes.Simple");
                 var repository = container.Resolve<Common.DomRepository>();
@@ -471,7 +471,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DateTimeConsistencyTest()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var databaseSettings = container.Resolve<CommonConceptsDatabaseSettings>();
                 container.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestTypes.Simple");
@@ -514,7 +514,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DecimalTest()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestTypes.Simple");
                 var repository = container.Resolve<Common.DomRepository>();
@@ -532,7 +532,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveNonmaterialized()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestEntity.UniqueEntity");
                 var r = container.Resolve<Common.DomRepository>().TestEntity.UniqueEntity;
@@ -549,7 +549,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveInvalidRecord_Insert()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repos = container.Resolve<Common.DomRepository>().TestEntity.Principal;
 
@@ -565,7 +565,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveInvalidRecord_SystemInsert()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repos = container.Resolve<Common.DomRepository>().TestEntity.Principal;
 
@@ -581,7 +581,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveInvalidRecord_Update()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repos = container.Resolve<Common.DomRepository>().TestEntity.Principal;
 
@@ -603,7 +603,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveInvalidRecord_SystemUpdate()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repos = container.Resolve<Common.DomRepository>().TestEntity.Principal;
 
@@ -625,7 +625,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveInvalidRecord_Delete()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repos = container.Resolve<Common.DomRepository>().TestEntity.Principal;
 
@@ -638,7 +638,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveInvalidRecordMultiple_Insert()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repos = container.Resolve<Common.DomRepository>().TestEntity.Principal;
 
@@ -652,7 +652,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveInvalidRecordMultiple_InsertDelete()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repos = container.Resolve<Common.DomRepository>().TestEntity.Principal;
 
@@ -671,8 +671,8 @@ namespace CommonConcepts.Test
         public void DeleteUpdateInsert_ConflictUnique()
         {
             foreach (bool useDatabaseNullSemantics in new[] { false, true })
-                using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
-                    RhetosProcessHelper.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
+                using (var container = TestContainer.Create(
+                    TestContainer.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
                 {
                     container.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestEntity.UniqueEntity");
                     var r = container.Resolve<Common.DomRepository>().TestEntity.UniqueEntity;
@@ -714,7 +714,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SimpleReferenceProperty()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestEntity.BaseEntity");
                 var repository = container.Resolve<Common.DomRepository>();
@@ -742,7 +742,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void OptimizedDeleteQuery()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var sqlExecuter = container.Resolve<ISqlExecuter>();
                 var repository = container.Resolve<Common.DomRepository>();

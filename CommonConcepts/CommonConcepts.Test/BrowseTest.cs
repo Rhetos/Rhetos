@@ -38,7 +38,7 @@ namespace CommonConcepts.Test.OldConcepts
         [TestMethod]
         public void SimpleReference()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -62,7 +62,7 @@ namespace CommonConcepts.Test.OldConcepts
         [TestMethod]
         public void ReuseableSourceFilter()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -110,7 +110,7 @@ namespace CommonConcepts.Test.OldConcepts
         [TestMethod]
         public void MultiplePropertiesSameSource()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -131,7 +131,7 @@ namespace CommonConcepts.Test.OldConcepts
         [TestMethod]
         public void TakeComplex()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -162,7 +162,7 @@ namespace CommonConcepts.Test.OldConcepts
         [TestMethod]
         public void Filters()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var genericRepository = container.Resolve<GenericRepository<TestBrowse.SF>>();
@@ -208,7 +208,7 @@ namespace CommonConcepts.Test.OldConcepts
         [TestMethod]
         public void OtherModule()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -239,7 +239,7 @@ namespace CommonConcepts.Test.OldConcepts
         [TestMethod]
         public void UniqueReference()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -258,8 +258,8 @@ namespace CommonConcepts.Test.OldConcepts
         public void UniqueReferenceCascadeDelete()
         {
             foreach (bool useDatabaseNullSemantics in new[] { false, true })
-                using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
-                    RhetosProcessHelper.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
+                using (var container = TestContainer.Create(
+                    TestContainer.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
                 {
                     var repository = container.Resolve<Common.DomRepository>();
 

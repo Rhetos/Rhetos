@@ -57,7 +57,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateCache()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM Test6.Pers;" });
@@ -108,7 +108,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ComputeForNewBaseItems()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -144,7 +144,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ComputeForNewBaseItems_InvalidCommand()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -192,7 +192,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ComputeForNewBaseItemsWithSaveFilter()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -210,8 +210,8 @@ namespace CommonConcepts.Test
         public void KeepSynchronizedSimple()
         {
             var log = new List<string>();
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
-                RhetosProcessHelper.ConfigureLogMonitor(log)))
+            using (var container = TestContainer.Create(
+                TestContainer.ConfigureLogMonitor(log)))
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -267,7 +267,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void KeepSynchronized()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -348,7 +348,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void AllPropertiesCopiesExtension()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var dslModel = container.Resolve<IDslModel>();
 

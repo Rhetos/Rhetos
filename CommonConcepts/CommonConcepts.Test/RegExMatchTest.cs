@@ -36,7 +36,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShouldThowUserExceptionOnInsert()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new Simple { StringFrom200To249 = "." };
@@ -49,7 +49,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShouldNotThrowUserExceptionOnInsert()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new Simple { StringFrom200To249 = "205" };
@@ -60,7 +60,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void EmptyValuesAreAllowed()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new Simple { StringFrom200To249 = null };
@@ -71,7 +71,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void EmptyValuesAreNotAllowedIfRequiredSet()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new SimpleRequired { StringFrom200To249 = null };
@@ -84,7 +84,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShouldThowUserExceptionOnUpdate()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new Simple { StringFrom200To249 = "205" };
@@ -100,7 +100,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ExactMatch()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new Simple { StringFrom200To249 = "a 205 a" };
@@ -114,7 +114,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ExactMatch2()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new Simple { StringFrom200To249 = " 205" };
@@ -128,7 +128,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ExactMatch3()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new Simple { StringFrom200To249 = "205 " };
@@ -142,7 +142,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UnicodeTest()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new Simple { UnicodeTest = "čćČĆテスト" };
@@ -158,7 +158,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void WhitespaceTest()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new Simple { WhitespaceTest = "a\r\nb\tc" };
@@ -174,7 +174,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SpecialCharTest()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new Simple { SpecialCharTest = @"a!@#$%^&*()_+-=[]\{}|;':"",./<>?" };
@@ -190,7 +190,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DefaultErrorMessageTest()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new Simple { DefaultErrorMessageTest = "123" };

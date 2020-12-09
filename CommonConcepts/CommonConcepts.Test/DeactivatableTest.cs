@@ -37,7 +37,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ActivePropertyValueDoesNotHaveToBeDefinedOnInsert()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestDeactivatable.BasicEnt" });
@@ -51,7 +51,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ActivePropertyValueDoesNotHaveToBeDefinedOnUpdate()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
@@ -86,7 +86,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ItIsOkToInsertInactiveOrActiveItem()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var entity = new BasicEnt { Name = "ttt", Active = false };
@@ -98,7 +98,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void TestForActiveItemsFilter()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { 
                     "DELETE FROM TestDeactivatable.BasicEnt;",
@@ -115,7 +115,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void TestForThisAndActiveItemsFilter()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { 
                     "DELETE FROM TestDeactivatable.BasicEnt;",

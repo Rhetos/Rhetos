@@ -29,6 +29,7 @@ using System.Linq;
 using Rhetos.Deployment;
 using System.IO;
 using Rhetos.Extensibility;
+using System.Reflection;
 
 namespace Rhetos.Configuration.Autofac.Test
 {
@@ -66,35 +67,27 @@ namespace Rhetos.Configuration.Autofac.Test
         {
             string rhetosAppRootPath = AppDomain.CurrentDomain.BaseDirectory;
 
-            // This code is mostly copied from DeployPackages build-time configuration.
+            // This code is mostly copied from Rhetos CLI build-time configuration.
 
             var configuration = new ConfigurationBuilder(new ConsoleLogProvider())
                 .AddOptions(new RhetosBuildEnvironment
                 {
                     ProjectFolder = rhetosAppRootPath,
-                    OutputAssemblyName = null,
-                    CacheFolder = Path.Combine(rhetosAppRootPath, "GeneratedFilesCache"),
-                    GeneratedAssetsFolder = Path.Combine(rhetosAppRootPath), // Custom for testing
-                    GeneratedSourceFolder = null,
+                    OutputAssemblyName = Assembly.GetEntryAssembly().GetName().Name,
+                    CacheFolder = Path.Combine(rhetosAppRootPath, "BuildCacheTest"),
+                    GeneratedAssetsFolder = Path.Combine(rhetosAppRootPath, "GeneratedAssetsTest"), // Custom for testing
+                    GeneratedSourceFolder = "GeneratedSourceTest",
                 })
-                .AddOptions(new LegacyPathsOptions
+                .AddOptions(new RhetosTargetEnvironment
                 {
-                    BinFolder = Path.Combine(rhetosAppRootPath, "bin"),
-                    PluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins"),
-                    ResourcesFolder = Path.Combine(rhetosAppRootPath, "Resources"),
+                    TargetPath = @"TargetPathTest",
+                    TargetAssetsFolder = @"TargetAssetsTest",
                 })
-                .AddOptions(new LegacyPathsOptions
-                {
-                    BinFolder = Path.Combine(rhetosAppRootPath, "bin"),
-                    PluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins"),
-                    ResourcesFolder = Path.Combine(rhetosAppRootPath, "Resources"),
-                })
-                .AddKeyValue($"{OptionsAttribute.GetConfigurationPath<BuildOptions>()}:{nameof(BuildOptions.GenerateAppSettings)}", false)
-                .AddKeyValue($"{OptionsAttribute.GetConfigurationPath<BuildOptions>()}:{nameof(BuildOptions.BuildResourcesFolder)}", true)
+                .AddKeyValue(ConfigurationProvider.GetKey((ConfigurationProviderOptions o) => o.LegacyKeysWarning), true)
+                .AddKeyValue(ConfigurationProvider.GetKey((LoggingOptions o) => o.DelayedLogTimout), 60.0)
                 .AddConfigurationManagerConfiguration()
+                .AddJsonFile(Path.Combine(rhetosAppRootPath, RhetosBuildEnvironment.ConfigurationFileName), optional: true)
                 .Build();
-
-            LegacyUtilities.Initialize(configuration);
 
             return configuration;
         }
@@ -108,32 +101,33 @@ namespace Rhetos.Configuration.Autofac.Test
                 .Select(path => Path.GetFileName(path))
                 .ToList();
 
-            // Simulating common run-time configuration of application with DeployPackages.
+            // Simulating common run-time configuration of Rhetos CLI.
 
-            var configuration = new ConfigurationBuilder(new ConsoleLogProvider())
-                .AddOptions(new RhetosAppEnvironment
-                {
-                    ApplicationRootFolder = rhetosAppRootPath
-                })
-                .AddOptions(new RhetosAppOptions
-                {
-                    RhetosRuntimePath = currentAssemblyPath,
-                })
-                .AddOptions(new PluginScannerOptions
-                {
-                    // Ignore other MEF plugins from assemblies that might get bundled in the same testing output folder.
-                    IgnoreAssemblyFiles = allOtherAssemblies
-                })
-                .AddOptions(new LegacyPathsOptions
-                {
-                    BinFolder = Path.Combine(rhetosAppRootPath, "bin"),
-                    PluginsFolder = Path.Combine(rhetosAppRootPath, "bin", "Plugins"),
-                    ResourcesFolder = Path.Combine(rhetosAppRootPath, "Resources"),
-                })
-                .AddConfigurationManagerConfiguration()
-                .Build();
+            var rhetosRuntime = new RhetosRuntime();
 
-            LegacyUtilities.Initialize(configuration);
+            var configuration = rhetosRuntime.BuildConfiguration(new ConsoleLogProvider(), rhetosAppRootPath, configurationBuilder =>
+            {
+                configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((DatabaseOptions o) => o.SqlCommandTimeout), 0);
+                configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((ConfigurationProviderOptions o) => o.LegacyKeysWarning), true);
+                configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((LoggingOptions o) => o.DelayedLogTimout), 60.0);
+                configurationBuilder.AddConfigurationManagerConfiguration();
+                configurationBuilder.AddJsonFile(Path.Combine(rhetosAppRootPath, DbUpdateOptions.ConfigurationFileName), optional: true);
+                // shortTransactions
+                configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((DbUpdateOptions o) => o.ShortTransactions), true);
+                // skipRecompute
+                configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((DbUpdateOptions o) => o.SkipRecompute), true);
+
+                configurationBuilder
+                    .AddOptions(new RhetosAppOptions
+                    {
+                        RhetosRuntimePath = currentAssemblyPath,
+                    })
+                    .AddOptions(new PluginScannerOptions
+                     {
+                         // Ignore other MEF plugins from assemblies that might get bundled in the same testing output folder.
+                         IgnoreAssemblyFiles = allOtherAssemblies
+                     });
+            });
 
             return configuration;
         }
@@ -144,12 +138,20 @@ namespace Rhetos.Configuration.Autofac.Test
         }
 
         [TestMethod]
+        public void CorrectBuildOptions()
+        {
+            var configuration = GetBuildConfiguration();
+            Assert.AreEqual("TestValue", configuration.GetValue<string>("TestBuildSettings"));
+            var connectionsString = configuration.GetValue<string>($"ConnectionStrings:ServerConnectionString:ConnectionString");
+            TestUtility.AssertContains(connectionsString, new[] { "TestSql", "TestDb" });
+        }
+
+        [TestMethod]
         public void CorrectOptionsAddedByKeyValue()
         {
             var configuration = GetBuildConfiguration();
-            var buildOptions = configuration.GetOptions<BuildOptions>();
-            Assert.AreEqual(false, buildOptions.GenerateAppSettings);
-            Assert.AreEqual(true, buildOptions.BuildResourcesFolder);
+            Assert.AreEqual(true, configuration.GetOptions<ConfigurationProviderOptions>().LegacyKeysWarning);
+            Assert.AreEqual(60.0, configuration.GetOptions<LoggingOptions>().DelayedLogTimout);
         }
 
         [TestMethod]
@@ -288,7 +290,6 @@ Activator = InitializationConcept (ReflectionActivator), Services = [Rhetos.Dsl.
 Activator = InstalledPackages (ProvidedInstanceActivator), Services = [Rhetos.Deployment.IInstalledPackages, Rhetos.Deployment.InstalledPackages], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = InstalledPackagesGenerator (ReflectionActivator), Services = [Rhetos.Extensibility.IGenerator], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = InstalledPackagesProvider (ReflectionActivator), Services = [Rhetos.Deployment.InstalledPackagesProvider], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
-Activator = LegacyPathsOptions (DelegateActivator), Services = [Rhetos.Utilities.LegacyPathsOptions], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = LifetimeScope (DelegateActivator), Services = [Autofac.ILifetimeScope, Autofac.IComponentContext], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = Shared, Ownership = ExternallyOwned
 Activator = LoggingOptions (DelegateActivator), Services = [Rhetos.Utilities.LoggingOptions], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = MacroOrderRepository (ReflectionActivator), Services = [Rhetos.Dsl.IMacroOrderRepository], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
@@ -321,7 +322,6 @@ Activator = DataMigrationScriptsFile (ReflectionActivator), Services = [Rhetos.D
 Activator = DbUpdateOptions (DelegateActivator), Services = [Rhetos.Utilities.DbUpdateOptions], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = DelayedLogProvider (ReflectionActivator), Services = [Rhetos.Utilities.IDelayedLogProvider], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = FilesUtility (ReflectionActivator), Services = [Rhetos.Utilities.FilesUtility], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
-Activator = LegacyPathsOptions (DelegateActivator), Services = [Rhetos.Utilities.LegacyPathsOptions], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = LifetimeScope (DelegateActivator), Services = [Autofac.ILifetimeScope, Autofac.IComponentContext], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = Shared, Ownership = ExternallyOwned
 Activator = LoggingOptions (DelegateActivator), Services = [Rhetos.Utilities.LoggingOptions], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = MsSqlExecuter (ReflectionActivator), Services = [Rhetos.Utilities.ISqlExecuter], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
@@ -354,7 +354,6 @@ Activator = EfMappingViewsInitializer (ReflectionActivator), Services = [Rhetos.
 Activator = FilesUtility (ReflectionActivator), Services = [Rhetos.Utilities.FilesUtility], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = InstalledPackages (DelegateActivator), Services = [Rhetos.Deployment.InstalledPackages, Rhetos.Deployment.IInstalledPackages], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = InstalledPackagesProvider (ReflectionActivator), Services = [Rhetos.Deployment.InstalledPackagesProvider], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
-Activator = LegacyPathsOptions (DelegateActivator), Services = [Rhetos.Utilities.LegacyPathsOptions], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = LifetimeScope (DelegateActivator), Services = [Autofac.ILifetimeScope, Autofac.IComponentContext], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = Shared, Ownership = ExternallyOwned
 Activator = LoggingOptions (DelegateActivator), Services = [Rhetos.Utilities.LoggingOptions], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = MsSqlExecuter (ReflectionActivator), Services = [Rhetos.Utilities.ISqlExecuter], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope

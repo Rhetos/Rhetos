@@ -36,7 +36,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void QueryableExtenstionHasBase()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -48,7 +48,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void TableConstraints()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var sqlExecuter = container.Resolve<ISqlExecuter>();
                 var repository = container.Resolve<Common.DomRepository>();
@@ -89,7 +89,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NavigationFromBaseToExtension_Query()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -102,7 +102,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NavigationFromBaseToExtension_LazyLoadReference()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -114,7 +114,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void MissingExtensionRecord()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
@@ -159,7 +159,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void LazyLoadExtensions()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();

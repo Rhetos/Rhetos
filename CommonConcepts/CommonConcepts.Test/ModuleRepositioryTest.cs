@@ -33,7 +33,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DomRepositoryHasModuleRepositories()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 Assert.IsNotNull(repository.TestDataStructure);

@@ -52,7 +52,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SqlFunction()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 Assert.AreEqual("11", ReportSqlQueryResult(container.Resolve<ISqlExecuter>(), "SELECT * FROM TestSqlWorkarounds.Fun2(10)"));
             }
@@ -61,7 +61,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SqlObject()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                 {
@@ -89,7 +89,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ExecuteSqlProcedure()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestSqlWorkarounds.Person" });
                 container.Resolve<ISqlExecuter>().ExecuteSql(Enumerable.Range(1, 100).Select(x =>
@@ -107,7 +107,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SqlDependsOnSqlIndexForFirstProperty()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var features = new Dictionary<string, string>
                 {
@@ -146,7 +146,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SqlDependsOnID()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var features = new Dictionary<string, string>
                 {
@@ -183,7 +183,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SqlDependsOnSqlIndex()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var features = new Dictionary<string, string>
                 {
@@ -209,7 +209,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SqlDependsOnCaseInsensitive()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var features = new Dictionary<string, string>
                 {
@@ -238,7 +238,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SqlDependsOnDataStructureNoProperties()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var features = new Dictionary<string, string>
                 {
@@ -264,7 +264,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SqlDependsOnModule()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var features = new Dictionary<string, string>
                 {
@@ -294,7 +294,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void AutoSqlDependsOnPolymorphic()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var features = new Dictionary<string, string>
                 {
@@ -346,7 +346,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SqlUserError()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -359,7 +359,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void WithoutTransaction()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var sqlExecuter = container.Resolve<ISqlExecuter>();
                 var createdViews = new List<string>();
@@ -373,7 +373,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NotNullColumn()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var sqlExecuter = container.Resolve<ISqlExecuter>();
                 sqlExecuter.ExecuteSql(new[] {
@@ -398,7 +398,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void LongIdentifiers()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repos = container.Resolve<Common.DomRepository>().TestLongIdentifiers;
 

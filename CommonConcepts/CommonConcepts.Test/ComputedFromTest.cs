@@ -45,7 +45,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void PersistAll()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestComputedFrom.PersistAll" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -68,7 +68,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void PersistPartial()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestComputedFrom.PersistPartial" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -91,7 +91,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void PersistCustom()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestComputedFrom.PersistCustom" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -114,7 +114,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void PersistComplex()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestComputedFrom.PersistComplex" });
                 var repository = container.Resolve<Common.DomRepository>();
@@ -132,7 +132,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void PersistOverlap()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestComputedFrom.PersistOverlap" });
                 var testComputedFrom = container.Resolve<Common.DomRepository>().TestComputedFrom;
@@ -160,7 +160,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void MultiSync_InsertBase()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var deleteTables = new[] { "MultiSync", "Base1", "Base2" };
                 container.Resolve<ISqlExecuter>().ExecuteSql(deleteTables.Select(t => "DELETE FROM TestComputedFrom." + t));
@@ -201,7 +201,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ComputedWithAutocode()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var computedRepos = container.Resolve<GenericRepository<TestComputedFrom.ComputedWithAutoCode>>();
                 var computedSourceRepos = container.Resolve<GenericRepository<TestComputedFrom.ComputedWithAutoCodeSource>>();
@@ -234,7 +234,7 @@ namespace CommonConcepts.Test
         private void TestKeyPropertyTarget<TEntity>(Action<TEntity, string> setControlValue, Func<TEntity, string> report)
             where TEntity : class, IEntity
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
                 var sourceRepository = context.Repository.TestComputedFrom.SyncByKeySource;
@@ -279,8 +279,8 @@ namespace CommonConcepts.Test
         public void ChangesOnReferenced()
         {
             var log = new List<string>();
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
-                RhetosProcessHelper.ConfigureLogMonitor(log)))
+            using (var container = TestContainer.Create(
+                TestContainer.ConfigureLogMonitor(log)))
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var test = repository.TestChangesOnReferenced;
@@ -353,8 +353,8 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void KeepSyncRepositoryMembers()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
-                RhetosProcessHelper.ConfigureFakeUser("bb")))
+            using (var container = TestContainer.Create(
+                TestContainer.ConfigureFakeUser("bb")))
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestComputedFrom.KeepSyncRepositoryMembers");
                 var repository = container.Resolve<Common.DomRepository>();

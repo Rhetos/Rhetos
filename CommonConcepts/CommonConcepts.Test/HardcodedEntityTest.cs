@@ -36,7 +36,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HardcodedEntityWithDefinedAllPropertiesTest()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var statusWithoutIntPropertyDefined = repository.TestHardcodedEntity.SimpleHardcodedEntity.Query().Where(x => x.ID == TestHardcodedEntity.SimpleHardcodedEntity.StatusWithDefinedAllPropertity).Single();
@@ -50,7 +50,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NotDefinedPropertiesShouldBeNullTest()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var statusWithoutIntPropertyDefined = repository.TestHardcodedEntity.SimpleHardcodedEntity.Query().Where(x => x.ID == TestHardcodedEntity.SimpleHardcodedEntity.StatusWithoutIntPropertyDefined).Single();
@@ -64,7 +64,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SqlTest()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 repository.TestHardcodedEntity.ReferenceToHardcodedEntity.Insert(new TestHardcodedEntity.ReferenceToHardcodedEntity
@@ -85,7 +85,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SpecialDescription()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var item = repository.TestHardcodedEntity.SimpleHardcodedEntity.Load(x => x.Name == "SpecialDescription").Single();
@@ -96,7 +96,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ModifyingHardcodedEntityTest()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -112,7 +112,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HardcodedEntityAndPolymorphicTests()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 

@@ -54,6 +54,14 @@ namespace Rhetos.DatabaseGenerator.Test
     [TestClass]
     public class ConceptApplicationRepositoryTest
     {
+        public ConceptApplicationRepositoryTest()
+        {
+            var configuration = new ConfigurationBuilder(new ConsoleLogProvider())
+                .AddConfigurationManagerConfiguration()
+                .Build();
+            LegacyUtilities.Initialize(configuration);
+        }
+
         private static ConceptApplication NewConceptApplication(
             IConceptInfo conceptInfo,
             IConceptDatabaseDefinition conceptImplementation,
@@ -76,14 +84,6 @@ namespace Rhetos.DatabaseGenerator.Test
                 DependsOn = DependsOn,
                 OldCreationOrder = OldCreationOrder
             };
-        }
-
-        public ConceptApplicationRepositoryTest()
-        {
-            var configuration = new ConfigurationBuilder(new ConsoleLogProvider())
-                .AddConfigurationManagerConfiguration()
-                .Build();
-            LegacyUtilities.Initialize(configuration);
         }
 
         private class MockSqlExecuter : ISqlExecuter

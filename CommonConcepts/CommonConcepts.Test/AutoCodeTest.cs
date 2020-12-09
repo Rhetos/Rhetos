@@ -115,7 +115,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Simple()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 DeleteOldData(container);
                 var repository = container.Resolve<Common.DomRepository>();
@@ -139,7 +139,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InsertMultipleItems()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 DeleteOldData(container);
                 var repository = container.Resolve<Common.DomRepository>();
@@ -177,7 +177,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SimpleFromHelp()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 DeleteOldData(container);
                 var repository = container.Resolve<Common.DomRepository>();
@@ -196,7 +196,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DoubleAutoCode()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 DeleteOldData(container);
                 var repository = container.Resolve<Common.DomRepository>();
@@ -220,7 +220,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void IntAutoCode()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 DeleteOldData(container);
                 var repository = container.Resolve<Common.DomRepository>();
@@ -238,7 +238,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void IntAutoCodeNull()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 DeleteOldData(container);
                 var repository = container.Resolve<Common.DomRepository>();
@@ -251,7 +251,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DoubleAutoCodeWithGroup()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 DeleteOldData(container);
                 var repository = container.Resolve<Common.DomRepository>();
@@ -277,7 +277,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DoubleIntegerAutoCodeWithGroup()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 repository.TestAutoCode.IntegerAutoCodeForEach.Delete(repository.TestAutoCode.IntegerAutoCodeForEach.Query());
@@ -294,7 +294,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DoubleIntegerAutoCodeWithGroupNull()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 repository.TestAutoCode.IntegerAutoCodeForEach.Delete(repository.TestAutoCode.IntegerAutoCodeForEach.Query());
@@ -345,7 +345,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Grouping()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 DeleteOldData(container);
                 var repository = container.Resolve<Common.DomRepository>();
@@ -393,7 +393,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void AllowedNullValueInternally()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 DeleteOldData(container);
 
@@ -413,7 +413,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void AutocodeStringNull()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 DeleteOldData(container);
 
@@ -430,7 +430,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void AutocodeStringEmpty()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 DeleteOldData(container);
 
@@ -444,7 +444,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SimpleWithPredefinedSuffixLength()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 DeleteOldData(container);
                 var repository = container.Resolve<Common.DomRepository>();
@@ -468,7 +468,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SimpleWithPredefinedSuffixLength2()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 DeleteOldData(container);
                 var repository = container.Resolve<Common.DomRepository>();
@@ -493,7 +493,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DifferentLengths()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 DeleteOldData(container);
                 var repository = container.Resolve<Common.DomRepository>();
@@ -518,7 +518,7 @@ namespace CommonConcepts.Test
             foreach (var test in new[] {"a+a", "a++a", "+a", "++a", "+a+", "++a+", "+a++", "++a++"})
             {
                 Console.WriteLine("Test: " + test);
-                using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+                using (var container = TestContainer.Create())
                 {
                     DeleteOldData(container);
                     var repository = container.Resolve<Common.DomRepository>();
@@ -549,7 +549,7 @@ namespace CommonConcepts.Test
                 repository.Insert(new[] { new TestAutoCode.Simple { Code = "+", Data = process.ToString() } });
             });
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>().TestAutoCode.Simple;
                 var generatedCodes = repository.Query().Select(item => item.Code).ToList();
@@ -576,7 +576,7 @@ namespace CommonConcepts.Test
                 repository.Insert(new[] { new TestAutoCode.Simple { Code = (char)('a' + process) + "+", Data = process.ToString() } });
             });
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>().TestAutoCode.Simple;
                 var generatedCodes = repository.Query().Select(item => item.Code).ToList();
@@ -599,7 +599,7 @@ namespace CommonConcepts.Test
                 endTimes[process] = DateTime.Now;
             });
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>().TestAutoCode.Simple;
                 var generatedCodes = repository.Query().Select(item => item.Code).ToList();
@@ -642,7 +642,7 @@ namespace CommonConcepts.Test
                         endTimes[process] = DateTime.Now;
                     });
 
-                    using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+                    using (var container = TestContainer.Create())
                     {
                         var repository = container.Resolve<Common.DomRepository>().TestAutoCode.Simple;
                         var generatedCodes = repository.Query().Select(item => item.Code).ToList();
@@ -681,9 +681,9 @@ namespace CommonConcepts.Test
         {
             const int threadCount = 2;
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
-                RhetosProcessHelper.CheckForParallelism(container.Resolve<ISqlExecuter>(), threadCount);
+                TestContainer.CheckForParallelism(container.Resolve<ISqlExecuter>(), threadCount);
                 DeleteOldData(container);
                 container.CommitChanges();
             }
@@ -691,7 +691,7 @@ namespace CommonConcepts.Test
             for (int test = 1; test <= testCount; test++)
             {
                 Console.WriteLine("Test: " + test);
-                var containers = Enumerable.Range(0, threadCount).Select(t => RhetosProcessHelper.CreateTransactionScopeContainer()).ToArray();
+                var containers = Enumerable.Range(0, threadCount).Select(t => TestContainer.Create()).ToArray();
 
                 try
                 {
@@ -774,10 +774,10 @@ namespace CommonConcepts.Test
         {
             int threadCount = actions.Count();
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var sqlExecuter = container.Resolve<ISqlExecuter>();
-                RhetosProcessHelper.CheckForParallelism(sqlExecuter, threadCount);
+                TestContainer.CheckForParallelism(sqlExecuter, threadCount);
                 DeleteOldData(container);
 
                 coldStartInsert(container.Resolve<Common.ExecutionContext>());
@@ -785,7 +785,7 @@ namespace CommonConcepts.Test
                 container.CommitChanges();
             }
 
-            var containers = Enumerable.Range(0, threadCount).Select(t => RhetosProcessHelper.CreateTransactionScopeContainer()).ToArray();
+            var containers = Enumerable.Range(0, threadCount).Select(t => TestContainer.Create()).ToArray();
 
             var exceptions = new Exception[threadCount];
 
@@ -880,7 +880,7 @@ namespace CommonConcepts.Test
                     // Check the generated codes:
 
                     string generatedCodes;
-                    using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+                    using (var container = TestContainer.Create())
                     {
                         var repository = container.Resolve<Common.DomRepository>();
                         generatedCodes = TestUtility.DumpSorted(

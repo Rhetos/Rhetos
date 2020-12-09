@@ -40,7 +40,7 @@ namespace CommonConcepts.Test
 
             // Insert the test data (server code bypasses row permissions):
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var context = container.Resolve<Common.ExecutionContext>();
@@ -71,8 +71,8 @@ namespace CommonConcepts.Test
 
             // Simulate client request: Reading all documents (access denied)
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
-                RhetosProcessHelper.ConfigureIgnoreClaims()))
+            using (var container = TestContainer.Create(
+                TestContainer.ConfigureIgnoreClaims()))
             {
                 var processingEngine = container.Resolve<IProcessingEngine>();
                 var serverCommand = new ReadCommandInfo
@@ -88,8 +88,8 @@ namespace CommonConcepts.Test
 
             // Simulate client request: Reading the user's documents
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
-                RhetosProcessHelper.ConfigureIgnoreClaims()))
+            using (var container = TestContainer.Create(
+                TestContainer.ConfigureIgnoreClaims()))
             {
                 var processingEngine = container.Resolve<IProcessingEngine>();
                 var serverCommand = new ReadCommandInfo
@@ -112,7 +112,7 @@ namespace CommonConcepts.Test
 
             // Insert the test data (server code bypasses row permissions):
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var context = container.Resolve<Common.ExecutionContext>();
@@ -162,8 +162,8 @@ namespace CommonConcepts.Test
 
             // Simulate client request: Reading all documents (access denied)
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
-                RhetosProcessHelper.ConfigureIgnoreClaims()))
+            using (var container = TestContainer.Create(
+                TestContainer.ConfigureIgnoreClaims()))
             {
                 var processingEngine = container.Resolve<IProcessingEngine>();
                 var serverCommand = new ReadCommandInfo
@@ -179,8 +179,8 @@ namespace CommonConcepts.Test
 
             // Simulate client request: Reading the user's documents
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
-                RhetosProcessHelper.ConfigureIgnoreClaims()))
+            using (var container = TestContainer.Create(
+                TestContainer.ConfigureIgnoreClaims()))
             {
                 var processingEngine = container.Resolve<IProcessingEngine>();
                 var serverCommand = new ReadCommandInfo
@@ -197,8 +197,8 @@ namespace CommonConcepts.Test
 
             // Simulate client request: Edit doc1 (ok)
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
-                RhetosProcessHelper.ConfigureIgnoreClaims()))
+            using (var container = TestContainer.Create(
+                TestContainer.ConfigureIgnoreClaims()))
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var doc1 = repository.DemoRowPermissions2.Document.Query().Where(d => d.Title == "doc1").Single();
@@ -221,8 +221,8 @@ namespace CommonConcepts.Test
 
             // Simulate client request: Edit doc4 (access denied)
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
-                RhetosProcessHelper.ConfigureIgnoreClaims()))
+            using (var container = TestContainer.Create(
+                TestContainer.ConfigureIgnoreClaims()))
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var doc4 = repository.DemoRowPermissions2.Document.Query().Where(d => d.Title == "doc4").Single();
@@ -249,7 +249,7 @@ namespace CommonConcepts.Test
 
             // Insert the test data (server code bypasses row permissions):
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var context = container.Resolve<Common.ExecutionContext>();
@@ -316,7 +316,7 @@ namespace CommonConcepts.Test
             // Test the current user's row permissions:
             // The test will not execute client requests, but simply directly check the row permissions filters.
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var allowedReadBrowse =
                     container.Resolve<GenericRepository<DemoRowPermissions2.DocumentBrowse>>()
@@ -348,7 +348,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void OptimizedInheritingRowPermissions()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
                 var repository = context.Repository;
@@ -370,7 +370,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void OptimizedInheritingRowPermissions2()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
                 var repository = context.Repository;
@@ -391,7 +391,7 @@ namespace CommonConcepts.Test
 
         private void InsertCurrentPrincipal()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
                 var userAccount = context.UserInfo.UserName.Split('\\').Last();

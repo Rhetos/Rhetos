@@ -45,7 +45,7 @@ namespace CommonConcepts.Test
             string anonymous = SystemRole.Anonymous.ToString();
             AuthorizationDataCache.ClearCache();
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
                 var repository = context.Repository;

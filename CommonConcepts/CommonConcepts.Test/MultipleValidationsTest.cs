@@ -38,7 +38,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateLockedData()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var id1 = Guid.NewGuid();
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
@@ -56,7 +56,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateLockedData2()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var id1 = Guid.NewGuid();
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
@@ -74,7 +74,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateLockedData3()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var id1 = Guid.NewGuid();
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
@@ -92,7 +92,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateLockedData4()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var id1 = Guid.NewGuid();
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[] {

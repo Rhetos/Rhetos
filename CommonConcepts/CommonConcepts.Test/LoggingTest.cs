@@ -39,7 +39,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DeleteIntegerStringDataTime()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -88,7 +88,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SpecialCharacters()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -117,7 +117,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdatedOldNullValues()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -156,7 +156,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DeleteOldNullValues()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -189,7 +189,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SqlChangeID()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -223,7 +223,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Complex()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {

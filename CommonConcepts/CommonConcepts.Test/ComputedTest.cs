@@ -36,7 +36,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SimpleRead()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -55,7 +55,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SpecialLoad()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -68,7 +68,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ComputedWithContext()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var user = container.Resolve<IUserInfo>();
                 var repository = container.Resolve<Common.DomRepository>();

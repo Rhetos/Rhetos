@@ -47,8 +47,8 @@ namespace CommonConcepts.Test
             // Test SQL:
 
             foreach (bool useDatabaseNullSemantics in new[] { false, true })
-                using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
-                    RhetosProcessHelper.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
+                using (var container = TestContainer.Create(
+                    TestContainer.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
                 {
 
                     container.Resolve<ISqlExecuter>().ExecuteSql(
@@ -106,7 +106,7 @@ namespace CommonConcepts.Test
 
             // Test SQL:
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(
                     new[] { "DELETE FROM TestDatabaseExtensions.Simple" }
@@ -336,7 +336,7 @@ namespace CommonConcepts.Test
 
             // Test SQL:
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(
                     new[] { "DELETE FROM TestDatabaseExtensions.Simple" }

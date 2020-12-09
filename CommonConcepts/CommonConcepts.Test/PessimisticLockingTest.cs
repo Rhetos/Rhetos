@@ -35,7 +35,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateLocked()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -95,7 +95,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ParentLocked()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -185,7 +185,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void LockFinish()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -260,7 +260,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ActionSetLock_Basic()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var parentId = Guid.NewGuid();
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]
@@ -290,7 +290,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ActionSetLock_OtherUser()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var parentId = Guid.NewGuid();
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]
@@ -324,7 +324,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ActionSetLock_OtherUserObsoleteLock()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var parentId = Guid.NewGuid();
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]
@@ -365,7 +365,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ActionSetLock_MyRedundantLock()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var parentId = Guid.NewGuid();
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]
@@ -412,7 +412,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ActionReleaseLock_Basic()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var parentId = Guid.NewGuid();
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]
@@ -456,7 +456,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ActionReleaseLock_OtherUser()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var parentId = Guid.NewGuid();
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]

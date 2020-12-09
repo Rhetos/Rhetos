@@ -121,12 +121,6 @@ namespace Rhetos
             var configuration = new ConfigurationBuilder(LogProvider)
                 .AddOptions(rhetosProjectContent.RhetosBuildEnvironment)
                 .AddOptions(rhetosProjectContent.RhetosTargetEnvironment)
-                .AddOptions(new LegacyPathsOptions
-                {
-                    BinFolder = null, // // Rhetos CLI does not use bin folder at build-time. Rhetos framework libraries are provided by NuGet.
-                    PluginsFolder = null, // Rhetos CLI does not manage plugin libraries directly, they are provided by NuGet.
-                    ResourcesFolder = Path.Combine(projectRootPath, "Resources"), // Currently supporting old plugins by default.
-                })
                 .AddKeyValue(ConfigurationProvider.GetKey((ConfigurationProviderOptions o) => o.LegacyKeysWarning), true)
                 .AddKeyValue(ConfigurationProvider.GetKey((LoggingOptions o) => o.DelayedLogTimout), 60.0)
                 .AddConfigurationManagerConfiguration()

@@ -37,7 +37,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void QueryWithParameterSimple()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var testData = new[] { "a1", "a2", "b1" }
                     .Select(name => new TestQueryable.Simple { Name = name })
@@ -60,7 +60,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void QueryCovariance()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var testData = new[] { "a1", "a2", "b1" }
                     .Select((name, x) => new TestQueryable.Simple { Name = name, ID = Guid.NewGuid() })

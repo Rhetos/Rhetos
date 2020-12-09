@@ -39,7 +39,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void WhereContainsTest()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -61,7 +61,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void MultipleWhereContainsTest()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -89,7 +89,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void WhereEmptyContainsTest()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -116,7 +116,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void OptimizeContainsIdsTest()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -143,7 +143,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void OptimizeContainsNullableIdsTest()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -174,7 +174,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void OptimizeContainsNullableWithNullValueTest()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -195,8 +195,8 @@ namespace CommonConcepts.Test
         public void OptimizeContainsNullableWithMixedNullValueTest()
         {
             foreach (bool useDatabaseNullSemantics in new[] { false, true })
-                using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
-                    RhetosProcessHelper.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
+                using (var container = TestContainer.Create(
+                    TestContainer.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
                 {
                     var repository = container.Resolve<Common.DomRepository>();
 
@@ -241,7 +241,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void OptimizeEnumerableContainsTest()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -261,7 +261,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NestedPropertyContainsTest()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -374,7 +374,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void WhereContainsWithGroupBy()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 

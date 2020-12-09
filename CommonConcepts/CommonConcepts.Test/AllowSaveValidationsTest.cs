@@ -37,7 +37,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ValidData()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var simple = container.Resolve<Common.DomRepository>().TestAllowSave.Simple;
                 var s1 = new TestAllowSave.Simple { Code = 1, Name = "a", CodeAS = 2, NameAS = "b" };
@@ -49,7 +49,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InvalidInteger()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var simple = container.Resolve<Common.DomRepository>().TestAllowSave.Simple;
                 var s1 = new TestAllowSave.Simple { Code = null, Name = "a", CodeAS = 2, NameAS = "b" };
@@ -63,7 +63,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InvalidString()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var simple = container.Resolve<Common.DomRepository>().TestAllowSave.Simple;
                 var s1 = new TestAllowSave.Simple { Code = 1, Name = null, CodeAS = 2, NameAS = "b" };
@@ -72,7 +72,7 @@ namespace CommonConcepts.Test
                     "It is not allowed to enter TestAllowSave.Simple because the required property Name is not set.",
                     "SystemMessage: DataStructure:TestAllowSave.Simple,ID:", ",Property:Name");
             }
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var simple = container.Resolve<Common.DomRepository>().TestAllowSave.Simple;
                 var s1 = new TestAllowSave.Simple { Code = 1, Name = "", CodeAS = 2, NameAS = "b" };
@@ -87,8 +87,8 @@ namespace CommonConcepts.Test
         public void AllowSave()
         {
             foreach (bool useDatabaseNullSemantics in new[] { false, true })
-                using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
-                    RhetosProcessHelper.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
+                using (var container = TestContainer.Create(
+                    TestContainer.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
                 {
                     var simple = container.Resolve<Common.DomRepository>().TestAllowSave.Simple;
                     var s1 = new TestAllowSave.Simple { Code = 1, Name = "a", CodeAS = null, NameAS = null };
@@ -114,7 +114,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void AllowSaveEmptyString()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var simple = container.Resolve<Common.DomRepository>().TestAllowSave.Simple;
                 var s1 = new TestAllowSave.Simple { Code = 1, Name = "a", CodeAS = 2, NameAS = "" };
@@ -135,7 +135,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InvalidDataReporting()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var simpleSystem = container.Resolve<Common.DomRepository>().TestAllowSave.SimpleSystem;
                 var sqlExecuter = container.Resolve<ISqlExecuter>();

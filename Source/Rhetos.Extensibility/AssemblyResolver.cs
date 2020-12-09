@@ -32,7 +32,6 @@ namespace Rhetos.Extensibility
         public static string[] GetRuntimeAssemblies(IConfiguration configuration)
         {
             var rhetosAppOptions = configuration.GetOptions<RhetosAppOptions>();
-            var legacyPaths = configuration.GetOptions<LegacyPathsOptions>();
 
             if (string.IsNullOrEmpty(rhetosAppOptions.RhetosRuntimePath))
                 throw new FrameworkException($"Run-time configuration option '{nameof(RhetosAppOptions)}.{nameof(RhetosAppOptions.RhetosRuntimePath)}' is not provided.");
@@ -41,19 +40,9 @@ namespace Rhetos.Extensibility
             IEnumerable<string> searchFolders;
 
             if (rhetosAppOptions.AssemblyFolders != null && rhetosAppOptions.AssemblyFolders.Any())
-            {
                 searchFolders = rhetosAppOptions.AssemblyFolders;
-            }
-            else if (string.IsNullOrEmpty(legacyPaths.PluginsFolder))
-            {
-                // Application with Rhetos CLI.
-                searchFolders = new[] { runtimeAssemblyFolder };
-            }
             else
-            {
-                // Application With DeployPackages.
-                searchFolders = new[] { runtimeAssemblyFolder, legacyPaths.PluginsFolder, rhetosAppOptions.AssetsFolder };
-            }
+                searchFolders = new[] { runtimeAssemblyFolder };
 
             var foundAssemblies = searchFolders
                 .Where(folder => Directory.Exists(folder))

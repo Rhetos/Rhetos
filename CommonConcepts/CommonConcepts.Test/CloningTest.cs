@@ -38,7 +38,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void CreatedColumns()
         {
-            using (Rhetos.TransactionScopeContainer container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (Rhetos.TransactionScopeContainer container = TestContainer.Create())
             {
                 var sql = @"SELECT
                         OBJECT_NAME(object_id) + '.' + name
@@ -72,7 +72,7 @@ Clone3.Start
         [TestMethod]
         public void CreatedIndexes()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var sql = @"SELECT
                         i.name + '.' + c.name
@@ -100,7 +100,7 @@ Clone3.Start
         [TestMethod]
         public void ClonesSimpleBusinessLogic()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 container.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
@@ -141,7 +141,7 @@ Clone3.Start
         [TestMethod]
         public void CloneExtension()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var dslModel = container.Resolve<IDslModel>();
                 var clone3 = (EntityInfo)dslModel.FindByKey("DataStructureInfo TestCloning.Clone3");
@@ -161,7 +161,7 @@ Clone3.Start
         [TestMethod]
         public void CloneUniqueReference()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var dslModel = container.Resolve<IDslModel>();
                 var cloneUR = (EntityInfo)dslModel.FindByKey("DataStructureInfo TestCloning.CloneUR");

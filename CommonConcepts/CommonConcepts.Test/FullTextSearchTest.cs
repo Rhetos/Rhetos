@@ -45,7 +45,7 @@ namespace CommonConcepts.Test
                     {
                         // Insert the test data:
 
-                        using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+                        using (var container = TestContainer.Create())
                         {
                             var simpleTestData = new[]
                             {
@@ -92,7 +92,7 @@ namespace CommonConcepts.Test
 
                         // Wait for SQL Server to populate the full-text search index:
 
-                        using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+                        using (var container = TestContainer.Create())
                         {
                             var stopwatch = Stopwatch.StartNew();
                             while (true)
@@ -151,7 +151,7 @@ namespace CommonConcepts.Test
         {
             PrepareData();
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var tests = new Dictionary<string, string>
                 {
@@ -185,7 +185,7 @@ namespace CommonConcepts.Test
         {
             PrepareData();
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -201,7 +201,7 @@ namespace CommonConcepts.Test
         {
             PrepareData();
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var tests = new Dictionary<string, string>
                 {
@@ -228,7 +228,7 @@ namespace CommonConcepts.Test
         {
             PrepareData();
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var tests = new Dictionary<string, string>
                 {
@@ -256,7 +256,7 @@ namespace CommonConcepts.Test
         {
             PrepareData();
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var tests = new Dictionary<string, string>
                 {
@@ -289,7 +289,7 @@ namespace CommonConcepts.Test
         {
             PrepareData();
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -326,7 +326,7 @@ namespace CommonConcepts.Test
         {
             PrepareData();
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var tests = new Dictionary<string, string>
                 {
@@ -367,7 +367,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NullArgument()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 var ex = TestUtility.ShouldFail(
@@ -383,7 +383,7 @@ namespace CommonConcepts.Test
         {
             // SQL Server does not support the table parameter to be a variable.
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 string table = "TestFullTextSearch.SimpleFTS";
@@ -400,7 +400,7 @@ namespace CommonConcepts.Test
         {
             // SQL Server does not support the columns parameter to be a variable.
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 string columns = "*";
@@ -417,7 +417,7 @@ namespace CommonConcepts.Test
         {
             // SQL Server does not support the rankTop parameter to be an expression.
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 int topValue = 10;
@@ -434,7 +434,7 @@ namespace CommonConcepts.Test
         {
             PrepareData();
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var tests = new Dictionary<string, string>
                 {

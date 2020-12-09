@@ -37,7 +37,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ErrorMetadataOnInsert()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 repository.TestReference.Child.Delete(repository.TestReference.Child.Query());
@@ -55,7 +55,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ErrorMetadataOnUpdate()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 repository.TestReference.Child.Delete(repository.TestReference.Child.Query());
@@ -78,7 +78,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ErrorMetadataOnDelete()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var repository = container.Resolve<Common.DomRepository>();
                 repository.TestReference.Child.Delete(repository.TestReference.Child.Query());

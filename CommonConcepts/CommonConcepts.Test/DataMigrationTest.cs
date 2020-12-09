@@ -59,8 +59,8 @@ namespace CommonConcepts.Test
         {
 
             var log = new List<string>();
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
-                RhetosProcessHelper.ConfigureLogMonitor(log)))
+            using (var container = TestContainer.Create(
+                TestContainer.ConfigureLogMonitor(log)))
             {
                 var sqlExecuter = container.Resolve<ISqlExecuter>();
                 sqlExecuter.ExecuteSql("DELETE FROM Rhetos.DataMigrationScript");

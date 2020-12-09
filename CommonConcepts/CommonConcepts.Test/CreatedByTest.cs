@@ -36,7 +36,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SetCurrentUser()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
                 var repository = container.Resolve<Common.DomRepository>();
@@ -60,7 +60,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void LeavePredefinedUser()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
                 var repository = container.Resolve<Common.DomRepository>();
@@ -87,7 +87,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void WorksWithConstraints()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
                 var repository = container.Resolve<Common.DomRepository>();
@@ -111,7 +111,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FailsOnDenyUserEdit()
         {
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = TestContainer.Create())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
                 var repository = container.Resolve<Common.DomRepository>();
