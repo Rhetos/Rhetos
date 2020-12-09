@@ -18,13 +18,10 @@
 */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Rhetos.Utilities
 {
-    [Obsolete("Use IConfiguration instead.")]
+    [Obsolete("Instead of this static configuration, use IConfiguration with dependency injection.")]
     public static class ConfigUtility
     {
         private static IConfiguration _configuration;
@@ -35,10 +32,7 @@ namespace Rhetos.Utilities
         }
 
         /// <summary>
-        /// Use "Configuration.GetInt" or "Configuration.GetBool" instead.
-        /// Reads the web service configuration from appSettings group in web.config file.
-        /// When used in another application (for example, DeployPackages.exe),
-        /// the application's ".config" file can be used to override the default settings from the web.config.
+        /// Reads the application's configuration.
         /// </summary>
         public static string GetAppSetting(string key)
         {

@@ -31,7 +31,7 @@ namespace Rhetos.Utilities
     /// Legacy code that accessed this class directly has used it with default constructor, without dependency injection,
     /// expecting it to read global system configuration. This class is left as a support for that legacy code.
     /// </summary>
-    [Obsolete("Use IConfiguration instead.")]
+    [Obsolete("Instead of this static configuration, use IConfiguration with dependency injection.")]
     public class Configuration : IConfiguration
     {
         private static IConfiguration _staticConfigurationProvider;
