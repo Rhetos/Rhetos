@@ -25,8 +25,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
-[assembly: InternalsVisibleTo("Rhetos.Utilities.Test")]
-
 namespace Rhetos.Utilities
 {
     // TODO: Move most of the methods to ISqlUtility.
@@ -57,8 +55,6 @@ namespace Rhetos.Utilities
             return value;
         }
 
-        internal const string OracleNationalLanguageKey = "Rhetos:DatabaseOracle:NationalLanguage";
-
         public static void Initialize(IConfiguration configuration)
         {
             _initialized = true;
@@ -71,7 +67,7 @@ namespace Rhetos.Utilities
             var runtimeOptions = configuration.GetOptions<RhetosAppOptions>();
             var buildOptions = configuration.GetOptions<BuildOptions>();
             _databaseLanguage = runtimeOptions.DatabaseLanguage ?? buildOptions.DatabaseLanguage;
-            _nationalLanguage = configuration.GetValue(OracleNationalLanguageKey, "");
+            _nationalLanguage = configuration.GetValue(OracleSqlUtility.OracleNationalLanguageKey, "");
             InitializeProviderContext();
         }
 
@@ -181,17 +177,12 @@ namespace Rhetos.Utilities
 
         public static string GetSchemaName(string fullObjectName)
         {
-            int dotPosition = fullObjectName.IndexOf('.');
-            if (dotPosition == -1)
-                if (_databaseLanguageIsMsSql)
-                    return "dbo";
-                else if (_databaseLanguageIsOracle)
-                    throw new FrameworkException("Missing schema name for database object '" + fullObjectName + "'.");
-                else
-                    throw new FrameworkException(UnsupportedLanguageError);
-
-            var schema = fullObjectName.Substring(0, dotPosition);
-            return SqlUtility.Identifier(schema);
+            if (_databaseLanguageIsMsSql)
+                return MsSqlUtility.GetSchemaName(fullObjectName);
+            else if (_databaseLanguageIsOracle)
+                return OracleSqlUtility.GetSchemaName(fullObjectName);
+            else
+                throw new FrameworkException(UnsupportedLanguageError);
         }
 
         public static string GetShortName(string fullObjectName)

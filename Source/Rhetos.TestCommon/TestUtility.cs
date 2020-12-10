@@ -194,19 +194,18 @@ namespace Rhetos.TestCommon
         /// </summary>
         public static void CheckDatabaseAvailability(string expectedLanguage = null)
         {
-            const string connectionStringLocation = @"Enter the database connection in Rhetos\ConnectionStrings.config, then rebuild this project.";
             try
             {
                 Assert.IsNotNull(SqlUtility.ConnectionString);
             }
             catch (Exception ex)
             {
-                Assert.Inconclusive(@"A live database is needed for this unit test to run. " + connectionStringLocation
-                    + Environment.NewLine + ex.GetType().Name + ": " + ex.Message);
+                Assert.Inconclusive($"A live database is needed for this unit test to run. Configure database connection string begin running the tests. {ex.GetType().Name}: {ex.Message}");
             }
 
             if (expectedLanguage != null && SqlUtility.DatabaseLanguage != expectedLanguage)
-                Assert.Inconclusive("This test will run only on '" + expectedLanguage + "' database language, not '" + SqlUtility.DatabaseLanguage + "'. " + connectionStringLocation);
+                Assert.Inconclusive($"This test will run only on '{expectedLanguage}' database language, not '{SqlUtility.DatabaseLanguage}'." +
+                    $" Configure database language and connection string, then rebuild this project.");
         }
 
         /// <summary>

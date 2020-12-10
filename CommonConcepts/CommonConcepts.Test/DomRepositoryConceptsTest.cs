@@ -33,7 +33,7 @@ using System.Text;
 namespace CommonConcepts.Test
 {
     [TestClass]
-    public class DomRepositoryConcepts
+    public class DomRepositoryConceptsTest
     {
         [TestMethod]
         public void OnSaveUpdateAndValidate()

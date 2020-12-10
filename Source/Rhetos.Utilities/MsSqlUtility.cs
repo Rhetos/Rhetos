@@ -258,5 +258,15 @@ namespace Rhetos.Utilities
         {
             return dictionary.TryGetValue(key, out object value) ? value as string : null;
         }
+
+        public static string GetSchemaName(string fullObjectName)
+        {
+            int dotPosition = fullObjectName.IndexOf('.');
+            if (dotPosition == -1)
+                return "dbo";
+
+            var schema = fullObjectName.Substring(0, dotPosition);
+            return SqlUtility.Identifier(schema);
+        }
     }
 }

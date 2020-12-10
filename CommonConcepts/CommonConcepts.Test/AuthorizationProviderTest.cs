@@ -17,25 +17,18 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Autofac;
 using CommonConcepts.Test.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos.Configuration.Autofac;
 using Rhetos.Dom.DefaultConcepts;
-using Rhetos.Logging;
 using Rhetos.Security;
 using Rhetos.TestCommon;
-using Rhetos.Utilities;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace CommonConcepts.Test
 {
     [TestClass]
-    public class AuthorizationProvider
+    public class AuthorizationProviderTest
     {
         [TestMethod]
         public void SystemRoles()

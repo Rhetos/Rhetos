@@ -27,7 +27,6 @@ using System.Linq;
 namespace Rhetos.Utilities.Test
 {
     [TestClass]
-    [DeploymentItem("ConnectionStrings.config")]
     public class SqlUtilityTest
     {
         public SqlUtilityTest()
@@ -70,34 +69,27 @@ namespace Rhetos.Utilities.Test
         }
 
         [TestMethod]
-        public void SqlObjectName()
+        public void GetShortName()
         {
-            TestUtility.CheckDatabaseAvailability();
-
-            Assert.AreEqual("someschema", SqlUtility.GetSchemaName("someschema.someview"));
             Assert.AreEqual("someview", SqlUtility.GetShortName("someschema.someview"));
+            Assert.AreEqual("someview", SqlUtility.GetShortName("someview"));
 
             TestUtility.ShouldFail(() => SqlUtility.GetShortName("a.b.c"), "Invalid database object name");
             TestUtility.ShouldFail(() => SqlUtility.GetShortName("a."), "Invalid database object name");
         }
 
         [TestMethod]
-        public void MsSqlObjectName()
+        public void MsSqlGetSchemaName()
         {
-            TestUtility.CheckDatabaseAvailability("MsSql");
-
-            Assert.AreEqual("dbo", SqlUtility.GetSchemaName("someview"));
-            Assert.AreEqual("someview", SqlUtility.GetShortName("someview"));
+            Assert.AreEqual("someschema", MsSqlUtility.GetSchemaName("someschema.someview"));
+            Assert.AreEqual("dbo", MsSqlUtility.GetSchemaName("someview"));
         }
 
         [TestMethod]
-        [DeploymentItem("ConnectionStrings.config")]
-        public void OracleObjectName()
+        public void OracleGetSchemaName()
         {
-            TestUtility.CheckDatabaseAvailability("Oracle");
-
-            TestUtility.ShouldFail(() => SqlUtility.GetSchemaName("someview"), "Missing schema");
-            Assert.AreEqual("someview", SqlUtility.GetShortName("someview"));
+            Assert.AreEqual("someschema", OracleSqlUtility.GetSchemaName("someschema.someview"));
+            TestUtility.ShouldFail(() => OracleSqlUtility.GetSchemaName("someview"), "Missing schema");
         }
 
         [TestMethod]

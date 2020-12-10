@@ -19,13 +19,14 @@
 
 using Autofac;
 using CommonConcepts.Test.Helpers;
+using Rhetos;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
 using System.ComponentModel.Composition;
 
-namespace Rhetos
+namespace CommonConcepts.Test
 {
     /// <summary>
     /// Provides basic runtime infrastructure for Rhetos framework: configuration settings and system components registration.
