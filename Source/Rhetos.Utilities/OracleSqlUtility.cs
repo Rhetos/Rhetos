@@ -29,7 +29,7 @@ namespace Rhetos.Utilities
             const int MaxLength = 30;
             if (name.Length > MaxLength)
             {
-                var hashErasedPart = name.Substring(MaxLength - 9).GetHashCode().ToString("X").PadLeft(8, '0');
+                var hashErasedPart = CsUtility.GetStableHashCode(name.Substring(MaxLength - 9)).ToString("X").PadLeft(8, '0');
                 return name.Substring(0, MaxLength - 9) + "_" + hashErasedPart;
             }
             return name;
