@@ -832,44 +832,50 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void OptimizeParallelInsertsForDifferentGroups()
         {
-            var tests = new ListOfTuples<string, string, bool>
+            var tests = new (string, string, bool ExpectedParallel)[]
             // Format:
             // 1. Records to insert (Grouping1-Grouping2) to entity MultipleGroups, with parallel requests.
             // 2. Expected generated codes (Code1-Code2) for each record.
             // 3. Whether the inserts should be executed in parallel.
             {
-                { "A-B, A-B", "1-1, 2-2", false }, // Same Grouping1 and Grouping2: codes should be generated sequentially.
-                { "A-B, A-C", "1-1, 2-1", false }, // Same Grouping1: Code1 should be generated sequentially.
-                { "A-B, C-B", "1-1, 1-2", false }, // Same Grouping2: Code2 should be generated sequentially.
-                { "A-B, C-D", "1-1, 1-1", true },
-                { "A-B, B-A", "1-1, 1-1", true },
+                ( "A-B, A-B", "1-1, 2-2", false ), // Same Grouping1 and Grouping2: codes should be generated sequentially.
+                ( "A-B, A-C", "1-1, 2-1", false ), // Same Grouping1: Code1 should be generated sequentially.
+                ( "A-B, C-B", "1-1, 1-2", false ), // Same Grouping2: Code2 should be generated sequentially.
+                ( "A-B, C-D", "1-1, 1-1", true ),
+                ( "A-B, B-A", "1-1, 1-1", true ),
             };
 
-            var results = new ListOfTuples<string, string, bool>();
+            var results = new List<(string, string, bool ExecutedInParallel)>();
             var report = new List<string>();
 
             const int testPause = 100;
-            const int retries = 4;
+            const int retries = 20;
 
             foreach (var test in tests)
             {
-                for (int retry = 0; retry < retries; retry++)
+                var items = test.Item1.Split(',').Select(item => item.Trim()).Select(item => item.Split('-'))
+                    .Select(item => new TestAutoCode.MultipleGroups { Grouping1 = item[0], Grouping2 = item[1] })
+                    .ToArray();
+
+                var insertDurations = new double[items.Length];
+
+                var parallelInsertRequests = items.Select((item, x) => (Action<Common.ExecutionContext>)
+                    (context =>
+                    {
+                        var sw = Stopwatch.StartNew();
+                        context.Repository.TestAutoCode.MultipleGroups.Insert(item);
+                        insertDurations[x] = sw.Elapsed.TotalMilliseconds;
+                        Thread.Sleep(testPause);
+                    }))
+                    .ToArray();
+
+                string generatedCodes = null;
+                bool startedImmediately = false;
+                bool executedInParallel = false;
+
+                for (int retry = 0; retry <= retries; retry++)
                 {
-                    var items = test.Item1.Split(',').Select(item => item.Trim()).Select(item => item.Split('-'))
-                        .Select(item => new TestAutoCode.MultipleGroups { Grouping1 = item[0], Grouping2 = item[1] })
-                        .ToArray();
-
-                    var insertDurations = new double[items.Length];
-
-                    var parallelInsertRequests = items.Select((item, x) => (Action<Common.ExecutionContext>)
-                        (context =>
-                        {
-                            var sw = Stopwatch.StartNew();
-                            context.Repository.TestAutoCode.MultipleGroups.Insert(item);
-                            insertDurations[x] = sw.Elapsed.TotalMilliseconds;
-                            Thread.Sleep(testPause);
-                        }))
-                        .ToArray();
+                    // Execute in parallel inserts that generate AutoCode values:
 
                     var exceptions = ExecuteParallel(parallelInsertRequests,
                         context => context.Repository.TestAutoCode.MultipleGroups.Insert(new TestAutoCode.MultipleGroups { }),
@@ -879,7 +885,6 @@ namespace CommonConcepts.Test
 
                     // Check the generated codes:
 
-                    string generatedCodes;
                     using (var container = TestContainer.Create())
                     {
                         var repository = container.Resolve<Common.DomRepository>();
@@ -890,27 +895,27 @@ namespace CommonConcepts.Test
 
                     // Check if the inserts were executed in parallel:
 
-                    bool startedImmediately = insertDurations.Any(t => t < testPause);
-                    bool executedInParallel = insertDurations.All(t => t < testPause);
+                    startedImmediately = insertDurations.Any(t => t < testPause);
+                    executedInParallel = insertDurations.All(t => t < testPause);
 
                     // It the parallelism check did not pass, try again to reduce false negatives when the test machine is under load.
-                    if (!startedImmediately || executedInParallel != test.Item3)
-                    {
-                        Console.WriteLine("Retry");
-                        continue;
-                    }
-
-                    Assert.IsTrue(startedImmediately, $"({test.Item1}) At lease one item should be inserted without waiting. The test machine was probably under load during the parallelism test.");
-
-                    report.Add($"Test '{test.Item1}' insert durations: '{TestUtility.Dump(insertDurations)}'.");
-                    results.Add(test.Item1, generatedCodes, executedInParallel);
-                    break;
+                    if (!startedImmediately && retry < retries)
+                        Console.WriteLine("Retrying, did not start immediately.");
+                    else if (executedInParallel != test.ExpectedParallel && retry < retries)
+                        Console.WriteLine("Retrying, did not achieve parallelism.");
+                    else
+                        break;
                 }
+
+                Assert.IsTrue(startedImmediately, $"({test.Item1}) At lease one item should be inserted without waiting. The test machine was probably under load during the parallelism test.");
+
+                report.Add($"Test '{test.Item1}' insert durations: '{TestUtility.Dump(insertDurations)}'.");
+                results.Add((test.Item1, generatedCodes, executedInParallel));
             }
 
             Assert.AreEqual(
-                string.Concat(tests.Select(test => $"{test.Item1} => {test.Item2} {(test.Item3 ? "parallel" : "sequential")}\r\n")),
-                string.Concat(results.Select(test => $"{test.Item1} => {test.Item2} {(test.Item3 ? "parallel" : "sequential")}\r\n")),
+                string.Concat(tests.Select(t => $"{t.Item1} => {t.Item2} {(t.ExpectedParallel ? "parallel" : "sequential")}\r\n")),
+                string.Concat(results.Select(r => $"{r.Item1} => {r.Item2} {(r.ExecutedInParallel ? "parallel" : "sequential")}\r\n")),
                 "Report: " + string.Concat(report.Select(line => "\r\n" + line)));
         }
     }
