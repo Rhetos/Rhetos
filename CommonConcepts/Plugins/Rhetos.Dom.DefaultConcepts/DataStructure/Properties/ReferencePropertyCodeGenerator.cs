@@ -42,6 +42,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             var referenceGuid = new PropertyInfo { DataStructure = info.DataStructure, Name = info.Name + "ID" };
             PropertyHelper.GenerateCodeForType(referenceGuid, codeBuilder, "Guid?");
+            PropertyHelper.GenerateSotrageMapping(referenceGuid, codeBuilder);
 
             if (DslUtility.IsQueryable(info.DataStructure) && DslUtility.IsQueryable(info.Referenced))
                 DataStructureQueryableCodeGenerator.AddNavigationPropertyWithBackingField(codeBuilder, info.DataStructure,
@@ -66,6 +67,10 @@ namespace Rhetos.Dom.DefaultConcepts
                         ((Rhetos.UserException)interpretedException).SystemMessage = " + CsUtility.QuotedString(systemMessage) + @";
                     ";
                     codeBuilder.InsertCode(onEnterInterpretSqlError, WritableOrmDataStructureCodeGenerator.OnDatabaseErrorTag, info.DataStructure);
+
+                    if (info.Referenced == info.DataStructure)
+                        codeBuilder.InsertCode($@"if(entity.{info.Name}ID != null && entity.{info.Name}ID != entity.ID) dependencies.Add(entity.{info.Name}ID.Value);
+            ", WritableOrmDataStructureCodeGenerator.PersistanceStorageMapperDependencyResolutionTag, info.DataStructure);
                 }
 
                 if (info.Referenced is IWritableOrmDataStructure)
@@ -77,6 +82,7 @@ namespace Rhetos.Dom.DefaultConcepts
                         ((Rhetos.UserException)interpretedException).SystemMessage = " + CsUtility.QuotedString(systemMessage) + @";
                     ";
                     codeBuilder.InsertCode(onDeleteInterpretSqlError, WritableOrmDataStructureCodeGenerator.OnDatabaseErrorTag, info.Referenced);
+
                 }
             }
         }

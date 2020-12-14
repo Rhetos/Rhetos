@@ -76,6 +76,10 @@ namespace Rhetos.Dom.DefaultConcepts
         /// Data is already saved to the database (but the SQL transaction has not yet been committed).</summary>
         public static readonly CsTag<DataStructureInfo> AfterSaveTag = "WritableOrm AfterSave";
 
+        public static readonly CsTag<DataStructureInfo> PersistanceStorageMapperPropertyMappingTag = "PersistanceStorageMapperPropertyMapping";
+
+        public static readonly CsTag<DataStructureInfo> PersistanceStorageMapperDependencyResolutionTag = "PersistanceStorageMapperDependencyResolution";
+
         protected static string MemberFunctionsSnippet(DataStructureInfo info)
         {
             return string.Format(
@@ -100,8 +104,8 @@ namespace Rhetos.Dom.DefaultConcepts
             " + ProcessedOldDataTag.Evaluate(info) + @"
 
             {{
-                DomHelper.EntityFrameworkOptimizedSave(insertedNew, updatedNew, deletedIds, item => item.ToNavigation(), checkUserPermissions, _executionContext.EntityFrameworkContext, _sqlUtility,
-                    out var saveOperation, out var saveException, out var interpretedException);
+                DomHelper.EntityFrameworkOptimizedSave(insertedNew, updatedNew, deletedIds, _executionContext.PersistanceStorage, checkUserPermissions, _sqlUtility,
+                    out var saveOperation, out System.Data.SqlClient.SqlException saveException, out var interpretedException);
 
                 if (saveException != null)
                 {{
@@ -145,6 +149,38 @@ namespace Rhetos.Dom.DefaultConcepts
                 info.Name);
         }
 
+        protected static string PersistanceStorageMappingSnippet(DataStructureInfo info)
+        {
+            return $@"
+    public class {info.Module.Name}_{info.Name}_Mapper : IPersistanceStorageObjectMapper
+    {{
+    	public Dictionary<string, System.Data.Common.DbParameter> GetParameters(IEntity genericEntity)
+        {{
+            var entity = genericEntity as {info.Module}.{info.Name};
+            var mappings = new Dictionary<string, System.Data.Common.DbParameter>();
+            mappings.Add(""ID"", new SqlParameter("""", entity.ID));
+            {PersistanceStorageMapperPropertyMappingTag.Evaluate(info)}
+    
+            return mappings;
+        }}
+    
+    	public List<Guid> GetDependencies(IEntity genericEntity)
+        {{
+            var entity = genericEntity as {info.Module}.{info.Name};
+            var dependencies = new List<Guid>();
+            {PersistanceStorageMapperDependencyResolutionTag.Evaluate(info)}
+    
+            return dependencies;
+        }}
+    
+    	public string GetTableName()
+        {{
+            return ""{(info as IOrmDataStructure).GetOrmSchema()}.{(info as IOrmDataStructure).GetOrmDatabaseObject()}"";
+        }}
+    }}
+    ";
+        }
+
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (DataStructureInfo)conceptInfo;
@@ -160,6 +196,11 @@ namespace Rhetos.Dom.DefaultConcepts
                 codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.ExceptionsUtility));
                 codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.CsUtility));
                 codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Dom.DefaultConcepts.InvalidDataMessage));
+
+                codeBuilder.InsertCode(PersistanceStorageMappingSnippet(info), DomInitializationCodeGenerator.PersistanceStorageMappingsTag);
+                string registerRepository = $@"_mappings.Add(typeof({info.Module.Name}.{info.Name}), new {info.Module.Name}_{info.Name}_Mapper());
+            ";
+                codeBuilder.InsertCode(registerRepository, DomInitializationCodeGenerator.PersistanceStorageMappingRegistrationTag);
             }
         }
     }

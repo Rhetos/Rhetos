@@ -39,6 +39,7 @@ namespace Rhetos.Dom.DefaultConcepts
             var info = (PropertyInfo)conceptInfo;
 
             PropertyHelper.GenerateCodeForType(info, codeBuilder, "decimal?");
+            PropertyHelper.GenerateSotrageMappingForDecimalTypes(info, codeBuilder, 10, 28);
         }
     }
 }

@@ -18,12 +18,7 @@
 */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
-using System.Globalization;
 using Rhetos.Compiler;
 
 namespace Rhetos.Dom.DefaultConcepts
@@ -59,6 +54,30 @@ namespace Rhetos.Dom.DefaultConcepts
                 codeBuilder.InsertCode(
                     string.Format(",\r\n                {0} = item.{0}", info.Name),
                     RepositoryHelper.AssignSimplePropertyTag, info.DataStructure);
+        }
+
+        public static void GenerateSotrageMapping(PropertyInfo info, ICodeBuilder codeBuilder)
+        {
+            if (info.DataStructure is IWritableOrmDataStructure)
+            {
+                codeBuilder.InsertCode($@"mappings.Add(""{info.Name}"", new SqlParameter("""", ((object)entity.{info.Name}) ?? DBNull.Value));
+            ", WritableOrmDataStructureCodeGenerator.PersistanceStorageMapperPropertyMappingTag, info.DataStructure);
+            }
+        }
+
+        public static void GenerateSotrageMappingForDecimalTypes(PropertyInfo info, ICodeBuilder codeBuilder, int scale, int precision)
+        {
+            if (info.DataStructure is IWritableOrmDataStructure)
+            {
+                var code = $@"{{
+                var parameter = new SqlParameter("""", ((object)entity.{info.Name}) ?? DBNull.Value);
+                parameter.Scale = {scale};
+                parameter.Precision = {precision};
+                mappings.Add(""{info.Name}"", parameter);
+            }}
+            ";
+                codeBuilder.InsertCode(code, WritableOrmDataStructureCodeGenerator.PersistanceStorageMapperPropertyMappingTag, info.DataStructure);
+            }
         }
     }
 }

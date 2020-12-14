@@ -22,8 +22,8 @@ using Rhetos.Dsl;
 using Rhetos.Extensibility;
 using Rhetos.Processing;
 using Rhetos.Utilities;
-using System;
 using System.ComponentModel.Composition;
+using System.IO;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -39,6 +39,8 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly string ReadableRepositoryBaseMembersTag = "/*ReadableRepositoryBaseMembers*/";
         public static readonly string QueryableRepositoryBaseMembersTag = "/*QueryableRepositoryBaseMembers*/";
         public static readonly string OrmRepositoryBaseMembersTag = "/*OrmRepositoryBaseMembers*/";
+        public static readonly string PersistanceStorageMappingRegistrationTag = "/*PersistanceStorageMappingRegistration*/";
+        public static readonly string PersistanceStorageMappingsTag = "/*PersistanceStorageMappings*/";
 
         private readonly RhetosBuildEnvironment _buildEnvironment;
         private readonly CommonConceptsOptions _commonConceptsOptions;
@@ -59,13 +61,15 @@ namespace Rhetos.Dom.DefaultConcepts
     using System.Linq.Expressions;
     using System.Runtime.Serialization;
     using Rhetos.Dom.DefaultConcepts;
-    using Rhetos.Utilities;";
+    using Rhetos.Utilities;
+    using System.Data.SqlClient;";
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             codeBuilder.InsertCodeToFile(GetModelSnippet(), $"{DomAssemblies.Model}\\QueryExtensions");
             codeBuilder.InsertCodeToFile(GetOrmSnippet(), string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder) ? DomAssemblies.Orm.ToString() : "EntityFrameworkContext");
             codeBuilder.InsertCodeToFile(GetRepositoriesSnippet(), DomAssemblies.Repositories.ToString());
+            codeBuilder.InsertCodeToFile(GetPersistanceStorageMapperSnippet(), string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder) ? DomAssemblies.Orm.ToString() : "PersistanceStorageMapper");
 
             codeBuilder.InsertCode("this.Configuration.UseDatabaseNullSemantics = _rhetosAppOptions.EntityFrameworkUseDatabaseNullSemantics;\r\n            ", EntityFrameworkContextInitializeTag);
 
@@ -77,6 +81,8 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Security.IAuthorizationManager));
             codeBuilder.AddReferencesFromDependency(typeof(System.ComponentModel.Composition.ExportAttribute));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Dom.DefaultConcepts.GenericRepositories));
+            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Dom.DefaultConcepts.IEntity));
+            codeBuilder.AddReferencesFromDependency(typeof(System.Data.SqlClient.SqlCommand));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Logging.ILogProvider));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Security.IWindowsSecurity));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.SqlUtility));
@@ -91,6 +97,13 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Dom.DefaultConcepts.CommonConceptsDatabaseSettings));
             codeBuilder.AddReferencesFromDependency(typeof(ApplyFiltersOnClientRead));
             codeBuilder.AddReferencesFromDependency(typeof(ICommandInfo)); // Used from ApplyFiltersOnClientRead.
+            //In .NET Standard the SqlException is located in the System.Data assmbly and if we add
+            //codeBuilder.AddReferencesFromDependency(typeof(System.Data.SqlClient.SqlException))
+            //it will add a reference to the assembly System.Data.
+            //The problem is when we are tryng to compile the generated source code, the target framework is .NET 4.7.1, and the compiler can't find
+            //the definition of SqlException in System.Data assembly because the definition is located in System.Data.SqlClient
+            if (string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder))
+                codeBuilder.AddReference(Path.Combine(Paths.BinFolder, "System.Data.SqlClient.dll"));
         }
 
         public static string DisableWarnings(CommonConceptsOptions commonConceptsOptions)
@@ -290,6 +303,9 @@ $@"namespace Common
         protected Lazy<Common.DomRepository> _repository;
         public Common.DomRepository Repository {{ get {{ return _repository.Value; }} }}
 
+        protected Lazy<Rhetos.Dom.DefaultConcepts.IPersistanceStorage> _persistanceStorage;
+        public Rhetos.Dom.DefaultConcepts.IPersistanceStorage PersistanceStorage {{ get {{ return _persistanceStorage.Value; }} }}
+
         public Rhetos.Logging.ILogProvider LogProvider {{ get; private set; }}
 
         protected Lazy<Rhetos.Security.IWindowsSecurity> _windowsSecurity;
@@ -307,6 +323,7 @@ $@"namespace Common
             Lazy<Rhetos.Security.IAuthorizationManager> authorizationManager,
             Lazy<Rhetos.Dom.DefaultConcepts.GenericRepositories> genericRepositories,
             Lazy<Common.DomRepository> repository,
+            Lazy<Rhetos.Dom.DefaultConcepts.IPersistanceStorage> persistanceStorage,
             Rhetos.Logging.ILogProvider logProvider,
             Lazy<Rhetos.Security.IWindowsSecurity> windowsSecurity{ModuleCodeGenerator.ExecutionContextConstructorArgumentTag},
             EntityFrameworkContext entityFrameworkContext)
@@ -317,6 +334,7 @@ $@"namespace Common
             _authorizationManager = authorizationManager;
             _genericRepositories = genericRepositories;
             _repository = repository;
+            _persistanceStorage = persistanceStorage;
             LogProvider = logProvider;
             _windowsSecurity = windowsSecurity;
             EntityFrameworkContext = entityFrameworkContext;
@@ -347,6 +365,7 @@ $@"namespace Common
             builder.RegisterType<ExecutionContext>().InstancePerLifetimeScope();
             builder.RegisterInstance(Infrastructure.RegisteredInterfaceImplementations).ExternallyOwned();
             builder.RegisterInstance(Infrastructure.ApplyFiltersOnClientRead).ExternallyOwned();
+            builder.RegisterType<PersistanceStorageObjectMappings>().As<IPersistanceStorageObjectMappings>().SingleInstance();            
             builder.RegisterInstance(new Rhetos.Dom.DefaultConcepts.CommonConceptsDatabaseSettings
             {{
                 UseLegacyMsSqlDateTime = {_databaseSettings.UseLegacyMsSqlDateTime.ToString().ToLowerInvariant()},
@@ -500,6 +519,37 @@ $@"namespace Common
     }}
 
     {ModuleCodeGenerator.CommonNamespaceMembersTag}{RestoreWarnings(_commonConceptsOptions)}
+}}
+";
+
+        private string GetPersistanceStorageMapperSnippet() =>
+$@"namespace Common
+{{
+    using System;
+    using Rhetos.Dom.DefaultConcepts;
+    using System.Collections.Generic;
+    using System.Data.SqlClient;
+
+    public class PersistanceStorageObjectMappings : IPersistanceStorageObjectMappings
+    {{
+        Dictionary<Type, IPersistanceStorageObjectMapper> _mappings = new Dictionary<Type, IPersistanceStorageObjectMapper>();
+
+        public PersistanceStorageObjectMappings()
+        {{
+            {PersistanceStorageMappingRegistrationTag}
+        }}
+
+        public IPersistanceStorageObjectMapper GetMapping(Type type)
+        {{
+            IPersistanceStorageObjectMapper mapper;
+            if(_mappings.TryGetValue(type, out mapper))
+                return mapper;
+            else
+                throw new Rhetos.FrameworkException(""There is no mapping associated with the type {{type.GetType().FullName}}. The mapping definition is required for database save operations."");
+        }}
+    }}
+
+    {PersistanceStorageMappingsTag}
 }}
 ";
     }

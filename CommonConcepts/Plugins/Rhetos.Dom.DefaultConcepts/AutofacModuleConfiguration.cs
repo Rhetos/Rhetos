@@ -46,6 +46,7 @@ namespace Rhetos.Dom.DefaultConcepts
             builder.RegisterType<EntityFrameworkMetadata>().SingleInstance();
             builder.RegisterType<MetadataWorkspaceFileProvider>().As<IMetadataWorkspaceFileProvider>().SingleInstance();
             builder.RegisterType<EfMappingViewsHash>().As<IEfMappingViewsHash>();
+            builder.RegisterType<PersistanceStorage>().As<IPersistanceStorage>();
 
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<CommonConceptsOptions>()).SingleInstance(); // Build-time configuration. It is disabled at run-time by AutofacModuleConfiguration in the generated code.
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<CommonConceptsDatabaseSettings>()).SingleInstance(); // Reading configuration at build-time. It is overridden at run-time by AutofacModuleConfiguration in the generated code, to return values from build-time that are hardcoded in the generated application.
