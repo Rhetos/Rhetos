@@ -37,9 +37,9 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnInsert()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new SimpleRange { FromValue = 1, ToValue = 0 };
                 repository.TestRange.SimpleRange.Insert(new[] { entity });
             }
@@ -48,9 +48,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShouldNotThrowUserExceptionOnInsert()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new SimpleRange { FromValue = (decimal)1.1, ToValue = (decimal)2.0 };
                 repository.TestRange.SimpleRange.Insert(new[] { entity });
             }
@@ -59,14 +59,14 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShouldInsertEntityWithoutRangeTo()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestRange.SimpleRange;",
                     });
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new SimpleRange { FromValue = 1 };
                 var entity2 = new SimpleRange { ToValue = 1 };
                 repository.TestRange.SimpleRange.Insert(new[] { entity, entity2 });
@@ -77,9 +77,9 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnUpdate()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new SimpleRange { FromValue = 1, ToValue = 5 };
                 repository.TestRange.SimpleRange.Insert(new[] { entity });
 
@@ -91,9 +91,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShoulInsertNormallyDate()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new DateRangeWithoutDef { FromDate = DateTime.Today, ToDate = DateTime.Today.AddDays(2) };
                 repository.TestRange.DateRangeWithoutDef.Insert(new[] { entity });
             }
@@ -102,9 +102,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShoulInsertNormallySameDates()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new DateRangeWithoutDef { FromDate = DateTime.Today, ToDate = DateTime.Today };
                 repository.TestRange.DateRangeWithoutDef.Insert(new[] { entity });
             }
@@ -114,9 +114,9 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnUpdateDate()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new DateRangeWithoutDef { FromDate = DateTime.Today, ToDate = DateTime.Today.AddDays(2) };
                 repository.TestRange.DateRangeWithoutDef.Insert(new[] { entity });
 
@@ -128,9 +128,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShoulInsertNormallySameDateTime()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new DateTimeRangeWithoutDef { FromDate = DateTime.Today, ToDate = DateTime.Today };
                 repository.TestRange.DateTimeRangeWithoutDef.Insert(new[] { entity });
             }
@@ -140,9 +140,9 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnUpdateDateTime()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new DateTimeRangeWithoutDef { FromDate = DateTime.Today, ToDate = DateTime.Today.AddDays(2) };
                 repository.TestRange.DateTimeRangeWithoutDef.Insert(new[] { entity });
 
@@ -154,9 +154,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShouldInsertNormallyJustOneDate()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new DateRangeWithoutDef { FromDate = DateTime.Today };
                 var entity2 = new DateRangeWithoutDef { ToDate = DateTime.Today };
                 repository.TestRange.DateRangeWithoutDef.Insert(new[] { entity, entity2 });
@@ -168,9 +168,9 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThrowExceptionIfNotSetRequired()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new DateRangeWithRequired { ToDate = DateTime.Today };
                 repository.TestRange.DateRangeWithRequired.Insert(new[] { entity });
             }

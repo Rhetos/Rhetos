@@ -38,12 +38,12 @@ namespace CommonConcepts.Test.OldConcepts
         [TestMethod]
         public void SimpleReference()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 Guid refID = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestBrowse.Source;",
                         "DELETE FROM TestBrowse.Other;",
@@ -62,12 +62,12 @@ namespace CommonConcepts.Test.OldConcepts
         [TestMethod]
         public void ReuseableSourceFilter()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 Guid refID = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestBrowse.Source;",
                         "DELETE FROM TestBrowse.Other;",
@@ -110,12 +110,12 @@ namespace CommonConcepts.Test.OldConcepts
         [TestMethod]
         public void MultiplePropertiesSameSource()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 Guid refID = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestBrowse.Source",
                         "DELETE FROM TestBrowse.Other",
@@ -131,12 +131,12 @@ namespace CommonConcepts.Test.OldConcepts
         [TestMethod]
         public void TakeComplex()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 Guid parentID = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestBrowse.Complex",
                         "DELETE FROM TestBrowse.Parent",
@@ -162,10 +162,10 @@ namespace CommonConcepts.Test.OldConcepts
         [TestMethod]
         public void Filters()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
-                var genericRepository = container.Resolve<GenericRepository<TestBrowse.SF>>();
+                var repository = scope.Resolve<Common.DomRepository>();
+                var genericRepository = scope.Resolve<GenericRepository<TestBrowse.SF>>();
 
                 //Assert.AreEqual(0, genericRepository.Load(item => item.ID == Guid.Empty).Count(), "Generic repository: Simple loader with filter expression.");
                 //Assert.AreEqual(0, repository.TestBrowse.SF.Query().Where(item => item.ID == Guid.Empty).ToSimple().ToList().Count(), "Simple query.");
@@ -173,7 +173,7 @@ namespace CommonConcepts.Test.OldConcepts
 
                 Guid sourceId = Guid.NewGuid();
                 Guid refId = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestBrowse.Source;",
                         "DELETE FROM TestBrowse.Other;",
@@ -208,12 +208,12 @@ namespace CommonConcepts.Test.OldConcepts
         [TestMethod]
         public void OtherModule()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 Guid parentID = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestBrowse.Complex",
                         "DELETE FROM TestBrowse.Parent",
@@ -239,9 +239,9 @@ namespace CommonConcepts.Test.OldConcepts
         [TestMethod]
         public void UniqueReference()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var p = new TestBrowse.ParentBase { Name = "p" };
                 repository.TestBrowse.ParentBase.Insert(p);
@@ -258,10 +258,10 @@ namespace CommonConcepts.Test.OldConcepts
         public void UniqueReferenceCascadeDelete()
         {
             foreach (bool useDatabaseNullSemantics in new[] { false, true })
-                using (var container = TestContainer.Create(
-                    TestContainer.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
+                using (var scope = TestScope.Create(
+                    TestScope.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
                 {
-                    var repository = container.Resolve<Common.DomRepository>();
+                    var repository = scope.Resolve<Common.DomRepository>();
 
                     var p1 = new TestBrowse.ParentBase { Name = "p1" };
                     var p2 = new TestBrowse.ParentBase { Name = "p2" };

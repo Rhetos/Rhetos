@@ -54,8 +54,8 @@ namespace Rhetos.Persistence.Test
         [TestInitialize]
         public void CheckDatabaseIsMsSql()
         {
-            // Creating empty Rhetos DI container just to initialize static utilities that are required for test in this class.
-            using (var container = TestContainer.Create())
+            // Creating empty Rhetos DI scope just to initialize static utilities that are required for test in this class.
+            using (var scope = TestScope.Create())
                 Assert.IsNotNull(SqlUtility.ConnectionString);
 
             TestUtility.CheckDatabaseAvailability("MsSql");

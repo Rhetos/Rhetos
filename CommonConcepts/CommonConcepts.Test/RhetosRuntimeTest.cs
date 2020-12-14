@@ -33,11 +33,11 @@ namespace Rhetos
         [TestMethod]
         public void RuntimeRegistrationsRegressionTest()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var lifetimeScope = (Lazy<ILifetimeScope>)container.GetType()
+                var lifetimeScope = (Lazy<ILifetimeScope>)scope.GetType()
                     .GetField("_lifetimeScope", BindingFlags.NonPublic | BindingFlags.Instance)
-                    .GetValue(container);
+                    .GetValue(scope);
 
                 var registrations = lifetimeScope.Value.ComponentRegistry.Registrations
                     .Select(registration => registration.ToString())

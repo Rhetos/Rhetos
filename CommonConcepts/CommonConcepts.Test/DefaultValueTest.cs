@@ -38,10 +38,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ValuesShouldBeSet()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
-                var ctx = container.Resolve<Common.ExecutionContext>();
+                var repository = scope.Resolve<Common.DomRepository>();
+                var ctx = scope.Resolve<Common.ExecutionContext>();
 
                 var userName = ctx.UserInfo.UserName;
                 var id = Guid.NewGuid();

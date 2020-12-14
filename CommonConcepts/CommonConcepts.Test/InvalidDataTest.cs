@@ -47,10 +47,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InsertInvalidData()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestInvalidData.Simple;" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestInvalidData.Simple;" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 repository.TestInvalidData.Simple.Insert(CreateSimple(3));
                 AssertData(repository, "s3");
@@ -62,10 +62,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InsertValidAndInvalidData()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestInvalidData.Simple;" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestInvalidData.Simple;" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 TestUtility.ShouldFail(() => repository.TestInvalidData.Simple.Insert(CreateSimple(3, 300)), "larger than 100");
             }
@@ -74,10 +74,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateInvalidData()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestInvalidData.Simple;" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestInvalidData.Simple;" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var s3 = CreateSimple(3).Single();
                 repository.TestInvalidData.Simple.Insert(new[] { s3 });
@@ -96,10 +96,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateInvalidDataWithValidInsertAndDelete()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestInvalidData.Simple;" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestInvalidData.Simple;" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var s1 = CreateSimple(1).Single();
                 var s2 = CreateSimple(2).Single();
@@ -120,10 +120,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InsertInvalidDataWithValidUpdateAndDelete()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestInvalidData.Simple;" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestInvalidData.Simple;" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var s1 = CreateSimple(1).Single();
                 var s2 = CreateSimple(2).Single();
@@ -154,10 +154,10 @@ namespace CommonConcepts.Test
 
             foreach (var test in tests)
             {
-                using (var container = TestContainer.Create())
+                using (var scope = TestScope.Create())
                 {
                     Console.WriteLine("\r\nInput: " + test.Item1);
-                    var simple2 = container.Resolve<Common.DomRepository>().TestInvalidData.Simple2;
+                    var simple2 = scope.Resolve<Common.DomRepository>().TestInvalidData.Simple2;
                     simple2.Delete(simple2.Query());
                     var newItem = new TestInvalidData.Simple2 { Name = test.Item1 };
                     var error = TestUtility.ShouldFail<Rhetos.UserException>(

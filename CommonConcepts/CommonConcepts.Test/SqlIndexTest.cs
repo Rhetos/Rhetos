@@ -50,9 +50,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SqlIndexMultipleClustered()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var sqlExecuter = container.Resolve<ISqlExecuter>();
+                var sqlExecuter = scope.Resolve<ISqlExecuter>();
 
                 string sqlIndexInfo =
                     @"SELECT

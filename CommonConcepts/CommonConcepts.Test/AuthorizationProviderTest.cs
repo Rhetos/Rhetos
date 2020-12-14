@@ -38,9 +38,9 @@ namespace CommonConcepts.Test
             string anonymous = SystemRole.Anonymous.ToString();
             AuthorizationDataCache.ClearCache();
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
                 var repository = context.Repository;
 
                 // Insert test user and roles:
@@ -59,7 +59,7 @@ namespace CommonConcepts.Test
 
                 // Test automatically assigned system roles:
 
-                var authorizationProvider = (CommonAuthorizationProvider)container.Resolve<IAuthorizationProvider>();
+                var authorizationProvider = (CommonAuthorizationProvider)scope.Resolve<IAuthorizationProvider>();
                 Func<IPrincipal, string[]> getUserRolesNames = principal =>
                     authorizationProvider.GetUsersRoles(principal).Select(id => repository.Common.Role.Load(new[] { id }).Single().Name).ToArray();
 

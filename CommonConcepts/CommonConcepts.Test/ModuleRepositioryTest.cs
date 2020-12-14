@@ -33,9 +33,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DomRepositoryHasModuleRepositories()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 Assert.IsNotNull(repository.TestDataStructure);
             }
         }

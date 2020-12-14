@@ -35,9 +35,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void QueryableFromRepository()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var secondString = repository.TestDataStructure.SqlQueryable1.Query().Where(item => item.i == 2).Select(item => item.s).Single();
                 Assert.AreEqual("b", secondString);
@@ -52,11 +52,11 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NotCached()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestDataStructure.CachingTestEntity;" });
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestDataStructure.CachingTestEntity;" });
                 Assert.AreEqual("", ReportCachingTestView(repository), "initial");
 
                 var entities = repository.TestDataStructure.CachingTestEntity;
@@ -75,10 +75,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NotCachedReference()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {"DELETE FROM TestSqlQueryable.Document;"});
-                var documentRepository = container.Resolve<Common.DomRepository>().TestSqlQueryable.Document;
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {"DELETE FROM TestSqlQueryable.Document;"});
+                var documentRepository = scope.Resolve<Common.DomRepository>().TestSqlQueryable.Document;
 
                 var doc = new TestSqlQueryable.Document { ID = Guid.NewGuid(), Name = "abc" };
                 documentRepository.Insert(new[] { doc });
@@ -94,11 +94,11 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ReferenceToView()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestDataStructure.ReferenceView;" });
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestDataStructure.ReferenceView;" });
 
-                var entityRepository = container.Resolve<Common.DomRepository>().TestDataStructure.ReferenceView;
+                var entityRepository = scope.Resolve<Common.DomRepository>().TestDataStructure.ReferenceView;
 
                 var newItem = new TestDataStructure.ReferenceView { SqlQueryable1ID = new Guid("DB97EA5F-FB8C-408F-B35B-AD6642C593D7") };
                 entityRepository.Insert(new[] { newItem });

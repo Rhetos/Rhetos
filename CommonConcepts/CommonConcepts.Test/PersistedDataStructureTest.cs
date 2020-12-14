@@ -57,10 +57,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateCache()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM Test6.Pers;" });
+                var repository = scope.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM Test6.Pers;" });
 
                 Assert.AreEqual("a1, b2, c3", ReportSource(repository), "source computation");
                 Assert.AreEqual("", ReportPersisted(repository), "initial");
@@ -108,12 +108,12 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ComputeForNewBaseItems()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var d1ID = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM Test9.Document;",
                         "DELETE FROM Test9.DocumentCreationInfo;",
@@ -144,13 +144,13 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ComputeForNewBaseItems_InvalidCommand()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var d1ID = Guid.NewGuid();
                 var d2ID = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM Test9.Document;",
                         "DELETE FROM Test9.DocumentCreationInfo;",
@@ -192,9 +192,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ComputeForNewBaseItemsWithSaveFilter()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var documentUser = new Test9.Document { Name = "UserDoc" };
                 var documentAuto = new Test9.Document { Name = "AutoDoc" };
@@ -210,10 +210,10 @@ namespace CommonConcepts.Test
         public void KeepSynchronizedSimple()
         {
             var log = new List<string>();
-            using (var container = TestContainer.Create(
-                TestContainer.ConfigureLogMonitor(log)))
+            using (var scope = TestScope.Create(
+                TestScope.ConfigureLogMonitor(log)))
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var doc1 = new Test9.Document { Name = "doc1" };
                 var doc2 = new Test9.Document { Name = "doc2" };
@@ -267,14 +267,14 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void KeepSynchronized()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var d1ID = Guid.NewGuid();
                 var d2ID = Guid.NewGuid();
                 var s11ID = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM Test9.DocumentAggregates;",
                         "DELETE FROM Test9.Part;",
@@ -348,9 +348,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void AllPropertiesCopiesExtension()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var dslModel = container.Resolve<IDslModel>();
+                var dslModel = scope.Resolve<IDslModel>();
 
                 var persisted = (EntityInfo)dslModel.FindByKey("DataStructureInfo Test9.DocumentCreationInfo");
 

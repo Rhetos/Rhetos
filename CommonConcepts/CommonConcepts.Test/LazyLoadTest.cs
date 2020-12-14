@@ -37,9 +37,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void LazyLoadReferenceBaseExtensionLinkedItems()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 repository.TestLazyLoad.Simple.Delete(repository.TestLazyLoad.Simple.Load());
                 repository.TestLazyLoad.SimpleBase.Delete(repository.TestLazyLoad.SimpleBase.Load());
                 repository.TestLazyLoad.Parent.Delete(repository.TestLazyLoad.Parent.Load());
@@ -75,9 +75,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void LinkedItems()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 repository.TestLazyLoad.Simple.Delete(repository.TestLazyLoad.Simple.Load());
                 repository.TestLazyLoad.SimpleBase.Delete(repository.TestLazyLoad.SimpleBase.Load());
@@ -117,9 +117,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UsableObjectsAfterClearCache()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 repository.TestLazyLoad.Simple.Delete(repository.TestLazyLoad.Simple.Load());
                 repository.TestLazyLoad.SimpleBase.Delete(repository.TestLazyLoad.SimpleBase.Load());
                 repository.TestLazyLoad.Parent.Delete(repository.TestLazyLoad.Parent.Load());
@@ -135,7 +135,7 @@ namespace CommonConcepts.Test
                 var s1 = new TestLazyLoad.Simple { ID = sb1.ID, ParentID = p0.ID };
                 repository.TestLazyLoad.Simple.Insert(s0, s1);
 
-                //container.Resolve<IPersistenceCache>().ClearCache(); // TODO: Update or delete this unit test.
+                //scope.Resolve<IPersistenceCache>().ClearCache(); // TODO: Update or delete this unit test.
 
                 var parents = repository.TestLazyLoad.Parent.Query().OrderBy(sb => sb.Name).ToList();
                 var simpleBases = repository.TestLazyLoad.SimpleBase.Query().OrderBy(sb => sb.Name).ToList();
@@ -148,7 +148,7 @@ namespace CommonConcepts.Test
                 // When removing objects from Entity Framework's cache, the EF will automatically set references
                 // between objects to null. Rhetos includes a hack to keep the references, so some data will
                 // be available even though the proxies will probably not work.
-                //container.Resolve<IPersistenceCache>().ClearCache();; // TODO: Update or delete this unit test.
+                //scope.Resolve<IPersistenceCache>().ClearCache();; // TODO: Update or delete this unit test.
 
                 Assert.AreEqual("sb0", simples[0].Base.Name);
                 Assert.AreEqual("p0", simples[0].Parent.Name);
@@ -159,9 +159,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void LoadAndFilterShouldNotReturnNavigationProperties()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var simpleBase = container.Resolve<Common.DomRepository>().TestLazyLoad.SimpleBase;
+                var simpleBase = scope.Resolve<Common.DomRepository>().TestLazyLoad.SimpleBase;
                 simpleBase.Delete(simpleBase.Load());
 
                 var sb0 = new TestLazyLoad.SimpleBase { ID = Guid.NewGuid(), Name = "sb0" };
@@ -188,9 +188,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void QueryLoaded()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 repository.TestLazyLoad.Simple.Delete(repository.TestLazyLoad.Simple.Load());
                 repository.TestLazyLoad.SimpleBase.Delete(repository.TestLazyLoad.SimpleBase.Load());
                 repository.TestLazyLoad.Parent.Delete(repository.TestLazyLoad.Parent.Load());
@@ -216,10 +216,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void OrmCacheShouldNotLeak()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
-                var sqlExecuter = container.Resolve<ISqlExecuter>();
+                var repository = scope.Resolve<Common.DomRepository>();
+                var sqlExecuter = scope.Resolve<ISqlExecuter>();
 
                 var p0 = new TestLazyLoad.Parent { ID = Guid.NewGuid(), Name = "p0" };
                 var p1 = new TestLazyLoad.Parent { ID = Guid.NewGuid(), Name = "p1" };

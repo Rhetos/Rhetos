@@ -39,10 +39,10 @@ namespace CommonConcepts.Test
         {
             var ids = new[] { Guid.NewGuid(), Guid.NewGuid() };
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
-                var sqlExecuter = container.Resolve<ISqlExecuter>();
+                var repository = scope.Resolve<Common.DomRepository>();
+                var sqlExecuter = scope.Resolve<ISqlExecuter>();
 
                 // Initial empty state:
                 Assert.AreEqual("", TestUtility.DumpSorted(repository.TestEntity.BaseEntity.Load(ids), item => item.Name));
@@ -63,9 +63,9 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("e0, e1", TestUtility.DumpSorted(sqlReport));
             }
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 // Empty state after persistence transaction rollback:
                 Assert.AreEqual("", TestUtility.DumpSorted(repository.TestEntity.BaseEntity.Load(ids), item => item.Name));
@@ -77,10 +77,10 @@ namespace CommonConcepts.Test
         {
             var ids = new[] { Guid.NewGuid(), Guid.NewGuid() };
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
-                var sqlExecuter = container.Resolve<ISqlExecuter>();
+                var repository = scope.Resolve<Common.DomRepository>();
+                var sqlExecuter = scope.Resolve<ISqlExecuter>();
 
                 // Initial empty state:
                 Assert.AreEqual("", TestUtility.DumpSorted(repository.TestEntity.BaseEntity.Load(ids), item => item.Name));
@@ -106,9 +106,9 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("e0, e1", TestUtility.DumpSorted(sqlReport));
             }
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 // After persistence transaction rollback, a record should remain from ExecuteSql with "useTransaction: false"
                 Assert.AreEqual("e0", TestUtility.DumpSorted(repository.TestEntity.BaseEntity.Load(ids), item => item.Name));
@@ -125,12 +125,12 @@ namespace CommonConcepts.Test
             var itemsIds = items.Select(item => item.ID);
 
             var log = new List<string>();
-            using (var container = TestContainer.Create(
-                TestContainer.ConfigureLogMonitor(log)))
+            using (var scope = TestScope.Create(
+                TestScope.ConfigureLogMonitor(log)))
             {
-                var repository = container.Resolve<Common.DomRepository>();
-                var sqlExecuter = container.Resolve<ISqlExecuter>();
-                var persistence = container.Resolve<IPersistenceTransaction>();
+                var repository = scope.Resolve<Common.DomRepository>();
+                var sqlExecuter = scope.Resolve<ISqlExecuter>();
+                var persistence = scope.Resolve<IPersistenceTransaction>();
 
                 repository.TestEntity.BaseEntity.Delete(repository.TestEntity.BaseEntity.Query());
 
@@ -153,9 +153,9 @@ namespace CommonConcepts.Test
                 //Assert.AreEqual("e0, e1, e2, e3", TestUtility.DumpSorted(repository.TestEntity.BaseEntity.Query(itemsIds), item => item.Name));
             }
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 Assert.AreEqual("e0, e1", TestUtility.DumpSorted(repository.TestEntity.BaseEntity.Query(itemsIds), item => item.Name));
             }

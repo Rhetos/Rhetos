@@ -36,10 +36,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShouldUploadBinary()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestBinary.E;" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestBinary.E;" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var rnd = new Random();
                 var blob = new Byte[10];
@@ -56,10 +56,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void LargeBinary()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestBinary.E;" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestBinary.E;" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var rnd = new Random();
                 var blob = new Byte[1000000];

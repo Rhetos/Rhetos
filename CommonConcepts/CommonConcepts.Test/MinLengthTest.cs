@@ -37,9 +37,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShouldThowUserExceptionOnInsert()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new SimpleMinLength { StringMoreThan2Chars = "." };
 
                 TestUtility.ShouldFail<Rhetos.UserException>(
@@ -51,9 +51,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShouldNotThrowUserExceptionOnInsert()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new SimpleMinLength { StringMoreThan2Chars = ".aaa" };
                 repository.TestLengthLimit.SimpleMinLength.Insert(new[] { entity });
             }
@@ -62,14 +62,14 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShouldInsertEntity()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestLengthLimit.SimpleMaxLength;",
                     });
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new SimpleMinLength { StringMoreThan2Chars = "abc" };
                 repository.TestLengthLimit.SimpleMinLength.Insert(new[] { entity });
             }
@@ -78,9 +78,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShouldThowUserExceptionOnUpdate()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new SimpleMinLength { StringMoreThan2Chars = "1234" };
                 repository.TestLengthLimit.SimpleMinLength.Insert(entity);
                 entity.StringMoreThan2Chars = "1";

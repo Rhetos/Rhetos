@@ -37,20 +37,20 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void QueryWithParameterSimple()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var testData = new[] { "a1", "a2", "b1" }
                     .Select(name => new TestQueryable.Simple { Name = name })
                     .ToList();
 
-                var simpleRepository = container.Resolve<Common.DomRepository>().TestQueryable.Simple;
+                var simpleRepository = scope.Resolve<Common.DomRepository>().TestQueryable.Simple;
                 simpleRepository.Delete(simpleRepository.Load());
                 simpleRepository.Insert(testData);
 
                 var parameter = new TestQueryable.StartsWith { Prefix = "a" };
                 Assert.AreEqual("a1, a2", TestUtility.DumpSorted(simpleRepository.Query(parameter), item => item.Name));
 
-                var genericRepository = container.Resolve<GenericRepository<TestQueryable.Simple>>();
+                var genericRepository = scope.Resolve<GenericRepository<TestQueryable.Simple>>();
                 Assert.AreEqual("a1, a2", TestUtility.DumpSorted(genericRepository.Query(parameter), item => item.Name));
                 Assert.AreEqual("a1, a2", TestUtility.DumpSorted(genericRepository.Load(parameter), item => item.Name));
                 TestUtility.ShouldFail(() => genericRepository.Filter(genericRepository.Query(), parameter), "does not implement", "TestQueryable.StartsWith");
@@ -60,13 +60,13 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void QueryCovariance()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var testData = new[] { "a1", "a2", "b1" }
                     .Select((name, x) => new TestQueryable.Simple { Name = name, ID = Guid.NewGuid() })
                     .ToList();
 
-                var simpleRepository = container.Resolve<Common.DomRepository>().TestQueryable.Simple;
+                var simpleRepository = scope.Resolve<Common.DomRepository>().TestQueryable.Simple;
                 simpleRepository.Delete(simpleRepository.Load());
                 simpleRepository.Insert(testData);
 

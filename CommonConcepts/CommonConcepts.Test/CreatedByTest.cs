@@ -36,12 +36,12 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SetCurrentUser()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
-                var repository = container.Resolve<Common.DomRepository>();
+                var context = scope.Resolve<Common.ExecutionContext>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
-                string currentUserName = container.Resolve<IUserInfo>().UserName;
+                string currentUserName = scope.Resolve<IUserInfo>().UserName;
                 Assert.IsTrue(!string.IsNullOrWhiteSpace(currentUserName));
                 var currentPrincipal = context.InsertPrincipalOrReadId(currentUserName);
 
@@ -60,12 +60,12 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void LeavePredefinedUser()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
-                var repository = container.Resolve<Common.DomRepository>();
+                var context = scope.Resolve<Common.ExecutionContext>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
-                string currentUserName = container.Resolve<IUserInfo>().UserName;
+                string currentUserName = scope.Resolve<IUserInfo>().UserName;
                 Assert.IsTrue(!string.IsNullOrWhiteSpace(currentUserName));
                 var currentPrincipal = context.InsertPrincipalOrReadId(currentUserName);
 
@@ -87,12 +87,12 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void WorksWithConstraints()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
-                var repository = container.Resolve<Common.DomRepository>();
+                var context = scope.Resolve<Common.ExecutionContext>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
-                string currentUserName = container.Resolve<IUserInfo>().UserName;
+                string currentUserName = scope.Resolve<IUserInfo>().UserName;
                 Assert.IsTrue(!string.IsNullOrWhiteSpace(currentUserName));
                 var currentPrincipal = context.InsertPrincipalOrReadId(currentUserName);
 
@@ -111,12 +111,12 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FailsOnDenyUserEdit()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
-                var repository = container.Resolve<Common.DomRepository>();
+                var context = scope.Resolve<Common.ExecutionContext>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
-                string currentUserName = container.Resolve<IUserInfo>().UserName;
+                string currentUserName = scope.Resolve<IUserInfo>().UserName;
                 Assert.IsTrue(!string.IsNullOrWhiteSpace(currentUserName));
                 var currentPrincipal = context.InsertPrincipalOrReadId(currentUserName);
 

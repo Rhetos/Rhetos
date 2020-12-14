@@ -41,9 +41,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterNoPermissions()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repositories = container.Resolve<Common.DomRepository>();
+                var repositories = scope.Resolve<Common.DomRepository>();
                 var itemsRepository = repositories.TestRowPermissions.RPRulesItem;
                 var groupsRepository = repositories.TestRowPermissions.RPRulesGroup;
                 itemsRepository.Delete(itemsRepository.Query());
@@ -70,10 +70,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterWithPermissions()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var currentUserName = container.Resolve<IUserInfo>().UserName;
-                var repositories = container.Resolve<Common.DomRepository>();
+                var currentUserName = scope.Resolve<IUserInfo>().UserName;
+                var repositories = scope.Resolve<Common.DomRepository>();
                 var itemsRepository = repositories.TestRowPermissions.RPRulesItem;
                 var groupsRepository = repositories.TestRowPermissions.RPRulesGroup;
                 itemsRepository.Delete(itemsRepository.Query());
@@ -108,10 +108,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterOptimizeAllowedAll()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var currentUserName = container.Resolve<IUserInfo>().UserName;
-                var repositories = container.Resolve<Common.DomRepository>();
+                var currentUserName = scope.Resolve<IUserInfo>().UserName;
+                var repositories = scope.Resolve<Common.DomRepository>();
                 var itemsRepository = repositories.TestRowPermissions.RPRulesItem;
                 var groupsRepository = repositories.TestRowPermissions.RPRulesGroup;
                 itemsRepository.Delete(itemsRepository.Query());
@@ -146,7 +146,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InheritFrom()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 Level1
                     l1ReadAllow = new Level1() { ID = Guid.NewGuid(), value = 190 },
@@ -160,7 +160,7 @@ namespace CommonConcepts.Test
                     l2cParentWriteAllow = new Level2() { ID = Guid.NewGuid(), MyParentID = l1WriteAllow.ID, value = 7 },
                     l2cParentWriteDeny = new Level2() { ID = Guid.NewGuid(), MyParentID = l1WriteDeny.ID, value = 8 };
 
-                var repositories = container.Resolve<Common.DomRepository>();
+                var repositories = scope.Resolve<Common.DomRepository>();
                 var l1Repo = repositories.TestRowPermissions.Level1;
                 var l2Repo = repositories.TestRowPermissions.Level2;
                 var l3Repo = repositories.TestRowPermissions.Level3;
@@ -214,12 +214,12 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void RulesWrite()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repositories = container.Resolve<Common.DomRepository>();
+                var repositories = scope.Resolve<Common.DomRepository>();
                 var emptyRP = repositories.TestRowPermissions.RPWriteRulesEmpty;
                 var writeRP = repositories.TestRowPermissions.RPWriteRules;
-                var commandImplementations = container.Resolve<IPluginsContainer<ICommandImplementation>>();
+                var commandImplementations = scope.Resolve<IPluginsContainer<ICommandImplementation>>();
                 var saveCommand = commandImplementations.GetImplementations(typeof(SaveEntityCommandInfo)).Single();
 
                 {
@@ -314,10 +314,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void CombinedRules()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var settingsRepos = container.Resolve<GenericRepository<RPCombinedRulesSettings>>();
-                var itemsRepos = container.Resolve<GenericRepository<RPCombinedRulesItems>>();
+                var settingsRepos = scope.Resolve<GenericRepository<RPCombinedRulesSettings>>();
+                var itemsRepos = scope.Resolve<GenericRepository<RPCombinedRulesItems>>();
 
                 var items = "a a1 a2 ab ab1 ab2 b b1 b2 r w"
                     .Split(' ')
@@ -370,7 +370,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void AutoInherit()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var names = new[] { "1", "1b", "2", "3", "4" };
                 var itemsE4 = names.Select(name => new TestRowPermissions4.E4 { ID = Guid.NewGuid(), Name4 = name }).ToList();
@@ -378,12 +378,12 @@ namespace CommonConcepts.Test
                 var itemsE2 = names.Select((name, x) => new TestRowPermissions2.E2 { ID = Guid.NewGuid(), Name2 = name, E3ID = itemsE3[x].ID }).ToList();
                 var itemsE1 = names.Select((name, x) => new TestRowPermissions1.E1 { ID = Guid.NewGuid(), Name1 = name, E2ID = itemsE2[x].ID }).ToList();
 
-                var reposE1 = container.Resolve<GenericRepository<TestRowPermissions1.E1>>();
-                var reposE1Browse = container.Resolve<GenericRepository<TestRowPermissions1.E1Browse>>();
-                var reposE1BrowseRP = container.Resolve<GenericRepository<TestRowPermissions1.E1BrowseRP>>();
-                var reposE2 = container.Resolve<GenericRepository<TestRowPermissions2.E2>>();
-                var reposE3 = container.Resolve<Common.DomRepository>().TestRowPermissions3.E3;
-                var reposE4 = container.Resolve<GenericRepository<TestRowPermissions4.E4>>();
+                var reposE1 = scope.Resolve<GenericRepository<TestRowPermissions1.E1>>();
+                var reposE1Browse = scope.Resolve<GenericRepository<TestRowPermissions1.E1Browse>>();
+                var reposE1BrowseRP = scope.Resolve<GenericRepository<TestRowPermissions1.E1BrowseRP>>();
+                var reposE2 = scope.Resolve<GenericRepository<TestRowPermissions2.E2>>();
+                var reposE3 = scope.Resolve<Common.DomRepository>().TestRowPermissions3.E3;
+                var reposE4 = scope.Resolve<GenericRepository<TestRowPermissions4.E4>>();
 
                 reposE4.Save(itemsE4, null, reposE4.Load());
                 reposE3.Save(itemsE3, null, reposE3.Load());
@@ -402,9 +402,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void AutoInheritInternallyVsFull()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 repository.TestRowPermissionsInheritInternally.ExtensionComplex.Delete(repository.TestRowPermissionsInheritInternally.ExtensionComplex.Query());
                 repository.TestRowPermissionsInheritInternally.SimpleDetail.Delete(repository.TestRowPermissionsInheritInternally.SimpleDetail.Query());
                 repository.TestRowPermissionsInheritFull.ExtensionComplex.Delete(repository.TestRowPermissionsInheritFull.ExtensionComplex.Query());
@@ -441,9 +441,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SelfReference()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var testData = new[]
                 {

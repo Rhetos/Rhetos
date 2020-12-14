@@ -45,9 +45,9 @@ namespace CommonConcepts.Test
         static string _rowPermissionsReadFilter = "Common.RowPermissionsReadItems";
         static string _rowPermissionsWriteFilter = "Common.RowPermissionsWriteItems";
 
-        private static ReadCommandResult ExecuteReadCommand(ReadCommandInfo commandInfo, TransactionScopeContainer container)
+        private static ReadCommandResult ExecuteReadCommand(ReadCommandInfo commandInfo, TransactionScopeContainer scope)
         {
-            var commands = container.Resolve<IIndex<Type, IEnumerable<ICommandImplementation>>>();
+            var commands = scope.Resolve<IIndex<Type, IEnumerable<ICommandImplementation>>>();
             var readCommand = (ReadCommand)commands[typeof(ReadCommandInfo)].Single();
             return (ReadCommandResult)readCommand.Execute(commandInfo).Data.Value;
         }
@@ -58,9 +58,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void TestReadNoRowPermissions()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var gRepository = container.Resolve<GenericRepository<NoRP>>();
+                var gRepository = scope.Resolve<GenericRepository<NoRP>>();
                 gRepository.Save(Enumerable.Range(0, 50).Select(a => new NoRP() { value = a }), null, gRepository.Load());
 
                 {
@@ -69,7 +69,7 @@ namespace CommonConcepts.Test
                         DataSource = "TestRowPermissions.NoRP",
                         ReadRecords = true
                     };
-                    var result = ExecuteReadCommand(all, container);
+                    var result = ExecuteReadCommand(all, scope);
                     Assert.AreEqual(50, result.Records.Count());
                 }
 
@@ -80,7 +80,7 @@ namespace CommonConcepts.Test
                         ReadRecords = true,
                         Filters = new FilterCriteria[] { new FilterCriteria() { Filter = "TestRowPermissions.Value30" } }
                     };
-                    var result = ExecuteReadCommand(filtered, container);
+                    var result = ExecuteReadCommand(filtered, scope);
                     Assert.AreEqual(19, result.Records.Count());
                 }
 
@@ -94,7 +94,7 @@ namespace CommonConcepts.Test
                         ReadRecords = true,
                         Filters = new FilterCriteria[] { new FilterCriteria() { Property = "ID", Operation = "equal", Value = guid } }
                     };
-                    var result = ExecuteReadCommand(single, container);
+                    var result = ExecuteReadCommand(single, scope);
                     Assert.AreEqual(1, result.Records.Count());
                     Assert.AreEqual(51, (result.Records[0] as NoRP).value);
                 }
@@ -109,9 +109,9 @@ namespace CommonConcepts.Test
         {
             CancelTestOnSlowServer();
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var gRepository = container.Resolve<GenericRepository<SimpleRP>>();
+                var gRepository = scope.Resolve<GenericRepository<SimpleRP>>();
                 var items = Enumerable.Range(0, 4001).Select(a => new SimpleRP() { ID = Guid.NewGuid(), value = a }).ToList();
                 gRepository.Save(items, null, gRepository.Load());
 
@@ -121,7 +121,7 @@ namespace CommonConcepts.Test
                             DataSource = "TestRowPermissions.SimpleRP",
                             ReadRecords = true,
                     };
-                    TestUtility.ShouldFail(() => ExecuteReadCommand(cReadAll, container), _readException);
+                    TestUtility.ShouldFail(() => ExecuteReadCommand(cReadAll, scope), _readException);
                 }
 
                 {
@@ -131,7 +131,7 @@ namespace CommonConcepts.Test
                             ReadRecords = true,
                             Filters = new FilterCriteria[] { }
                     };
-                    TestUtility.ShouldFail(() => ExecuteReadCommand(cReadAll, container), _readException);
+                    TestUtility.ShouldFail(() => ExecuteReadCommand(cReadAll, scope), _readException);
                 }
 
                 {
@@ -140,7 +140,7 @@ namespace CommonConcepts.Test
                             DataSource = "TestRowPermissions.SimpleRP",
                             ReadTotalCount = true,
                     };
-                    var result = ExecuteReadCommand(cReadCountOnly, container);
+                    var result = ExecuteReadCommand(cReadCountOnly, scope);
                     Assert.AreEqual(4001, result.TotalCount);
                 }
 
@@ -156,7 +156,7 @@ namespace CommonConcepts.Test
                             Top = 1001,
                             OrderByProperties = orderByValue,
                     };
-                    var result = ExecuteReadCommand(cRead1500_2500, container);
+                    var result = ExecuteReadCommand(cRead1500_2500, scope);
                     Assert.AreEqual(1001, result.Records.Count());
                 }
 
@@ -169,7 +169,7 @@ namespace CommonConcepts.Test
                         Top = 1001,
                         OrderByProperties = orderByValue,
                     };
-                    TestUtility.ShouldFail(() => ExecuteReadCommand(cRead1501_2501, container), _readException);
+                    TestUtility.ShouldFail(() => ExecuteReadCommand(cRead1501_2501, scope), _readException);
                 }
 
                 {
@@ -181,7 +181,7 @@ namespace CommonConcepts.Test
                         Top = 1001,
                         OrderByProperties = orderByValue,
                     };
-                    TestUtility.ShouldFail(() => ExecuteReadCommand(cRead1499_2499, container), _readException);
+                    TestUtility.ShouldFail(() => ExecuteReadCommand(cRead1499_2499, scope), _readException);
                 }
 
                 {
@@ -193,7 +193,7 @@ namespace CommonConcepts.Test
                         Top = 1,
                         OrderByProperties = orderByValue,
                     };
-                    TestUtility.ShouldFail(() => ExecuteReadCommand(cRead4000, container), _readException);
+                    TestUtility.ShouldFail(() => ExecuteReadCommand(cRead4000, scope), _readException);
                 }
 
                 {
@@ -203,7 +203,7 @@ namespace CommonConcepts.Test
                         ReadRecords = true,
                         Filters = new FilterCriteria[] { new FilterCriteria() { Property = "value", Operation = "less", Value = 2001 } }
                     };
-                    TestUtility.ShouldFail(() => ExecuteReadCommand(cReadFilterFail, container), _readException);
+                    TestUtility.ShouldFail(() => ExecuteReadCommand(cReadFilterFail, scope), _readException);
                 }
 
                 {
@@ -213,7 +213,7 @@ namespace CommonConcepts.Test
                         ReadRecords = true,
                         Filters = new FilterCriteria[] { new FilterCriteria() { Property = "ID", Operation = "equal", Value = items[2501].ID } }
                     };
-                    TestUtility.ShouldFail(() => ExecuteReadCommand(cReadSingleFail, container), _readException);
+                    TestUtility.ShouldFail(() => ExecuteReadCommand(cReadSingleFail, scope), _readException);
                 }
 
                 {
@@ -223,7 +223,7 @@ namespace CommonConcepts.Test
                         ReadRecords = true,
                         Filters = new FilterCriteria[] { new FilterCriteria() { Property = "ID", Operation = "equal", Value = items[2500].ID } }
                     };
-                    var result = ExecuteReadCommand(cReadSingleOk, container);
+                    var result = ExecuteReadCommand(cReadSingleOk, scope);
                     Assert.AreEqual(1, result.Records.Count());
                 }
 
@@ -238,7 +238,7 @@ namespace CommonConcepts.Test
                                 new FilterCriteria() { Property = "value", Operation = "less", Value = 2501 }
                             }
                     };
-                    var result = ExecuteReadCommand(cReadFilterOk, container);
+                    var result = ExecuteReadCommand(cReadFilterOk, scope);
                     Assert.AreEqual(1, result.Records.Count());
                     Assert.AreEqual(items[2500].ID, (result.Records[0] as SimpleRP).ID);
                 }
@@ -251,7 +251,7 @@ namespace CommonConcepts.Test
                         Filters = new FilterCriteria[] { new FilterCriteria()  
                             { Filter = _rowPermissionsReadFilter } }
                     };
-                    var result = ExecuteReadCommand(cPermissionFilter, container);
+                    var result = ExecuteReadCommand(cPermissionFilter, scope);
                     Assert.AreEqual(1001, result.Records.Count());
                     var values = ((SimpleRP[])result.Records).Select(a => a.value);
                     Assert.IsTrue(Enumerable.Range(1500, 1001).All(a => values.Contains(a)));
@@ -262,11 +262,11 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void TestReadComplexWithContext()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
                 var currentUserName = context.UserInfo.UserName; 
-                var permRepository = container.Resolve<GenericRepository<TestRowPermissions.ComplexRPPermissions>>();
+                var permRepository = scope.Resolve<GenericRepository<TestRowPermissions.ComplexRPPermissions>>();
 
                 ComplexRPPermissions[] perms = new ComplexRPPermissions[]
                 {
@@ -276,7 +276,7 @@ namespace CommonConcepts.Test
                 };
                 permRepository.Save(perms, null, permRepository.Load());
 
-                var gRepository = container.Resolve<GenericRepository<TestRowPermissions.ComplexRP>>();
+                var gRepository = scope.Resolve<GenericRepository<TestRowPermissions.ComplexRP>>();
                 var items = Enumerable.Range(0, 101).Select(a => new ComplexRP() { ID = Guid.NewGuid(), value = a }).ToList();
                 gRepository.Save(items, null, gRepository.Load());
 
@@ -288,7 +288,7 @@ namespace CommonConcepts.Test
                         ReadRecords = true,
                         Filters = new FilterCriteria[] { new FilterCriteria() { Filter = _rowPermissionsReadFilter } }
                     };
-                    var result = ExecuteReadCommand(cAllowed, container);
+                    var result = ExecuteReadCommand(cAllowed, scope);
                     var values = ((ComplexRP[])result.Records).Select(a => a.value);
                     Assert.IsTrue(Enumerable.Range(5, 86).All(a => values.Contains(a)));
                 }
@@ -305,7 +305,7 @@ namespace CommonConcepts.Test
                             new FilterCriteria() { Filter = "TestRowPermissions.Value10" }
                         }
                     };
-                    var result = ExecuteReadCommand(cAllowedFilter, container);
+                    var result = ExecuteReadCommand(cAllowedFilter, scope);
                     var values = ((ComplexRP[])result.Records).Select(a => a.value);
                     Assert.IsTrue(Enumerable.Range(11, 80).All(a => values.Contains(a)));
                 }
@@ -322,7 +322,7 @@ namespace CommonConcepts.Test
                         }
                     };
                     
-                    TestUtility.ShouldFail(() => ExecuteReadCommand(cInvalidRange, container), _readException);
+                    TestUtility.ShouldFail(() => ExecuteReadCommand(cInvalidRange, scope), _readException);
                 }
 
                 {
@@ -335,7 +335,7 @@ namespace CommonConcepts.Test
                             new FilterCriteria() { Property = "value", Operation = "less", Value = 2 },
                         }
                     };
-                    TestUtility.ShouldFail(() => ExecuteReadCommand(cInvalidRange2, container), _readException);
+                    TestUtility.ShouldFail(() => ExecuteReadCommand(cInvalidRange2, scope), _readException);
                 }
 
                 {
@@ -348,7 +348,7 @@ namespace CommonConcepts.Test
                             new FilterCriteria() { Property = "value", Operation = "less", Value = 60 },
                             new FilterCriteria() { Property = "value", Operation = "greater", Value = 50 },                        }
                     };
-                    var result = ExecuteReadCommand(cValidRange, container);
+                    var result = ExecuteReadCommand(cValidRange, scope);
                     Assert.AreEqual(9, result.Records.Count());
                 }
 
@@ -362,7 +362,7 @@ namespace CommonConcepts.Test
                             new FilterCriteria() { Property = "value", Operation = "greater", Value = 200 },
                         }
                     };
-                    var result = ExecuteReadCommand(cNoRecords, container);
+                    var result = ExecuteReadCommand(cNoRecords, scope);
                     Assert.AreEqual(0, result.Records.Count());
                 }
 
@@ -372,7 +372,7 @@ namespace CommonConcepts.Test
                         DataSource = "TestRowPermissions.ComplexRP",
                         ReadTotalCount = true,
                     };
-                    var result = ExecuteReadCommand(cTotalCount, container);
+                    var result = ExecuteReadCommand(cTotalCount, scope);
                     Assert.AreEqual(101, result.TotalCount);
                 }
 
@@ -386,7 +386,7 @@ namespace CommonConcepts.Test
                             new FilterCriteria() { Property = "ID", Operation = "equal", Value = items[90].ID },
                         }
                     };
-                    var result = ExecuteReadCommand(cSingleOk, container);
+                    var result = ExecuteReadCommand(cSingleOk, scope);
                     Assert.AreEqual(1, result.Records.Count());
                 }
 
@@ -400,7 +400,7 @@ namespace CommonConcepts.Test
                             new FilterCriteria() { Property = "ID", Operation = "equal", Value = items[91].ID },
                         }
                     };
-                    TestUtility.ShouldFail(() => ExecuteReadCommand(cSingleFail, container), _readException);
+                    TestUtility.ShouldFail(() => ExecuteReadCommand(cSingleFail, scope), _readException);
                 }
             }
         }
@@ -408,9 +408,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Browse()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var gr = container.Resolve<GenericRepository<SimpleRP>>();
+                var gr = scope.Resolve<GenericRepository<SimpleRP>>();
 
                 var items = new[] { 1000, 2000 }.Select(a => new SimpleRP() { ID = Guid.NewGuid(), value = a }).ToList();
                 gr.Save(items, null, gr.Load());
@@ -421,7 +421,7 @@ namespace CommonConcepts.Test
                         DataSource = "TestRowPermissions.SimpleRPBrowse",
                         ReadRecords = true,
                     };
-                    TestUtility.ShouldFail(() => ExecuteReadCommand(cReadAll, container), _readException);
+                    TestUtility.ShouldFail(() => ExecuteReadCommand(cReadAll, scope), _readException);
                 }
                 {
                     var cReadAll = new ReadCommandInfo()
@@ -430,7 +430,7 @@ namespace CommonConcepts.Test
                         ReadRecords = true,
                         Filters = new[] { new FilterCriteria("Value2", "less", 1900) }
                     };
-                    TestUtility.ShouldFail(() => ExecuteReadCommand(cReadAll, container), _readException);
+                    TestUtility.ShouldFail(() => ExecuteReadCommand(cReadAll, scope), _readException);
                 }
                 {
                     var cReadAll = new ReadCommandInfo()
@@ -439,7 +439,7 @@ namespace CommonConcepts.Test
                         ReadRecords = true,
                         Filters = new[] { new FilterCriteria("Value2", "greater", 1900) }
                     };
-                    dynamic result = ExecuteReadCommand(cReadAll, container).Records.Single();
+                    dynamic result = ExecuteReadCommand(cReadAll, scope).Records.Single();
                     Assert.AreEqual(2000, result.Value2);
                 }
             }
@@ -448,10 +448,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void AutoApplyFilter()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var gr = container.Resolve<GenericRepository<TestRowPermissions.AutoFilter>>();
-                var logFilterQuery = container.Resolve<Common.DomRepository>().Common.Log.Query()
+                var gr = scope.Resolve<GenericRepository<TestRowPermissions.AutoFilter>>();
+                var logFilterQuery = scope.Resolve<Common.DomRepository>().Common.Log.Query()
                     .Where(log => log.TableName == "TestRowPermissions.AutoFilter" && log.Action == "RowPermissionsReadItems filter");
 
                 var testData = new[] { "a1", "a2", "b1", "b2" }.Select(name => new TestRowPermissions.AutoFilter { Name = name });
@@ -464,7 +464,7 @@ namespace CommonConcepts.Test
                         ReadRecords = true
                     };
                     int lastFilterCount = logFilterQuery.Count();
-                    var readResult = (TestRowPermissions.AutoFilter[])ExecuteReadCommand(readCommand, container).Records;
+                    var readResult = (TestRowPermissions.AutoFilter[])ExecuteReadCommand(readCommand, scope).Records;
                     Assert.AreEqual("a1, a2", TestUtility.DumpSorted(readResult, item => item.Name));
 
                     Assert.AreEqual(1, logFilterQuery.Count() - lastFilterCount,
@@ -479,7 +479,7 @@ namespace CommonConcepts.Test
                         Filters = new FilterCriteria[] { new FilterCriteria("Name", "contains", "2") }
                     };
                     int lastFilterCount = logFilterQuery.Count();
-                    var readResult = (TestRowPermissions.AutoFilter[])ExecuteReadCommand(readCommand, container).Records;
+                    var readResult = (TestRowPermissions.AutoFilter[])ExecuteReadCommand(readCommand, scope).Records;
                     Assert.AreEqual("a2", TestUtility.DumpSorted(readResult, item => item.Name));
 
                     Assert.AreEqual(1, logFilterQuery.Count() - lastFilterCount,
@@ -494,7 +494,7 @@ namespace CommonConcepts.Test
                         Filters = new FilterCriteria[] { new FilterCriteria("Name", "contains", "2"), new FilterCriteria(typeof(Common.RowPermissionsReadItems)) }
                     };
                     int lastFilterCount = logFilterQuery.Count();
-                    var readResult = (TestRowPermissions.AutoFilter[])ExecuteReadCommand(readCommand, container).Records;
+                    var readResult = (TestRowPermissions.AutoFilter[])ExecuteReadCommand(readCommand, scope).Records;
                     Assert.AreEqual("a2", TestUtility.DumpSorted(readResult, item => item.Name));
 
                     Assert.AreEqual(1, logFilterQuery.Count() - lastFilterCount,
@@ -509,7 +509,7 @@ namespace CommonConcepts.Test
                         Filters = new FilterCriteria[] { new FilterCriteria(typeof(Common.RowPermissionsReadItems)), new FilterCriteria("Name", "contains", "2") }
                     };
                     int lastFilterCount = logFilterQuery.Count();
-                    var readResult = (TestRowPermissions.AutoFilter[])ExecuteReadCommand(readCommand, container).Records;
+                    var readResult = (TestRowPermissions.AutoFilter[])ExecuteReadCommand(readCommand, scope).Records;
                     Assert.AreEqual("a2", TestUtility.DumpSorted(readResult, item => item.Name));
 
                     Assert.AreEqual(2, logFilterQuery.Count() - lastFilterCount,
@@ -518,11 +518,11 @@ namespace CommonConcepts.Test
             }
         }
         
-        string ReadErrorData(TransactionScopeContainer container, string testName)
+        string ReadErrorData(TransactionScopeContainer scope, string testName)
         {
             Console.WriteLine("Test: " + testName);
             var readCommand = new ReadCommandInfo() { DataSource = "TestRowPermissions.ErrorData", ReadRecords = true, Filters = new[] { new FilterCriteria(testName) } };
-            var loaded = ExecuteReadCommand(readCommand, container).Records;
+            var loaded = ExecuteReadCommand(readCommand, scope).Records;
             string report = TestUtility.DumpSorted(loaded, item => ((ErrorData)item).Name);
             Console.WriteLine("Result: " + report);
             return report;
@@ -531,15 +531,15 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ErrorHandling_SourceHasDuplicateID()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var gr = container.Resolve<GenericRepository<ErrorData>>();
+                var gr = scope.Resolve<GenericRepository<ErrorData>>();
                 var newItems = new[] { "a", "b", "c" }.Select(name => new ErrorData { ID = Guid.NewGuid(), Name = name }).ToList();
                 gr.Save(newItems, null, gr.Load());
 
-                Assert.AreEqual("a, b, c", ReadErrorData(container, ""));
+                Assert.AreEqual("a, b, c", ReadErrorData(scope, ""));
 
-                TestUtility.ShouldFail<FrameworkException>(() => ReadErrorData(container, "duplicateSecondItem"),
+                TestUtility.ShouldFail<FrameworkException>(() => ReadErrorData(scope, "duplicateSecondItem"),
                     "duplicate IDs", "ErrorData", newItems[1].ID.ToString());
             }
         }
@@ -547,11 +547,11 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ErrorHandling_RowPermissionsFilterReturnsDuplicateID()
         {
-            using (var container = TestContainer.Create(
-                TestContainer.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(
+                TestScope.ConfigureIgnoreClaims()))
             {
-                var repository = container.Resolve<Common.DomRepository>();
-                var readCommand = container.Resolve<IPluginsContainer<ICommandImplementation>>().GetPlugins().OfType<ReadCommand>().Single();
+                var repository = scope.Resolve<Common.DomRepository>();
+                var readCommand = scope.Resolve<IPluginsContainer<ICommandImplementation>>().GetPlugins().OfType<ReadCommand>().Single();
                 Guid testRun = Guid.NewGuid();
 
                 // The following DuplicateIdViewID GUIDs are hard-coded in SqlQueryable DuplicateIdView.
@@ -575,9 +575,9 @@ namespace CommonConcepts.Test
             }
         }
 
-        private void ExecuteSaveCommand(SaveEntityCommandInfo saveInfo, TransactionScopeContainer container)
+        private void ExecuteSaveCommand(SaveEntityCommandInfo saveInfo, TransactionScopeContainer scope)
         {
-            var commandImplementations = container.Resolve<IPluginsContainer<ICommandImplementation>>();
+            var commandImplementations = scope.Resolve<IPluginsContainer<ICommandImplementation>>();
             var saveCommand = commandImplementations.GetImplementations(saveInfo.GetType()).Single();
             saveCommand.Execute(saveInfo);
         }
@@ -587,20 +587,20 @@ namespace CommonConcepts.Test
             // we need to use commitChanges == true to validate rollbacks on bad inserts and updates
            
             // initialize and persist
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var gRepository = container.Resolve<GenericRepository<T>>();
+                var gRepository = scope.Resolve<GenericRepository<T>>();
                 // clear the repository
                 gRepository.Save(null, null, gRepository.Load());
 
                 // save initial data
                 gRepository.Save(initial, null, null);
 
-                container.CommitChanges();
+                scope.CommitChanges();
             }
 
             // attempt to write test data
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 // construct and execute SaveEntityCommand
                 var saveCommand = new SaveEntityCommandInfo()
@@ -612,23 +612,23 @@ namespace CommonConcepts.Test
                 };
 
                 if (string.IsNullOrEmpty(expectedException))
-                    ExecuteSaveCommand(saveCommand, container);
+                    ExecuteSaveCommand(saveCommand, scope);
                 else
-                    TestUtility.ShouldFail(() => ExecuteSaveCommand(saveCommand, container), expectedException);
+                    TestUtility.ShouldFail(() => ExecuteSaveCommand(saveCommand, scope), expectedException);
 
-                container.CommitChanges();
+                scope.CommitChanges();
             } // closing the scope makes transactions rollback for failed commands
 
             // read final state and cleanup
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var finalRepository = container.Resolve<GenericRepository<T>>();
+                var finalRepository = scope.Resolve<GenericRepository<T>>();
                 var allData = finalRepository.Load().ToArray();
 
                 // cleanup
                 finalRepository.Save(null, null, allData);
 
-                container.CommitChanges();
+                scope.CommitChanges();
                 // return state of repository before cleanup
                 return allData;
             }
@@ -711,9 +711,9 @@ namespace CommonConcepts.Test
 
         private void CancelTestOnSlowServer()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
                 var scripts = Enumerable.Range(1, 10).Select(x => $"print {x}");
                 context.SqlExecuter.ExecuteSql(scripts.First()); // Cold start.
 
@@ -738,11 +738,11 @@ namespace CommonConcepts.Test
 
             var items = Enumerable.Range(0, 101).Select(a => new ComplexRP() { ID = Guid.NewGuid(), value = a }).ToArray();
             
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
                 var currentUserName = context.UserInfo.UserName;
-                var permRepository = container.Resolve<GenericRepository<TestRowPermissions.ComplexRPPermissions>>();
+                var permRepository = scope.Resolve<GenericRepository<TestRowPermissions.ComplexRPPermissions>>();
 
                 ComplexRPPermissions[] perms = new ComplexRPPermissions[]
                 {
@@ -752,7 +752,7 @@ namespace CommonConcepts.Test
                 };
                 permRepository.Save(perms, null, permRepository.Load());
 
-                var gRepository = container.Resolve<GenericRepository<TestRowPermissions.ComplexRP>>();
+                var gRepository = scope.Resolve<GenericRepository<TestRowPermissions.ComplexRP>>();
                 gRepository.Save(items, null, gRepository.Load());
 
                 // first test results with explicit RP write filter calls
@@ -763,12 +763,12 @@ namespace CommonConcepts.Test
                         ReadRecords = true,
                         Filters = new FilterCriteria[] { new FilterCriteria() { Filter = _rowPermissionsWriteFilter } }
                     };
-                    var result = ExecuteReadCommand(cAllowed, container);
+                    var result = ExecuteReadCommand(cAllowed, scope);
                     var values = ((ComplexRP[])result.Records).Select(a => a.value);
                     Assert.IsTrue(Enumerable.Range(5, 86).All(a => values.Contains(a)));
                 }
 
-                container.CommitChanges();
+                scope.CommitChanges();
             }
             
             // illegal insert
@@ -839,10 +839,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveInvalidRecordWithPermission_Insert()
         {
-            using (var container = TestContainer.Create(
-                TestContainer.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(
+                TestScope.ConfigureIgnoreClaims()))
             {
-                var processingEngine = container.Resolve<IProcessingEngine>();
+                var processingEngine = scope.Resolve<IProcessingEngine>();
 
                 var item1 = new SimpleRP { value = 1000, ID = Guid.NewGuid() };
                 var item2 = new SimpleRP { value = 1001, ID = item1.ID };
@@ -862,10 +862,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveInvalidRecordWithPermission_Update()
         {
-            using (var container = TestContainer.Create(
-                TestContainer.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(
+                TestScope.ConfigureIgnoreClaims()))
             {
-                var processingEngine = container.Resolve<IProcessingEngine>();
+                var processingEngine = scope.Resolve<IProcessingEngine>();
 
                 var item = new SimpleRP { value = 1000, ID = Guid.NewGuid() };
                 var command = new SaveEntityCommandInfo { Entity = item.GetType().FullName, DataToUpdate = new[] { item } };
@@ -880,10 +880,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveInvalidRecordWithPermission_Delete()
         {
-            using (var container = TestContainer.Create(
-                TestContainer.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(
+                TestScope.ConfigureIgnoreClaims()))
             {
-                var processingEngine = container.Resolve<IProcessingEngine>();
+                var processingEngine = scope.Resolve<IProcessingEngine>();
 
                 var item = new SimpleRP { value = 1000, ID = Guid.NewGuid() };
                 var command = new SaveEntityCommandInfo { Entity = item.GetType().FullName, DataToDelete = new[] { item } };
@@ -898,10 +898,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveInvalidRecordWithoutPermission_Insert()
         {
-            using (var container = TestContainer.Create(
-                TestContainer.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(
+                TestScope.ConfigureIgnoreClaims()))
             {
-                var processingEngine = container.Resolve<IProcessingEngine>();
+                var processingEngine = scope.Resolve<IProcessingEngine>();
 
                 var item1 = new SimpleRP { value = 1000, ID = Guid.NewGuid() };
                 var item2 = new SimpleRP { value = 1, ID = item1.ID };
@@ -921,10 +921,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveInvalidRecordWithoutPermission_Update()
         {
-            using (var container = TestContainer.Create(
-                TestContainer.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(
+                TestScope.ConfigureIgnoreClaims()))
             {
-                var processingEngine = container.Resolve<IProcessingEngine>();
+                var processingEngine = scope.Resolve<IProcessingEngine>();
 
                 var item = new SimpleRP { value = 1, ID = Guid.NewGuid() };
                 var command = new SaveEntityCommandInfo { Entity = item.GetType().FullName, DataToUpdate = new[] { item } };
@@ -939,10 +939,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveInvalidRecordWithoutPermission_Delete()
         {
-            using (var container = TestContainer.Create(
-                TestContainer.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(
+                TestScope.ConfigureIgnoreClaims()))
             {
-                var processingEngine = container.Resolve<IProcessingEngine>();
+                var processingEngine = scope.Resolve<IProcessingEngine>();
 
                 var item = new SimpleRP { value = 1, ID = Guid.NewGuid() };
                 var command = new SaveEntityCommandInfo { Entity = item.GetType().FullName, DataToDelete = new[] { item } };
@@ -957,10 +957,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void OptimizeExtension()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
-                var repository = container.Resolve<Common.DomRepository>();
+                var context = scope.Resolve<Common.ExecutionContext>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 Assert.AreEqual(
                     @"item => item.Extension_OptimizeExtension.NameE.Contains(""allow"")",
@@ -989,9 +989,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InheritRowPermissionsToQuery()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 Guid groupID = Guid.NewGuid();
                 repository.TestRowPermissionsInheritToQuery.Simple.Insert(new[]

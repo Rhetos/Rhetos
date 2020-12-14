@@ -48,10 +48,10 @@ namespace CommonConcepts.Test
         public void InsertTestPermissions()
         {
             DeleteTestPermissions();
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
-                var r = container.Resolve<Common.DomRepository>();
+                var context = scope.Resolve<Common.ExecutionContext>();
+                var r = scope.Resolve<Common.DomRepository>();
 
                 var principal1 = context.InsertPrincipalOrReadId(User1Name);
                 context.InsertPrincipalOrReadId(User2Name);
@@ -68,22 +68,22 @@ namespace CommonConcepts.Test
                 r.Common.PrincipalPermission.Insert(new Common.PrincipalPermission { PrincipalID = principal1.ID, ClaimID = claim1.ID, IsAuthorized = true });
                 r.Common.RolePermission.Insert(new Common.RolePermission { RoleID = role2.ID, ClaimID = claim2.ID, IsAuthorized = true });
                 
-                container.CommitChanges();
+                scope.CommitChanges();
             }
         }
 
         [TestCleanup]
         public void DeleteTestPermissions()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var c = container.Resolve<Common.ExecutionContext>();
-                var r = container.Resolve<Common.DomRepository>();
+                var c = scope.Resolve<Common.ExecutionContext>();
+                var r = scope.Resolve<Common.DomRepository>();
                 var oldData = c.GenericPrincipal().Query(p => p.Name.StartsWith(UserPrefix));
                 c.GenericPrincipal().Delete(oldData);
                 r.Common.Role.Delete(r.Common.Role.Load(p => p.Name.StartsWith(RolePrefix)));
                 
-                container.CommitChanges();
+                scope.CommitChanges();
             }
         }
 
@@ -291,12 +291,12 @@ namespace CommonConcepts.Test
         public string TestPermissionsCachingOnChange(Action<Common.ExecutionContext> change, bool[] expectedPermissionsAfterChange, Action<Common.ExecutionContext> init = null)
         {
             var log = new List<string>();
-            using (var container = TestContainer.Create(
-                TestContainer.ConfigureLogMonitor(log) +
-                TestContainer.ConfigureFakeUser(User1Name)))
+            using (var scope = TestScope.Create(
+                TestScope.ConfigureLogMonitor(log) +
+                TestScope.ConfigureFakeUser(User1Name)))
             {   
-                var context = container.Resolve<Common.ExecutionContext>();
-                var authorizationManager = container.Resolve<IAuthorizationManager>();
+                var context = scope.Resolve<Common.ExecutionContext>();
+                var authorizationManager = scope.Resolve<IAuthorizationManager>();
 
                 Console.WriteLine("== Begin test initialization ==");
                 init?.Invoke(context);
