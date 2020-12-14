@@ -24,6 +24,7 @@ using Rhetos.TestCommon;
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace Rhetos
 {
@@ -42,7 +43,10 @@ namespace Rhetos
                 var registrations = lifetimeScope.Value.ComponentRegistry.Registrations
                     .Select(registration => registration.ToString())
                     .OrderBy(text => text)
-                    .Where(text => !text.Contains("_Repository (")) // Removing repository class registrations. This test is focusing on system components, not business features in test DSL scripts.
+                    // Removing repository class registrations. This test is focused on system components, not business features in test DSL scripts.
+                    .Where(text => !text.Contains("_Repository ("))
+                    // Removing implementations of generic interfaces. They are added dynamically at runtime as an internal Autofac caching mechanism.
+                    .Where(text => !_genericInterfaceRegistration.IsMatch(text))
                     .ToList();
 
                 foreach (string line in registrations)
@@ -51,6 +55,8 @@ namespace Rhetos
                 TestUtility.AssertAreEqualByLine(_expectedRegistrationsRuntime.Trim(), string.Join("\r\n", registrations));
             }
         }
+
+        private static readonly Regex _genericInterfaceRegistration = new Regex(@"`\d+\[\["); // For example IEnumerable`1[[SomeType]]
 
         const string _expectedRegistrationsRuntime =
 @"
