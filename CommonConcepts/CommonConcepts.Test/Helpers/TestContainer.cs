@@ -68,7 +68,7 @@ namespace CommonConcepts.Test.Helpers
 
             Console.WriteLine($"CheckForParallelism: {sw.ElapsedMilliseconds} ms.");
 
-            if (sw.ElapsedMilliseconds < 50)
+            if (sw.ElapsedMilliseconds < 90)
                 Assert.Fail($"Delay is unexpectedly short: {sw.ElapsedMilliseconds}");
 
             if (sw.Elapsed.TotalMilliseconds > 190)
