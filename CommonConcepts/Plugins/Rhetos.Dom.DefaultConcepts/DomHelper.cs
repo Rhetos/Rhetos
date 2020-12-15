@@ -74,8 +74,6 @@ namespace Rhetos.Dom.DefaultConcepts
                 items = items.Select(item => new TEntity { ID = item.ID }).ToList();
         }
 
-        public enum SaveOperation { None, Insert, Update, Delete };
-
         public static void EntityFrameworkOptimizedSave<TEntity>(
             IEnumerable<TEntity> insertedNew,
             IEnumerable<TEntity> updatedNew,
@@ -83,56 +81,31 @@ namespace Rhetos.Dom.DefaultConcepts
             IPersistanceStorage persistanceStorage,
             bool checkUserPermissions,
             ISqlUtility sqlUtility,
-            out SaveOperation saveOperation,
             out SqlException saveException,
             out RhetosException interpretedException)
             where TEntity : class, IEntity
         {
-            saveOperation = SaveOperation.None;
             try
             {
-                saveOperation = SaveOperation.Delete;
-                var numberOfRowsAffectedDuringDeleteOperation = persistanceStorage.Delete(deletedIds);
-                ThrowIfSavingNonexistentId(numberOfRowsAffectedDuringDeleteOperation, deletedIds, checkUserPermissions, saveOperation);
-
-                saveOperation = SaveOperation.Update;
-                var numberOfRowsAffectedDuringUpdateOperation = persistanceStorage.Update(updatedNew);
-                ThrowIfSavingNonexistentId(numberOfRowsAffectedDuringUpdateOperation, updatedNew, checkUserPermissions, saveOperation);
-
-                saveOperation = SaveOperation.Insert;
-                var numberOfRowsAffectedDuringInsertOperation = persistanceStorage.Insert(insertedNew);
-                ThrowIfSavingNonexistentId(numberOfRowsAffectedDuringInsertOperation, insertedNew, checkUserPermissions, saveOperation);
-
-                saveOperation = SaveOperation.None;
-
+                persistanceStorage.Delete(deletedIds);
+                persistanceStorage.Update(updatedNew);
+                persistanceStorage.Insert(insertedNew);
                 saveException = null;
                 interpretedException = null;
+            }
+            catch (NonexistentRecordException nre)
+            {
+                saveException = null;
+                interpretedException = null;
+                if (checkUserPermissions)
+                    throw new ClientException(nre.Message);
+                else
+                    ExceptionsUtility.Rethrow(nre);
             }
             catch (SqlException e)
             {
                 saveException = e;
                 interpretedException = sqlUtility.InterpretSqlException(saveException);
-            }
-        }
-
-        public static void ThrowIfSavingNonexistentId<TEntity>(int affectedNumberOfRows, IEnumerable<TEntity> entities, bool checkUserPermissions, SaveOperation saveOperation) where TEntity : class, IEntity
-        {
-            if (entities.Count() != affectedNumberOfRows)
-            {
-                string message;
-                if (saveOperation == SaveOperation.Update)
-                    message = "Updating a record that does not exist in database.";
-                else if (saveOperation == SaveOperation.Delete)
-                    message = "Deleting a record that does not exist in database.";
-                else
-                    return;
-
-                message += string.Join(",", entities.Select(e => " ID=" + e.ID.ToString()));
-
-                if (checkUserPermissions)
-                    throw new ClientException(message);
-                else
-                    throw new FrameworkException(message);
             }
         }
 

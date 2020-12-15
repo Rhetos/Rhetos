@@ -51,7 +51,7 @@ namespace Rhetos.Dom.DefaultConcepts
 			_afterCommandExecution = afterCommandExecution;
 		}
 
-		public IPersistanceStorageCommandBatch Add<T>(T entity, PersistanceStorageCommandType commandType) where T : IEntity
+		public IPersistanceStorageCommandBatch Add<T>(T entity, PersistanceStorageCommandType commandType) where T : class, IEntity
 		{	
 			_commands.Add(new Command
 			{

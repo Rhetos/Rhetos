@@ -69,6 +69,9 @@ namespace Rhetos.Dom.DefaultConcepts
         /// Data is already saved to the database (but the SQL transaction has not yet been committed).</summary>
         public static readonly CsTag<DataStructureInfo> OnSaveValidateTag = "WritableOrm OnSaveValidate";
 
+        /// <summary>
+        /// Entity-specific interpretation of database errors.
+        /// </summary>
         public static readonly CsTag<DataStructureInfo> OnDatabaseErrorTag = "WritableOrm OnDatabaseError";
 
         /// <summary>The inserted code will be execute after recomputing and validations.
@@ -105,7 +108,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             {{
                 DomHelper.EntityFrameworkOptimizedSave(insertedNew, updatedNew, deletedIds, _executionContext.PersistanceStorage, checkUserPermissions, _sqlUtility,
-                    out var saveOperation, out System.Data.SqlClient.SqlException saveException, out var interpretedException);
+                    out System.Data.SqlClient.SqlException saveException, out Rhetos.RhetosException interpretedException);
 
                 if (saveException != null)
                 {{
