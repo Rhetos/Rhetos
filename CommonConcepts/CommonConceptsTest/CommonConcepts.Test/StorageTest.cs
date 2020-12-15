@@ -65,7 +65,7 @@ namespace CommonConcepts.Test
                     DateTimeProperty = new DateTime(2020, 3, 2, 2, 3, 1),
                     DecimalProperty = 101.23423m,
                     GuidProperty = new Guid("05CE273A-C644-485F-82D7-8A3B6922F276"),
-                    IntegerProperty = 301,
+                    IntegerProperty = -2_147_483_648,
                     MoneyProperty = 23432.23m,
                     ShortStringProperty = "Test",
                     LongStringProperty = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."
@@ -73,10 +73,10 @@ namespace CommonConcepts.Test
                 context.PersistanceStorage.Insert(entity);
                 AssertAreEqual(entity, context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity.ID).Single());
 
-                entity.BinaryProperty = Encoding.ASCII.GetBytes("Test1");
+                entity.BinaryProperty = new byte[] { };
                 entity.BoolProperty = false;
                 entity.DateProperty = new DateTime(2020, 2, 2);
-                entity.DateTimeProperty = new DateTime(2020, 7, 2, 2, 3, 10);
+                entity.DateTimeProperty = new DateTime(2020, 7, 2, 2, 3, 10, 150);
                 entity.DecimalProperty = 523.23353m;
                 entity.GuidProperty = new Guid("EE4193C4-580A-4295-B47B-4C2B56F64002");
                 entity.IntegerProperty = 34;
@@ -197,62 +197,120 @@ namespace CommonConcepts.Test
                     .Execute();
 
                 Assert.AreEqual(1, rowsAffected2, "The entity does not have any property except ID which is the key of the entity so an update command is not required, only the insert command will be executed.");
+
+                // Event if update is not needed, repository.Update() should not throw an exception.
+                context.Repository.TestStorage.EntityWithNoProperty.Update(new TestStorage.EntityWithNoProperty { ID = entityID });
             }
         }
 
         [TestMethod]
-        public void MoneyPropertyCutDecimalPostionTest()
+        public void MoneyPropertySizeAndDecimals()
         {
             using (var container = new RhetosTestContainer())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
 
-                var entity1 = new TestStorage.AllProperties
+                var tests = new List<(decimal Save, decimal Load)>
                 {
-                    ID = Guid.NewGuid(),
-                    MoneyProperty = 12.34100m
+                    (12.34100m, 12.34m),
+                    (12.34900m, 12.34m),
+                    (-12.3410m, -12.34m),
+                    (-12.3490m, -12.34m),
+                    (-922337203685477.58m, -922337203685477.58m), // T-SQL money limits.
+                    (922337203685477.58m, 922337203685477.58m), // T-SQL money limits.
+                    (0m, 0m),
+                    (0.001m, 0m),
+                    (0.009m, 0m),
+                    (0.019m, 0.01m),
+                    (-0.001m, 0m),
+                    (-0.009m, 0m),
+                    (-0.019m, -0.01m),
                 };
-                context.PersistanceStorage.Insert(entity1);
-                Assert.AreEqual(12.34m, context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity1.ID).Single().MoneyProperty,
-                    "The money property should be cut off on the second decimal position.");
 
-                var entity2 = new TestStorage.AllProperties
+                foreach (var test in tests)
                 {
-                    ID = Guid.NewGuid(),
-                    MoneyProperty = 12.34900m
-                };
-                context.PersistanceStorage.Insert(entity2);
-                Assert.AreEqual(12.34m, context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity2.ID).Single().MoneyProperty,
-                    "The money property should be cut off on the second decimal position.");
-
+                    var entity = new TestStorage.AllProperties
+                    {
+                        ID = Guid.NewGuid(),
+                        MoneyProperty = test.Save
+                    };
+                    context.PersistanceStorage.Insert(entity);
+                    Assert.AreEqual(test.Load, context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity.ID).Single().MoneyProperty,
+                        $"The money property should be cut off on the second decimal position ({test.Save}).");
+                }
             }
         }
 
         [TestMethod]
-        public void DecimalPropertyCutDecimalPostionTest()
+        public void DecimalPropertySizeAndDecimals()
         {
             using (var container = new RhetosTestContainer())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
 
-                var entity1 = new TestStorage.AllProperties
+                var tests = new List<(decimal Save, decimal Load)>
                 {
-                    ID = Guid.NewGuid(),
-                    DecimalProperty = 12.34000000001m
+                    (12.34000000001m, 12.34m),
+                    (12.34000000009m, 12.34m),
+                    (-12.34000000001m, -12.34m),
+                    (-12.34000000009m, -12.34m),
+                    (12.34000000011m, 12.3400000001m),
+                    (12.34000000019m, 12.3400000001m),
+                    (-12.34000000011m, -12.3400000001m),
+                    (-12.34000000019m, -12.3400000001m),
+                    (923456789012345678.0123456789m, 923456789012345678.0123456789m), // decimal(28,10) should allow 18 digits on left and 10 digits on right side of the decimal point.
+                    (-923456789012345678.0123456789m, -923456789012345678.0123456789m), // decimal(28,10) should allow 18 digits on left and 10 digits on right side of the decimal point.
+                    (0m, 0m),
+                    (0.00000000001m, 0m),
+                    (0.00000000009m, 0m),
+                    (0.00000000019m, 0.0000000001m),
+                    (-0.00000000001m, 0m),
+                    (-0.00000000009m, 0m),
+                    (-0.00000000019m, -0.0000000001m),
                 };
-                context.PersistanceStorage.Insert(entity1);
-                Assert.AreEqual(12.34m, context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity1.ID).Single().DecimalProperty,
-                    "The money property should be cut off on the 10th decimal position.");
 
-                var entity2 = new TestStorage.AllProperties
+                foreach (var test in tests)
                 {
-                    ID = Guid.NewGuid(),
-                    DecimalProperty = 12.34000000009m
-                };
-                context.PersistanceStorage.Insert(entity2);
-                Assert.AreEqual(12.34m, context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity2.ID).Single().DecimalProperty,
-                    "The money property should be cut off on the 10th decimal position.");
+                    var entity1 = new TestStorage.AllProperties
+                    {
+                        ID = Guid.NewGuid(),
+                        DecimalProperty = test.Save
+                    };
+                    context.PersistanceStorage.Insert(entity1);
+                    Assert.AreEqual(test.Load, context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity1.ID).Single().DecimalProperty,
+                        $"The money property should be cut off on the 10th decimal position ({test.Save}).");
+                }
+            }
+        }
 
+        [TestMethod]
+        public void ShortStringPropertySave()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var context = container.Resolve<Common.ExecutionContext>();
+
+                var tests = new List<string>
+                {
+                    "abc",
+                    "ABC",
+                    "",
+                    null,
+                    @"čćšđžČĆŠĐŽ",
+                    @"`~!@#$%^&*()_+-=[]\{}|;':"",./<>?",
+                    new string('a', 256),
+                };
+
+                foreach (var test in tests)
+                {
+                    var entity1 = new TestStorage.AllProperties
+                    {
+                        ID = Guid.NewGuid(),
+                        ShortStringProperty = test
+                    };
+                    context.PersistanceStorage.Insert(entity1);
+                    Assert.AreEqual(test, context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity1.ID).Single().ShortStringProperty);
+                }
             }
         }
 
@@ -270,6 +328,79 @@ namespace CommonConcepts.Test
                 };
                 TestUtility.ShouldFail<SqlException>(() => context.PersistanceStorage.Insert(entity1),
                     "data would be truncated");
+            }
+        }
+
+        [TestMethod]
+        public void LongStringPropertySave()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var context = container.Resolve<Common.ExecutionContext>();
+
+                var tests = new List<string>
+                {
+                    "abc",
+                    "ABC",
+                    "",
+                    null,
+                    @"čćšđžČĆŠĐŽ",
+                    @"`~!@#$%^&*()_+-=[]\{}|;':"",./<>?",
+                    new string('a', 256),
+                    new string('a', 17000),
+                };
+
+                foreach (var test in tests)
+                {
+                    var entity1 = new TestStorage.AllProperties
+                    {
+                        ID = Guid.NewGuid(),
+                        LongStringProperty = test
+                    };
+                    context.PersistanceStorage.Insert(entity1);
+                    Assert.AreEqual(test, context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity1.ID).Single().LongStringProperty);
+                }
+            }
+        }
+
+        [TestMethod]
+        public void DateTimeSave()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var context = container.Resolve<Common.ExecutionContext>();
+                bool usingDateTime2 = !container.Resolve<CommonConceptsDatabaseSettings>().UseLegacyMsSqlDateTime;
+
+                var tests = new List<DateTime>
+                {
+                    new DateTime(1900, 1, 1),
+                    new DateTime(1900, 1, 1, 1, 1, 1, 300),
+                    new DateTime(3000, 12, 31),
+                    new DateTime(3000, 12, 31, 23, 59, 59, 300),
+                    new DateTime(2001, 2, 3, 4, 5, 6, 3),
+                    new DateTime(2001, 2, 3, 4, 5, 6, 7),
+                    new DateTime(2001, 2, 3, 4, 5, 6, 10),
+                    new DateTime(2001, 2, 3, 4, 5, 6, 13),
+                };
+
+                foreach (var test in tests)
+                {
+                    var entity1 = new TestStorage.AllProperties
+                    {
+                        ID = Guid.NewGuid(),
+                        DateTimeProperty = test
+                    };
+                    context.PersistanceStorage.Insert(entity1);
+                    DateTime? loaded = context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity1.ID).Single().DateTimeProperty;
+                    if (!usingDateTime2)
+                        Assert.AreEqual(test, loaded);
+                    else // Old DateTime column type has 3 ms precision.
+                    {
+                        string info = $"Saved value: '{test}'. Loaded value: '{loaded}'.";
+                        Console.WriteLine(info);
+                        Assert.IsTrue(Math.Abs(test.Subtract(loaded.Value).TotalMilliseconds) <= 3, info);
+                    }
+                }
             }
         }
 
