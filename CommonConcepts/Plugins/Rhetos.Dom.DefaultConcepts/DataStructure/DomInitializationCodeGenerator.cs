@@ -545,7 +545,7 @@ $@"namespace Common
             if(_mappings.TryGetValue(type, out mapper))
                 return mapper;
             else
-                throw new Rhetos.FrameworkException(""There is no mapping associated with the type {{type.GetType().FullName}}. The mapping definition is required for database save operations."");
+                throw new Rhetos.FrameworkException($""There is no mapping associated with the type '{{type}}'. The mapping definition is required for database save operations."");
         }}
     }}
 

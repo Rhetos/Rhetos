@@ -1,13 +1,31 @@
-﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
+﻿/*
+    Copyright (C) 2014 Omega software d.o.o.
+
+    This file is part of Rhetos.
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Configuration.Autofac;
+using Rhetos.Dom.DefaultConcepts;
 using Rhetos.TestCommon;
+using System;
+using System.Collections.Generic;
 using System.Data.SqlClient;
-using Common;
+using System.Linq;
+using System.Text;
 
 namespace CommonConcepts.Test
 {
@@ -68,6 +86,19 @@ namespace CommonConcepts.Test
                 context.PersistanceStorage.Update(entity);
                 AssertAreEqual(entity, context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity.ID).Single());
 
+                entity.BinaryProperty = null;
+                entity.BoolProperty = null;
+                entity.DateProperty = null;
+                entity.DateTimeProperty = null;
+                entity.DecimalProperty = null;
+                entity.GuidProperty = null;
+                entity.IntegerProperty = null;
+                entity.MoneyProperty = null;
+                entity.ShortStringProperty = null;
+                entity.LongStringProperty = null;
+                context.PersistanceStorage.Update(entity);
+                AssertAreEqual(entity, context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity.ID).Single());
+
                 context.PersistanceStorage.Delete(entity);
                 Assert.IsFalse(context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity.ID).Any());
             }
@@ -114,6 +145,7 @@ namespace CommonConcepts.Test
                     Name = "Test"
                 };
                 context.PersistanceStorage.Insert(new List<TestStorage.Simple> { entity });
+                Assert.AreEqual(1, context.Repository.TestStorage.Simple.Load(x => x.ID == entityID).Count());
                 context.PersistenceTransaction.DiscardChanges();
             }
 
@@ -139,7 +171,7 @@ namespace CommonConcepts.Test
                 };
                 TestUtility.ShouldFail(
                     () => context.PersistanceStorage.Insert(entity),
-                    "There is no mapping");
+                    "There is no mapping", "TestStorage.DataStructureWithNoSaveMapping");
             }
         }
 
@@ -165,7 +197,6 @@ namespace CommonConcepts.Test
                     .Execute();
 
                 Assert.AreEqual(1, rowsAffected2, "The entity does not have any property except ID which is the key of the entity so an update command is not required, only the insert command will be executed.");
-
             }
         }
 
@@ -355,7 +386,7 @@ namespace CommonConcepts.Test
                 Assert.AreEqual(report[i].Item1, rowsAffectedInBatches[i]);
         }
 
-        private void AssertItemsExists(DomRepository repository, params TestStorage.Simple[] entites)
+        private void AssertItemsExists(Common.DomRepository repository, params TestStorage.Simple[] entites)
         {
             var nonexistentIds = new List<Guid>();
             foreach (var entity in entites)
