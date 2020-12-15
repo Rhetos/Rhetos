@@ -14,7 +14,7 @@ namespace CommonConcepts.Test
     [TestClass]
     public class StorageTest
     {
-        private void AssertAreEqual(Storage.AllProperties expected, Storage.AllProperties actual)
+        private void AssertAreEqual(TestStorage.AllProperties expected, TestStorage.AllProperties actual)
         {
             if (expected.BinaryProperty == null)
                 Assert.IsNull(actual.BinaryProperty);
@@ -38,7 +38,7 @@ namespace CommonConcepts.Test
             {
                 var context = container.Resolve<Common.ExecutionContext>();
 
-                var entity = new Storage.AllProperties
+                var entity = new TestStorage.AllProperties
                 {
                     ID = Guid.NewGuid(),
                     BinaryProperty = Encoding.ASCII.GetBytes("Test"),
@@ -53,7 +53,7 @@ namespace CommonConcepts.Test
                     LongStringProperty = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."
                 };
                 context.PersistanceStorage.Insert(entity);
-                AssertAreEqual(entity, context.Repository.Storage.AllProperties.Load(x => x.ID == entity.ID).Single());
+                AssertAreEqual(entity, context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity.ID).Single());
 
                 entity.BinaryProperty = Encoding.ASCII.GetBytes("Test1");
                 entity.BoolProperty = false;
@@ -66,10 +66,10 @@ namespace CommonConcepts.Test
                 entity.ShortStringProperty = "Test1";
                 entity.LongStringProperty = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore.";
                 context.PersistanceStorage.Update(entity);
-                AssertAreEqual(entity, context.Repository.Storage.AllProperties.Load(x => x.ID == entity.ID).Single());
+                AssertAreEqual(entity, context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity.ID).Single());
 
                 context.PersistanceStorage.Delete(entity);
-                Assert.IsFalse(context.Repository.Storage.AllProperties.Load(x => x.ID == entity.ID).Any());
+                Assert.IsFalse(context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity.ID).Any());
             }
         }
 
@@ -80,7 +80,7 @@ namespace CommonConcepts.Test
             {
                 var context = container.Resolve<Common.ExecutionContext>();
 
-                var entity = new Storage.AllProperties
+                var entity = new TestStorage.AllProperties
                 {
                     ID = Guid.NewGuid(),
                     BinaryProperty = null,
@@ -95,7 +95,7 @@ namespace CommonConcepts.Test
                     LongStringProperty = null
                 };
                 context.PersistanceStorage.Insert(entity);
-                var entityLoadedFromDatabase = context.Repository.Storage.AllProperties.Load(x => x.ID == entity.ID).Single();
+                var entityLoadedFromDatabase = context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity.ID).Single();
                 AssertAreEqual(entity, entityLoadedFromDatabase);
             }
         }
@@ -108,19 +108,19 @@ namespace CommonConcepts.Test
             {
                 var context = container.Resolve<Common.ExecutionContext>();
 
-                var entity = new Storage.Simple
+                var entity = new TestStorage.Simple
                 {
                     ID = entityID,
                     Name = "Test"
                 };
-                context.PersistanceStorage.Insert(new List<Storage.Simple> { entity });
+                context.PersistanceStorage.Insert(new List<TestStorage.Simple> { entity });
                 context.PersistenceTransaction.DiscardChanges();
             }
 
             using (var container = new RhetosTestContainer(commitChanges: false))
             {
                 var context = container.Resolve<Common.ExecutionContext>();
-                Assert.AreEqual(0, context.Repository.Storage.Simple.Load(x => x.ID == entityID).Count());
+                Assert.AreEqual(0, context.Repository.TestStorage.Simple.Load(x => x.ID == entityID).Count());
             }
         }
 
@@ -132,7 +132,7 @@ namespace CommonConcepts.Test
             {
                 var context = container.Resolve<Common.ExecutionContext>();
 
-                var entity = new Storage.DataStructureWithNoSaveMapping
+                var entity = new TestStorage.DataStructureWithNoSaveMapping
                 {
                     ID = entityID,
                     Name = "Test"
@@ -152,16 +152,16 @@ namespace CommonConcepts.Test
 
                 var entityID = Guid.NewGuid();
 
-                context.PersistanceStorage.Insert(new List<Storage.EntityWithNoProperty> { new Storage.EntityWithNoProperty { ID = entityID } });
+                context.PersistanceStorage.Insert(new List<TestStorage.EntityWithNoProperty> { new TestStorage.EntityWithNoProperty { ID = entityID } });
 
                 var rowsAffected1 = context.PersistanceStorage.StartBatch()
-                    .Add(new Storage.EntityWithNoProperty { ID = entityID }, PersistanceStorageCommandType.Update)
+                    .Add(new TestStorage.EntityWithNoProperty { ID = entityID }, PersistanceStorageCommandType.Update)
                     .Execute();
                 Assert.AreEqual(0, rowsAffected1, "The entity does not have any property except ID which is the key of the entity so an update command is not required.");
 
                 var rowsAffected2 = context.PersistanceStorage.StartBatch()
-                    .Add(new Storage.Simple { ID = Guid.NewGuid() }, PersistanceStorageCommandType.Insert)
-                    .Add(new Storage.EntityWithNoProperty { ID = entityID }, PersistanceStorageCommandType.Update)
+                    .Add(new TestStorage.Simple { ID = Guid.NewGuid() }, PersistanceStorageCommandType.Insert)
+                    .Add(new TestStorage.EntityWithNoProperty { ID = entityID }, PersistanceStorageCommandType.Update)
                     .Execute();
 
                 Assert.AreEqual(1, rowsAffected2, "The entity does not have any property except ID which is the key of the entity so an update command is not required, only the insert command will be executed.");
@@ -176,22 +176,22 @@ namespace CommonConcepts.Test
             {
                 var context = container.Resolve<Common.ExecutionContext>();
 
-                var entity1 = new Storage.AllProperties
+                var entity1 = new TestStorage.AllProperties
                 {
                     ID = Guid.NewGuid(),
                     MoneyProperty = 12.34100m
                 };
                 context.PersistanceStorage.Insert(entity1);
-                Assert.AreEqual(12.34m, context.Repository.Storage.AllProperties.Load(x => x.ID == entity1.ID).Single().MoneyProperty,
+                Assert.AreEqual(12.34m, context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity1.ID).Single().MoneyProperty,
                     "The money property should be cut off on the second decimal position.");
 
-                var entity2 = new Storage.AllProperties
+                var entity2 = new TestStorage.AllProperties
                 {
                     ID = Guid.NewGuid(),
                     MoneyProperty = 12.34900m
                 };
                 context.PersistanceStorage.Insert(entity2);
-                Assert.AreEqual(12.34m, context.Repository.Storage.AllProperties.Load(x => x.ID == entity2.ID).Single().MoneyProperty,
+                Assert.AreEqual(12.34m, context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity2.ID).Single().MoneyProperty,
                     "The money property should be cut off on the second decimal position.");
 
             }
@@ -204,22 +204,22 @@ namespace CommonConcepts.Test
             {
                 var context = container.Resolve<Common.ExecutionContext>();
 
-                var entity1 = new Storage.AllProperties
+                var entity1 = new TestStorage.AllProperties
                 {
                     ID = Guid.NewGuid(),
                     DecimalProperty = 12.34000000001m
                 };
                 context.PersistanceStorage.Insert(entity1);
-                Assert.AreEqual(12.34m, context.Repository.Storage.AllProperties.Load(x => x.ID == entity1.ID).Single().DecimalProperty,
+                Assert.AreEqual(12.34m, context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity1.ID).Single().DecimalProperty,
                     "The money property should be cut off on the 10th decimal position.");
 
-                var entity2 = new Storage.AllProperties
+                var entity2 = new TestStorage.AllProperties
                 {
                     ID = Guid.NewGuid(),
                     DecimalProperty = 12.34000000009m
                 };
                 context.PersistanceStorage.Insert(entity2);
-                Assert.AreEqual(12.34m, context.Repository.Storage.AllProperties.Load(x => x.ID == entity2.ID).Single().DecimalProperty,
+                Assert.AreEqual(12.34m, context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity2.ID).Single().DecimalProperty,
                     "The money property should be cut off on the 10th decimal position.");
 
             }
@@ -232,7 +232,7 @@ namespace CommonConcepts.Test
             {
                 var context = container.Resolve<Common.ExecutionContext>();
 
-                var entity1 = new Storage.AllProperties
+                var entity1 = new TestStorage.AllProperties
                 {
                     ID = Guid.NewGuid(),
                     ShortStringProperty = "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt."
@@ -250,14 +250,14 @@ namespace CommonConcepts.Test
                 var context = container.Resolve<Common.ExecutionContext>();
 
                 var sampleDateTime = new DateTime(2020, 1, 1, 1, 1, 1, 1);
-                var entity = new Storage.AllProperties
+                var entity = new TestStorage.AllProperties
                 {
                     ID = Guid.NewGuid(),
                     DateTimeProperty = sampleDateTime
                 };
                 context.PersistanceStorage.Insert(entity);
 
-                var loadedEntity = context.Repository.Storage.AllProperties.Load(x => x.ID == entity.ID).Single();
+                var loadedEntity = context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity.ID).Single();
                 Assert.AreEqual(new DateTime(2020, 1, 1, 1, 1, 1, 0), loadedEntity.DateTimeProperty);
             }
         }
@@ -270,14 +270,14 @@ namespace CommonConcepts.Test
                 var context = container.Resolve<Common.ExecutionContext>();
 
                 var sampleDateTime = new DateTime(2020, 1, 1, 1, 1, 1);
-                var entity = new Storage.AllProperties
+                var entity = new TestStorage.AllProperties
                 {
                     ID = Guid.NewGuid(),
                     DateProperty = sampleDateTime
                 };
                 context.PersistanceStorage.Insert(entity);
 
-                var loadedEntity = context.Repository.Storage.AllProperties.Load(x => x.ID == entity.ID).Single();
+                var loadedEntity = context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity.ID).Single();
                 Assert.AreEqual(new DateTime(2020, 1, 1, 0, 0, 0), loadedEntity.DateProperty);
             }
         }
@@ -338,11 +338,11 @@ namespace CommonConcepts.Test
             }
         }
 
-        private Storage.Simple[] GenerateSimpleEntites(int count)
+        private TestStorage.Simple[] GenerateSimpleEntites(int count)
         {
-            var entites = new Storage.Simple[count];
+            var entites = new TestStorage.Simple[count];
             for (var i = 0; i < count; i++)
-                entites[i] = new Storage.Simple {
+                entites[i] = new TestStorage.Simple {
                     ID = Guid.NewGuid()
                 };
             return entites;
@@ -355,17 +355,17 @@ namespace CommonConcepts.Test
                 Assert.AreEqual(report[i].Item1, rowsAffectedInBatches[i]);
         }
 
-        private void AssertItemsExists(DomRepository repository, params Storage.Simple[] entites)
+        private void AssertItemsExists(DomRepository repository, params TestStorage.Simple[] entites)
         {
             var nonexistentIds = new List<Guid>();
             foreach (var entity in entites)
             {
-                if (!repository.Storage.Simple.Query(x => x.ID == entity.ID).Any())
+                if (!repository.TestStorage.Simple.Query(x => x.ID == entity.ID).Any())
                     nonexistentIds.Add(entity.ID);
             }
 
             if(nonexistentIds.Any())
-                Assert.Fail($"Records with ids {string.Join(",", nonexistentIds)} are expected in the table Storage.Simple.");
+                Assert.Fail($"Records with ids {string.Join(",", nonexistentIds)} are expected in the table TestStorage.Simple.");
         }
     }
 }

@@ -1,4 +1,4 @@
-Module Storage
+Module TestStorage
 {
     Entity AllProperties
     {
@@ -21,10 +21,11 @@ Module Storage
 
     SqlQueryable DataStructureWithNoSaveMapping
     "
-        SELECT ID, Name FROM Storage.Simple
+        SELECT ID, Name FROM TestStorage.Simple
     "
     {
         ShortString Name;
+        AutoDetectSqlDependencies;
     }
 
     Entity EntityWithNoProperty;
