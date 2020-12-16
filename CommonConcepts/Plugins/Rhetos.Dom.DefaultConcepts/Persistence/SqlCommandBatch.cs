@@ -26,7 +26,7 @@ using System.Text;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-	public class SqlCommandBatch : IPersistanceStorageCommandBatch
+	public class SqlCommandBatch : IPersistenceStorageCommandBatch
 	{
 		private int _batchNumber;
 
@@ -34,24 +34,24 @@ namespace Rhetos.Dom.DefaultConcepts
 
 		private IPersistenceTransaction _persistenceTransaction;
 
-		private IPersistanceStorageObjectMappings _persistanceMappingConfiguration;
+		private IPersistenceStorageObjectMappings _persistenceMappingConfiguration;
 
 		private Action<int, DbCommand> _afterCommandExecution;
 
 		public SqlCommandBatch(
 			IPersistenceTransaction persistenceTransaction,
-			IPersistanceStorageObjectMappings persistanceMappingConfiguration,
+			IPersistenceStorageObjectMappings persistenceMappingConfiguration,
 			int batchNumber,
 			Action<int, DbCommand> afterCommandExecution)
 		{
 			_batchNumber = batchNumber;
 			_commands = new List<Command>();
 			_persistenceTransaction = persistenceTransaction;
-			_persistanceMappingConfiguration = persistanceMappingConfiguration;
+			_persistenceMappingConfiguration = persistenceMappingConfiguration;
 			_afterCommandExecution = afterCommandExecution;
 		}
 
-		public IPersistanceStorageCommandBatch Add<T>(T entity, PersistanceStorageCommandType commandType) where T : class, IEntity
+		public IPersistenceStorageCommandBatch Add<T>(T entity, PersistenceStorageCommandType commandType) where T : class, IEntity
 		{	
 			_commands.Add(new Command
 			{
@@ -111,21 +111,21 @@ namespace Rhetos.Dom.DefaultConcepts
 
 		private void AppendCommand(Command comand, List<DbParameter> commandParameters, StringBuilder commandTextBuilder)
 		{
-			if (comand.CommandType == PersistanceStorageCommandType.Insert)
+			if (comand.CommandType == PersistenceStorageCommandType.Insert)
 			{
-				AppendInsertCommand(commandParameters, commandTextBuilder, comand.Entity, _persistanceMappingConfiguration.GetMapping(comand.EntityType));
+				AppendInsertCommand(commandParameters, commandTextBuilder, comand.Entity, _persistenceMappingConfiguration.GetMapping(comand.EntityType));
 			}
-			if (comand.CommandType == PersistanceStorageCommandType.Update)
+			if (comand.CommandType == PersistenceStorageCommandType.Update)
 			{
-				AppendUpdateCommand(commandParameters, commandTextBuilder, comand.Entity, _persistanceMappingConfiguration.GetMapping(comand.EntityType));
+				AppendUpdateCommand(commandParameters, commandTextBuilder, comand.Entity, _persistenceMappingConfiguration.GetMapping(comand.EntityType));
 			}
-			if (comand.CommandType == PersistanceStorageCommandType.Delete)
+			if (comand.CommandType == PersistenceStorageCommandType.Delete)
 			{
-				AppendDeleteCommand(commandParameters, commandTextBuilder, comand.Entity, _persistanceMappingConfiguration.GetMapping(comand.EntityType));
+				AppendDeleteCommand(commandParameters, commandTextBuilder, comand.Entity, _persistenceMappingConfiguration.GetMapping(comand.EntityType));
 			}
 		}
 
-		private void AppendInsertCommand(List<DbParameter> commandParameters, StringBuilder commandTextBuilder, IEntity entity, IPersistanceStorageObjectMapper mapper)
+		private void AppendInsertCommand(List<DbParameter> commandParameters, StringBuilder commandTextBuilder, IEntity entity, IPersistenceStorageObjectMapper mapper)
 		{
 			var parameters = mapper.GetParameters(entity);
 			InitializeAndAppendParameters(commandParameters, parameters);
@@ -143,7 +143,7 @@ namespace Rhetos.Dom.DefaultConcepts
 			commandParameters.AddRange(parameters.Select(x => x.Value));
 		}
 
-		private void AppendUpdateCommand(List<DbParameter> commandParameters, StringBuilder commandTextBuilder, IEntity entity, IPersistanceStorageObjectMapper mapper)
+		private void AppendUpdateCommand(List<DbParameter> commandParameters, StringBuilder commandTextBuilder, IEntity entity, IPersistenceStorageObjectMapper mapper)
 		{
 			var parameters = mapper.GetParameters(entity);
 			InitializeAndAppendParameters(commandParameters, parameters);
@@ -153,7 +153,7 @@ namespace Rhetos.Dom.DefaultConcepts
 				AppendEmptyUpdateCommandTextForType(parameters, mapper.GetTableName(), commandTextBuilder);
 		}
 
-		private void AppendDeleteCommand(List<DbParameter> commandParameters, StringBuilder commandTextBuilder, IEntity entity, IPersistanceStorageObjectMapper mapper)
+		private void AppendDeleteCommand(List<DbParameter> commandParameters, StringBuilder commandTextBuilder, IEntity entity, IPersistenceStorageObjectMapper mapper)
 		{
 			var entityName = mapper.GetTableName();
 			commandTextBuilder.Append($@"DELETE FROM {entityName} WHERE ID = '{entity.ID}';");
@@ -206,7 +206,7 @@ namespace Rhetos.Dom.DefaultConcepts
 		{
 			public IEntity Entity { get; set; }
 			public Type EntityType { get; set; }
-			public PersistanceStorageCommandType CommandType { get; set; }
+			public PersistenceStorageCommandType CommandType { get; set; }
 		}
 	}
 }

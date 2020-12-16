@@ -21,8 +21,8 @@ using System;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-    public interface IPersistanceStorageObjectMappings
+    public interface IPersistenceStorageObjectMappings
     {
-        IPersistanceStorageObjectMapper GetMapping(Type type);
+        IPersistenceStorageObjectMapper GetMapping(Type type);
     }
 }

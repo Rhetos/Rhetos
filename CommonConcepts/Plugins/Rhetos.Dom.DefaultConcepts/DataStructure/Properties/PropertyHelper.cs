@@ -61,7 +61,7 @@ namespace Rhetos.Dom.DefaultConcepts
             if (info.DataStructure is IWritableOrmDataStructure)
             {
                 codeBuilder.InsertCode($@"mappings.Add(""{info.Name}"", new SqlParameter("""", ((object)entity.{info.Name}) ?? DBNull.Value));
-            ", WritableOrmDataStructureCodeGenerator.PersistanceStorageMapperPropertyMappingTag, info.DataStructure);
+            ", WritableOrmDataStructureCodeGenerator.PersistenceStorageMapperPropertyMappingTag, info.DataStructure);
             }
         }
 
@@ -76,7 +76,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 mappings.Add(""{info.Name}"", parameter);
             }}
             ";
-                codeBuilder.InsertCode(code, WritableOrmDataStructureCodeGenerator.PersistanceStorageMapperPropertyMappingTag, info.DataStructure);
+                codeBuilder.InsertCode(code, WritableOrmDataStructureCodeGenerator.PersistenceStorageMapperPropertyMappingTag, info.DataStructure);
             }
         }
     }

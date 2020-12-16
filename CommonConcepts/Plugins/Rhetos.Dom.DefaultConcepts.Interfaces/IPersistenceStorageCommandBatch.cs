@@ -17,12 +17,24 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System.Collections.Generic;
+
 namespace Rhetos.Dom.DefaultConcepts
 {
-	public enum PersistanceStorageCommandType
-	{
-		Insert,
-		Update,
-		Delete
-	}
+    public interface IPersistenceStorageCommandBatch
+    {
+        IPersistenceStorageCommandBatch Add<T>(T entity, PersistenceStorageCommandType commandType) where T : class, IEntity;
+
+        int Execute();
+    }
+
+    public static class IPersistenceCommandBatchExtensions
+    {
+        public static IPersistenceStorageCommandBatch Add<T>(this IPersistenceStorageCommandBatch commandBatch, IEnumerable<T> entites, PersistenceStorageCommandType commandType) where T : class, IEntity
+        {
+            foreach (var entity in entites)
+                commandBatch.Add(entity, commandType);
+            return commandBatch;
+        }
+    }
 }

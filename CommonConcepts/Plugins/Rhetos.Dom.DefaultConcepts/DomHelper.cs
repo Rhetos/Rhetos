@@ -74,11 +74,11 @@ namespace Rhetos.Dom.DefaultConcepts
                 items = items.Select(item => new TEntity { ID = item.ID }).ToList();
         }
 
-        public static void EntityFrameworkOptimizedSave<TEntity>(
+        public static void WriteToDatabase<TEntity>(
             IEnumerable<TEntity> insertedNew,
             IEnumerable<TEntity> updatedNew,
             IEnumerable<TEntity> deletedIds,
-            IPersistanceStorage persistanceStorage,
+            IPersistenceStorage persistenceStorage,
             bool checkUserPermissions,
             ISqlUtility sqlUtility,
             out SqlException saveException,
@@ -87,9 +87,9 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             try
             {
-                persistanceStorage.Delete(deletedIds);
-                persistanceStorage.Update(updatedNew);
-                persistanceStorage.Insert(insertedNew);
+                persistenceStorage.Delete(deletedIds);
+                persistenceStorage.Update(updatedNew);
+                persistenceStorage.Insert(insertedNew);
                 saveException = null;
                 interpretedException = null;
             }

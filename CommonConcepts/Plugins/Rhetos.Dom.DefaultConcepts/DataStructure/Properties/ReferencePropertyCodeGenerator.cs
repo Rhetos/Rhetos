@@ -70,7 +70,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
                     if (info.Referenced == info.DataStructure)
                         codeBuilder.InsertCode($@"if(entity.{info.Name}ID != null && entity.{info.Name}ID != entity.ID) dependencies.Add(entity.{info.Name}ID.Value);
-            ", WritableOrmDataStructureCodeGenerator.PersistanceStorageMapperDependencyResolutionTag, info.DataStructure);
+            ", WritableOrmDataStructureCodeGenerator.PersistenceStorageMapperDependencyResolutionTag, info.DataStructure);
                 }
 
                 if (info.Referenced is IWritableOrmDataStructure)

@@ -47,7 +47,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 mappings.Add(""{info.Name}"", parameter);
             }}
             ";
-                codeBuilder.InsertCode(code, WritableOrmDataStructureCodeGenerator.PersistanceStorageMapperPropertyMappingTag, info.DataStructure);
+                codeBuilder.InsertCode(code, WritableOrmDataStructureCodeGenerator.PersistenceStorageMapperPropertyMappingTag, info.DataStructure);
             }
         }
     }

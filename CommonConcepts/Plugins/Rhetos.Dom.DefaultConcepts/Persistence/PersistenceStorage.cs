@@ -26,55 +26,55 @@ using System.Linq;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-    public class PersistanceStorage : IPersistanceStorage
+    public class PersistenceStorage : IPersistenceStorage
     {
         private readonly IPersistenceTransaction _persistenceTransaction;
 
-        private readonly IPersistanceStorageObjectMappings _persistanceStorageMapping;
+        private readonly IPersistenceStorageObjectMappings _persistenceStorageMapping;
 
         private readonly CommonConceptsRuntimeOptions _options;
 
         public Action<int, DbCommand> AfterCommandExecution { get; set; }
 
-        public PersistanceStorage(IPersistenceTransaction persistenceTransaction, IPersistanceStorageObjectMappings persistanceStorageMapping, CommonConceptsRuntimeOptions options)
+        public PersistenceStorage(IPersistenceTransaction persistenceTransaction, IPersistenceStorageObjectMappings persistenceStorageMapping, CommonConceptsRuntimeOptions options)
         {
             _persistenceTransaction = persistenceTransaction;
-            _persistanceStorageMapping = persistanceStorageMapping;
+            _persistenceStorageMapping = persistenceStorageMapping;
             _options = options;
         }
 
-        public IPersistanceStorageCommandBatch StartBatch()
+        public IPersistenceStorageCommandBatch StartBatch()
         {
-            return new SqlCommandBatch(_persistenceTransaction, _persistanceStorageMapping, _options.SaveSqlCommandBatchSize, AfterCommandExecution);
+            return new SqlCommandBatch(_persistenceTransaction, _persistenceStorageMapping, _options.SaveSqlCommandBatchSize, AfterCommandExecution);
         }
 
         public void Insert<TEntity>(IEnumerable<TEntity> toInsert) where TEntity : class, IEntity
         {
             CsUtility.Materialize(ref toInsert);
-            var numberOfAffectedRows = StartBatch().Add(GetSorted(toInsert).Reverse(), PersistanceStorageCommandType.Insert).Execute();
-            CheckRowCount(numberOfAffectedRows, toInsert, PersistanceStorageCommandType.Insert, typeof(TEntity));
+            var numberOfAffectedRows = StartBatch().Add(GetSorted(toInsert).Reverse(), PersistenceStorageCommandType.Insert).Execute();
+            CheckRowCount(numberOfAffectedRows, toInsert, PersistenceStorageCommandType.Insert, typeof(TEntity));
 
         }
 
         public void Update<TEntity>(IEnumerable<TEntity> toUpdate) where TEntity : class, IEntity
         {
             CsUtility.Materialize(ref toUpdate);
-            var numberOfAffectedRows = StartBatch().Add(GetSorted(toUpdate).Reverse(), PersistanceStorageCommandType.Update).Execute();
-            CheckRowCount(numberOfAffectedRows, toUpdate, PersistanceStorageCommandType.Update, typeof(TEntity));
+            var numberOfAffectedRows = StartBatch().Add(GetSorted(toUpdate).Reverse(), PersistenceStorageCommandType.Update).Execute();
+            CheckRowCount(numberOfAffectedRows, toUpdate, PersistenceStorageCommandType.Update, typeof(TEntity));
         }
 
         public void Delete<TEntity>(IEnumerable<TEntity> toDelete) where TEntity : class, IEntity
         {
             CsUtility.Materialize(ref toDelete);
-            var numberOfAffectedRows = StartBatch().Add(GetSorted(toDelete), PersistanceStorageCommandType.Delete).Execute();
-            CheckRowCount(numberOfAffectedRows, toDelete, PersistanceStorageCommandType.Delete, typeof(TEntity));
+            var numberOfAffectedRows = StartBatch().Add(GetSorted(toDelete), PersistenceStorageCommandType.Delete).Execute();
+            CheckRowCount(numberOfAffectedRows, toDelete, PersistenceStorageCommandType.Delete, typeof(TEntity));
         }
 
-        private void CheckRowCount(int numberOfAffectedRows, IEnumerable<IEntity> saveItems, PersistanceStorageCommandType commandType, Type entityType)
+        private void CheckRowCount(int numberOfAffectedRows, IEnumerable<IEntity> saveItems, PersistenceStorageCommandType commandType, Type entityType)
         {
-            if (numberOfAffectedRows < saveItems.Count() && (commandType == PersistanceStorageCommandType.Delete || commandType == PersistanceStorageCommandType.Update))
+            if (numberOfAffectedRows < saveItems.Count() && (commandType == PersistenceStorageCommandType.Delete || commandType == PersistenceStorageCommandType.Update))
             {
-                string message = commandType == PersistanceStorageCommandType.Update
+                string message = commandType == PersistenceStorageCommandType.Update
                     ? "Updating a record that does not exist in database."
                     : "Deleting a record that does not exist in database.";
 
@@ -90,7 +90,7 @@ namespace Rhetos.Dom.DefaultConcepts
         private IEnumerable<TEntity> GetSorted<TEntity>(IEnumerable<TEntity> entites) where TEntity : IEntity
         {
             var entitesCopy = new List<TEntity>(entites);
-            var mapper = _persistanceStorageMapping.GetMapping(typeof(TEntity));
+            var mapper = _persistenceStorageMapping.GetMapping(typeof(TEntity));
             var dependencies = entitesCopy.SelectMany(x => mapper.GetDependencies(x).Select(y => new Tuple<Guid, Guid>(x.ID, y)));
             var ids = entitesCopy.Select(x => x.ID).ToList();
             Graph.TopologicalSort(ids, dependencies);

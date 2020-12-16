@@ -70,7 +70,7 @@ namespace CommonConcepts.Test
                     ShortStringProperty = "Test",
                     LongStringProperty = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."
                 };
-                context.PersistanceStorage.Insert(entity);
+                context.PersistenceStorage.Insert(entity);
                 AssertAreEqual(entity, context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity.ID).Single());
 
                 entity.BinaryProperty = new byte[] { };
@@ -83,7 +83,7 @@ namespace CommonConcepts.Test
                 entity.MoneyProperty = 1.23m;
                 entity.ShortStringProperty = "Test1";
                 entity.LongStringProperty = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore.";
-                context.PersistanceStorage.Update(entity);
+                context.PersistenceStorage.Update(entity);
                 AssertAreEqual(entity, context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity.ID).Single());
 
                 entity.BinaryProperty = null;
@@ -96,10 +96,10 @@ namespace CommonConcepts.Test
                 entity.MoneyProperty = null;
                 entity.ShortStringProperty = null;
                 entity.LongStringProperty = null;
-                context.PersistanceStorage.Update(entity);
+                context.PersistenceStorage.Update(entity);
                 AssertAreEqual(entity, context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity.ID).Single());
 
-                context.PersistanceStorage.Delete(entity);
+                context.PersistenceStorage.Delete(entity);
                 Assert.IsFalse(context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity.ID).Any());
             }
         }
@@ -125,7 +125,7 @@ namespace CommonConcepts.Test
                     ShortStringProperty = null,
                     LongStringProperty = null
                 };
-                context.PersistanceStorage.Insert(entity);
+                context.PersistenceStorage.Insert(entity);
                 var entityLoadedFromDatabase = context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity.ID).Single();
                 AssertAreEqual(entity, entityLoadedFromDatabase);
             }
@@ -144,7 +144,7 @@ namespace CommonConcepts.Test
                     ID = entityID,
                     Name = "Test"
                 };
-                context.PersistanceStorage.Insert(new List<TestStorage.Simple> { entity });
+                context.PersistenceStorage.Insert(new List<TestStorage.Simple> { entity });
                 Assert.AreEqual(1, context.Repository.TestStorage.Simple.Load(x => x.ID == entityID).Count());
                 context.PersistenceTransaction.DiscardChanges();
             }
@@ -170,7 +170,7 @@ namespace CommonConcepts.Test
                     Name = "Test"
                 };
                 TestUtility.ShouldFail(
-                    () => context.PersistanceStorage.Insert(entity),
+                    () => context.PersistenceStorage.Insert(entity),
                     "There is no mapping", "TestStorage.DataStructureWithNoSaveMapping");
             }
         }
@@ -184,25 +184,25 @@ namespace CommonConcepts.Test
 
                 var entityID = Guid.NewGuid();
 
-                context.PersistanceStorage.Insert(new List<TestStorage.EntityWithNoProperty> { new TestStorage.EntityWithNoProperty { ID = entityID } });
+                context.PersistenceStorage.Insert(new List<TestStorage.EntityWithNoProperty> { new TestStorage.EntityWithNoProperty { ID = entityID } });
 
                 int accumulatedRowCount = 0;
 
                 var sqlCommandBatch = new SqlCommandBatch(
                     context.PersistenceTransaction,
-                    container.Resolve<IPersistanceStorageObjectMappings>(),
+                    container.Resolve<IPersistenceStorageObjectMappings>(),
                     20,
                     (rowCount, command) => accumulatedRowCount += rowCount);
 
                 sqlCommandBatch
-                    .Add(new TestStorage.EntityWithNoProperty { ID = entityID }, PersistanceStorageCommandType.Update)
+                    .Add(new TestStorage.EntityWithNoProperty { ID = entityID }, PersistenceStorageCommandType.Update)
                     .Execute();
                 Assert.AreEqual(1, accumulatedRowCount, "Event though update is not required, it should be executed for consistency, to verify if the record exists.");
 
                 accumulatedRowCount = 0;
                 sqlCommandBatch
-                    .Add(new TestStorage.Simple { ID = Guid.NewGuid() }, PersistanceStorageCommandType.Insert)
-                    .Add(new TestStorage.EntityWithNoProperty { ID = entityID }, PersistanceStorageCommandType.Update)
+                    .Add(new TestStorage.Simple { ID = Guid.NewGuid() }, PersistenceStorageCommandType.Insert)
+                    .Add(new TestStorage.EntityWithNoProperty { ID = entityID }, PersistenceStorageCommandType.Update)
                     .Execute();
 
                 Assert.AreEqual(2, accumulatedRowCount, "Multiple updates.");
@@ -243,7 +243,7 @@ namespace CommonConcepts.Test
                         ID = Guid.NewGuid(),
                         MoneyProperty = test.Save
                     };
-                    context.PersistanceStorage.Insert(entity);
+                    context.PersistenceStorage.Insert(entity);
                     Assert.AreEqual(test.Load, context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity.ID).Single().MoneyProperty,
                         $"The money property should be cut off on the second decimal position ({test.Save}).");
                 }
@@ -285,7 +285,7 @@ namespace CommonConcepts.Test
                         ID = Guid.NewGuid(),
                         DecimalProperty = test.Save
                     };
-                    context.PersistanceStorage.Insert(entity1);
+                    context.PersistenceStorage.Insert(entity1);
                     Assert.AreEqual(test.Load, context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity1.ID).Single().DecimalProperty,
                         $"The money property should be cut off on the 10th decimal position ({test.Save}).");
                 }
@@ -317,7 +317,7 @@ namespace CommonConcepts.Test
                         ID = Guid.NewGuid(),
                         ShortStringProperty = test
                     };
-                    context.PersistanceStorage.Insert(entity1);
+                    context.PersistenceStorage.Insert(entity1);
                     Assert.AreEqual(test, context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity1.ID).Single().ShortStringProperty);
                 }
             }
@@ -335,7 +335,7 @@ namespace CommonConcepts.Test
                     ID = Guid.NewGuid(),
                     ShortStringProperty = "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt."
                 };
-                TestUtility.ShouldFail<SqlException>(() => context.PersistanceStorage.Insert(entity1),
+                TestUtility.ShouldFail<SqlException>(() => context.PersistenceStorage.Insert(entity1),
                     "data would be truncated");
             }
         }
@@ -366,7 +366,7 @@ namespace CommonConcepts.Test
                         ID = Guid.NewGuid(),
                         LongStringProperty = test
                     };
-                    context.PersistanceStorage.Insert(entity1);
+                    context.PersistenceStorage.Insert(entity1);
                     Assert.AreEqual(test, context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity1.ID).Single().LongStringProperty);
                 }
             }
@@ -399,7 +399,7 @@ namespace CommonConcepts.Test
                         ID = Guid.NewGuid(),
                         DateTimeProperty = test
                     };
-                    context.PersistanceStorage.Insert(entity1);
+                    context.PersistenceStorage.Insert(entity1);
                     DateTime? loaded = context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity1.ID).Single().DateTimeProperty;
                     if (!usingDateTime2)
                         Assert.AreEqual(test, loaded);
@@ -426,7 +426,7 @@ namespace CommonConcepts.Test
                     ID = Guid.NewGuid(),
                     DateTimeProperty = sampleDateTime
                 };
-                context.PersistanceStorage.Insert(entity);
+                context.PersistenceStorage.Insert(entity);
 
                 var loadedEntity = context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity.ID).Single();
                 Assert.AreEqual(new DateTime(2020, 1, 1, 1, 1, 1, 0), loadedEntity.DateTimeProperty);
@@ -446,7 +446,7 @@ namespace CommonConcepts.Test
                     ID = Guid.NewGuid(),
                     DateProperty = sampleDateTime
                 };
-                context.PersistanceStorage.Insert(entity);
+                context.PersistenceStorage.Insert(entity);
 
                 var loadedEntity = context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity.ID).Single();
                 Assert.AreEqual(new DateTime(2020, 1, 1, 0, 0, 0), loadedEntity.DateProperty);
@@ -459,7 +459,7 @@ namespace CommonConcepts.Test
             using (var container = new RhetosTestContainer())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
-                var persistanceStorageMapping = container.Resolve<IPersistanceStorageObjectMappings>();
+                var persistanceStorageMapping = container.Resolve<IPersistenceStorageObjectMappings>();
                 var batchExecutionReport = new List<Tuple<int, string>>();
                 var commandBatch = new SqlCommandBatch(context.PersistenceTransaction, persistanceStorageMapping, 3, (rowsAffected, command)=> {
                     batchExecutionReport.Add(new Tuple<int, string>(rowsAffected, command.CommandText));
@@ -467,8 +467,8 @@ namespace CommonConcepts.Test
 
                 {
                     var entites = GenerateSimpleEntites(2);
-                    commandBatch.Add(entites[0], PersistanceStorageCommandType.Insert)
-                        .Add(entites[1], PersistanceStorageCommandType.Insert)
+                    commandBatch.Add(entites[0], PersistenceStorageCommandType.Insert)
+                        .Add(entites[1], PersistenceStorageCommandType.Insert)
                         .Execute();
                     AssertRowsAffected(batchExecutionReport, new[] { 2 });
                     AssertItemsExists(context.Repository, entites);
@@ -477,9 +477,9 @@ namespace CommonConcepts.Test
                 {
                     var entites = GenerateSimpleEntites(3);
                     batchExecutionReport.Clear();
-                    commandBatch.Add(entites[0], PersistanceStorageCommandType.Insert)
-                        .Add(entites[1], PersistanceStorageCommandType.Insert)
-                        .Add(entites[2], PersistanceStorageCommandType.Insert)
+                    commandBatch.Add(entites[0], PersistenceStorageCommandType.Insert)
+                        .Add(entites[1], PersistenceStorageCommandType.Insert)
+                        .Add(entites[2], PersistenceStorageCommandType.Insert)
                         .Execute();
                     AssertRowsAffected(batchExecutionReport, new[] { 3 });
                     AssertItemsExists(context.Repository, entites);
@@ -488,10 +488,10 @@ namespace CommonConcepts.Test
                 {
                     var entites = GenerateSimpleEntites(4);
                     batchExecutionReport.Clear();
-                    commandBatch.Add(entites[0], PersistanceStorageCommandType.Insert)
-                        .Add(entites[1], PersistanceStorageCommandType.Insert)
-                        .Add(entites[2], PersistanceStorageCommandType.Insert)
-                        .Add(entites[3], PersistanceStorageCommandType.Insert)
+                    commandBatch.Add(entites[0], PersistenceStorageCommandType.Insert)
+                        .Add(entites[1], PersistenceStorageCommandType.Insert)
+                        .Add(entites[2], PersistenceStorageCommandType.Insert)
+                        .Add(entites[3], PersistenceStorageCommandType.Insert)
                         .Execute();
                     AssertRowsAffected(batchExecutionReport, new[] { 3, 1 });
                     AssertItemsExists(context.Repository, entites);
@@ -499,9 +499,9 @@ namespace CommonConcepts.Test
                 {
                     var entites = GenerateSimpleEntites(1);
                     batchExecutionReport.Clear();
-                    commandBatch.Add(entites[0], PersistanceStorageCommandType.Insert)
-                        .Add(entites[0], PersistanceStorageCommandType.Update)
-                        .Add(entites[0], PersistanceStorageCommandType.Update)
+                    commandBatch.Add(entites[0], PersistenceStorageCommandType.Insert)
+                        .Add(entites[0], PersistenceStorageCommandType.Update)
+                        .Add(entites[0], PersistenceStorageCommandType.Update)
                         .Execute();
                     AssertRowsAffected(batchExecutionReport, new[] { 3 });
                     AssertItemsExists(context.Repository, entites);

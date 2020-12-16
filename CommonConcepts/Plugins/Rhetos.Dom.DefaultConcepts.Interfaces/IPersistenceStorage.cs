@@ -23,11 +23,11 @@ using System.Data.Common;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-    public interface IPersistanceStorage
+    public interface IPersistenceStorage
     {
         Action<int, DbCommand> AfterCommandExecution { get; set; }
 
-        IPersistanceStorageCommandBatch StartBatch();
+        IPersistenceStorageCommandBatch StartBatch();
 
         void Insert<TEntity>(IEnumerable<TEntity> toInsert) where TEntity : class, IEntity;
 
@@ -36,21 +36,21 @@ namespace Rhetos.Dom.DefaultConcepts
         void Delete<TEntity>(IEnumerable<TEntity> toDelete) where TEntity : class, IEntity;
     }
 
-    public static class IPersistanceStorageExtensions
+    public static class IPersistenceStorageExtensions
     {
-        public static void Insert<TEntity>(this IPersistanceStorage persistanceStorage, TEntity toInsert) where TEntity : class, IEntity
+        public static void Insert<TEntity>(this IPersistenceStorage persistenceStorage, TEntity toInsert) where TEntity : class, IEntity
         {
-            persistanceStorage.Insert(toInsert.Yield());
+            persistenceStorage.Insert(toInsert.Yield());
         }
 
-        public static void Update<TEntity>(this IPersistanceStorage persistanceStorage, TEntity toUpdate) where TEntity : class, IEntity
+        public static void Update<TEntity>(this IPersistenceStorage persistenceStorage, TEntity toUpdate) where TEntity : class, IEntity
         {
-            persistanceStorage.Update(toUpdate.Yield());
+            persistenceStorage.Update(toUpdate.Yield());
         }
 
-        public static void Delete<TEntity>(this IPersistanceStorage persistanceStorage, TEntity toDelete) where TEntity : class, IEntity
+        public static void Delete<TEntity>(this IPersistenceStorage persistenceStorage, TEntity toDelete) where TEntity : class, IEntity
         {
-            persistanceStorage.Delete(toDelete.Yield());
+            persistenceStorage.Delete(toDelete.Yield());
         }
 
         private static IEnumerable<T> Yield<T>(this T item)

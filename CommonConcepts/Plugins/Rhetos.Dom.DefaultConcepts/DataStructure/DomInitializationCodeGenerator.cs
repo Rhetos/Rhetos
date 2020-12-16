@@ -39,8 +39,8 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly string ReadableRepositoryBaseMembersTag = "/*ReadableRepositoryBaseMembers*/";
         public static readonly string QueryableRepositoryBaseMembersTag = "/*QueryableRepositoryBaseMembers*/";
         public static readonly string OrmRepositoryBaseMembersTag = "/*OrmRepositoryBaseMembers*/";
-        public static readonly string PersistanceStorageMappingRegistrationTag = "/*PersistanceStorageMappingRegistration*/";
-        public static readonly string PersistanceStorageMappingsTag = "/*PersistanceStorageMappings*/";
+        public static readonly string PersistenceStorageMappingRegistrationTag = "/*PersistenceStorageMappingRegistration*/";
+        public static readonly string PersistenceStorageMappingsTag = "/*PersistenceStorageMappings*/";
 
         private readonly RhetosBuildEnvironment _buildEnvironment;
         private readonly CommonConceptsOptions _commonConceptsOptions;
@@ -69,7 +69,7 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.InsertCodeToFile(GetModelSnippet(), $"{DomAssemblies.Model}\\QueryExtensions");
             codeBuilder.InsertCodeToFile(GetOrmSnippet(), string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder) ? DomAssemblies.Orm.ToString() : "EntityFrameworkContext");
             codeBuilder.InsertCodeToFile(GetRepositoriesSnippet(), DomAssemblies.Repositories.ToString());
-            codeBuilder.InsertCodeToFile(GetPersistanceStorageMapperSnippet(), string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder) ? DomAssemblies.Orm.ToString() : "PersistanceStorageMapper");
+            codeBuilder.InsertCodeToFile(GetPersistenceStorageMapperSnippet(), string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder) ? DomAssemblies.Orm.ToString() : "PersistenceStorageMapper");
 
             codeBuilder.InsertCode("this.Configuration.UseDatabaseNullSemantics = _rhetosAppOptions.EntityFrameworkUseDatabaseNullSemantics;\r\n            ", EntityFrameworkContextInitializeTag);
 
@@ -303,8 +303,8 @@ $@"namespace Common
         protected Lazy<Common.DomRepository> _repository;
         public Common.DomRepository Repository {{ get {{ return _repository.Value; }} }}
 
-        protected Lazy<Rhetos.Dom.DefaultConcepts.IPersistanceStorage> _persistanceStorage;
-        public Rhetos.Dom.DefaultConcepts.IPersistanceStorage PersistanceStorage {{ get {{ return _persistanceStorage.Value; }} }}
+        protected Lazy<Rhetos.Dom.DefaultConcepts.IPersistenceStorage> _persistenceStorage;
+        public Rhetos.Dom.DefaultConcepts.IPersistenceStorage PersistenceStorage {{ get {{ return _persistenceStorage.Value; }} }}
 
         public Rhetos.Logging.ILogProvider LogProvider {{ get; private set; }}
 
@@ -323,7 +323,7 @@ $@"namespace Common
             Lazy<Rhetos.Security.IAuthorizationManager> authorizationManager,
             Lazy<Rhetos.Dom.DefaultConcepts.GenericRepositories> genericRepositories,
             Lazy<Common.DomRepository> repository,
-            Lazy<Rhetos.Dom.DefaultConcepts.IPersistanceStorage> persistanceStorage,
+            Lazy<Rhetos.Dom.DefaultConcepts.IPersistenceStorage> persistenceStorage,
             Rhetos.Logging.ILogProvider logProvider,
             Lazy<Rhetos.Security.IWindowsSecurity> windowsSecurity{ModuleCodeGenerator.ExecutionContextConstructorArgumentTag},
             EntityFrameworkContext entityFrameworkContext)
@@ -334,7 +334,7 @@ $@"namespace Common
             _authorizationManager = authorizationManager;
             _genericRepositories = genericRepositories;
             _repository = repository;
-            _persistanceStorage = persistanceStorage;
+            _persistenceStorage = persistenceStorage;
             LogProvider = logProvider;
             _windowsSecurity = windowsSecurity;
             EntityFrameworkContext = entityFrameworkContext;
@@ -365,7 +365,7 @@ $@"namespace Common
             builder.RegisterType<ExecutionContext>().InstancePerLifetimeScope();
             builder.RegisterInstance(Infrastructure.RegisteredInterfaceImplementations).ExternallyOwned();
             builder.RegisterInstance(Infrastructure.ApplyFiltersOnClientRead).ExternallyOwned();
-            builder.RegisterType<PersistanceStorageObjectMappings>().As<IPersistanceStorageObjectMappings>().SingleInstance();            
+            builder.RegisterType<PersistenceStorageObjectMappings>().As<IPersistenceStorageObjectMappings>().SingleInstance();            
             builder.RegisterInstance(new Rhetos.Dom.DefaultConcepts.CommonConceptsDatabaseSettings
             {{
                 UseLegacyMsSqlDateTime = {_databaseSettings.UseLegacyMsSqlDateTime.ToString().ToLowerInvariant()},
@@ -522,7 +522,7 @@ $@"namespace Common
 }}
 ";
 
-        private string GetPersistanceStorageMapperSnippet() =>
+        private string GetPersistenceStorageMapperSnippet() =>
 $@"namespace Common
 {{
     using System;
@@ -530,18 +530,18 @@ $@"namespace Common
     using System.Collections.Generic;
     using System.Data.SqlClient;
 
-    public class PersistanceStorageObjectMappings : IPersistanceStorageObjectMappings
+    public class PersistenceStorageObjectMappings : IPersistenceStorageObjectMappings
     {{
-        Dictionary<Type, IPersistanceStorageObjectMapper> _mappings = new Dictionary<Type, IPersistanceStorageObjectMapper>();
+        Dictionary<Type, IPersistenceStorageObjectMapper> _mappings = new Dictionary<Type, IPersistenceStorageObjectMapper>();
 
-        public PersistanceStorageObjectMappings()
+        public PersistenceStorageObjectMappings()
         {{
-            {PersistanceStorageMappingRegistrationTag}
+            {PersistenceStorageMappingRegistrationTag}
         }}
 
-        public IPersistanceStorageObjectMapper GetMapping(Type type)
+        public IPersistenceStorageObjectMapper GetMapping(Type type)
         {{
-            IPersistanceStorageObjectMapper mapper;
+            IPersistenceStorageObjectMapper mapper;
             if(_mappings.TryGetValue(type, out mapper))
                 return mapper;
             else
@@ -549,7 +549,7 @@ $@"namespace Common
         }}
     }}
 
-    {PersistanceStorageMappingsTag}
+    {PersistenceStorageMappingsTag}
 }}
 ";
     }
