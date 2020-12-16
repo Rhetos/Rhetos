@@ -42,7 +42,7 @@ namespace Rhetos
         /// </summary>
         public static readonly IDictionary<string, string> LegacyKeysMapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            { "Rhetos:Build:AssemblyGeneratorErrorReportLimit", "AssemblyGenerator.ErrorReportLimit" },
+            { "Rhetos:Build:AssemblyGeneratorErrorReportLimit", "CONFIGURATION KEY NOT SUPPORTED" },
             { "Rhetos:App:AuthorizationAddUnregisteredPrincipals", "AuthorizationAddUnregisteredPrincipals" },
             { "Rhetos:App:AuthorizationCacheExpirationSeconds", "AuthorizationCacheExpirationSeconds" },
             { "Rhetos:AppSecurity:BuiltinAdminOverride", "BuiltinAdminOverride" },

@@ -14,6 +14,7 @@
     <dependencies>
       <dependency id="Rhetos" version="[5.0.0-dev,5.1.0)" />
       <dependency id="System.Runtime.Caching" version="4.7.0" />
+      <dependency id="Microsoft.CodeAnalysis.CSharp" version="3.7.0" />
     </dependencies>
   </metadata>
   <files>

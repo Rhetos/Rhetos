@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System;
 using System.Collections.Generic;
 
 namespace Rhetos.Utilities
@@ -25,11 +26,9 @@ namespace Rhetos.Utilities
     public class BuildOptions
     {
         public string DatabaseLanguage { get; set; } = "MsSql";
-
-        public bool Debug { get; set; }
-
+        
         public InitialConceptsSort InitialConceptsSort { get; set; } = InitialConceptsSort.Key;
-
+        
         public ExcessDotInKey DslSyntaxExcessDotInKey { get; set; } = ExcessDotInKey.Ignore;
 
         /// <summary>
@@ -43,11 +42,6 @@ namespace Rhetos.Utilities
         /// with essential information on application structure.
         /// </summary>
         public bool GenerateAppSettings { get; set; } = false;
-
-        /// <summary>
-        /// Option is a part of legacy design/configuration.
-        /// </summary>
-        public int AssemblyGeneratorErrorReportLimit { get; set; } = 5;
 
         /// <summary>
         /// Specifies maximum number of parallel threads while executing generators. 0 = unlimited.
