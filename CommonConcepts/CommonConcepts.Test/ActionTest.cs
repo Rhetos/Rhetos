@@ -38,9 +38,9 @@ namespace CommonConcepts.Test
         {
             var item1ID = Guid.NewGuid();
             var item2ID = Guid.NewGuid();
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 repository.TestAction.ToInsert.Insert(new TestAction.ToInsert { ID = item1ID });
 
                 var exception = TestUtility.ShouldFail<ApplicationException>(
@@ -50,9 +50,9 @@ namespace CommonConcepts.Test
                 TestUtility.AssertContains(exceptionOrigin, new[] { "InsertAndThrowException_Repository", "Execute", "InsertAndThrowException parameters" });
             }
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var toInsertEntityCount = repository.TestAction.ToInsert.Query(x => x.ID == item1ID || x.ID == item2ID).Count();
                 Assert.AreEqual(0, toInsertEntityCount);
             }
@@ -61,24 +61,24 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UseExecutionContext()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var executionContext = container.Resolve<Common.ExecutionContext>();
-                Assert.IsTrue(container.Resolve<IUserInfo>().UserName.Length > 0);
-                var repository = container.Resolve<Common.DomRepository>();
+                var executionContext = scope.Resolve<Common.ExecutionContext>();
+                Assert.IsTrue(scope.Resolve<IUserInfo>().UserName.Length > 0);
+                var repository = scope.Resolve<Common.DomRepository>();
                 TestUtility.ShouldFail(
                     () => repository.TestAction.UEC.Execute(new TestAction.UEC { }),
-                    "User " + container.Resolve<IUserInfo>().UserName);
+                    "User " + scope.Resolve<IUserInfo>().UserName);
             }
         }
 
         [TestMethod]
         public void UseObjectsWithCalculatedExtension()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestAction.Simple" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestAction.Simple" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var itemA = new TestAction.Simple { Name = "testA" };
                 var itemB = new TestAction.Simple { Name = "testB" };
@@ -93,10 +93,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void BeforeAction()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
-                var username = container.Resolve<IUserInfo>().UserName;
+                var repository = scope.Resolve<Common.DomRepository>();
+                var username = scope.Resolve<IUserInfo>().UserName;
 
                 TestUtility.ShouldFail<Rhetos.UserException>(
                     () => repository.TestAction.TestBefore.Execute(new TestAction.TestBefore { S = "abc" }),

@@ -33,9 +33,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void GetBaseChangesOnDependencyHistory()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var dslModel = container.Resolve<IDslModel>();
+                var dslModel = scope.Resolve<IDslModel>();
 
                 var dependsOnHistory = (SqlQueryableInfo)dslModel.FindByKey("DataStructureInfo TestHistory.SimpleWithLock_History");
 

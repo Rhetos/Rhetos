@@ -17,31 +17,16 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Utilities;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
     public static class DomUtility
     {
-        /// <summary>
-        /// Standard GetHashCode() function in not guaranteed to return same result in different environments.
-        /// </summary>
         public static int GetSubtypeImplementationHash(string implementationName)
         {
-            if (string.IsNullOrEmpty(implementationName))
-                return 0;
-
-            const int seed = 1737350767;
-            int hash = seed;
-            foreach (char c in implementationName)
-            {
-                hash += c;
-                hash *= seed;
-            }
-            return hash;
+            return CsUtility.GetStableHashCode(implementationName);
         }
 
         /// <summary>

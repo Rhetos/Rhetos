@@ -17,25 +17,18 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Autofac;
 using CommonConcepts.Test.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos.Configuration.Autofac;
 using Rhetos.Dom.DefaultConcepts;
-using Rhetos.Logging;
 using Rhetos.Security;
 using Rhetos.TestCommon;
-using Rhetos.Utilities;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace CommonConcepts.Test
 {
     [TestClass]
-    public class AuthorizationProvider
+    public class AuthorizationProviderTest
     {
         [TestMethod]
         public void SystemRoles()
@@ -45,9 +38,9 @@ namespace CommonConcepts.Test
             string anonymous = SystemRole.Anonymous.ToString();
             AuthorizationDataCache.ClearCache();
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
                 var repository = context.Repository;
 
                 // Insert test user and roles:
@@ -66,7 +59,7 @@ namespace CommonConcepts.Test
 
                 // Test automatically assigned system roles:
 
-                var authorizationProvider = (CommonAuthorizationProvider)container.Resolve<IAuthorizationProvider>();
+                var authorizationProvider = (CommonAuthorizationProvider)scope.Resolve<IAuthorizationProvider>();
                 Func<IPrincipal, string[]> getUserRolesNames = principal =>
                     authorizationProvider.GetUsersRoles(principal).Select(id => repository.Common.Role.Load(new[] { id }).Single().Name).ToArray();
 

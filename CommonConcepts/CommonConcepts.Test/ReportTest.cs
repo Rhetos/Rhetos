@@ -40,10 +40,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void MultipleSources()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestReport.Document" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestReport.Document" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var d1 = new Document { ID = Guid.NewGuid(), Name = "d1" };
                 var d2 = new Document { ID = Guid.NewGuid(), Name = "d2" };
@@ -87,10 +87,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void CustomReportFile()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestReport.Document" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestReport.Document" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var d1 = new Document { ID = Guid.NewGuid(), Name = "d1" };
                 var d2 = new Document { ID = Guid.NewGuid(), Name = "d2" };

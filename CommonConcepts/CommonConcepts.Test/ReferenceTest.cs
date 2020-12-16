@@ -37,9 +37,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ErrorMetadataOnInsert()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 repository.TestReference.Child.Delete(repository.TestReference.Child.Query());
                 repository.TestReference.Parent.Delete(repository.TestReference.Parent.Query());
 
@@ -55,9 +55,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ErrorMetadataOnUpdate()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 repository.TestReference.Child.Delete(repository.TestReference.Child.Query());
                 repository.TestReference.Parent.Delete(repository.TestReference.Parent.Query());
 
@@ -78,9 +78,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ErrorMetadataOnDelete()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 repository.TestReference.Child.Delete(repository.TestReference.Child.Query());
                 repository.TestReference.Parent.Delete(repository.TestReference.Parent.Query());
 

@@ -38,14 +38,14 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateLockedData()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var id1 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestMultipleLock.Simple",
                     "DELETE FROM TestMultipleLock.PassDependency",
                     "INSERT INTO TestMultipleLock.PassDependency (ID, MinPassLength) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 5)"});
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var pd = repository.TestMultipleLock.PassDependency.Load().SingleOrDefault();
                 var s1 = new TestMultipleLock.Simple { ID = Guid.NewGuid(), PassDependencyID = pd.ID, UserName = "test", Pass = "1.a" };
 
@@ -56,14 +56,14 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateLockedData2()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var id1 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestMultipleLock.Simple",
                     "DELETE FROM TestMultipleLock.PassDependency",
                     "INSERT INTO TestMultipleLock.PassDependency (ID, MinPassLength) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 5)"});
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var pd = repository.TestMultipleLock.PassDependency.Load().SingleOrDefault();
                 var s1 = new TestMultipleLock.Simple { ID = Guid.NewGuid(), PassDependencyID = pd.ID, UserName = "test", Pass = "123467" };
                 TestUtility.ShouldFail(() => repository.TestMultipleLock.Simple.Insert(new[] { s1 }), "Pass is not valid.");
@@ -74,14 +74,14 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateLockedData3()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var id1 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestMultipleLock.Simple",
                     "DELETE FROM TestMultipleLock.PassDependency",
                     "INSERT INTO TestMultipleLock.PassDependency (ID, MinPassLength) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 5)"});
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var pd = repository.TestMultipleLock.PassDependency.Load().SingleOrDefault();
                 var s1 = new TestMultipleLock.Simple { ID = Guid.NewGuid(), PassDependencyID = pd.ID, UserName = "test", Pass = "123467..;aaaas" };
                 repository.TestMultipleLock.Simple.Insert(new[] { s1 });
@@ -92,14 +92,14 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateLockedData4()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var id1 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestMultipleLock.Simple",
                     "DELETE FROM TestMultipleLock.PassDependency",
                     "INSERT INTO TestMultipleLock.PassDependency (ID, MinPassLength) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 5)"});
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var pd = repository.TestMultipleLock.PassDependency.Load().SingleOrDefault();
                 var s1 = new TestMultipleLock.Simple { ID = Guid.NewGuid(), PassDependencyID = pd.ID, UserName = "test", Pass = "123467..;atestaaas" };
                 TestUtility.ShouldFail(() => repository.TestMultipleLock.Simple.Insert(new[] { s1 }), "Pass cannot contain UserName.");

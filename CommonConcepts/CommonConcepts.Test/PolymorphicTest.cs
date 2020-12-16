@@ -41,9 +41,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Simple()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 // Initialize data:
 
@@ -107,17 +107,17 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Simple_NoExcessSql()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                CheckColumns(container, "ID, Days, Name", "TestPolymorphic", "Simple1_As_SimpleBase");
-                CheckColumns(container, "ID, Days, Name", "TestPolymorphic", "Simple2_As_SimpleBase");
-                CheckColumns(container, "ID, Days, Name, Subtype, Simple1ID, Simple2ID", "TestPolymorphic", "SimpleBase");
+                CheckColumns(scope, "ID, Days, Name", "TestPolymorphic", "Simple1_As_SimpleBase");
+                CheckColumns(scope, "ID, Days, Name", "TestPolymorphic", "Simple2_As_SimpleBase");
+                CheckColumns(scope, "ID, Days, Name, Subtype, Simple1ID, Simple2ID", "TestPolymorphic", "SimpleBase");
             }
         }
 
-        private static void CheckColumns(TransactionScopeContainer container, string expectedColumns, string schema, string table)
+        private static void CheckColumns(TransactionScopeContainer scope, string expectedColumns, string schema, string table)
         {
-            var sqlExecuter = container.Resolve<ISqlExecuter>();
+            var sqlExecuter = scope.Resolve<ISqlExecuter>();
             var actualColumns = new List<string>();
             sqlExecuter.ExecuteReader(
                 "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '" + schema + "' AND TABLE_NAME = '" + table + "'",
@@ -143,10 +143,10 @@ namespace CommonConcepts.Test
         public void Simple_Browse()
         {
             foreach (bool useDatabaseNullSemantics in new[] { false, true })
-                using (var container = TestContainer.Create(
-                    TestContainer.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
+                using (var scope = TestScope.Create(
+                    TestScope.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
                 {
-                    var repository = container.Resolve<Common.DomRepository>();
+                    var repository = scope.Resolve<Common.DomRepository>();
 
                     // Initialize data:
 
@@ -181,9 +181,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Empty()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var loaded = repository.TestPolymorphic.Empty.Load();
 
@@ -194,9 +194,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SecondBase()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 // Initialize data:
 
@@ -227,9 +227,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Dependant_FKConstraintDeleteReferenced()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var s1 = new TestPolymorphic.Simple1 { Name = "a", Days = 1 };
                 repository.TestPolymorphic.Simple1.Insert(new[] { s1 });
@@ -251,9 +251,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Dependant_FKConstraintInsert()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var s1 = new TestPolymorphic.Simple1 { Name = "a", Days = 1 };
                 repository.TestPolymorphic.Simple1.Insert(new[] { s1 });
@@ -272,9 +272,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Dependant_FKConstraintUpdate()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var s1 = new TestPolymorphic.Simple1 { Name = "a", Days = 1 };
                 repository.TestPolymorphic.Simple1.Insert(new[] { s1 });
@@ -294,9 +294,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Dependant_FKConstraintDeleteUniqueReferenced()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var s1 = new TestPolymorphic.Simple1 { Name = "s1", Days = 1 };
                 repository.TestPolymorphic.Simple1.Insert(new[] { s1 });
@@ -318,9 +318,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void CascadeDeleteDetail()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var s1 = new TestPolymorphic.Simple1 { Name = "s1", Days = 1 };
                 repository.TestPolymorphic.Simple1.Insert(new[] { s1 });
@@ -343,9 +343,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void CascadeDeleteExtension()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var s1 = new TestPolymorphic.Simple1 { Name = "s1", Days = 1 };
                 repository.TestPolymorphic.Simple1.Insert(new[] { s1 });
@@ -369,10 +369,10 @@ namespace CommonConcepts.Test
         public void Disjunctive()
         {
             foreach (bool useDatabaseNullSemantics in new[] { false, true })
-                using (var container = TestContainer.Create(
-                    TestContainer.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
+                using (var scope = TestScope.Create(
+                    TestScope.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
                 {
-                    var repository = container.Resolve<Common.DomRepository>();
+                    var repository = scope.Resolve<Common.DomRepository>();
 
                     repository.TestPolymorphic.Disjunctive1.Delete(repository.TestPolymorphic.Disjunctive1.Load());
                     repository.TestPolymorphic.Disjunctive2.Delete(repository.TestPolymorphic.Disjunctive2.Load());
@@ -403,10 +403,10 @@ namespace CommonConcepts.Test
         public void MultipleImplementations()
         {
             foreach (bool useDatabaseNullSemantics in new[] { false, true })
-                using (var container = TestContainer.Create(
-                    TestContainer.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
+                using (var scope = TestScope.Create(
+                    TestScope.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
                 {
-                    var repository = container.Resolve<Common.DomRepository>();
+                    var repository = scope.Resolve<Common.DomRepository>();
 
                     // Initialize data:
 
@@ -500,9 +500,9 @@ namespace CommonConcepts.Test
                 -2147483648
             };
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var sqlExecuter = container.Resolve<ISqlExecuter>();
+                var sqlExecuter = scope.Resolve<ISqlExecuter>();
                 
                 foreach (var guid in testGuids)
                     foreach (var hash in testHashes)
@@ -525,9 +525,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SubtypeInDifferentModule()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repositories = container.Resolve<GenericRepositories>();
+                var repositories = scope.Resolve<GenericRepositories>();
 
                 var subtype1 = new TestPolymorphic.DifferentModule { ID = Guid.NewGuid(), Code = "a" };
                 var subtype2 = new TestPolymorphic2.DifferentModule { ID = Guid.NewGuid(), Code = "b" };
@@ -544,9 +544,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SpecificComplexSubtype()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repositories = container.Resolve<GenericRepositories>();
+                var repositories = scope.Resolve<GenericRepositories>();
 
                 var subtype1 = new TestPolymorphic.ComplexImplementationData { ID = Guid.NewGuid(), a = "a" };
                 repositories.Save(new[] { subtype1 }, null, repositories.Load<TestPolymorphic.ComplexImplementationData>());
@@ -593,9 +593,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ReferenceTest()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repositories = container.Resolve<GenericRepositories>();
+                var repositories = scope.Resolve<GenericRepositories>();
                 repositories.Delete(repositories.Load<TestPolymorphic.ChildA>());
                 repositories.Delete(repositories.Load<TestPolymorphic.ChildB>());
                 repositories.Delete(repositories.Load<TestPolymorphic.Parent>());
@@ -616,9 +616,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void WhereTest()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 repository.TestPolymorphic.DeactivatableEntity.Delete(repository.TestPolymorphic.DeactivatableEntity.Query());
                 Assert.AreEqual("", TestUtility.DumpSorted(repository.TestPolymorphic.ActiveRecords.Query(), item => item.Name));
 
@@ -650,9 +650,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterSubtype()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 repository.TestPolymorphic.ComplexImplementationData.Delete(repository.TestPolymorphic.ComplexImplementationData.Load());
                 repository.TestPolymorphic.ComplexImplementationSql.Delete(repository.TestPolymorphic.ComplexImplementationSql.Load());
 
@@ -731,9 +731,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void AutomaticPropertySqlDependency()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var dslModel = container.Resolve<IDslModel>();
+                var dslModel = scope.Resolve<IDslModel>();
 
                 //var simpleBase = dslModel.FindByKey("DataStructureInfo TestPolymorphic.SimpleBase");
                 var simple1SqlView = dslModel.FindByKey("SqlViewInfo TestPolymorphic.Simple1_As_SimpleBase");
@@ -749,9 +749,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NamedSubtypeWithAutocode()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 repository.TestPolymorphic.OtherFeatures.Delete(repository.TestPolymorphic.OtherFeatures.Load());
 
                 repository.TestPolymorphic.OtherFeatures.Insert(new TestPolymorphic.OtherFeatures { Name = "a" });
@@ -765,7 +765,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Dependencies()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 int? dependencies = null;
                 string checkDependencies =
@@ -779,7 +779,7 @@ namespace CommonConcepts.Test
                         dependent.CreateQuery LIKE '%VIEW TestPolymorphic.DependentQuery%'
                         AND dependsOn.CreateQuery LIKE '%VIEW TestPolymorphic.PolyWithDependencies%'";
 
-                var sqlExecuter = container.Resolve<ISqlExecuter>();
+                var sqlExecuter = scope.Resolve<ISqlExecuter>();
                 sqlExecuter.ExecuteReader(checkDependencies, reader => { dependencies = reader.GetInt32(0); });
 
                 Assert.AreEqual(1, dependencies);

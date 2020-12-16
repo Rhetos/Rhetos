@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using CommonConcepts.Test.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
 using System;
@@ -27,12 +28,15 @@ using System.Linq;
 namespace Rhetos.Utilities.Test
 {
     [TestClass]
-    [DeploymentItem("ConnectionStrings.config")]
-    public class OracleSqlExecuterTest
+    public class OracleSqlExecuterIntegrationTest
     {
         [TestInitialize]
-        public void CheckDatabaseAvailability()
+        public void CheckDatabaseIsOracle()
         {
+            // Creating empty Rhetos DI scope just to initialize static utilities that are required for test in this class.
+            using (var scope = TestScope.Create())
+                Assert.IsNotNull(SqlUtility.ConnectionString);
+
             TestUtility.CheckDatabaseAvailability("Oracle");
         }
 
@@ -321,7 +325,7 @@ END;" }),
                 TestUtility.DumpSorted(new[] { "a", "A" }),
                 TestUtility.DumpSorted(result),
                 "Comparison will be case insensitive depending on SqlUtility.NationalLanguage" +
-                $" (see NLS_SORT), provided in configuration for '{SqlUtility.OracleNationalLanguageKey}'" +
+                $" (see NLS_SORT), provided in configuration for '{OracleSqlUtility.OracleNationalLanguageKey}'" +
                 " (for example Rhetos.Oracle.GENERIC_M_CI or Rhetos.Oracle.XGERMAN_CI).");
 
             result.Clear();

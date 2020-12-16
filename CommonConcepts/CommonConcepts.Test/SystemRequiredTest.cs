@@ -36,14 +36,14 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InsertSimple()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestSystemRequired.Child",
                         "DELETE FROM TestSystemRequired.Parent",
                     });
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 repository.TestSystemRequired.Parent.Insert(new[] { new TestSystemRequired.Parent { Name = "Test" } });
 
@@ -56,14 +56,14 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateSimple()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestSystemRequired.Parent",
                         "DELETE FROM TestSystemRequired.Child"
                     });
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var parent = new TestSystemRequired.Parent { ID = Guid.NewGuid(), Name = "Test" };
                 repository.TestSystemRequired.Parent.Insert(new[] { parent });
@@ -78,14 +78,14 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InsertReference()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestSystemRequired.Child",
                         "DELETE FROM TestSystemRequired.Parent",
                     });
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var parentID = Guid.NewGuid();
                 repository.TestSystemRequired.Parent.Insert(new[] { new TestSystemRequired.Parent { ID = parentID, Name = "Test" } });
@@ -100,9 +100,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void BoolProperty()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 repository.TestSystemRequired.Simple2.Delete(repository.TestSystemRequired.Simple2.Load());
 
                 repository.TestSystemRequired.Simple2.Insert(new TestSystemRequired.Simple2 { Name = "a", Tagged = false });

@@ -39,9 +39,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DeleteIntegerStringDataTime()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var newItem = new TestLogging.Simple { ID = Guid.NewGuid(), Count = -2, Name = "abc", Created = DateTime.Now };
                 repository.TestLogging.Simple.Insert(new[] { newItem });
@@ -55,12 +55,12 @@ namespace CommonConcepts.Test
                 logRecord = repository.Common.Log.Query().Where(log => log.ItemId == newItem.ID && log.Action == "Delete").SingleOrDefault();
                 Assert.IsNotNull(logRecord, "There should be 'Delete' record in the log.");
 
-                Assert.AreEqual(SqlUtility.UserContextInfoText(container.Resolve<IUserInfo>()), logRecord.ContextInfo);
-                Assert.IsTrue(container.Resolve<IUserInfo>().IsUserRecognized);
-                TestUtility.AssertContains(logRecord.ContextInfo, container.Resolve<IUserInfo>().UserName);
-                TestUtility.AssertContains(logRecord.ContextInfo, container.Resolve<IUserInfo>().Workstation);
+                Assert.AreEqual(SqlUtility.UserContextInfoText(scope.Resolve<IUserInfo>()), logRecord.ContextInfo);
+                Assert.IsTrue(scope.Resolve<IUserInfo>().IsUserRecognized);
+                TestUtility.AssertContains(logRecord.ContextInfo, scope.Resolve<IUserInfo>().UserName);
+                TestUtility.AssertContains(logRecord.ContextInfo, scope.Resolve<IUserInfo>().Workstation);
 
-                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
+                var now = SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>());
                 Assert.IsTrue(logRecord.Created.Value.Subtract(now).TotalSeconds < 5);
 
                 Assert.AreEqual("TestLogging.Simple", logRecord.TableName);
@@ -88,9 +88,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SpecialCharacters()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var newItem = new TestLogging.Simple { ID = Guid.NewGuid(), Name = @"<>'""&;[]\\//()čćšđžČĆŠĐŽ]]>" };
                 repository.TestLogging.Simple.Insert(new[] { newItem });
@@ -117,9 +117,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdatedOldNullValues()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var newItem = new TestLogging.Simple { ID = Guid.NewGuid(), Count = null, Name = null, Created = null };
                 repository.TestLogging.Simple.Insert(new[] { newItem });
@@ -156,9 +156,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DeleteOldNullValues()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var newItem = new TestLogging.Simple { ID = Guid.NewGuid(), Count = null, Name = null, Created = null };
                 repository.TestLogging.Simple.Insert(new[] { newItem });
@@ -189,14 +189,14 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SqlChangeID()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
 
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestLogging.Complex",
                         "DELETE FROM TestLogging.Simple",
@@ -223,14 +223,14 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Complex()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestLogging.Complex",
                         "DELETE FROM TestLogging.Simple",
                     });
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var id = Guid.NewGuid();
 
                 var simple = new TestLogging.Simple { ID = Guid.NewGuid() };

@@ -39,9 +39,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void QueryableFromRepository()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var dslModel = container.Resolve<IDslModel>();
+                var dslModel = scope.Resolve<IDslModel>();
 
                 var persisted = (PersistedDataStructureInfo)dslModel.FindByKey("DataStructureInfo TestAllProperties.TestAllPropertiesCopyAllFeatures");
 
@@ -73,11 +73,11 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void BrowseUsingImplicitlyCreatedProperties()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestAllProperties.Base;" });
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestAllProperties.Base;" });
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 repository.TestAllProperties.TestAllPropertiesCopyAllFeatures.Recompute();
                 Assert.AreEqual("", TestUtility.DumpSorted(

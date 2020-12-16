@@ -99,9 +99,9 @@ namespace CommonConcepts.Test
             if (!propertyFiltersCriteria.Any())
                 return item => true;
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var gfh = container.Resolve<GenericFilterHelper>();
+                var gfh = scope.Resolve<GenericFilterHelper>();
                 var filters = gfh.ToFilterObjects(propertyFiltersCriteria);
                 var propertyFilters = (IEnumerable<PropertyFilter>)filters.Single().Parameter;
                 var propertyFilterExpression = (Expression<Func<TEntity, bool>>)gfh.ToExpression(propertyFilters, typeof(TEntity));
@@ -173,9 +173,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterStringOperations()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestGenericFilter.Simple;",
                         "INSERT INTO TestGenericFilter.Simple (Code, Name) SELECT 1, 'abc1';",
@@ -183,7 +183,7 @@ namespace CommonConcepts.Test
                         "INSERT INTO TestGenericFilter.Simple (Code, Name) SELECT 3, 'def3';",
                     });
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 FilterName(repository, "equals", "abc2", "2");
                 FilterName(repository, "notequals", "abc2", "1, 3");
                 FilterName(repository, "less", "abc2", "1");
@@ -219,9 +219,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterIntOperations()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestGenericFilter.Simple;",
                         "INSERT INTO TestGenericFilter.Simple (Code, Name) SELECT 1, 'abc1';",
@@ -230,7 +230,7 @@ namespace CommonConcepts.Test
                         "INSERT INTO TestGenericFilter.Simple (Code, Name) SELECT 3, 'def3';",
                     });
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 FilterCode(repository, "equals", "2", "2");
                 FilterCode(repository, "notequals", "2", "1, 12, 3");
                 FilterCode(repository, "less", "2", "1");
@@ -259,10 +259,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterGuidOperations()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var ids = new[] { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestGenericFilter.Simple;",
                         $@"INSERT INTO TestGenericFilter.Simple (Identifier) SELECT '{ids[0]}';",
@@ -271,7 +271,7 @@ namespace CommonConcepts.Test
                         $@"INSERT INTO TestGenericFilter.Simple (Identifier) SELECT '{ids[3]}';",
                     });
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 FilterIdentifier(repository, "equals", ids[0], ids[0]);
                 FilterIdentifier(repository, "notequals", ids[0], ids[1], ids[2], ids[3]);
                 FilterIdentifier(repository, "equals", null, new Guid[0]);
@@ -321,9 +321,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterDateIn()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestGenericFilter.Simple;",
                         "INSERT INTO TestGenericFilter.Simple (Code, Start) SELECT 1, '2011-12-31';",
@@ -335,7 +335,7 @@ namespace CommonConcepts.Test
                         "INSERT INTO TestGenericFilter.Simple (Code, Start) SELECT 7, '2013-01-01';",
                     });
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 FilterStartDateIn(repository, "2010", "");
                 FilterStartDateIn(repository, "2011", "1");
@@ -397,9 +397,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterDateNotIn()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestGenericFilter.Simple;",
                         "INSERT INTO TestGenericFilter.Simple (Code, Start) SELECT 1, '2011-12-31';",
@@ -411,7 +411,7 @@ namespace CommonConcepts.Test
                         "INSERT INTO TestGenericFilter.Simple (Code, Start) SELECT 7, '2013-01-01';",
                     });
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 FilterStartDateNotIn(repository, "2010", "1, 2, 3, 4, 5, 6, 7");
                 FilterStartDateNotIn(repository, "2011", "2, 3, 4, 5, 6, 7");
@@ -447,10 +447,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterNullValues()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var parentId = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestGenericFilter.Child",
                         "DELETE FROM TestGenericFilter.Simple",
@@ -473,7 +473,7 @@ namespace CommonConcepts.Test
                         "INSERT INTO TestGenericFilter.Simple (Code, Name) SELECT null, 'n2'",
                     });
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var simple = repository.TestGenericFilter.Simple.Query();
                 var child = repository.TestGenericFilter.Child.Query();
 
@@ -524,9 +524,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InvalidPropertyNameError()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var childQuery = repository.TestGenericFilter.Child.Query();
                 FilterCriteria filter;
 
@@ -539,9 +539,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void GenericFilterOnLoadedArray()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 foreach (bool preferQuery in new[] { true, false })
                 {
@@ -568,9 +568,9 @@ namespace CommonConcepts.Test
         FROM [TestGenericFilter].[Simple] AS [Extent2]
         WHERE (N'A' = [Extent2].[Name]) AND ([Extent2].[ID] = [Extent1].[ParentID])
     )";
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var subquery = repository.TestGenericFilter.Simple.Query(item => item.Name == "A").Select(item => item.ID);
 
                 var querySimple = repository.TestGenericFilter.Child.Query(item => subquery.Contains(item.ParentID.Value)).Select(item => item.ID);
@@ -585,9 +585,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void OptimizeEqualsGuidTest()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var id = Guid.NewGuid();
 
                 var sqlQuery1 = repository.TestGenericFilter.Child.Query(new FilterCriteria("ID", "equals", id)).ToString();
@@ -629,10 +629,10 @@ namespace CommonConcepts.Test
                 (true, "notequals", null, "WHERE [Extent1].[ParentID] IS NOT NULL"),
             };
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
-                var repository = container.Resolve<Common.DomRepository>();
+                var context = scope.Resolve<Common.ExecutionContext>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var actualReport = new StringBuilder();
                 var expectedReport = new StringBuilder();
@@ -653,9 +653,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void OptimizeInGuid()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
                 var repository = context.Repository;
 
                 var s1 = new TestGenericFilter.Simple { Name = "s1" };

@@ -19,16 +19,15 @@
 
 using Autofac;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos;
+using Rhetos.Deployment;
+using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Rhetos.Deployment;
 using System.IO;
-using Rhetos.Extensibility;
+using System.Linq;
 using System.Reflection;
 
 namespace Rhetos.Configuration.Autofac.Test
@@ -36,31 +35,24 @@ namespace Rhetos.Configuration.Autofac.Test
     [TestClass]
     public class AutofacConfigurationTest
     {
-        private class ApplicationDeployment_Accessor : ApplicationDeployment
+        private class ApplicationDeploymentAccessor : ApplicationDeployment, ITestAccessor
         {
-            public ApplicationDeployment_Accessor(IConfiguration configuration, ILogProvider logProvider) : 
-                base(configuration, logProvider){}
+            public ApplicationDeploymentAccessor(IConfiguration configuration, ILogProvider logProvider) :
+                base(configuration, logProvider)
+            { }
 
-            public new RhetosContainerBuilder CreateDbUpdateComponentsContainer()
-            {
-                return base.CreateDbUpdateComponentsContainer();
-            }
+            public RhetosContainerBuilder CreateDbUpdateComponentsContainer() => this.Invoke("CreateDbUpdateComponentsContainer");
 
-            public new void AddAppInitializationComponents(ContainerBuilder builder)
-            {
-                base.AddAppInitializationComponents(builder);
-            }
+            public void AddAppInitializationComponents(ContainerBuilder builder) => this.Invoke("AddAppInitializationComponents", builder);
         }
 
-        private class ApplicationBuild_Accessor : ApplicationBuild
+        private class ApplicationBuildAccessor : ApplicationBuild, ITestAccessor
         {
-            public ApplicationBuild_Accessor(IConfiguration configuration, ILogProvider logProvider, IEnumerable<string> pluginAssemblies, InstalledPackages installedPackages) : 
-                base(configuration, logProvider, pluginAssemblies, installedPackages){ }
+            public ApplicationBuildAccessor(IConfiguration configuration, ILogProvider logProvider, IEnumerable<string> pluginAssemblies, InstalledPackages installedPackages) :
+                base(configuration, logProvider, pluginAssemblies, installedPackages)
+            { }
 
-            public new RhetosContainerBuilder CreateBuildComponentsContainer()
-            {
-                return base.CreateBuildComponentsContainer();
-            }
+            public RhetosContainerBuilder CreateBuildComponentsContainer() => this.Invoke("CreateBuildComponentsContainer");
         }
 
         public IConfiguration GetBuildConfiguration()
@@ -123,10 +115,10 @@ namespace Rhetos.Configuration.Autofac.Test
                         RhetosRuntimePath = currentAssemblyPath,
                     })
                     .AddOptions(new PluginScannerOptions
-                     {
-                         // Ignore other MEF plugins from assemblies that might get bundled in the same testing output folder.
-                         IgnoreAssemblyFiles = allOtherAssemblies
-                     });
+                    {
+                        // Ignore other MEF plugins from assemblies that might get bundled in the same testing output folder.
+                        IgnoreAssemblyFiles = allOtherAssemblies
+                    });
             });
 
             return configuration;
@@ -158,7 +150,7 @@ namespace Rhetos.Configuration.Autofac.Test
         public void CorrectRegistrationsBuildTime()
         {
             var configuration = GetBuildConfiguration();
-            var build = new ApplicationBuild_Accessor(configuration, new NLogProvider(), PluginsFromThisAssembly(), new InstalledPackages());
+            var build = new ApplicationBuildAccessor(configuration, new NLogProvider(), PluginsFromThisAssembly(), new InstalledPackages());
             var builder = build.CreateBuildComponentsContainer();
 
             using (var container = builder.Build())
@@ -177,7 +169,7 @@ namespace Rhetos.Configuration.Autofac.Test
         public void CorrectRegistrationsDbUpdate()
         {
             var configuration = GetRuntimeConfiguration();
-            var deployment = new ApplicationDeployment_Accessor(configuration, new NLogProvider());
+            var deployment = new ApplicationDeploymentAccessor(configuration, new NLogProvider());
             var builder = deployment.CreateDbUpdateComponentsContainer();
 
             using (var container = builder.Build())
@@ -195,7 +187,7 @@ namespace Rhetos.Configuration.Autofac.Test
         public void CorrectRegistrationsRuntimeWithInitialization()
         {
             var configuration = GetRuntimeConfiguration();
-            var deployment = new ApplicationDeployment_Accessor(configuration, new NLogProvider());
+            var deployment = new ApplicationDeploymentAccessor(configuration, new NLogProvider());
 
             using (var container = new RhetosRuntime().BuildContainer(new NLogProvider(), configuration, deployment.AddAppInitializationComponents))
             {

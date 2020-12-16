@@ -52,25 +52,25 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SqlFunction()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                Assert.AreEqual("11", ReportSqlQueryResult(container.Resolve<ISqlExecuter>(), "SELECT * FROM TestSqlWorkarounds.Fun2(10)"));
+                Assert.AreEqual("11", ReportSqlQueryResult(scope.Resolve<ISqlExecuter>(), "SELECT * FROM TestSqlWorkarounds.Fun2(10)"));
             }
         }
 
         [TestMethod]
         public void SqlObject()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                 {
                     "DELETE FROM TestSqlWorkarounds.E",
                     "INSERT INTO TestSqlWorkarounds.E (I) VALUES (100)"
                 });
 
                 string report = "";
-                container.Resolve<ISqlExecuter>().ExecuteReader(
+                scope.Resolve<ISqlExecuter>().ExecuteReader(
                     @"SELECT E.I, V1.I1, V2.I2
                         FROM TestSqlWorkarounds.E
                         INNER JOIN TestSqlWorkarounds.V1 ON V1.ID = E.ID
@@ -79,7 +79,7 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("100, 101, 102.", report);
 
                 report = "";
-                container.Resolve<ISqlExecuter>().ExecuteReader(
+                scope.Resolve<ISqlExecuter>().ExecuteReader(
                     @"SELECT X FROM TestSqlWorkarounds.V3 ORDER BY X",
                     reader => report += reader.GetInt32(0) + ".");
                 Assert.AreEqual("101.102.", report);
@@ -89,13 +89,13 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ExecuteSqlProcedure()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestSqlWorkarounds.Person" });
-                container.Resolve<ISqlExecuter>().ExecuteSql(Enumerable.Range(1, 100).Select(x =>
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestSqlWorkarounds.Person" });
+                scope.Resolve<ISqlExecuter>().ExecuteSql(Enumerable.Range(1, 100).Select(x =>
                     "INSERT INTO TestSqlWorkarounds.Person (Name) VALUES ('User" + x.ToString() +"')"));
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 TestUtility.ShouldFail(() => repository.TestSqlWorkarounds.PersonInfo.Load(), "filter", "PersonFilter", "must be used");
 
                 var result = repository.TestSqlWorkarounds.PersonInfo.Load(new TestSqlWorkarounds.PersonFilter { NamePattern = "%1%", LimitResultCount = 4 });
@@ -107,7 +107,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SqlDependsOnSqlIndexForFirstProperty()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var features = new Dictionary<string, string>
                 {
@@ -121,10 +121,10 @@ namespace CommonConcepts.Test
                 };
 
                 Dictionary<Guid, string> featuresById = features
-                    .Select(f => new { Name = f.Key, Id = ReadConceptId(f.Value, container) })
+                    .Select(f => new { Name = f.Key, Id = ReadConceptId(f.Value, scope) })
                     .ToDictionary(fid => fid.Id, fid => fid.Name);
 
-                var deployedDependencies = ReadConceptDependencies(featuresById.Keys, container)
+                var deployedDependencies = ReadConceptDependencies(featuresById.Keys, scope)
                     .Select(dep => featuresById[dep.Item1] + "-" + featuresById[dep.Item2]);
 
                 // Second concept depends on first concept.
@@ -146,7 +146,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SqlDependsOnID()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var features = new Dictionary<string, string>
                 {
@@ -160,10 +160,10 @@ namespace CommonConcepts.Test
                 };
 
                 Dictionary<Guid, string> featuresById = features
-                    .Select(f => new { Name = f.Key, Id = ReadConceptId(f.Value, container) })
+                    .Select(f => new { Name = f.Key, Id = ReadConceptId(f.Value, scope) })
                     .ToDictionary(fid => fid.Id, fid => fid.Name);
 
-                var deployedDependencies = ReadConceptDependencies(featuresById.Keys, container)
+                var deployedDependencies = ReadConceptDependencies(featuresById.Keys, scope)
                     .Select(dep => featuresById[dep.Item1] + "-" + featuresById[dep.Item2]);
 
                 // Second concept depends on first concept.
@@ -183,7 +183,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SqlDependsOnSqlIndex()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var features = new Dictionary<string, string>
                 {
@@ -192,10 +192,10 @@ namespace CommonConcepts.Test
                 };
 
                 Dictionary<Guid, string> featuresById = features
-                    .Select(f => new { Name = f.Key, Id = ReadConceptId(f.Value, container) })
+                    .Select(f => new { Name = f.Key, Id = ReadConceptId(f.Value, scope) })
                     .ToDictionary(fid => fid.Id, fid => fid.Name);
 
-                var deployedDependencies = ReadConceptDependencies(featuresById.Keys, container)
+                var deployedDependencies = ReadConceptDependencies(featuresById.Keys, scope)
                     .Select(dep => featuresById[dep.Item1] + "-" + featuresById[dep.Item2]);
 
                 var expectedDependencies = "index-dependsOnIndex";
@@ -209,7 +209,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SqlDependsOnCaseInsensitive()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var features = new Dictionary<string, string>
                 {
@@ -221,10 +221,10 @@ namespace CommonConcepts.Test
                 };
 
                 Dictionary<Guid, string> featuresById = features
-                    .Select(f => new { Name = f.Key, Id = ReadConceptId(f.Value, container) })
+                    .Select(f => new { Name = f.Key, Id = ReadConceptId(f.Value, scope) })
                     .ToDictionary(fid => fid.Id, fid => fid.Name);
 
-                var deployedDependencies = ReadConceptDependencies(featuresById.Keys, container)
+                var deployedDependencies = ReadConceptDependencies(featuresById.Keys, scope)
                     .Select(dep => featuresById[dep.Item1] + "-" + featuresById[dep.Item2]);
 
                 var expectedDependencies = "2-1, 2-1CI, 3-2, 4-3"; // Second concept depends on first concept.
@@ -238,7 +238,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SqlDependsOnDataStructureNoProperties()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var features = new Dictionary<string, string>
                 {
@@ -247,10 +247,10 @@ namespace CommonConcepts.Test
                 };
 
                 Dictionary<Guid, string> featuresById = features
-                    .Select(f => new { Name = f.Key, Id = ReadConceptId(f.Value, container) })
+                    .Select(f => new { Name = f.Key, Id = ReadConceptId(f.Value, scope) })
                     .ToDictionary(fid => fid.Id, fid => fid.Name);
 
-                var deployedDependencies = ReadConceptDependencies(featuresById.Keys, container)
+                var deployedDependencies = ReadConceptDependencies(featuresById.Keys, scope)
                     .Select(dep => featuresById[dep.Item1] + "-" + featuresById[dep.Item2]);
 
                 var expectedDependencies = "EntityNoProperies-View"; // Second concept depends on first concept.
@@ -264,7 +264,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SqlDependsOnModule()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var features = new Dictionary<string, string>
                 {
@@ -276,10 +276,10 @@ namespace CommonConcepts.Test
                 };
 
                 Dictionary<Guid, string> featuresById = features
-                    .Select(f => new { Name = f.Key, Id = ReadConceptId(f.Value, container) })
+                    .Select(f => new { Name = f.Key, Id = ReadConceptId(f.Value, scope) })
                     .ToDictionary(fid => fid.Id, fid => fid.Name);
 
-                var deployedDependencies = ReadConceptDependencies(featuresById.Keys, container)
+                var deployedDependencies = ReadConceptDependencies(featuresById.Keys, scope)
                     .Where(dep => featuresById[dep.Item1] == "X" || featuresById[dep.Item2] == "X")
                     .Select(dep => featuresById[dep.Item1] + "-" + featuresById[dep.Item2]);
 
@@ -294,7 +294,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void AutoSqlDependsOnPolymorphic()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var features = new Dictionary<string, string>
                 {
@@ -305,10 +305,10 @@ namespace CommonConcepts.Test
                 };
 
                 Dictionary<Guid, string> featuresById = features
-                    .Select(f => new { Name = f.Key, Id = ReadConceptId(f.Value, container) })
+                    .Select(f => new { Name = f.Key, Id = ReadConceptId(f.Value, scope) })
                     .ToDictionary(fid => fid.Id, fid => fid.Name);
 
-                var deployedDependencies = ReadConceptDependencies(featuresById.Keys, container)
+                var deployedDependencies = ReadConceptDependencies(featuresById.Keys, scope)
                     .Select(dep => featuresById[dep.Item1] + "-" + featuresById[dep.Item2]);
 
                 // The key dependency is "PolyView-AutoDependsOnPoly", it should be generated by AutodetectSqlDependencies:
@@ -320,10 +320,10 @@ namespace CommonConcepts.Test
             }
         }
 
-        private static Guid ReadConceptId(string conceptInfoKey, TransactionScopeContainer container)
+        private static Guid ReadConceptId(string conceptInfoKey, TransactionScopeContainer scope)
         {
             Guid id = Guid.Empty;
-            container.Resolve<ISqlExecuter>().ExecuteReader(
+            scope.Resolve<ISqlExecuter>().ExecuteReader(
                 "SELECT ID FROM Rhetos.AppliedConcept WHERE ConceptInfoKey = " + SqlUtility.QuoteText(conceptInfoKey),
                 reader => id = reader.GetGuid(0));
             if (id == Guid.Empty)
@@ -331,11 +331,11 @@ namespace CommonConcepts.Test
             return id;
         }
 
-        private static List<Tuple<Guid, Guid>> ReadConceptDependencies(IEnumerable<Guid> conceptsId, TransactionScopeContainer container)
+        private static List<Tuple<Guid, Guid>> ReadConceptDependencies(IEnumerable<Guid> conceptsId, TransactionScopeContainer scope)
         {
             var dependencies = new List<Tuple<Guid, Guid>>();
             string ids = string.Join(", ", conceptsId.Select(id => SqlUtility.QuoteGuid(id)));
-            container.Resolve<ISqlExecuter>().ExecuteReader(
+            scope.Resolve<ISqlExecuter>().ExecuteReader(
                 "SELECT DependsOnID, DependentID FROM Rhetos.AppliedConceptDependsOn"
                 + " WHERE DependentID IN (" + ids + ")"
                 + " AND DependsOnID IN (" + ids + ")",
@@ -346,9 +346,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SqlUserError()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 TestUtility.ShouldFail<Rhetos.UserException>(
                     () => repository.TestSqlWorkarounds.SqlUserError.Insert(new[] { new TestSqlWorkarounds.SqlUserError() }),
@@ -359,9 +359,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void WithoutTransaction()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var sqlExecuter = container.Resolve<ISqlExecuter>();
+                var sqlExecuter = scope.Resolve<ISqlExecuter>();
                 var createdViews = new List<string>();
                 sqlExecuter.ExecuteReader(
                     "SELECT name FROM sys.objects o WHERE type = 'V' AND SCHEMA_NAME(schema_id) = 'TestSqlWorkarounds' AND name LIKE 'With%Transaction[_]%'",
@@ -373,14 +373,14 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NotNullColumn()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var sqlExecuter = container.Resolve<ISqlExecuter>();
+                var sqlExecuter = scope.Resolve<ISqlExecuter>();
                 sqlExecuter.ExecuteSql(new[] {
                     "DELETE FROM TestSqlWorkarounds.HasNotNullProperty",
                     "INSERT INTO TestSqlWorkarounds.HasNotNullProperty (Name, Code) SELECT 'a', 1" });
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 Assert.AreEqual("a1", TestUtility.DumpSorted(repository.TestSqlWorkarounds.HasNotNullProperty.Query(), item => item.Name + item.Code));
 
@@ -398,9 +398,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void LongIdentifiers()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repos = container.Resolve<Common.DomRepository>().TestLongIdentifiers;
+                var repos = scope.Resolve<Common.DomRepository>().TestLongIdentifiers;
 
                 var p1 = new TestLongIdentifiers.LongIdentifier0000020000000003000000000400000000050000000006000000000700000000080000000009000000000C
                 {

@@ -40,10 +40,10 @@ namespace CommonConcepts.Test
 
             // Insert the test data (server code bypasses row permissions):
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
-                var context = container.Resolve<Common.ExecutionContext>();
+                var repository = scope.Resolve<Common.DomRepository>();
+                var context = scope.Resolve<Common.ExecutionContext>();
                 repository.DemoRowPermissions1.Document.Delete(repository.DemoRowPermissions1.Document.Query());
                 repository.DemoRowPermissions1.Employee.Delete(repository.DemoRowPermissions1.Employee.Query());
                 repository.DemoRowPermissions1.Division.Delete(repository.DemoRowPermissions1.Division.Query());
@@ -66,15 +66,15 @@ namespace CommonConcepts.Test
                 var doc2 = new DemoRowPermissions1.Document { Title = "doc2", DivisionID = div2.ID };
                 repository.DemoRowPermissions1.Document.Insert(new[] { doc1, doc2 });
 
-                container.CommitChanges();
+                scope.CommitChanges();
             }
 
             // Simulate client request: Reading all documents (access denied)
 
-            using (var container = TestContainer.Create(
-                TestContainer.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(
+                TestScope.ConfigureIgnoreClaims()))
             {
-                var processingEngine = container.Resolve<IProcessingEngine>();
+                var processingEngine = scope.Resolve<IProcessingEngine>();
                 var serverCommand = new ReadCommandInfo
                 {
                     DataSource = typeof(DemoRowPermissions1.Document).FullName,
@@ -88,10 +88,10 @@ namespace CommonConcepts.Test
 
             // Simulate client request: Reading the user's documents
 
-            using (var container = TestContainer.Create(
-                TestContainer.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(
+                TestScope.ConfigureIgnoreClaims()))
             {
-                var processingEngine = container.Resolve<IProcessingEngine>();
+                var processingEngine = scope.Resolve<IProcessingEngine>();
                 var serverCommand = new ReadCommandInfo
                 {
                     DataSource = typeof(DemoRowPermissions1.Document).FullName,
@@ -112,10 +112,10 @@ namespace CommonConcepts.Test
 
             // Insert the test data (server code bypasses row permissions):
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
-                var context = container.Resolve<Common.ExecutionContext>();
+                var repository = scope.Resolve<Common.DomRepository>();
+                var context = scope.Resolve<Common.ExecutionContext>();
                 repository.DemoRowPermissions2.DocumentApproval.Delete(repository.DemoRowPermissions2.DocumentApproval.Query());
                 repository.DemoRowPermissions2.DocumentComment.Delete(repository.DemoRowPermissions2.DocumentComment.Query());
                 repository.DemoRowPermissions2.Document.Delete(repository.DemoRowPermissions2.Document.Query());
@@ -157,15 +157,15 @@ namespace CommonConcepts.Test
                 var doc4 = new DemoRowPermissions2.Document { Title = "doc4", DivisionID = div1.ID, Created = DateTime.Now.AddYears(-1) };
                 repository.DemoRowPermissions2.Document.Insert(new[] { doc1, doc2, doc3, doc4 });
 
-                container.CommitChanges();
+                scope.CommitChanges();
             }
 
             // Simulate client request: Reading all documents (access denied)
 
-            using (var container = TestContainer.Create(
-                TestContainer.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(
+                TestScope.ConfigureIgnoreClaims()))
             {
-                var processingEngine = container.Resolve<IProcessingEngine>();
+                var processingEngine = scope.Resolve<IProcessingEngine>();
                 var serverCommand = new ReadCommandInfo
                 {
                     DataSource = typeof(DemoRowPermissions2.Document).FullName,
@@ -179,10 +179,10 @@ namespace CommonConcepts.Test
 
             // Simulate client request: Reading the user's documents
 
-            using (var container = TestContainer.Create(
-                TestContainer.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(
+                TestScope.ConfigureIgnoreClaims()))
             {
-                var processingEngine = container.Resolve<IProcessingEngine>();
+                var processingEngine = scope.Resolve<IProcessingEngine>();
                 var serverCommand = new ReadCommandInfo
                 {
                     DataSource = typeof(DemoRowPermissions2.Document).FullName,
@@ -197,14 +197,14 @@ namespace CommonConcepts.Test
 
             // Simulate client request: Edit doc1 (ok)
 
-            using (var container = TestContainer.Create(
-                TestContainer.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(
+                TestScope.ConfigureIgnoreClaims()))
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var doc1 = repository.DemoRowPermissions2.Document.Query().Where(d => d.Title == "doc1").Single();
                 doc1.Title += "x";
 
-                var processingEngine = container.Resolve<IProcessingEngine>();
+                var processingEngine = scope.Resolve<IProcessingEngine>();
                 var serverCommand = new SaveEntityCommandInfo
                 {
                     Entity = typeof(DemoRowPermissions2.Document).FullName,
@@ -221,14 +221,14 @@ namespace CommonConcepts.Test
 
             // Simulate client request: Edit doc4 (access denied)
 
-            using (var container = TestContainer.Create(
-                TestContainer.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(
+                TestScope.ConfigureIgnoreClaims()))
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var doc4 = repository.DemoRowPermissions2.Document.Query().Where(d => d.Title == "doc4").Single();
                 doc4.Title += "x";
 
-                var processingEngine = container.Resolve<IProcessingEngine>();
+                var processingEngine = scope.Resolve<IProcessingEngine>();
                 var serverCommand = new SaveEntityCommandInfo
                 {
                     Entity = typeof(DemoRowPermissions2.Document).FullName,
@@ -249,10 +249,10 @@ namespace CommonConcepts.Test
 
             // Insert the test data (server code bypasses row permissions):
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
-                var context = container.Resolve<Common.ExecutionContext>();
+                var repository = scope.Resolve<Common.DomRepository>();
+                var context = scope.Resolve<Common.ExecutionContext>();
                 repository.DemoRowPermissions2.DocumentApproval.Delete(repository.DemoRowPermissions2.DocumentApproval.Query());
                 repository.DemoRowPermissions2.DocumentComment.Delete(repository.DemoRowPermissions2.DocumentComment.Query());
                 repository.DemoRowPermissions2.Document.Delete(repository.DemoRowPermissions2.Document.Query());
@@ -310,36 +310,36 @@ namespace CommonConcepts.Test
                 var app3 = new DemoRowPermissions2.DocumentApproval { ID = doc3.ID, ApprovedByID = emp2.ID, Note = "app3" };
                 repository.DemoRowPermissions2.DocumentApproval.Insert(new[] { app1, app2, app3 });
 
-                container.CommitChanges();
+                scope.CommitChanges();
             }
 
             // Test the current user's row permissions:
             // The test will not execute client requests, but simply directly check the row permissions filters.
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var allowedReadBrowse =
-                    container.Resolve<GenericRepository<DemoRowPermissions2.DocumentBrowse>>()
+                    scope.Resolve<GenericRepository<DemoRowPermissions2.DocumentBrowse>>()
                     .Load<Common.RowPermissionsReadItems>();
                 Assert.AreEqual("doc1, doc3", TestUtility.DumpSorted(allowedReadBrowse, browse => browse.Title));
 
                 var allowedReadComment =
-                    container.Resolve<GenericRepository<DemoRowPermissions2.DocumentComment>>()
+                    scope.Resolve<GenericRepository<DemoRowPermissions2.DocumentComment>>()
                     .Load<Common.RowPermissionsReadItems>();
                 Assert.AreEqual("com1", TestUtility.DumpSorted(allowedReadComment, comment => comment.Comment));
 
                 var allowedReadApproval =
-                    container.Resolve<GenericRepository<DemoRowPermissions2.DocumentApproval>>()
+                    scope.Resolve<GenericRepository<DemoRowPermissions2.DocumentApproval>>()
                     .Load<Common.RowPermissionsReadItems>();
                 Assert.AreEqual("app1, app3", TestUtility.DumpSorted(allowedReadApproval, approval => approval.Note));
 
                 var allowedWriteApproval =
-                    container.Resolve<GenericRepository<DemoRowPermissions2.DocumentApproval>>()
+                    scope.Resolve<GenericRepository<DemoRowPermissions2.DocumentApproval>>()
                     .Load<Common.RowPermissionsWriteItems>();
                 Assert.AreEqual("app1", TestUtility.DumpSorted(allowedWriteApproval, approval => approval.Note));
 
                 var allowedReadInfo =
-                    container.Resolve<GenericRepository<DemoRowPermissions2.DocumentInfo>>()
+                    scope.Resolve<GenericRepository<DemoRowPermissions2.DocumentInfo>>()
                     .Load<Common.RowPermissionsReadItems>();
                 Assert.AreEqual("doc1_2, doc3_2", TestUtility.DumpSorted(allowedReadInfo, info => info.Title2));
             }
@@ -348,9 +348,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void OptimizedInheritingRowPermissions()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
                 var repository = context.Repository;
 
                 var query = repository.DemoRowPermissions2.DocumentInfo.Query();
@@ -370,9 +370,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void OptimizedInheritingRowPermissions2()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
                 var repository = context.Repository;
 
                 var query = repository.DemoRowPermissions2.DocumentInfo2.Query();
@@ -391,12 +391,12 @@ namespace CommonConcepts.Test
 
         private void InsertCurrentPrincipal()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
                 var userAccount = context.UserInfo.UserName.Split('\\').Last();
 
-                var genericRepositories = container.Resolve<GenericRepositories>();
+                var genericRepositories = scope.Resolve<GenericRepositories>();
                 var principalRepository = genericRepositories.GetGenericRepository("Common.Principal");
 
                 // Avoiding direct use of Common.Principal class, because some AspNetFormsAuth
@@ -412,7 +412,7 @@ namespace CommonConcepts.Test
                     principalRepository.Insert((IEntity)principal);
                 }
 
-                container.CommitChanges();
+                scope.CommitChanges();
             }
         }
 

@@ -36,9 +36,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HardcodedEntityWithDefinedAllPropertiesTest()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var statusWithoutIntPropertyDefined = repository.TestHardcodedEntity.SimpleHardcodedEntity.Query().Where(x => x.ID == TestHardcodedEntity.SimpleHardcodedEntity.StatusWithDefinedAllPropertity).Single();
 
                 Assert.AreEqual("Status with defined all properties", statusWithoutIntPropertyDefined.Description);
@@ -50,9 +50,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NotDefinedPropertiesShouldBeNullTest()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var statusWithoutIntPropertyDefined = repository.TestHardcodedEntity.SimpleHardcodedEntity.Query().Where(x => x.ID == TestHardcodedEntity.SimpleHardcodedEntity.StatusWithoutIntPropertyDefined).Single();
 
                 Assert.AreEqual("Status with undefined int property", statusWithoutIntPropertyDefined.Description);
@@ -64,9 +64,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SqlTest()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 repository.TestHardcodedEntity.ReferenceToHardcodedEntity.Insert(new TestHardcodedEntity.ReferenceToHardcodedEntity
                 {
                     Content = "Message 1",
@@ -85,9 +85,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SpecialDescription()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var item = repository.TestHardcodedEntity.SimpleHardcodedEntity.Load(x => x.Name == "SpecialDescription").Single();
                 Assert.AreEqual("a\r\n'\r\nb", item.Description);
             }
@@ -96,9 +96,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ModifyingHardcodedEntityTest()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 TestUtility.ShouldFail<Rhetos.UserException>(() => {
                     repository.TestHardcodedEntity.SimpleHardcodedEntity.Insert(new TestHardcodedEntity.SimpleHardcodedEntity
@@ -112,9 +112,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HardcodedEntityAndPolymorphicTests()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var implementation1 = new TestHardcodedEntity.ReferenceToHardcodedImplementation1 { ID = Guid.NewGuid() };
                 repository.TestHardcodedEntity.ReferenceToHardcodedImplementation1.Insert(implementation1);

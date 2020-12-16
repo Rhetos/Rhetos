@@ -35,13 +35,13 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Simple()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM Test11.Source;",
                         "INSERT INTO Test11.Source (ID, Name) SELECT '" + id1 + "', 'a';",
@@ -68,11 +68,11 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void QueryableFilterUsingBase()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM Test11.Source;",
                         "INSERT INTO Test11.Source (Name) SELECT 'a';",
@@ -87,11 +87,11 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SelectUsingBase()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM Test11.Source;",
                         "INSERT INTO Test11.Source (Name) SELECT 'a';",
@@ -107,11 +107,11 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void BrowseUsingBase()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM Test11.Source;",
                         "INSERT INTO Test11.Source (Name) SELECT 'a';",
@@ -126,18 +126,18 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UseExecutionContext()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM Test11.Source;",
                         "INSERT INTO Test11.Source (Name) SELECT 'a';",
                         "INSERT INTO Test11.Source (Name) SELECT 'b';"
                     });
 
-                var userInfo = container.Resolve<IUserInfo>();
+                var userInfo = scope.Resolve<IUserInfo>();
                 Assert.IsFalse(string.IsNullOrEmpty(userInfo.UserName));
                 string expected = string.Format("a {0}, b {0}", userInfo.UserName);
                 Console.WriteLine(expected);

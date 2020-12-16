@@ -36,10 +36,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ValidData()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestRequired.Simple" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestRequired.Simple" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 repository.TestRequired.Simple.Insert(new[] { new TestRequired.Simple { Count = 1, Name = "test1" } });
                 repository.TestRequired.Simple.Insert(new[] { new TestRequired.Simple { Count = 0, Name = "test2" } });
@@ -50,10 +50,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NullInteger()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestRequired.Simple" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestRequired.Simple" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 TestUtility.ShouldFail(() => repository.TestRequired.Simple.Insert(new[] { new TestRequired.Simple { Count = null, Name = "test3" } }), "required", "Count");
             }
@@ -62,10 +62,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NullString()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestRequired.Simple" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestRequired.Simple" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 TestUtility.ShouldFail(() => repository.TestRequired.Simple.Insert(new[] { new TestRequired.Simple { Count = 4, Name = null } }), "required", "Name");
             }
@@ -74,10 +74,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void EmptyString()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestRequired.Simple" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestRequired.Simple" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 TestUtility.ShouldFail(() => repository.TestRequired.Simple.Insert(new[] { new TestRequired.Simple { Count = 5, Name = "" } }), "required", "Name");
             }
@@ -86,9 +86,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void BoolProperty()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 repository.TestRequired.Simple2.Delete(repository.TestRequired.Simple2.Load());
 
                 repository.TestRequired.Simple2.Insert(new TestRequired.Simple2 { Name = "a", Tagged = false });

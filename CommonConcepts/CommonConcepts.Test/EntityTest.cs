@@ -37,14 +37,14 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void QuerySimple()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(
+                scope.Resolve<ISqlExecuter>().ExecuteSql(
                     "DELETE FROM TestEntity.Claim",
                     "INSERT INTO TestEntity.Claim (ClaimResource, ClaimRight) SELECT 'res1', 'rig1'",
                     "INSERT INTO TestEntity.Claim (ClaimResource, ClaimRight) SELECT 'res2', 'rig2'");
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var loaded = repository.TestEntity.Claim.Query();
                 Assert.AreEqual("res1.rig1, res2.rig2", TestUtility.DumpSorted(loaded, c => c.ClaimResource + "." + c.ClaimRight));
             }
@@ -53,11 +53,11 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void QueryComplex()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
-                container.Resolve<ISqlExecuter>().ExecuteSql(
+                scope.Resolve<ISqlExecuter>().ExecuteSql(
                     "DELETE FROM TestEntity.Permission",
                     "DELETE FROM TestEntity.Principal",
                     "DELETE FROM TestEntity.Claim",
@@ -82,11 +82,11 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ReferencedEntity()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
-                container.Resolve<ISqlExecuter>().ExecuteSql(
+                scope.Resolve<ISqlExecuter>().ExecuteSql(
                     "DELETE FROM TestEntity.Permission",
                     "DELETE FROM TestEntity.Principal",
                     "DELETE FROM TestEntity.Claim",
@@ -117,12 +117,12 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InsertUpdateDelete_TransientInstances()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var claims = repository.TestEntity.Claim;
 
-                container.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestEntity.Claim");
+                scope.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestEntity.Claim");
                 Assert.AreEqual("", ReportClaims(repository), "initial");
 
                 var newClaims = new[]
@@ -144,12 +144,12 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateDelete_PersistentInstances()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var claims = repository.TestEntity.Claim;
 
-                container.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestEntity.Claim");
+                scope.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestEntity.Claim");
                 Assert.AreEqual("", ReportClaims(repository), "initial");
 
                 var newClaims = new[]
@@ -176,11 +176,11 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateableExtendedTable()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                 {
                     "DELETE FROM TestEntity.Extension",
                     "DELETE FROM TestEntity.BaseEntity",
@@ -207,9 +207,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InsertTransient()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
                 var repository = context.Repository;
 
                 var b = new TestEntity.BaseEntity { ID = Guid.NewGuid(), Name = "b" };
@@ -228,9 +228,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateTransient()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
                 var repository = context.Repository;
 
                 var b = new TestEntity.BaseEntity { ID = Guid.NewGuid(), Name = "b" };
@@ -250,9 +250,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InsertPersistent()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
                 var repository = context.Repository;
 
                 repository.TestEntity.Child.Delete(repository.TestEntity.Child.Load());
@@ -283,9 +283,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdatePersistent()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
                 var repository = context.Repository;
 
                 var b = new TestEntity.BaseEntity { ID = Guid.NewGuid(), Name = "b" };
@@ -311,9 +311,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DeleteInsertSame()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
                 var repository = context.Repository;
                 repository.TestEntity.BaseEntity.Delete(repository.TestEntity.BaseEntity.Load());
 
@@ -332,9 +332,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DeleteInsertSamePersisted()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
                 var repository = context.Repository;
                 repository.TestEntity.BaseEntity.Delete(repository.TestEntity.BaseEntity.Load());
 
@@ -355,10 +355,10 @@ namespace CommonConcepts.Test
         public void CascadeDelete()
         {
             var log = new List<string>();
-            using (var container = TestContainer.Create(
-                TestContainer.ConfigureLogMonitor(log, EventType.Info)))
+            using (var scope = TestScope.Create(
+                TestScope.ConfigureLogMonitor(log, EventType.Info)))
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var pid1 = Guid.NewGuid();
                 var pid2 = Guid.NewGuid();
@@ -368,7 +368,7 @@ namespace CommonConcepts.Test
                 var cid21 = Guid.NewGuid();
                 var cid31 = Guid.NewGuid();
 
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                 {
                     "DELETE FROM TestEntity.Child",
                     "DELETE FROM TestEntity.BaseEntity",
@@ -394,10 +394,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShortStringPropertyBasicRhetosTypeValidation()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestEntity.Principal");
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestEntity.Principal");
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 TestEntity.Principal item = new TestEntity.Principal();
                 item.Name = new string('x', 256);
@@ -416,10 +416,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void LargeText()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestEntity.Large");
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestEntity.Large");
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var item = new TestEntity.Large { Text = new string('x', 1024 * 1024) };
                 repository.TestEntity.Large.Insert(item);
@@ -448,10 +448,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DateTimeTest()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestTypes.Simple");
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestTypes.Simple");
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 for (int i = 0; i < 7; i++)
                 {
@@ -471,11 +471,11 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DateTimeConsistencyTest()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var databaseSettings = container.Resolve<CommonConceptsDatabaseSettings>();
-                container.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestTypes.Simple");
-                var repository = container.Resolve<Common.DomRepository>();
+                var databaseSettings = scope.Resolve<CommonConceptsDatabaseSettings>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestTypes.Simple");
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 const int tests = 20;
 
@@ -514,10 +514,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DecimalTest()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestTypes.Simple");
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestTypes.Simple");
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 // Decimal(28,10) allows 18 digits before the decimal point and 10 digits after.
                 var s = new TestTypes.Simple { Length = 123456789012345678.0123456789m };
@@ -532,10 +532,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveNonmaterialized()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestEntity.UniqueEntity");
-                var r = container.Resolve<Common.DomRepository>().TestEntity.UniqueEntity;
+                scope.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestEntity.UniqueEntity");
+                var r = scope.Resolve<Common.DomRepository>().TestEntity.UniqueEntity;
 
                 var query = new[] { "a", "b", "c" }.Select(name => new TestEntity.UniqueEntity { Name = name });
                 Assert.IsFalse(query is ICollection);
@@ -549,9 +549,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveInvalidRecord_Insert()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repos = container.Resolve<Common.DomRepository>().TestEntity.Principal;
+                var repos = scope.Resolve<Common.DomRepository>().TestEntity.Principal;
 
                 var item1 = new TestEntity.Principal { Name = "a", ID = Guid.NewGuid() };
                 repos.Insert(item1);
@@ -565,9 +565,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveInvalidRecord_SystemInsert()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repos = container.Resolve<Common.DomRepository>().TestEntity.Principal;
+                var repos = scope.Resolve<Common.DomRepository>().TestEntity.Principal;
 
                 var item1 = new TestEntity.Principal { Name = "a", ID = Guid.NewGuid() };
                 repos.Insert(item1);
@@ -581,9 +581,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveInvalidRecord_Update()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repos = container.Resolve<Common.DomRepository>().TestEntity.Principal;
+                var repos = scope.Resolve<Common.DomRepository>().TestEntity.Principal;
 
                 var item1 = new TestEntity.Principal { Name = "1", ID = Guid.NewGuid() };
                 var item2 = new TestEntity.Principal { Name = "2", ID = Guid.NewGuid() };
@@ -603,9 +603,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveInvalidRecord_SystemUpdate()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repos = container.Resolve<Common.DomRepository>().TestEntity.Principal;
+                var repos = scope.Resolve<Common.DomRepository>().TestEntity.Principal;
 
                 var item1 = new TestEntity.Principal { Name = "1", ID = Guid.NewGuid() };
                 var item2 = new TestEntity.Principal { Name = "2", ID = Guid.NewGuid() };
@@ -625,9 +625,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveInvalidRecord_Delete()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repos = container.Resolve<Common.DomRepository>().TestEntity.Principal;
+                var repos = scope.Resolve<Common.DomRepository>().TestEntity.Principal;
 
                 var item = new TestEntity.Principal { Name = "a", ID = Guid.NewGuid() };
                 TestUtility.ShouldFail<Rhetos.ClientException>(() => repos.Save(null, null, new[] { item }, checkUserPermissions: true),
@@ -638,9 +638,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveInvalidRecordMultiple_Insert()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repos = container.Resolve<Common.DomRepository>().TestEntity.Principal;
+                var repos = scope.Resolve<Common.DomRepository>().TestEntity.Principal;
 
                 var item1 = new TestEntity.Principal { Name = "a", ID = Guid.NewGuid() };
                 var item2 = new TestEntity.Principal { Name = "b", ID = item1.ID };
@@ -652,9 +652,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveInvalidRecordMultiple_InsertDelete()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repos = container.Resolve<Common.DomRepository>().TestEntity.Principal;
+                var repos = scope.Resolve<Common.DomRepository>().TestEntity.Principal;
 
                 var item1 = new TestEntity.Principal { Name = "a", ID = Guid.NewGuid() };
                 repos.Insert(item1);
@@ -671,11 +671,11 @@ namespace CommonConcepts.Test
         public void DeleteUpdateInsert_ConflictUnique()
         {
             foreach (bool useDatabaseNullSemantics in new[] { false, true })
-                using (var container = TestContainer.Create(
-                    TestContainer.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
+                using (var scope = TestScope.Create(
+                    TestScope.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
                 {
-                    container.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestEntity.UniqueEntity");
-                    var r = container.Resolve<Common.DomRepository>().TestEntity.UniqueEntity;
+                    scope.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestEntity.UniqueEntity");
+                    var r = scope.Resolve<Common.DomRepository>().TestEntity.UniqueEntity;
 
                     var ia = new TestEntity.UniqueEntity { Name = "a", ID = Guid.NewGuid() };
                     var ib = new TestEntity.UniqueEntity { Name = "b", ID = Guid.NewGuid() };
@@ -714,10 +714,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SimpleReferenceProperty()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestEntity.BaseEntity");
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestEntity.BaseEntity");
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var b1 = new TestEntity.BaseEntity { Name = "b1" };
                 var b2 = new TestEntity.BaseEntity { Name = "b2" };
@@ -742,10 +742,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void OptimizedDeleteQuery()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var sqlExecuter = container.Resolve<ISqlExecuter>();
-                var repository = container.Resolve<Common.DomRepository>();
+                var sqlExecuter = scope.Resolve<ISqlExecuter>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 repository.TestEntity.UniqueEntity.Delete(repository.TestEntity.UniqueEntity.Load());
                 var newItem = new TestEntity.UniqueEntity { ID = Guid.NewGuid(), Name = "a", Data = "b" };

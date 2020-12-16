@@ -41,10 +41,10 @@ namespace CommonConcepts.Test
             private readonly Common.ExecutionContext _executionContext;
             private readonly Common.DomRepository _repository;
 
-            public EntityHelper(TransactionScopeContainer container)
+            public EntityHelper(TransactionScopeContainer scope)
             {
-                _executionContext = container.Resolve<Common.ExecutionContext>();
-                _repository = container.Resolve<Common.DomRepository>();
+                _executionContext = scope.Resolve<Common.ExecutionContext>();
+                _repository = scope.Resolve<Common.DomRepository>();
             }
 
             public void Insert(string s, int i, TestUnique.R r, Guid? id = null)
@@ -91,16 +91,16 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Insert_Index3()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestUnique.E;",
                         "DELETE FROM TestUnique.R;"
                     });
 
-                var repository = container.Resolve<Common.DomRepository>();
-                var helper = new EntityHelper(container);
+                var repository = scope.Resolve<Common.DomRepository>();
+                var helper = new EntityHelper(scope);
 
                 var r1 = new TestUnique.R { S = "r1" };
                 var r2 = new TestUnique.R { S = "r2" };
@@ -117,16 +117,16 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Update_Index3()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestUnique.E;",
                         "DELETE FROM TestUnique.R;"
                     });
 
-                var repository = container.Resolve<Common.DomRepository>();
-                var helper = new EntityHelper(container);
+                var repository = scope.Resolve<Common.DomRepository>();
+                var helper = new EntityHelper(scope);
 
                 var r1 = new TestUnique.R { S = "r1" };
                 var r2 = new TestUnique.R { S = "r2" };
@@ -145,15 +145,15 @@ namespace CommonConcepts.Test
 
         private void TestIndexMultipleInsert(string s, int i, int r, bool shouldFail = false)
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestUnique.Multi;",
                         "DELETE FROM TestUnique.R;"
                     });
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var r1 = new TestUnique.R { S = "r1" };
                 var r2 = new TestUnique.R { S = "r2" };
@@ -193,12 +193,12 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UniqueConstraintInApplication()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 // If a writable ORM data structure is not Entity, the constraint check will be done in the application.
 
-                var e = container.Resolve<GenericRepository<TestUnique.E>>();
-                var le = container.Resolve<GenericRepository<TestUnique.LE>>();
+                var e = scope.Resolve<GenericRepository<TestUnique.E>>();
+                var le = scope.Resolve<GenericRepository<TestUnique.LE>>();
                 e.Delete(e.Load());
                 e.Insert(
                     new TestUnique.E { I = 1, S = "aaa" },
@@ -219,10 +219,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ProcessingEngineUniqueConstraintError()
         {
-            using (var container = TestContainer.Create(
-                TestContainer.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(
+                TestScope.ConfigureIgnoreClaims()))
             {
-                var processingEngine = container.Resolve<IProcessingEngine>();
+                var processingEngine = scope.Resolve<IProcessingEngine>();
                 var saveDuplicates = new SaveEntityCommandInfo
                 {
                     Entity = "TestUnique.E",
@@ -241,9 +241,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ErrorMetadata()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var e = container.Resolve<GenericRepository<TestUnique.E>>();
+                var e = scope.Resolve<GenericRepository<TestUnique.E>>();
 
                 var ex = TestUtility.ShouldFail<Rhetos.UserException>(
                     () => e.Insert(

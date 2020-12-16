@@ -39,11 +39,11 @@ namespace CommonConcepts.Test
         public void LogCommandDescription()
         {
             var log = new List<string>();
-            using (var container = TestContainer.Create(
-                TestContainer.ConfigureLogMonitor(log) +
-                TestContainer.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(
+                TestScope.ConfigureLogMonitor(log) +
+                TestScope.ConfigureIgnoreClaims()))
             {
-                var processingEngine = container.Resolve<IProcessingEngine>();
+                var processingEngine = scope.Resolve<IProcessingEngine>();
                 var readPrincipals = new ReadCommandInfo
                 {
                     DataSource = "Common.Principal",
@@ -76,11 +76,11 @@ namespace CommonConcepts.Test
         public void LogCommandClientErrorDescription()
         {
             var log = new List<string>();
-            using (var container = TestContainer.Create(
-                TestContainer.ConfigureLogMonitor(log) +
-                TestContainer.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(
+                TestScope.ConfigureLogMonitor(log) +
+                TestScope.ConfigureIgnoreClaims()))
             {
-                var processingEngine = container.Resolve<IProcessingEngine>();
+                var processingEngine = scope.Resolve<IProcessingEngine>();
                 var saveDuplicates = new SaveEntityCommandInfo
                 {
                     Entity = "TestUnique.E",
@@ -117,12 +117,12 @@ namespace CommonConcepts.Test
         public void LogCommandServerErrorDescription()
         {
             var log = new List<string>();
-            using (var container = TestContainer.Create(
-                TestContainer.ConfigureLogMonitor(log) +
-                TestContainer.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(
+                TestScope.ConfigureLogMonitor(log) +
+                TestScope.ConfigureIgnoreClaims()))
             {
                 var readCommandError = new ReadCommandInfo() { DataSource = "TestRowPermissions.ErrorData", ReadRecords = true, Filters = new[] { new FilterCriteria("duplicateSecondItem") } };
-                var processingEngine = container.Resolve<IProcessingEngine>();
+                var processingEngine = scope.Resolve<IProcessingEngine>();
                 var processingEngineResult = processingEngine.Execute(new[] { readCommandError });
                 Assert.IsFalse(processingEngineResult.Success);
                 TestUtility.AssertContains(processingEngineResult.SystemMessage, new[] { "Internal server error occurred", "IndexOutOfRangeException" });
@@ -206,16 +206,16 @@ namespace CommonConcepts.Test
 
         private TResult Exec<TResult>(ICommandInfo command)
         {
-            using (var container = TestContainer.Create(
-                TestContainer.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(
+                TestScope.ConfigureIgnoreClaims()))
             {
-                var processingEngine = container.Resolve<IProcessingEngine>();
+                var processingEngine = scope.Resolve<IProcessingEngine>();
                 var result = processingEngine.Execute(new[] { command });
                 if (!result.Success)
                     throw new ApplicationException(result.UserMessage + ", " + result.SystemMessage);
                 var results =  (TResult)result.CommandResults.Single().Data?.Value;
 
-                container.CommitChanges();
+                scope.CommitChanges();
                 return results;
             }
         }

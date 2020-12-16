@@ -27,13 +27,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="rhetos-app.local.settings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="rhetos-app.settings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
-  <Target Name="CopyConfigFiles" AfterTargets="AfterBuild">
-    <Copy SourceFiles="..\..\Tools\Configuration\rhetos-app.local.settings.json" DestinationFiles="$(OutDir)\rhetos-app.local.settings.json" />
-  </Target>
 
 </Project>

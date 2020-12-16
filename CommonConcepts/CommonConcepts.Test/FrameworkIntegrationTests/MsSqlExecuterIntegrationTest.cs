@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using CommonConcepts.Test.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
@@ -28,8 +29,7 @@ using System.Linq;
 namespace Rhetos.Persistence.Test
 {
     [TestClass]
-    [DeploymentItem("ConnectionStrings.config")]
-    public class MsSqlExecuterTest
+    public class MsSqlExecuterIntegrationTest
     {
         private static MsSqlExecuter NewSqlExecuter(string connectionString = null, IUserInfo testUser = null)
         {
@@ -52,12 +52,11 @@ namespace Rhetos.Persistence.Test
         }
 
         [TestInitialize]
-        public void ChecklDatabaseAvailability()
+        public void CheckDatabaseIsMsSql()
         {
-            var configuration = new ConfigurationBuilder(new ConsoleLogProvider())
-                .AddConfigurationManagerConfiguration()
-                .Build();
-            LegacyUtilities.Initialize(configuration);
+            // Creating empty Rhetos DI scope just to initialize static utilities that are required for test in this class.
+            using (var scope = TestScope.Create())
+                Assert.IsNotNull(SqlUtility.ConnectionString);
 
             TestUtility.CheckDatabaseAvailability("MsSql");
         }
@@ -65,10 +64,10 @@ namespace Rhetos.Persistence.Test
         [ClassCleanup]
         public static void DropRhetosUnitTestSchema()
         {
-            Console.WriteLine("=== ClassCleanup ===");
-
             try { TestUtility.CheckDatabaseAvailability("MsSql"); }
             catch { return; }
+
+            Console.WriteLine("=== ClassCleanup ===");
 
             NewSqlExecuter().ExecuteSql(new[] { 
                 @"DECLARE @sql NVARCHAR(MAX)

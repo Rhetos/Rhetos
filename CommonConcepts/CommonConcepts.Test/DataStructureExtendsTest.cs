@@ -36,9 +36,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void QueryableExtenstionHasBase()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var secondDescription = repository.TestExtension.SqlQueryableExtenson1.Query().Where(item => item.Base.i == 2).Select(item => item.info).Single();
                 Assert.AreEqual("2-b", secondDescription);
@@ -48,10 +48,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void TableConstraints()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var sqlExecuter = container.Resolve<ISqlExecuter>();
-                var repository = container.Resolve<Common.DomRepository>();
+                var sqlExecuter = scope.Resolve<ISqlExecuter>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 sqlExecuter.ExecuteSql(new[]
                     {
@@ -89,9 +89,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NavigationFromBaseToExtension_Query()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var secondBaseQuery = repository.TestExtension.SqlQueryableBase1.Query().Where(baseItem => baseItem.Extension_SqlQueryableExtenson1.info == "2-b");
                 var secondBaseItem = secondBaseQuery.Single();
@@ -102,9 +102,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NavigationFromBaseToExtension_LazyLoadReference()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var secondBaseItem = repository.TestExtension.SqlQueryableBase1.Query().Where(baseItem => baseItem.i == 2).Single();
                 Assert.AreEqual("2-b", secondBaseItem.Extension_SqlQueryableExtenson1.info);
@@ -114,17 +114,17 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void MissingExtensionRecord()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestExtension.SimpleBase",
                     "INSERT INTO TestExtension.SimpleBase (ID, Name) VALUES ('" + id1 + "', 'b1')",
                     "INSERT INTO TestExtension.SimpleBase (ID, Name) VALUES ('" + id2 + "', 'b2missing')",
                     "INSERT INTO TestExtension.SimpleExtension (ID, Name) VALUES ('" + id1 + "', 'e1')"
                 });
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 Assert.AreEqual("b1 e1 b1Sql, b2missing <null> <null>", TestUtility.DumpSorted(
                     repository.TestExtension.SimpleBase.Query().Select(item => new
@@ -159,17 +159,17 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void LazyLoadExtensions()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestExtension.SimpleBase",
                     "INSERT INTO TestExtension.SimpleBase (ID, Name) VALUES ('" + id1 + "', 'b1')",
                     "INSERT INTO TestExtension.SimpleBase (ID, Name) VALUES ('" + id2 + "', 'b2missing')",
                     "INSERT INTO TestExtension.SimpleExtension (ID, Name) VALUES ('" + id1 + "', 'e1')"
                 });
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var all = repository.TestExtension.SimpleBase.Load();
                 Assert.AreEqual("b1, b2missing", TestUtility.DumpSorted(all, item => item.Name),
