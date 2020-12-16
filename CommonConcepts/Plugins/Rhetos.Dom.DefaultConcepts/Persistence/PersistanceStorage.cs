@@ -32,17 +32,20 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private readonly IPersistanceStorageObjectMappings _persistanceStorageMapping;
 
+        private readonly CommonConceptsRuntimeOptions _options;
+
         public Action<int, DbCommand> AfterCommandExecution { get; set; }
 
-        public PersistanceStorage(IPersistenceTransaction persistenceTransaction, IPersistanceStorageObjectMappings persistanceStorageMapping)
+        public PersistanceStorage(IPersistenceTransaction persistenceTransaction, IPersistanceStorageObjectMappings persistanceStorageMapping, CommonConceptsRuntimeOptions options)
         {
             _persistenceTransaction = persistenceTransaction;
             _persistanceStorageMapping = persistanceStorageMapping;
+            _options = options;
         }
 
         public IPersistanceStorageCommandBatch StartBatch()
         {
-            return new SqlCommandBatch(_persistenceTransaction, _persistanceStorageMapping, 20, AfterCommandExecution);
+            return new SqlCommandBatch(_persistenceTransaction, _persistanceStorageMapping, _options.SaveSqlCommandBatchSize, AfterCommandExecution);
         }
 
         public void Insert<TEntity>(IEnumerable<TEntity> toInsert) where TEntity : class, IEntity
