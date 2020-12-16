@@ -146,12 +146,11 @@ namespace Rhetos.Dom.DefaultConcepts
 		private void AppendUpdateCommand(List<DbParameter> commandParameters, StringBuilder commandTextBuilder, IEntity entity, IPersistanceStorageObjectMapper mapper)
 		{
 			var parameters = mapper.GetParameters(entity);
-			//If parameters has only the ID property we will not execute the update command
-			if (parameters.Count() > 1)
-			{
-				InitializeAndAppendParameters(commandParameters, parameters);
+			InitializeAndAppendParameters(commandParameters, parameters);
+			if (parameters.Count() > 1) // If entity has other properties besides ID.
 				AppendUpdateCommandTextForType(parameters, mapper.GetTableName(), commandTextBuilder);
-			}
+			else
+				AppendEmptyUpdateCommandTextForType(parameters, mapper.GetTableName(), commandTextBuilder);
 		}
 
 		private void AppendDeleteCommand(List<DbParameter> commandParameters, StringBuilder commandTextBuilder, IEntity entity, IPersistanceStorageObjectMapper mapper)
@@ -193,7 +192,17 @@ namespace Rhetos.Dom.DefaultConcepts
 			commandTextBuilder.Append(" WHERE ID = " + parameters["ID"] + ";");
 		}
 
-        private class Command
+		/// <summary>
+		/// In rare case when updating entity that has only ID property, the update command has no business value and probably will not occur in practice.
+		/// For consistency, this command still executes an SQL query. It provides consistent error handling in case the record does not
+		/// exists in database, to match the behavior of other regular entities.
+		/// </summary>
+		private void AppendEmptyUpdateCommandTextForType(Dictionary<string, DbParameter> parameters, string tableFullName, StringBuilder commandTextBuilder)
+		{
+			commandTextBuilder.Append("UPDATE " + tableFullName + " SET ID = ID WHERE ID = " + parameters["ID"] + ";");
+		}
+
+		private class Command
 		{
 			public IEntity Entity { get; set; }
 			public Type EntityType { get; set; }

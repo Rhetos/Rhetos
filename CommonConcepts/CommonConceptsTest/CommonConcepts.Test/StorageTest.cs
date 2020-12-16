@@ -176,7 +176,7 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void UpdateNotExecutedOnEntityWithNoProperty()
+        public void UpdateOnEntityWithNoProperty()
         {
             using (var container = new RhetosTestContainer())
             {
@@ -186,17 +186,26 @@ namespace CommonConcepts.Test
 
                 context.PersistanceStorage.Insert(new List<TestStorage.EntityWithNoProperty> { new TestStorage.EntityWithNoProperty { ID = entityID } });
 
-                var rowsAffected1 = context.PersistanceStorage.StartBatch()
+                int accumulatedRowCount = 0;
+
+                var sqlCommandBatch = new SqlCommandBatch(
+                    context.PersistenceTransaction,
+                    container.Resolve<IPersistanceStorageObjectMappings>(),
+                    20,
+                    (rowCount, command) => accumulatedRowCount += rowCount);
+
+                sqlCommandBatch
                     .Add(new TestStorage.EntityWithNoProperty { ID = entityID }, PersistanceStorageCommandType.Update)
                     .Execute();
-                Assert.AreEqual(0, rowsAffected1, "The entity does not have any property except ID which is the key of the entity so an update command is not required.");
+                Assert.AreEqual(1, accumulatedRowCount, "Event though update is not required, it should be executed for consistency, to verify if the record exists.");
 
-                var rowsAffected2 = context.PersistanceStorage.StartBatch()
+                accumulatedRowCount = 0;
+                sqlCommandBatch
                     .Add(new TestStorage.Simple { ID = Guid.NewGuid() }, PersistanceStorageCommandType.Insert)
                     .Add(new TestStorage.EntityWithNoProperty { ID = entityID }, PersistanceStorageCommandType.Update)
                     .Execute();
 
-                Assert.AreEqual(1, rowsAffected2, "The entity does not have any property except ID which is the key of the entity so an update command is not required, only the insert command will be executed.");
+                Assert.AreEqual(2, accumulatedRowCount, "Multiple updates.");
 
                 // Event if update is not needed, repository.Update() should not throw an exception.
                 context.Repository.TestStorage.EntityWithNoProperty.Update(new TestStorage.EntityWithNoProperty { ID = entityID });
