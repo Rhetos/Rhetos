@@ -171,6 +171,8 @@
     <Compile Include="AuthorizationCachingTest.cs" />
     <Compile Include="CreatedByTest.cs" />
     <Compile Include="DataMigrationTest.cs" />
+    <Compile Include="Helpers\PersistenceCommandsDecorator.cs" />
+    <Compile Include="Helpers\PersistenceCommandsMock.cs" />
     <Compile Include="Helpers\RhetosProcessHelper.cs" />
     <Compile Include="StorageTest.cs" />
     <Compile Include="RhetosTransactionScopeContainerTest.cs" />

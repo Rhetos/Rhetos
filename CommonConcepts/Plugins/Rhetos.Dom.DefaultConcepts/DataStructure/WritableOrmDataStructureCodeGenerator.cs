@@ -154,12 +154,12 @@ namespace Rhetos.Dom.DefaultConcepts
 
         protected static string PersistenceStorageMappingSnippet(DataStructureInfo info)
         {
-            return $@"
-    public class {info.Module.Name}_{info.Name}_Mapper : IPersistenceStorageObjectMapper
+            return
+    $@"public class {info.Module.Name}_{info.Name}_Mapper : IPersistenceStorageObjectMapper
     {{
     	public Dictionary<string, System.Data.Common.DbParameter> GetParameters(IEntity genericEntity)
         {{
-            var entity = genericEntity as {info.Module}.{info.Name};
+            var entity = ({info.Module}.{info.Name})genericEntity;
             var mappings = new Dictionary<string, System.Data.Common.DbParameter>();
             mappings.Add(""ID"", new SqlParameter("""", entity.ID));
             {PersistenceStorageMapperPropertyMappingTag.Evaluate(info)}
@@ -169,7 +169,7 @@ namespace Rhetos.Dom.DefaultConcepts
     
     	public List<Guid> GetDependencies(IEntity genericEntity)
         {{
-            var entity = genericEntity as {info.Module}.{info.Name};
+            var entity = ({info.Module}.{info.Name})genericEntity;
             var dependencies = new List<Guid>();
             {PersistenceStorageMapperDependencyResolutionTag.Evaluate(info)}
     
@@ -181,6 +181,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return ""{(info as IOrmDataStructure).GetOrmSchema()}.{(info as IOrmDataStructure).GetOrmDatabaseObject()}"";
         }}
     }}
+
     ";
         }
 

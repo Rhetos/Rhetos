@@ -17,111 +17,62 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Persistence;
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.Data.Common;
-using Rhetos.Persistence;
+using System.Linq;
 using System.Text;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-	public class SqlCommandBatch : IPersistenceStorageCommandBatch
+    public class SqlCommandBatch : IPersistenceStorageCommandBatch
 	{
-		private int _batchNumber;
-
-		private List<Command> _commands;
-
-		private IPersistenceTransaction _persistenceTransaction;
-
-		private IPersistenceStorageObjectMappings _persistenceMappingConfiguration;
-
-		private Action<int, DbCommand> _afterCommandExecution;
+		private readonly IPersistenceTransaction _persistenceTransaction;
+		private readonly IPersistenceStorageObjectMappings _persistenceMappingConfiguration;
 
 		public SqlCommandBatch(
 			IPersistenceTransaction persistenceTransaction,
-			IPersistenceStorageObjectMappings persistenceMappingConfiguration,
-			int batchNumber,
-			Action<int, DbCommand> afterCommandExecution)
+			IPersistenceStorageObjectMappings persistenceMappingConfiguration)
 		{
-			_batchNumber = batchNumber;
-			_commands = new List<Command>();
 			_persistenceTransaction = persistenceTransaction;
 			_persistenceMappingConfiguration = persistenceMappingConfiguration;
-			_afterCommandExecution = afterCommandExecution;
 		}
 
-		public IPersistenceStorageCommandBatch Add<T>(T entity, PersistenceStorageCommandType commandType) where T : class, IEntity
-		{	
-			_commands.Add(new Command
-			{
-				Entity = entity,
-				EntityType = typeof(T),
-				CommandType = commandType
-			});
-
-			return this;
-		}
-
-		public int Execute()
+		public int Execute(IList<PersistenceStorageCommand> commands)
 		{
-			var numberOfAffectedRows = 0;
+			if (commands.Count == 0)
+				return 0;
 
 			var commandParameters = new List<DbParameter>();
 			var commandTextBuilder = new StringBuilder();
-			using (var command = _persistenceTransaction.Connection.CreateCommand())
+			foreach (var command in commands)
+				AppendCommand(command, commandParameters, commandTextBuilder);
+
+			using (var dbCommand = _persistenceTransaction.Connection.CreateCommand())
 			{
-				command.Transaction = _persistenceTransaction.Transaction;
+				dbCommand.Transaction = _persistenceTransaction.Transaction;
 
-				var numberOfBatchedCommand = 0;
-				for (int i = 0; i < _commands.Count; i++)
-				{
-					AppendCommand(_commands[i], commandParameters, commandTextBuilder);
-					numberOfBatchedCommand++;
-
-					if (numberOfBatchedCommand == _batchNumber || i == _commands.Count - 1)
-					{
-						numberOfAffectedRows += ExecuteNonQueryAndClearCommand(command, commandParameters, commandTextBuilder);
-						numberOfBatchedCommand = 0;
-					}
-				}
-				_commands.Clear();
+				dbCommand.CommandText = commandTextBuilder.ToString();
+				foreach (var parameter in commandParameters)
+					dbCommand.Parameters.Add(parameter);
+				return dbCommand.ExecuteNonQuery();
 			}
-
-			return numberOfAffectedRows;
 		}
 
-		private int ExecuteNonQueryAndClearCommand(DbCommand command, List<DbParameter> commandParameters, StringBuilder commandTextBuilder)
+		private void AppendCommand(PersistenceStorageCommand command, List<DbParameter> commandParameters, StringBuilder commandTextBuilder)
 		{
-			var numberOfAffectedRows = 0;
-			if (commandTextBuilder.Length != 0)
+			if (command.CommandType == PersistenceStorageCommandType.Insert)
 			{
-				command.CommandText = commandTextBuilder.ToString();
-				foreach(var parameter in commandParameters)
-					command.Parameters.Add(parameter);
-				numberOfAffectedRows = command.ExecuteNonQuery();
-				_afterCommandExecution?.Invoke(numberOfAffectedRows, command);
+				AppendInsertCommand(commandParameters, commandTextBuilder, command.Entity, _persistenceMappingConfiguration.GetMapping(command.EntityType));
 			}
-			command.CommandText = "";
-			command.Parameters.Clear();
-			commandParameters.Clear();
-			commandTextBuilder.Clear();
-			return numberOfAffectedRows;
-		}
-
-		private void AppendCommand(Command comand, List<DbParameter> commandParameters, StringBuilder commandTextBuilder)
-		{
-			if (comand.CommandType == PersistenceStorageCommandType.Insert)
+			if (command.CommandType == PersistenceStorageCommandType.Update)
 			{
-				AppendInsertCommand(commandParameters, commandTextBuilder, comand.Entity, _persistenceMappingConfiguration.GetMapping(comand.EntityType));
+				AppendUpdateCommand(commandParameters, commandTextBuilder, command.Entity, _persistenceMappingConfiguration.GetMapping(command.EntityType));
 			}
-			if (comand.CommandType == PersistenceStorageCommandType.Update)
+			if (command.CommandType == PersistenceStorageCommandType.Delete)
 			{
-				AppendUpdateCommand(commandParameters, commandTextBuilder, comand.Entity, _persistenceMappingConfiguration.GetMapping(comand.EntityType));
-			}
-			if (comand.CommandType == PersistenceStorageCommandType.Delete)
-			{
-				AppendDeleteCommand(commandParameters, commandTextBuilder, comand.Entity, _persistenceMappingConfiguration.GetMapping(comand.EntityType));
+				AppendDeleteCommand(commandTextBuilder, command.Entity, _persistenceMappingConfiguration.GetMapping(command.EntityType));
 			}
 		}
 
@@ -147,13 +98,13 @@ namespace Rhetos.Dom.DefaultConcepts
 		{
 			var parameters = mapper.GetParameters(entity);
 			InitializeAndAppendParameters(commandParameters, parameters);
-			if (parameters.Count() > 1) // If entity has other properties besides ID.
+			if (parameters.Count > 1) // If entity has other properties besides ID.
 				AppendUpdateCommandTextForType(parameters, mapper.GetTableName(), commandTextBuilder);
 			else
 				AppendEmptyUpdateCommandTextForType(parameters, mapper.GetTableName(), commandTextBuilder);
 		}
 
-		private void AppendDeleteCommand(List<DbParameter> commandParameters, StringBuilder commandTextBuilder, IEntity entity, IPersistenceStorageObjectMapper mapper)
+		private void AppendDeleteCommand(StringBuilder commandTextBuilder, IEntity entity, IPersistenceStorageObjectMapper mapper)
 		{
 			var entityName = mapper.GetTableName();
 			commandTextBuilder.Append($@"DELETE FROM {entityName} WHERE ID = '{entity.ID}';");
@@ -166,7 +117,7 @@ namespace Rhetos.Dom.DefaultConcepts
 			{
 				commandTextBuilder.Append(keyValue.Key + ", ");
 			}
-			commandTextBuilder.Length = commandTextBuilder.Length - 2;
+			commandTextBuilder.Length -= 2;
 
 			commandTextBuilder.Append(") VALUES (");
 
@@ -174,7 +125,7 @@ namespace Rhetos.Dom.DefaultConcepts
 			{
 				commandTextBuilder.Append(keyValue.Value.ParameterName + ", ");
 			}
-			commandTextBuilder.Length = commandTextBuilder.Length - 2;
+			commandTextBuilder.Length -= 2;
 			commandTextBuilder.Append(");");
 		}
 
@@ -188,7 +139,7 @@ namespace Rhetos.Dom.DefaultConcepts
 					commandTextBuilder.Append(keyValue.Key + " = " + keyValue.Value.ParameterName + ", ");
 				}
 			}
-			commandTextBuilder.Length = commandTextBuilder.Length - 2;
+			commandTextBuilder.Length -= 2;
 			commandTextBuilder.Append(" WHERE ID = " + parameters["ID"] + ";");
 		}
 
@@ -200,13 +151,6 @@ namespace Rhetos.Dom.DefaultConcepts
 		private void AppendEmptyUpdateCommandTextForType(Dictionary<string, DbParameter> parameters, string tableFullName, StringBuilder commandTextBuilder)
 		{
 			commandTextBuilder.Append("UPDATE " + tableFullName + " SET ID = ID WHERE ID = " + parameters["ID"] + ";");
-		}
-
-		private class Command
-		{
-			public IEntity Entity { get; set; }
-			public Type EntityType { get; set; }
-			public PersistenceStorageCommandType CommandType { get; set; }
 		}
 	}
 }

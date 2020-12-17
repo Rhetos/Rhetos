@@ -87,9 +87,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             try
             {
-                persistenceStorage.Delete(deletedIds);
-                persistenceStorage.Update(updatedNew);
-                persistenceStorage.Insert(insertedNew);
+                persistenceStorage.Save(insertedNew, updatedNew, deletedIds);
                 saveException = null;
                 interpretedException = null;
             }
@@ -109,7 +107,7 @@ namespace Rhetos.Dom.DefaultConcepts
             }
         }
 
-        public static void ThrowInterpretedException(bool checkUserPermissions, Exception saveException, RhetosException interpretedException, ISqlUtility sqlUtility, string tableName)
+        public static void ThrowInterpretedException(bool checkUserPermissions, SqlException saveException, RhetosException interpretedException, ISqlUtility sqlUtility, string tableName)
         {
             if (checkUserPermissions)
                 MsSqlUtility.ThrowIfPrimaryKeyErrorOnInsert(interpretedException, tableName);

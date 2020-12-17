@@ -17,6 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Autofac;
+using CommonConcepts.Test.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Dom.DefaultConcepts;
@@ -186,29 +188,59 @@ namespace CommonConcepts.Test
 
                 context.PersistenceStorage.Insert(new List<TestStorage.EntityWithNoProperty> { new TestStorage.EntityWithNoProperty { ID = entityID } });
 
-                int accumulatedRowCount = 0;
+                var sqlCommandBatch = container.Resolve<IPersistenceStorageCommandBatch>();
 
-                var sqlCommandBatch = new SqlCommandBatch(
-                    context.PersistenceTransaction,
-                    container.Resolve<IPersistenceStorageObjectMappings>(),
-                    20,
-                    (rowCount, command) => accumulatedRowCount += rowCount);
+                int rowCount1 = sqlCommandBatch
+                    .Execute(new[]
+                    {
+                        new PersistenceStorageCommand
+                        {
+                            CommandType = PersistenceStorageCommandType.Update,
+                            Entity = new TestStorage.EntityWithNoProperty { ID = entityID },
+                            EntityType = typeof(TestStorage.EntityWithNoProperty)
+                        }
+                    });
+                Assert.AreEqual(1, rowCount1, "Event though update is not required, it should be executed for consistency, to verify if the record exists.");
 
-                sqlCommandBatch
-                    .Add(new TestStorage.EntityWithNoProperty { ID = entityID }, PersistenceStorageCommandType.Update)
-                    .Execute();
-                Assert.AreEqual(1, accumulatedRowCount, "Event though update is not required, it should be executed for consistency, to verify if the record exists.");
-
-                accumulatedRowCount = 0;
-                sqlCommandBatch
-                    .Add(new TestStorage.Simple { ID = Guid.NewGuid() }, PersistenceStorageCommandType.Insert)
-                    .Add(new TestStorage.EntityWithNoProperty { ID = entityID }, PersistenceStorageCommandType.Update)
-                    .Execute();
-
-                Assert.AreEqual(2, accumulatedRowCount, "Multiple updates.");
+                int rowCount2 = sqlCommandBatch
+                    .Execute(new[]
+                    {
+                        new PersistenceStorageCommand
+                        {
+                            CommandType = PersistenceStorageCommandType.Insert,
+                            Entity = new TestStorage.Simple { ID = Guid.NewGuid() },
+                            EntityType = typeof(TestStorage.Simple)
+                        },
+                        new PersistenceStorageCommand
+                        {
+                            CommandType = PersistenceStorageCommandType.Update,
+                            Entity = new TestStorage.EntityWithNoProperty { ID = entityID },
+                            EntityType = typeof(TestStorage.EntityWithNoProperty)
+                        }
+                    });
+                Assert.AreEqual(2, rowCount2, "Multiple updates.");
 
                 // Event if update is not needed, repository.Update() should not throw an exception.
                 context.Repository.TestStorage.EntityWithNoProperty.Update(new TestStorage.EntityWithNoProperty { ID = entityID });
+            }
+        }
+
+        [TestMethod]
+        public void UpdateOnEntityWithNoPropertyWithRepository()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var context = container.Resolve<Common.ExecutionContext>();
+
+                var item = new TestStorage.EntityWithNoProperty();
+                context.Repository.TestStorage.EntityWithNoProperty.Insert(item);
+                Assert.AreEqual(1, context.Repository.TestStorage.EntityWithNoProperty.Query(new[] { item.ID }).Count());
+
+                context.Repository.TestStorage.EntityWithNoProperty.Update(item);
+                Assert.AreEqual(1, context.Repository.TestStorage.EntityWithNoProperty.Query(new[] { item.ID }).Count());
+
+                context.Repository.TestStorage.EntityWithNoProperty.Delete(item);
+                Assert.AreEqual(0, context.Repository.TestStorage.EntityWithNoProperty.Query(new[] { item.ID }).Count());
             }
         }
 
@@ -456,54 +488,51 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void BatchNumberCountTest()
         {
-            using (var container = new RhetosTestContainer())
+            var commandBatchesLog = new PersistenceCommandsDecorator.Log();
+
+            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(builder =>
+                {
+                    builder.RegisterDecorator<PersistenceCommandsDecorator, IPersistenceStorageCommandBatch>();
+                    builder.RegisterInstance(commandBatchesLog);
+                    builder.RegisterInstance(new CommonConceptsRuntimeOptions { SaveSqlCommandBatchSize = 3 });
+                }
+            ))
             {
                 var context = container.Resolve<Common.ExecutionContext>();
-                var persistanceStorageMapping = container.Resolve<IPersistenceStorageObjectMappings>();
-                var batchExecutionReport = new List<Tuple<int, string>>();
-                var commandBatch = new SqlCommandBatch(context.PersistenceTransaction, persistanceStorageMapping, 3, (rowsAffected, command)=> {
-                    batchExecutionReport.Add(new Tuple<int, string>(rowsAffected, command.CommandText));
-                });
+                var persistenceStorage = container.Resolve<IPersistenceStorage>();
 
                 {
                     var entites = GenerateSimpleEntites(2);
-                    commandBatch.Add(entites[0], PersistenceStorageCommandType.Insert)
-                        .Add(entites[1], PersistenceStorageCommandType.Insert)
-                        .Execute();
-                    AssertRowsAffected(batchExecutionReport, new[] { 2 });
+                    commandBatchesLog.Clear();
+                    persistenceStorage.Insert(entites[0], entites[1]);
+
+                    Assert.AreEqual("2", TestUtility.Dump(commandBatchesLog, batch => batch.Count));
                     AssertItemsExists(context.Repository, entites);
                 }
 
                 {
                     var entites = GenerateSimpleEntites(3);
-                    batchExecutionReport.Clear();
-                    commandBatch.Add(entites[0], PersistenceStorageCommandType.Insert)
-                        .Add(entites[1], PersistenceStorageCommandType.Insert)
-                        .Add(entites[2], PersistenceStorageCommandType.Insert)
-                        .Execute();
-                    AssertRowsAffected(batchExecutionReport, new[] { 3 });
+                    commandBatchesLog.Clear();
+                    persistenceStorage.Insert(entites[0], entites[1], entites[2]);
+
+                    Assert.AreEqual("3", TestUtility.Dump(commandBatchesLog, batch => batch.Count));
                     AssertItemsExists(context.Repository, entites);
                 }
 
                 {
                     var entites = GenerateSimpleEntites(4);
-                    batchExecutionReport.Clear();
-                    commandBatch.Add(entites[0], PersistenceStorageCommandType.Insert)
-                        .Add(entites[1], PersistenceStorageCommandType.Insert)
-                        .Add(entites[2], PersistenceStorageCommandType.Insert)
-                        .Add(entites[3], PersistenceStorageCommandType.Insert)
-                        .Execute();
-                    AssertRowsAffected(batchExecutionReport, new[] { 3, 1 });
+                    commandBatchesLog.Clear();
+                    persistenceStorage.Insert(entites[0], entites[1], entites[2], entites[3]);
+
+                    Assert.AreEqual("3, 1", TestUtility.Dump(commandBatchesLog, batch => batch.Count));
                     AssertItemsExists(context.Repository, entites);
                 }
                 {
                     var entites = GenerateSimpleEntites(1);
-                    batchExecutionReport.Clear();
-                    commandBatch.Add(entites[0], PersistenceStorageCommandType.Insert)
-                        .Add(entites[0], PersistenceStorageCommandType.Update)
-                        .Add(entites[0], PersistenceStorageCommandType.Update)
-                        .Execute();
-                    AssertRowsAffected(batchExecutionReport, new[] { 3 });
+                    commandBatchesLog.Clear();
+                    persistenceStorage.Save(new[] { entites[0] }, new[] { entites[0], entites[0] }, null);
+
+                    Assert.AreEqual("2, 1", TestUtility.Dump(commandBatchesLog, batch => batch.Count));
                     AssertItemsExists(context.Repository, entites);
                 }
             }
@@ -519,13 +548,6 @@ namespace CommonConcepts.Test
             return entites;
         }
 
-        private void AssertRowsAffected(List<Tuple<int, string>> report, int[] rowsAffectedInBatches)
-        {
-            Assert.AreEqual(report.Count, rowsAffectedInBatches.Length);
-            for (var i = 0; i < report.Count; i++)
-                Assert.AreEqual(report[i].Item1, rowsAffectedInBatches[i]);
-        }
-
         private void AssertItemsExists(Common.DomRepository repository, params TestStorage.Simple[] entites)
         {
             var nonexistentIds = new List<Guid>();
@@ -537,6 +559,107 @@ namespace CommonConcepts.Test
 
             if(nonexistentIds.Any())
                 Assert.Fail($"Records with ids {string.Join(",", nonexistentIds)} are expected in the table TestStorage.Simple.");
+        }
+
+        [TestMethod]
+        public void SortBySelfReferencingDependenciesInsert()
+        {
+            var a = new TestStorage.SelfReferencing { ID = Guid.NewGuid(), Name = "a" };
+            var b = new TestStorage.SelfReferencing { ID = Guid.NewGuid(), Name = "b", ParentID = a.ID };
+            var c = new TestStorage.SelfReferencing { ID = Guid.NewGuid(), Name = "c", ParentID = b.ID };
+            var d = new TestStorage.SelfReferencing { ID = Guid.NewGuid(), Name = "d", ParentID = c.ID };
+
+            var ids = new[] { a.ID, b.ID, c.ID, d.ID };
+
+            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+
+                // Insert would fail if the records are inserted to database in incorrect order,
+                // because of self-referencing FK constraint on column ParentID.
+                repository.TestStorage.SelfReferencing.Insert(d, c, b, a);
+
+                // Check if the records are in the database.
+                var query = repository.TestStorage.SelfReferencing.Query(ids)
+                    .Select(item => new { item.Name, ParentName = item.Parent.Name });
+                Assert.AreEqual("a:, b:a, c:b, d:c", TestUtility.Dump(query.ToList(), item => $"{item.Name}:{item.ParentName}"));
+
+                repository.TestStorage.SelfReferencing.Delete(d, c, b, a);
+                Assert.AreEqual("", TestUtility.Dump(query.ToList(), item => $"{item.Name}:{item.ParentName}"));
+            }
+
+            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+
+                // Testing with opposite initial ordering, just in case.
+                repository.TestStorage.SelfReferencing.Insert(a, b, c, d);
+
+                // Check if the records are in the database.
+                var query = repository.TestStorage.SelfReferencing.Query(ids)
+                    .Select(item => new { item.Name, ParentName = item.Parent.Name });
+                Assert.AreEqual("a:, b:a, c:b, d:c", TestUtility.Dump(query.ToList(), item => $"{item.Name}:{item.ParentName}"));
+
+                repository.TestStorage.SelfReferencing.Delete(a, b, c, d);
+                Assert.AreEqual("", TestUtility.Dump(query.ToList(), item => $"{item.Name}:{item.ParentName}"));
+            }
+        }
+
+        [TestMethod]
+        public void SortBySelfReferencingDependenciesWithMock()
+        {
+            // NOTE:
+            // Sorting of updated and deleted record works only with the information provided in the given records.
+            // It will not load fresh records from database to analyze the dependencies.
+
+            var commandsMock = new PersistenceCommandsMock();
+
+            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
+                builder => builder.RegisterInstance<IPersistenceStorageCommandBatch>(commandsMock)))
+            {
+                var persistenceStorage = container.Resolve<IPersistenceStorage>();
+
+                // Input is list for records: "Name:ParentName" or "Name" if it has no parent.
+                var tests = new (string Input, string ExpectedOrder)[]
+                {
+                    ("a, b:a, c:b, d:c", "a, b, c, d"),
+                    ("a:b, b:c, c:d, d", "d, c, b, a"),
+                    ("a, b, c", "a, b, c"), // Keep initial order if there are no dependencies.
+                    ("c, b, a", "c, b, a"), // Keep initial order if there are no dependencies.
+                };
+
+                foreach (var test in tests)
+                {
+                    Console.WriteLine($"Test input: {test.Input}");
+
+                    var records = test.Input.Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries)
+                        .Select(r => r.Split(':'))
+                        .Select(r => new
+                        {
+                            ID = Guid.NewGuid(),
+                            Name = r[0],
+                            ParentName = r.Length > 1 ? r[1] : null
+                        })
+                        .ToDictionary(r => r.Name);
+
+                    var entities = records.Values
+                        .Select(r => new TestStorage.SelfReferencing
+                        {
+                            ID = r.ID,
+                            Name = r.Name,
+                            ParentID = !string.IsNullOrEmpty(r.ParentName) ? (Guid?)records[r.ParentName].ID : null
+                        }).ToList();
+
+                    commandsMock.CommandBatchesLog.Clear();
+
+                    persistenceStorage.Insert(entities);
+
+                    var saved = commandsMock.CommandBatchesLog
+                        .SelectMany(batch => batch.Select(command => ((TestStorage.SelfReferencing)command.Entity).Name));
+
+                    Assert.AreEqual(test.ExpectedOrder, TestUtility.Dump(saved));
+                }
+            }
         }
     }
 }

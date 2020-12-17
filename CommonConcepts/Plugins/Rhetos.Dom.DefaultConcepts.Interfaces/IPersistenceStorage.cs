@@ -19,43 +19,48 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.Common;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
+    /// <summary>
+    /// Executed insert, update and delete operations for given records.
+    /// It manages batching, RowCount verification and sorting records with self-references by dependencies.
+    /// </summary>
     public interface IPersistenceStorage
     {
-        Action<int, DbCommand> AfterCommandExecution { get; set; }
-
-        IPersistenceStorageCommandBatch StartBatch();
-
-        void Insert<TEntity>(IEnumerable<TEntity> toInsert) where TEntity : class, IEntity;
-
-        void Update<TEntity>(IEnumerable<TEntity> toUpdate) where TEntity : class, IEntity;
-
-        void Delete<TEntity>(IEnumerable<TEntity> toDelete) where TEntity : class, IEntity;
+        void Save<TEntity>(IEnumerable<TEntity> toInsert, IEnumerable<TEntity> toUpdate, IEnumerable<TEntity> toDelete) where TEntity : class, IEntity;
     }
 
-    public static class IPersistenceStorageExtensions
+    public static class PersistenceStorageExtensions
     {
-        public static void Insert<TEntity>(this IPersistenceStorage persistenceStorage, TEntity toInsert) where TEntity : class, IEntity
+        public static void Insert<TEntity>(this IPersistenceStorage persistenceStorage, IEnumerable<TEntity> toInsert) where TEntity : class, IEntity
         {
-            persistenceStorage.Insert(toInsert.Yield());
+            persistenceStorage.Save(toInsert, Array.Empty<TEntity>(), Array.Empty<TEntity>());
         }
 
-        public static void Update<TEntity>(this IPersistenceStorage persistenceStorage, TEntity toUpdate) where TEntity : class, IEntity
+        public static void Insert<TEntity>(this IPersistenceStorage persistenceStorage, params TEntity[] toInsert) where TEntity : class, IEntity
         {
-            persistenceStorage.Update(toUpdate.Yield());
+            persistenceStorage.Save(toInsert, Array.Empty<TEntity>(), Array.Empty<TEntity>());
         }
 
-        public static void Delete<TEntity>(this IPersistenceStorage persistenceStorage, TEntity toDelete) where TEntity : class, IEntity
+        public static void Update<TEntity>(this IPersistenceStorage persistenceStorage, IEnumerable<TEntity> toUpdate) where TEntity : class, IEntity
         {
-            persistenceStorage.Delete(toDelete.Yield());
+            persistenceStorage.Save(Array.Empty<TEntity>(), toUpdate, Array.Empty<TEntity>());
         }
 
-        private static IEnumerable<T> Yield<T>(this T item)
+        public static void Update<TEntity>(this IPersistenceStorage persistenceStorage, params TEntity[] toUpdate) where TEntity : class, IEntity
         {
-            yield return item;
+            persistenceStorage.Save(Array.Empty<TEntity>(), toUpdate, Array.Empty<TEntity>());
+        }
+
+        public static void Delete<TEntity>(this IPersistenceStorage persistenceStorage, IEnumerable<TEntity> toDelete) where TEntity : class, IEntity
+        {
+            persistenceStorage.Save(Array.Empty<TEntity>(), Array.Empty<TEntity>(), toDelete);
+        }
+
+        public static void Delete<TEntity>(this IPersistenceStorage persistenceStorage, params TEntity[] toDelete) where TEntity : class, IEntity
+        {
+            persistenceStorage.Save(Array.Empty<TEntity>(), Array.Empty<TEntity>(), toDelete);
         }
     }
 }

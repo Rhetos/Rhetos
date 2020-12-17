@@ -29,4 +29,10 @@ Module TestStorage
     }
 
     Entity EntityWithNoProperty;
+
+    Entity SelfReferencing
+    {
+        ShortString Name;
+        Reference Parent TestStorage.SelfReferencing;
+    }
 }

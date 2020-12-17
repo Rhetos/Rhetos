@@ -17,15 +17,19 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Dom.DefaultConcepts;
 using System.Collections.Generic;
 
-namespace Rhetos.Dom.DefaultConcepts
+namespace CommonConcepts.Test
 {
-    /// <summary>
-    /// Executed insert, update and delete operations for given records in a single database request.
-    /// </summary>
-    public interface IPersistenceStorageCommandBatch
+    public class PersistenceCommandsMock : IPersistenceStorageCommandBatch
     {
-        int Execute(IList<PersistenceStorageCommand> commands);
+        public List<IList<PersistenceStorageCommand>> CommandBatchesLog { get; set; } = new List<IList<PersistenceStorageCommand>>();
+
+        public int Execute(IList<PersistenceStorageCommand> commands)
+        {
+            CommandBatchesLog.Add(commands);
+            return commands.Count;
+        }
     }
 }
