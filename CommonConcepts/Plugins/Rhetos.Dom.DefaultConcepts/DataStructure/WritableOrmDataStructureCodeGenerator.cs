@@ -157,23 +157,21 @@ namespace Rhetos.Dom.DefaultConcepts
             return
     $@"public class {info.Module.Name}_{info.Name}_Mapper : IPersistenceStorageObjectMapper
     {{
-    	public Dictionary<string, System.Data.Common.DbParameter> GetParameters(IEntity genericEntity)
+        public PersistenceStorageObjectParameter[] GetParameters(IEntity genericEntity)
         {{
             var entity = ({info.Module}.{info.Name})genericEntity;
-            var mappings = new Dictionary<string, System.Data.Common.DbParameter>();
-            mappings.Add(""ID"", new SqlParameter("""", entity.ID));
-            {PersistenceStorageMapperPropertyMappingTag.Evaluate(info)}
-    
-            return mappings;
+            return new PersistenceStorageObjectParameter[]
+            {{
+                new PersistenceStorageObjectParameter(""ID"", new SqlParameter("""", entity.ID)),
+                {PersistenceStorageMapperPropertyMappingTag.Evaluate(info)}
+            }};
         }}
     
-    	public List<Guid> GetDependencies(IEntity genericEntity)
+    	public IEnumerable<Guid> GetDependencies(IEntity genericEntity)
         {{
             var entity = ({info.Module}.{info.Name})genericEntity;
-            var dependencies = new List<Guid>();
             {PersistenceStorageMapperDependencyResolutionTag.Evaluate(info)}
-    
-            return dependencies;
+            yield break;
         }}
     
     	public string GetTableName()

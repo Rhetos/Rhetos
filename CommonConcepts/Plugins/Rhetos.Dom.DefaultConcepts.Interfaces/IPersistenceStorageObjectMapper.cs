@@ -19,15 +19,29 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
 	public interface IPersistenceStorageObjectMapper
 	{
-		Dictionary<string, System.Data.Common.DbParameter> GetParameters(IEntity entity);
+        PersistenceStorageObjectParameter[] GetParameters(IEntity entity);
 
-		List<Guid> GetDependencies(IEntity entity);
+		IEnumerable<Guid> GetDependencies(IEntity entity);
 
 		string GetTableName();
 	}
+
+    public struct PersistenceStorageObjectParameter
+    {
+        public string PropertyName { get; }
+
+        public DbParameter DbParameter { get; }
+
+        public PersistenceStorageObjectParameter(string propertyName, DbParameter dbParameter)
+        {
+            PropertyName = propertyName;
+            DbParameter = dbParameter;
+        }
+    }
 }

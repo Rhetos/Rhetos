@@ -83,22 +83,22 @@ namespace Rhetos.Dom.DefaultConcepts
 			AppendInsertCommandTextForType(parameters, mapper.GetTableName(), commandTextBuilder);
 		}
 
-		private void InitializeAndAppendParameters(List<DbParameter> commandParameters, Dictionary<string, DbParameter> parameters)
+		private void InitializeAndAppendParameters(List<DbParameter> commandParameters, PersistenceStorageObjectParameter[] parameters)
 		{
 			var index = commandParameters.Count;
 			foreach (var item in parameters)
 			{
-				item.Value.ParameterName = "@" + index;
+				item.DbParameter.ParameterName = "@" + index;
 				index++;
 			}
-			commandParameters.AddRange(parameters.Select(x => x.Value));
+			commandParameters.AddRange(parameters.Select(x => x.DbParameter));
 		}
 
 		private void AppendUpdateCommand(List<DbParameter> commandParameters, StringBuilder commandTextBuilder, IEntity entity, IPersistenceStorageObjectMapper mapper)
 		{
 			var parameters = mapper.GetParameters(entity);
 			InitializeAndAppendParameters(commandParameters, parameters);
-			if (parameters.Count > 1) // If entity has other properties besides ID.
+			if (parameters.Length > 1) // If entity has other properties besides ID.
 				AppendUpdateCommandTextForType(parameters, mapper.GetTableName(), commandTextBuilder);
 			else
 				AppendEmptyUpdateCommandTextForType(parameters, mapper.GetTableName(), commandTextBuilder);
@@ -110,12 +110,12 @@ namespace Rhetos.Dom.DefaultConcepts
 			commandTextBuilder.Append($@"DELETE FROM {entityName} WHERE ID = '{entity.ID}';");
 		}
 
-		private void AppendInsertCommandTextForType(Dictionary<string, DbParameter> parameters, string tableFullName, StringBuilder commandTextBuilder)
+		private void AppendInsertCommandTextForType(PersistenceStorageObjectParameter[] parameters, string tableFullName, StringBuilder commandTextBuilder)
 		{
 			commandTextBuilder.Append("INSERT INTO " + tableFullName + " (");
 			foreach (var keyValue in parameters)
 			{
-				commandTextBuilder.Append(keyValue.Key + ", ");
+				commandTextBuilder.Append(keyValue.PropertyName + ", ");
 			}
 			commandTextBuilder.Length -= 2;
 
@@ -123,24 +123,24 @@ namespace Rhetos.Dom.DefaultConcepts
 
 			foreach (var keyValue in parameters)
 			{
-				commandTextBuilder.Append(keyValue.Value.ParameterName + ", ");
+				commandTextBuilder.Append(keyValue.DbParameter.ParameterName + ", ");
 			}
 			commandTextBuilder.Length -= 2;
 			commandTextBuilder.Append(");");
 		}
 
-		private void AppendUpdateCommandTextForType(Dictionary<string, DbParameter> parameters, string tableFullName, StringBuilder commandTextBuilder)
+		private void AppendUpdateCommandTextForType(PersistenceStorageObjectParameter[] parameters, string tableFullName, StringBuilder commandTextBuilder)
 		{
 			commandTextBuilder.Append("UPDATE " + tableFullName + " SET ");
 			foreach (var keyValue in parameters)
 			{
-				if (keyValue.Key != "ID")
+				if (keyValue.PropertyName != "ID")
 				{
-					commandTextBuilder.Append(keyValue.Key + " = " + keyValue.Value.ParameterName + ", ");
+					commandTextBuilder.Append(keyValue.PropertyName + " = " + keyValue.DbParameter.ParameterName + ", ");
 				}
 			}
 			commandTextBuilder.Length -= 2;
-			commandTextBuilder.Append(" WHERE ID = " + parameters["ID"] + ";");
+			commandTextBuilder.Append(" WHERE ID = " + parameters.First().DbParameter + ";");
 		}
 
 		/// <summary>
@@ -148,9 +148,9 @@ namespace Rhetos.Dom.DefaultConcepts
 		/// For consistency, this command still executes an SQL query. It provides consistent error handling in case the record does not
 		/// exists in database, to match the behavior of other regular entities.
 		/// </summary>
-		private void AppendEmptyUpdateCommandTextForType(Dictionary<string, DbParameter> parameters, string tableFullName, StringBuilder commandTextBuilder)
+		private void AppendEmptyUpdateCommandTextForType(PersistenceStorageObjectParameter[] parameters, string tableFullName, StringBuilder commandTextBuilder)
 		{
-			commandTextBuilder.Append("UPDATE " + tableFullName + " SET ID = ID WHERE ID = " + parameters["ID"] + ";");
+			commandTextBuilder.Append("UPDATE " + tableFullName + " SET ID = ID WHERE ID = " + parameters.First().DbParameter + ";");
 		}
 	}
 }

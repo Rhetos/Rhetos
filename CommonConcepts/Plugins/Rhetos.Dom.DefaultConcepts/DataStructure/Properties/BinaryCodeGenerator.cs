@@ -41,12 +41,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
             if (info.DataStructure is IWritableOrmDataStructure)
             {
-                var code = $@"{{
-                var parameter = new SqlParameter("""", System.Data.SqlDbType.VarBinary);
-                parameter.Value = ((object)entity.{info.Name}) ?? System.Data.SqlTypes.SqlBinary.Null;
-                mappings.Add(""{info.Name}"", parameter);
-            }}
-            ";
+                var code = $@"new PersistenceStorageObjectParameter(""{info.Name}"", new SqlParameter("""", System.Data.SqlDbType.VarBinary) {{ Value = ((object)entity.{info.Name}) ?? System.Data.SqlTypes.SqlBinary.Null }}),
+                ";
                 codeBuilder.InsertCode(code, WritableOrmDataStructureCodeGenerator.PersistenceStorageMapperPropertyMappingTag, info.DataStructure);
             }
         }

@@ -60,8 +60,8 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             if (info.DataStructure is IWritableOrmDataStructure)
             {
-                codeBuilder.InsertCode($@"mappings.Add(""{info.Name}"", new SqlParameter("""", ((object)entity.{info.Name}) ?? DBNull.Value));
-            ", WritableOrmDataStructureCodeGenerator.PersistenceStorageMapperPropertyMappingTag, info.DataStructure);
+                codeBuilder.InsertCode($@"new PersistenceStorageObjectParameter(""{info.Name}"", new SqlParameter("""", ((object)entity.{info.Name}) ?? DBNull.Value)),
+                ", WritableOrmDataStructureCodeGenerator.PersistenceStorageMapperPropertyMappingTag, info.DataStructure);
             }
         }
 
@@ -69,13 +69,8 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             if (info.DataStructure is IWritableOrmDataStructure)
             {
-                var code = $@"{{
-                var parameter = new SqlParameter("""", ((object)entity.{info.Name}) ?? DBNull.Value);
-                parameter.Scale = {scale};
-                parameter.Precision = {precision};
-                mappings.Add(""{info.Name}"", parameter);
-            }}
-            ";
+                var code = $@"new PersistenceStorageObjectParameter(""{info.Name}"", new SqlParameter("""", ((object)entity.{info.Name}) ?? DBNull.Value) {{ Scale = {scale}, Precision = {precision} }}),
+                ";
                 codeBuilder.InsertCode(code, WritableOrmDataStructureCodeGenerator.PersistenceStorageMapperPropertyMappingTag, info.DataStructure);
             }
         }
