@@ -56,7 +56,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     RepositoryHelper.AssignSimplePropertyTag, info.DataStructure);
         }
 
-        public static void GenerateSotrageMapping(PropertyInfo info, ICodeBuilder codeBuilder)
+        public static void GenerateStorageMapping(PropertyInfo info, ICodeBuilder codeBuilder)
         {
             if (info.DataStructure is IWritableOrmDataStructure)
             {
@@ -65,7 +65,7 @@ namespace Rhetos.Dom.DefaultConcepts
             }
         }
 
-        public static void GenerateSotrageMappingForDecimalTypes(PropertyInfo info, ICodeBuilder codeBuilder, int scale, int precision)
+        public static void GenerateStorageMappingForDecimalTypes(PropertyInfo info, ICodeBuilder codeBuilder, int scale, int precision)
         {
             if (info.DataStructure is IWritableOrmDataStructure)
             {

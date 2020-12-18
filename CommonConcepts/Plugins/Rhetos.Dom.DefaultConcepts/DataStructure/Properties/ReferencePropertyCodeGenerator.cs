@@ -42,7 +42,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             var referenceGuid = new PropertyInfo { DataStructure = info.DataStructure, Name = info.Name + "ID" };
             PropertyHelper.GenerateCodeForType(referenceGuid, codeBuilder, "Guid?");
-            PropertyHelper.GenerateSotrageMapping(referenceGuid, codeBuilder);
+            PropertyHelper.GenerateStorageMapping(referenceGuid, codeBuilder);
 
             if (DslUtility.IsQueryable(info.DataStructure) && DslUtility.IsQueryable(info.Referenced))
                 DataStructureQueryableCodeGenerator.AddNavigationPropertyWithBackingField(codeBuilder, info.DataStructure,

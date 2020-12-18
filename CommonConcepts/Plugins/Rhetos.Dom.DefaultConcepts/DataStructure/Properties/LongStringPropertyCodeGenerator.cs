@@ -38,7 +38,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             PropertyInfo info = (PropertyInfo)conceptInfo;
             PropertyHelper.GenerateCodeForType(info, codeBuilder, "string");
-            PropertyHelper.GenerateSotrageMapping(info, codeBuilder);
+            PropertyHelper.GenerateStorageMapping(info, codeBuilder);
         }
     }
 }

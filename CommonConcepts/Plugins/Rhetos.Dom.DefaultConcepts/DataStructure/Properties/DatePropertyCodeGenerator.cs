@@ -37,7 +37,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             PropertyHelper.GenerateCodeForType((PropertyInfo)conceptInfo, codeBuilder, "DateTime?");
-            PropertyHelper.GenerateSotrageMapping((PropertyInfo)conceptInfo, codeBuilder);
+            PropertyHelper.GenerateStorageMapping((PropertyInfo)conceptInfo, codeBuilder);
         }
     }
 }

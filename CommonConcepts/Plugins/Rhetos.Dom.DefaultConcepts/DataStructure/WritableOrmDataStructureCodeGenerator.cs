@@ -176,7 +176,7 @@ namespace Rhetos.Dom.DefaultConcepts
     
     	public string GetTableName()
         {{
-            return ""{(info as IOrmDataStructure).GetOrmSchema()}.{(info as IOrmDataStructure).GetOrmDatabaseObject()}"";
+            return ""{((IOrmDataStructure)info).GetOrmSchema()}.{((IOrmDataStructure)info).GetOrmDatabaseObject()}"";
         }}
     }}
 

@@ -38,7 +38,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var info = conceptInfo as PropertyInfo;
             PropertyHelper.GenerateCodeForType(info, codeBuilder, "decimal?");
-            PropertyHelper.GenerateSotrageMappingForDecimalTypes(info, codeBuilder, 2, 18);
+            PropertyHelper.GenerateStorageMappingForDecimalTypes(info, codeBuilder, 2, 18);
         }
     }
 }
