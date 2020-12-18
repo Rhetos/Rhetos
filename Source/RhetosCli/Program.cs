@@ -67,10 +67,11 @@ namespace Rhetos
 
             var dbUpdateCommand = new Command("dbupdate", "Updates the database structure and initializes the application data in the database.");
             dbUpdateCommand.Add(new Argument<DirectoryInfo>("application-folder", () => new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory)) { Description = "If not specified, it will search for the application at rhetos.exe location and parent directories." });
+            dbUpdateCommand.Add(new Argument<string>("startup-assembly") { Description = "Startup assembly of the host application." });
             dbUpdateCommand.Add(new Option<bool>("--short-transactions", "Commit transaction after creating or dropping each database object."));
             dbUpdateCommand.Add(new Option<bool>("--skip-recompute", "Skip automatic update of computed data with KeepSynchronized. See output log for data that needs updating."));
-            dbUpdateCommand.Handler = CommandHandler.Create((DirectoryInfo applicationFolder, bool shortTransactions, bool skipRecompute)
-                => ReportError(() => DbUpdate(applicationFolder, shortTransactions, skipRecompute)));
+            dbUpdateCommand.Handler = CommandHandler.Create((DirectoryInfo applicationFolder, string startupAssembly, bool shortTransactions, bool skipRecompute)
+                => ReportError(() => DbUpdate(applicationFolder, startupAssembly, shortTransactions, skipRecompute)));
             rootCommand.AddCommand(dbUpdateCommand);
 
             return rootCommand.Invoke(args);
@@ -135,29 +136,43 @@ namespace Rhetos
             build.GenerateApplication();
         }
 
-        private void DbUpdate(DirectoryInfo applicationFolder, bool shortTransactions, bool skipRecompute)
+        private void DbUpdate(DirectoryInfo applicationFolder, string startupAssembly, bool shortTransactions, bool skipRecompute)
         {
-            var host = Host.Find(applicationFolder.FullName, LogProvider);
+            //var host = Host.Find(applicationFolder.FullName, LogProvider);
+            // we need 
+            /*
+            var rhetosAppSettingsFilePath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, RhetosAppEnvironment.ConfigurationFileName));
+            var rhetosAppConfiguration = new ConfigurationBuilder(LogProvider)
+                .AddJsonFile(rhetosAppSettingsFilePath)
+                .Build();
+            */
 
-            var configuration = host.RhetosRuntime.BuildConfiguration(LogProvider, host.ConfigurationFolder, configurationBuilder =>
-            {
-                configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((DatabaseOptions o) => o.SqlCommandTimeout), 0);
-                configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((ConfigurationProviderOptions o) => o.LegacyKeysWarning), true);
-                configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((LoggingOptions o) => o.DelayedLogTimout), 60.0);
-                configurationBuilder.AddConfigurationManagerConfiguration();
-                configurationBuilder.AddJsonFile(Path.Combine(host.ConfigurationFolder, DbUpdateOptions.ConfigurationFileName), optional: true);
-                if (shortTransactions)
-                    configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((DbUpdateOptions o) => o.ShortTransactions), shortTransactions);
-                if (skipRecompute)
-                    configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((DbUpdateOptions o) => o.SkipRecompute), skipRecompute);
-            });
-
-            var assemblyFiles = AssemblyResolver.GetRuntimeAssemblies(configuration);
+            /*
+            var assemblyFiles = AssemblyResolver.GetRuntimeAssemblies(AppDomain.CurrentDomain.BaseDirectory);
             AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolver.GetResolveEventHandler(assemblyFiles, LogProvider, true);
+            */
 
-            var deployment = new ApplicationDeployment(configuration, LogProvider);
+            IRhetosHostBuilder CreateHostBuilder()
+            {
+                var builder = RhetosHost.FindBuilder(startupAssembly, AppDomain.CurrentDomain.BaseDirectory);
+                builder.ConfigureConfiguration(configurationBuilder =>
+                {
+                    configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((DatabaseOptions o) => o.SqlCommandTimeout), 0);
+                    configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((ConfigurationProviderOptions o) => o.LegacyKeysWarning), true);
+                    configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((LoggingOptions o) => o.DelayedLogTimout), 60.0);
+                    configurationBuilder.AddConfigurationManagerConfiguration();
+                    configurationBuilder.AddJsonFile(DbUpdateOptions.ConfigurationFileName, optional: true);
+                    if (shortTransactions)
+                        configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((DbUpdateOptions o) => o.ShortTransactions), shortTransactions);
+                    if (skipRecompute)
+                        configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((DbUpdateOptions o) => o.SkipRecompute), skipRecompute);
+                });
+                return builder;
+            }
+
+            var deployment = new ApplicationDeployment(CreateHostBuilder, LogProvider);
             deployment.UpdateDatabase();
-            deployment.InitializeGeneratedApplication(host.RhetosRuntime);
+            deployment.InitializeGeneratedApplication();
         }
 
         public static void PrintErrorSummary(Exception ex)

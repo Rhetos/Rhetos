@@ -41,7 +41,7 @@ namespace Rhetos
     /// </summary>
     public class ProcessContainer : IDisposable
     {
-        private readonly Lazy<Host> _host;
+        private readonly Lazy<IRhetosHostBuilder> _rhetosHostBuilder;
         private readonly Lazy<IConfiguration> _configuration;
         private readonly Lazy<IContainer> _rhetosIocContainer;
         private ResolveEventHandler _assemblyResolveEventHandler = null;
@@ -70,8 +70,8 @@ namespace Rhetos
             if (applicationFolder == null)
                 applicationFolder = AppDomain.CurrentDomain.BaseDirectory;
 
-            _host = new Lazy<Host>(() => Host.Find(applicationFolder, logProvider), LazyThreadSafetyMode.ExecutionAndPublication);
-            _configuration = new Lazy<IConfiguration>(() => _host.Value.RhetosRuntime.BuildConfiguration(logProvider, _host.Value.ConfigurationFolder, addCustomConfiguration), LazyThreadSafetyMode.ExecutionAndPublication);
+            _rhetosHostBuilder = new Lazy<IRhetosHostBuilder>(() => RhetosHost.FindBuilder(applicationFolder).UseBuilderLogProvider(logProvider), LazyThreadSafetyMode.ExecutionAndPublication);
+            //_configuration = new Lazy<IConfiguration>(() => _host.Value.RhetosRuntime.BuildConfiguration(logProvider, _host.Value.ConfigurationFolder, addCustomConfiguration), LazyThreadSafetyMode.ExecutionAndPublication);
             _rhetosIocContainer = new Lazy<IContainer>(() => BuildProcessContainer(logProvider, registerCustomComponents), LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
@@ -81,20 +81,18 @@ namespace Rhetos
             // so that the performance logging only takes into account the time needed to build the IOC container
             var sw = Stopwatch.StartNew();
 
-            var runtimeAssemblies = AssemblyResolver.GetRuntimeAssemblies(_configuration.Value);
-            _assemblyResolveEventHandler = AssemblyResolver.GetResolveEventHandler(runtimeAssemblies, logProvider, false);
-            AppDomain.CurrentDomain.AssemblyResolve += _assemblyResolveEventHandler;
+            var rhetosHost = _rhetosHostBuilder.Value
+                .ConfigureContainer(builder =>
+                {
+                    // Override runtime IUserInfo plugins. This container is intended to be used in unit tests or
+                    // in a process that is executed directly by user, usually by developer or administrator.
+                    builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();
+                    builder.RegisterType<ConsoleLogProvider>().As<ILogProvider>();
+                })
+                .Build();
 
-            var iocContainer = _host.Value.RhetosRuntime.BuildContainer(logProvider, _configuration.Value, builder =>
-            {
-                // Override runtime IUserInfo plugins. This container is intended to be used in unit tests or
-                // in a process that is executed directly by user, usually by developer or administrator.
-                builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();
-                builder.RegisterType<ConsoleLogProvider>().As<ILogProvider>();
-                registerCustomComponents?.Invoke(builder);
-            });
             logProvider.GetLogger("Performance." + GetType().Name).Write(sw, $"Built IoC container");
-            return iocContainer;
+            return rhetosHost.Container;
         }
 
         /// <summary>

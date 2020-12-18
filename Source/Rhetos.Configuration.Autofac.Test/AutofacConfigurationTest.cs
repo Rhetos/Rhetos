@@ -41,9 +41,9 @@ namespace Rhetos.Configuration.Autofac.Test
             public ApplicationDeployment_Accessor(IConfiguration configuration, ILogProvider logProvider) : 
                 base(configuration, logProvider){}
 
-            public new RhetosContainerBuilder CreateDbUpdateComponentsContainer()
+            public new IRhetosHostBuilder CreateDbUpdateHostBuilder()
             {
-                return base.CreateDbUpdateComponentsContainer();
+                return base.CreateDbUpdateHostBuilder();
             }
 
             public new void AddAppInitializationComponents(ContainerBuilder builder)
@@ -92,7 +92,7 @@ namespace Rhetos.Configuration.Autofac.Test
             return configuration;
         }
 
-        public IConfiguration GetRuntimeConfiguration()
+        public void ConfigureRuntimeConfiguration(ConfigurationBuilder configurationBuilder)
         {
             string rhetosAppRootPath = AppDomain.CurrentDomain.BaseDirectory;
             string currentAssemblyPath = GetType().Assembly.Location;
@@ -102,34 +102,26 @@ namespace Rhetos.Configuration.Autofac.Test
                 .ToList();
 
             // Simulating common run-time configuration of Rhetos CLI.
-
-            var rhetosRuntime = new RhetosRuntime();
-
-            var configuration = rhetosRuntime.BuildConfiguration(new ConsoleLogProvider(), rhetosAppRootPath, configurationBuilder =>
-            {
-                configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((DatabaseOptions o) => o.SqlCommandTimeout), 0);
-                configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((ConfigurationProviderOptions o) => o.LegacyKeysWarning), true);
-                configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((LoggingOptions o) => o.DelayedLogTimout), 60.0);
-                configurationBuilder.AddConfigurationManagerConfiguration();
-                configurationBuilder.AddJsonFile(Path.Combine(rhetosAppRootPath, DbUpdateOptions.ConfigurationFileName), optional: true);
+            configurationBuilder
+                .AddKeyValue(ConfigurationProvider.GetKey((DatabaseOptions o) => o.SqlCommandTimeout), 0)
+                .AddKeyValue(ConfigurationProvider.GetKey((ConfigurationProviderOptions o) => o.LegacyKeysWarning), true)
+                .AddKeyValue(ConfigurationProvider.GetKey((LoggingOptions o) => o.DelayedLogTimout), 60.0)
+                .AddConfigurationManagerConfiguration()
+                .AddRhetosAppEnvironment(rhetosAppRootPath)
+                .AddJsonFile(Path.Combine(rhetosAppRootPath, DbUpdateOptions.ConfigurationFileName), optional: true)
                 // shortTransactions
-                configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((DbUpdateOptions o) => o.ShortTransactions), true);
+                .AddKeyValue(ConfigurationProvider.GetKey((DbUpdateOptions o) => o.ShortTransactions), true)
                 // skipRecompute
-                configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((DbUpdateOptions o) => o.SkipRecompute), true);
-
-                configurationBuilder
-                    .AddOptions(new RhetosAppOptions
-                    {
-                        RhetosRuntimePath = currentAssemblyPath,
-                    })
-                    .AddOptions(new PluginScannerOptions
-                     {
-                         // Ignore other MEF plugins from assemblies that might get bundled in the same testing output folder.
-                         IgnoreAssemblyFiles = allOtherAssemblies
-                     });
-            });
-
-            return configuration;
+                .AddKeyValue(ConfigurationProvider.GetKey((DbUpdateOptions o) => o.SkipRecompute), true)
+                .AddOptions(new RhetosAppOptions
+                {
+                    RhetosRuntimePath = currentAssemblyPath,
+                })
+                .AddOptions(new PluginScannerOptions
+                {
+                    // Ignore other MEF plugins from assemblies that might get bundled in the same testing output folder.
+                    IgnoreAssemblyFiles = allOtherAssemblies
+                });
         }
 
         private IEnumerable<string> PluginsFromThisAssembly()
@@ -176,17 +168,17 @@ namespace Rhetos.Configuration.Autofac.Test
         [TestMethod]
         public void CorrectRegistrationsDbUpdate()
         {
-            var configuration = GetRuntimeConfiguration();
+            var configuration = ConfigureRuntimeConfiguration();
             var deployment = new ApplicationDeployment_Accessor(configuration, new NLogProvider());
-            var builder = deployment.CreateDbUpdateComponentsContainer();
+            var rhetosHostBuilder = deployment.CreateDbUpdateHostBuilder();
 
-            using (var container = builder.Build())
+            using (var rhetosHost = rhetosHostBuilder.Build())
             {
-                var registrationsDump = DumpSortedRegistrations(container);
+                var registrationsDump = DumpSortedRegistrations(rhetosHost.Container);
                 System.Diagnostics.Trace.WriteLine(registrationsDump);
                 TestUtility.AssertAreEqualByLine(_expectedRegistrationsDbUpdate, registrationsDump);
 
-                TestAmbiguousRegistations(container,
+                TestAmbiguousRegistations(rhetosHost.Container,
                     expectedOverridenRegistrations: new Dictionary<Type, string> { { typeof(IUserInfo), "NullUserInfo" } });
             }
         }

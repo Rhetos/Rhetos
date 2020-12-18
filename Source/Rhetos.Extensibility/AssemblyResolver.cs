@@ -44,13 +44,22 @@ namespace Rhetos.Extensibility
             else
                 searchFolders = new[] { runtimeAssemblyFolder };
 
-            var foundAssemblies = searchFolders
-                .Where(folder => Directory.Exists(folder))
-                .SelectMany(folder => Directory.GetFiles(folder, "*.dll", SearchOption.TopDirectoryOnly));
+            var assembliesFromFolders = GetRuntimeAssemblies(searchFolders.ToArray());
 
-            return new[] { rhetosAppOptions.RhetosRuntimePath }.Concat(foundAssemblies)
+            return new[] { rhetosAppOptions.RhetosRuntimePath }.Concat(assembliesFromFolders)
                 .Distinct()
                 .ToArray();
+        }
+
+        public static string[] GetRuntimeAssemblies(params string[] searchFolders)
+        {
+            var foundAssemblies = searchFolders
+                .Where(folder => Directory.Exists(folder))
+                .SelectMany(folder => Directory.GetFiles(folder, "*.dll", SearchOption.TopDirectoryOnly))
+                .Distinct()
+                .ToArray();
+
+            return foundAssemblies;
         }
 
         /// <param name="warningOnDuplicateFiles">Suppress the warnings to avoid spamming the application run-time log. The warnings should show on build.</param>
