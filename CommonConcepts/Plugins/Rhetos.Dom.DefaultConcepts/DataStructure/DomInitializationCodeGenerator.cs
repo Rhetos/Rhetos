@@ -61,8 +61,7 @@ namespace Rhetos.Dom.DefaultConcepts
     using System.Linq.Expressions;
     using System.Runtime.Serialization;
     using Rhetos.Dom.DefaultConcepts;
-    using Rhetos.Utilities;
-    using System.Data.SqlClient;";
+    using Rhetos.Utilities;";
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
@@ -82,7 +81,6 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.AddReferencesFromDependency(typeof(System.ComponentModel.Composition.ExportAttribute));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Dom.DefaultConcepts.GenericRepositories));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Dom.DefaultConcepts.IEntity));
-            codeBuilder.AddReferencesFromDependency(typeof(System.Data.SqlClient.SqlCommand));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Logging.ILogProvider));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Security.IWindowsSecurity));
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.SqlUtility));
@@ -97,13 +95,6 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Dom.DefaultConcepts.CommonConceptsDatabaseSettings));
             codeBuilder.AddReferencesFromDependency(typeof(ApplyFiltersOnClientRead));
             codeBuilder.AddReferencesFromDependency(typeof(ICommandInfo)); // Used from ApplyFiltersOnClientRead.
-            //In .NET Standard the SqlException is located in the System.Data assmbly and if we add
-            //codeBuilder.AddReferencesFromDependency(typeof(System.Data.SqlClient.SqlException))
-            //it will add a reference to the assembly System.Data.
-            //The problem is when we are tryng to compile the generated source code, the target framework is .NET 4.7.1, and the compiler can't find
-            //the definition of SqlException in System.Data assembly because the definition is located in System.Data.SqlClient
-            if (string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder))
-                codeBuilder.AddReference(Path.Combine(Paths.BinFolder, "System.Data.SqlClient.dll"));
         }
 
         public static string DisableWarnings(CommonConceptsOptions commonConceptsOptions)
@@ -365,7 +356,11 @@ $@"namespace Common
             builder.RegisterType<ExecutionContext>().InstancePerLifetimeScope();
             builder.RegisterInstance(Infrastructure.RegisteredInterfaceImplementations).ExternallyOwned();
             builder.RegisterInstance(Infrastructure.ApplyFiltersOnClientRead).ExternallyOwned();
-            builder.RegisterType<PersistenceStorageObjectMappings>().As<IPersistenceStorageObjectMappings>().SingleInstance();            
+            builder.RegisterType<PersistenceStorage>().As<IPersistenceStorage>();
+            builder.RegisterType<SqlCommandBatch>().As<IPersistenceStorageCommandBatch>();
+            builder.RegisterType<PersistenceStorageObjectMappings>().As<IPersistenceStorageObjectMappings>().SingleInstance();
+
+            builder.Register(context => context.Resolve<IConfiguration>().GetOptions<CommonConceptsRuntimeOptions>()).SingleInstance();
             builder.RegisterInstance(new Rhetos.Dom.DefaultConcepts.CommonConceptsDatabaseSettings
             {{
                 UseLegacyMsSqlDateTime = {_databaseSettings.UseLegacyMsSqlDateTime.ToString().ToLowerInvariant()},

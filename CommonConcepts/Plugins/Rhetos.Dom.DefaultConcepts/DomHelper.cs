@@ -81,7 +81,7 @@ namespace Rhetos.Dom.DefaultConcepts
             IPersistenceStorage persistenceStorage,
             bool checkUserPermissions,
             ISqlUtility sqlUtility,
-            out SqlException saveException,
+            out Exception saveException,
             out RhetosException interpretedException)
             where TEntity : class, IEntity
         {
@@ -107,7 +107,8 @@ namespace Rhetos.Dom.DefaultConcepts
             }
         }
 
-        public static void ThrowInterpretedException(bool checkUserPermissions, SqlException saveException, RhetosException interpretedException, ISqlUtility sqlUtility, string tableName)
+        /// <param name="saveException">SqlException, or an exception that has SqlException as an inner exception (directly or indirectly).</param>
+        public static void ThrowInterpretedException(bool checkUserPermissions, Exception saveException, RhetosException interpretedException, ISqlUtility sqlUtility, string tableName)
         {
             if (checkUserPermissions)
                 MsSqlUtility.ThrowIfPrimaryKeyErrorOnInsert(interpretedException, tableName);

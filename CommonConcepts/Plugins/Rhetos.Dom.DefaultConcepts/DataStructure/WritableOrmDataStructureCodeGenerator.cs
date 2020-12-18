@@ -108,7 +108,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             {{
                 DomHelper.WriteToDatabase(insertedNew, updatedNew, deletedIds, _executionContext.PersistenceStorage, checkUserPermissions, _sqlUtility,
-                    out System.Data.SqlClient.SqlException saveException, out Rhetos.RhetosException interpretedException);
+                    out Exception saveException, out Rhetos.RhetosException interpretedException);
 
                 if (saveException != null)
                 {{
