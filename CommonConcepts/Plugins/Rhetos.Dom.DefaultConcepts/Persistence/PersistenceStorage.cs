@@ -82,22 +82,22 @@ namespace Rhetos.Dom.DefaultConcepts
                 throw new FrameworkException($"Unexpected number of rows affected on insert of '{entityType}'. Row count {numberOfAffectedRows}, expected {commands.Count}.");
         }
 
-        private List<TEntity> GetSorted<TEntity>(IEnumerable<TEntity> entites) where TEntity : IEntity
+        private List<TEntity> GetSorted<TEntity>(IEnumerable<TEntity> entities) where TEntity : IEntity
         {
-            var entitesCopy = new List<TEntity>(entites);
+            var entitiesCopy = new List<TEntity>(entities);
             var mapper = _persistenceMappings.GetMapping(typeof(TEntity));
-            var dependencies = entitesCopy.SelectMany(x => mapper.GetDependencies(x).Select(y => new Tuple<Guid, Guid>(y, x.ID)));
-            var ids = entitesCopy.Select(x => x.ID).ToList();
+            var dependencies = entitiesCopy.SelectMany(x => mapper.GetDependencies(x).Select(y => new Tuple<Guid, Guid>(y, x.ID)));
+            var ids = entitiesCopy.Select(x => x.ID).ToList();
             Graph.TopologicalSort(ids, dependencies);
-            Graph.SortByGivenOrder(entitesCopy, ids, plugin => plugin.ID);
-            return entitesCopy;
+            Graph.SortByGivenOrder(entitiesCopy, ids, plugin => plugin.ID);
+            return entitiesCopy;
         }
 
-        private List<TEntity> GetSortedReverse<TEntity>(IEnumerable<TEntity> entites) where TEntity : IEntity
+        private List<TEntity> GetSortedReverse<TEntity>(IEnumerable<TEntity> entities) where TEntity : IEntity
         {
-            var entitesCopy = GetSorted(entites);
-            entitesCopy.Reverse();
-            return entitesCopy;
+            var entitiesCopy = GetSorted(entities);
+            entitiesCopy.Reverse();
+            return entitiesCopy;
         }
     }
 }

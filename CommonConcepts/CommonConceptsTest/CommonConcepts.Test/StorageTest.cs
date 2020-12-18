@@ -502,56 +502,77 @@ namespace CommonConcepts.Test
                 var persistenceStorage = container.Resolve<IPersistenceStorage>();
 
                 {
-                    var entites = GenerateSimpleEntites(2);
+                    var entities = GenerateSimpleEntities(2);
                     commandBatchesLog.Clear();
-                    persistenceStorage.Insert(entites[0], entites[1]);
+                    persistenceStorage.Insert(entities[0], entities[1]);
 
                     Assert.AreEqual("2", TestUtility.Dump(commandBatchesLog, batch => batch.Count));
-                    AssertItemsExists(context.Repository, entites);
+                    AssertItemsExists(context.Repository, entities);
                 }
 
                 {
-                    var entites = GenerateSimpleEntites(3);
+                    var entities = GenerateSimpleEntities(3);
                     commandBatchesLog.Clear();
-                    persistenceStorage.Insert(entites[0], entites[1], entites[2]);
+                    persistenceStorage.Insert(entities[0], entities[1], entities[2]);
 
                     Assert.AreEqual("3", TestUtility.Dump(commandBatchesLog, batch => batch.Count));
-                    AssertItemsExists(context.Repository, entites);
+                    AssertItemsExists(context.Repository, entities);
                 }
 
                 {
-                    var entites = GenerateSimpleEntites(4);
+                    var entities = GenerateSimpleEntities(4);
                     commandBatchesLog.Clear();
-                    persistenceStorage.Insert(entites[0], entites[1], entites[2], entites[3]);
+                    persistenceStorage.Insert(entities[0], entities[1], entities[2], entities[3]);
 
                     Assert.AreEqual("3, 1", TestUtility.Dump(commandBatchesLog, batch => batch.Count));
-                    AssertItemsExists(context.Repository, entites);
+                    AssertItemsExists(context.Repository, entities);
                 }
                 {
-                    var entites = GenerateSimpleEntites(1);
-                    commandBatchesLog.Clear();
-                    persistenceStorage.Save(new[] { entites[0] }, new[] { entites[0], entites[0] }, null);
+                    var entities = GenerateSimpleEntities(1);
 
-                    Assert.AreEqual("2, 1", TestUtility.Dump(commandBatchesLog, batch => batch.Count));
-                    AssertItemsExists(context.Repository, entites);
+                    var commandBatch = container.Resolve<IPersistenceStorageCommandBatch>();
+                    int rowCount = commandBatch.Execute(new[]
+                    {
+                        new PersistenceStorageCommand
+                        {
+                            CommandType = PersistenceStorageCommandType.Insert,
+                            Entity = entities[0],
+                            EntityType = typeof(TestStorage.Simple)
+                        },
+                        new PersistenceStorageCommand
+                        {
+                            CommandType = PersistenceStorageCommandType.Update,
+                            Entity = entities[0],
+                            EntityType = typeof(TestStorage.Simple)
+                        },
+                        new PersistenceStorageCommand
+                        {
+                            CommandType = PersistenceStorageCommandType.Update,
+                            Entity = entities[0],
+                            EntityType = typeof(TestStorage.Simple)
+                        },
+                    });
+
+                    Assert.AreEqual(3, rowCount);
+                    AssertItemsExists(context.Repository, entities);
                 }
             }
         }
 
-        private TestStorage.Simple[] GenerateSimpleEntites(int count)
+        private TestStorage.Simple[] GenerateSimpleEntities(int count)
         {
-            var entites = new TestStorage.Simple[count];
+            var entities = new TestStorage.Simple[count];
             for (var i = 0; i < count; i++)
-                entites[i] = new TestStorage.Simple {
+                entities[i] = new TestStorage.Simple {
                     ID = Guid.NewGuid()
                 };
-            return entites;
+            return entities;
         }
 
-        private void AssertItemsExists(Common.DomRepository repository, params TestStorage.Simple[] entites)
+        private void AssertItemsExists(Common.DomRepository repository, params TestStorage.Simple[] entities)
         {
             var nonexistentIds = new List<Guid>();
-            foreach (var entity in entites)
+            foreach (var entity in entities)
             {
                 if (!repository.TestStorage.Simple.Query(x => x.ID == entity.ID).Any())
                     nonexistentIds.Add(entity.ID);
