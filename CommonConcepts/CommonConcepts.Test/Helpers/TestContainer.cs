@@ -43,14 +43,14 @@ namespace CommonConcepts.Test.Helpers
         /// </summary>
         public static TransactionScopeContainer Create(Action<ContainerBuilder> registerCustomComponents = null)
         {
-            return ProcessContainer.CreateTransactionScopeContainer(registerCustomComponents);
+            return RhetosHost.CreateScope(registerCustomComponents);
         }
 
         /// <summary>
         /// Shared DI container to be reused between tests, to reduce initialization time for each test.
         /// Each test should create a child container with <see cref="Create"/> method to start a 'using' block.
         /// </summary>
-        public static readonly ProcessContainer ProcessContainer = new ProcessContainer(Environment.CurrentDirectory);
+        public static readonly RhetosHost RhetosHost = Program.CreateRhetosHostBuilder().Build();
 
         private static int _checkedForParallelismThreadCount = 0;
 

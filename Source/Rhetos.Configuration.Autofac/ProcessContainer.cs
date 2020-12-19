@@ -69,7 +69,7 @@ namespace Rhetos
             if (applicationFolder == null)
                 applicationFolder = AppDomain.CurrentDomain.BaseDirectory;
 
-            _rhetosHostBuilder = new Lazy<IRhetosHostBuilder>(() => RhetosHost.FindBuilder(applicationFolder).UseBuilderLogProvider(logProvider), LazyThreadSafetyMode.ExecutionAndPublication);
+            _rhetosHostBuilder = new Lazy<IRhetosHostBuilder>(() => new RhetosHostBuilder().UseBuilderLogProvider(logProvider), LazyThreadSafetyMode.ExecutionAndPublication);
             _rhetosIocContainer = new Lazy<IContainer>(() => BuildProcessContainer(logProvider, addCustomConfiguration, registerCustomComponents), LazyThreadSafetyMode.ExecutionAndPublication);
         }
 

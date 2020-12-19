@@ -19,6 +19,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Autofac;
 using Rhetos.Extensibility;
@@ -42,11 +43,13 @@ namespace Rhetos
             return new TransactionScopeContainer(Container, registerScopeComponentsAction);
         }
 
-        public static IRhetosHostBuilder FindBuilder(string hostFilename, params string[] assemblyProbingDirectories)
+        public static IRhetosHostBuilder FindBuilder(string hostFilePath, params string[] assemblyProbingDirectories)
         {
-            var directory = Path.GetDirectoryName(hostFilename);
-            if (!string.IsNullOrEmpty(directory))
-                throw new FrameworkException($"Host filename '{hostFilename}' shouldn't contain directory/path.");
+            var hostAbsolutePath = Path.GetFullPath(hostFilePath);
+            var hostDirectory = Path.GetDirectoryName(hostAbsolutePath);
+            assemblyProbingDirectories = assemblyProbingDirectories.Concat(new [] { hostDirectory }).ToArray();
+
+            var hostFilename = Path.GetFileName(hostFilePath);
 
             var startupAssembly = ResolveStartupAssembly(hostFilename, assemblyProbingDirectories);
 
@@ -65,6 +68,7 @@ namespace Rhetos
 
             var rhetosHostBuilder = (IRhetosHostBuilder)method.Invoke(null, new object[] { });
             rhetosHostBuilder.AddAssemblyProbingDirectories(assemblyProbingDirectories); // preserve probing directories which were used to locate this builder
+            rhetosHostBuilder.UseRootFolder(hostDirectory); // use host directory as root for all RhetosHostBuilder operations
             return rhetosHostBuilder;
         }
 

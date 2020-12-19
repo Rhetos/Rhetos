@@ -19,22 +19,35 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Autofac;
+using Rhetos;
 using Rhetos.Logging;
+using Rhetos.Security;
 using Rhetos.Utilities;
 
-namespace Rhetos
+namespace CommonConcepts.Test.Helpers
 {
-    public interface IRhetosHostBuilder
+    public static class Program
     {
-        IRhetosHostBuilder UseBuilderLogProvider(ILogProvider logProvider);
-        IRhetosHostBuilder ConfigureConfiguration(Action<IConfigurationBuilder> configureAction);
-        IRhetosHostBuilder ConfigureContainer(Action<ContainerBuilder> configureAction);
-        IRhetosHostBuilder UseCustomContainerConfiguration(Action<IConfiguration, ContainerBuilder, List<Action<ContainerBuilder>>> containerConfigurationAction);
-        IRhetosHostBuilder AddAssemblyProbingDirectories(params string[] assemblyProbingDirectories);
-        IRhetosHostBuilder UseRootFolder(string rootFolder);
-        RhetosHost Build();
+        public static void Main()
+        {
+        }
+
+        public static IRhetosHostBuilder CreateRhetosHostBuilder()
+        {
+            return new RhetosHostBuilder()
+                .ConfigureConfiguration(builder =>
+                {
+                    builder.AddJsonFile(RhetosAppEnvironment.LocalConfigurationFileName);
+                })
+                .ConfigureContainer(builder =>
+                {
+                    builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();
+                    builder.RegisterType<ConsoleLogProvider>().As<ILogProvider>();
+                });
+        }
     }
 }

@@ -35,6 +35,7 @@ namespace Rhetos
         private Action<IConfiguration, ContainerBuilder, List<Action<ContainerBuilder>>> _customContainerConfigurationAction ;
         private readonly List<string> _probingDirectories = new List<string>();
         private ILogger _buildLogger;
+        private string _rootFolder;
 
         public RhetosHostBuilder()
         {
@@ -70,9 +71,16 @@ namespace Rhetos
             return this;
         }
 
+        public IRhetosHostBuilder UseRootFolder(string rootFolder)
+        {
+            _rootFolder = rootFolder;
+            return this;
+        }
+
         public RhetosHost Build()
         {
             ResolveEventHandler resolveEventHandler = null;
+            var restoreCurrentDirectory = Environment.CurrentDirectory;
             
             if (_probingDirectories.Count > 0)
             {
@@ -84,6 +92,16 @@ namespace Rhetos
             _buildLogger = _builderLogProvider.GetLogger(nameof(RhetosHost));
             try
             {
+                if (!string.IsNullOrEmpty(_rootFolder))
+                {
+                    Directory.SetCurrentDirectory(_rootFolder);
+                    _buildLogger.Info($"Using '{_rootFolder}' as root folder for {nameof(Build)} operation.");
+                }
+                else
+                {
+                    Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
+                }
+
                 var configuration = CreateConfiguration();
                 var rhetosContainer = BuildContainer(configuration);
                 return new RhetosHost(rhetosContainer);
@@ -97,12 +115,14 @@ namespace Rhetos
             {
                 if (resolveEventHandler != null)
                     AppDomain.CurrentDomain.AssemblyResolve -= resolveEventHandler;
+
+                Directory.SetCurrentDirectory(restoreCurrentDirectory);
             }
         }
 
         private IConfiguration CreateConfiguration()
         {
-            var rhetosAppSettingsFilePath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, RhetosAppEnvironment.ConfigurationFileName));
+            var rhetosAppSettingsFilePath = Path.GetFullPath(RhetosAppEnvironment.ConfigurationFileName);
             if (!File.Exists(rhetosAppSettingsFilePath))
                 throw new FrameworkException($"Unable to initialize RhetosHost. Rhetos app settings file '{rhetosAppSettingsFilePath}' not found.");
 

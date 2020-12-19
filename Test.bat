@@ -14,8 +14,8 @@ dotnet test "Source\Rhetos.Extensibility.Test\bin\Debug\net5.0\Rhetos.Extensibil
 dotnet test "Source\Rhetos.Logging.Test\bin\Debug\net5.0\Rhetos.Logging.Test.dll" || GOTO Error0
 dotnet test "Source\Rhetos.Deployment.Test\bin\Debug\net5.0\Rhetos.Deployment.Test.dll" || GOTO Error0
 dotnet test "CommonConcepts\Plugins\Rhetos.CommonConcepts.Test\bin\Debug\net5.0\Rhetos.CommonConcepts.Test.dll" || GOTO Error0
-
 dotnet build CommonConceptsTest.sln /target:restore /p:RestoreForce=True /target:rebuild /p:Configuration=Debug /verbosity:minimal || GOTO Error0
+.\CommonConcepts\CommonConcepts.Test\bin\Debug\net5.0\rhetos.exe dbupdate CommonConcepts\CommonConcepts.Test\bin\Debug\net5.0\CommonConcepts.Test.dll
 dotnet test "CommonConcepts\CommonConcepts.Test\bin\Debug\net5.0\CommonConcepts.Test.dll" || GOTO Error0
 
 @REM ================================================
