@@ -38,8 +38,8 @@ namespace Rhetos.Configuration.Autofac.Test
     {
         private class ApplicationDeployment_Accessor : ApplicationDeployment
         {
-            public ApplicationDeployment_Accessor(IConfiguration configuration, ILogProvider logProvider) : 
-                base(configuration, logProvider){}
+            public ApplicationDeployment_Accessor(Action<IConfigurationBuilder> configureConfiguration, ILogProvider logProvider) : 
+                base(HostBuilderFactoryWithConfiguration(configureConfiguration), logProvider){}
 
             public new IRhetosHostBuilder CreateDbUpdateHostBuilder()
             {
@@ -49,6 +49,12 @@ namespace Rhetos.Configuration.Autofac.Test
             public new void AddAppInitializationComponents(ContainerBuilder builder)
             {
                 base.AddAppInitializationComponents(builder);
+            }
+
+            private static Func<IRhetosHostBuilder> HostBuilderFactoryWithConfiguration(Action<IConfigurationBuilder> configureConfiguration)
+            {
+                return () => new RhetosHostBuilder()
+                    .ConfigureConfiguration(configureConfiguration);
             }
         }
 
@@ -85,14 +91,13 @@ namespace Rhetos.Configuration.Autofac.Test
                 })
                 .AddKeyValue(ConfigurationProvider.GetKey((ConfigurationProviderOptions o) => o.LegacyKeysWarning), true)
                 .AddKeyValue(ConfigurationProvider.GetKey((LoggingOptions o) => o.DelayedLogTimout), 60.0)
-                .AddConfigurationManagerConfiguration()
                 .AddJsonFile(Path.Combine(rhetosAppRootPath, RhetosBuildEnvironment.ConfigurationFileName), optional: true)
                 .Build();
 
             return configuration;
         }
 
-        public void ConfigureRuntimeConfiguration(ConfigurationBuilder configurationBuilder)
+        public void ConfigureRuntimeConfiguration(IConfigurationBuilder configurationBuilder)
         {
             string rhetosAppRootPath = AppDomain.CurrentDomain.BaseDirectory;
             string currentAssemblyPath = GetType().Assembly.Location;
@@ -168,8 +173,7 @@ namespace Rhetos.Configuration.Autofac.Test
         [TestMethod]
         public void CorrectRegistrationsDbUpdate()
         {
-            var configuration = ConfigureRuntimeConfiguration();
-            var deployment = new ApplicationDeployment_Accessor(configuration, new NLogProvider());
+            var deployment = new ApplicationDeployment_Accessor(ConfigureRuntimeConfiguration, new NLogProvider());
             var rhetosHostBuilder = deployment.CreateDbUpdateHostBuilder();
 
             using (var rhetosHost = rhetosHostBuilder.Build())
@@ -186,16 +190,19 @@ namespace Rhetos.Configuration.Autofac.Test
         [TestMethod]
         public void CorrectRegistrationsRuntimeWithInitialization()
         {
-            var configuration = GetRuntimeConfiguration();
-            var deployment = new ApplicationDeployment_Accessor(configuration, new NLogProvider());
+            // we construct the object, but need only its 'almost' static .AddAppInitilizationComponents
+            var deployment = new ApplicationDeployment_Accessor(ConfigureRuntimeConfiguration, new NLogProvider());
+            var rhetosHostBuilder = new RhetosHostBuilder()
+                .ConfigureConfiguration(ConfigureRuntimeConfiguration)
+                .ConfigureContainer(deployment.AddAppInitializationComponents);
 
-            using (var container = new RhetosRuntime().BuildContainer(new NLogProvider(), configuration, deployment.AddAppInitializationComponents))
+            using (var rhetosHost = rhetosHostBuilder.Build())
             {
-                var registrationsDump = DumpSortedRegistrations(container);
+                var registrationsDump = DumpSortedRegistrations(rhetosHost.Container);
                 System.Diagnostics.Trace.WriteLine(registrationsDump);
                 TestUtility.AssertAreEqualByLine(_expectedRegistrationsRuntimeWithInitialization, registrationsDump);
 
-                TestAmbiguousRegistations(container,
+                TestAmbiguousRegistations(rhetosHost.Container,
                     expectedMultiplePlugins: new[] { "Rhetos.Dsl.IDslModelIndex" },
                     expectedOverridenRegistrations: new Dictionary<Type, string> { { typeof(IUserInfo), "ProcessUserInfo" } });
             }

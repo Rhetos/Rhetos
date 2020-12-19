@@ -89,7 +89,7 @@ namespace Rhetos
                 throw new FrameworkException($"Unable to initialize RhetosHost. Rhetos app settings file '{rhetosAppSettingsFilePath}' not found.");
 
             buildLogger.Info(() => $"Initializing Rhetos app from '{rhetosAppSettingsFilePath}'.");
-
+            
             var configurationBuilder = new ConfigurationBuilder(builderLogProvider)
                 .AddJsonFile(rhetosAppSettingsFilePath);
 

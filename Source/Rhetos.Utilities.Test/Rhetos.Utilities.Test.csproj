@@ -29,7 +29,7 @@
     <None Update="TestCfg.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="testhost.dll.config">
+    <None Update="app.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="..\..\Tools\Configuration\ConnectionStrings.config">

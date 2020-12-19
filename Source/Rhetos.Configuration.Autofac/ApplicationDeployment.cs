@@ -37,15 +37,7 @@ namespace Rhetos
     {
         private readonly Func<IRhetosHostBuilder> _rhetosHostBuilderFactory;
         private readonly ILogger _logger;
-        private readonly IConfiguration _configuration;
         private readonly ILogProvider _logProvider;
-
-        public ApplicationDeployment(IConfiguration configuration, ILogProvider logProvider)
-        {
-            _logger = logProvider.GetLogger(GetType().Name);
-            _configuration = configuration;
-            _logProvider = logProvider;
-        }
 
         public ApplicationDeployment(Func<IRhetosHostBuilder> rhetosHostBuilderFactory, ILogProvider logProvider)
         {
@@ -73,7 +65,6 @@ namespace Rhetos
             }
         }
 
-        // TODO: can we just use provided RhetosHost and add DbUpdateModule to it instead of building twice?
         protected IRhetosHostBuilder CreateDbUpdateHostBuilder()
         {
             var hostBuilder = _rhetosHostBuilderFactory()
@@ -81,12 +72,13 @@ namespace Rhetos
                 .UseCustomContainerConfiguration((configuration, builder, configureActions) =>
                 {
                     builder.RegisterModule(new CoreModule());
-                    builder.RegisterModule(new DbUpdateModule());
                     builder.AddPluginModules();
+
+                    RhetosHostBuilder.InvokeAll(builder, configureActions);
+
+                    builder.RegisterModule(new DbUpdateModule());
                     builder.RegisterType<NullUserInfo>()
                         .As<IUserInfo>(); // Override runtime IUserInfo plugins. This container should not execute the application's business features.
-                    // ignore configureActions?
-                    // RhetosHostBuilder.InvokeAll(builder, configureActions);
                 });
 
             return hostBuilder;
