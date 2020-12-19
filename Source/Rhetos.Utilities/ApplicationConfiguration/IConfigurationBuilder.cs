@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Logging;
 using Rhetos.Utilities;
 using Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources;
 
@@ -25,6 +26,7 @@ namespace Rhetos
     public interface IConfigurationBuilder
     {
         IConfigurationBuilder Add(IConfigurationSource source);
+        IConfigurationBuilder UseBuilderLogProvider(ILogProvider builderLogProvider);
         IConfiguration Build();
     }
 }
