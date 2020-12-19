@@ -29,7 +29,7 @@ namespace Rhetos.Utilities
     public class RhetosAppOptions : IAssetsOptions
     {
         /// <summary>
-        /// Main application's assembly file that contains <see cref="IRhetosRuntime"/> implementation.
+        /// Main Rhetos application's assembly file that is used for bootstrapping Rhetos application via IRhetosHostBuilder implementation.
         /// The value is configured automatically by Rhetos build if <see cref="BuildOptions.GenerateAppSettings"/> is enabled.
         /// </summary>
         [AbsolutePathOption]

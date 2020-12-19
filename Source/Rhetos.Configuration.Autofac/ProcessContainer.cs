@@ -42,11 +42,10 @@ namespace Rhetos
     public class ProcessContainer : IDisposable
     {
         private readonly Lazy<IRhetosHostBuilder> _rhetosHostBuilder;
-        private readonly Lazy<IConfiguration> _configuration;
         private readonly Lazy<IContainer> _rhetosIocContainer;
         private ResolveEventHandler _assemblyResolveEventHandler = null;
 
-        public IConfiguration Configuration => _configuration.Value;
+        public IConfiguration Configuration => _rhetosIocContainer.Value.Resolve<IConfiguration>();
 
         /// <param name="applicationFolder">
         /// Folder where the Rhetos configuration file is located (see <see cref="RhetosAppEnvironment.ConfigurationFileName"/>),
@@ -66,28 +65,34 @@ namespace Rhetos
         public ProcessContainer(string applicationFolder = null, ILogProvider logProvider = null,
             Action<IConfigurationBuilder> addCustomConfiguration = null, Action<ContainerBuilder> registerCustomComponents = null)
         {
-            logProvider = logProvider ?? new ConsoleLogProvider();
+            logProvider = logProvider ?? LoggingDefaults.DefaultLogProvider;
             if (applicationFolder == null)
                 applicationFolder = AppDomain.CurrentDomain.BaseDirectory;
 
             _rhetosHostBuilder = new Lazy<IRhetosHostBuilder>(() => RhetosHost.FindBuilder(applicationFolder).UseBuilderLogProvider(logProvider), LazyThreadSafetyMode.ExecutionAndPublication);
-            //_configuration = new Lazy<IConfiguration>(() => _host.Value.RhetosRuntime.BuildConfiguration(logProvider, _host.Value.ConfigurationFolder, addCustomConfiguration), LazyThreadSafetyMode.ExecutionAndPublication);
-            _rhetosIocContainer = new Lazy<IContainer>(() => BuildProcessContainer(logProvider, registerCustomComponents), LazyThreadSafetyMode.ExecutionAndPublication);
+            _rhetosIocContainer = new Lazy<IContainer>(() => BuildProcessContainer(logProvider, addCustomConfiguration, registerCustomComponents), LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
-        private IContainer BuildProcessContainer(ILogProvider logProvider, Action<ContainerBuilder> registerCustomComponents)
+        private IContainer BuildProcessContainer(ILogProvider logProvider, Action<IConfigurationBuilder> addCustomConfiguration,
+            Action<ContainerBuilder> registerCustomComponents)
         {
             // The values for rhetosRuntime and configuration are resolved before the call to Stopwatch.StartNew
             // so that the performance logging only takes into account the time needed to build the IOC container
             var sw = Stopwatch.StartNew();
 
             var rhetosHost = _rhetosHostBuilder.Value
+                .ConfigureConfiguration(configuration =>
+                {
+                    addCustomConfiguration?.Invoke(configuration);
+                })
                 .ConfigureContainer(builder =>
                 {
                     // Override runtime IUserInfo plugins. This container is intended to be used in unit tests or
                     // in a process that is executed directly by user, usually by developer or administrator.
                     builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();
                     builder.RegisterType<ConsoleLogProvider>().As<ILogProvider>();
+
+                    registerCustomComponents?.Invoke(builder);
                 })
                 .Build();
 

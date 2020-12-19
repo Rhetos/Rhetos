@@ -612,7 +612,9 @@ namespace Rhetos.Utilities.Test
 
         private class TestOptions
         {
+#pragma warning disable 414
             private string PrivateField;
+#pragma warning restore 414
             private string PrivateProperty { get; set; }
             public string PublicField;
             public string PublicProperty { get; set; }

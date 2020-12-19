@@ -24,7 +24,7 @@ namespace Rhetos
 {
     /// <summary>
     /// When reading this configuration setting, any relative path will be converted to absolute.
-    /// The base folder depends on configuration source implementation of <see cref="IConfigurationValue"/>,
+    /// The base folder depends on configuration source implementation of <see cref="ConfigurationValue"/>,
     /// it should match the configuration file location.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]

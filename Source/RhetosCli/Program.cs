@@ -66,12 +66,11 @@ namespace Rhetos
             rootCommand.AddCommand(buildCommand);
 
             var dbUpdateCommand = new Command("dbupdate", "Updates the database structure and initializes the application data in the database.");
-            dbUpdateCommand.Add(new Argument<DirectoryInfo>("application-folder", () => new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory)) { Description = "If not specified, it will search for the application at rhetos.exe location and parent directories." });
             dbUpdateCommand.Add(new Argument<string>("startup-assembly") { Description = "Startup assembly of the host application." });
             dbUpdateCommand.Add(new Option<bool>("--short-transactions", "Commit transaction after creating or dropping each database object."));
             dbUpdateCommand.Add(new Option<bool>("--skip-recompute", "Skip automatic update of computed data with KeepSynchronized. See output log for data that needs updating."));
-            dbUpdateCommand.Handler = CommandHandler.Create((DirectoryInfo applicationFolder, string startupAssembly, bool shortTransactions, bool skipRecompute)
-                => ReportError(() => DbUpdate(applicationFolder, startupAssembly, shortTransactions, skipRecompute)));
+            dbUpdateCommand.Handler = CommandHandler.Create((string startupAssembly, bool shortTransactions, bool skipRecompute)
+                => ReportError(() => DbUpdate(startupAssembly, shortTransactions, skipRecompute)));
             rootCommand.AddCommand(dbUpdateCommand);
 
             return rootCommand.Invoke(args);
@@ -136,22 +135,8 @@ namespace Rhetos
             build.GenerateApplication();
         }
 
-        private void DbUpdate(DirectoryInfo applicationFolder, string startupAssembly, bool shortTransactions, bool skipRecompute)
+        private void DbUpdate(string startupAssembly, bool shortTransactions, bool skipRecompute)
         {
-            //var host = Host.Find(applicationFolder.FullName, LogProvider);
-            // we need 
-            /*
-            var rhetosAppSettingsFilePath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, RhetosAppEnvironment.ConfigurationFileName));
-            var rhetosAppConfiguration = new ConfigurationBuilder(LogProvider)
-                .AddJsonFile(rhetosAppSettingsFilePath)
-                .Build();
-            */
-
-            /*
-            var assemblyFiles = AssemblyResolver.GetRuntimeAssemblies(AppDomain.CurrentDomain.BaseDirectory);
-            AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolver.GetResolveEventHandler(assemblyFiles, LogProvider, true);
-            */
-
             IRhetosHostBuilder CreateHostBuilder()
             {
                 var builder = RhetosHost.FindBuilder(startupAssembly, AppDomain.CurrentDomain.BaseDirectory);
