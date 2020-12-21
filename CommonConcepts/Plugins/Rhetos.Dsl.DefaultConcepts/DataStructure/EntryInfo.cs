@@ -80,6 +80,10 @@ END"
         }
     }
 
+    /// <summary>
+    /// Creates a row in the database for every entry inside a Hardcoded concept.
+    /// ID value is automatically generated based on the entry name.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Entry")]
     public class EntryWithGeneratedIdentifierInfo : EntryInfo, IAlternativeInitializationConcept
@@ -92,7 +96,7 @@ END"
         public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
         {
             createdConcepts = new List<IConceptInfo>();
-            Identifier = CsUtility.GenerateIdentifier(Name).ToString();
+            Identifier = CsUtility.GenerateGuid(Name).ToString();
         }
     }
 }

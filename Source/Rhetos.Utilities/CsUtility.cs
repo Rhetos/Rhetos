@@ -425,18 +425,16 @@ namespace Rhetos.Utilities
         }
 
         /// <summary>
-        /// Generates identifier based on a string.
+        /// Generates GUID based on a string.
         /// </summary>
-        public static Guid GenerateIdentifier(string s)
+        public static Guid GenerateGuid(string s)
         {
-            Guid id;
             using (var hashing = System.Security.Cryptography.SHA256.Create())
             {
-                byte[] inputBytes = Encoding.ASCII.GetBytes(s);
+                byte[] inputBytes = Encoding.UTF8.GetBytes(s);
                 byte[] hashBytes = hashing.ComputeHash(inputBytes).Take(16).ToArray();
-                id = new Guid(hashBytes);
+                return new Guid(hashBytes);
             }
-            return id;
         }
     }
 }
