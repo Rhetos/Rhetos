@@ -17,15 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos.TestCommon;
 using Rhetos.Configuration.Autofac;
-using Rhetos.Utilities;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.TestCommon;
+using Rhetos.Utilities;
+using System;
+using System.Linq;
 
 namespace CommonConcepts.Test
 {
@@ -122,6 +120,34 @@ namespace CommonConcepts.Test
 
                 Assert.AreEqual(TestHardcodedEntity.SimpleHardcodedEntity.SpecialDescription, repository.TestHardcodedEntity.ReferenceToHardcoded.Query(x => x.ID == implementation1.ID).First().SimpleHardcodedEntityID.Value);
                 Assert.AreEqual(TestHardcodedEntity.SimpleHardcodedEntity.StatusWithoutIntPropertyDefined, repository.TestHardcodedEntity.ReferenceToHardcoded.Query(x => x.ID == implementation2.ID).First().SimpleHardcodedEntityID.Value);
+            }
+        }
+
+        [TestMethod]
+        public void HardcodedEntityWithCustomEntryIdentifierTest()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+
+                Assert.AreEqual(new Guid("32AA7C09-ECFE-45E9-81B7-CB761D28F351"), repository.TestHardcodedEntity.HardcodedWithCustomIdentifier.Query().Single(x => x.Name == "Entry1").ID);
+                Assert.AreEqual(new Guid("213E77EE-F622-4487-8709-B30D280FB31E"), repository.TestHardcodedEntity.HardcodedWithCustomIdentifier.Query().Single(x => x.Name == "Entry2").ID);
+                Assert.AreEqual(TestHardcodedEntity.HardcodedWithCustomIdentifier.Entry2, repository.TestHardcodedEntity.HardcodedWithCustomIdentifier.Query().Single(x => x.Name == "Entry2").ID);
+            }
+        }
+
+        [TestMethod]
+        public void HardcodedEntityWithGeneratedEntryIdentifierTest()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repository = container.Resolve<Common.DomRepository>();
+
+                var entry3Id = repository.TestHardcodedEntity.HardcodedWithCustomIdentifier.Query().Single(x => x.Name == "Entry3").ID;
+                Assert.AreEqual(CsUtility.GenerateGuid("Entry3"), entry3Id);
+                Assert.AreEqual(TestHardcodedEntity.HardcodedWithCustomIdentifier.Entry3, entry3Id);
+                // The generated ID should not be changed in different version and environments, to make sure existing applications can be easily upgraded:
+                Assert.AreEqual(new Guid("F138A49A-9CEF-8D2D-64FF-4AD929C85327"), entry3Id);
             }
         }
     }
