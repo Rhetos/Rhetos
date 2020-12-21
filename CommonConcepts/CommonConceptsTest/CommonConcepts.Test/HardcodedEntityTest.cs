@@ -144,7 +144,7 @@ namespace CommonConcepts.Test
                 var repository = container.Resolve<Common.DomRepository>();
 
                 var entry3Id = repository.TestHardcodedEntity.HardcodedWithCustomIdentifier.Query().Single(x => x.Name == "Entry3").ID;
-                Assert.AreEqual(CsUtility.GenerateIdentifier("Entry3"), entry3Id);
+                Assert.AreEqual(CsUtility.GenerateGuid("Entry3"), entry3Id);
                 Assert.AreEqual(TestHardcodedEntity.HardcodedWithCustomIdentifier.Entry3, entry3Id);
                 // The generated ID should not be changed in different version and environments, to make sure existing applications can be easily upgraded:
                 Assert.AreEqual(new Guid("F138A49A-9CEF-8D2D-64FF-4AD929C85327"), entry3Id);
