@@ -146,6 +146,10 @@
      if it needs to override end-user permissions checking.
      For example, if using RhetosTestContainer add
      `container.InitializeSession += builder.RegisterType<Rhetos.Security.NullAuthorizationProvider>().As<IAuthorizationProvider>();`
+10. Removed support for source code compilation. Removed class AssemblyGenerator and interface IAssemblyGenerator.
+    Removed options Debug and AssemblyGeneratorErrorReportLimit from Build options.
+    * If you need to compile a generated source code a better approach would be to include the generated source code inside a C# project and leave the compilation to Visual Studio or MSBuild.
+
 
 ### New features
 
