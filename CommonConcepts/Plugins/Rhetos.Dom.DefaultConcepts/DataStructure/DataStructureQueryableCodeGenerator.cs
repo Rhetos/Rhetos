@@ -126,7 +126,6 @@ namespace Rhetos.Dom.DefaultConcepts
         public static void AddInterfaceAndReference(ICodeBuilder codeBuilder, string typeName, Type type, DataStructureInfo dataStructureInfo)
         {
             codeBuilder.InsertCode(typeName, DataStructureQueryableCodeGenerator.InterfaceTag, dataStructureInfo);
-            codeBuilder.AddReferencesFromDependency(type);
         }
     }
 }

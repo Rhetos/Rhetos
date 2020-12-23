@@ -47,7 +47,7 @@ namespace Rhetos.Dom
             var sourceFiles = _codeGenerator.ExecutePluginsToFiles(_pluginRepository, "/*", "*/", null);
 
             foreach (var sourceFile in sourceFiles)
-                _sourceWriter.Add(sourceFile.Key + ".cs", sourceFile.Value.GeneratedCode);
+                _sourceWriter.Add(sourceFile.Key + ".cs", sourceFile.Value);
         }
     }
 }

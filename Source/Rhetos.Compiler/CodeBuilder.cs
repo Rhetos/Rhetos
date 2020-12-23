@@ -17,46 +17,20 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using Rhetos.Utilities;
 
 namespace Rhetos.Compiler
 {
     public class CodeBuilder : ICodeBuilder
     {
         private readonly FastReplacer _code;
-        private readonly HashSet<string> _references = new HashSet<string>();
 
         public CodeBuilder(string tagOpen, string tagClose)
         {
             _code =  new FastReplacer(tagOpen, tagClose);
-        }
-
-        private void AddReferenceByLocation(string assemblyLocation)
-        {
-            if (!_references.Contains(assemblyLocation))
-                _references.Add(assemblyLocation);
-        }
-
-        /// <summary>
-        /// Use AddReferencesFromDependency to safely add reference to exact assembly, instead of using dll's short name to guess assembly version that should be used.
-        /// </summary>
-        public void AddReference(string shortName)
-        {
-            AddReferenceByLocation(shortName);
-        }
-
-        public void AddReferencesFromDependency(Type type)
-        {
-            AddReferenceByLocation(type.Assembly.Location);
-            while (type.BaseType != null && type.BaseType != typeof(object))
-            {
-                type = type.BaseType;
-                AddReferenceByLocation(type.Assembly.Location);
-            }
         }
 
         public void InsertCodeToFile(string code, string path)
@@ -130,7 +104,5 @@ namespace Rhetos.Compiler
         public string GenerateCode() => _code.ToString();
 
         public IDictionary<string, string> GeneratedCodeByFile => _code.GetPaths().ToDictionary(path => path, path => _code.ToString(path));
-
-        public IEnumerable<string> RegisteredReferences => _references;
     }
 }

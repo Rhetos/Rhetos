@@ -17,18 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
 using Rhetos.Compiler;
+using Rhetos.DatabaseGenerator.DefaultConcepts;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
 using Rhetos.Utilities;
-using System.Globalization;
-using Rhetos.DatabaseGenerator.DefaultConcepts;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.Dom.DefaultConcepts.SimpleBusinessLogic
 {
@@ -54,7 +49,6 @@ namespace Rhetos.Dom.DefaultConcepts.SimpleBusinessLogic
             if (ImplementInObjectModel(info))
             {
                 codeBuilder.InsertCode(CheckSavedItemsSnippet(info), WritableOrmDataStructureCodeGenerator.OnSaveTag2, info.DataStructure);
-                codeBuilder.AddReferencesFromDependency(typeof(UserException));
             }
 
             if (info.Dependency_SqlIndex.SqlImplementation() && info.DataStructure is IWritableOrmDataStructure)

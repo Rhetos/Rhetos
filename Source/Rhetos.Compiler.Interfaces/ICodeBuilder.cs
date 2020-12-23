@@ -17,34 +17,26 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Diagnostics.Contracts;
-using System.Globalization;
-using System.Reflection;
-
 namespace Rhetos.Compiler
 {
     public interface ICodeBuilder
     {
         /// <summary>
-        /// Use AddReferencesFromDependency to safely add reference to exact assembly, instead of using dll's short name to guess assembly version that should be used.
-        /// </summary>
-        void AddReference(string shortName);
-        void AddReferencesFromDependency(Type type);
-
-        /// <summary>
         /// Insert code that is grouped into files.
         /// <see cref="InsertCode(string)"/> uses empty string for the path.
         /// </summary>
         void InsertCodeToFile(string code, string path);
+
         void InsertCode(string code);
+
         void InsertCode(string code, string tag);
+
         void InsertCode(string firstCode, string nextCode, string firstTag, string nextTag);
+
         void InsertCode(string code, string tag, bool insertAfterTag);
+
         void InsertCode(string firstCode, string nextCode, string firstTag, string nextTag, bool insertAfterTag);
+
         void ReplaceCode(string code, string tag);
 
         bool TagExists(string tag);
