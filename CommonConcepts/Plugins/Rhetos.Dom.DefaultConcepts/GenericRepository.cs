@@ -41,8 +41,8 @@ namespace Rhetos.Dom.DefaultConcepts
     }
 
     /// <summary>
-    /// GenericRepository is a helper for a type-safe reflection-based use of the repositories in the ServerDom.*.dll,
-    /// without a need to directly reference ServerDom.*.dll.
+    /// GenericRepository is a helper for a type-safe reflection-based use of the repositories in the generated object model,
+    /// without a need to directly reference the generated assembly.
     /// For the type-safe use of an entity with a GenericRepository, set the generic parameter to an interface that an entity implements (ImplementInterface concept).
     /// For the pure reflection-based use of an entity with a GenericRepository, provide the full entity name when creating the GenericRepository; the IEntity interface will be used for all methods.
     /// </summary>

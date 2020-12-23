@@ -93,14 +93,5 @@ namespace Rhetos.Utilities
             }
             return Path.GetFullPath(Path.Combine(_rhetosServerRootPath, path));
         }
-
-        public static string GetDomAssemblyFile(DomAssemblies domAssembly) => Path.Combine(GeneratedFolder, $"ServerDom.{domAssembly}.dll");
-
-        /// <summary>
-        /// List of the generated DLL files that make the domain object model (ServerDom.*.dll).
-        /// Empty for applications built with Rhetos CLI, as they does not generate the ServerDom assemblies
-        /// (only source, compiled into the main application).
-        /// </summary>
-        public static IEnumerable<string> DomAssemblyFiles => Array.Empty<string>();
     }
 }

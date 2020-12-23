@@ -71,7 +71,7 @@ namespace Common.Queryable
 
     {CommonQueryableMemebersTag.Evaluate(info)}{DomInitializationCodeGenerator.RestoreWarnings(_commonConceptsOptions)}
 }}
-", $"{DomAssemblies.Model}\\{info.Name}{DomAssemblies.Model}");
+", $"{GeneratedSourceDirectories.Model}\\{info.Name}{GeneratedSourceDirectories.Model}");
 
             codeBuilder.InsertCodeToFile(
 $@"namespace {info.Name}._Helper
@@ -95,7 +95,7 @@ $@"namespace {info.Name}._Helper
     {HelperNamespaceMembersTag.Evaluate(info)}{DomInitializationCodeGenerator.RestoreWarnings(_commonConceptsOptions)}
 }}
 
-", $"{DomAssemblies.Repositories}\\{info.Name}{DomAssemblies.Repositories}");
+", $"{GeneratedSourceDirectories.Repositories}\\{info.Name}{GeneratedSourceDirectories.Repositories}");
 
             codeBuilder.InsertCode(ModuleRepositoryInCommonRepositorySnippet(info), CommonDomRepositoryMembersTag);
         }

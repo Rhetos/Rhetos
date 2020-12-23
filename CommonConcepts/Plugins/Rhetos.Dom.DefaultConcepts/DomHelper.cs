@@ -28,7 +28,7 @@ using System.Linq;
 namespace Rhetos.Dom.DefaultConcepts
 {
     /// <summary>
-    /// These methods are called from the generated ServerDom.*.cs.
+    /// These methods are called from the generated source code.
     /// </summary>
     public static class DomHelper
     {

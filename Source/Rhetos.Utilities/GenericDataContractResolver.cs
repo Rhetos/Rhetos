@@ -76,7 +76,8 @@ namespace Rhetos.Utilities
 
             if (_domainObjectModel != null)
             {
-                // Without explicit use of IDomainObjectModel, there is a possibility that ServerDom.*.dll will not get in AppDomain.CurrentDomain.GetAssemblies(), so ResolveName will fail to resolve the type. Unexpectedly, the problem occurred stochastically when the server was under heavy load.
+                // Without explicit use of IDomainObjectModel, there is a possibility that assembly will not get in AppDomain.CurrentDomain.GetAssemblies()
+                // on application startup, so ResolveName will fail to resolve the type. Unexpectedly, this problem occurred stochastically when the server was under heavy load.
                 type = _domainObjectModel.GetType(decodedTypeName);
                 if (type != null)
                     return type;
