@@ -64,7 +64,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             codeBuilder.InsertCodeToFile(GetModelSnippet(), $"{DomAssemblies.Model}\\QueryExtensions");
-            codeBuilder.InsertCodeToFile(GetOrmSnippet(), string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder) ? DomAssemblies.Orm.ToString() : "EntityFrameworkContext");
+            codeBuilder.InsertCodeToFile(GetOrmSnippet(), "EntityFrameworkContext");
             codeBuilder.InsertCodeToFile(GetRepositoriesSnippet(), DomAssemblies.Repositories.ToString());
 
             codeBuilder.InsertCode("this.Configuration.UseDatabaseNullSemantics = _rhetosAppOptions.EntityFrameworkUseDatabaseNullSemantics;\r\n            ", EntityFrameworkContextInitializeTag);

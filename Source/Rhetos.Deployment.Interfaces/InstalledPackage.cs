@@ -56,7 +56,7 @@ namespace Rhetos.Deployment
 
         /// <summary>The local folder where the package files are extracted and used by Rhetos.</summary>
         ///<remarks>Instead of scanning this folder, use the <see cref="ContentFiles"/> property instead, because the <see cref="Folder"/>
-        ///is missing the in-package file paths when using package directly from source, <see cref="ContentFile.InPackagePath"/>.</remarks>
+        ///is missing the in-package file paths when using package directly from source, see <see cref="ContentFile.InPackagePath"/>.</remarks>
         public string Folder { get; private set; }
 
         public List<ContentFile> ContentFiles { get; private set; }

@@ -21,10 +21,17 @@ namespace Rhetos.Compiler
 {
     public interface ISourceWriter
     {
+        /// <summary>
+        /// Creates the source file within the designated directory, or overwrites an existing file.
+        /// </summary>
         /// <param name="relativePath">
         /// Path should be a file name or a relative path inside the generated source folder.
         /// </param>
         void Add(string relativePath, string content);
+
+        /// <summary>
+        /// Deletes all other files it generated source directory, that have not been written in the current build.
+        /// </summary>
         void CleanUp();
     }
 }

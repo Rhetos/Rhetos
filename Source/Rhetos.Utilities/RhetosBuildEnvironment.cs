@@ -34,7 +34,6 @@ namespace Rhetos.Utilities
 
         /// <summary>
         /// Assembly that will contains the generated object model.
-        /// Null for old Rhetos applications with multiple generated ServerDom libraries.
         /// </summary>
         public string OutputAssemblyName { get; set; }
 
