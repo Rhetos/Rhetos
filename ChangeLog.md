@@ -120,6 +120,12 @@
      if it needs to override end-user permissions checking.
      For example, if using RhetosTestContainer add
      `container.InitializeSession += builder.RegisterType<Rhetos.Security.NullAuthorizationProvider>().As<IAuthorizationProvider>();`
+10. For custom plugins that implement *IGenerator* interface, it is no longer assumed to have
+    dependency to ServerDom.*.dll libraries or Resources folder. Such plugin might be executed
+    *before* ServerDom libraries or Resources folder is generated, if the dependency is not specified
+    by IGenerator.Dependencies property.
+    * If a custom IGenerator plugin reads files from **Resources folder** at build-time, specify dependency to `typeof(Rhetos.Deployment.ResourcesGenerator).FullName`.
+    * If it requires **ServerDom.*.dll** at build-time, specify dependency to `typeof(Rhetos.Dom.DomGenerator).FullName"`.
 
 ### New features
 
