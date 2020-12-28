@@ -126,6 +126,7 @@
     by IGenerator.Dependencies property.
     * If a custom IGenerator plugin reads files from **Resources folder** at build-time, the Dependencies property should include `typeof(Rhetos.Deployment.ResourcesGenerator).FullName`.
     * If it requires **ServerDom.*.dll** at build-time, the Dependencies property should include `typeof(Rhetos.Dom.DomGenerator).FullName"`.
+      Missing dependency may results with C# compiler error "The type or namespace name 'DomRepository' could not be found", or similar.
 
 ### New features
 
