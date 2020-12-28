@@ -18,7 +18,6 @@
 */
 
 using Autofac;
-using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Security;
 using Rhetos.Utilities;
@@ -37,20 +36,17 @@ namespace Rhetos
     /// Each child container uses its own database transaction that is either committed or rolled back
     /// when the instance is disposed, making data changes atomic.
     /// <see cref="ProcessContainer"/> overrides the main application's DI components to use <see cref="ProcessUserInfo"/>
-    /// and <see cref="ConsoleLogProvider"/>. It also registers assembly resolver to access the main application's assemblies.
+    /// and <see cref="ConsoleLogProvider"/>.
     /// </summary>
     public class ProcessContainer : IDisposable
     {
         private readonly Lazy<IRhetosHostBuilder> _rhetosHostBuilder;
         private readonly Lazy<IContainer> _rhetosIocContainer;
-        private ResolveEventHandler _assemblyResolveEventHandler = null;
 
         public IConfiguration Configuration => _rhetosIocContainer.Value.Resolve<IConfiguration>();
 
-        /// <param name="applicationFolder">
-        /// Folder where the Rhetos configuration file is located (see <see cref="RhetosAppEnvironment.ConfigurationFileName"/>),
-        /// or any subfolder.
-        /// If not specified, the current application's base directory is used by default.
+        /// <param name="rhetosAppAssemblyPath">
+        /// Path to assembly where the CreateRhetosHostBuilder method is located.
         /// </param>
         /// <param name="logProvider">
         /// If not specified, <see cref="ConsoleLogProvider"/> is used by default.
@@ -62,14 +58,12 @@ namespace Rhetos
         /// Register custom components that may override system and plugins services.
         /// This is commonly used by utilities and tests that need to override host application's components or register additional plugins.
         /// </param>
-        public ProcessContainer(string applicationFolder = null, ILogProvider logProvider = null,
+        public ProcessContainer(string rhetosAppAssemblyPath, ILogProvider logProvider = null,
             Action<IConfigurationBuilder> addCustomConfiguration = null, Action<ContainerBuilder> registerCustomComponents = null)
         {
             logProvider = logProvider ?? LoggingDefaults.DefaultLogProvider;
-            if (applicationFolder == null)
-                applicationFolder = AppDomain.CurrentDomain.BaseDirectory;
 
-            _rhetosHostBuilder = new Lazy<IRhetosHostBuilder>(() => new RhetosHostBuilder().UseBuilderLogProvider(logProvider), LazyThreadSafetyMode.ExecutionAndPublication);
+            _rhetosHostBuilder = new Lazy<IRhetosHostBuilder>(() => RhetosHost.FindBuilder(rhetosAppAssemblyPath), LazyThreadSafetyMode.ExecutionAndPublication);
             _rhetosIocContainer = new Lazy<IContainer>(() => BuildProcessContainer(logProvider, addCustomConfiguration, registerCustomComponents), LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
@@ -120,7 +114,7 @@ namespace Rhetos
         #region Static helper for singleton ProcessContainer. Useful optimization for LINQPad scripts that reuse the external static instance after recompiling the script.
 
         private static ProcessContainer _singleContainer = null;
-        private static string _singleContainerApplicationFolder = null;
+        private static string _singleContainerAssemblyPath = null;
         private static readonly object _singleContainerLock = new object();
 
         /// <summary>
@@ -132,10 +126,8 @@ namespace Rhetos
         /// after recompiling the script.
         /// </para>
         /// </summary>
-        /// <param name="applicationFolder">
-        /// Folder where the Rhetos configuration file is located (see <see cref="RhetosAppEnvironment.ConfigurationFileName"/>),
-        /// or any subfolder.
-        /// If not specified, the current application's base directory is used by default.
+        /// <param name="rhetosAppAssemblyPath">
+        /// Path to assembly where the CreateRhetosHostBuilder method is located.
         /// </param>
         /// <param name="registerCustomComponents">
         /// Register custom components that may override system and plugins services.
@@ -145,19 +137,19 @@ namespace Rhetos
         /// Customize the behavior of singleton components in <see cref="ProcessContainer"/> constructor.
         /// </para>
         /// </param>
-        public static TransactionScopeContainer CreateTransactionScopeContainer(string applicationFolder = null, Action<ContainerBuilder> registerCustomComponents = null)
+        public static TransactionScopeContainer CreateTransactionScopeContainer(string rhetosAppAssemblyPath, Action<ContainerBuilder> registerCustomComponents = null)
         {
             if (_singleContainer == null)
                 lock (_singleContainerLock)
                     if (_singleContainer == null)
                     {
-                        _singleContainerApplicationFolder = applicationFolder;
-                        _singleContainer = new ProcessContainer(applicationFolder);
+                        _singleContainerAssemblyPath = rhetosAppAssemblyPath;
+                        _singleContainer = new ProcessContainer(rhetosAppAssemblyPath);
                     }
 
-            if (_singleContainerApplicationFolder != applicationFolder)
+            if (_singleContainerAssemblyPath != rhetosAppAssemblyPath)
                 throw new FrameworkException($"Static {nameof(ProcessContainer)}.{nameof(CreateTransactionScopeContainer)} cannot be used for different" +
-                    $" application contexts: Provided folder 1: '{_singleContainerApplicationFolder}', folder 2: '{applicationFolder}'." +
+                    $" application contexts: Provided folder 1: '{_singleContainerAssemblyPath}', folder 2: '{rhetosAppAssemblyPath}'." +
                     $" Use a {nameof(ProcessContainer)} instances instead.");
 
             return _singleContainer.CreateTransactionScopeContainer(registerCustomComponents);
@@ -184,8 +176,6 @@ namespace Rhetos
             {
                 if (_rhetosIocContainer.IsValueCreated)
                     _rhetosIocContainer.Value.Dispose();
-                if (_assemblyResolveEventHandler != null)
-                    AppDomain.CurrentDomain.AssemblyResolve -= _assemblyResolveEventHandler;
             }
 
             disposed = true;

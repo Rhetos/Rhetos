@@ -33,7 +33,6 @@ namespace Rhetos
         IRhetosHostBuilder ConfigureConfiguration(Action<IConfigurationBuilder> configureAction);
         IRhetosHostBuilder ConfigureContainer(Action<ContainerBuilder> configureAction);
         IRhetosHostBuilder UseCustomContainerConfiguration(Action<IConfiguration, ContainerBuilder, List<Action<ContainerBuilder>>> containerConfigurationAction);
-        IRhetosHostBuilder AddAssemblyProbingDirectories(params string[] assemblyProbingDirectories);
         IRhetosHostBuilder UseRootFolder(string rootFolder);
         RhetosHost Build();
     }

@@ -21,7 +21,9 @@ using Autofac;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;
+using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace Rhetos
 {
@@ -32,22 +34,9 @@ namespace Rhetos
     /// </summary>
     public class RhetosContainerBuilder : ContainerBuilder
     {
-        /// <summary>
-        /// Initializes a container with specified <see cref="IConfiguration"/>. 
-        /// Registers <see cref="IConfiguration"/> instance to newly created container.
-        /// <see cref="ILogProvider"/> is not registered and is meant to be used during the lifetime of registration and container building process.
-        /// <see cref="LegacyUtilities"/> will also be initialized with the given configuration.
-        /// </summary>
-        /// <param name="pluginAssemblies">List of assemblies (DLL file paths) that will be used for plugins search when using the <see cref="ContainerBuilderPluginRegistration"/></param>
-        public RhetosContainerBuilder(IConfiguration configuration, ILogProvider logProvider, IEnumerable<string> pluginAssemblies)
+        private RhetosContainerBuilder(IConfiguration configuration, ILogProvider logProvider, IPluginScanner pluginScanner)
         {
             this.RegisterInstance(configuration);
-
-            var pluginScanner = new PluginScanner(
-                pluginAssemblies,
-                PluginScanner.GetCacheFolder(configuration),
-                logProvider,
-                configuration.GetOptions<PluginScannerOptions>());
 
             // make properties accessible to modules which are provided with new/unique instance of ContainerBuilder
             this.Properties.Add(nameof(IPluginScanner), pluginScanner);
@@ -57,6 +46,42 @@ namespace Rhetos
             LegacyUtilities.Initialize(configuration);
 
             Plugins.Initialize(builder => builder.GetPluginRegistration());
+        }
+
+        /// <summary>
+        /// Initializes a container with specified <see cref="IConfiguration"/>. 
+        /// Registers <see cref="IConfiguration"/> instance to newly created container.
+        /// Registers <see cref="PluginInfoContainer"/> instance to newly created container.
+        /// <see cref="ILogProvider"/> is not registered and is meant to be used during the lifetime of registration and container building process.
+        /// <see cref="LegacyUtilities"/> will also be initialized with the given configuration.
+        /// This <see cref="RhetosContainerBuilder"/> instance is used during build time when all the specified assembly needs to be loaded.
+        /// </summary>
+        /// <param name="pluginAssemblies">List of assemblies (DLL file paths) that will be used for plugins search when using the <see cref="ContainerBuilderPluginRegistration"/></param>
+        public static RhetosContainerBuilder CreateBuildTimeContainerBuilder(IConfiguration configuration, ILogProvider logProvider, IEnumerable<string> pluginAssemblies)
+        {
+            var pluginScanner = new PluginScanner(
+                pluginAssemblies,
+                PluginScanner.GetCacheFolder(configuration),
+                logProvider,
+                configuration.GetOptions<PluginScannerOptions>());
+
+            var containerBuilder =  new RhetosContainerBuilder(configuration, logProvider, pluginScanner);
+            containerBuilder.Register(context => new PluginInfoContainer(pluginScanner.FindAllPlugins()));
+            return containerBuilder;
+        }
+
+        /// <summary>
+        /// Initializes a container with specified <see cref="IConfiguration"/>. 
+        /// Registers <see cref="IConfiguration"/> instance to newly created container.
+        /// <see cref="ILogProvider"/> is not registered and is meant to be used during the lifetime of registration and container building process.
+        /// <see cref="LegacyUtilities"/> will also be initialized with the given configuration.
+        /// </summary>
+        /// <param name="assemblies">List of assemblies that will be used for plugins search when using the <see cref="ContainerBuilderPluginRegistration"/></param>
+        /// /// <param name="types">List of types that will be used for plugins search when using the <see cref="ContainerBuilderPluginRegistration"/></param>
+        public static RhetosContainerBuilder CreateRunTimeContainerBuilder(IConfiguration configuration, ILogProvider logProvider, IEnumerable<Assembly> assemblies, IEnumerable<Type> types)
+        {
+            var pluginScanner = new RuntimePluginScanner(assemblies, types, logProvider);
+            return new RhetosContainerBuilder(configuration, logProvider, pluginScanner);
         }
     }
 }

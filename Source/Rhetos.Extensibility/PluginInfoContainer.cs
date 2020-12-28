@@ -17,30 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.ComponentModel.Composition;
-using Rhetos.Extensibility;
+using System.Collections.Generic;
 
-namespace Rhetos.Processing.DefaultCommands
+namespace Rhetos.Extensibility
 {
-    [Export(typeof(ICommandImplementation))]
-    [ExportMetadata(MefProvider.Implements, typeof(PingCommandInfo))]
-    public class PingCommand : ICommandImplementation
+    public class PluginInfoContainer : List<PluginInfo>
     {
-        private readonly IDataTypeProvider _dataTypeProvider;
-
-        public PingCommand(IDataTypeProvider dataTypeProvider)
-        {
-            _dataTypeProvider = dataTypeProvider;
-        }
-
-        public CommandResult Execute(ICommandInfo info)
-        {
-            return new CommandResult
-            {
-                Data = _dataTypeProvider.CreateBasicData(((PingCommandInfo)info).Data),
-                Message = "",
-                Success = true
-            };
-        }
+        public PluginInfoContainer(IEnumerable<PluginInfo> plugins) : base(plugins)
+        { }
     }
 }

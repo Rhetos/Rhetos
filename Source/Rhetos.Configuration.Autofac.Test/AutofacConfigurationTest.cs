@@ -36,6 +36,16 @@ namespace Rhetos.Configuration.Autofac.Test
     [TestClass]
     public class AutofacConfigurationTest
     {
+        private class RhetosHostTestBuilder : RhetosHostBuilderBase
+        {
+            protected override ContainerBuilder CreateContainerBuilder(IConfiguration configuration)
+            {
+                return RhetosContainerBuilder.CreateRunTimeContainerBuilder(configuration, this._builderLogProvider,
+                    new List<Assembly> { Assembly.GetExecutingAssembly()}, new List<Type>());
+            }
+
+        }
+
         private class ApplicationDeployment_Accessor : ApplicationDeployment
         {
             public ApplicationDeployment_Accessor(Action<IConfigurationBuilder> configureConfiguration, ILogProvider logProvider) : 
@@ -53,7 +63,7 @@ namespace Rhetos.Configuration.Autofac.Test
 
             private static Func<IRhetosHostBuilder> HostBuilderFactoryWithConfiguration(Action<IConfigurationBuilder> configureConfiguration)
             {
-                return () => new RhetosHostBuilder()
+                return () => new RhetosHostTestBuilder()
                     .ConfigureConfiguration(configureConfiguration);
             }
         }
@@ -192,7 +202,7 @@ namespace Rhetos.Configuration.Autofac.Test
         {
             // we construct the object, but need only its 'almost' static .AddAppInitilizationComponents
             var deployment = new ApplicationDeployment_Accessor(ConfigureRuntimeConfiguration, new NLogProvider());
-            var rhetosHostBuilder = new RhetosHostBuilder()
+            var rhetosHostBuilder = new RhetosHostTestBuilder()
                 .ConfigureConfiguration(ConfigureRuntimeConfiguration)
                 .ConfigureContainer(deployment.AddAppInitializationComponents);
 
@@ -296,6 +306,8 @@ Activator = MsSqlUtility (ReflectionActivator), Services = [Rhetos.Utilities.ISq
 Activator = NLogProvider (ReflectionActivator), Services = [Rhetos.Logging.ILogProvider], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = NullImplementation (ReflectionActivator), Services = [Rhetos.DatabaseGenerator.IConceptDatabaseDefinition], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = NullUserInfo (ReflectionActivator), Services = [Rhetos.Utilities.IUserInfo], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
+Activator = PluginInfoContainer (DelegateActivator), Services = [Rhetos.Extensibility.PluginInfoContainer], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
+Activator = PluginRegistrationModuleGenerator (ReflectionActivator), Services = [Rhetos.Extensibility.IGenerator], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = ResourcesGenerator (ReflectionActivator), Services = [Rhetos.Extensibility.IGenerator], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = RhetosBuildEnvironment (DelegateActivator), Services = [Rhetos.Utilities.RhetosBuildEnvironment, Rhetos.Utilities.IAssetsOptions], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = RhetosTargetEnvironment (DelegateActivator), Services = [Rhetos.Utilities.RhetosTargetEnvironment], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope

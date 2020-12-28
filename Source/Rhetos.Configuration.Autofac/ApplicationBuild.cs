@@ -84,7 +84,7 @@ namespace Rhetos
 
         protected RhetosContainerBuilder CreateBuildComponentsContainer()
         {
-            var builder = new RhetosContainerBuilder(_configuration, _logProvider, _pluginAssemblies);
+            var builder = RhetosContainerBuilder.CreateBuildTimeContainerBuilder(_configuration, _logProvider, _pluginAssemblies);
             builder.RegisterModule(new CoreModule());
             builder.RegisterModule(new CorePluginsModule());
             builder.RegisterModule(new BuildModule());

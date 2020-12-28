@@ -20,24 +20,23 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using Autofac;
-using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 
 namespace Rhetos
 {
-    public class RhetosHostBuilder : IRhetosHostBuilder
+    public abstract class RhetosHostBuilderBase : IRhetosHostBuilder
     {
-        private ILogProvider _builderLogProvider = LoggingDefaults.DefaultLogProvider;
+        protected ILogProvider _builderLogProvider = LoggingDefaults.DefaultLogProvider;
         private readonly List<Action<ContainerBuilder>> _configureContainerActions = new List<Action<ContainerBuilder>>();
         private readonly List<Action<IConfigurationBuilder>> _configureConfigurationActions = new List<Action<IConfigurationBuilder>>();
         private Action<IConfiguration, ContainerBuilder, List<Action<ContainerBuilder>>> _customContainerConfigurationAction ;
-        private readonly List<string> _probingDirectories = new List<string>();
-        private ILogger _buildLogger;
+        protected ILogger _buildLogger;
         private string _rootFolder;
 
-        public RhetosHostBuilder()
+        public RhetosHostBuilderBase()
         {
         }
 
@@ -65,12 +64,6 @@ namespace Rhetos
             return this;
         }
 
-        public IRhetosHostBuilder AddAssemblyProbingDirectories(params string[] assemblyProbingDirectories)
-        {
-            _probingDirectories.AddRange(assemblyProbingDirectories);
-            return this;
-        }
-
         public IRhetosHostBuilder UseRootFolder(string rootFolder)
         {
             _rootFolder = rootFolder;
@@ -79,15 +72,7 @@ namespace Rhetos
 
         public RhetosHost Build()
         {
-            ResolveEventHandler resolveEventHandler = null;
             var restoreCurrentDirectory = Environment.CurrentDirectory;
-            
-            if (_probingDirectories.Count > 0)
-            {
-                var assemblyFiles = AssemblyResolver.GetRuntimeAssemblies(_probingDirectories.ToArray());
-                resolveEventHandler = AssemblyResolver.GetResolveEventHandler(assemblyFiles, _builderLogProvider, true);
-                AppDomain.CurrentDomain.AssemblyResolve += resolveEventHandler;
-            }
 
             _buildLogger = _builderLogProvider.GetLogger(nameof(RhetosHost));
             try
@@ -108,14 +93,11 @@ namespace Rhetos
             }
             catch (Exception e)
             {
-                _buildLogger.Error(() => $"Error during {nameof(RhetosHostBuilder)}.{nameof(Build)}: {e}");
+                _buildLogger.Error(() => $"Error during {nameof(RhetosHostBuilderBase)}.{nameof(Build)}: {e}");
                 throw;
             }
             finally
             {
-                if (resolveEventHandler != null)
-                    AppDomain.CurrentDomain.AssemblyResolve -= resolveEventHandler;
-
                 Directory.SetCurrentDirectory(restoreCurrentDirectory);
             }
         }
@@ -131,15 +113,14 @@ namespace Rhetos
             var configurationBuilder = new ConfigurationBuilder(_builderLogProvider)
                 .AddJsonFile(rhetosAppSettingsFilePath);
 
-            InvokeAll(configurationBuilder, _configureConfigurationActions);
+            CsUtility.InvokeAll(configurationBuilder, _configureConfigurationActions);
 
             return configurationBuilder.Build();
         }
 
         private IContainer BuildContainer(IConfiguration configuration)
         {
-            var pluginAssemblies = AssemblyResolver.GetRuntimeAssemblies(configuration);
-            var builder = new RhetosContainerBuilder(configuration, _builderLogProvider, pluginAssemblies);
+            var builder = CreateContainerBuilder(configuration);
 
             var configurationAction = _customContainerConfigurationAction ?? DefaultContainerConfiguration;
             configurationAction(configuration, builder, _configureContainerActions);
@@ -147,18 +128,14 @@ namespace Rhetos
             return builder.Build();
         }
 
+        protected abstract ContainerBuilder CreateContainerBuilder(IConfiguration configuration);
+
         private void DefaultContainerConfiguration(IConfiguration configuration, ContainerBuilder builder, List<Action<ContainerBuilder>> customActions)
         {
             builder.AddRhetosRuntime();
             builder.AddPluginModules();
 
-            InvokeAll(builder, customActions);
-        }
-
-        public static void InvokeAll<T>(T target, IEnumerable<Action<T>> actions)
-        {
-            foreach (var action in actions)
-                action.Invoke(target);
+            CsUtility.InvokeAll(builder, customActions);
         }
     }
 }

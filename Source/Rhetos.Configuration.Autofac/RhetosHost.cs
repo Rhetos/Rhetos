@@ -47,7 +47,6 @@ namespace Rhetos
         {
             var hostAbsolutePath = Path.GetFullPath(hostFilePath);
             var hostDirectory = Path.GetDirectoryName(hostAbsolutePath);
-            assemblyProbingDirectories = assemblyProbingDirectories.Concat(new [] { hostDirectory }).ToArray();
 
             var hostFilename = Path.GetFileName(hostFilePath);
 
@@ -67,7 +66,6 @@ namespace Rhetos
                 throw new FrameworkException($"Static method '{entryPointType.FullName}.{HostBuilderFactoryMethodName}' has incorrect return type. Expected return type is {nameof(IRhetosHostBuilder)}.");
 
             var rhetosHostBuilder = (IRhetosHostBuilder)method.Invoke(null, new object[] { });
-            rhetosHostBuilder.AddAssemblyProbingDirectories(assemblyProbingDirectories); // preserve probing directories which were used to locate this builder
             rhetosHostBuilder.UseRootFolder(hostDirectory); // use host directory as root for all RhetosHostBuilder operations
             return rhetosHostBuilder;
         }

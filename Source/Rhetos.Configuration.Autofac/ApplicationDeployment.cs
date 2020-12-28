@@ -74,7 +74,7 @@ namespace Rhetos
                     builder.RegisterModule(new CoreModule());
                     builder.AddPluginModules();
 
-                    RhetosHostBuilder.InvokeAll(builder, configureActions);
+                    CsUtility.InvokeAll(builder, configureActions);
 
                     builder.RegisterModule(new DbUpdateModule());
                     builder.RegisterType<NullUserInfo>()
