@@ -17,16 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rhetos.Dsl.DefaultConcepts;
-using System.Globalization;
-using System.ComponentModel.Composition;
-using Rhetos.Extensibility;
-using Rhetos.Dsl;
 using Rhetos.Compiler;
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Extensibility;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -37,7 +32,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             PropertyHelper.GenerateCodeForType((PropertyInfo)conceptInfo, codeBuilder, "bool?");
-            PropertyHelper.GenerateStorageMapping((PropertyInfo)conceptInfo, codeBuilder);
+            PropertyHelper.GenerateStorageMapping((PropertyInfo)conceptInfo, codeBuilder, "System.Data.SqlDbType.Bit");
         }
     }
 }

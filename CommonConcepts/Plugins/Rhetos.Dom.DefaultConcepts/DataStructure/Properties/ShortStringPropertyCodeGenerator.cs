@@ -33,7 +33,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             PropertyInfo info = (PropertyInfo)conceptInfo;
             PropertyHelper.GenerateCodeForType(info, codeBuilder, "string");
-            PropertyHelper.GenerateStorageMapping(info, codeBuilder);
+            PropertyHelper.GenerateStorageMapping(info, codeBuilder, "System.Data.SqlDbType.NVarChar"); // Size is automatically set by SqlProperty, it should not be specified in storage mapping, to avoid automatic truncating longer strings.
 
             if (info.DataStructure is IWritableOrmDataStructure)
                 codeBuilder.InsertCode(LimitStringLengthOnSaveSnippet(info), WritableOrmDataStructureCodeGenerator.ArgumentValidationTag, info.DataStructure);

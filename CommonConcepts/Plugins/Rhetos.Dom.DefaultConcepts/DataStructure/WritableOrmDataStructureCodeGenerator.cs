@@ -162,7 +162,7 @@ namespace Rhetos.Dom.DefaultConcepts
             var entity = ({info.Module}.{info.Name})genericEntity;
             return new PersistenceStorageObjectParameter[]
             {{
-                new PersistenceStorageObjectParameter(""ID"", new SqlParameter("""", entity.ID)),
+                new PersistenceStorageObjectParameter(""ID"", new SqlParameter("""", System.Data.SqlDbType.UniqueIdentifier) {{ Value = entity.ID }}),
                 {PersistenceStorageMapperPropertyMappingTag.Evaluate(info)}
             }};
         }}

@@ -544,6 +544,16 @@ $@"namespace Common
         }}
     }}
 
+    public static class PersistenceStorageHelper
+    {{
+        public static SqlParameter GetMoneySqlParameter(decimal? money)
+        {{
+            // Simulates automatic rounding by Entity Framework, for backward compatibility. See related issue https://github.com/Rhetos/Rhetos/issues/389.
+	        object dbValue = money != null ? (object)(((long)(money.Value * 100m)) / 100m) : DBNull.Value;
+            return new SqlParameter("""", System.Data.SqlDbType.Money) {{ Value = dbValue }};
+        }}
+    }}
+
     {PersistenceStorageMappingsTag}
 }}
 ";

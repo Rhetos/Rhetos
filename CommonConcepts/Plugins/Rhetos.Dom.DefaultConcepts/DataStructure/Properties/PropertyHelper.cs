@@ -56,22 +56,28 @@ namespace Rhetos.Dom.DefaultConcepts
                     RepositoryHelper.AssignSimplePropertyTag, info.DataStructure);
         }
 
-        public static void GenerateStorageMapping(PropertyInfo info, ICodeBuilder codeBuilder)
+        public static void GenerateStorageCustomMapping(PropertyInfo info, ICodeBuilder codeBuilder, string sqlParameter)
         {
             if (info.DataStructure is IWritableOrmDataStructure)
             {
-                codeBuilder.InsertCode($@"new PersistenceStorageObjectParameter(""{info.Name}"", new SqlParameter("""", ((object)entity.{info.Name}) ?? DBNull.Value)),
-                ", WritableOrmDataStructureCodeGenerator.PersistenceStorageMapperPropertyMappingTag, info.DataStructure);
+                var code = $@"new PersistenceStorageObjectParameter(""{info.Name}"", {sqlParameter}),
+                ";
+                codeBuilder.InsertCode(code, WritableOrmDataStructureCodeGenerator.PersistenceStorageMapperPropertyMappingTag, info.DataStructure);
             }
         }
 
-        public static void GenerateStorageMappingForDecimalTypes(PropertyInfo info, ICodeBuilder codeBuilder, int scale, int precision)
+        public static void GenerateStorageMapping(PropertyInfo info, ICodeBuilder codeBuilder, string dbType, int precision = 0, int scale = 0)
         {
             if (info.DataStructure is IWritableOrmDataStructure)
             {
-                var code = $@"new PersistenceStorageObjectParameter(""{info.Name}"", new SqlParameter("""", ((object)entity.{info.Name}) ?? DBNull.Value) {{ Scale = {scale}, Precision = {precision} }}),
-                ";
-                codeBuilder.InsertCode(code, WritableOrmDataStructureCodeGenerator.PersistenceStorageMapperPropertyMappingTag, info.DataStructure);
+                string options = "";
+                if (precision > 0)
+                    options += $", Precision = {precision}";
+                if (scale > 0)
+                    options += $", Scale = {scale}";
+
+                var sqlParameter = $@"new SqlParameter("""", {dbType}) {{ Value = ((object)entity.{info.Name}) ?? DBNull.Value{options} }}";
+                GenerateStorageCustomMapping(info, codeBuilder, sqlParameter);
             }
         }
     }

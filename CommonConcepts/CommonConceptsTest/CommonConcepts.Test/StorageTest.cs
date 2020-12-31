@@ -260,6 +260,8 @@ namespace CommonConcepts.Test
                     (-922337203685477.58m, -922337203685477.58m), // T-SQL money limits.
                     (922337203685477.58m, 922337203685477.58m), // T-SQL money limits.
                     (0m, 0m),
+                    // Current behavior is rounding money values, but it should be changed in future,
+                    // see https://github.com/Rhetos/Rhetos/issues/389: Money type should throw an exception, instead of implicit rounding, if saving more decimals then allowed.
                     (0.001m, 0m),
                     (0.009m, 0m),
                     (0.019m, 0.01m),
@@ -356,6 +358,33 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
+        public void ShortStringPropertyTooLong()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var context = container.Resolve<Common.ExecutionContext>();
+
+                var tests = new List<string>
+                {
+                    new string('a', 257),
+                    new string('a', 17000),
+                };
+
+                foreach (var test in tests)
+                {
+                    var entity1 = new TestStorage.AllProperties
+                    {
+                        ID = Guid.NewGuid(),
+                        ShortStringProperty = test
+                    };
+                    TestUtility.ShouldFail<SqlException>(
+                        () => context.PersistenceStorage.Insert(entity1),
+                        "String or binary data would be truncated in table 'RhetosFullTest.TestStorage.AllProperties', column 'ShortStringProperty'.");
+                }
+            }
+        }
+
+        [TestMethod]
         public void ShortStringPropertyTruncationErrorTest()
         {
             using (var container = new RhetosTestContainer())
@@ -424,6 +453,13 @@ namespace CommonConcepts.Test
                     new DateTime(2001, 2, 3, 4, 5, 6, 13),
                 };
 
+                if (usingDateTime2)
+                    tests.AddRange(new[]
+                    {
+                        new DateTime(2001, 2, 3, 4, 5, 6, 14),
+                        new DateTime(2001, 2, 3, 4, 5, 6, 15),
+                    });
+
                 foreach (var test in tests)
                 {
                     var entity1 = new TestStorage.AllProperties
@@ -433,11 +469,14 @@ namespace CommonConcepts.Test
                     };
                     context.PersistenceStorage.Insert(entity1);
                     DateTime? loaded = context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity1.ID).Single().DateTimeProperty;
-                    if (!usingDateTime2)
-                        Assert.AreEqual(test, loaded);
-                    else // Old DateTime column type has 3 ms precision.
+                    string info = $"Saved value: '{test:o}'. Loaded value: '{loaded:o}'."; // Includes milliseconds, Assert.AreEqual does not show them.
+                    if (usingDateTime2)
                     {
-                        string info = $"Saved value: '{test}'. Loaded value: '{loaded}'.";
+                        Assert.AreEqual(test, loaded, info);
+                    }
+                    else
+                    {
+                        // Old DateTime column type has 3 ms precision.
                         Console.WriteLine(info);
                         Assert.IsTrue(Math.Abs(test.Subtract(loaded.Value).TotalMilliseconds) <= 3, info);
                     }
@@ -448,20 +487,39 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void RoundDateTimePropertyTest()
         {
+            var tests = new (string Save, string Expected, string ExpectedLegacy)[] // ExpectedLegacy is used for database with 'datetime' columns instead of 'datetime2'.
+            {
+                ("2020-12-28T19:46:25.0010000", "2020-12-28T19:46:25.0010000", "2020-12-28T19:46:25.0000000"),
+                ("2020-12-28T19:46:25.0020000", "2020-12-28T19:46:25.0020000", "2020-12-28T19:46:25.0030000"),
+                ("2020-12-28T19:46:25.1234567", "2020-12-28T19:46:25.1230000", "2020-12-28T19:46:25.1230000"),
+                ("2020-12-28T19:46:25.1235000", "2020-12-28T19:46:25.1230000", "2020-12-28T19:46:25.1230000"),
+                // Rounding for datetime2 occurs in SqlCommand (SqlParameter), not in database, therefore it is rounded down instead of to nearest value.
+                ("2020-12-28T19:46:25.1245678", "2020-12-28T19:46:25.1240000", "2020-12-28T19:46:25.1230000"),
+                ("2020-12-28T19:46:25.1249000", "2020-12-28T19:46:25.1240000", "2020-12-28T19:46:25.1230000"),
+                ("2020-12-28T19:46:25.1250000", "2020-12-28T19:46:25.1250000", "2020-12-28T19:46:25.1270000"),
+            };
+
             using (var container = new RhetosTestContainer())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
+                bool usingDateTime2 = !container.Resolve<CommonConceptsDatabaseSettings>().UseLegacyMsSqlDateTime;
 
-                var sampleDateTime = new DateTime(2020, 1, 1, 1, 1, 1, 1);
-                var entity = new TestStorage.AllProperties
+                foreach (var test in tests)
                 {
-                    ID = Guid.NewGuid(),
-                    DateTimeProperty = sampleDateTime
-                };
-                context.PersistenceStorage.Insert(entity);
+                    var save = DateTime.ParseExact(test.Save, "o", null);
+                    var expected = DateTime.ParseExact(usingDateTime2 ? test.Expected : test.ExpectedLegacy, "o", null);
 
-                var loadedEntity = context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity.ID).Single();
-                Assert.AreEqual(new DateTime(2020, 1, 1, 1, 1, 1, 0), loadedEntity.DateTimeProperty);
+                    var entity = new TestStorage.AllProperties
+                    {
+                        ID = Guid.NewGuid(),
+                        DateTimeProperty = save
+                    };
+                    context.PersistenceStorage.Insert(entity);
+
+                    DateTime? loaded = context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity.ID).Single().DateTimeProperty;
+                    string info = $"Saved: '{save:o}'. Expected rounded: '{expected:o}'. Loaded: '{loaded:o}'."; // Includes milliseconds, Assert.AreEqual does not show them.
+                    Assert.AreEqual(expected, loaded, info);
+                }
             }
         }
 
@@ -472,7 +530,7 @@ namespace CommonConcepts.Test
             {
                 var context = container.Resolve<Common.ExecutionContext>();
 
-                var sampleDateTime = new DateTime(2020, 1, 1, 1, 1, 1);
+                var sampleDateTime = new DateTime(2020, 1, 1, 23, 59, 59);
                 var entity = new TestStorage.AllProperties
                 {
                     ID = Guid.NewGuid(),
