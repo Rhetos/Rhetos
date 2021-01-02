@@ -2,9 +2,21 @@
 
 ## 4.3.0 (TO BE RELEASED)
 
+### New features
+
+* **DateTime** property concept can now create *datetime2* database column type, instead of obsolete *datetime* column type (issue #101). Legacy *datetime* type is currently enabled by default, for backward compatibility. See [Migrating an existing application from datetime to datetime2](https://github.com/Rhetos/Rhetos/wiki/Migrating-from-DateTime-to-DateTime2).
+* Custom ID value can be specified for Entry of a **Hardcoded** entity (see [documentation](https://github.com/Rhetos/Rhetos/wiki/simple-read-only-entities-and-codetables)).
+
 ### Internal improvements
 
-* **DateTime** property concept can now create *datetime2* database column type, instead of obsolete *datetime* column type. This feature is turned off by default, for backward compatibility. See [Migrating an existing application from datetime to datetime2](https://github.com/Rhetos/Rhetos/wiki/Migrating-from-DateTime-to-DateTime2).
+* Saving records directly to database, instead of using Entity Framework (issue #374).
+  * Entity Framework is still used for querying data, and EF DbContext may still be used for writing to database where specifically needed.
+  * This change allows for different performances optimizations and simpler internal design,
+    because of a mismatch in write approach between Rhetos and Entity Framework
+    (developers use explicit insert/update/delete operations in Rhetos).
+* Bugfix: Rhetos build was sometimes not triggered by MSBuild, if an input file was deleted.
+* Bugfix: Some database schemas were created with incorrect owner (an admin account that created the schema, instead of dbo), depending on database configuration (issue #92). Note that this is not an application security issue. On older Rhetos versions it might have caused database update to fail, if a database schema needed to be dropped.
+* Bugfix: Incorrect "method is obsolete" warning on Load method, with description "Use Load(ids) or Query(ids) method.".
 
 ## 4.2.0 (2020-10-26)
 

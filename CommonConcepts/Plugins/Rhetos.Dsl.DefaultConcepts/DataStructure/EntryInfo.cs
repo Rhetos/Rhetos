@@ -36,6 +36,9 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public string Name { get; set; }
 
+        /// <summary>
+        /// ID property value (GUID).
+        /// </summary>
         public string Identifier { get; set; }
 
         public Guid GetIdentifier()
