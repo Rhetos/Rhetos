@@ -24,7 +24,7 @@ using System.Linq;
 
 namespace Rhetos.Deployment.Test
 {
-    // There are more tests in the CommonConceptsTest solution, that use a running database.
+    // NOTE: There are more tests in the CommonConceptsTest solution, that use a live database.
     [TestClass]
     public class DataMigrationTest
     {
@@ -48,7 +48,7 @@ namespace Rhetos.Deployment.Test
             var oldIndex = CreateScriptsFromTags("s2, s4, s6");
             var newScripts = CreateTestScripts(@"s1:1\0001, s2:1\0002, s3:1\0003, s4:2\0005, s5:2\0006, s6:2\0007");
 
-            DataMigration_Accessor dataMigrationAccessor = new DataMigration_Accessor();
+            var dataMigrationAccessor = new DataMigrationScriptsExecuterAccessor();
             List<DataMigrationScript> skippedOldUnexecutesScripts = dataMigrationAccessor.FindSkipedScriptsInEachPackage(oldIndex, newScripts);
             Assert.AreEqual("s1, s5", TestUtility.DumpSorted(skippedOldUnexecutesScripts, s => s.Tag));
         }
@@ -59,7 +59,7 @@ namespace Rhetos.Deployment.Test
             var oldIndex = CreateScriptsFromTags("s2, s5");
             var newScripts = CreateTestScripts(@"s1:1\9\c, s2:1\10\b, s3:1\11\a, s4:1\99\c, s5:1\100\b, s6:1\101\a");
 
-            DataMigration_Accessor dataMigrationAccessor = new DataMigration_Accessor();
+            var dataMigrationAccessor = new DataMigrationScriptsExecuterAccessor();
             List<DataMigrationScript> skippedOldUnexecutesScripts = dataMigrationAccessor.FindSkipedScriptsInEachPackage(oldIndex, newScripts);
             Assert.AreEqual("s1, s3, s4", TestUtility.DumpSorted(skippedOldUnexecutesScripts, s => s.Tag));
         }
@@ -69,7 +69,7 @@ namespace Rhetos.Deployment.Test
             var oldIndex = CreateScriptsFromTags(executedScript);
             var newScripts = CreateTestScripts(newScriptsText);
 
-            DataMigration_Accessor dataMigrationAccessor = new DataMigration_Accessor();
+            var dataMigrationAccessor = new DataMigrationScriptsExecuterAccessor();
             List<DataMigrationScript> skippedOldUnexecutesScripts = dataMigrationAccessor.FindSkipedScriptsInEachPackage(oldIndex, newScripts);
             return TestUtility.DumpSorted(skippedOldUnexecutesScripts, s => s.Tag);
         }

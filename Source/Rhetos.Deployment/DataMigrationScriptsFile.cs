@@ -23,18 +23,15 @@ using Rhetos.Utilities;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Text;
 
 namespace Rhetos.Deployment
 {
-    public class DataMigrationScriptsFile
+    public class DataMigrationScriptsFile : IDataMigrationScriptsFile
     {
-        const string DataMigrationScriptsFileName = "DataMigrationScripts.json";
+        private const string DataMigrationScriptsFileName = "DataMigrationScripts.json";
 
         private readonly ILogger _performanceLogger;
         private readonly string _dataMigrationScriptsFilePath;
-
-        public IEnumerable<string> Dependencies => new List<string>();
 
         public DataMigrationScriptsFile(IAssetsOptions assetsOptions, ILogProvider logProvider)
         {

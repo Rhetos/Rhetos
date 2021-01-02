@@ -19,30 +19,20 @@
 
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
-using System;
 using System.Collections.Generic;
 
-namespace Rhetos.Dsl.Test
+namespace Rhetos.Deployment.Test
 {
-    class TestDslParser : DslParser, ITestAccessor
+    class DataMigrationScriptsExecuterAccessor : DataMigrationScriptsExecuter, ITestAccessor
     {
-        public TestDslParser(string dsl, IConceptInfo[] conceptInfoPlugins = null)
-            : base (
-                new TestTokenizer(dsl),
-                conceptInfoPlugins ?? Array.Empty<IConceptInfo>(),
-                new ConsoleLogProvider(),
-                new BuildOptions())
+        public DataMigrationScriptsExecuterAccessor()
+            : base(null, new ConsoleLogProvider(), null, null, null)
         {
         }
 
-        public IEnumerable<IConceptInfo> ExtractConcepts(MultiDictionary<string, IConceptParser> conceptParsers)
+        public List<DataMigrationScript> FindSkipedScriptsInEachPackage(List<DataMigrationScript> oldScripts, List<DataMigrationScript> newScripts)
         {
-            return (IEnumerable<IConceptInfo>)this.Invoke(nameof(ExtractConcepts), conceptParsers);
-        }
-
-        public IConceptInfo ParseNextConcept(TokenReader tokenReader, Stack<IConceptInfo> context, MultiDictionary<string, IConceptParser> conceptParsers)
-        {
-            return this.Invoke(nameof(ParseNextConcept), tokenReader, context, conceptParsers).Item1;
+            return this.Invoke(nameof(FindSkipedScriptsInEachPackage), oldScripts, newScripts);
         }
     }
 }

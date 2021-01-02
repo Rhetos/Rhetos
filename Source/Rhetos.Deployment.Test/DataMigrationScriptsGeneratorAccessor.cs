@@ -17,21 +17,24 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.TestCommon;
 using Rhetos.Utilities;
-using System.Collections.Generic;
 
 namespace Rhetos.Deployment.Test
 {
-    class DataMigration_Accessor : DataMigrationScriptsExecuter
+    public class DataMigrationScriptsGeneratorAccessor : DataMigrationScriptsGenerator, ITestAccessor
     {
-        public DataMigration_Accessor()
-            : base(null, new ConsoleLogProvider(), null, null, null)
+        public DataMigrationScriptsGeneratorAccessor() : this(null, null, null)
         {
         }
 
-        new public List<DataMigrationScript> FindSkipedScriptsInEachPackage(List<DataMigrationScript> oldScripts, List<DataMigrationScript> newScripts)
+        public DataMigrationScriptsGeneratorAccessor(InstalledPackages installedPackages, FilesUtility filesUtility, IDataMigrationScriptsFile dataMigrationScriptsFile) : base(installedPackages, filesUtility, dataMigrationScriptsFile)
         {
-            return base.FindSkipedScriptsInEachPackage(oldScripts, newScripts);
+        }
+
+        public (string Tag, bool IsDowngradeScript) ParseScriptHeader(string scriptContent, string file)
+        {
+            return this.Invoke(nameof(ParseScriptHeader), scriptContent, file);
         }
     }
 }

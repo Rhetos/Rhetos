@@ -17,15 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.Collections.Generic;
-
-namespace Rhetos.Deployment
+namespace Rhetos.Deployment.Test
 {
-    public class DataMigrationScripts
+    public class DataMigrationScriptsFileMock : IDataMigrationScriptsFile
     {
-        /// <summary>
-        /// The scripts are sorted by the intended execution order.
-        /// </summary>
-        public List<DataMigrationScript> Scripts { get; set; }
+        public DataMigrationScripts DataMigrationScripts { get; set; }
+
+        public DataMigrationScripts Load() => DataMigrationScripts;
+
+        public void Save(DataMigrationScripts dataMigrationScripts) => DataMigrationScripts = dataMigrationScripts;
     }
 }

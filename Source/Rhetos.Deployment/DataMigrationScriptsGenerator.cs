@@ -37,13 +37,13 @@ namespace Rhetos.Deployment
 
         protected readonly InstalledPackages _installedPackages;
         private readonly FilesUtility _filesUtility;
-        private readonly DataMigrationScriptsFile _dataMigrationScriptsFile;
+        private readonly IDataMigrationScriptsFile _dataMigrationScriptsFile;
 
         public IEnumerable<string> Dependencies => new List<string>();
 
         public DataMigrationScriptsGenerator(InstalledPackages installedPackages,
             FilesUtility filesUtility,
-            DataMigrationScriptsFile dataMigrationScriptsFile)
+            IDataMigrationScriptsFile dataMigrationScriptsFile)
         {
             _installedPackages = installedPackages;
             _filesUtility = filesUtility;
@@ -62,42 +62,85 @@ namespace Rhetos.Deployment
                 const string expectedExtension = ".sql";
                 var badFile = files.FirstOrDefault(file => !string.Equals(Path.GetExtension(file.InPackagePath), expectedExtension, StringComparison.OrdinalIgnoreCase));
                 if (badFile != null)
-                    throw new FrameworkException("Data migration script '" + badFile.PhysicalPath + "' does not have expected extension '" + expectedExtension + "'.");
+                    throw new FrameworkException($"Data migration script '{badFile.PhysicalPath}' does not have expected extension '{expectedExtension}'.");
 
-                var packageScripts =
+                var packageSqlFiles =
                     (from file in files
                      let scriptContent = _filesUtility.ReadAllText(file.PhysicalPath)
-                     select new DataMigrationScript
+                     select new
                      {
-                         Tag = ParseScriptTag(scriptContent, file.PhysicalPath),
+                         Header = ParseScriptHeader(scriptContent, file.PhysicalPath),
                          // Using package.Id instead of full package subfolder name, in order to keep the same script path between different versions of the package (the folder name will contain the version number).
                          Path = package.Id + "\\" + file.InPackagePath.Substring(DataMigrationSubfolderPrefix.Length),
                          Content = scriptContent
                      }).ToList();
 
-                packageScripts.Sort();
-                allScripts.AddRange(packageScripts);
+                // Early check for better error messages:
+                CheckDuplicateTags(packageSqlFiles.Where(s => s.Header.IsDowngradeScript).Select(s => (s.Header.Tag, s.Path)));
+                CheckDuplicateTags(packageSqlFiles.Where(s => !s.Header.IsDowngradeScript).Select(s => (s.Header.Tag, s.Path)));
+
+                var packageScripts = packageSqlFiles.Where(sqlFile => !sqlFile.Header.IsDowngradeScript).Select(upSqlFile => new DataMigrationScript
+                {
+                    Tag = upSqlFile.Header.Tag,
+                    Path = upSqlFile.Path,
+                    Content = upSqlFile.Content,
+                    Down = null
+                }).ToDictionary(script => script.Tag);
+
+                foreach (var downSqlFile in packageSqlFiles.Where(sqlFile => sqlFile.Header.IsDowngradeScript))
+                {
+                    if (!packageScripts.TryGetValue(downSqlFile.Header.Tag, out var upScript))
+                        throw new FrameworkException($"There is no matching 'up' data-migration script for the 'down' script '{downSqlFile.Path}': Cannot find the same tag '{downSqlFile.Header.Tag}' in the up scripts.");
+
+                    string expectedDownPath = upScript.Path.Insert(upScript.Path.Length - 4, ".down");
+                    if (!downSqlFile.Path.Equals(expectedDownPath, StringComparison.OrdinalIgnoreCase))
+                        throw new FrameworkException($"Data-migration 'down' script '{downSqlFile.Path}' should have same file name as the related 'up' script with added suffix \".down\": {expectedDownPath}.");
+
+                    if (upScript.Down != null) // This is just an internal consistency validation, this error is not expected to occur.
+                        throw new FrameworkException($"The 'up' data-migration script with tag '{downSqlFile.Header.Tag}' is already mapped to another down script. Cannot map '{downSqlFile.Path}'.");
+
+                    upScript.Down = downSqlFile.Content;
+                }
+
+                var packageScriptsSorted = packageScripts.Values.ToList();
+                packageScriptsSorted.Sort();
+                allScripts.AddRange(packageScriptsSorted);
             }
 
-            var badGroup = allScripts.GroupBy(s => s.Tag).FirstOrDefault(g => g.Count() >= 2);
-            if (badGroup != null)
-                throw new FrameworkException(string.Format(
-                    "Data migration scripts '{0}' and '{1}' have same tag '{2}' in their headers.",
-                    badGroup.First().Path, badGroup.ElementAt(1).Path, badGroup.Key));
+            CheckDuplicateTags(allScripts.Select(s => (s.Tag, s.Path)));
 
             _dataMigrationScriptsFile.Save(new DataMigrationScripts { Scripts = allScripts });
         }
 
-        protected static readonly Regex ScriptIdRegex = new Regex(@"^/\*DATAMIGRATION (.+)\*/");
-
-        protected static string ParseScriptTag(string scriptContent, string file)
+        private void CheckDuplicateTags(IEnumerable<(string Tag, string Path)> scripts)
         {
-            if (!ScriptIdRegex.IsMatch(scriptContent))
-                throw new FrameworkException("Data migration script '" + file + "' should start with a header '/*DATAMIGRATION unique_script_identifier*/'.");
-            string tag = ScriptIdRegex.Match(scriptContent).Groups[1].Value.Trim();
+            var badGroup = scripts.GroupBy(s => s.Tag).FirstOrDefault(g => g.Count() >= 2);
+            if (badGroup != null)
+            {
+                var script1 = badGroup.First();
+                var script2 = badGroup.ElementAt(1);
+                string message = $"Data migration scripts '{script1.Path}' and '{script2.Path}' have same tag '{badGroup.Key}' in their headers.";
+
+                if (script1.Path.IndexOf(".down.", StringComparison.OrdinalIgnoreCase) >= 0
+                    != script2.Path.IndexOf(".down.", StringComparison.OrdinalIgnoreCase) >= 0)
+                    message += $" Note that the 'down' script should have \"DATAMIGRATION-DOWN\" label in the header.";
+                
+                throw new FrameworkException(message);
+            }
+        }
+
+        private static readonly Regex ScriptHeaderRegex = new Regex(@"^/\*DATAMIGRATION(?<down>-DOWN)? (?<tag>.+)\*/");
+
+        private (string Tag, bool IsDowngradeScript) ParseScriptHeader(string scriptContent, string file)
+        {
+            var match = ScriptHeaderRegex.Match(scriptContent);
+            if (!match.Success)
+                throw new FrameworkException($"Data migration script '{file}' should start with a header '/*DATAMIGRATION unique_script_identifier*/'.");
+            bool down = match.Groups["down"].Success;
+            string tag = match.Groups["tag"].Value.Trim();
             if (string.IsNullOrEmpty(tag) || tag.Contains("\n"))
-                throw new FrameworkException("Data migration script '" + file + "' has invalid header. It should start with a header '/*DATAMIGRATION unique_script_identifier*/'");
-            return tag;
+                throw new FrameworkException($"Data migration script '{file}' has invalid header. It should start with a header '/*DATAMIGRATION unique_script_identifier*/'");
+            return (tag, down);
         }
     }
 }

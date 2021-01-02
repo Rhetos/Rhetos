@@ -21,11 +21,11 @@ using System.Collections.Generic;
 
 namespace Rhetos.Deployment
 {
-    public class DataMigrationScripts
+    public class DataMigrationReport
     {
         /// <summary>
-        /// The scripts are sorted by the intended execution order.
+        /// The scripts are listed in the order in which they were executed.
         /// </summary>
-        public List<DataMigrationScript> Scripts { get; set; }
+        public List<DataMigrationScript> CreatedScripts { get; set; }
     }
 }

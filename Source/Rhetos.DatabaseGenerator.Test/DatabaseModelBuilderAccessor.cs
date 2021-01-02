@@ -34,12 +34,12 @@ namespace Rhetos.DatabaseGenerator.Test
 
         public static string GetCodeGeneratorSeparator(int codeGeneratorId)
         {
-            return (string)TestAccessorHelpers.Invoke<DatabaseModelBuilder>("GetCodeGeneratorSeparator", codeGeneratorId);
+            return (string)TestAccessorHelpers.Invoke<DatabaseModelBuilder>(nameof(GetCodeGeneratorSeparator), codeGeneratorId);
         }
 
         public static Dictionary<int, string> ExtractCreateQueries(string generatedSqlCode)
         {
-            return (Dictionary<int, string>)TestAccessorHelpers.Invoke<DatabaseModelBuilder>("ExtractCreateQueries", generatedSqlCode);
+            return (Dictionary<int, string>)TestAccessorHelpers.Invoke<DatabaseModelBuilder>(nameof(ExtractCreateQueries), generatedSqlCode);
         }
     }
 }

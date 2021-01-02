@@ -19,11 +19,7 @@
 
 using Rhetos.Utilities;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 
 namespace Rhetos.Deployment
 {
@@ -31,12 +27,24 @@ namespace Rhetos.Deployment
     public class DataMigrationScript : IComparable<DataMigrationScript>
     {
         public string Tag { get; set; }
+
         /// <summary>
         /// Full name of the script, including package name, subfolder path, and file name.
         /// This is not an actual file path on disk.
         /// </summary>
         public string Path { get; set; }
+
+        /// <summary>
+        /// SQL script that will be executed on database update.
+        /// </summary>
         public string Content { get; set; }
+
+        /// <summary>
+        /// SQL script that will be executed on database update when reverting to an older version of the application.
+        /// The "down" script is loaded from database table Rhetos.DataMigrationScript and executed,
+        /// if the currently deployed application version does not include a data-migrations script with the same <see cref="Tag"/>.
+        /// </summary>
+        public string Down { get; set; }
 
         private string _orderWithinPackage;
 
@@ -45,12 +53,12 @@ namespace Rhetos.Deployment
         /// </summary>
         private string OrderWithinPackage
         {
-            get { return _orderWithinPackage ?? (_orderWithinPackage = ComputeOrder(Path)); }
+            get { return _orderWithinPackage ?? (_orderWithinPackage = ComputeOrderWithinPackage(Path)); }
         }
 
-        private static string ComputeOrder(string s)
+        private static string ComputeOrderWithinPackage(string path)
         {
-            return CsUtility.GetNaturalSortString(s).Replace(@"\", @" \").ToLower();
+            return CsUtility.GetNaturalSortString(path).Replace(@"\", @" \").ToLower();
         }
 
         /// <summary>
