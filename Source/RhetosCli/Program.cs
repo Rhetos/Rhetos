@@ -66,11 +66,11 @@ namespace Rhetos
             rootCommand.AddCommand(buildCommand);
 
             var dbUpdateCommand = new Command("dbupdate", "Updates the database structure and initializes the application data in the database.");
-            dbUpdateCommand.Add(new Argument<string>("startup-assembly") { Description = "Startup assembly of the host application." });
+            dbUpdateCommand.Add(new Argument<FileInfo>("startup-assembly") { Description = "Startup assembly of the host application." });
             dbUpdateCommand.Add(new Option<bool>("--short-transactions", "Commit transaction after creating or dropping each database object."));
             dbUpdateCommand.Add(new Option<bool>("--skip-recompute", "Skip automatic update of computed data with KeepSynchronized. See output log for data that needs updating."));
-            dbUpdateCommand.Handler = CommandHandler.Create((string startupAssembly, bool shortTransactions, bool skipRecompute)
-                => ReportError(() => DbUpdate(startupAssembly, shortTransactions, skipRecompute)));
+            dbUpdateCommand.Handler = CommandHandler.Create((FileInfo startupAssembly, bool shortTransactions, bool skipRecompute)
+                => ReportError(() => DbUpdate(startupAssembly.FullName, shortTransactions, skipRecompute)));
             rootCommand.AddCommand(dbUpdateCommand);
 
             return rootCommand.Invoke(args);
@@ -139,7 +139,7 @@ namespace Rhetos
         {
             IRhetosHostBuilder CreateHostBuilder()
             {
-                var builder = RhetosHost.FindBuilder(startupAssembly, AppDomain.CurrentDomain.BaseDirectory);
+                var builder = RhetosHost.FindBuilder(startupAssembly);
                 builder.ConfigureConfiguration(configurationBuilder =>
                 {
                     configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((DatabaseOptions o) => o.SqlCommandTimeout), 0);

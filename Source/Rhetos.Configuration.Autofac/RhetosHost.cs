@@ -19,11 +19,10 @@
 
 using System;
 using System.IO;
-using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Runtime.Loader;
 using Autofac;
-using Rhetos.Extensibility;
-using Rhetos.Utilities;
 
 namespace Rhetos
 {
@@ -43,14 +42,11 @@ namespace Rhetos
             return new TransactionScopeContainer(Container, registerScopeComponentsAction);
         }
 
-        public static IRhetosHostBuilder FindBuilder(string hostFilePath, params string[] assemblyProbingDirectories)
+        public static IRhetosHostBuilder FindBuilder(string hostFilePath)
         {
-            var hostAbsolutePath = Path.GetFullPath(hostFilePath);
-            var hostDirectory = Path.GetDirectoryName(hostAbsolutePath);
+            var hostDirectory = Path.GetDirectoryName(hostFilePath);
 
-            var hostFilename = Path.GetFileName(hostFilePath);
-
-            var startupAssembly = ResolveStartupAssembly(hostFilename, assemblyProbingDirectories);
+            var startupAssembly = ResolveStartupAssembly(hostFilePath);
 
             var entryPointType = startupAssembly?.EntryPoint?.DeclaringType;
             if (entryPointType == null)
@@ -70,33 +66,21 @@ namespace Rhetos
             return rhetosHostBuilder;
         }
 
-        private static Assembly ResolveStartupAssembly(string hostFilename, params string[] assemblyProbingDirectories)
+        private static Assembly ResolveStartupAssembly(string hostFilename)
         {
-            ResolveEventHandler resolveEventHandler = null;
-            if (assemblyProbingDirectories.Length > 0)
+            var assemblyDependencyResolver = new AssemblyDependencyResolver(hostFilename);
+            var currentAcl = AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly());
+            currentAcl.Resolving += (AssemblyLoadContext acl, AssemblyName assemblyName) =>
             {
-                var assemblies = AssemblyResolver.GetRuntimeAssemblies(assemblyProbingDirectories);
-                resolveEventHandler = AssemblyResolver.GetResolveEventHandler(assemblies, LoggingDefaults.DefaultLogProvider, true);
-                AppDomain.CurrentDomain.AssemblyResolve += resolveEventHandler;
-            }
+                return acl.LoadFromAssemblyPath(assemblyDependencyResolver.ResolveAssemblyToPath(assemblyName));
+            };
 
-            try
+            currentAcl.ResolvingUnmanagedDll += (Assembly assembly, string assemblyName) =>
             {
-                var assemblyName = new AssemblyName(Path.GetFileNameWithoutExtension(hostFilename));
-                var startupAssembly = Assembly.Load(assemblyName);
-                if (startupAssembly == null)
-                    throw new InvalidOperationException($"Assembly load for '{assemblyName.Name}' failed.");
-                return startupAssembly;
-            }
-            catch (Exception e)
-            {
-                throw new FrameworkException($"Error loading startup assembly '{hostFilename}': {e.Message}", e);
-            }
-            finally
-            {
-                if (resolveEventHandler != null)
-                    AppDomain.CurrentDomain.AssemblyResolve -= resolveEventHandler;
-            }
+                return NativeLibrary.Load(assemblyDependencyResolver.ResolveUnmanagedDllToPath(assemblyName));
+            };
+
+            return currentAcl.LoadFromAssemblyPath(hostFilename);
         }
 
         public void Dispose()
