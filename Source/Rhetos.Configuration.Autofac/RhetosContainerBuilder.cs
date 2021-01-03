@@ -44,8 +44,6 @@ namespace Rhetos
 
             // this is a patch/mock to provide backward compatibility for all usages of old static classes
             LegacyUtilities.Initialize(configuration);
-
-            Plugins.Initialize(builder => builder.GetPluginRegistration());
         }
 
         /// <summary>
