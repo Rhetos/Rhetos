@@ -37,11 +37,11 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ActivePropertyValueDoesNotHaveToBeDefinedOnInsert()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestDeactivatable.BasicEnt" });
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new BasicEnt { Name = "ttt" };
                 repository.TestDeactivatable.BasicEnt.Insert(new[] { entity });
                 Assert.AreEqual(true, repository.TestDeactivatable.BasicEnt.Load().Single().Active);
@@ -51,20 +51,20 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ActivePropertyValueDoesNotHaveToBeDefinedOnUpdate()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
                 var id3 = Guid.NewGuid();
                 var id4 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestDeactivatable.BasicEnt",
                     "INSERT INTO TestDeactivatable.BasicEnt (ID, Name) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 'a')",
                     "INSERT INTO TestDeactivatable.BasicEnt (ID, Name, Active) VALUES (" + SqlUtility.QuoteGuid(id2) + ", 'b', 0)",
                     "INSERT INTO TestDeactivatable.BasicEnt (ID, Name) VALUES (" + SqlUtility.QuoteGuid(id3) + ", 'c')",
                     "INSERT INTO TestDeactivatable.BasicEnt (ID, Name, Active) VALUES (" + SqlUtility.QuoteGuid(id4) + ", 'd', 1)",
                 });
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 Assert.AreEqual(
                     "a , b False, c , d True",
@@ -86,9 +86,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ItIsOkToInsertInactiveOrActiveItem()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new BasicEnt { Name = "ttt", Active = false };
                 var entity2 = new BasicEnt { Name = "ttt2", Active = true };
                 repository.TestDeactivatable.BasicEnt.Insert(new[] { entity, entity2 });
@@ -98,12 +98,12 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void TestForActiveItemsFilter()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { 
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { 
                     "DELETE FROM TestDeactivatable.BasicEnt;",
                 });
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new BasicEnt { Name = "ttt", Active = false };
                 var entity2 = new BasicEnt { Name = "ttt2", Active = true };
                 
@@ -115,13 +115,13 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void TestForThisAndActiveItemsFilter()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { 
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { 
                     "DELETE FROM TestDeactivatable.BasicEnt;",
                 });
                 var e1ID = Guid.NewGuid();
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new BasicEnt { ID = e1ID, Name = "ttt", Active = false };
                 var entity2 = new BasicEnt { Name = "ttt2", Active = true };
                 var entity3 = new BasicEnt { Name = "ttt3", Active = false };

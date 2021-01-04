@@ -37,9 +37,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ValidData()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var simple = container.Resolve<Common.DomRepository>().TestAllowSave.Simple;
+                var simple = scope.Resolve<Common.DomRepository>().TestAllowSave.Simple;
                 var s1 = new TestAllowSave.Simple { Code = 1, Name = "a", CodeAS = 2, NameAS = "b" };
                 simple.Insert(s1);
                 Assert.AreEqual("1a2b", simple.Query(new[] { s1.ID }).Select(s => s.Code + s.Name + s.CodeAS + s.NameAS).Single());
@@ -49,9 +49,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InvalidInteger()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var simple = container.Resolve<Common.DomRepository>().TestAllowSave.Simple;
+                var simple = scope.Resolve<Common.DomRepository>().TestAllowSave.Simple;
                 var s1 = new TestAllowSave.Simple { Code = null, Name = "a", CodeAS = 2, NameAS = "b" };
                 TestUtility.ShouldFail<UserException>(
                     () => simple.Insert(s1),
@@ -63,18 +63,18 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InvalidString()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var simple = container.Resolve<Common.DomRepository>().TestAllowSave.Simple;
+                var simple = scope.Resolve<Common.DomRepository>().TestAllowSave.Simple;
                 var s1 = new TestAllowSave.Simple { Code = 1, Name = null, CodeAS = 2, NameAS = "b" };
                 TestUtility.ShouldFail<UserException>(
                     () => simple.Insert(s1),
                     "It is not allowed to enter TestAllowSave.Simple because the required property Name is not set.",
                     "SystemMessage: DataStructure:TestAllowSave.Simple,ID:", ",Property:Name");
             }
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var simple = container.Resolve<Common.DomRepository>().TestAllowSave.Simple;
+                var simple = scope.Resolve<Common.DomRepository>().TestAllowSave.Simple;
                 var s1 = new TestAllowSave.Simple { Code = 1, Name = "", CodeAS = 2, NameAS = "b" };
                 TestUtility.ShouldFail<UserException>(
                     () => simple.Insert(s1),
@@ -87,10 +87,10 @@ namespace CommonConcepts.Test
         public void AllowSave()
         {
             foreach (bool useDatabaseNullSemantics in new[] { false, true })
-                using (var container = TestContainer.Create(
-                    TestContainer.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
+                using (var scope = TestScope.Create(
+                    TestScope.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
                 {
-                    var simple = container.Resolve<Common.DomRepository>().TestAllowSave.Simple;
+                    var simple = scope.Resolve<Common.DomRepository>().TestAllowSave.Simple;
                     var s1 = new TestAllowSave.Simple { Code = 1, Name = "a", CodeAS = null, NameAS = null };
                     var s2 = new TestAllowSave.Simple { Code = 1, Name = "aaaaa", CodeAS = 2, NameAS = "b" };
 
@@ -114,9 +114,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void AllowSaveEmptyString()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var simple = container.Resolve<Common.DomRepository>().TestAllowSave.Simple;
+                var simple = scope.Resolve<Common.DomRepository>().TestAllowSave.Simple;
                 var s1 = new TestAllowSave.Simple { Code = 1, Name = "a", CodeAS = 2, NameAS = "" };
 
                 simple.Insert(s1);
@@ -135,10 +135,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InvalidDataReporting()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var simpleSystem = container.Resolve<Common.DomRepository>().TestAllowSave.SimpleSystem;
-                var sqlExecuter = container.Resolve<ISqlExecuter>();
+                var simpleSystem = scope.Resolve<Common.DomRepository>().TestAllowSave.SimpleSystem;
+                var sqlExecuter = scope.Resolve<ISqlExecuter>();
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
                 Console.WriteLine(id1);

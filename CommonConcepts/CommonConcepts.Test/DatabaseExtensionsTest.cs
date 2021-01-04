@@ -47,15 +47,15 @@ namespace CommonConcepts.Test
             // Test SQL:
 
             foreach (bool useDatabaseNullSemantics in new[] { false, true })
-                using (var container = TestContainer.Create(
-                    TestContainer.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
+                using (var scope = TestScope.Create(
+                    TestScope.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
                 {
 
-                    container.Resolve<ISqlExecuter>().ExecuteSql(
+                    scope.Resolve<ISqlExecuter>().ExecuteSql(
                         new[] { "DELETE FROM TestDatabaseExtensions.Simple" }
                         .Concat(data.Select(name => "INSERT INTO TestDatabaseExtensions.Simple (Name) SELECT " + SqlUtility.QuoteText(name))));
 
-                    var repository = container.Resolve<Common.DomRepository>();
+                    var repository = scope.Resolve<Common.DomRepository>();
 
                     foreach (var test in tests)
                     {
@@ -106,14 +106,14 @@ namespace CommonConcepts.Test
 
             // Test SQL:
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(
+                scope.Resolve<ISqlExecuter>().ExecuteSql(
                     new[] { "DELETE FROM TestDatabaseExtensions.Simple" }
                     .Concat(data.Select(code => "INSERT INTO TestDatabaseExtensions.Simple (Code) SELECT "
                         + (code != null ? code.ToString() : "NULL"))));
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 foreach (var test in tests)
                 {
@@ -336,14 +336,14 @@ namespace CommonConcepts.Test
 
             // Test SQL:
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(
+                scope.Resolve<ISqlExecuter>().ExecuteSql(
                     new[] { "DELETE FROM TestDatabaseExtensions.Simple" }
                     .Concat(testData.Select(code => "INSERT INTO TestDatabaseExtensions.Simple (Code) SELECT "
                         + (code != null ? code.ToString() : "NULL"))));
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var loaded = repository.TestDatabaseExtensions.Simple.Query().Select(item => item.Code.CastToString()).ToList();
                 Assert.AreEqual("-123456789, 0, 1, 123, null", TestUtility.DumpSorted(loaded, str => str ?? "null"));

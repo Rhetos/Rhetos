@@ -34,11 +34,14 @@ namespace CommonConcepts.Test.Helpers
 {
     /// <summary>
     /// Helper class that manages Dependency Injection container for unit tests.
+    /// All methods operate on a scope of a single unit of work,
+    /// that typically corresponds to a single unit tests.
     /// </summary>
-    public static class TestContainer
+    public static class TestScope
     {
         /// <summary>
-        /// Creates a thread-safe lifetime scope DI container to isolate unit of work with a <b>separate database transaction</b>.
+        /// Creates a thread-safe lifetime scope DI container (service provider)
+        /// to isolate unit of work with a <b>separate database transaction</b>.
         /// To commit changes to database, call <see cref="TransactionScopeContainer.CommitChanges"/> at the end of the 'using' block.
         /// </summary>
         public static TransactionScopeContainer Create(Action<ContainerBuilder> registerCustomComponents = null)
@@ -48,7 +51,7 @@ namespace CommonConcepts.Test.Helpers
 
         /// <summary>
         /// Shared DI container to be reused between tests, to reduce initialization time for each test.
-        /// Each test should create a child container with <see cref="Create"/> method to start a 'using' block.
+        /// Each test should create a child scope with <see cref="Create"/> method to start a 'using' block.
         /// </summary>
         public static readonly RhetosHost RhetosHost = Program.CreateRhetosHostBuilder().Build();
 
@@ -68,7 +71,7 @@ namespace CommonConcepts.Test.Helpers
 
             Console.WriteLine($"CheckForParallelism: {sw.ElapsedMilliseconds} ms.");
 
-            if (sw.ElapsedMilliseconds < 50)
+            if (sw.ElapsedMilliseconds < 90)
                 Assert.Fail($"Delay is unexpectedly short: {sw.ElapsedMilliseconds}");
 
             if (sw.Elapsed.TotalMilliseconds > 190)

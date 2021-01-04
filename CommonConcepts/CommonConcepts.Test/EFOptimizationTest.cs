@@ -39,14 +39,14 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void WhereContainsTest()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
                 var id3 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         $@"INSERT INTO Test12.Entity1 (ID) SELECT '{id1}';",
                         $@"INSERT INTO Test12.Entity2 (ID, Entity1ID) SELECT '{id2}', '{id1}';",
@@ -61,15 +61,15 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void MultipleWhereContainsTest()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
                 var id3 = Guid.NewGuid();
 
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         $@"INSERT INTO Test12.Entity1 (ID) SELECT '{id1}';",
                         $@"INSERT INTO Test12.Entity2 (ID, Entity1ID) SELECT '{id2}', '{id1}';",
@@ -89,15 +89,15 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void WhereEmptyContainsTest()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
                 var id3 = Guid.NewGuid();
 
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         $@"INSERT INTO Test12.Entity1 (ID) SELECT '{id1}';",
                         $@"INSERT INTO Test12.Entity2 (ID, Entity1ID) SELECT '{id2}', '{id1}';",
@@ -116,14 +116,14 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void OptimizeContainsIdsTest()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
                 var id3 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         $@"INSERT INTO Test12.Entity1 (ID) SELECT '{id1}';",
                         $@"INSERT INTO Test12.Entity2 (ID, Entity1ID) SELECT '{id2}', '{id1}';",
@@ -143,14 +143,14 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void OptimizeContainsNullableIdsTest()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
                 var id3 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         $@"INSERT INTO Test12.Entity1 (ID) SELECT '{id1}';",
                         $@"INSERT INTO Test12.Entity2 (ID, Entity1ID) SELECT '{id2}', '{id1}';",
@@ -174,12 +174,12 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void OptimizeContainsNullableWithNullValueTest()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var id1 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         $@"INSERT INTO Test12.Entity1 (ID) SELECT '{id1}';",
                     });
@@ -195,14 +195,14 @@ namespace CommonConcepts.Test
         public void OptimizeContainsNullableWithMixedNullValueTest()
         {
             foreach (bool useDatabaseNullSemantics in new[] { false, true })
-                using (var container = TestContainer.Create(
-                    TestContainer.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
+                using (var scope = TestScope.Create(
+                    TestScope.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
                 {
-                    var repository = container.Resolve<Common.DomRepository>();
+                    var repository = scope.Resolve<Common.DomRepository>();
 
                     var id1 = Guid.NewGuid();
                     var id2 = Guid.NewGuid();
-                    container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                    scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                         {
                             $@"INSERT INTO Test12.Entity1 (ID) SELECT '{id1}';",
                             $@"INSERT INTO Test12.Entity1 (ID) SELECT '{id2}';",
@@ -241,9 +241,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void OptimizeEnumerableContainsTest()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var guidArray = new Guid[] { Guid.NewGuid() };
                 var sqlQuery = repository.Test12.Entity1.Query().Where(EFExpression.OptimizeContains<Common.Queryable.Test12_Entity1>(x => guidArray.Contains(x.ID))).ToString();
@@ -261,9 +261,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NestedPropertyContainsTest()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var c = new { Property1 = new {
                     Property2 = new List<Guid> { Guid.NewGuid() } }
@@ -374,9 +374,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void WhereContainsWithGroupBy()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 const int count = 3;
                 var items = Enumerable.Range(0, count)

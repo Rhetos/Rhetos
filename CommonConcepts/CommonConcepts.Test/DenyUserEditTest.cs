@@ -45,14 +45,14 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void EditableProperty()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestDenyUserEdit.Simple",
                         "DELETE FROM TestDenyUserEdit.Parent"
                     });
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var simple = new TestDenyUserEdit.Simple { Editable = "a" };
                 repository.TestDenyUserEdit.Simple.Save(new[] { simple }, null, null, true);
@@ -67,14 +67,14 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NonEditablePropertyInsert()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestDenyUserEdit.Simple",
                         "DELETE FROM TestDenyUserEdit.Parent"
                     });
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var simple = new TestDenyUserEdit.Simple { Editable = "a", NonEditable = "x" };
                 TestUtility.ShouldFail(() => repository.TestDenyUserEdit.Simple.Save(new[] { simple }, null, null, true),
@@ -85,17 +85,17 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NonEditablePropertyUpdate()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var simpleID = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestDenyUserEdit.Simple",
                         "DELETE FROM TestDenyUserEdit.Parent",
                         "INSERT INTO TestDenyUserEdit.Simple (ID, Editable, NonEditable) VALUES (" + SqlUtility.QuoteGuid(simpleID) + ", 'a', 'x')"
                     });
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 Assert.AreEqual("a x null", DumpSimple(repository));
 
@@ -112,17 +112,17 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NonEditablePropertyUpdateToNullIgnore()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var simpleID = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestDenyUserEdit.Simple",
                         "DELETE FROM TestDenyUserEdit.Parent",
                         "INSERT INTO TestDenyUserEdit.Simple (ID, Editable, NonEditable) VALUES (" + SqlUtility.QuoteGuid(simpleID) + ", 'a', 'x')"
                     });
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var simple = new TestDenyUserEdit.Simple { ID = simpleID, Editable = "a", NonEditable = null };
                 //Client may ignore existence of the DenyUserEdit properties (the value will be null on save).
@@ -139,17 +139,17 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NonEditablePropertyUpdateFromNull()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var simpleID = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestDenyUserEdit.Simple",
                         "DELETE FROM TestDenyUserEdit.Parent",
                         "INSERT INTO TestDenyUserEdit.Simple (ID, Editable, NonEditable) VALUES (" + SqlUtility.QuoteGuid(simpleID) + ", 'a', NULL)"
                     });
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var simple = new TestDenyUserEdit.Simple { ID = simpleID, Editable = "a", NonEditable = "x" };
                 TestUtility.ShouldFail(() => repository.TestDenyUserEdit.Simple.Save(null, new[] { simple }, null, true),
@@ -160,14 +160,14 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NonEditableRefereceInsert()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestDenyUserEdit.Simple",
                         "DELETE FROM TestDenyUserEdit.Parent"
                     });
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var parent = new TestDenyUserEdit.Parent { Name = "p" };
                 repository.TestDenyUserEdit.Parent.Save(new[] { parent }, null, null, true);
@@ -181,14 +181,14 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NonEditableRefereceInsertGuid()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestDenyUserEdit.Simple",
                         "DELETE FROM TestDenyUserEdit.Parent"
                     });
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var parent = new TestDenyUserEdit.Parent { Name = "p" };
                 repository.TestDenyUserEdit.Parent.Save(new[] { parent }, null, null, true);
@@ -202,9 +202,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HardcodedEntity_Insert()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 TestUtility.ShouldFail(
                     () => repository.TestDenyUserEdit.Hardcoded.Save(new[] { new TestDenyUserEdit.Hardcoded { Name = "abc" } }, null, null, true),
@@ -215,12 +215,12 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HardcodedEntity_Delete()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestDenyUserEdit.Hardcoded",
                     "INSERT INTO TestDenyUserEdit.Hardcoded (Name) VALUES ('abc')" });
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var item = repository.TestDenyUserEdit.Hardcoded.Load().Single();
                 Assert.AreEqual("abc", item.Name);
@@ -233,12 +233,12 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HardcodedEntity_Update()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestDenyUserEdit.Hardcoded",
                     "INSERT INTO TestDenyUserEdit.Hardcoded (Name) VALUES ('abc')" });
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var item = repository.TestDenyUserEdit.Hardcoded.Load().Single();
                 Assert.AreEqual("abc", item.Name);
@@ -252,10 +252,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void AutoInitialized()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
-                var sqlExecuter = container.Resolve<ISqlExecuter>();
+                var repository = scope.Resolve<Common.DomRepository>();
+                var sqlExecuter = scope.Resolve<ISqlExecuter>();
 
                 DateTime start = SqlUtility.GetDatabaseTime(sqlExecuter);
 

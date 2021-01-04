@@ -41,10 +41,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DeleteLockedData()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestLockItems.Simple;" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestLockItems.Simple;" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var s1 = new TestLockItems.Simple { ID = Guid.NewGuid(), Name = "s1" };
                 var s2 = new TestLockItems.Simple { ID = Guid.NewGuid(), Name = "s2" };
@@ -66,10 +66,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateLockedData()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestLockItems.Simple;" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestLockItems.Simple;" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var s1 = new TestLockItems.Simple { ID = Guid.NewGuid(), Name = "s1" };
                 var s2 = new TestLockItems.Simple { ID = Guid.NewGuid(), Name = "s2" };
@@ -95,10 +95,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateTryRemoveLock()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestLockItems.Simple;" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestLockItems.Simple;" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var s3Lock = new TestLockItems.Simple { ID = Guid.NewGuid(), Name = "s3_lock" };
                 repository.TestLockItems.Simple.Insert(new[] { s3Lock });
@@ -115,10 +115,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdatePersistentObject()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestLockItems.Simple;" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestLockItems.Simple;" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 {
                     var s3Lock = new TestLockItems.Simple { ID = Guid.NewGuid(), Name = "s3_lock" };
@@ -139,10 +139,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DeleteModifiedPersistentObject()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestLockItems.Simple;" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestLockItems.Simple;" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 {
                     var s3Lock = new TestLockItems.Simple { ID = Guid.NewGuid(), Name = "s3_lock" };
@@ -167,11 +167,11 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ClearCacheKeepsChangedData()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestLockItems.Simple;",
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestLockItems.Simple;",
                     "INSERT INTO TestLockItems.Simple (Name) VALUES ('abc locked')" });
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var s1 = repository.TestLockItems.Simple.Load().Single();
                 Assert.AreEqual("abc locked", s1.Name);
@@ -186,11 +186,11 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void PersistentObjectIgnoredWhenVerifyingOldData()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestLockItems.Simple;",
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestLockItems.Simple;",
                     "INSERT INTO TestLockItems.Simple (Name) VALUES ('abc locked')" });
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var s1 = repository.TestLockItems.Simple.Load().Single();
                 Assert.AreEqual("abc locked", s1.Name);
@@ -223,14 +223,14 @@ namespace CommonConcepts.Test
 
         public void UpdateLockedExceptProperty(Action<TestLockItems.Simple2> update, bool updateShouldPass)
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestLockItems.Simple2",
                     "DELETE FROM TestLockItems.Simple" });
 
-                var simpleRepos = container.Resolve<GenericRepository<TestLockItems.Simple>>();
-                var simple2Repos = container.Resolve<GenericRepository<TestLockItems.Simple2>>();
+                var simpleRepos = scope.Resolve<GenericRepository<TestLockItems.Simple>>();
+                var simple2Repos = scope.Resolve<GenericRepository<TestLockItems.Simple2>>();
 
                 var s1a = new TestLockItems.Simple { Name = "a" };
                 var s1b = new TestLockItems.Simple { Name = "b" };

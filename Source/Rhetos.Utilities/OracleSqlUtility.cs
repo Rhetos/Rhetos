@@ -29,11 +29,13 @@ namespace Rhetos.Utilities
             const int MaxLength = 30;
             if (name.Length > MaxLength)
             {
-                var hashErasedPart = name.Substring(MaxLength - 9).GetHashCode().ToString("X").PadLeft(8, '0'); ;
+                var hashErasedPart = CsUtility.GetStableHashCode(name.Substring(MaxLength - 9)).ToString("X").PadLeft(8, '0');
                 return name.Substring(0, MaxLength - 9) + "_" + hashErasedPart;
             }
             return name;
         }
+
+        public static readonly string OracleNationalLanguageKey = "Rhetos:DatabaseOracle:NationalLanguage";
 
         private static string _setNationalLanguageQuery;
 
@@ -88,6 +90,16 @@ END;", SqlUtility.NationalLanguage);
         public Exception ExtractSqlException(Exception exception)
         {
             return null;
+        }
+
+        public static string GetSchemaName(string fullObjectName)
+        {
+            int dotPosition = fullObjectName.IndexOf('.');
+            if (dotPosition == -1)
+                throw new FrameworkException($"Missing schema name for database object '{fullObjectName}'.");
+
+            var schema = fullObjectName.Substring(0, dotPosition);
+            return SqlUtility.Identifier(schema);
         }
     }
 }

@@ -38,9 +38,9 @@ namespace CommonConcepts.Test
     [TestClass]
     public class FilterTest
     {
-        private static ReadCommandResult ExecuteCommand(ReadCommandInfo commandInfo, TransactionScopeContainer container)
+        private static ReadCommandResult ExecuteCommand(ReadCommandInfo commandInfo, TransactionScopeContainer scope)
         {
-            var commands = container.Resolve<IIndex<Type, IEnumerable<ICommandImplementation>>>();
+            var commands = scope.Resolve<IIndex<Type, IEnumerable<ICommandImplementation>>>();
             var readCommand = (ReadCommand)commands[typeof(ReadCommandInfo)].Single();
             return (ReadCommandResult)readCommand.Execute(commandInfo).Data.Value;
         }
@@ -48,9 +48,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterAll()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 Assert.AreEqual("1a, 2b", TestUtility.DumpSorted(repository.Test10.Source.Query(), item => item.i + item.s));
             }
         }
@@ -58,9 +58,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterByIdentities()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var source = repository.Test10.Source.Load().OrderBy(item => item.i).ToArray();
                 Assert.AreEqual("2b", TestUtility.DumpSorted(repository.Test10.Source.Load(new [] { source[1].ID }), item => item.i + item.s));
             }
@@ -89,10 +89,10 @@ namespace CommonConcepts.Test
             int oldFilterIds;
             Guid commitCheckId = Guid.NewGuid();
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
-                var filterIdRepos = container.Resolve<GenericRepository<Common.FilterId>>();
+                var context = scope.Resolve<Common.ExecutionContext>();
+                var filterIdRepos = scope.Resolve<GenericRepository<Common.FilterId>>();
                 oldFilterIds = filterIdRepos.Query().Count();
 
                 var guids = Enumerable.Range(0, n).Select(x => Guid.NewGuid()).ToList();
@@ -106,8 +106,8 @@ namespace CommonConcepts.Test
                         sql.AppendFormat("INSERT INTO Test10.Simple (ID, i) SELECT '{0}', {1};\r\n", guids[j*1000 + i], j*1000 + i);
                     commands.Add(sql.ToString());
                 }
-                container.Resolve<ISqlExecuter>().ExecuteSql(commands);
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(commands);
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var loaded = repository.Test10.Simple.Load(new[] { guids[0] });
                 Assert.AreEqual("0", TestUtility.DumpSorted(loaded, item => item.i.ToString()));
@@ -117,7 +117,7 @@ namespace CommonConcepts.Test
                     var loadedByIds = repository.Test10.Simple.Load(guids);
                     Assert.AreEqual(n, loadedByIds.Count());
 
-                    var queriedByIds = container.Resolve<GenericRepository<Test10.Simple>>().Query(guids);
+                    var queriedByIds = scope.Resolve<GenericRepository<Test10.Simple>>().Query(guids);
                     Assert.AreEqual(n, queriedByIds.Count());
                 }
                 catch (Exception ex)
@@ -139,16 +139,16 @@ namespace CommonConcepts.Test
                 context.EntityFrameworkContext.Database.ExecuteSqlCommand("DELETE FROM Test10.Simple");
                 repository.Test10.Simple.Insert(new[] { new Test10.Simple { ID = commitCheckId } });
 
-                container.CommitChanges();
+                scope.CommitChanges();
             }
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var testRepos = container.Resolve<GenericRepository<Test10.Simple>>();
+                var testRepos = scope.Resolve<GenericRepository<Test10.Simple>>();
                 if (testRepos.Query(new[] { commitCheckId }).Count() == 0)
                     Assert.Fail("Transaction did not commit. Cannot test for remaining temporary data.");
 
-                var filterIdRepos = container.Resolve<GenericRepository<Common.FilterId>>();
+                var filterIdRepos = scope.Resolve<GenericRepository<Common.FilterId>>();
                 Assert.AreEqual(0, filterIdRepos.Query().Count() - oldFilterIds, "Temporary data used for filtering should be cleaned.");
             }
         }
@@ -158,13 +158,13 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterBy()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.Source;" });
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "a1", "b1", "b2", "c1" }
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.Source;" });
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "a1", "b1", "b2", "c1" }
                     .Select(name => "INSERT INTO TestFilter.Source (Name) SELECT N'" + name + "';"));
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var loaded = repository.TestFilter.Source.Filter(new TestFilter.FilterByPrefix { Prefix = "b" });
                 Assert.AreEqual("b1, b2", TestUtility.DumpSorted(loaded, item => item.Name));
@@ -176,13 +176,13 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ComposableFilterBy_CompositionOfTwoFilters()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.Source;" });
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "a1", "b1", "b2", "c1" }
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.Source;" });
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "a1", "b1", "b2", "c1" }
                     .Select(name => "INSERT INTO TestFilter.Source (Name) SELECT N'" + name + "';"));
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var q = repository.TestFilter.Source.Query();
                 q = repository.TestFilter.Source.Filter(q, new TestFilter.ComposableFilterByPrefix { Prefix = "b" });
@@ -196,13 +196,13 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ComposableFilterBy_StandardFilterInterface()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.Source;" });
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "a1", "b1", "b2", "c1" }
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.Source;" });
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "a1", "b1", "b2", "c1" }
                     .Select(name => "INSERT INTO TestFilter.Source (Name) SELECT N'" + name + "';"));
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var loaded = repository.TestFilter.Source.Filter(new TestFilter.ComposableFilterByPrefix { Prefix = "b" });
                 Assert.AreEqual("b1, b2", TestUtility.DumpSorted(loaded, item => item.Name));
@@ -214,13 +214,13 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ItemFilter()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.Source;" });
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "a1", "b1", "b2", "c1" }
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.Source;" });
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "a1", "b1", "b2", "c1" }
                     .Select(name => "INSERT INTO TestFilter.Source (Name) SELECT N'" + name + "';"));
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var q = repository.TestFilter.Source.Query();
                 q = repository.TestFilter.Source.Filter(q, new TestFilter.ItemStartsWithB());
@@ -234,13 +234,13 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ItemFilter_ExplicitModuleName()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.Source;" });
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "a1", "b1", "b2", "c1" }
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.Source;" });
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "a1", "b1", "b2", "c1" }
                     .Select(name => "INSERT INTO TestFilter.Source (Name) SELECT N'" + name + "';"));
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var q = repository.TestFilter.Source.Query();
                 q = repository.TestFilter.Source.Filter(q, new TestFilter2.ItemStartsWithC());
@@ -255,10 +255,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterByBase()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.Source" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.Source" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var s1 = new TestFilter.Source { ID = Guid.NewGuid(), Name = "A s1" };
                 var s2 = new TestFilter.Source { ID = Guid.NewGuid(), Name = "B s2" };
@@ -274,10 +274,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FilterByReferencedAndLinkedItems()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.Source" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.Source" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var s1 = new TestFilter.Source { Name = "A s1" };
                 var s2 = new TestFilter.Source { Name = "B s2" };
@@ -297,10 +297,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SimpleComposableFilterCaseInsensitive()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.CombinedFilters" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.CombinedFilters" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var s1 = new TestFilter.CombinedFilters { Name = "Abeceda" };
                 var s2 = new TestFilter.CombinedFilters { Name = "abeceda" };
@@ -312,7 +312,7 @@ namespace CommonConcepts.Test
                     Filters = new[] { new FilterCriteria(new TestFilter.ComposableFilterByContains { Pattern = "Abec" }) },
                     ReadRecords = true,
                     ReadTotalCount = true
-                }, container);
+                }, scope);
 
                 var filteredByContainsWithGenericFilter = ExecuteCommand(new ReadCommandInfo
                 {
@@ -324,7 +324,7 @@ namespace CommonConcepts.Test
                     },
                     ReadRecords = true,
                     ReadTotalCount = true
-                }, container);
+                }, scope);
                 // filter doubled should return same results as just one Composable filter
                 Assert.AreEqual(filteredByContainsJustComposable.Records.Length, filteredByContainsWithGenericFilter.Records.Length);
                 Assert.AreEqual(2, filteredByContainsWithGenericFilter.Records.Length);
@@ -334,10 +334,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SimpleComposableFilterGenericFilterReferenced()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.CombinedFilters", "DELETE FROM TestFilter.Simple" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.CombinedFilters", "DELETE FROM TestFilter.Simple" });
+                var repository = scope.Resolve<Common.DomRepository>();
                 var refEnt = new TestFilter.Simple { Name = "test" };
                 repository.TestFilter.Simple.Insert(new[] { refEnt });
                 var s1 = new TestFilter.CombinedFilters { Name = "Abeceda", SimpleID = refEnt.ID };
@@ -355,17 +355,17 @@ namespace CommonConcepts.Test
                     },
                     ReadRecords = true,
                     ReadTotalCount = true
-                }, container);
+                }, scope);
                 Assert.AreEqual(1, filteredByContainsWithGenericFilter.Records.Length);
             }
         }
 
-        private static string ReportFilteredBrowse(TransactionScopeContainer container, ReadCommandInfo readCommandInfo)
+        private static string ReportFilteredBrowse(TransactionScopeContainer scope, ReadCommandInfo readCommandInfo)
         {
             readCommandInfo.DataSource = "TestFilter.ComposableFilterBrowse";
 
             return TestUtility.DumpSorted(
-                ExecuteCommand(readCommandInfo, container).Records,
+                ExecuteCommand(readCommandInfo, scope).Records,
                 item =>
                 {
                     var x = (TestFilter.ComposableFilterBrowse)item;
@@ -387,10 +387,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ComposableFilterBrowse()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.CombinedFilters", "DELETE FROM TestFilter.Simple" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.CombinedFilters", "DELETE FROM TestFilter.Simple" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var parentA = new TestFilter.Simple { Name = "PA" };
                 var parentB = new TestFilter.Simple { Name = "PB" };
@@ -401,31 +401,31 @@ namespace CommonConcepts.Test
                 var childNull = new TestFilter.CombinedFilters { Name = "CN", SimpleID = null };
                 repository.TestFilter.CombinedFilters.Insert(new[] { childA, childB, childNull });
 
-                Assert.AreEqual("CA PA", ReportFilteredBrowse(container, ReadCommandWithFilters(
+                Assert.AreEqual("CA PA", ReportFilteredBrowse(scope, ReadCommandWithFilters(
                     new TestFilter.SimpleNameA())));
 
-                Assert.AreEqual("CA PA", ReportFilteredBrowse(container, ReadCommandWithFilters(
+                Assert.AreEqual("CA PA", ReportFilteredBrowse(scope, ReadCommandWithFilters(
                     new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "a" })));
 
-                Assert.AreEqual("CA PA", ReportFilteredBrowse(container, ReadCommandWithFilters(
+                Assert.AreEqual("CA PA", ReportFilteredBrowse(scope, ReadCommandWithFilters(
                     new TestFilter.SimpleNameA(),
                     new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "a" })));
 
-                Assert.AreEqual("CN null", ReportFilteredBrowse(container, ReadCommandWithFilters(
+                Assert.AreEqual("CN null", ReportFilteredBrowse(scope, ReadCommandWithFilters(
                     new FilterCriteria { Property = "Name", Operation = "Contains", Value = "n" })));
 
-                Assert.AreEqual("CN null", ReportFilteredBrowse(container, ReadCommandWithFilters(
+                Assert.AreEqual("CN null", ReportFilteredBrowse(scope, ReadCommandWithFilters(
                     new TestFilter.NameN())));
 
-                Assert.AreEqual("", ReportFilteredBrowse(container, ReadCommandWithFilters(
+                Assert.AreEqual("", ReportFilteredBrowse(scope, ReadCommandWithFilters(
                     new TestFilter.NameN(),
                     new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "p" })));
 
-                Assert.AreEqual("", ReportFilteredBrowse(container, ReadCommandWithFilters(
+                Assert.AreEqual("", ReportFilteredBrowse(scope, ReadCommandWithFilters(
                     new TestFilter.NameN(),
                     new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "p" })));
 
-                Assert.AreEqual("CA PA", ReportFilteredBrowse(container, ReadCommandWithFilters(
+                Assert.AreEqual("CA PA", ReportFilteredBrowse(scope, ReadCommandWithFilters(
                     new TestFilter.ComposableFilterBrowseLoader { Pattern = "a" })));
             }
         }
@@ -433,10 +433,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ArrayFilterBrowse()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.CombinedFilters", "DELETE FROM TestFilter.Simple" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestFilter.CombinedFilters", "DELETE FROM TestFilter.Simple" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var parentA = new TestFilter.Simple { Name = "PA" };
                 var parentB = new TestFilter.Simple { Name = "PB" };
@@ -447,14 +447,14 @@ namespace CommonConcepts.Test
                 var childNull = new TestFilter.CombinedFilters { Name = "CN", SimpleID = null };
                 repository.TestFilter.CombinedFilters.Insert(new[] { childA, childB, childNull });
 
-                Assert.AreEqual("CA PA", ReportFilteredBrowse(container, ReadCommandWithFilters(
+                Assert.AreEqual("CA PA", ReportFilteredBrowse(scope, ReadCommandWithFilters(
                     new TestFilter.ComposableFilterBrowseLoader { Pattern = "a" },
                     new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "p" })));
 
                 // This test just documents the current behavior, this is not an intended feature.
                 // NullReferenceException because "Simple.Name" FilterCriteria is executed in C# instead of the database.
                 TestUtility.ShouldFail<NullReferenceException>(() =>
-                    ReportFilteredBrowse(container, ReadCommandWithFilters(
+                    ReportFilteredBrowse(scope, ReadCommandWithFilters(
                         new TestFilter.ComposableFilterBrowseLoader { Pattern = "c" },
                         new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "p" })));
             }
@@ -463,11 +463,11 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ComposableFilterWithExecutionContext()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
-                var currentUserName = container.Resolve<IUserInfo>().UserName;
+                var currentUserName = scope.Resolve<IUserInfo>().UserName;
                 Assert.IsTrue(!string.IsNullOrWhiteSpace(currentUserName));
 
                 Assert.AreEqual(currentUserName,
@@ -478,9 +478,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ExternalFilterType()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 repository.TestFilter.ExternalFilter.Delete(repository.TestFilter.ExternalFilter.Query());
                 repository.TestFilter.ExternalFilter.Insert(
@@ -496,7 +496,7 @@ namespace CommonConcepts.Test
                     Tuple.Create<Type, object, string>(typeof(DateTime), default(DateTime), "ddef"),
                 };
 
-                var gr = container.Resolve<GenericRepository<TestFilter.ExternalFilter>>();
+                var gr = scope.Resolve<GenericRepository<TestFilter.ExternalFilter>>();
 
                 foreach (var test in tests)
                 {
@@ -523,7 +523,7 @@ namespace CommonConcepts.Test
                             ReadRecords = true
                         };
                         
-                        var commandResult = (TestFilter.ExternalFilter[])ExecuteCommand(readCommand, container).Records;
+                        var commandResult = (TestFilter.ExternalFilter[])ExecuteCommand(readCommand, scope).Records;
                         Assert.AreEqual(
                             test.Item3,
                             TestUtility.DumpSorted(commandResult, item => item.Name),
@@ -536,9 +536,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void AutoFilter_NoEffectOnServerObjectModel()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 repository.TestFilter.AutoFilter1.Delete(repository.TestFilter.AutoFilter1.Query());
                 repository.TestFilter.AutoFilter2.Delete(repository.TestFilter.AutoFilter2.Query());
 
@@ -554,7 +554,7 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("a1, a2, b1, b2", TestUtility.DumpSorted(repository.TestFilter.AutoFilter2.Query(), item => item.Name));
                 Assert.AreEqual("a1, a2, b1, b2", TestUtility.DumpSorted(repository.TestFilter.AutoFilter2Browse.Query(), item => item.Name2));
 
-                var gr = container.Resolve<GenericRepositories>();
+                var gr = scope.Resolve<GenericRepositories>();
 
                 Assert.AreEqual("a1, a2, b1, b2", TestUtility.DumpSorted(gr.GetGenericRepository<TestFilter.AutoFilter1>().Load(), item => item.Name));
                 Assert.AreEqual("a1, a2, b1, b2", TestUtility.DumpSorted(gr.GetGenericRepository<TestFilter.AutoFilter2>().Load(), item => item.Name));
@@ -565,9 +565,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void AutoFilter_Simple()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 repository.TestFilter.AutoFilter1.Delete(repository.TestFilter.AutoFilter1.Query());
                 repository.TestFilter.AutoFilter2.Delete(repository.TestFilter.AutoFilter2.Query());
 
@@ -579,20 +579,20 @@ namespace CommonConcepts.Test
                     new[] { "a1", "a2", "b1", "b2" }
                     .Select(name => new TestFilter.AutoFilter2 { Name = name }));
 
-                TestClientRead<TestFilter.AutoFilter1>(container, "a1, a2", item => item.Name);
-                TestClientRead<TestFilter.AutoFilter2>(container, "a1, a2, b1, b2", item => item.Name);
-                TestClientRead<TestFilter.AutoFilter2Browse>(container, "b1x, b2x", item => item.Name2);
+                TestClientRead<TestFilter.AutoFilter1>(scope, "a1, a2", item => item.Name);
+                TestClientRead<TestFilter.AutoFilter2>(scope, "a1, a2, b1, b2", item => item.Name);
+                TestClientRead<TestFilter.AutoFilter2Browse>(scope, "b1x, b2x", item => item.Name2);
             }
         }
 
-        private static void TestClientRead<T>(TransactionScopeContainer container, string expected, Func<T, object> reporter, ReadCommandInfo readCommand = null)
+        private static void TestClientRead<T>(TransactionScopeContainer scope, string expected, Func<T, object> reporter, ReadCommandInfo readCommand = null)
             where T : class, IEntity
         {
             readCommand = readCommand ?? new ReadCommandInfo();
             readCommand.DataSource = typeof(T).FullName;
             readCommand.ReadRecords = true;
 
-            var loaded = ExecuteCommand(readCommand, container).Records;
+            var loaded = ExecuteCommand(readCommand, scope).Records;
             var report = loaded.Select(item => reporter((T)item).ToString());
             if (readCommand.OrderByProperties == null)
                 report = report.OrderBy(x => x);
@@ -602,9 +602,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void AutoFilter_Complex()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 repository.TestFilter.AutoFilter1.Delete(repository.TestFilter.AutoFilter1.Query());
                 repository.TestFilter.AutoFilter2.Delete(repository.TestFilter.AutoFilter2.Query());
 
@@ -616,7 +616,7 @@ namespace CommonConcepts.Test
                     new[] { "a1", "a2", "b1", "b2" }
                     .Select(name => new TestFilter.AutoFilter2 { Name = name }));
 
-                var gr = container.Resolve<GenericRepositories>();
+                var gr = scope.Resolve<GenericRepositories>();
 
                 var readCommand = new ReadCommandInfo
                 {
@@ -625,7 +625,7 @@ namespace CommonConcepts.Test
                     ReadTotalCount = true,
                     Top = 1
                 };
-                TestClientRead<TestFilter.AutoFilter1>(container, "a2", item => item.Name, readCommand);
+                TestClientRead<TestFilter.AutoFilter1>(scope, "a2", item => item.Name, readCommand);
 
                 readCommand = new ReadCommandInfo
                 {
@@ -634,16 +634,16 @@ namespace CommonConcepts.Test
                     ReadTotalCount = true,
                     Top = 1
                 };
-                TestClientRead<TestFilter.AutoFilter2Browse>(container, "b2x", item => item.Name2, readCommand);
+                TestClientRead<TestFilter.AutoFilter2Browse>(scope, "b2x", item => item.Name2, readCommand);
             }
         }
 
         [TestMethod]
         public void AutoFilter_NoRedundantAutoFilter()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 repository.TestFilter.AutoFilter1.Delete(repository.TestFilter.AutoFilter1.Query());
                 repository.TestFilter.AutoFilter2.Delete(repository.TestFilter.AutoFilter2.Query());
 
@@ -655,7 +655,7 @@ namespace CommonConcepts.Test
                     new[] { "a1", "a2", "b1", "b2" }
                     .Select(name => new TestFilter.AutoFilter2 { Name = name }));
 
-                var gr = container.Resolve<GenericRepositories>();
+                var gr = scope.Resolve<GenericRepositories>();
 
                 // Number of 'x' characters in the Name property shows how many times the filter was applied.
                 // Auto filter should not be applied if the filter was already manually applied.
@@ -669,7 +669,7 @@ namespace CommonConcepts.Test
                     ReadTotalCount = true,
                     Top = 1
                 };
-                TestClientRead<TestFilter.AutoFilter2Browse>(container, "b2x", item => item.Name2, readCommand);
+                TestClientRead<TestFilter.AutoFilter2Browse>(scope, "b2x", item => item.Name2, readCommand);
 
                 // Same filter manually applied multiple times.
 
@@ -683,16 +683,16 @@ namespace CommonConcepts.Test
                     ReadTotalCount = true,
                     Top = 1
                 };
-                TestClientRead<TestFilter.AutoFilter2Browse>(container, "b2xx", item => item.Name2, readCommand);
+                TestClientRead<TestFilter.AutoFilter2Browse>(scope, "b2xx", item => item.Name2, readCommand);
             }
         }
 
         [TestMethod]
         public void AutoFilter_Where()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 repository.TestFilter.AutoFilter3.Delete(repository.TestFilter.AutoFilter3.Query());
 
                 repository.TestFilter.AutoFilter3.Insert(
@@ -724,10 +724,10 @@ namespace CommonConcepts.Test
                     Filters = new[] { new FilterCriteria { Filter = "TestFilter.WithA" } },
                 };
 
-                TestClientRead<TestFilter.AutoFilter3>(container, "a1, a2, b1, b2", item => item.Name, readAll);
-                TestClientRead<TestFilter.AutoFilter3>(container, "a1, a2", item => item.Name, read10);
-                TestClientRead<TestFilter.AutoFilter3>(container, "a1, a2", item => item.Name, readFiltered);
-                TestClientRead<TestFilter.AutoFilter3>(container, "a1, a2", item => item.Name, readFiltered10);
+                TestClientRead<TestFilter.AutoFilter3>(scope, "a1, a2, b1, b2", item => item.Name, readAll);
+                TestClientRead<TestFilter.AutoFilter3>(scope, "a1, a2", item => item.Name, read10);
+                TestClientRead<TestFilter.AutoFilter3>(scope, "a1, a2", item => item.Name, readFiltered);
+                TestClientRead<TestFilter.AutoFilter3>(scope, "a1, a2", item => item.Name, readFiltered10);
 
                 Assert.AreEqual("", TestUtility.Dump(readAll.Filters.Select(f => f.Filter)));
                 Assert.AreEqual("TestFilter.WithA", TestUtility.Dump(read10.Filters.Select(f => f.Filter)));
@@ -739,9 +739,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ItemFilterReferenced()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var source = repository.TestFilter.Source;
                 var detail = repository.TestFilter.SourceDetail;
 
@@ -760,9 +760,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void QueryFilterParemeterDataStructure()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var parents = new[]
                 {
@@ -802,9 +802,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void QueryFilterCustomPareter()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var items = new[]
                 {

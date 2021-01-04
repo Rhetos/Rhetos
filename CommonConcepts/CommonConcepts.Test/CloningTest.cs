@@ -38,7 +38,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void CreatedColumns()
         {
-            using (Rhetos.TransactionScopeContainer container = TestContainer.Create())
+            using (Rhetos.TransactionScopeContainer scope = TestScope.Create())
             {
                 var sql = @"SELECT
                         OBJECT_NAME(object_id) + '.' + name
@@ -63,7 +63,7 @@ Clone3.ParentID
 Clone3.Start
 ";
                 var actual = new StringBuilder();
-                container.Resolve<ISqlExecuter>().ExecuteReader(sql, reader => actual.AppendLine(reader.GetString(0)));
+                scope.Resolve<ISqlExecuter>().ExecuteReader(sql, reader => actual.AppendLine(reader.GetString(0)));
 
                 Assert.AreEqual(expected, actual.ToString());
             }
@@ -72,7 +72,7 @@ Clone3.Start
         [TestMethod]
         public void CreatedIndexes()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var sql = @"SELECT
                         i.name + '.' + c.name
@@ -91,7 +91,7 @@ Clone3.Start
                     + " IX_Clone3_Start_Parent.ParentID PK_Clone1.ID PK_Clone2.ID PK_Clone3.ID").Split(' ');
 
                 var actual = new List<string>();
-                container.Resolve<ISqlExecuter>().ExecuteReader(sql, reader => actual.Add(reader.GetString(0)));
+                scope.Resolve<ISqlExecuter>().ExecuteReader(sql, reader => actual.Add(reader.GetString(0)));
 
                 Assert.AreEqual(TestUtility.DumpSorted(expected), TestUtility.DumpSorted(actual));
             }
@@ -100,15 +100,15 @@ Clone3.Start
         [TestMethod]
         public void ClonesSimpleBusinessLogic()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestCloning.Source",
                         "DELETE FROM TestCloning.Parent",
                         "DELETE FROM TestCloning.Base"
                     });
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var b = new TestCloning.Base { ID = Guid.NewGuid(), Name = "b" };
                 var b2 = new TestCloning.Base { ID = Guid.NewGuid(), Name = "b2" };
@@ -141,9 +141,9 @@ Clone3.Start
         [TestMethod]
         public void CloneExtension()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var dslModel = container.Resolve<IDslModel>();
+                var dslModel = scope.Resolve<IDslModel>();
                 var clone3 = (EntityInfo)dslModel.FindByKey("DataStructureInfo TestCloning.Clone3");
 
                 var properties = dslModel.FindByReference<PropertyInfo>(p => p.DataStructure, clone3);
@@ -161,9 +161,9 @@ Clone3.Start
         [TestMethod]
         public void CloneUniqueReference()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var dslModel = container.Resolve<IDslModel>();
+                var dslModel = scope.Resolve<IDslModel>();
                 var cloneUR = (EntityInfo)dslModel.FindByKey("DataStructureInfo TestCloning.CloneUR");
 
                 var properties = dslModel.FindByReference<PropertyInfo>(p => p.DataStructure, cloneUR);

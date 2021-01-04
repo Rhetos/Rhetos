@@ -36,9 +36,9 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnInsertInteger()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new SimpleInteger { Value = 3 };
                 repository.TestMaxValue.SimpleInteger.Insert(new[] { entity });
             }
@@ -47,9 +47,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NormallyInsertInteger()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new SimpleInteger { Value = 1 };
                 repository.TestMaxValue.SimpleInteger.Insert(new[] { entity });
             }
@@ -59,9 +59,9 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnUpdate()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new SimpleInteger { Value = 1 };
                 repository.TestMaxValue.SimpleInteger.Insert(new[] { entity });
 
@@ -74,9 +74,9 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnInsertDecimal()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new SimpleDecimal { Value = (decimal)3.33 };
                 repository.TestMaxValue.SimpleDecimal.Insert(new[] { entity });
             }
@@ -85,9 +85,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NormallyInsertDecimal()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new SimpleDecimal { Value = (decimal)2.30 };
                 repository.TestMaxValue.SimpleDecimal.Insert(new[] { entity });
             }
@@ -98,9 +98,9 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnInsertMoney()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new SimpleMoney { Value = (decimal)3.33 };
                 repository.TestMaxValue.SimpleMoney.Insert(new[] { entity });
             }
@@ -109,9 +109,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NormallyInsertMoney()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new SimpleMoney { Value = (decimal)2.30 };
                 repository.TestMaxValue.SimpleMoney.Insert(new[] { entity });
             }
@@ -121,9 +121,9 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnInsertDate()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new SimpleDate { Value = new DateTime(2013, 7, 7) };
                 repository.TestMaxValue.SimpleDate.Insert(new[] { entity });
             }
@@ -132,9 +132,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NormallyInsertDate()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new SimpleDate { Value = new DateTime(2013, 7, 3) };
                 repository.TestMaxValue.SimpleDate.Insert(new[] { entity });
             }
@@ -144,9 +144,9 @@ namespace CommonConcepts.Test
         [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThowUserExceptionOnInsertDateTime()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new SimpleDateTime { Value = new DateTime(2013, 7, 5, 12, 34, 59) };
                 repository.TestMaxValue.SimpleDateTime.Insert(new[] { entity });
             }
@@ -155,9 +155,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NormallyInsertDateTime()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new SimpleDateTime { Value = new DateTime(2013, 7, 5, 12, 33, 1) };
                 repository.TestMaxValue.SimpleDateTime.Insert(new[] { entity });
             }
@@ -166,9 +166,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NullValue()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new SimpleInteger { ID = Guid.NewGuid(), Value = null };
                 repository.TestMaxValue.SimpleInteger.Insert(new[] { entity });
                 Assert.IsNull(repository.TestMaxValue.SimpleInteger.Load(new[] { entity.ID }).Single().Value);

@@ -41,9 +41,9 @@ namespace CommonConcepts.Test
     [TestClass]
     public class QueryDataSourceCommandTest
     {
-        private static void InitializeData(TransactionScopeContainer container)
+        private static void InitializeData(TransactionScopeContainer scope)
         {
-            container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+            scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                 {
                     "DELETE FROM TestQueryDataStructureCommand.E;",
                     "INSERT INTO TestQueryDataStructureCommand.E(Name) SELECT 'a';",
@@ -54,9 +54,9 @@ namespace CommonConcepts.Test
                 });
         }
 
-        private static string ReportCommandResult(TransactionScopeContainer container, QueryDataSourceCommandInfo info, bool sort = false)
+        private static string ReportCommandResult(TransactionScopeContainer scope, QueryDataSourceCommandInfo info, bool sort = false)
         {
-            var commands = container.Resolve<IIndex<Type, IEnumerable<ICommandImplementation>>>();
+            var commands = scope.Resolve<IIndex<Type, IEnumerable<ICommandImplementation>>>();
             var queryDataSourceCommand = (QueryDataSourceCommand)commands[typeof(QueryDataSourceCommandInfo)].Single();
 
             var result = (QueryDataSourceCommandResult)queryDataSourceCommand.Execute(info).Data.Value;
@@ -71,21 +71,21 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Entity()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                InitializeData(container);
+                InitializeData(scope);
 
                 var info = new QueryDataSourceCommandInfo { DataSource = "TestQueryDataStructureCommand.E" };
-                Assert.AreEqual("a, b, c, d, e /5", ReportCommandResult(container, info, true));
+                Assert.AreEqual("a, b, c, d, e /5", ReportCommandResult(scope, info, true));
             }
         }
 
         [TestMethod]
         public void Ordering()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                InitializeData(container);
+                InitializeData(scope);
 
                 var info = new QueryDataSourceCommandInfo
                                {
@@ -93,16 +93,16 @@ namespace CommonConcepts.Test
                                    OrderByProperty = "Name",
                                    OrderDescending = true
                                };
-                Assert.AreEqual("e, d, c, b, a /5", ReportCommandResult(container, info));
+                Assert.AreEqual("e, d, c, b, a /5", ReportCommandResult(scope, info));
             }
         }
 
         [TestMethod]
         public void Paging()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                InitializeData(container);
+                InitializeData(scope);
 
                 var info = new QueryDataSourceCommandInfo
                 {
@@ -112,16 +112,16 @@ namespace CommonConcepts.Test
                     OrderByProperty = "Name",
                     OrderDescending = true
                 };
-                Assert.AreEqual("b, a /5", ReportCommandResult(container, info));
+                Assert.AreEqual("b, a /5", ReportCommandResult(scope, info));
             }
         }
 
         [TestMethod]
         public void PagingWithoutOrder()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                InitializeData(container);
+                InitializeData(scope);
 
                 var info = new QueryDataSourceCommandInfo
                 {
@@ -130,32 +130,32 @@ namespace CommonConcepts.Test
                     PageNumber = 2
                 };
 
-                TestUtility.ShouldFail(() => ReportCommandResult(container, info), "Sort order must be set if paging is used");
+                TestUtility.ShouldFail(() => ReportCommandResult(scope, info), "Sort order must be set if paging is used");
             }
         }
 
         [TestMethod]
         public void GenericFilter()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                InitializeData(container);
+                InitializeData(scope);
 
                 var info = new QueryDataSourceCommandInfo
                 {
                     DataSource = "TestQueryDataStructureCommand.E",
                     GenericFilter = new [] { new FilterCriteria { Property = "Name", Operation = "NotEqual", Value = "c" } }
                 };
-                Assert.AreEqual("a, b, d, e /4", ReportCommandResult(container, info, true));
+                Assert.AreEqual("a, b, d, e /4", ReportCommandResult(scope, info, true));
             }
         }
 
         [TestMethod]
         public void GenericFilterWithPaging()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                InitializeData(container);
+                InitializeData(scope);
 
                 var info = new QueryDataSourceCommandInfo
                 {
@@ -165,15 +165,15 @@ namespace CommonConcepts.Test
                     PageNumber = 2,
                     OrderByProperty = "Name"
                 };
-                Assert.AreEqual("d, e /4", ReportCommandResult(container, info));
+                Assert.AreEqual("d, e /4", ReportCommandResult(scope, info));
             }
         }
 
         //====================================================================
 
-        private static string ReportCommandResult2(TransactionScopeContainer container, QueryDataSourceCommandInfo info, bool sort = false)
+        private static string ReportCommandResult2(TransactionScopeContainer scope, QueryDataSourceCommandInfo info, bool sort = false)
         {
-            var commands = container.Resolve<IIndex<Type, IEnumerable<ICommandImplementation>>>();
+            var commands = scope.Resolve<IIndex<Type, IEnumerable<ICommandImplementation>>>();
             var queryDataSourceCommand = (QueryDataSourceCommand)commands[typeof(QueryDataSourceCommandInfo)].Single();
 
             var result = (QueryDataSourceCommandResult)queryDataSourceCommand.Execute(info).Data.Value;
@@ -189,37 +189,37 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Filter()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestQueryDataStructureCommand.Source;" });
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "a1", "b1", "b2", "c1" }
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestQueryDataStructureCommand.Source;" });
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "a1", "b1", "b2", "c1" }
                     .Select(name => "INSERT INTO TestQueryDataStructureCommand.Source (Name) SELECT N'" + name + "';"));
 
                 var info = new QueryDataSourceCommandInfo { DataSource = "TestQueryDataStructureCommand.Source" };
-                Assert.AreEqual("a1, b1, b2, c1 /4", ReportCommandResult2(container, info, true));
+                Assert.AreEqual("a1, b1, b2, c1 /4", ReportCommandResult2(scope, info, true));
 
                 info.Filter = new TestQueryDataStructureCommand.FilterByPrefix {  Prefix = "b"};
-                Assert.AreEqual("b1, b2 /2", ReportCommandResult2(container, info, true));
+                Assert.AreEqual("b1, b2 /2", ReportCommandResult2(scope, info, true));
 
                 info.OrderByProperty = "Name";
                 info.OrderDescending = true;
-                Assert.AreEqual("b2, b1 /2", ReportCommandResult2(container, info));
+                Assert.AreEqual("b2, b1 /2", ReportCommandResult2(scope, info));
 
                 info.PageNumber = 1;
                 info.RecordsPerPage = 1;
-                Assert.AreEqual("b2 /2", ReportCommandResult2(container, info));
+                Assert.AreEqual("b2 /2", ReportCommandResult2(scope, info));
 
                 info.GenericFilter = new[] { new FilterCriteria { Property = "Name", Operation = "Contains", Value = "1" } };
-                Assert.AreEqual("b1 /1", ReportCommandResult2(container, info));
+                Assert.AreEqual("b1 /1", ReportCommandResult2(scope, info));
             }
         }
 
         [TestMethod]
         public void NullGenericFilter()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var genericRepos = container.Resolve<GenericRepositories>().GetGenericRepository("Common.Claim");
+                var genericRepos = scope.Resolve<GenericRepositories>().GetGenericRepository("Common.Claim");
 
                 var readCommand = new ReadCommandInfo
                 {
@@ -230,7 +230,7 @@ namespace CommonConcepts.Test
                     ReadTotalCount = true
                 };
 
-                var serverCommandsUtility = container.Resolve<ServerCommandsUtility>();
+                var serverCommandsUtility = scope.Resolve<ServerCommandsUtility>();
 
                 var readResult = serverCommandsUtility.ExecuteReadCommand(readCommand, genericRepos);
                 Console.WriteLine("Records.Length: " + readResult.Records.Length);

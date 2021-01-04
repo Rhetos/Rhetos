@@ -19,16 +19,15 @@
 
 using Autofac;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos;
+using Rhetos.Deployment;
+using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Rhetos.Deployment;
 using System.IO;
-using Rhetos.Extensibility;
+using System.Linq;
 using System.Reflection;
 
 namespace Rhetos.Configuration.Autofac.Test
@@ -46,20 +45,16 @@ namespace Rhetos.Configuration.Autofac.Test
 
         }
 
-        private class ApplicationDeployment_Accessor : ApplicationDeployment
+        private class ApplicationDeploymentAccessor : ApplicationDeployment, ITestAccessor
         {
-            public ApplicationDeployment_Accessor(Action<IConfigurationBuilder> configureConfiguration, ILogProvider logProvider) : 
+            public ApplicationDeploymentAccessor(Action<IConfigurationBuilder> configureConfiguration, ILogProvider logProvider) : 
                 base(HostBuilderFactoryWithConfiguration(configureConfiguration), logProvider){}
 
             public new IRhetosHostBuilder CreateDbUpdateHostBuilder()
             {
                 return base.CreateDbUpdateHostBuilder();
             }
-
-            public new void AddAppInitializationComponents(ContainerBuilder builder)
-            {
-                base.AddAppInitializationComponents(builder);
-            }
+            public void AddAppInitializationComponents(ContainerBuilder builder) => this.Invoke("AddAppInitializationComponents", builder);
 
             private static Func<IRhetosHostBuilder> HostBuilderFactoryWithConfiguration(Action<IConfigurationBuilder> configureConfiguration)
             {
@@ -68,15 +63,13 @@ namespace Rhetos.Configuration.Autofac.Test
             }
         }
 
-        private class ApplicationBuild_Accessor : ApplicationBuild
+        private class ApplicationBuildAccessor : ApplicationBuild, ITestAccessor
         {
-            public ApplicationBuild_Accessor(IConfiguration configuration, ILogProvider logProvider, IEnumerable<string> pluginAssemblies, InstalledPackages installedPackages) : 
-                base(configuration, logProvider, pluginAssemblies, installedPackages){ }
+            public ApplicationBuildAccessor(IConfiguration configuration, ILogProvider logProvider, IEnumerable<string> pluginAssemblies, InstalledPackages installedPackages) :
+                base(configuration, logProvider, pluginAssemblies, installedPackages)
+            { }
 
-            public new RhetosContainerBuilder CreateBuildComponentsContainer()
-            {
-                return base.CreateBuildComponentsContainer();
-            }
+            public RhetosContainerBuilder CreateBuildComponentsContainer() => this.Invoke("CreateBuildComponentsContainer");
         }
 
         public IConfiguration GetBuildConfiguration()
@@ -107,7 +100,7 @@ namespace Rhetos.Configuration.Autofac.Test
             return configuration;
         }
 
-        public void ConfigureRuntimeConfiguration(IConfigurationBuilder configurationBuilder)
+        public void GetRuntimeConfiguration(IConfigurationBuilder configurationBuilder)
         {
             string rhetosAppRootPath = AppDomain.CurrentDomain.BaseDirectory;
             string currentAssemblyPath = GetType().Assembly.Location;
@@ -165,7 +158,7 @@ namespace Rhetos.Configuration.Autofac.Test
         public void CorrectRegistrationsBuildTime()
         {
             var configuration = GetBuildConfiguration();
-            var build = new ApplicationBuild_Accessor(configuration, new NLogProvider(), PluginsFromThisAssembly(), new InstalledPackages());
+            var build = new ApplicationBuildAccessor(configuration, new NLogProvider(), PluginsFromThisAssembly(), new InstalledPackages());
             var builder = build.CreateBuildComponentsContainer();
 
             using (var container = builder.Build())
@@ -183,7 +176,7 @@ namespace Rhetos.Configuration.Autofac.Test
         [TestMethod]
         public void CorrectRegistrationsDbUpdate()
         {
-            var deployment = new ApplicationDeployment_Accessor(ConfigureRuntimeConfiguration, new NLogProvider());
+            var deployment = new ApplicationDeploymentAccessor(GetRuntimeConfiguration, new NLogProvider());
             var rhetosHostBuilder = deployment.CreateDbUpdateHostBuilder();
 
             using (var rhetosHost = rhetosHostBuilder.Build())
@@ -201,9 +194,9 @@ namespace Rhetos.Configuration.Autofac.Test
         public void CorrectRegistrationsRuntimeWithInitialization()
         {
             // we construct the object, but need only its 'almost' static .AddAppInitilizationComponents
-            var deployment = new ApplicationDeployment_Accessor(ConfigureRuntimeConfiguration, new NLogProvider());
+            var deployment = new ApplicationDeploymentAccessor(GetRuntimeConfiguration, new NLogProvider());
             var rhetosHostBuilder = new RhetosHostTestBuilder()
-                .ConfigureConfiguration(ConfigureRuntimeConfiguration)
+                .ConfigureConfiguration(GetRuntimeConfiguration)
                 .ConfigureContainer(deployment.AddAppInitializationComponents);
 
             using (var rhetosHost = rhetosHostBuilder.Build())
@@ -271,7 +264,6 @@ namespace Rhetos.Configuration.Autofac.Test
         const string _expectedRegistrationsBuild =
 @"Activator = ApplicationGenerator (ReflectionActivator), Services = [Rhetos.Deployment.ApplicationGenerator], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = AppSettingsGenerator (ReflectionActivator), Services = [Rhetos.Extensibility.IGenerator], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
-Activator = AssemblyGenerator (ReflectionActivator), Services = [Rhetos.Compiler.IAssemblyGenerator], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = BuildOptions (DelegateActivator), Services = [Rhetos.Utilities.BuildOptions], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = CodeBuilder (ReflectionActivator), Services = [Rhetos.Compiler.ICodeBuilder], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = CodeGenerator (ReflectionActivator), Services = [Rhetos.Compiler.ICodeGenerator], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope

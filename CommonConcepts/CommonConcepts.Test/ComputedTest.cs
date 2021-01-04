@@ -36,9 +36,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SimpleRead()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 {
                     var loaded = repository.TestComputed.Simple.Load();
@@ -55,9 +55,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SpecialLoad()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var paremeter = new TestComputed.SpecialLoad { SpecialName = "spec" };
                 var loaded = repository.TestComputed.Simple.Filter(paremeter);
@@ -68,10 +68,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ComputedWithContext()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var user = container.Resolve<IUserInfo>();
-                var repository = container.Resolve<Common.DomRepository>();
+                var user = scope.Resolve<IUserInfo>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 Assert.IsFalse(string.IsNullOrWhiteSpace(user.UserName));
                 Assert.AreEqual(user.UserName, repository.TestComputed.ComputedWithContext.Load().Single().Name);

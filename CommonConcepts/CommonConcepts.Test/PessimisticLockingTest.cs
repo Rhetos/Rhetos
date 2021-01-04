@@ -35,14 +35,14 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateLocked()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var groupId = Guid.NewGuid();
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestPessimisticLocking.Article;",
                         "DELETE FROM Common.ExclusiveLock;",
@@ -66,44 +66,44 @@ namespace CommonConcepts.Test
                 var myLock = new Common.ExclusiveLock
                 {
                     UserName = "OtherUser",
-                    Workstation = container.Resolve<IUserInfo>().Workstation,
+                    Workstation = scope.Resolve<IUserInfo>().Workstation,
                     ResourceType = "TestPessimisticLocking.Article",
                     ResourceID = id2,
-                    LockStart = DbTime(container),
-                    LockFinish = DbTime(container).AddSeconds(10)
+                    LockStart = DbTime(scope),
+                    LockFinish = DbTime(scope).AddSeconds(10)
                 };
                 lockRepos.Insert(new[] { myLock });
                 TestUtility.ShouldFail(() => articleRepos.Update(articles), id2.ToString(), "OtherUser");
 
-                myLock.UserName = container.Resolve<IUserInfo>().UserName;
+                myLock.UserName = scope.Resolve<IUserInfo>().UserName;
                 myLock.Workstation = "OtherWorkstation";
                 lockRepos.Update(new[] { myLock });
                 TestUtility.ShouldFail(() => articleRepos.Update(articles), id2.ToString(), "OtherWorkstation");
 
-                myLock.Workstation = container.Resolve<IUserInfo>().Workstation;
+                myLock.Workstation = scope.Resolve<IUserInfo>().Workstation;
                 lockRepos.Update(new[] { myLock });
                 articleRepos.Update(articles);
                 Assert.AreEqual("aaa12, bbb12", TestUtility.DumpSorted(articleRepos.Query(), item => item.Name), "updated with owned locks");
             }
         }
 
-        private static DateTime DbTime(TransactionScopeContainer container)
+        private static DateTime DbTime(TransactionScopeContainer scope)
         {
-            return SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
+            return SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>());
         }
 
         [TestMethod]
         public void ParentLocked()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var parentId0 = Guid.NewGuid();
                 var parentId1 = Guid.NewGuid();
                 var id0 = Guid.NewGuid();
                 var id1 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestPessimisticLocking.Article;",
                         "DELETE FROM TestPessimisticLocking.ArticleGroup;",
@@ -132,22 +132,22 @@ namespace CommonConcepts.Test
                 var myLock = new Common.ExclusiveLock
                 {
                     UserName = "OtherUser",
-                    Workstation = container.Resolve<IUserInfo>().Workstation,
+                    Workstation = scope.Resolve<IUserInfo>().Workstation,
                     ResourceType = "TestPessimisticLocking.ArticleGroup",
                     ResourceID = parentId0,
-                    LockStart = DbTime(container),
-                    LockFinish = DbTime(container).AddSeconds(10)
+                    LockStart = DbTime(scope),
+                    LockFinish = DbTime(scope).AddSeconds(10)
                 };
                 lockRepos.Insert(new[] { myLock });
                 TestUtility.ShouldFail(() => articleRepos.Update(articles), parentId0.ToString(), "OtherUser");
 
-                myLock.UserName = container.Resolve<IUserInfo>().UserName;
+                myLock.UserName = scope.Resolve<IUserInfo>().UserName;
                 myLock.Workstation = "OtherWorkstation";
                 lockRepos.Update(new[] { myLock });
                 TestUtility.ShouldFail(() => articleRepos.Update(articles), parentId0.ToString(), "OtherWorkstation");
 
-                myLock.UserName = container.Resolve<IUserInfo>().UserName;
-                myLock.Workstation = container.Resolve<IUserInfo>().Workstation;
+                myLock.UserName = scope.Resolve<IUserInfo>().UserName;
+                myLock.Workstation = scope.Resolve<IUserInfo>().Workstation;
                 lockRepos.Update(new[] { myLock });
                 articleRepos.Update(articles);
                 Assert.AreEqual("aaa12, bbb12", TestUtility.DumpSorted(articleRepos.Query(), item => item.Name), "updated with OWNED parent lock");
@@ -163,7 +163,7 @@ namespace CommonConcepts.Test
 
                 TestUtility.ShouldFail(() => articleRepos.Delete(new[] { articles[0] }), parentId0.ToString(), "OtherUser");
 
-                myLock.UserName = container.Resolve<IUserInfo>().UserName;
+                myLock.UserName = scope.Resolve<IUserInfo>().UserName;
                 lockRepos.Update(new[] { myLock });
                 articleRepos.Update(articles);
                 Assert.AreEqual("aaa12, bbb12", TestUtility.DumpSorted(articleRepos.Query(), item => item.Name), "Updated with OWNED old parent lock");
@@ -175,7 +175,7 @@ namespace CommonConcepts.Test
                 var newArticle = new TestPessimisticLocking.Article { ID = Guid.NewGuid(), Name = "ccc", ParentID = groups[0].ID };
                 TestUtility.ShouldFail(() => articleRepos.Insert(new[] { newArticle }), parentId0.ToString(), "OtherUser");
 
-                myLock.UserName = container.Resolve<IUserInfo>().UserName;
+                myLock.UserName = scope.Resolve<IUserInfo>().UserName;
                 lockRepos.Update(new[] { myLock });
                 articleRepos.Insert(new[] { newArticle });
                 Assert.AreEqual("aaa12, bbb12, ccc", TestUtility.DumpSorted(articleRepos.Query(), item => item.Name), "Inserted with OWNED new parent lock");
@@ -185,12 +185,12 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void LockFinish()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var parentId = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestPessimisticLocking.Article;",
                         "DELETE FROM TestPessimisticLocking.ArticleGroup;",
@@ -210,17 +210,17 @@ namespace CommonConcepts.Test
                 var myLock = new Common.ExclusiveLock
                 {
                     UserName = "OtherUser",
-                    Workstation = container.Resolve<IUserInfo>().Workstation,
+                    Workstation = scope.Resolve<IUserInfo>().Workstation,
                     ResourceType = "TestPessimisticLocking.Article",
                     ResourceID = article.ID,
-                    LockStart = DbTime(container),
-                    LockFinish = DbTime(container).AddSeconds(10)
+                    LockStart = DbTime(scope),
+                    LockFinish = DbTime(scope).AddSeconds(10)
                 };
                 lockRepos.Insert(new[] { myLock });
                 article.Name = article.Name + "1";
                 TestUtility.ShouldFail(() => articleRepos.Update(new[] { article }), article.ID.ToString(), "OtherUser");
 
-                myLock.LockFinish = DbTime(container).AddSeconds(-10);
+                myLock.LockFinish = DbTime(scope).AddSeconds(-10);
                 lockRepos.Update(new[] { myLock });
                 articleRepos.Update(new[] { article });
                 Assert.AreEqual("aaa1", TestUtility.DumpSorted(articleRepos.Query(), item => item.Name), "Inactive lock");
@@ -230,17 +230,17 @@ namespace CommonConcepts.Test
                 myLock = new Common.ExclusiveLock
                 {
                     UserName = "OtherUser",
-                    Workstation = container.Resolve<IUserInfo>().Workstation,
+                    Workstation = scope.Resolve<IUserInfo>().Workstation,
                     ResourceType = "TestPessimisticLocking.ArticleGroup",
                     ResourceID = group.ID,
-                    LockStart = DbTime(container),
-                    LockFinish = DbTime(container).AddSeconds(10)
+                    LockStart = DbTime(scope),
+                    LockFinish = DbTime(scope).AddSeconds(10)
                 };
                 lockRepos.Insert(new[] { myLock });
                 article.Name = article.Name + "2";
                 TestUtility.ShouldFail(() => articleRepos.Update(new[] { article }), group.ID.ToString(), "OtherUser");
 
-                myLock.LockFinish = DbTime(container).AddSeconds(-10);
+                myLock.LockFinish = DbTime(scope).AddSeconds(-10);
                 lockRepos.Update(new[] { myLock });
                 articleRepos.Update(new[] { article });
                 Assert.AreEqual("aaa12", TestUtility.DumpSorted(articleRepos.Query(), item => item.Name), "Inactive parent lock");
@@ -260,10 +260,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ActionSetLock_Basic()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var parentId = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestPessimisticLocking.Article;",
                         "DELETE FROM TestPessimisticLocking.ArticleGroup;",
@@ -272,16 +272,16 @@ namespace CommonConcepts.Test
                         "INSERT INTO TestPessimisticLocking.Article (ID, Name, ParentID) SELECT '" + Guid.NewGuid() + "', 'aaa', '" + parentId + "';"
                     });
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var article = repository.TestPessimisticLocking.Article.Load().Single();
 
                 TestSetLock(new Common.SetLock { ResourceType = "TestPessimisticLocking.Article", ResourceID = article.ID }, repository);
                 var myLock = repository.Common.ExclusiveLock.Load().Single();
                 Assert.AreEqual("TestPessimisticLocking.Article", myLock.ResourceType);
                 Assert.AreEqual(article.ID, myLock.ResourceID);
-                Assert.AreEqual(container.Resolve<IUserInfo>().UserName, myLock.UserName);
-                Assert.AreEqual(container.Resolve<IUserInfo>().Workstation, myLock.Workstation);
-                var now = DbTime(container);
+                Assert.AreEqual(scope.Resolve<IUserInfo>().UserName, myLock.UserName);
+                Assert.AreEqual(scope.Resolve<IUserInfo>().Workstation, myLock.Workstation);
+                var now = DbTime(scope);
                 AssertInRange(myLock.LockStart.Value, now.AddSeconds(-1), now);
                 AssertInRange(myLock.LockFinish.Value, now.AddMinutes(defaultLockMinutes).AddSeconds(-1), now.AddMinutes(defaultLockMinutes));
             }
@@ -290,10 +290,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ActionSetLock_OtherUser()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var parentId = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestPessimisticLocking.Article;",
                         "DELETE FROM TestPessimisticLocking.ArticleGroup;",
@@ -302,17 +302,17 @@ namespace CommonConcepts.Test
                         "INSERT INTO TestPessimisticLocking.Article (ID, Name, ParentID) SELECT '" + Guid.NewGuid() + "', 'aaa', '" + parentId + "';"
                     });
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var article = repository.TestPessimisticLocking.Article.Load().Single();
 
                 var oldLock = new Common.ExclusiveLock
                 {
                     UserName = "OtherUser",
-                    Workstation = container.Resolve<IUserInfo>().Workstation,
+                    Workstation = scope.Resolve<IUserInfo>().Workstation,
                     ResourceType = "TestPessimisticLocking.Article",
                     ResourceID = article.ID,
-                    LockStart = DbTime(container),
-                    LockFinish = DbTime(container).AddSeconds(10)
+                    LockStart = DbTime(scope),
+                    LockFinish = DbTime(scope).AddSeconds(10)
                 };
                 repository.Common.ExclusiveLock.Insert(new[] { oldLock });
 
@@ -324,10 +324,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ActionSetLock_OtherUserObsoleteLock()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var parentId = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestPessimisticLocking.Article;",
                         "DELETE FROM TestPessimisticLocking.ArticleGroup;",
@@ -336,17 +336,17 @@ namespace CommonConcepts.Test
                         "INSERT INTO TestPessimisticLocking.Article (ID, Name, ParentID) SELECT '" + Guid.NewGuid() + "', 'aaa', '" + parentId + "';"
                     });
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var article = repository.TestPessimisticLocking.Article.Load().Single();
 
                 var oldLock = new Common.ExclusiveLock
                 {
                     UserName = "OtherUser",
-                    Workstation = container.Resolve<IUserInfo>().Workstation,
+                    Workstation = scope.Resolve<IUserInfo>().Workstation,
                     ResourceType = "TestPessimisticLocking.Article",
                     ResourceID = article.ID,
-                    LockStart = DbTime(container).AddDays(-1),
-                    LockFinish = DbTime(container).AddDays(-1).AddSeconds(10)
+                    LockStart = DbTime(scope).AddDays(-1),
+                    LockFinish = DbTime(scope).AddDays(-1).AddSeconds(10)
                 };
                 repository.Common.ExclusiveLock.Insert(new[] { oldLock });
 
@@ -354,9 +354,9 @@ namespace CommonConcepts.Test
                 var myLock = repository.Common.ExclusiveLock.Load().Single();
                 Assert.AreEqual("TestPessimisticLocking.Article", myLock.ResourceType);
                 Assert.AreEqual(article.ID, myLock.ResourceID);
-                Assert.AreEqual(container.Resolve<IUserInfo>().UserName, myLock.UserName);
-                Assert.AreEqual(container.Resolve<IUserInfo>().Workstation, myLock.Workstation);
-                var now = DbTime(container);
+                Assert.AreEqual(scope.Resolve<IUserInfo>().UserName, myLock.UserName);
+                Assert.AreEqual(scope.Resolve<IUserInfo>().Workstation, myLock.Workstation);
+                var now = DbTime(scope);
                 AssertInRange(myLock.LockStart.Value, now.AddSeconds(-1), now);
                 AssertInRange(myLock.LockFinish.Value, now.AddMinutes(defaultLockMinutes).AddSeconds(-1), now.AddMinutes(defaultLockMinutes));
             }
@@ -365,10 +365,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ActionSetLock_MyRedundantLock()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var parentId = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestPessimisticLocking.Article;",
                         "DELETE FROM TestPessimisticLocking.ArticleGroup;",
@@ -377,18 +377,18 @@ namespace CommonConcepts.Test
                         "INSERT INTO TestPessimisticLocking.Article (ID, Name, ParentID) SELECT '" + Guid.NewGuid() + "', 'aaa', '" + parentId + "';"
                     });
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var article = repository.TestPessimisticLocking.Article.Load().Single();
 
                 var oldLock = new Common.ExclusiveLock
                 {
-                    UserName = container.Resolve<IUserInfo>().UserName,
-                    Workstation = container.Resolve<IUserInfo>().Workstation,
+                    UserName = scope.Resolve<IUserInfo>().UserName,
+                    Workstation = scope.Resolve<IUserInfo>().Workstation,
                     ResourceType = "TestPessimisticLocking.Article",
                     ResourceID = article.ID,
-                    LockStart = DbTime(container).AddSeconds(-10),
-                    LockFinish = DbTime(container).AddSeconds(4)
+                    LockStart = DbTime(scope).AddSeconds(-10),
+                    LockFinish = DbTime(scope).AddSeconds(4)
                 };
                 repository.Common.ExclusiveLock.Insert(new[] { oldLock });
 
@@ -396,9 +396,9 @@ namespace CommonConcepts.Test
                 var myLock = repository.Common.ExclusiveLock.Load().Single();
                 Assert.AreEqual("TestPessimisticLocking.Article", myLock.ResourceType);
                 Assert.AreEqual(article.ID, myLock.ResourceID);
-                Assert.AreEqual(container.Resolve<IUserInfo>().UserName, myLock.UserName);
-                Assert.AreEqual(container.Resolve<IUserInfo>().Workstation, myLock.Workstation);
-                var now = DbTime(container);
+                Assert.AreEqual(scope.Resolve<IUserInfo>().UserName, myLock.UserName);
+                Assert.AreEqual(scope.Resolve<IUserInfo>().Workstation, myLock.Workstation);
+                var now = DbTime(scope);
                 AssertInRange(myLock.LockStart.Value, now.AddSeconds(-1), now);
                 AssertInRange(myLock.LockFinish.Value, now.AddMinutes(defaultLockMinutes).AddSeconds(-1), now.AddMinutes(defaultLockMinutes));
             }
@@ -412,10 +412,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ActionReleaseLock_Basic()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var parentId = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestPessimisticLocking.Article;",
                         "DELETE FROM TestPessimisticLocking.ArticleGroup;",
@@ -424,7 +424,7 @@ namespace CommonConcepts.Test
                         "INSERT INTO TestPessimisticLocking.Article (ID, Name, ParentID) SELECT '" + Guid.NewGuid() + "', 'aaa', '" + parentId + "';"
                     });
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var article = repository.TestPessimisticLocking.Article.Load().Single();
 
                 TestReleaseLock(new Common.ReleaseLock { ResourceType = "TestPessimisticLocking.Article", ResourceID = article.ID }, repository);
@@ -432,12 +432,12 @@ namespace CommonConcepts.Test
 
                 var oldLock = new Common.ExclusiveLock
                 {
-                    UserName = container.Resolve<IUserInfo>().UserName,
-                    Workstation = container.Resolve<IUserInfo>().Workstation,
+                    UserName = scope.Resolve<IUserInfo>().UserName,
+                    Workstation = scope.Resolve<IUserInfo>().Workstation,
                     ResourceType = "TestPessimisticLocking.Article",
                     ResourceID = article.ID,
-                    LockStart = DbTime(container).AddSeconds(-10),
-                    LockFinish = DbTime(container).AddSeconds(4)
+                    LockStart = DbTime(scope).AddSeconds(-10),
+                    LockFinish = DbTime(scope).AddSeconds(4)
                 };
                 repository.Common.ExclusiveLock.Insert(new[] { oldLock });
                 Assert.AreEqual(1, repository.Common.ExclusiveLock.Query().Count());
@@ -456,10 +456,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ActionReleaseLock_OtherUser()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var parentId = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestPessimisticLocking.Article;",
                         "DELETE FROM TestPessimisticLocking.ArticleGroup;",
@@ -468,17 +468,17 @@ namespace CommonConcepts.Test
                         "INSERT INTO TestPessimisticLocking.Article (ID, Name, ParentID) SELECT '" + Guid.NewGuid() + "', 'aaa', '" + parentId + "';"
                     });
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var article = repository.TestPessimisticLocking.Article.Load().Single();
 
                 var oldLock = new Common.ExclusiveLock
                 {
                     UserName = "OtherUser",
-                    Workstation = container.Resolve<IUserInfo>().Workstation,
+                    Workstation = scope.Resolve<IUserInfo>().Workstation,
                     ResourceType = "TestPessimisticLocking.Article",
                     ResourceID = article.ID,
-                    LockStart = DbTime(container).AddSeconds(0),
-                    LockFinish = DbTime(container).AddSeconds(10)
+                    LockStart = DbTime(scope).AddSeconds(0),
+                    LockFinish = DbTime(scope).AddSeconds(10)
                 };
                 repository.Common.ExclusiveLock.Insert(new[] { oldLock });
                 Assert.AreEqual(1, repository.Common.ExclusiveLock.Query().Count());

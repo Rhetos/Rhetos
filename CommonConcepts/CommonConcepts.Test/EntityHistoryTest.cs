@@ -78,9 +78,9 @@ namespace CommonConcepts.Test
             return new DateTime(2001, 1, 1).AddDays(d-1);
         }
 
-        private static DateTime GetServerTime(TransactionScopeContainer container)
+        private static DateTime GetServerTime(TransactionScopeContainer scope)
         {
-            var serverTime = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
+            var serverTime = SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>());
             Console.WriteLine("Server time: " + serverTime.ToString("o") + ". Local time: " + DateTime.Now.ToString("o") + ".");
             return serverTime;
         }
@@ -96,10 +96,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void MinimalHistoryInsert()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Minimal" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Minimal" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 Assert.AreEqual(0, repository.TestHistory.Minimal.Query().Count());
                 Assert.AreEqual(0, repository.TestHistory.Minimal_Changes.Query().Count());
@@ -108,7 +108,7 @@ namespace CommonConcepts.Test
                 var m2 = new TestHistory.Minimal { Code = 2 };
                 repository.TestHistory.Minimal.Insert(new[] { m1, m2 });
 
-                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
+                var now = SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>());
 
                 Assert.AreEqual("1, 2", TestUtility.DumpSorted(repository.TestHistory.Minimal.Query(), item => item.Code.ToString()));
                 Assert.AreEqual(0, repository.TestHistory.Minimal_Changes.Query().Count());
@@ -121,20 +121,20 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void MinimalHistoryUpdate()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var id1 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Minimal",
                     "INSERT INTO TestHistory.Minimal (ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, '2001-01-01')"});
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var m1 = repository.TestHistory.Minimal.Load().Single();
                 m1.ActiveSince = null;
                 m1.Code = 11;
                 repository.TestHistory.Minimal.Update(new[] { m1 });
 
-                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
+                var now = SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>());
 
                 var h = repository.TestHistory.Minimal_Changes.Query().Single();
 
@@ -147,20 +147,20 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ActiveUntilCheck()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var id1 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Minimal",
                     "INSERT INTO TestHistory.Minimal (ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, '2001-01-01')"});
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var m1 = repository.TestHistory.Minimal.Load().Single();
                 m1.ActiveSince = null;
                 m1.Code = 11;
                 repository.TestHistory.Minimal.Update(new[] { m1 });
 
-                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
+                var now = SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>());
 
                 var h = repository.TestHistory.Minimal_History.Load().OrderBy(t => t.ActiveSince).FirstOrDefault();
                 var m = repository.TestHistory.Minimal.Load().Single();
@@ -172,21 +172,21 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ActiveUntilEditingCurrentVersionActiveFromCheck()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var id1 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Minimal",
                     "INSERT INTO TestHistory.Minimal (ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, '2012-01-01')",
                     "INSERT INTO TestHistory.Minimal_Changes (ID, EntityID, ActiveSince) VALUES ('"+Guid.NewGuid().ToString()+"'," + SqlUtility.QuoteGuid(id1) + ", '2000-01-01')"                    
                 });
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var m1 = repository.TestHistory.Minimal.Load().Single();
                 m1.ActiveSince = new DateTime(2012, 12, 25);
                 repository.TestHistory.Minimal.Update(new[] { m1 });
 
-                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
+                var now = SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>());
 
                 var h = repository.TestHistory.Minimal_History.Load().OrderBy(t => t.ActiveSince).ToList();
                 var m = repository.TestHistory.Minimal.Load().Single();
@@ -199,20 +199,20 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ActiveUntilAsExtensionInHistory()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var id1 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Minimal",
                     "INSERT INTO TestHistory.Minimal (ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, '2001-01-01')"});
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var m1 = repository.TestHistory.Minimal.Load().Single();
                 m1.ActiveSince = null;
                 m1.Code = 11;
                 repository.TestHistory.Minimal.Update(new[] { m1 });
 
-                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
+                var now = SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>());
 
                 var hist = repository.TestHistory.Minimal_Changes.Query().Where(item => item.EntityID == m1.ID).Single();
                 var m = repository.TestHistory.Minimal.Load().Single();
@@ -224,20 +224,20 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ActiveUntilInHistory()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var id1 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Minimal",
                     "INSERT INTO TestHistory.Minimal (ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, '2001-01-01')"});
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var m1 = repository.TestHistory.Minimal.Load().Single();
                 m1.ActiveSince = null;
                 m1.Code = 11;
                 repository.TestHistory.Minimal.Update(new[] { m1 });
 
-                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
+                var now = SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>());
 
                 var fullh = repository.TestHistory.Minimal_History.Query().Where(item => item.EntityID == m1.ID).OrderBy(item => item.ActiveSince).Select(item => item).ToList();
 
@@ -249,10 +249,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryWithInvalidData()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Standard" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Standard" });
+                var repository = scope.Resolve<Common.DomRepository>();
                 var standardRepos = repository.TestHistory.Standard;
 
                 var e = new TestHistory.Standard { Code = 1, Name = "a", Birthday = new DateTime(2001, 2, 3, 4, 5, 6) };
@@ -272,13 +272,13 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryWithReference()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 Guid c1ID = Guid.NewGuid();
                 Guid c2ID = Guid.NewGuid();
                 Guid rcID = Guid.NewGuid();
 
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { 
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { 
                     "DELETE FROM TestHistory.ReferenceClean_Changes;",
                     "DELETE FROM TestHistory.ReferenceClean;",
                     "DELETE FROM TestHistory.Clean;",
@@ -286,7 +286,7 @@ namespace CommonConcepts.Test
                     "INSERT INTO TestHistory.Clean (ID, Name) VALUES ('" + c2ID.ToString() + "', 'c1');",
                     "INSERT INTO TestHistory.ReferenceClean (ID, AddName, CleanID) VALUES ('" + rcID.ToString() + "', 'rc','" + c1ID.ToString() + "');"
                 });
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var cleanRepos = repository.TestHistory.Clean;
 
                 var c1 = repository.TestHistory.Clean.Query().Where(item => item.ID == c1ID).SingleOrDefault();
@@ -305,13 +305,13 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryWithAutocode()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.BasicAutocode_Changes;",
                     "DELETE FROM TestHistory.BasicAutocode;" });
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var c1 = new TestHistory.BasicAutocode { ID = Guid.NewGuid(), Name = "c1", Code = "+" };
                 var c2 = new TestHistory.BasicAutocode { ID = Guid.NewGuid(), Name = "c2", Code = "+" };
@@ -333,13 +333,13 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryWithUnique()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 Guid c1ID = Guid.NewGuid();
                 Guid c2ID = Guid.NewGuid();
                 Guid c3ID = Guid.NewGuid();
 
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { 
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { 
                     "DELETE FROM TestHistory.BasicUnique_Changes;",
                     "DELETE FROM TestHistory.BasicUnique;",
                     "INSERT INTO TestHistory.BasicUnique (ID, Name, ActiveSince) VALUES ('" + c1ID.ToString() + "', 'c1', '2013-01-01');",
@@ -348,7 +348,7 @@ namespace CommonConcepts.Test
                     "INSERT INTO TestHistory.BasicUnique_Changes (ID, EntityID, Name, ActiveSince) VALUES ('" + Guid.NewGuid().ToString() + "', '" + c1ID.ToString() + "', 'oldc1', '2012-01-01');",
                     "INSERT INTO TestHistory.BasicUnique_Changes (ID, EntityID, Name, ActiveSince) VALUES ('" + Guid.NewGuid().ToString() + "', '" + c2ID.ToString() + "', 'c3', '2012-01-01');"
                 });
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var cleanRepos = repository.TestHistory.BasicUnique;
 
                 var c1 = repository.TestHistory.BasicUnique.Query().Where(item => item.ID == c1ID).SingleOrDefault();
@@ -375,14 +375,14 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void MinimalHistoryUpdateInvalidActiveSince()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var id1 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Minimal",
                     "INSERT INTO TestHistory.Minimal (ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, '2013-01-01')",
                     "INSERT INTO TestHistory.Minimal_Changes (ID, EntityID, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(Guid.NewGuid()) + ", " + SqlUtility.QuoteGuid(id1) + ", '2012-12-30')"});
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var m1 = repository.TestHistory.Minimal.Load().Single();
                 m1.ActiveSince = new DateTime(2012, 12, 25);
@@ -395,10 +395,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void CrudWithExplicitTime()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 // Insert:
                 var s = new TestHistory.Simple { ID = Guid.NewGuid(), Code = 1, ActiveSince = Day(1), Name = "a" };
@@ -439,12 +439,12 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InsertFuture()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
-                var future = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>())
+                var future = SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>())
                     .Rounded().AddMinutes(1);
                 repository.TestHistory.Simple.Insert(new[] { new TestHistory.Simple { Code = 1, ActiveSince = future } });
 
@@ -455,15 +455,15 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateFuture()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var s = new TestHistory.Simple { ID = Guid.NewGuid(), Code = 1 };
                 repository.TestHistory.Simple.Insert(new[] { s });
 
-                var future = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>())
+                var future = SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>())
                     .Rounded().AddMinutes(1);
                 s.ActiveSince = future;
                 repository.TestHistory.Simple.Update(new[] { s });
@@ -475,17 +475,17 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NormalUpdateIfExistsNewerHistoryEntryDiffBase()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple_Changes",
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'Test1', '2001-01-01')",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id2) + ", 1, 'Test2', '2013-12-12')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, Code, ActiveSince, ID) VALUES (" + SqlUtility.QuoteGuid(id2) + ", 1, '2013-10-10', '"+(Guid.NewGuid()).ToString()+"')"});
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var m1 = repository.TestHistory.Simple.Query().Where(t => t.ID == id1).SingleOrDefault();
                 m1.ActiveSince = new DateTime(2013, 5, 5);
@@ -497,13 +497,13 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NormalUpdate()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var id1 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'Test', '2001-01-01')"});
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var m1 = repository.TestHistory.Simple.Load().Single();
                 m1.ActiveSince = null;
@@ -515,12 +515,12 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateWithoutSettingActiveSince()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
-                var inPast = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()).AddMinutes(-1);
+                var inPast = SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>()).AddMinutes(-1);
                 var s = new TestHistory.Simple { ID = Guid.NewGuid(), Code = 1, ActiveSince = inPast };
                 repository.TestHistory.Simple.Insert(new[] { s });
 
@@ -539,10 +539,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void FastUpdate()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
+                var repository = scope.Resolve<Common.DomRepository>();
                 var simpleRepos = repository.TestHistory.Simple;
 
                 Assert.AreEqual("", DumpFull(simpleRepos.Query()));
@@ -590,15 +590,15 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryAtTime()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Standard" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Standard" });
+                var repository = scope.Resolve<Common.DomRepository>();
                 var standardRepos = repository.TestHistory.Standard;
 
                 var e = new TestHistory.Standard { Code = 1, Name = "a", Birthday = new DateTime(2001, 2, 3, 4, 5, 6) };
                 standardRepos.Insert(new[] { e });
-                DateTime t1 = GetServerTime(container);
+                DateTime t1 = GetServerTime(scope);
                 string v1 = "1 a 2001-02-03T04:05:06";
                 Assert.AreEqual(v1, Dump(standardRepos.Query()));
 
@@ -609,7 +609,7 @@ namespace CommonConcepts.Test
                 e.ActiveSince = null;
                 e.Birthday = new DateTime(2011, 12, 13, 14, 15, 16);
                 standardRepos.Update(new[] { e });
-                DateTime t2 = GetServerTime(container);
+                DateTime t2 = GetServerTime(scope);
                 string v2 = "2 b 2011-12-13T14:15:16";
                 Assert.AreEqual(v2, Dump(standardRepos.Query()));
 
@@ -619,7 +619,7 @@ namespace CommonConcepts.Test
                 e.Name = "c";
                 e.ActiveSince = null;
                 standardRepos.Update(new[] { e });
-                DateTime t3 = GetServerTime(container);
+                DateTime t3 = GetServerTime(scope);
                 string v3 = "3 c 2011-12-13T14:15:16";
                 Assert.AreEqual(v3, Dump(standardRepos.Query()));
 
@@ -635,16 +635,16 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void PartialHistoryAtTime()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
+                var repository = scope.Resolve<Common.DomRepository>();
                 var er = repository.TestHistory.Simple;
                 var hr = repository.TestHistory.Simple_Changes;
 
                 var e = new TestHistory.Simple { Code = 1, Name = "a" };
                 er.Insert(new[] { e });
-                DateTime t1 = GetServerTime(container);
+                DateTime t1 = GetServerTime(scope);
                 Assert.AreEqual("1 a", Dump(er.Query()));
 
                 System.Threading.Thread.Sleep(DatabaseDateTimeImprecision + DatabaseDateTimeImprecision);
@@ -653,7 +653,7 @@ namespace CommonConcepts.Test
                 e.Name = "b";
                 e.ActiveSince = null;
                 er.Update(new[] { e });
-                DateTime t2 = GetServerTime(container);
+                DateTime t2 = GetServerTime(scope);
                 Assert.AreEqual("2 b", Dump(er.Query()));
 
                 System.Threading.Thread.Sleep(DatabaseDateTimeImprecision + DatabaseDateTimeImprecision);
@@ -662,7 +662,7 @@ namespace CommonConcepts.Test
                 e.Name = "c";
                 e.ActiveSince = null;
                 er.Update(new[] { e });
-                DateTime t3 = GetServerTime(container);
+                DateTime t3 = GetServerTime(scope);
                 Assert.AreEqual("3 c", Dump(er.Query()));
 
                 Console.WriteLine("t1: " + t1.ToString("o"));
@@ -678,18 +678,18 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryBeforeFirstRecord()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Standard" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Standard" });
+                var repository = scope.Resolve<Common.DomRepository>();
                 var er = repository.TestHistory.Standard;
 
 
                 var e = new TestHistory.Standard { Code = 1, Name = "a", Birthday = new DateTime(2001, 2, 3, 4, 5, 6) };
-                DateTime t0 = GetServerTime(container);
+                DateTime t0 = GetServerTime(scope);
                 Console.WriteLine("t0: " + t0.ToString("o"));
                 er.Insert(new[] { e });
-                DateTime t1 = GetServerTime(container);
+                DateTime t1 = GetServerTime(scope);
                 Console.WriteLine("t1: " + t1.ToString("o"));
 
                 const string v1 = "1 a 2001-02-03T04:05:06";
@@ -704,10 +704,10 @@ namespace CommonConcepts.Test
 //        [TestMethod]
 //        public void ManualHistoryManagement()
 //        {
-//            using (var container = TestContainer.Create())
+//            using (var scope = TestScope.Create())
 //            {
-//                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple_Base" });
-//                var repository = container.Resolve<Common.DomRepository>();
+//                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple_Base" });
+//                var repository = scope.Resolve<Common.DomRepository>();
 
 //                var id = Guid.NewGuid();
 //                var hBase = new TestHistory.Simple_Base { ID = id };
@@ -733,12 +733,12 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InsertHistoryFuture()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
-                var future1 = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>())
+                var future1 = SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>())
                     .Rounded().AddMinutes(1);
                 var future2 = future1.AddMinutes(1);
 
@@ -753,12 +753,12 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateHistoryFuture()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Simple" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
-                var now = GetServerTime(container).Rounded();
+                var now = GetServerTime(scope).Rounded();
                 DateTime future1 = now.AddMinutes(1);
                 DateTime future2 = future1.AddMinutes(1);
                 DateTime future3 = future2.AddMinutes(1);
@@ -787,10 +787,10 @@ namespace CommonConcepts.Test
 //        [TestMethod]
 //        public void RequiredBase()
 //        {
-//            using (var container = TestContainer.Create())
+//            using (var scope = TestScope.Create())
 //            {
-//                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
-//                var repository = container.Resolve<Common.DomRepository>();
+//                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
+//                var repository = scope.Resolve<Common.DomRepository>();
 
 //                var other = new TestHistory.Other { ID = Guid.NewGuid() };
 //                repository.TestHistory.Other.Insert(new[] { other });
@@ -804,10 +804,10 @@ namespace CommonConcepts.Test
 //        [TestMethod]
 //        public void RequiredHistory()
 //        {
-//            using (var container = TestContainer.Create())
+//            using (var scope = TestScope.Create())
 //            {
-//                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
-//                var repository = container.Resolve<Common.DomRepository>();
+//                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
+//                var repository = scope.Resolve<Common.DomRepository>();
 
 //                var other = new TestHistory.Other { ID = Guid.NewGuid() };
 //                repository.TestHistory.Other.Insert(new[] { other });
@@ -825,10 +825,10 @@ namespace CommonConcepts.Test
 //        [TestMethod]
 //        public void Reference()
 //        {
-//            using (var container = TestContainer.Create())
+//            using (var scope = TestScope.Create())
 //            {
-//                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
-//                var repository = container.Resolve<Common.DomRepository>();
+//                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
+//                var repository = scope.Resolve<Common.DomRepository>();
 
 //                var other = new TestHistory.Other { ID = Guid.NewGuid() };
 //                repository.TestHistory.Other.Insert(new[] { other });
@@ -848,7 +848,7 @@ namespace CommonConcepts.Test
 //        [TestMethod]
 //        public void SqlIndex()
 //        {
-//            using (var container = TestContainer.Create())
+//            using (var scope = TestScope.Create())
 //            {
 //                var sql = @"SELECT
 //	i.name, c.name, ic.*
@@ -872,7 +872,7 @@ namespace CommonConcepts.Test
 //PK_Complex_Changes	ID
 //";
 //                var actual = new StringBuilder();
-//                container.Resolve<ISqlExecuter>().ExecuteReader(sql, reader => actual.AppendLine(reader.GetString(0) + "\t" + reader.GetString(1)));
+//                scope.Resolve<ISqlExecuter>().ExecuteReader(sql, reader => actual.AppendLine(reader.GetString(0) + "\t" + reader.GetString(1)));
 
 //                Assert.AreEqual(expected, actual.ToString());
 //            }
@@ -881,10 +881,10 @@ namespace CommonConcepts.Test
 //        [TestMethod]
 //        public void UniqueBase()
 //        {
-//            using (var container = TestContainer.Create())
+//            using (var scope = TestScope.Create())
 //            {
-//                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
-//                var repository = container.Resolve<Common.DomRepository>();
+//                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
+//                var repository = scope.Resolve<Common.DomRepository>();
 
 //                var other = new TestHistory.Other { ID = Guid.NewGuid() };
 //                repository.TestHistory.Other.Insert(new[] { other });
@@ -899,10 +899,10 @@ namespace CommonConcepts.Test
 //        [TestMethod]
 //        public void UniqueHistory()
 //        {
-//            using (var container = TestContainer.Create())
+//            using (var scope = TestScope.Create())
 //            {
-//                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
-//                var repository = container.Resolve<Common.DomRepository>();
+//                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
+//                var repository = scope.Resolve<Common.DomRepository>();
 
 //                var other = new TestHistory.Other { ID = Guid.NewGuid() };
 //                repository.TestHistory.Other.Insert(new[] { other });
@@ -927,10 +927,10 @@ namespace CommonConcepts.Test
 //        [TestMethod]
 //        public void UniqueMultiple()
 //        {
-//            using (var container = TestContainer.Create())
+//            using (var scope = TestScope.Create())
 //            {
-//                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
-//                var repository = container.Resolve<Common.DomRepository>();
+//                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
+//                var repository = scope.Resolve<Common.DomRepository>();
 
 //                var other = new TestHistory.Other { ID = Guid.NewGuid() };
 //                repository.TestHistory.Other.Insert(new[] { other });
@@ -956,10 +956,10 @@ namespace CommonConcepts.Test
 //        [TestMethod]
 //        public void AutoCodeForEachBase()
 //        {
-//            using (var container = TestContainer.Create())
+//            using (var scope = TestScope.Create())
 //            {
-//                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
-//                var repository = container.Resolve<Common.DomRepository>();
+//                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
+//                var repository = scope.Resolve<Common.DomRepository>();
 
 //                repository.TestHistory.Complex.Insert(new[] {
 //                    new TestHistory.Complex { Name = "a", Code = "+" },
@@ -992,10 +992,10 @@ namespace CommonConcepts.Test
 //        [Ignore] // Not yet implemented.
 //        public void Detail()
 //        {
-//            using (var container = TestContainer.Create())
+//            using (var scope = TestScope.Create())
 //            {
-//                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
-//                var repository = container.Resolve<Common.DomRepository>();
+//                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
+//                var repository = scope.Resolve<Common.DomRepository>();
 
 //                var other = new TestHistory.Other { ID = Guid.NewGuid() };
 //                repository.TestHistory.Other.Insert(new[] { other });
@@ -1011,10 +1011,10 @@ namespace CommonConcepts.Test
 //        [Ignore] // Not yet implemented.
 //        public void Detail2()
 //        {
-//            using (var container = TestContainer.Create())
+//            using (var scope = TestScope.Create())
 //            {
-//                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
-//                var repository = container.Resolve<Common.DomRepository>();
+//                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "DELETE FROM TestHistory.Other" });
+//                var repository = scope.Resolve<Common.DomRepository>();
 
 //                var complex = new TestHistory.Complex { Name = "a", Code = "1" };
 //                repository.TestHistory.Complex.Insert(new[] { complex });
@@ -1045,10 +1045,10 @@ namespace CommonConcepts.Test
 //        [Ignore] // Not yet implemented.
 //        public void Logging()
 //        {
-//            using (var container = TestContainer.Create())
+//            using (var scope = TestScope.Create())
 //            {
-//                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "TRUNCATE TABLE Common.Log" });
-//                var repository = container.Resolve<Common.DomRepository>();
+//                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHistory.Complex_Base", "TRUNCATE TABLE Common.Log" });
+//                var repository = scope.Resolve<Common.DomRepository>();
 
 //                var c = new TestHistory.Complex { Code = "1", Name = "a" };
 //                repository.TestHistory.Complex.Insert(new[] { c });
@@ -1083,10 +1083,10 @@ namespace CommonConcepts.Test
 //        [TestMethod]
 //        public void ItemFilter()
 //        {
-//            using (var container = TestContainer.Create())
+//            using (var scope = TestScope.Create())
 //            {
 //                var ids = Enumerable.Range(1, 4).Select(x => Guid.NewGuid()).ToArray();
-//                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+//                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
 //                    {
 //                        "DELETE FROM TestHistory.Complex_Base",
 //                        "INSERT INTO TestHistory.Complex_Base (ID) SELECT '"+ids[0]+"'",
@@ -1098,7 +1098,7 @@ namespace CommonConcepts.Test
 //                        "INSERT INTO TestHistory.Complex_Changes (BaseID, Code, Name, ActiveSince) SELECT '"+ids[2]+"', '15', 'aaaaaaaaaaaaaaa', '2001-01-01'",
 //                        "INSERT INTO TestHistory.Complex_Changes (BaseID, Code, Name, ActiveSince) SELECT '"+ids[3]+"', '16', 'aaaaaaaaaaaaaaaa', '2001-01-01'"
 //                    });
-//                var repository = container.Resolve<Common.DomRepository>();
+//                var repository = scope.Resolve<Common.DomRepository>();
 
 //                Assert.AreEqual("15, 16", TestUtility.DumpSorted(repository.TestHistory.Complex.Filter(new TestHistory.TooLong()), item => item.Code));
 //            }
@@ -1108,10 +1108,10 @@ namespace CommonConcepts.Test
 //        [Ignore] // Not yet implemented.
 //        public void InvalidData()
 //        {
-//            using (var container = TestContainer.Create())
+//            using (var scope = TestScope.Create())
 //            {
 //                var ids = Enumerable.Range(1, 3).Select(x => Guid.NewGuid()).ToArray();
-//                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+//                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
 //                    {
 //                        "DELETE FROM TestHistory.Complex_Base",
 //                        "INSERT INTO TestHistory.Complex_Base (ID) SELECT '"+ids[0]+"'",
@@ -1121,7 +1121,7 @@ namespace CommonConcepts.Test
 //                        "INSERT INTO TestHistory.Complex_Changes (BaseID, Code, Name, ActiveSince) SELECT '"+ids[1]+"', '5', 'aaaaa', '2001-01-01'",
 //                        "INSERT INTO TestHistory.Complex_Changes (BaseID, Code, Name, ActiveSince) SELECT '"+ids[2]+"', '15', 'aaaaaaaaaaaaaaa', '2001-01-01'",
 //                    });
-//                var repository = container.Resolve<Common.DomRepository>();
+//                var repository = scope.Resolve<Common.DomRepository>();
 
 //                var c = new TestHistory.Complex { Code = "3", Name = "bbb" };
 //                repository.TestHistory.Complex.Insert(new[] { c });
@@ -1157,22 +1157,22 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryEditHistorySimple()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')"});
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 // take entry in history table
                 var h1 = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince).Take(1).Single();
                 h1.Code = 3;
                 repository.TestHistory.Simple_History.Update(new[] { h1 });
 
-                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
+                var now = SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>());
 
                 var h = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
 
@@ -1183,15 +1183,15 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryEditHistoryActiveSinceNewerThanActiveItem()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')"});
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 // take entry in history table
                 var h1 = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince).Take(1).Single();
@@ -1204,15 +1204,15 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryEditHistoryChangingActiveSinceOK()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')"});
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 // take entry in history table
                 var h1 = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince).Take(1).Single();
@@ -1220,7 +1220,7 @@ namespace CommonConcepts.Test
                 h1.ActiveSince = new DateTime(2010, 1, 1);
                 repository.TestHistory.Simple_History.Update(new[] { h1 });
 
-                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
+                var now = SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>());
 
                 var h = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
 
@@ -1231,15 +1231,15 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryUpdateActiveItemOK()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')"});
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 // take entry in history table
                 var a1 = repository.TestHistory.Simple_History.Query().OrderByDescending(x => x.ActiveSince).Take(1).Single();
@@ -1247,7 +1247,7 @@ namespace CommonConcepts.Test
                 a1.ActiveSince = new DateTime(2010, 1, 1);
                 repository.TestHistory.Simple_History.Update(new[] { a1 });
 
-                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
+                var now = SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>());
 
                 var h = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
 
@@ -1258,15 +1258,15 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryUpdateActiveItemActiveSince()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')"});
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 // take entry in history table
                 var a1 = repository.TestHistory.Simple_History.Query().OrderByDescending(x => x.ActiveSince).Take(1).Single();
@@ -1282,15 +1282,15 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryUpdateActiveItemFailOlderThanLastInHistory()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')"});
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 // take entry in history table
                 var a1 = repository.TestHistory.Simple_History.Query().OrderByDescending(x => x.ActiveSince).Take(1).Single();
@@ -1304,21 +1304,21 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryDeleteActiveItemReplaceWithHistory()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')"});
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 // take entry that is current
                 var a1 = repository.TestHistory.Simple_History.Query().OrderByDescending(x => x.ActiveSince).Take(1).Single();
                 repository.TestHistory.Simple_History.Delete(new[] { a1 });
 
-                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
+                var now = SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>());
 
                 var fh = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
                 Assert.AreEqual(1, fh.Count());
@@ -1331,19 +1331,19 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryDeleteActiveItemOnlyItemInHistory()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var id1 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')"});
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 // take entry that is current
                 var a1 = repository.TestHistory.Simple_History.Query().OrderByDescending(x => x.ActiveSince).Take(1).Single();
                 repository.TestHistory.Simple_History.Delete(new[] { a1 });
 
-                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
+                var now = SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>());
 
                 var fh = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
                 Assert.AreEqual(0, fh.Count());
@@ -1353,21 +1353,21 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryDeleteHistoryOnlyItemInHistory()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')"});
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 // take entry that is only item in history table
                 var a2 = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince).Take(1).Single();
                 repository.TestHistory.Simple_History.Delete(new[] { a2 });
 
-                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
+                var now = SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>());
 
                 var fh = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
                 Assert.AreEqual(1, fh.Count());
@@ -1385,23 +1385,23 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryDeleteHistoryMiddleInHistory()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
                 var id3 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id3) + ", 3, '2000-01-01')"});
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 // take entry that is in the middle of history
                 var a2 = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince).Skip(1).Take(1).Single();
                 repository.TestHistory.Simple_History.Delete(new[] { a2 });
 
-                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
+                var now = SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>());
 
                 var fh = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
                 Assert.AreEqual(2, fh.Count());
@@ -1420,17 +1420,17 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryInsertAsActive()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
                 var id3 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id3) + ", 3, '2000-01-01')"});
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 repository.TestHistory.Simple_History.Insert(new[] { new TestHistory.Simple_History() {
                     ActiveSince = new DateTime(2013, 1, 1),
@@ -1438,7 +1438,7 @@ namespace CommonConcepts.Test
                     EntityID = id1
                 } });
 
-                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
+                var now = SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>());
 
                 var currentItems = repository.TestHistory.Simple.Query().ToList();
                 var fullHistory = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince).ToList();
@@ -1454,17 +1454,17 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryInsertAsHistory()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
                 var id3 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id3) + ", 3, '2000-01-01')"});
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 // take entry that is in the middle of history
                 var a2 = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince).Skip(1).Take(1).Single();
@@ -1474,7 +1474,7 @@ namespace CommonConcepts.Test
                     EntityID = id1
                 } });
 
-                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
+                var now = SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>());
 
                 var fh = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
                 Assert.AreEqual(4, fh.Count());
@@ -1491,23 +1491,23 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryDeleteCurrentItemAndLastInHistory()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
                 var id3 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id3) + ", 3, '2000-01-01')"});
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 // take entry that is in the middle of history
                 var delEnt = repository.TestHistory.Simple_History.Query().OrderByDescending(x => x.ActiveSince).Take(2).ToArray();
                 repository.TestHistory.Simple_History.Delete(delEnt);
 
-                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
+                var now = SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>());
 
                 var fh = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
                 Assert.AreEqual(1, fh.Count());
@@ -1525,23 +1525,23 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryDeleteAllHistory()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
                 var id3 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.Simple",
                     "INSERT INTO TestHistory.Simple (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'a', '2011-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, '2001-01-01')",
                     "INSERT INTO TestHistory.Simple_Changes (EntityID, ID, Code, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id3) + ", 3, '2000-01-01')"});
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 // take entry that is in the middle of history
                 var delEnt = repository.TestHistory.Simple_History.Load();
                 repository.TestHistory.Simple_History.Delete(delEnt);
 
-                var now = SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>());
+                var now = SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>());
 
                 var fh = repository.TestHistory.Simple_History.Query().OrderBy(x => x.ActiveSince);
                 Assert.AreEqual(0, fh.Count());
@@ -1551,17 +1551,17 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryLockProperty()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
                 var id3 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.SimpleWithLock",
                     "INSERT INTO TestHistory.SimpleWithLock (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'b', '2011-01-01')",
                     "INSERT INTO TestHistory.SimpleWithLock_Changes (EntityID, ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, 'b', '2001-01-01')",
                     "INSERT INTO TestHistory.SimpleWithLock_Changes (EntityID, ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id3) + ", 3, 'b', '2000-01-01')"});
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 // take entry that is in the middle of history
                 var editEnt = repository.TestHistory.SimpleWithLock.Load();
@@ -1577,18 +1577,18 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HistoryLockPropertyAndInvalidData()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
                 var id3 = Guid.NewGuid();
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestHistory.SimpleWithLockAndDeny",
                     "INSERT INTO TestHistory.SimpleWithLockAndDeny (ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 1, 'b', '2011-01-01')",
                     "INSERT INTO TestHistory.SimpleWithLockAndDenyAdd (ID, NameNew) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 'btest')",
                     "INSERT INTO TestHistory.SimpleWithLockAndDeny_Changes (EntityID, ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id2) + ", 2, 'b', '2001-01-01')",
                     "INSERT INTO TestHistory.SimpleWithLockAndDeny_Changes (EntityID, ID, Code, Name, ActiveSince) VALUES (" + SqlUtility.QuoteGuid(id1) + "," + SqlUtility.QuoteGuid(id3) + ", 3, 'b', '2000-01-01')"});
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 // take entry that is in the middle of history
                 var editEnt = repository.TestHistory.SimpleWithLockAndDeny.Load();

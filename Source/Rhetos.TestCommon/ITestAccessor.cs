@@ -41,20 +41,20 @@ namespace Rhetos.TestCommon
         /// <summary>
         /// Invokes the private instance method of the accessor's base class.
         /// </summary>
-        public static dynamic Invoke(this ITestAccessor accessor, string methodName, params object[] parameters)
+        public static dynamic Invoke(this ITestAccessor accessor, string privateInstanceMethodName, params object[] parameters)
         {
             return accessor.GetType().BaseType
-                    .GetMethod(methodName, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                    .GetMethod(privateInstanceMethodName, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                     .InvokeEx(accessor, parameters);
         }
 
         /// <summary>
         /// Invokes the private static method of the accessor's base class.
         /// </summary>
-        public static dynamic Invoke<TBase>(string methodName, params object[] parameters)
+        public static dynamic Invoke<TBase>(string privateStaticMethodName, params object[] parameters)
         {
             return typeof(TBase)
-                .GetMethod(methodName, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
+                .GetMethod(privateStaticMethodName, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
                 .InvokeEx(null, parameters);
         }
     }

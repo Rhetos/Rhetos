@@ -72,10 +72,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SimpleHierarchy()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 PrepareSimpleData(repository, "a");
                 Assert.AreEqual("a1/2", ReportSimple(repository));
@@ -98,10 +98,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Level()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var query = repository.TestHierarchy.Simple.Query();
 
@@ -116,10 +116,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HierarchyAncestorsDescendants()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var h = new TestHierarchy.Simple2 { ID = Guid.NewGuid(), Name2 = "h", Parent2ID = null };
                 var h1 = new TestHierarchy.Simple2 { ID = Guid.NewGuid(), Name2 = "h1", Parent2ID = h.ID };
@@ -163,10 +163,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SingleRootConstraint()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple2" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple2" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var h1 = new TestHierarchy.Simple2 { ID = Guid.NewGuid(), Name2 = "h1", Parent2ID = null };
                 var h2 = new TestHierarchy.Simple2 { ID = Guid.NewGuid(), Name2 = "h2", Parent2ID = null };
@@ -179,10 +179,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ErrorCircularReference1InsertSingleRoot()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple2" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple2" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var single = new TestHierarchy.Simple2 { ID = Guid.NewGuid(), Name2 = "a" };
                 single.Parent2ID = single.ID;
@@ -194,10 +194,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ErrorCircularReference1UpdateSingleRoot()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple2" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple2" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var single = new TestHierarchy.Simple2 { ID = Guid.NewGuid(), Name2 = "a" };
                 repository.TestHierarchy.Simple2.Insert(new[] { single });
@@ -210,10 +210,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void MultipleRoots()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 PrepareSimpleData(repository, "a, b, b-c");
                 var report = ReportSimple(repository.TestHierarchy.Simple.Query());
@@ -224,10 +224,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DontFailOnEmpty()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 repository.TestHierarchy.SimpleParentHierarchy.Recompute();
                 Assert.AreEqual("", ReportSimple(repository), "Initially empty.");
@@ -246,10 +246,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ErrorCircularReference1Insert()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var single = new TestHierarchy.Simple { ID = Guid.NewGuid(), Name = "a" };
                 single.ParentID = single.ID;
@@ -261,10 +261,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ErrorCircularReference1Update()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 PrepareSimpleData(repository, "a");
                 Assert.AreEqual("a1/2", ReportSimple(repository));
@@ -278,10 +278,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ErrorCircularReference2()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 PrepareSimpleData(repository, "a, a-b");
                 Assert.AreEqual("a1/4, b2/3", ReportSimple(repository));
@@ -296,10 +296,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ErrorCircularReference4()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.Simple" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 PrepareSimpleData(repository, "a, a-b, b-c, c-d");
                 var root = repository.TestHierarchy.Simple.Query().Where(item => item.Name == "a").Single();
@@ -313,10 +313,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Path()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.WithPath" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestHierarchy.WithPath" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var h1 = new TestHierarchy.WithPath { ID = Guid.NewGuid(), Title = "h1", GroupID = null };
                 var h11 = new TestHierarchy.WithPath { ID = Guid.NewGuid(), Title = "h11", GroupID = h1.ID };
@@ -335,9 +335,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void LongPath()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 repository.TestHierarchy.WithPath.Delete(repository.TestHierarchy.WithPath.Query());
 
                 var h1 = new TestHierarchy.WithPath { ID = Guid.NewGuid(), Title = new string('a', 256), GroupID = null };

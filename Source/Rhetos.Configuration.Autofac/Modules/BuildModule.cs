@@ -105,7 +105,6 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.RegisterType<CodeBuilder>().As<ICodeBuilder>();
             builder.RegisterType<Compiler.CodeGenerator>().As<ICodeGenerator>();
             builder.RegisterType<SourceWriter>().As<ISourceWriter>().SingleInstance();
-            builder.RegisterType<AssemblyGenerator>().As<IAssemblyGenerator>();
             pluginRegistration.FindAndRegisterPlugins<IConceptCodeGenerator>();
         }
     }

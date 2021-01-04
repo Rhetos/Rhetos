@@ -71,10 +71,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Serialization()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var item = new TestDataStructure.SimpleDataStructure2 { SimpleShortString = "abc" };
-                string xml = container.Resolve<XmlUtility>().SerializeToXml(item);
+                string xml = scope.Resolve<XmlUtility>().SerializeToXml(item);
                 Console.WriteLine(xml);
 
                 TestUtility.AssertContains(xml, "TestDataStructure");
@@ -82,7 +82,7 @@ namespace CommonConcepts.Test
                 TestUtility.AssertContains(xml, "SimpleShortString");
                 TestUtility.AssertContains(xml, "abc");
 
-                var item2 = container.Resolve<XmlUtility>().DeserializeFromXml<TestDataStructure.SimpleDataStructure2>(xml);
+                var item2 = scope.Resolve<XmlUtility>().DeserializeFromXml<TestDataStructure.SimpleDataStructure2>(xml);
                 Assert.IsNotNull(item2);
                 Assert.AreEqual(item.SimpleShortString, item2.SimpleShortString);
             }
@@ -91,10 +91,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SerializationMustNotDependOnClientOrServerDllName()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var item = new TestDataStructure.SimpleDataStructure2 { SimpleShortString = "abc" };
-                string xml = container.Resolve<XmlUtility>().SerializeToXml(item);
+                string xml = scope.Resolve<XmlUtility>().SerializeToXml(item);
                 Console.WriteLine(xml);
 
                 var type = typeof(TestDataStructure.SimpleDataStructure2);
@@ -112,13 +112,13 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SerializationOfNull()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var item = new TestDataStructure.SimpleDataStructure2 { SimpleShortString = null };
-                string xml = container.Resolve<XmlUtility>().SerializeToXml(item);
+                string xml = scope.Resolve<XmlUtility>().SerializeToXml(item);
                 Console.WriteLine(xml);
 
-                var item2 = container.Resolve<XmlUtility>().DeserializeFromXml<TestDataStructure.SimpleDataStructure2>(xml);
+                var item2 = scope.Resolve<XmlUtility>().DeserializeFromXml<TestDataStructure.SimpleDataStructure2>(xml);
                 Assert.IsNotNull(item2);
                 Assert.IsNull(item2.SimpleShortString);
             }
@@ -136,15 +136,15 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SerializationCsStringEncoding()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 foreach (string s in StringoviSaOstalimUnicodeZnakovima)
                 {
                     var item = new TestDataStructure.SimpleDataStructure2 { SimpleShortString = s };
-                    string xml = container.Resolve<XmlUtility>().SerializeToXml(item);
+                    string xml = scope.Resolve<XmlUtility>().SerializeToXml(item);
                     Console.WriteLine(xml);
 
-                    var item2 = container.Resolve<XmlUtility>().DeserializeFromXml<TestDataStructure.SimpleDataStructure2>(xml);
+                    var item2 = scope.Resolve<XmlUtility>().DeserializeFromXml<TestDataStructure.SimpleDataStructure2>(xml);
                     Assert.IsNotNull(item2);
                     Assert.AreEqual(item.SimpleShortString, item2.SimpleShortString);
 
@@ -156,14 +156,14 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SimpleReference()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                     {
                         "DELETE FROM TestDataStructure.Child",
                         "DELETE FROM TestDataStructure.Parent",
                     });
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var parent = new TestDataStructure.Parent { ID = Guid.NewGuid() };
                 var child = new TestDataStructure.Child { ID = Guid.NewGuid(), ParentID = parent.ID };
@@ -183,9 +183,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SimpleMethod()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var test = new TestDataStructure.TestMethod { Name = "test" };
                 repository.TestDataStructure.TestMethod.Insert(test);

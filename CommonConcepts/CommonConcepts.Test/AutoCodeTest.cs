@@ -37,9 +37,9 @@ namespace CommonConcepts.Test
     [TestClass]
     public class AutoCodeTest
     {
-        private static void DeleteOldData(TransactionScopeContainer container)
+        private static void DeleteOldData(TransactionScopeContainer scope)
         {
-            container.Resolve<ISqlExecuter>().ExecuteSql(new[]
+            scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                 {
                     @"DELETE FROM TestAutoCode.ReferenceGroup;
                     DELETE FROM TestAutoCode.ShortReferenceGroup;
@@ -115,10 +115,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Simple()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                DeleteOldData(container);
-                var repository = container.Resolve<Common.DomRepository>();
+                DeleteOldData(scope);
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 TestSimple(repository, "+", "1");
                 TestSimple(repository, "+", "2");
@@ -139,10 +139,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InsertMultipleItems()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                DeleteOldData(container);
-                var repository = container.Resolve<Common.DomRepository>();
+                DeleteOldData(scope);
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var tests = new ListOfTuples<string, string>
                 {
@@ -177,10 +177,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SimpleFromHelp()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                DeleteOldData(container);
-                var repository = container.Resolve<Common.DomRepository>();
+                DeleteOldData(scope);
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 TestSimple(repository, "ab+", "ab1");
                 TestSimple(repository, "ab+", "ab2");
@@ -196,10 +196,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DoubleAutoCode()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                DeleteOldData(container);
-                var repository = container.Resolve<Common.DomRepository>();
+                DeleteOldData(scope);
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 TestDoubleAutoCode(repository, "+", "+", "1,1");
                 TestDoubleAutoCode(repository, "+", "4", "2,4");
@@ -220,10 +220,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void IntAutoCode()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                DeleteOldData(container);
-                var repository = container.Resolve<Common.DomRepository>();
+                DeleteOldData(scope);
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 TestIntAutoCode(repository, 0, 1);
                 TestIntAutoCode(repository, 10, 10);
@@ -238,10 +238,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void IntAutoCodeNull()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                DeleteOldData(container);
-                var repository = container.Resolve<Common.DomRepository>();
+                DeleteOldData(scope);
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 TestIntAutoCode(repository, null, 1);
                 TestIntAutoCode(repository, null, 2);
@@ -251,10 +251,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DoubleAutoCodeWithGroup()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                DeleteOldData(container);
-                var repository = container.Resolve<Common.DomRepository>();
+                DeleteOldData(scope);
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 TestDoubleAutoCodeWithGroup(repository, "1", "+", "+", "1,1");
                 TestDoubleAutoCodeWithGroup(repository, "1", "+", "4", "2,4");
@@ -277,9 +277,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DoubleIntegerAutoCodeWithGroup()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 repository.TestAutoCode.IntegerAutoCodeForEach.Delete(repository.TestAutoCode.IntegerAutoCodeForEach.Query());
 
                 TestDoubleIntegerAutoCodeWithGroup(repository, 1, 0, 0, "1,1");
@@ -294,9 +294,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DoubleIntegerAutoCodeWithGroupNull()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 repository.TestAutoCode.IntegerAutoCodeForEach.Delete(repository.TestAutoCode.IntegerAutoCodeForEach.Query());
 
                 TestDoubleIntegerAutoCodeWithGroup(repository, 1, null, null, "1,1");
@@ -345,10 +345,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void Grouping()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                DeleteOldData(container);
-                var repository = container.Resolve<Common.DomRepository>();
+                DeleteOldData(scope);
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 TestGroup<TestAutoCode.IntGroup, int>(repository.TestAutoCode.IntGroup, 500, "+", "1");
                 TestGroup<TestAutoCode.IntGroup, int>(repository.TestAutoCode.IntGroup, 500, "+", "2");
@@ -393,11 +393,11 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void AllowedNullValueInternally()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                DeleteOldData(container);
+                DeleteOldData(scope);
 
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
 
                 var s1 = new TestAutoCode.Simple { ID = Guid.NewGuid(), Code = null };
 
@@ -413,11 +413,11 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void AutocodeStringNull()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                DeleteOldData(container);
+                DeleteOldData(scope);
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var item1 = new TestAutoCode.Simple { ID = Guid.NewGuid() };
                 var item2 = new TestAutoCode.Simple { ID = Guid.NewGuid() };
                 repository.TestAutoCode.Simple.Insert(item1);
@@ -430,11 +430,11 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void AutocodeStringEmpty()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                DeleteOldData(container);
+                DeleteOldData(scope);
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var item1 = new TestAutoCode.Simple { ID = Guid.NewGuid(), Code = "" };
                 repository.TestAutoCode.Simple.Insert(item1);
                 Assert.AreEqual("", repository.TestAutoCode.Simple.Load(new[] { item1.ID }).Single().Code);
@@ -444,10 +444,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SimpleWithPredefinedSuffixLength()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                DeleteOldData(container);
-                var repository = container.Resolve<Common.DomRepository>();
+                DeleteOldData(scope);
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 TestSimple(repository, "+", "1");
                 TestSimple(repository, "+", "2");
@@ -468,10 +468,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SimpleWithPredefinedSuffixLength2()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                DeleteOldData(container);
-                var repository = container.Resolve<Common.DomRepository>();
+                DeleteOldData(scope);
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 TestSimple(repository, "+++", "001");
                 TestSimple(repository, "+", "002");
@@ -493,10 +493,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DifferentLengths()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                DeleteOldData(container);
-                var repository = container.Resolve<Common.DomRepository>();
+                DeleteOldData(scope);
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 TestSimple(repository, "002", "002");
                 TestSimple(repository, "55", "55");
@@ -518,10 +518,10 @@ namespace CommonConcepts.Test
             foreach (var test in new[] {"a+a", "a++a", "+a", "++a", "+a+", "++a+", "+a++", "++a++"})
             {
                 Console.WriteLine("Test: " + test);
-                using (var container = TestContainer.Create())
+                using (var scope = TestScope.Create())
                 {
-                    DeleteOldData(container);
-                    var repository = container.Resolve<Common.DomRepository>();
+                    DeleteOldData(scope);
+                    var repository = scope.Resolve<Common.DomRepository>();
 
                     TestUtility.ShouldFail(
                         () => repository.TestAutoCode.Simple.Insert(new[] {
@@ -549,9 +549,9 @@ namespace CommonConcepts.Test
                 repository.Insert(new[] { new TestAutoCode.Simple { Code = "+", Data = process.ToString() } });
             });
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>().TestAutoCode.Simple;
+                var repository = scope.Resolve<Common.DomRepository>().TestAutoCode.Simple;
                 var generatedCodes = repository.Query().Select(item => item.Code).ToList();
                 var expected = Enumerable.Range(1, 50 * 2 * 2);
                 Assert.AreEqual(TestUtility.DumpSorted(expected), TestUtility.DumpSorted(generatedCodes));
@@ -576,9 +576,9 @@ namespace CommonConcepts.Test
                 repository.Insert(new[] { new TestAutoCode.Simple { Code = (char)('a' + process) + "+", Data = process.ToString() } });
             });
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>().TestAutoCode.Simple;
+                var repository = scope.Resolve<Common.DomRepository>().TestAutoCode.Simple;
                 var generatedCodes = repository.Query().Select(item => item.Code).ToList();
                 var expected = Enumerable.Range(1, 50 * 2).SelectMany(x => new[] { "a" + x, "b" + x });
                 Assert.AreEqual(TestUtility.DumpSorted(expected), TestUtility.DumpSorted(generatedCodes));
@@ -599,9 +599,9 @@ namespace CommonConcepts.Test
                 endTimes[process] = DateTime.Now;
             });
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>().TestAutoCode.Simple;
+                var repository = scope.Resolve<Common.DomRepository>().TestAutoCode.Simple;
                 var generatedCodes = repository.Query().Select(item => item.Code).ToList();
                 var expected = Enumerable.Range(1, 2);
                 Assert.AreEqual(TestUtility.DumpSorted(expected), TestUtility.DumpSorted(generatedCodes));
@@ -642,9 +642,9 @@ namespace CommonConcepts.Test
                         endTimes[process] = DateTime.Now;
                     });
 
-                    using (var container = TestContainer.Create())
+                    using (var scope = TestScope.Create())
                     {
-                        var repository = container.Resolve<Common.DomRepository>().TestAutoCode.Simple;
+                        var repository = scope.Resolve<Common.DomRepository>().TestAutoCode.Simple;
                         var generatedCodes = repository.Query().Select(item => item.Code).ToList();
                         var expected = new[] { "a1", "b1" };
                         Assert.AreEqual(TestUtility.DumpSorted(expected), TestUtility.DumpSorted(generatedCodes));
@@ -681,17 +681,17 @@ namespace CommonConcepts.Test
         {
             const int threadCount = 2;
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                TestContainer.CheckForParallelism(container.Resolve<ISqlExecuter>(), threadCount);
-                DeleteOldData(container);
-                container.CommitChanges();
+                TestScope.CheckForParallelism(scope.Resolve<ISqlExecuter>(), threadCount);
+                DeleteOldData(scope);
+                scope.CommitChanges();
             }
 
             for (int test = 1; test <= testCount; test++)
             {
                 Console.WriteLine("Test: " + test);
-                var containers = Enumerable.Range(0, threadCount).Select(t => TestContainer.Create()).ToArray();
+                var containers = Enumerable.Range(0, threadCount).Select(t => TestScope.Create()).ToArray();
 
                 try
                 {
@@ -774,18 +774,18 @@ namespace CommonConcepts.Test
         {
             int threadCount = actions.Count();
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var sqlExecuter = container.Resolve<ISqlExecuter>();
-                TestContainer.CheckForParallelism(sqlExecuter, threadCount);
-                DeleteOldData(container);
+                var sqlExecuter = scope.Resolve<ISqlExecuter>();
+                TestScope.CheckForParallelism(sqlExecuter, threadCount);
+                DeleteOldData(scope);
 
-                coldStartInsert(container.Resolve<Common.ExecutionContext>());
+                coldStartInsert(scope.Resolve<Common.ExecutionContext>());
                 
-                container.CommitChanges();
+                scope.CommitChanges();
             }
 
-            var containers = Enumerable.Range(0, threadCount).Select(t => TestContainer.Create()).ToArray();
+            var containers = Enumerable.Range(0, threadCount).Select(t => TestScope.Create()).ToArray();
 
             var exceptions = new Exception[threadCount];
 
@@ -832,44 +832,50 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void OptimizeParallelInsertsForDifferentGroups()
         {
-            var tests = new ListOfTuples<string, string, bool>
+            var tests = new (string, string, bool ExpectedParallel)[]
             // Format:
             // 1. Records to insert (Grouping1-Grouping2) to entity MultipleGroups, with parallel requests.
             // 2. Expected generated codes (Code1-Code2) for each record.
             // 3. Whether the inserts should be executed in parallel.
             {
-                { "A-B, A-B", "1-1, 2-2", false }, // Same Grouping1 and Grouping2: codes should be generated sequentially.
-                { "A-B, A-C", "1-1, 2-1", false }, // Same Grouping1: Code1 should be generated sequentially.
-                { "A-B, C-B", "1-1, 1-2", false }, // Same Grouping2: Code2 should be generated sequentially.
-                { "A-B, C-D", "1-1, 1-1", true },
-                { "A-B, B-A", "1-1, 1-1", true },
+                ( "A-B, A-B", "1-1, 2-2", false ), // Same Grouping1 and Grouping2: codes should be generated sequentially.
+                ( "A-B, A-C", "1-1, 2-1", false ), // Same Grouping1: Code1 should be generated sequentially.
+                ( "A-B, C-B", "1-1, 1-2", false ), // Same Grouping2: Code2 should be generated sequentially.
+                ( "A-B, C-D", "1-1, 1-1", true ),
+                ( "A-B, B-A", "1-1, 1-1", true ),
             };
 
-            var results = new ListOfTuples<string, string, bool>();
+            var results = new List<(string, string, bool ExecutedInParallel)>();
             var report = new List<string>();
 
             const int testPause = 100;
-            const int retries = 4;
+            const int retries = 20;
 
             foreach (var test in tests)
             {
-                for (int retry = 0; retry < retries; retry++)
+                var items = test.Item1.Split(',').Select(item => item.Trim()).Select(item => item.Split('-'))
+                    .Select(item => new TestAutoCode.MultipleGroups { Grouping1 = item[0], Grouping2 = item[1] })
+                    .ToArray();
+
+                var insertDurations = new double[items.Length];
+
+                var parallelInsertRequests = items.Select((item, x) => (Action<Common.ExecutionContext>)
+                    (context =>
+                    {
+                        var sw = Stopwatch.StartNew();
+                        context.Repository.TestAutoCode.MultipleGroups.Insert(item);
+                        insertDurations[x] = sw.Elapsed.TotalMilliseconds;
+                        Thread.Sleep(testPause);
+                    }))
+                    .ToArray();
+
+                string generatedCodes = null;
+                bool startedImmediately = false;
+                bool executedInParallel = false;
+
+                for (int retry = 0; retry <= retries; retry++)
                 {
-                    var items = test.Item1.Split(',').Select(item => item.Trim()).Select(item => item.Split('-'))
-                        .Select(item => new TestAutoCode.MultipleGroups { Grouping1 = item[0], Grouping2 = item[1] })
-                        .ToArray();
-
-                    var insertDurations = new double[items.Length];
-
-                    var parallelInsertRequests = items.Select((item, x) => (Action<Common.ExecutionContext>)
-                        (context =>
-                        {
-                            var sw = Stopwatch.StartNew();
-                            context.Repository.TestAutoCode.MultipleGroups.Insert(item);
-                            insertDurations[x] = sw.Elapsed.TotalMilliseconds;
-                            Thread.Sleep(testPause);
-                        }))
-                        .ToArray();
+                    // Execute in parallel inserts that generate AutoCode values:
 
                     var exceptions = ExecuteParallel(parallelInsertRequests,
                         context => context.Repository.TestAutoCode.MultipleGroups.Insert(new TestAutoCode.MultipleGroups { }),
@@ -879,10 +885,9 @@ namespace CommonConcepts.Test
 
                     // Check the generated codes:
 
-                    string generatedCodes;
-                    using (var container = TestContainer.Create())
+                    using (var scope = TestScope.Create())
                     {
-                        var repository = container.Resolve<Common.DomRepository>();
+                        var repository = scope.Resolve<Common.DomRepository>();
                         generatedCodes = TestUtility.DumpSorted(
                             repository.TestAutoCode.MultipleGroups.Load(items.Select(item => item.ID)),
                             x => $"{x.Code1}-{x.Code2}");
@@ -890,27 +895,27 @@ namespace CommonConcepts.Test
 
                     // Check if the inserts were executed in parallel:
 
-                    bool startedImmediately = insertDurations.Any(t => t < testPause);
-                    bool executedInParallel = insertDurations.All(t => t < testPause);
+                    startedImmediately = insertDurations.Any(t => t < testPause);
+                    executedInParallel = insertDurations.All(t => t < testPause);
 
                     // It the parallelism check did not pass, try again to reduce false negatives when the test machine is under load.
-                    if (!startedImmediately || executedInParallel != test.Item3)
-                    {
-                        Console.WriteLine("Retry");
-                        continue;
-                    }
-
-                    Assert.IsTrue(startedImmediately, $"({test.Item1}) At lease one item should be inserted without waiting. The test machine was probably under load during the parallelism test.");
-
-                    report.Add($"Test '{test.Item1}' insert durations: '{TestUtility.Dump(insertDurations)}'.");
-                    results.Add(test.Item1, generatedCodes, executedInParallel);
-                    break;
+                    if (!startedImmediately && retry < retries)
+                        Console.WriteLine("Retrying, did not start immediately.");
+                    else if (executedInParallel != test.ExpectedParallel && retry < retries)
+                        Console.WriteLine("Retrying, did not achieve parallelism.");
+                    else
+                        break;
                 }
+
+                Assert.IsTrue(startedImmediately, $"({test.Item1}) At lease one item should be inserted without waiting. The test machine was probably under load during the parallelism test.");
+
+                report.Add($"Test '{test.Item1}' insert durations: '{TestUtility.Dump(insertDurations)}'.");
+                results.Add((test.Item1, generatedCodes, executedInParallel));
             }
 
             Assert.AreEqual(
-                string.Concat(tests.Select(test => $"{test.Item1} => {test.Item2} {(test.Item3 ? "parallel" : "sequential")}\r\n")),
-                string.Concat(results.Select(test => $"{test.Item1} => {test.Item2} {(test.Item3 ? "parallel" : "sequential")}\r\n")),
+                string.Concat(tests.Select(t => $"{t.Item1} => {t.Item2} {(t.ExpectedParallel ? "parallel" : "sequential")}\r\n")),
+                string.Concat(results.Select(r => $"{r.Item1} => {r.Item2} {(r.ExecutedInParallel ? "parallel" : "sequential")}\r\n")),
                 "Report: " + string.Concat(report.Select(line => "\r\n" + line)));
         }
     }

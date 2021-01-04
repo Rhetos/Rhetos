@@ -45,7 +45,7 @@ namespace CommonConcepts.Test
                     {
                         // Insert the test data:
 
-                        using (var container = TestContainer.Create())
+                        using (var scope = TestScope.Create())
                         {
                             var simpleTestData = new[]
                             {
@@ -65,7 +65,7 @@ namespace CommonConcepts.Test
                                 new TestFullTextSearch.AlternativeEntity { AlternativeKey = 5, Text1 = "xy", Text2 = "-123" },
                             };
 
-                            var context = container.Resolve<Common.ExecutionContext>();
+                            var context = scope.Resolve<Common.ExecutionContext>();
 
                             context.GenericRepository<TestFullTextSearch.Simple>().InsertOrUpdateOrDelete(
                                 simpleTestData,
@@ -87,12 +87,12 @@ namespace CommonConcepts.Test
 
                             context.Repository.TestFullTextSearch.SimpleFTS.Recompute();
 
-                            container.CommitChanges();
+                            scope.CommitChanges();
                         }
 
                         // Wait for SQL Server to populate the full-text search index:
 
-                        using (var container = TestContainer.Create())
+                        using (var scope = TestScope.Create())
                         {
                             var stopwatch = Stopwatch.StartNew();
                             while (true)
@@ -101,7 +101,7 @@ namespace CommonConcepts.Test
                                 int? ftsStatus2 = null;
                                 var getFtsStatus = "SELECT OBJECTPROPERTYEX(OBJECT_ID('TestFullTextSearch.SimpleFTS'), 'TableFulltextPopulateStatus'), "
                                                         + "OBJECTPROPERTYEX(OBJECT_ID('TestFullTextSearch.AlternativeEntity'), 'TableFulltextPopulateStatus')";
-                                container.Resolve<ISqlExecuter>().ExecuteReader(getFtsStatus, reader =>
+                                scope.Resolve<ISqlExecuter>().ExecuteReader(getFtsStatus, reader =>
                                 {
                                     ftsStatus1 = reader.GetInt32(0);
                                     ftsStatus2 = reader.GetInt32(1);
@@ -123,7 +123,7 @@ namespace CommonConcepts.Test
                                 }
                             }
 
-                            container.CommitChanges();
+                            scope.CommitChanges();
                         }
 
                         DataPrepared = true;
@@ -151,7 +151,7 @@ namespace CommonConcepts.Test
         {
             PrepareData();
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var tests = new Dictionary<string, string>
                 {
@@ -161,7 +161,7 @@ namespace CommonConcepts.Test
                     { "a'#'b", "" },
                 };
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 foreach (var test in tests)
                 {
@@ -185,9 +185,9 @@ namespace CommonConcepts.Test
         {
             PrepareData();
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var filtered = repository.TestFullTextSearch.SimpleFTS.Query()
                     .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, "\"ab*\"", "TestFullTextSearch.SimpleFTS", "*"))
@@ -201,7 +201,7 @@ namespace CommonConcepts.Test
         {
             PrepareData();
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var tests = new Dictionary<string, string>
                 {
@@ -209,7 +209,7 @@ namespace CommonConcepts.Test
                     { "\"12*\"", "123, ab, xy" },
                 };
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 foreach (var test in tests)
                 {
@@ -228,7 +228,7 @@ namespace CommonConcepts.Test
         {
             PrepareData();
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var tests = new Dictionary<string, string>
                 {
@@ -236,7 +236,7 @@ namespace CommonConcepts.Test
                     { "\"12*\"", "123, ab, xy" },
                 };
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 foreach (var test in tests)
                 {
@@ -256,7 +256,7 @@ namespace CommonConcepts.Test
         {
             PrepareData();
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var tests = new Dictionary<string, string>
                 {
@@ -264,7 +264,7 @@ namespace CommonConcepts.Test
                     { "\"12*\"", "-123-xy, 12-ab, 56-123" },
                 };
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 foreach (var test in tests)
                 {
@@ -289,9 +289,9 @@ namespace CommonConcepts.Test
         {
             PrepareData();
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 {
                     string pattern = "\"ab*\"";
@@ -326,7 +326,7 @@ namespace CommonConcepts.Test
         {
             PrepareData();
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var tests = new Dictionary<string, string>
                 {
@@ -334,7 +334,7 @@ namespace CommonConcepts.Test
                     { "\"12*\"", "123, ab, xy" },
                 };
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 foreach (var test in tests)
                 {
@@ -367,9 +367,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NullArgument()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var ex = TestUtility.ShouldFail(
                     () => repository.TestFullTextSearch.SimpleFTS.Query()
                         .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, null, "TestFullTextSearch.SimpleFTS", "*"))
@@ -383,9 +383,9 @@ namespace CommonConcepts.Test
         {
             // SQL Server does not support the table parameter to be a variable.
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 string table = "TestFullTextSearch.SimpleFTS";
                 var ex = TestUtility.ShouldFail(
                     () => repository.TestFullTextSearch.SimpleFTS.Query()
@@ -400,9 +400,9 @@ namespace CommonConcepts.Test
         {
             // SQL Server does not support the columns parameter to be a variable.
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 string columns = "*";
                 var ex = TestUtility.ShouldFail(
                     () => repository.TestFullTextSearch.SimpleFTS.Query()
@@ -417,9 +417,9 @@ namespace CommonConcepts.Test
         {
             // SQL Server does not support the rankTop parameter to be an expression.
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 int topValue = 10;
                 var ex = TestUtility.ShouldFail(
                     () => repository.TestFullTextSearch.SimpleFTS.Query()
@@ -434,7 +434,7 @@ namespace CommonConcepts.Test
         {
             PrepareData();
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var tests = new Dictionary<string, string>
                 {
@@ -442,7 +442,7 @@ namespace CommonConcepts.Test
                     { "\"12*\"", "123, ab, xy" },
                 };
 
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 foreach (var test in tests)
                 {

@@ -45,10 +45,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void PersistAll()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestComputedFrom.PersistAll" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestComputedFrom.PersistAll" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 Assert.AreEqual("", TestUtility.DumpSorted(repository.TestComputedFrom.PersistAll.Load(), Dump));
 
@@ -68,10 +68,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void PersistPartial()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestComputedFrom.PersistPartial" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestComputedFrom.PersistPartial" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 Assert.AreEqual("", TestUtility.DumpSorted(repository.TestComputedFrom.PersistPartial.Load(), Dump));
 
@@ -91,10 +91,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void PersistCustom()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestComputedFrom.PersistCustom" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestComputedFrom.PersistCustom" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 Assert.AreEqual("", TestUtility.DumpSorted(repository.TestComputedFrom.PersistCustom.Load(), Dump));
 
@@ -114,10 +114,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void PersistComplex()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestComputedFrom.PersistComplex" });
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestComputedFrom.PersistComplex" });
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 Assert.AreEqual("", TestUtility.DumpSorted(repository.TestComputedFrom.PersistComplex.Load(), Dump));
 
@@ -132,10 +132,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void PersistOverlap()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestComputedFrom.PersistOverlap" });
-                var testComputedFrom = container.Resolve<Common.DomRepository>().TestComputedFrom;
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestComputedFrom.PersistOverlap" });
+                var testComputedFrom = scope.Resolve<Common.DomRepository>().TestComputedFrom;
 
                 Assert.AreEqual("", TestUtility.DumpSorted(testComputedFrom.PersistOverlap.Load(), Dump));
 
@@ -160,11 +160,11 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void MultiSync_InsertBase()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
                 var deleteTables = new[] { "MultiSync", "Base1", "Base2" };
-                container.Resolve<ISqlExecuter>().ExecuteSql(deleteTables.Select(t => "DELETE FROM TestComputedFrom." + t));
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql(deleteTables.Select(t => "DELETE FROM TestComputedFrom." + t));
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 Assert.AreEqual("", TestUtility.DumpSorted(repository.TestComputedFrom.MultiSync.Query(), Dump));
 
@@ -173,38 +173,38 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("b1 b1a b1b ", TestUtility.DumpSorted(repository.TestComputedFrom.MultiSync.Query().ToList(), Dump));
 
                 var ms = repository.TestComputedFrom.MultiSync.Load().Single();
-                AssertIsRecently(ms.LastModifiedName1bx, SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()));
-                AssertIsRecently(ms.Start, SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()));
+                AssertIsRecently(ms.LastModifiedName1bx, SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>()));
+                AssertIsRecently(ms.Start, SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>()));
 
                 ms.Start = new DateTime(2001, 2, 3);
                 ms.LastModifiedName1bx = new DateTime(2001, 2, 3);
                 repository.TestComputedFrom.MultiSync.Update(new[] { ms });
                 ms = repository.TestComputedFrom.MultiSync.Load().Single();
-                AssertIsRecently(ms.Start, SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()), false);
-                AssertIsRecently(ms.LastModifiedName1bx, SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()), false);
+                AssertIsRecently(ms.Start, SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>()), false);
+                AssertIsRecently(ms.LastModifiedName1bx, SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>()), false);
 
                 b.Info = "xxx";
                 repository.TestComputedFrom.Base1.Update(new[] { b });
                 ms = repository.TestComputedFrom.MultiSync.Load().Single();
-                AssertIsRecently(ms.Start, SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()), false);
-                AssertIsRecently(ms.LastModifiedName1bx, SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()), false);
+                AssertIsRecently(ms.Start, SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>()), false);
+                AssertIsRecently(ms.LastModifiedName1bx, SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>()), false);
 
                 b.Name1 = "b1new";
                 repository.TestComputedFrom.Base1.Update(new[] { b });
                 Assert.AreEqual("b1new b1newa b1newb ", TestUtility.DumpSorted(repository.TestComputedFrom.MultiSync.Query().ToList(), Dump));
                 ms = repository.TestComputedFrom.MultiSync.Load().Single();
-                AssertIsRecently(ms.Start, SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()), false);
-                AssertIsRecently(ms.LastModifiedName1bx, SqlUtility.GetDatabaseTime(container.Resolve<ISqlExecuter>()));
+                AssertIsRecently(ms.Start, SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>()), false);
+                AssertIsRecently(ms.LastModifiedName1bx, SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>()));
             }
         }
 
         [TestMethod]
         public void ComputedWithAutocode()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var computedRepos = container.Resolve<GenericRepository<TestComputedFrom.ComputedWithAutoCode>>();
-                var computedSourceRepos = container.Resolve<GenericRepository<TestComputedFrom.ComputedWithAutoCodeSource>>();
+                var computedRepos = scope.Resolve<GenericRepository<TestComputedFrom.ComputedWithAutoCode>>();
+                var computedSourceRepos = scope.Resolve<GenericRepository<TestComputedFrom.ComputedWithAutoCodeSource>>();
 
                 var item1 = new TestComputedFrom.ComputedWithAutoCode { ID = Guid.NewGuid(), Code = "+" };
                 computedRepos.Save(new[] { item1 }, null, computedRepos.Load());
@@ -234,9 +234,9 @@ namespace CommonConcepts.Test
         private void TestKeyPropertyTarget<TEntity>(Action<TEntity, string> setControlValue, Func<TEntity, string> report)
             where TEntity : class, IEntity
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
                 var sourceRepository = context.Repository.TestComputedFrom.SyncByKeySource;
                 var targetRepository = context.GenericRepository<TEntity>();
 
@@ -279,10 +279,10 @@ namespace CommonConcepts.Test
         public void ChangesOnReferenced()
         {
             var log = new List<string>();
-            using (var container = TestContainer.Create(
-                TestContainer.ConfigureLogMonitor(log)))
+            using (var scope = TestScope.Create(
+                TestScope.ConfigureLogMonitor(log)))
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
                 var test = repository.TestChangesOnReferenced;
                 test.Tested.Delete(test.Tested.Query());
                 test.Parent.Delete(test.Parent.Query());
@@ -353,11 +353,11 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void KeepSyncRepositoryMembers()
         {
-            using (var container = TestContainer.Create(
-                TestContainer.ConfigureFakeUser("bb")))
+            using (var scope = TestScope.Create(
+                TestScope.ConfigureFakeUser("bb")))
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestComputedFrom.KeepSyncRepositoryMembers");
-                var repository = container.Resolve<Common.DomRepository>();
+                scope.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestComputedFrom.KeepSyncRepositoryMembers");
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 repository.TestComputedFrom.KeepSyncRepositoryMembers.RecomputeFromSource();
                 Assert.AreEqual("bb 22", TestUtility.DumpSorted(repository.TestComputedFrom.KeepSyncRepositoryMembers.Query(), item => item.Name + " " + item.Code));

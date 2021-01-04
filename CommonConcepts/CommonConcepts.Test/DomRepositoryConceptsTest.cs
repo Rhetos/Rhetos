@@ -33,18 +33,18 @@ using System.Text;
 namespace CommonConcepts.Test
 {
     [TestClass]
-    public class DomRepositoryConcepts
+    public class DomRepositoryConceptsTest
     {
         [TestMethod]
         public void OnSaveUpdateAndValidate()
         {
             var log = new List<string>();
-            using (var container = TestContainer.Create(
-                TestContainer.ConfigureLogMonitor(log, EventType.Info)))
+            using (var scope = TestScope.Create(
+                TestScope.ConfigureLogMonitor(log, EventType.Info)))
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestDataStructure.SaveTesterBase" });
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestDataStructure.SaveTesterBase" });
 
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
 
                 var baseRepos = context.Repository.TestDataStructure.SaveTesterBase;
                 var testerRepos = context.Repository.TestDataStructure.SaveTester;
@@ -87,11 +87,11 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveMethodInitialization()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                container.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestDataStructure.SaveTesterBase" });
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestDataStructure.SaveTesterBase" });
 
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
 
                 var baseRepos = context.Repository.TestDataStructure.SaveTesterBase;
                 var testerRepos = context.Repository.TestDataStructure.SaveTester;
@@ -110,10 +110,10 @@ namespace CommonConcepts.Test
         public void AutomaticallyDeleteExtensionWithBusinessLogic()
         {
             var log = new List<string>();
-            using (var container = TestContainer.Create(
-                TestContainer.ConfigureLogMonitor(log)))
+            using (var scope = TestScope.Create(
+                TestScope.ConfigureLogMonitor(log)))
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var baseItem = new TestDataStructure.SaveTesterBase { Name = "b1" };
                 repository.TestDataStructure.SaveTesterBase.Insert(baseItem);
@@ -137,9 +137,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveMethodArgumentValidation()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
 
                 var baseItem = new TestDataStructure.SaveTesterBase();
                 context.Repository.TestDataStructure.SaveTesterBase.Insert(baseItem);
@@ -153,9 +153,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveMethodOldDataLoaded()
         {
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
 
                 var baseItem = new TestDataStructure.SaveTesterBase { Name = "456" };
                 context.Repository.TestDataStructure.SaveTesterBase.Insert(baseItem);

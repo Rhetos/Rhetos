@@ -282,7 +282,6 @@ namespace Rhetos.Utilities.Test
         }
 
         [TestMethod]
-        [DeploymentItem("ConnectionStrings.config")]
         public void ConfigurationManagerSource()
         {
             var provider = new ConfigurationBuilder(new ConsoleLogProvider())
@@ -295,7 +294,6 @@ namespace Rhetos.Utilities.Test
         }
 
         [TestMethod]
-        [DeploymentItem("ConnectionStrings.config")]
         public void BindsConnectionStringOptions()
         {
             var provider = new ConfigurationBuilder(new ConsoleLogProvider())
@@ -308,7 +306,6 @@ namespace Rhetos.Utilities.Test
 
 
         [TestMethod]
-        [DeploymentItem("TestCfg.config")]
         public void ConfigurationFileSource()
         {
             var provider = new ConfigurationBuilder(new ConsoleLogProvider())
@@ -534,7 +531,6 @@ namespace Rhetos.Utilities.Test
         }
 
         [TestMethod]
-        [DeploymentItem("JsonConfigurationFile.json")]
         public void JsonConfigurationCorrect()
         {
             var provider = new ConfigurationBuilder(new ConsoleLogProvider())
@@ -556,7 +552,6 @@ namespace Rhetos.Utilities.Test
         }
 
         [TestMethod]
-        [DeploymentItem("JsonConfigurationFile_Invalid.json")]
         public void InvalidJsonFileThrows()
         {
             var builder = new ConfigurationBuilder(new ConsoleLogProvider())

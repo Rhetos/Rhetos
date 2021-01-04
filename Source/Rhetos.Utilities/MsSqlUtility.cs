@@ -22,7 +22,6 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Rhetos.Utilities
@@ -180,7 +179,7 @@ namespace Rhetos.Utilities
             const int MaxLength = 128;
             if (name.Length > MaxLength)
             {
-                var hashErasedPart = name.Substring(MaxLength - 9).GetHashCode().ToString("X");
+                var hashErasedPart = CsUtility.GetStableHashCode(name.Substring(MaxLength - 9)).ToString("X").PadLeft(8, '0');
                 return name.Substring(0, MaxLength - 9) + "_" + hashErasedPart;
             }
             return name;
@@ -257,6 +256,16 @@ namespace Rhetos.Utilities
         private static string GetString(IDictionary<string, object> dictionary, string key)
         {
             return dictionary.TryGetValue(key, out object value) ? value as string : null;
+        }
+
+        public static string GetSchemaName(string fullObjectName)
+        {
+            int dotPosition = fullObjectName.IndexOf('.');
+            if (dotPosition == -1)
+                return "dbo";
+
+            var schema = fullObjectName.Substring(0, dotPosition);
+            return SqlUtility.Identifier(schema);
         }
     }
 }

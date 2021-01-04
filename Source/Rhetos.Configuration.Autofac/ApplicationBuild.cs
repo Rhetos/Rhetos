@@ -82,7 +82,7 @@ namespace Rhetos
             }
         }
 
-        protected RhetosContainerBuilder CreateBuildComponentsContainer()
+        private RhetosContainerBuilder CreateBuildComponentsContainer()
         {
             var builder = RhetosContainerBuilder.CreateBuildTimeContainerBuilder(_configuration, _logProvider, _pluginAssemblies);
             builder.RegisterModule(new CoreModule());

@@ -22,8 +22,6 @@ using Rhetos.Extensibility;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
 namespace Rhetos.Dom
 {
@@ -31,8 +29,6 @@ namespace Rhetos.Dom
     {
         private readonly IPluginsContainer<IConceptCodeGenerator> _pluginRepository;
         private readonly ICodeGenerator _codeGenerator;
-        private readonly IAssemblyGenerator _assemblyGenerator;
-        private readonly RhetosBuildEnvironment _buildEnvironment;
         private readonly ISourceWriter _sourceWriter;
 
         /// <summary>
@@ -42,14 +38,11 @@ namespace Rhetos.Dom
         public DomGenerator(
             IPluginsContainer<IConceptCodeGenerator> plugins,
             ICodeGenerator codeGenerator,
-            IAssemblyGenerator assemblyGenerator,
             RhetosBuildEnvironment buildEnvironment,
             ISourceWriter sourceWriter)
         {
             _pluginRepository = plugins;
             _codeGenerator = codeGenerator;
-            _assemblyGenerator = assemblyGenerator;
-            _buildEnvironment = buildEnvironment;
             _sourceWriter = sourceWriter;
         }
 
@@ -58,42 +51,9 @@ namespace Rhetos.Dom
         public void Generate()
         {
             var sourceFiles = _codeGenerator.ExecutePluginsToFiles(_pluginRepository, "/*", "*/", null);
-            
-            if (!string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder))
-            {
-                foreach (var sourceFile in sourceFiles)
-                    _sourceWriter.Add(sourceFile.Key + ".cs", sourceFile.Value.GeneratedCode);
-            }
-            else
-            {
-                var targetAssemblies = sourceFiles
-                    .GroupBy(sourceFile => sourceFile.Key.Split('\\').First())
-                    .Select(sourceFileGroup => new
-                    {
-                        Name = sourceFileGroup.Key,
-                        AssemblySource = new AssemblySource
-                        {
-                            GeneratedCode = string.Join("\r\n", sourceFileGroup.OrderBy(sourceFile => sourceFile.Key).Select(sourceFile => sourceFile.Value.GeneratedCode)),
-                            RegisteredReferences = sourceFileGroup.SelectMany(sourceFile => sourceFile.Value.RegisteredReferences).Distinct().OrderBy(name => name)
-                        },
-                        AssemblyFile = Paths.GetDomAssemblyFile((DomAssemblies)Enum.Parse(typeof(DomAssemblies), sourceFileGroup.Key)),
-                    })
-                    .ToList();
 
-                Graph.SortByGivenOrder(targetAssemblies,
-                    new string[] { DomAssemblies.Model.ToString(), DomAssemblies.Orm.ToString(), DomAssemblies.Repositories.ToString() },
-                    targetAssembly => targetAssembly.Name);
-                AddReferences(targetAssemblies[1].AssemblySource, new[] { targetAssemblies[0].AssemblyFile });
-                AddReferences(targetAssemblies[2].AssemblySource, new[] { targetAssemblies[0].AssemblyFile, targetAssemblies[1].AssemblyFile });
-
-                foreach (var targetAssembly in targetAssemblies)
-                    _assemblyGenerator.Generate(targetAssembly.AssemblySource, targetAssembly.AssemblyFile);
-            }
-        }
-
-        private void AddReferences(AssemblySource targetAssembly, string[] additionalReferences)
-        {
-            targetAssembly.RegisteredReferences = targetAssembly.RegisteredReferences.Concat(additionalReferences).ToList();
+            foreach (var sourceFile in sourceFiles)
+                _sourceWriter.Add(sourceFile.Key + ".cs", sourceFile.Value.GeneratedCode);
         }
     }
 }

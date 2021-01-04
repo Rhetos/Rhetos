@@ -37,16 +37,16 @@ namespace CommonConcepts.Test
         {
             var id1 = Guid.NewGuid();
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
                 context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id1 });
-                container.CommitChanges();
+                scope.CommitChanges();
             }
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
                 Assert.IsTrue(context.Repository.TestEntity.BaseEntity.Query(new[] { id1 }).Any());
             }
         }
@@ -58,13 +58,13 @@ namespace CommonConcepts.Test
 
             try
             {
-                using (var container = TestContainer.Create())
+                using (var scope = TestScope.Create())
                 {
-                    var context = container.Resolve<Common.ExecutionContext>();
+                    var context = scope.Resolve<Common.ExecutionContext>();
                     context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id1 });
                     throw new FrameworkException(nameof(RollbackByDefault)); // The exception that is not handled within transaction scope.
 #pragma warning disable CS0162 // Unreachable code detected
-                    container.CommitChanges();
+                    scope.CommitChanges();
 #pragma warning restore CS0162 // Unreachable code detected
                 }
             }
@@ -73,9 +73,9 @@ namespace CommonConcepts.Test
                 Console.WriteLine($"{ex.GetType().Name}: {ex.Message}");
             }
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
                 Assert.IsFalse(context.Repository.TestEntity.BaseEntity.Query(new[] { id1 }).Any());
             }
         }
@@ -91,10 +91,10 @@ namespace CommonConcepts.Test
 
             try
             {
-                using (var container = TestContainer.Create())
+                using (var scope = TestScope.Create())
                 {
-                    container.CommitChanges(); // CommitChanges is incorrectly places at this position.
-                    var context = container.Resolve<Common.ExecutionContext>();
+                    scope.CommitChanges(); // CommitChanges is incorrectly placed at this position.
+                    var context = scope.Resolve<Common.ExecutionContext>();
                     context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id1 });
                     throw new FrameworkException(nameof(EarlyCommit)); // The exception is not handled within transaction scope to discard the transaction.
                 }
@@ -104,9 +104,9 @@ namespace CommonConcepts.Test
                 Console.WriteLine($"{ex.GetType().Name}: {ex.Message}");
             }
 
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
                 Assert.IsTrue(context.Repository.TestEntity.BaseEntity.Query(new[] { id1 }).Any()); // The transaction is committed because of incorrect implementation pattern above.
             }
         }
@@ -117,11 +117,11 @@ namespace CommonConcepts.Test
             const int threadCount = 2;
 
             int initialCount;
-            using (var container = TestContainer.Create())
+            using (var scope = TestScope.Create())
             {
-                TestContainer.CheckForParallelism(container.Resolve<ISqlExecuter>(), threadCount);
+                TestScope.CheckForParallelism(scope.Resolve<ISqlExecuter>(), threadCount);
 
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
                 initialCount = context.Repository.TestEntity.BaseEntity.Query().Count();
             }
 
@@ -129,9 +129,9 @@ namespace CommonConcepts.Test
 
             Parallel.For(0, threadCount, thread =>
             {
-                using (var container = TestContainer.Create())
+                using (var scope = TestScope.Create())
                 {
-                    var context = container.Resolve<Common.ExecutionContext>();
+                    var context = scope.Resolve<Common.ExecutionContext>();
 
                     Assert.AreEqual(initialCount, context.Repository.TestEntity.BaseEntity.Query().Count());
                     Thread.Sleep(100);

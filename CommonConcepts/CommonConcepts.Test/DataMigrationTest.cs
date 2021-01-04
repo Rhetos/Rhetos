@@ -59,18 +59,18 @@ namespace CommonConcepts.Test
         {
 
             var log = new List<string>();
-            using (var container = TestContainer.Create(
-                TestContainer.ConfigureLogMonitor(log)))
+            using (var scope = TestScope.Create(
+                TestScope.ConfigureLogMonitor(log)))
             {
-                var sqlExecuter = container.Resolve<ISqlExecuter>();
+                var sqlExecuter = scope.Resolve<ISqlExecuter>();
                 sqlExecuter.ExecuteSql("DELETE FROM Rhetos.DataMigrationScript");
 
-                var sqlBatches = container.Resolve<SqlTransactionBatches>();
+                var sqlBatches = scope.Resolve<SqlTransactionBatches>();
 
                 foreach (string scriptsDescription in scriptsDescriptions)
                 {
                     var dbUpdateOptions = new DbUpdateOptions() { DataMigrationSkipScriptsWithWrongOrder = skipScriptsWithWrongOrder };
-                    var dataMigration = new DataMigrationScriptsExecuter(sqlExecuter, container.Resolve<ILogProvider>(), DataMigrationScriptsFromScriptsDescription(scriptsDescription), dbUpdateOptions, sqlBatches);
+                    var dataMigration = new DataMigrationScriptsExecuter(sqlExecuter, scope.Resolve<ILogProvider>(), DataMigrationScriptsFromScriptsDescription(scriptsDescription), dbUpdateOptions, sqlBatches);
                     dataMigration.Execute();
                 }
 

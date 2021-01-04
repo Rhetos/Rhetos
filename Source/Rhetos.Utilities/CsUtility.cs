@@ -64,6 +64,11 @@ namespace Rhetos.Utilities
             return result.ToString();
         }
 
+        public static string Indent(string lines, int indentation)
+        {
+            return string.Join("\r\n", lines.Replace("\r\n", "\n").Replace("\r", "\n").Split('\n').Select(line => new string(' ', indentation) + line));
+        }
+
         /// <summary>
         /// Reads a value from the dictionary, with extended error handling.
         /// Parameter exceptionMessage can contain format tag {0} that will be replaced by missing key.
@@ -74,11 +79,6 @@ namespace Rhetos.Utilities
             if (!dictionary.TryGetValue(key, out value))
                 throw new FrameworkException(string.Format(exceptionMessage(), key));
             return value;
-        }
-
-        public static string Indent(string lines, int indentation)
-        {
-            return string.Join("\r\n", lines.Replace("\r\n", "\n").Replace("\r", "\n").Split('\n').Select(line => new string(' ', indentation) + line));
         }
 
         /// <summary>
@@ -112,20 +112,17 @@ namespace Rhetos.Utilities
             if (string.IsNullOrEmpty(name))
                 return "Identifier name is empty.";
 
-            {
-                char c = name[0];
-                if ((c < 'a' || c > 'z') && (c < 'A' || c > 'Z') && c != '_')
-                    return "Identifier name '" + name + "' is not valid. First character is not an English letter or underscore.";
-            }
+            if (IsNotLetterOrUnderscore(name[0]))
+                return $"Identifier name '{name}' is not valid. First character is not an English letter or underscore.";
 
-            {
-                foreach (char c in name)
-                    if ((c < 'a' || c > 'z') && (c < 'A' || c > 'Z') && c != '_' && (c < '0' || c > '9'))
-                        return "Identifier name '" + name + "' is not valid. Character '" + c + "' is not an English letter or number or underscore.";
-            }
+            foreach (char c in name)
+                if (IsNotLetterOrUnderscore(c) && (c < '0' || c > '9'))
+                    return $"Identifier name '{name}' is not valid. Character '{c}' is not an English letter or number or underscore.";
 
             return null;
         }
+
+        private static bool IsNotLetterOrUnderscore(char c) => (c < 'a' || c > 'z') && (c < 'A' || c > 'Z') && c != '_';
 
         /// <summary>
         /// Result does not include implemented interfaces, only base classes.
@@ -435,6 +432,24 @@ namespace Rhetos.Utilities
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Standard GetHashCode() function in not guaranteed to return same result in different environments.
+        /// </summary>
+        public static int GetStableHashCode(string implementationName)
+        {
+            if (string.IsNullOrEmpty(implementationName))
+                return 0;
+
+            const int seed = 1737350767;
+            int hash = seed;
+            foreach (char c in implementationName)
+            {
+                hash += c;
+                hash *= seed;
+            }
+            return hash;
         }
 
         public static void InvokeAll<T>(T target, IEnumerable<Action<T>> actions)
