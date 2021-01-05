@@ -17,16 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rhetos.Dsl.DefaultConcepts;
-using System.Globalization;
-using System.ComponentModel.Composition;
-using Rhetos.Extensibility;
-using Rhetos.Dsl;
 using Rhetos.Compiler;
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Extensibility;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -39,67 +34,49 @@ namespace Rhetos.Dom.DefaultConcepts
             var info = (DenyUserEditPropertyInfo)conceptInfo;
             codeBuilder.InsertCode(CheckChangesOnInsertSnippet(info), WritableOrmDataStructureCodeGenerator.ArgumentValidationTag, info.Property.DataStructure);
             codeBuilder.InsertCode(CheckChangesOnUpdateSnippet(info), WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.Property.DataStructure);
-            codeBuilder.AddReferencesFromDependency(typeof(UserException));
         }
 
         private static string ThrowExceptionSnippet(DenyUserEditPropertyInfo info)
         {
-            return string.Format(
-            @"if (invalidItem != null)
+            return $@"if (invalidItem != null)
                     throw new Rhetos.UserException(
                         ""It is not allowed to directly enter {{0}} property of {{1}}."",
-                        new[] {{ ""{2}"", ""{0}.{1}"" }},
-                        ""DataStructure:{0}.{1},ID:"" + invalidItem.ID + "",Property:{2}"",
+                        new[] {{ ""{info.Property.Name}"", ""{info.Property.DataStructure.Module.Name}.{info.Property.DataStructure.Name}"" }},
+                        ""DataStructure:{info.Property.DataStructure.Module.Name}.{info.Property.DataStructure.Name},ID:"" + invalidItem.ID + "",Property:{info.Property.Name}"",
                         null);
-            ",
-                info.Property.DataStructure.Module.Name,
-                info.Property.DataStructure.Name,
-                info.Property.Name,
-                GetComparedPropertyName(info.Property));
+            ";
         }
 
 
         private static string CheckChangesOnInsertSnippet(DenyUserEditPropertyInfo info)
         {
-            return string.Format(
-            @"if (checkUserPermissions)
+            return $@"if (checkUserPermissions)
             {{
-                var invalidItem = insertedNew.Where(newItem => newItem.{3} != null).FirstOrDefault();
+                var invalidItem = insertedNew.Where(newItem => newItem.{GetComparedPropertyName(info.Property)} != null).FirstOrDefault();
 
-                {4}
+                {ThrowExceptionSnippet(info)}
             }}
 
-            ",
-                info.Property.DataStructure.Module.Name,
-                info.Property.DataStructure.Name,
-                info.Property.Name,
-                GetComparedPropertyName(info.Property),
-                ThrowExceptionSnippet(info));
+            ";
         }
 
         private static string CheckChangesOnUpdateSnippet(DenyUserEditPropertyInfo info)
         {
-            return string.Format(
-            @"if (checkUserPermissions)
+            return $@"if (checkUserPermissions)
             {{
                 var changes = updatedNew.Zip(updated, (newItem, oldItem) => new {{ newItem, oldItem }});
                 foreach (var change in changes)
-                    if (change.newItem.{3} == null && change.oldItem.{3} != null)
-                        change.newItem.{3} = change.oldItem.{3};
+                    if (change.newItem.{GetComparedPropertyName(info.Property)} == null && change.oldItem.{GetComparedPropertyName(info.Property)} != null)
+                        change.newItem.{GetComparedPropertyName(info.Property)} = change.oldItem.{GetComparedPropertyName(info.Property)};
                 var invalidItem = changes
-                    .Where(change => change.newItem.{3} != null && !change.newItem.{3}.Equals(change.oldItem.{3}) || change.newItem.{3} == null && change.oldItem.{3} != null)
+                    .Where(change => change.newItem.{GetComparedPropertyName(info.Property)} != null && !change.newItem.{GetComparedPropertyName(info.Property)}.Equals(change.oldItem.{GetComparedPropertyName(info.Property)}) || change.newItem.{GetComparedPropertyName(info.Property)} == null && change.oldItem.{GetComparedPropertyName(info.Property)} != null)
                     .Select(change => change.newItem)
                     .FirstOrDefault();
 
-                {4}
+                {ThrowExceptionSnippet(info)}
             }}
 
-            ",
-                info.Property.DataStructure.Module.Name,
-                info.Property.DataStructure.Name,
-                info.Property.Name,
-                GetComparedPropertyName(info.Property),
-                ThrowExceptionSnippet(info));
+            ";
         }
 
         private static string GetComparedPropertyName(PropertyInfo propertyInfo)

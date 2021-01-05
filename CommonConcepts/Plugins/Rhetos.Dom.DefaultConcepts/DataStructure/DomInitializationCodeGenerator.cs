@@ -20,9 +20,6 @@
 using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Extensibility;
-using Rhetos.Processing;
-using Rhetos.Utilities;
-using System;
 using System.ComponentModel.Composition;
 
 namespace Rhetos.Dom.DefaultConcepts
@@ -40,13 +37,11 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly string QueryableRepositoryBaseMembersTag = "/*QueryableRepositoryBaseMembers*/";
         public static readonly string OrmRepositoryBaseMembersTag = "/*OrmRepositoryBaseMembers*/";
 
-        private readonly RhetosBuildEnvironment _buildEnvironment;
         private readonly CommonConceptsOptions _commonConceptsOptions;
         private readonly CommonConceptsDatabaseSettings _databaseSettings;
 
-        public DomInitializationCodeGenerator(RhetosBuildEnvironment buildEnvironment, CommonConceptsOptions commonConceptsOptions, CommonConceptsDatabaseSettings databaseSettings)
+        public DomInitializationCodeGenerator(CommonConceptsOptions commonConceptsOptions, CommonConceptsDatabaseSettings databaseSettings)
         {
-            _buildEnvironment = buildEnvironment;
             _commonConceptsOptions = commonConceptsOptions;
             _databaseSettings = databaseSettings;
         }
@@ -63,33 +58,11 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            codeBuilder.InsertCodeToFile(GetModelSnippet(), $"{DomAssemblies.Model}\\QueryExtensions");
-            codeBuilder.InsertCodeToFile(GetOrmSnippet(), string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder) ? DomAssemblies.Orm.ToString() : "EntityFrameworkContext");
-            codeBuilder.InsertCodeToFile(GetRepositoriesSnippet(), DomAssemblies.Repositories.ToString());
+            codeBuilder.InsertCodeToFile(GetModelSnippet(), $"{GeneratedSourceDirectories.Model}\\QueryExtensions");
+            codeBuilder.InsertCodeToFile(GetOrmSnippet(), "EntityFrameworkContext");
+            codeBuilder.InsertCodeToFile(GetRepositoriesSnippet(), GeneratedSourceDirectories.Repositories.ToString());
 
             codeBuilder.InsertCode("this.Configuration.UseDatabaseNullSemantics = _rhetosAppOptions.EntityFrameworkUseDatabaseNullSemantics;\r\n            ", EntityFrameworkContextInitializeTag);
-
-            // Types used in the preceding code snippet:
-            codeBuilder.AddReferencesFromDependency(typeof(Autofac.Module)); // Includes a reference to Autofac.dll.
-            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Extensibility.INamedPlugins<>));
-            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.IUserInfo));
-            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.ISqlExecuter));
-            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Security.IAuthorizationManager));
-            codeBuilder.AddReferencesFromDependency(typeof(System.ComponentModel.Composition.ExportAttribute));
-            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Dom.DefaultConcepts.GenericRepositories));
-            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Logging.ILogProvider));
-            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.SqlUtility));
-            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.ExceptionsUtility));
-            codeBuilder.AddReferencesFromDependency(typeof(System.Data.Entity.DbContext));
-            codeBuilder.AddReferencesFromDependency(typeof(System.Data.Entity.SqlServer.SqlProviderServices));
-            codeBuilder.AddReferencesFromDependency(typeof(System.Data.Entity.Core.EntityClient.EntityConnection));
-            codeBuilder.AddReferencesFromDependency(typeof(System.Data.Entity.Core.Metadata.Edm.MetadataWorkspace));
-            codeBuilder.AddReferencesFromDependency(typeof(System.Data.Entity.Core.Objects.ObjectStateEntry));
-            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Persistence.IPersistenceCache));
-            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Persistence.IPersistenceTransaction));
-            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Dom.DefaultConcepts.CommonConceptsDatabaseSettings));
-            codeBuilder.AddReferencesFromDependency(typeof(ApplyFiltersOnClientRead));
-            codeBuilder.AddReferencesFromDependency(typeof(ICommandInfo)); // Used from ApplyFiltersOnClientRead.
         }
 
         public static string DisableWarnings(CommonConceptsOptions commonConceptsOptions)

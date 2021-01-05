@@ -20,13 +20,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Diagnostics.Contracts;
 using System.Reflection;
 
 namespace Rhetos.Dom
 {
-    public enum DomAssemblies { Model, Orm, Repositories };
+    /// <summary>
+    /// A helper to encourage naming consistency for subdirectories where the source code is generated.
+    /// The source can also be generated in other subdirectories.
+    /// </summary>
+    public enum GeneratedSourceDirectories { Model, Orm, Repositories };
 
     public interface IDomainObjectModel
     {

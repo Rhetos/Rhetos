@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System;
 using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
@@ -29,6 +30,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("ExternalReference")]
+    [Obsolete("Add a NuGet dependency or a project reference to specify Rhetos application dependency to external library.")]
     public class ModuleExternalReferenceInfo : IConceptInfo
     {
         [ConceptKey]

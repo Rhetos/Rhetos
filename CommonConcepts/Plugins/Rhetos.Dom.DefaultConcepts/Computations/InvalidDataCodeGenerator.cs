@@ -55,7 +55,6 @@ namespace Rhetos.Dom.DefaultConcepts
 
         ";
             codeBuilder.InsertCode(errorMessageMethod, RepositoryHelper.RepositoryMembers, info.Source);
-            codeBuilder.AddReferencesFromDependency(typeof(InvalidDataMessage));
 
             // HACK: Using IDslModel as a cleaner alternative to ConceptMetadata (which is not saved with DslModel).
             // We could remove InvalidDataMessageInfo and InvalidDataAllowSaveInfo concepts,

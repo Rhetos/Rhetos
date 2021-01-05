@@ -66,7 +66,7 @@ namespace Rhetos.Persistence
         {
             var sw = Stopwatch.StartNew();
 
-            string xml = _codeGenerator.ExecutePlugins(_plugins, "<!--", "-->", new InitialSnippet()).GeneratedCode;
+            string xml = _codeGenerator.ExecutePlugins(_plugins, "<!--", "-->", new InitialSnippet());
             string[] segments = xml.Split(new[] { "\r\n" + _segmentSplitter + "\r\n" }, StringSplitOptions.None);
 
             if (segments.Length != EntityFrameworkMapping.ModelFiles.Length)

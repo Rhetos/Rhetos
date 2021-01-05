@@ -43,31 +43,18 @@ namespace Rhetos.Compiler
             _dslModel = dslModel;
         }
 
-        public IAssemblySource ExecutePlugins<TPlugin>(IPluginsContainer<TPlugin> plugins, string tagOpen, string tagClose, IConceptCodeGenerator initialCodeGenerator)
+        public string ExecutePlugins<TPlugin>(IPluginsContainer<TPlugin> plugins, string tagOpen, string tagClose, IConceptCodeGenerator initialCodeGenerator)
             where TPlugin : IConceptCodeGenerator
         {
             var codeBuilder = BuildCode(plugins, tagOpen, tagClose, initialCodeGenerator);
-
-            return new AssemblySource
-            {
-                GeneratedCode = codeBuilder.GenerateCode(),
-                RegisteredReferences = codeBuilder.RegisteredReferences
-            };
+            return codeBuilder.GenerateCode();
         }
 
-        public IDictionary<string, IAssemblySource> ExecutePluginsToFiles<TPlugin>(IPluginsContainer<TPlugin> plugins, string tagOpen, string tagClose, IConceptCodeGenerator initialCodeGenerator)
+        public IDictionary<string, string> ExecutePluginsToFiles<TPlugin>(IPluginsContainer<TPlugin> plugins, string tagOpen, string tagClose, IConceptCodeGenerator initialCodeGenerator)
             where TPlugin : IConceptCodeGenerator
         {
             var codeBuilder = BuildCode(plugins, tagOpen, tagClose, initialCodeGenerator);
-
-            return codeBuilder.GeneratedCodeByFile
-                .ToDictionary(
-                    codeFile => codeFile.Key,
-                    codeFile => (IAssemblySource)new AssemblySource
-                    {
-                        GeneratedCode = codeFile.Value,
-                        RegisteredReferences = codeBuilder.RegisteredReferences
-                    });
+            return codeBuilder.GeneratedCodeByFile;
         }
 
         private CodeBuilder BuildCode<TPlugin>(IPluginsContainer<TPlugin> plugins, string tagOpen, string tagClose, IConceptCodeGenerator initialCodeGenerator) where TPlugin : IConceptCodeGenerator

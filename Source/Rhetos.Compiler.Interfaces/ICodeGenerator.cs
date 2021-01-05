@@ -30,15 +30,15 @@ namespace Rhetos.Compiler
         /// <summary>
         /// For each concept in DslModel executes registered code generator plugin and returns the generated source code.
         /// </summary>
-        /// <param name="initialCodeGenerator">Optional. Used to initialize generated AssemblyInfo. It will be called with IConceptInfo argument set to null.</param>
-        IAssemblySource ExecutePlugins<TPlugin>(IPluginsContainer<TPlugin> plugins, string tagOpen, string tagClose, IConceptCodeGenerator initialCodeGenerator)
+        /// <param name="initialCodeGenerator">Optional. It will be called before other code generators, with IConceptInfo argument set to null.</param>
+        string ExecutePlugins<TPlugin>(IPluginsContainer<TPlugin> plugins, string tagOpen, string tagClose, IConceptCodeGenerator initialCodeGenerator)
             where TPlugin : IConceptCodeGenerator;
 
         /// <summary>
         /// For each concept in DslModel executes registered code generator plugin and returns the generated source code split to files.
         /// </summary>
-        /// <param name="initialCodeGenerator">Optional. Used to initialize generated AssemblyInfo. It will be called with IConceptInfo argument set to null.</param>
-        IDictionary<string, IAssemblySource> ExecutePluginsToFiles<TPlugin>(IPluginsContainer<TPlugin> plugins, string tagOpen, string tagClose, IConceptCodeGenerator initialCodeGenerator)
+        /// <param name="initialCodeGenerator">Optional. It will be called before other code generators, with IConceptInfo argument set to null.</param>
+        IDictionary<string, string> ExecutePluginsToFiles<TPlugin>(IPluginsContainer<TPlugin> plugins, string tagOpen, string tagClose, IConceptCodeGenerator initialCodeGenerator)
             where TPlugin : IConceptCodeGenerator;
     }
 }

@@ -32,7 +32,6 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             codeBuilder.InsertCode("AddInterceptor(new Rhetos.Dom.DefaultConcepts.ContainsIdsInterceptor());\r\n            ", DomInitializationCodeGenerator.EntityFrameworkConfigurationTag);
-            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Dom.DefaultConcepts.ContainsIdsInterceptor));
         }
     }
 }

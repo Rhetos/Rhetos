@@ -21,11 +21,7 @@ using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -52,8 +48,6 @@ namespace Rhetos.Dom.DefaultConcepts
             // Inserting snippet at OldDataLoadedTag instead of InitializationTag, to ensure that
             // default values for code format or grouping can be set before generating the autocode.
             codeBuilder.InsertCode(snippet, WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.Property.DataStructure);
-            codeBuilder.AddReferencesFromDependency(typeof(AutoCodeHelper));
-            codeBuilder.AddReferencesFromDependency(typeof(AutoCodeItem));
         }
     }
 }

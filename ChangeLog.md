@@ -25,6 +25,11 @@
     * TODO: Implement them in a separate NuGet package.
 14. TestUtility.DumpSorted may return items in a different order, because the default string comparer is different between .NET Framework and .NET 5.
 15. Removed LegacyPathsOptions class, specific for build process with DeployPackages.
+16. Removed methods ICodeBuilder.AddReference and AddReferencesFromDependency.
+    * Calls to this methods can be removed from custom code, since since Rhetos no longer compiles assemblies directly.
+17. Removed IAssemblySource. ICodeGenerator methods return generated source as a string.
+    * Custom code that called ExecutePlugins can use the string result directly, instead of IAssemblySource.GeneratedCode property.
+    * Custom code should not use IAssemblySource.RegisteredReferences, since Rhetos no longer compiles assemblies.
 
 ## 4.3.0 (TO BE RELEASED)
 

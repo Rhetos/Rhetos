@@ -17,67 +17,30 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Logging;
 using Rhetos.Utilities;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 
 namespace Rhetos.Dom
 {
     public class DomLoader : IDomainObjectModel
     {
-        private readonly ILogger _logger;
-        private readonly ILogger _performanceLogger;
-
-        private List<Assembly> _assemblies;
-        private readonly object _assembliesLock = new object();
         private readonly RhetosAppOptions _rhetosAppOptions;
+        private readonly Lazy<List<Assembly>> _assemblies;
 
-        public DomLoader(ILogProvider logProvider, RhetosAppOptions rhetosAppOptions)
+        public DomLoader(RhetosAppOptions rhetosAppOptions)
         {
-            _logger = logProvider.GetLogger("DomLoader");
-            _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _rhetosAppOptions = rhetosAppOptions;
+            _assemblies = new Lazy<List<Assembly>>(LoadObjectModel);
         }
 
-        public IEnumerable<Assembly> Assemblies
-        {
-            get
-            {
-                if (_assemblies == null)
-                    lock (_assembliesLock)
-                        if (_assemblies == null)
-                            _assemblies = LoadObjectModel();
-
-                return _assemblies;
-            }
-        }
+        public IEnumerable<Assembly> Assemblies => _assemblies.Value;
 
         private List<Assembly> LoadObjectModel()
         {
-            var loaded = new List<Assembly>();
-            var sw = Stopwatch.StartNew();
-
-            if (Paths.DomAssemblyFiles.All(file => File.Exists(file)))
-            {
-                foreach (string name in Paths.DomAssemblyFiles.Select(Path.GetFileNameWithoutExtension))
-                {
-                    _logger.Trace("Loading assembly \"" + name + "\".");
-                    var assembly = Assembly.Load(name);
-                    if (assembly == null)
-                        throw new FrameworkException($"Failed to load assembly '{name}'.");
-                    loaded.Add(assembly);
-                    _performanceLogger.Write(sw, "LoadObjectModel " + name);
-                }
-                return loaded;
-            }
-            else
-            {
-                return new List<Assembly> { Assembly.Load(Path.GetFileNameWithoutExtension(_rhetosAppOptions.RhetosRuntimePath)) };
-            }
+            return new List<Assembly> { Assembly.Load(Path.GetFileNameWithoutExtension(_rhetosAppOptions.RhetosRuntimePath)) };
         }
     }
 }

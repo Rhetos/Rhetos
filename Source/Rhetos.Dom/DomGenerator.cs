@@ -19,7 +19,6 @@
 
 using Rhetos.Compiler;
 using Rhetos.Extensibility;
-using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 
@@ -31,14 +30,9 @@ namespace Rhetos.Dom
         private readonly ICodeGenerator _codeGenerator;
         private readonly ISourceWriter _sourceWriter;
 
-        /// <summary>
-        /// If assemblyName is not null, the assembly will be saved on disk.
-        /// If assemblyName is null, the assembly will be generated in memory.
-        /// </summary>
         public DomGenerator(
             IPluginsContainer<IConceptCodeGenerator> plugins,
             ICodeGenerator codeGenerator,
-            RhetosBuildEnvironment buildEnvironment,
             ISourceWriter sourceWriter)
         {
             _pluginRepository = plugins;
@@ -53,7 +47,7 @@ namespace Rhetos.Dom
             var sourceFiles = _codeGenerator.ExecutePluginsToFiles(_pluginRepository, "/*", "*/", null);
 
             foreach (var sourceFile in sourceFiles)
-                _sourceWriter.Add(sourceFile.Key + ".cs", sourceFile.Value.GeneratedCode);
+                _sourceWriter.Add(sourceFile.Key + ".cs", sourceFile.Value);
         }
     }
 }

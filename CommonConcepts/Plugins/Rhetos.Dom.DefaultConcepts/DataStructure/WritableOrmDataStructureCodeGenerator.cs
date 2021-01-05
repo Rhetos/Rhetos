@@ -17,16 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rhetos.Dsl.DefaultConcepts;
-using System.Globalization;
-using System.ComponentModel.Composition;
 using Rhetos.Compiler;
-using Rhetos.Extensibility;
 using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Extensibility;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -153,13 +148,8 @@ namespace Rhetos.Dom.DefaultConcepts
             {
                 codeBuilder.InsertCode("IWritableRepository<" + info.Module.Name + "." + info.Name + ">", RepositoryHelper.RepositoryInterfaces, info);
                 codeBuilder.InsertCode("IValidateRepository", RepositoryHelper.RepositoryInterfaces, info);
-                codeBuilder.AddReferencesFromDependency(typeof(IWritableRepository<>));
-                codeBuilder.AddReferencesFromDependency(typeof(IValidateRepository));
 
                 codeBuilder.InsertCode(MemberFunctionsSnippet(info), RepositoryHelper.RepositoryMembers, info);
-                codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.ExceptionsUtility));
-                codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Utilities.CsUtility));
-                codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Dom.DefaultConcepts.InvalidDataMessage));
             }
         }
     }

@@ -17,17 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Globalization;
-using System.ComponentModel.Composition;
 using Rhetos.Compiler;
-using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
-using System.Diagnostics.Contracts;
+using System;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -65,7 +60,6 @@ namespace Rhetos.Dom.DefaultConcepts
         public static void AddInterfaceAndReference(ICodeBuilder codeBuilder, string typeName, Type type, DataStructureInfo dataStructureInfo)
         {
             codeBuilder.InsertCode(typeName, DataStructureCodeGenerator.InterfaceTag, dataStructureInfo);
-            codeBuilder.AddReferencesFromDependency(type);
         }
     }
 }

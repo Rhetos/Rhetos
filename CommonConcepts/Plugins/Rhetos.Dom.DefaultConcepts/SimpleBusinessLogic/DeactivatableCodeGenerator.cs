@@ -41,7 +41,6 @@ namespace Rhetos.Dom.DefaultConcepts
 
             codeBuilder.InsertCode(saveCode, WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.Entity);
             codeBuilder.InsertCode("Rhetos.Dom.DefaultConcepts.IDeactivatable", DataStructureCodeGenerator.InterfaceTag, info.Entity);
-            codeBuilder.AddReferencesFromDependency(typeof(IDeactivatable));
         }
 
         public static void SetActiveByDefault(IEnumerable<IDeactivatable> insertedNew, IEnumerable<IDeactivatable> updatedNew, IEnumerable<IDeactivatable> updatedOld)

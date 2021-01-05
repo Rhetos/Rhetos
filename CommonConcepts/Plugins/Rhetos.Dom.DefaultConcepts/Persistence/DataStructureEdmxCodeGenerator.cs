@@ -84,7 +84,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private string GetEntityTypeNodeForConceptualModel(DataStructureInfo dataStructureInfo)
         {
-            var assemblyName = string.IsNullOrEmpty(_rhetosBuildEnvironment.OutputAssemblyName) ? "ServerDom.Model, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" : _rhetosBuildEnvironment.OutputAssemblyName;
+            var assemblyName = _rhetosBuildEnvironment.OutputAssemblyName;
             return $@"
   <EntityType Name=""{GetName(dataStructureInfo)}"" customannotation:ClrType=""Common.Queryable.{GetName(dataStructureInfo)}, {assemblyName}"">
     <Key>

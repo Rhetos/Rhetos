@@ -17,15 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Rhetos.Compiler;
 using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Dsl;
-using Rhetos.Processing;
-using Rhetos.Processing.DefaultCommands;
 using Rhetos.Utilities;
 
 namespace Rhetos.Dom.DefaultConcepts
@@ -76,7 +69,6 @@ namespace Rhetos.Dom.DefaultConcepts
 
         ";
             codeBuilder.InsertCode(callFromModuleRepostiorySnippet, ModuleCodeGenerator.RepositoryMembersTag, info.Module);
-            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Extensibility.NamedPluginsExtensions));
 
             string registerRepository = $@"builder.RegisterType<{module}._Helper.{entity}_Repository>().Keyed<IRepository>(""{module}.{entity}"").InstancePerLifetimeScope();
             ";

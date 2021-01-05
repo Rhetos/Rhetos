@@ -36,11 +36,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
             codeBuilder.InsertCode("IWritableRepository<" + info.DataStructure.Module.Name + "." + info.DataStructure.Name + ">", RepositoryHelper.RepositoryInterfaces, info.DataStructure);
             codeBuilder.InsertCode("IValidateRepository", RepositoryHelper.RepositoryInterfaces, info.DataStructure);
-            codeBuilder.AddReferencesFromDependency(typeof(IWritableRepository<>));
-            codeBuilder.AddReferencesFromDependency(typeof(IValidateRepository));
 
             codeBuilder.InsertCode(MemberFunctionsSnippet(info), RepositoryHelper.RepositoryMembers, info.DataStructure);
-            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Dom.DefaultConcepts.InvalidDataMessage));
         }
 
         protected static string MemberFunctionsSnippet(WriteInfo info)

@@ -21,9 +21,7 @@ using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -73,7 +71,7 @@ namespace Common.Queryable
 
     {CommonQueryableMemebersTag.Evaluate(info)}{DomInitializationCodeGenerator.RestoreWarnings(_commonConceptsOptions)}
 }}
-", $"{DomAssemblies.Model}\\{info.Name}{DomAssemblies.Model}");
+", $"{GeneratedSourceDirectories.Model}\\{info.Name}{GeneratedSourceDirectories.Model}");
 
             codeBuilder.InsertCodeToFile(
 $@"namespace {info.Name}._Helper
@@ -97,22 +95,7 @@ $@"namespace {info.Name}._Helper
     {HelperNamespaceMembersTag.Evaluate(info)}{DomInitializationCodeGenerator.RestoreWarnings(_commonConceptsOptions)}
 }}
 
-", $"{DomAssemblies.Repositories}\\{info.Name}{DomAssemblies.Repositories}");
-
-            // Default .NET framework assemblies:
-            codeBuilder.AddReferencesFromDependency(typeof(int)); // Includes reference to mscorlib.dll
-            codeBuilder.AddReferencesFromDependency(typeof(Enumerable)); // Includes reference to System.Core, a default reference for new project in Visual Studio.
-            codeBuilder.AddReferencesFromDependency(typeof(ISet<>)); // Includes reference to System, a default reference for new project in Visual Studio.
-            codeBuilder.AddReferencesFromDependency(typeof(Microsoft.CSharp.RuntimeBinder.RuntimeBinderException)); // Includes reference to Microsoft.CSharp, a default reference for new project in Visual Studio.
-            codeBuilder.AddReferencesFromDependency(typeof(System.Data.Common.DbDataReader)); // Includes reference to System.Data, a default reference for new project in Visual Studio.
-            codeBuilder.AddReferencesFromDependency(typeof(System.Xml.Serialization.XmlSerializer)); // Includes reference to System.Xml, a default reference for new project in Visual Studio.
-            codeBuilder.AddReferencesFromDependency(typeof(System.Xml.Linq.XElement)); // Includes reference to System.Xml.Linq, a default reference for new project in Visual Studio.
-            // Commonly used Rhetos classes:
-            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Dom.DefaultConcepts.FilterAll)); // Includes reference to Rhetos.Dom.DefaultConcepts.dll
-            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Extensibility.INamedPlugins<>));
-            // Other classes used in domain object model:
-            codeBuilder.AddReferencesFromDependency(typeof(System.Runtime.Serialization.DataContractAttribute)); // Includes reference to System.Runtime.Serialization.dll.
-            codeBuilder.AddReferencesFromDependency(typeof(Rhetos.Persistence.IPersistenceTransaction));
+", $"{GeneratedSourceDirectories.Repositories}\\{info.Name}{GeneratedSourceDirectories.Repositories}");
 
             codeBuilder.InsertCode(ModuleRepositoryInCommonRepositorySnippet(info), CommonDomRepositoryMembersTag);
         }
