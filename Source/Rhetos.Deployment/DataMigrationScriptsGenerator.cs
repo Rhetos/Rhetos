@@ -28,14 +28,15 @@ using System.Text.RegularExpressions;
 namespace Rhetos.Deployment
 {
     /// <summary>
-    /// Generates data migration script from provided SQL scripts.
+    /// Generates the assets file that contains all information on data migration scripts, needed for database upgrade.
+    /// It is generated from the provided data-migration SQL files within the current Rhetos project and NuGet packages.
     /// </summary>
     public class DataMigrationScriptsGenerator : IGenerator
     {
-        const string DataMigrationSubfolder = "DataMigration";
-        const string DataMigrationSubfolderPrefix = DataMigrationSubfolder + @"\";
+        private const string DataMigrationSubfolder = "DataMigration";
+        private const string DataMigrationSubfolderPrefix = DataMigrationSubfolder + @"\";
 
-        protected readonly InstalledPackages _installedPackages;
+        private readonly InstalledPackages _installedPackages;
         private readonly FilesUtility _filesUtility;
         private readonly IDataMigrationScriptsFile _dataMigrationScriptsFile;
 
@@ -78,6 +79,10 @@ namespace Rhetos.Deployment
                 // Early check for better error messages:
                 CheckDuplicateTags(packageSqlFiles.Where(s => s.Header.IsDowngradeScript).Select(s => (s.Header.Tag, s.Path)));
                 CheckDuplicateTags(packageSqlFiles.Where(s => !s.Header.IsDowngradeScript).Select(s => (s.Header.Tag, s.Path)));
+
+                var invalidDownSuffix = packageSqlFiles.FirstOrDefault(s => !s.Header.IsDowngradeScript && s.Path.EndsWith(".down.sql", StringComparison.OrdinalIgnoreCase));
+                if (invalidDownSuffix != null)
+                    throw new FrameworkException($"Data-migration 'down' script '{invalidDownSuffix.Path}' should have \"DATAMIGRATION-DOWN\" label in the header.");
 
                 var packageScripts = packageSqlFiles.Where(sqlFile => !sqlFile.Header.IsDowngradeScript).Select(upSqlFile => new DataMigrationScript
                 {

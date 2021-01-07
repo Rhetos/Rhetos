@@ -109,6 +109,15 @@ namespace Rhetos.Deployment.Test
         }
 
         [TestMethod]
+        public void DownSuffixOnUpScript()
+        {
+            var files = new[] { "i.down.sql" };
+            TestUtility.ShouldFail<FrameworkException>(
+                () => GenerateDataMigrationScriptsAssetsFile(files),
+                @"Data-migration 'down' script 'TestPackage\i.down.sql' should have ""DATAMIGRATION-DOWN"" label in the header.");
+        }
+
+        [TestMethod]
         public void TagLabelIncorrectUp()
         {
             var files = new[] { "i2.sql", "i2.down.sql" };
