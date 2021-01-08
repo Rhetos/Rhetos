@@ -120,12 +120,12 @@ namespace Rhetos
         /// <summary>
         /// This method creates a thread-safe lifetime scope DI container to isolate unit of work in a separate database transaction.
         /// To commit changes to database, call <see cref="TransactionScopeContainer.CommitChanges"/> at the end of the 'using' block.
-        /// <para>
-        /// In most cases it is preferred to use a <see cref="ProcessContainer"/> instance instead of this static method, for better control over the DI container.
+        /// </summary>
+        /// <remarks>
+        /// In most cases it is preferred to use a <see cref="ProcessContainer"/> instance, instead of this static method, for better control over the DI container.
         /// The static method is useful in some special cases, for example to optimize LINQPad scripts that can reuse the external static instance
         /// after recompiling the script.
-        /// </para>
-        /// </summary>
+        /// </remarks>
         /// <param name="rhetosAppAssemblyPath">
         /// Path to assembly where the CreateRhetosHostBuilder method is located.
         /// </param>

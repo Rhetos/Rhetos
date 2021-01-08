@@ -30,6 +30,10 @@ using System.Threading;
 
 namespace Rhetos.Extensibility
 {
+    /// <summary>
+    /// Build-time plugin scanner.
+    /// See <see cref="RuntimePluginScanner"/> for runtime plugins.
+    /// </summary>
     public class PluginScanner : IPluginScanner
     {
         /// <summary>
@@ -47,33 +51,19 @@ namespace Rhetos.Extensibility
         /// It searches for type implementations in the provided list of assemblies.
         /// </summary>
         /// <param name="pluginAssemblies">List of DLL file paths that will be searched for plugins when invoking the method <see cref="FindPlugins"/>.</param>
-        public PluginScanner(IEnumerable<string> pluginAssemblies, string cacheFolder, ILogProvider logProvider, PluginScannerOptions pluginScannerOptions)
+        public PluginScanner(IEnumerable<string> pluginAssemblies, RhetosBuildEnvironment buildEnvironment, ILogProvider logProvider, PluginScannerOptions pluginScannerOptions)
         {
+            if (string.IsNullOrEmpty(buildEnvironment.CacheFolder))
+                throw new ArgumentException($"Configuration setting '{OptionsAttribute.GetConfigurationPath<RhetosBuildEnvironment>()}:{nameof(RhetosBuildEnvironment.CacheFolder)}' in not provided.");
+
             _pluginsByExport = new Lazy<MultiDictionary<string, PluginInfo>>(() => GetPluginsByExport(pluginAssemblies), LazyThreadSafetyMode.ExecutionAndPublication);
-            _pluginScannerCache = new PluginScannerCache(cacheFolder, logProvider, new FilesUtility(logProvider));
+            _pluginScannerCache = new PluginScannerCache(buildEnvironment.CacheFolder, logProvider, new FilesUtility(logProvider));
             _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _logger = logProvider.GetLogger(GetType().Name);
 
             var ignoreList = pluginScannerOptions.PredefinedIgnoreAssemblyFiles.Concat(pluginScannerOptions.IgnoreAssemblyFiles ?? Array.Empty<string>()).Distinct().ToList();
             _ignoreAssemblyFiles = new HashSet<string>(ignoreList.Where(name => !name.EndsWith("*")), StringComparer.OrdinalIgnoreCase);
             _ignoreAssemblyPrefixes = ignoreList.Where(name => name.EndsWith("*")).Select(name => name.Trim('*')).ToArray();
-        }
-
-        /// <summary>
-        /// Finds the cache folder in either build-time or run-time configuration, since plugin scanner is used in both environments.
-        /// </summary>
-        public static string GetCacheFolder(IConfiguration configuration)
-        {
-            var rhetosBuildEnvironment = configuration.GetOptions<RhetosBuildEnvironment>();
-            var rhetosAppOptions = configuration.GetOptions<RhetosAppOptions>();
-            string runtimeAssemblyFolder = !string.IsNullOrEmpty(rhetosAppOptions.RhetosRuntimePath)
-                ? Path.GetDirectoryName(rhetosAppOptions.RhetosRuntimePath) : null;
-
-            string cacheFolder = rhetosBuildEnvironment.CacheFolder ?? runtimeAssemblyFolder;
-            if (cacheFolder == null)
-                throw new FrameworkException($"Missing configuration settings for build ({OptionsAttribute.GetConfigurationPath<RhetosBuildEnvironment>()}:{nameof(RhetosBuildEnvironment.CacheFolder)})" +
-                    $" or runtime ({OptionsAttribute.GetConfigurationPath<RhetosAppOptions>()}:{nameof(RhetosAppOptions.RhetosRuntimePath)}).");
-            return cacheFolder;
         }
 
         /// <summary>

@@ -25,17 +25,20 @@ using System.Text;
 
 namespace Rhetos.Dom
 {
-    public class PluginRegistrationModuleGenerator : IGenerator
+    public class RhetosHostBuilderGenerator : IGenerator
     {
-        private readonly PluginInfoContainer _plugins;
+        public static readonly string PluginAssembliesTag = "/*RhetosHostBuilder.PluginAssemblies*/";
+        public static readonly string PluginTypesTag = "/*RhetosHostBuilder.PluginTypes*/";
+
+        private readonly PluginInfoCollection _plugins;
 
         private readonly ISourceWriter _sourceWriter;
 
         public IEnumerable<string> Dependencies => Array.Empty<string>();
 
-        public PluginRegistrationModuleGenerator(
+        public RhetosHostBuilderGenerator(
             ISourceWriter sourceWriter,
-            PluginInfoContainer plugins)
+            PluginInfoCollection plugins)
         {
             _sourceWriter = sourceWriter;
             _plugins = plugins;
@@ -43,10 +46,10 @@ namespace Rhetos.Dom
 
         public void Generate()
         {
-            var sb = new StringBuilder();
+            var addPlugins = new StringBuilder();
             foreach (var plugin in _plugins)
             {
-                sb.Append($"            pluginList.Add(typeof({plugin.Type.FullName}));" + Environment.NewLine);
+                addPlugins.Append($"typeof({plugin.Type.FullName}),{Environment.NewLine}                ");
             }
 
             var rhetosHostBuilderCode = $@"using Autofac;
@@ -59,25 +62,31 @@ namespace Rhetos
 {{
     public class RhetosHostBuilder : RhetosHostBuilderBase
     {{
-        public RhetosHostBuilder()
-        {{
-        }}
-
         protected override ContainerBuilder CreateContainerBuilder(IConfiguration configuration)
         {{
-            return RhetosContainerBuilder.CreateRunTimeContainerBuilder(configuration, this._builderLogProvider, new List<Assembly> {{ Assembly.GetExecutingAssembly() }}, GetPluginTypes());
+            return RhetosContainerBuilder.CreateRunTimeContainerBuilder(configuration, _builderLogProvider, GetPluginAssemblies(), GetPluginTypes());
         }}
 
-        private List<Type> GetPluginTypes()
+        private static IEnumerable<Assembly> GetPluginAssemblies()
         {{
-            var pluginList = new List<Type>();
+            return new Assembly[]
+            {{
+                Assembly.GetExecutingAssembly(),
+                {PluginAssembliesTag}
+            }};
+        }}
 
-{sb}
-            return pluginList;
+        private static IEnumerable<Type> GetPluginTypes()
+        {{
+            #pragma warning disable CS0618 // (Type or member is obsolete) Obsolete plugins can be registered without a warning, their usage will show a warning.
+            return new Type[]
+            {{
+                {addPlugins}{PluginTypesTag}
+            }};
+            #pragma warning restore CS0618
         }}
     }}
 }}
-
 ";
 
             _sourceWriter.Add("RhetosHostBuilder.cs", rhetosHostBuilderCode);

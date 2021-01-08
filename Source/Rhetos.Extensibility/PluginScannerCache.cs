@@ -21,7 +21,6 @@ using Newtonsoft.Json;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
-using System.Collections.Generic;
 using System.IO;
 
 namespace Rhetos.Extensibility
@@ -40,8 +39,6 @@ namespace Rhetos.Extensibility
             _logger = logProvider.GetLogger(GetType().Name);
             _filesUtility = filesUtility;
         }
-
-        public IEnumerable<string> Dependencies => Array.Empty<string>();
 
         internal PluginsCacheData LoadPluginsCacheData()
         {

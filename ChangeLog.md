@@ -8,7 +8,8 @@
 2. Removed WcfWindowsUserInfo, IWindowsSecurity and WindowsSecurity from Rhetos framework. WindowsSecurity property on ExecutionContext is removed.
    * TODO: These classes might be implemented in a separate plugin package.
 3. Removed CleanupOldData executable
-4. Removed CreateAndSetDatabase executable
+4. Removed CreateAndSetDatabase executable.
+   * Use [sqlcmd](https://docs.microsoft.com/en-us/sql/tools/sqlcmd-utility) CLI utility to create a database.
 5. Removed CreateIISSite executable
 6. Removed DeployPackages executable
    * rhetos.exe is replacing DeployPackages.exe, see [Migrating from DeployPackages to Rhetos CLI](https://github.com/Rhetos/Rhetos/wiki/Migrating-from-DeployPackages-to-Rhetos-CLI).
@@ -25,6 +26,7 @@
     * TODO: Implement them in a separate NuGet package.
 14. TestUtility.DumpSorted may return items in a different order, because the default string comparer is different between .NET Framework and .NET 5.
 15. Removed LegacyPathsOptions class, specific for build process with DeployPackages.
+16. Removed Plugins class, use ContainerBuilderPluginRegistration instead. Resolve it from ContainerBuilder with extension method builder.GetPluginRegistration().
 
 ## 4.3.0 (TO BE RELEASED)
 

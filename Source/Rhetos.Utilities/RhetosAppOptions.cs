@@ -52,13 +52,5 @@ namespace Rhetos.Utilities
         public double AuthorizationCacheExpirationSeconds { get; set; } = 30;
 
         public bool AuthorizationAddUnregisteredPrincipals { get; set; } = false;
-
-        /// <summary>
-        /// Locations of application's runtime assemblies (probing paths), required for plugin discovery
-        /// and assembly resolver in external applications such as CLI utilities and tests.
-        /// If not specified, Rhetos will try to automatically detect folders based on application's configuration.
-        /// </summary>
-        [AbsolutePathOption]
-        public IEnumerable<string> AssemblyFolders { get; set; }
     }
 }

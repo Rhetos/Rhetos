@@ -21,7 +21,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
-using System.Collections.Generic;
 using System.IO;
 
 namespace Rhetos.Extensibility.Test
@@ -37,10 +36,10 @@ namespace Rhetos.Extensibility.Test
         public void AnalyzeAndReportTypeLoadException()
         {
             var incompatibleAssemblies = new[] { GetIncompatibleAssemblyPath() };
-            //TODO: Check if this was the inteneded behaviour from the start
+            //TODO: Check if this was the intended behavior from the start
             var assemblyResolver = AssemblyResolver.GetResolveEventHandler(incompatibleAssemblies, new ConsoleLogProvider(), false);
             AppDomain.CurrentDomain.AssemblyResolve += assemblyResolver;
-            var pluginsScanner = new PluginScanner(incompatibleAssemblies, ".", new ConsoleLogProvider(), new PluginScannerOptions());
+            var pluginsScanner = new PluginScanner(incompatibleAssemblies, new RhetosBuildEnvironment { CacheFolder = "." }, new ConsoleLogProvider(), new PluginScannerOptions());
             TestUtility.ShouldFail<FrameworkException>(
                 () => pluginsScanner.FindPlugins(typeof(IGenerator)),
                 "Please check if the assembly is missing or has a different version.",

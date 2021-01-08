@@ -17,13 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
 using Autofac;
 using Rhetos.Logging;
 using Rhetos.Utilities;
+using System;
+using System.Collections.Generic;
+using System.IO;
 
 namespace Rhetos
 {
@@ -35,10 +34,6 @@ namespace Rhetos
         private Action<IConfiguration, ContainerBuilder, List<Action<ContainerBuilder>>> _customContainerConfigurationAction ;
         protected ILogger _buildLogger;
         private string _rootFolder;
-
-        public RhetosHostBuilderBase()
-        {
-        }
 
         public IRhetosHostBuilder UseBuilderLogProvider(ILogProvider logProvider)
         {
@@ -87,7 +82,7 @@ namespace Rhetos
                     Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
                 }
 
-                var configuration = CreateConfiguration();
+                var configuration = BuildConfiguration();
                 var rhetosContainer = BuildContainer(configuration);
                 return new RhetosHost(rhetosContainer);
             }
@@ -102,7 +97,7 @@ namespace Rhetos
             }
         }
 
-        private IConfiguration CreateConfiguration()
+        private IConfiguration BuildConfiguration()
         {
             var rhetosAppSettingsFilePath = Path.GetFullPath(RhetosAppEnvironment.ConfigurationFileName);
             if (!File.Exists(rhetosAppSettingsFilePath))

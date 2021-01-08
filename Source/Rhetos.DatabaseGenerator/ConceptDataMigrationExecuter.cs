@@ -17,14 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Newtonsoft.Json;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace Rhetos.DatabaseGenerator
 {
@@ -34,8 +31,6 @@ namespace Rhetos.DatabaseGenerator
         private readonly SqlTransactionBatches _sqlExecuter;
         private readonly Lazy<GeneratedDataMigrationScripts> _scripts;
         private readonly RhetosAppOptions _rhetosAppOptions;
-
-        public IEnumerable<string> Dependencies => new List<string>();
 
         public ConceptDataMigrationExecuter(
             ILogProvider logProvider,

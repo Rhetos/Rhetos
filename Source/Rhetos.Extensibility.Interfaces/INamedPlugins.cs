@@ -17,17 +17,18 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Linq;
 using System.Collections.Generic;
 
 namespace Rhetos.Extensibility
 {
     /// <summary>
-    /// Note: Named plugins cannot be used to list all plugins (Autofac limitation). If that feature is needed, the plugin must
+    /// This is a simple wrapper around internal DI container for resolving "named" plugins, allowing plugin projects to compile without referencing Autofac.
+    /// </summary>
+    /// <remarks>
+    /// Named plugins cannot be used to list all plugins (Autofac limitation). If that feature is needed, the plugin must
     /// be registered both as a named (keyed) service, and as a simple service, then use IPluginsContainer to get all plugins.
     /// https://stackoverflow.com/questions/4959148/is-it-possible-in-autofac-to-resolve-all-services-for-a-type-even-if-they-were
-    /// </summary>
+    /// </remarks>
     public interface INamedPlugins<TPlugin>
     {
         IEnumerable<TPlugin> GetPlugins(string name);

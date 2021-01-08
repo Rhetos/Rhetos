@@ -36,9 +36,9 @@ namespace Rhetos.Extensibility
         /// <summary>
         /// It searches for type implementations in the provided list of assemblies and types.
         /// </summary>
-        public RuntimePluginScanner(IEnumerable<Assembly> assemblies, IEnumerable<Type> types, ILogProvider logProvider)
+        public RuntimePluginScanner(IEnumerable<Assembly> pluginAssemblies, IEnumerable<Type> pluginTypes, ILogProvider logProvider)
         {
-            _pluginsByExport = new Lazy<MultiDictionary<string, PluginInfo>>(() => GetPluginsByExport(assemblies, types), LazyThreadSafetyMode.ExecutionAndPublication);
+            _pluginsByExport = new Lazy<MultiDictionary<string, PluginInfo>>(() => GetPluginsByExport(pluginAssemblies, pluginTypes), LazyThreadSafetyMode.ExecutionAndPublication);
             _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
         }
 

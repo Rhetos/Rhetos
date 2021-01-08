@@ -42,11 +42,23 @@ namespace Rhetos
             return new TransactionScopeContainer(Container, registerScopeComponentsAction);
         }
 
+        /// <summary>
+        /// Finds and loads the runtime context of the main application.
+        /// The application is expected to have an entry point (typically the Program class) with a
+        /// static method that creates and configures a <see cref="IRhetosHostBuilder"/> instance,
+        /// see <see cref="HostBuilderFactoryMethodName"/>.
+        /// The application should be created with Rhetos framework, or reference an assembly that
+        /// was created with Rhetos framework.
+        /// </summary>
+        /// <param name="hostFilePath">Path of the application's assembly file (.dll or .exe).</param>
         public static IRhetosHostBuilder FindBuilder(string hostFilePath)
         {
-            var hostDirectory = Path.GetDirectoryName(hostFilePath);
+            if (!File.Exists(hostFilePath))
+                throw new ArgumentException($"Please specify the host application assembly file. File '{hostFilePath}' does not exist.");
 
             var startupAssembly = ResolveStartupAssembly(hostFilePath);
+            if (startupAssembly == null)
+                throw new FrameworkException($"Could not resolve assembly from path '{hostFilePath}'.");
 
             var entryPointType = startupAssembly?.EntryPoint?.DeclaringType;
             if (entryPointType == null)
@@ -62,7 +74,7 @@ namespace Rhetos
                 throw new FrameworkException($"Static method '{entryPointType.FullName}.{HostBuilderFactoryMethodName}' has incorrect return type. Expected return type is {nameof(IRhetosHostBuilder)}.");
 
             var rhetosHostBuilder = (IRhetosHostBuilder)method.Invoke(null, new object[] { });
-            rhetosHostBuilder.UseRootFolder(hostDirectory); // use host directory as root for all RhetosHostBuilder operations
+            rhetosHostBuilder.UseRootFolder(Path.GetDirectoryName(hostFilePath)); // use host directory as root for all RhetosHostBuilder operations
             return rhetosHostBuilder;
         }
 

@@ -21,9 +21,15 @@ using System.Collections.Generic;
 
 namespace Rhetos.Extensibility
 {
-    public class PluginInfoContainer : List<PluginInfo>
+    /// <summary>
+    /// Contains a list of all build-time plugin types.
+    /// Used internally for performance optimization.
+    /// To resolve the specific plugins, use <see cref="IPluginsContainer{TPlugin}"/>
+    /// or <see cref="INamedPlugins{TPlugin}"/> instead.
+    /// </summary>
+    public class PluginInfoCollection : List<PluginInfo>
     {
-        public PluginInfoContainer(IEnumerable<PluginInfo> plugins) : base(plugins)
+        public PluginInfoCollection(IEnumerable<PluginInfo> plugins) : base(plugins)
         { }
     }
 }
