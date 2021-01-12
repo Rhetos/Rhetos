@@ -64,7 +64,8 @@ namespace Rhetos
     {{
         protected override ContainerBuilder CreateContainerBuilder(IConfiguration configuration)
         {{
-            return RhetosContainerBuilder.CreateRunTimeContainerBuilder(configuration, _builderLogProvider, GetPluginAssemblies(), GetPluginTypes());
+            var pluginScanner = new Rhetos.Extensibility.RuntimePluginScanner(GetPluginAssemblies(), GetPluginTypes(), _builderLogProvider);
+            return new RhetosContainerBuilder(configuration, _builderLogProvider, pluginScanner);
         }}
 
         private static IEnumerable<Assembly> GetPluginAssemblies()

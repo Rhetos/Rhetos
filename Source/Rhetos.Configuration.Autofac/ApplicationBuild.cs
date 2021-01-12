@@ -84,7 +84,14 @@ namespace Rhetos
 
         private RhetosContainerBuilder CreateBuildComponentsContainer()
         {
-            var builder = RhetosContainerBuilder.CreateBuildTimeContainerBuilder(_configuration, _logProvider, _pluginAssemblies);
+            var pluginScanner = new PluginScanner(
+                _pluginAssemblies,
+                _configuration.GetOptions<RhetosBuildEnvironment>(),
+                _logProvider,
+                _configuration.GetOptions<PluginScannerOptions>());
+
+            var builder = new RhetosContainerBuilder(_configuration, _logProvider, pluginScanner);
+            builder.Register(context => new PluginInfoCollection(pluginScanner.FindAllPlugins()));
             builder.RegisterModule(new CoreModule());
             builder.RegisterModule(new CorePluginsModule());
             builder.RegisterModule(new BuildModule());

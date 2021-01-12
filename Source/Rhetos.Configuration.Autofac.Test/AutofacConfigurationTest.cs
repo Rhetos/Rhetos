@@ -39,8 +39,10 @@ namespace Rhetos.Configuration.Autofac.Test
         {
             protected override ContainerBuilder CreateContainerBuilder(IConfiguration configuration)
             {
-                return RhetosContainerBuilder.CreateRunTimeContainerBuilder(configuration, _builderLogProvider,
-                    new List<Assembly> { Assembly.GetExecutingAssembly()}, new List<Type>());
+                var pluginAssemblies = new[] { Assembly.GetExecutingAssembly() };
+                var pluginTypes = Array.Empty<Type>();
+                var pluginScanner = new RuntimePluginScanner(pluginAssemblies, pluginTypes, _builderLogProvider);
+                return new RhetosContainerBuilder(configuration, _builderLogProvider, pluginScanner);
             }
         }
 

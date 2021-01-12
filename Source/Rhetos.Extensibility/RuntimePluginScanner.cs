@@ -36,6 +36,8 @@ namespace Rhetos.Extensibility
         /// <summary>
         /// It searches for type implementations in the provided list of assemblies and types.
         /// </summary>
+        /// <param name="pluginAssemblies">List of DLL file paths that will be searched for plugins when invoking the method <see cref="FindPlugins"/>.</param>
+        /// <param name="pluginTypes">List of additional types that will be used for plugins search.</param>
         public RuntimePluginScanner(IEnumerable<Assembly> pluginAssemblies, IEnumerable<Type> pluginTypes, ILogProvider logProvider)
         {
             _pluginsByExport = new Lazy<MultiDictionary<string, PluginInfo>>(() => GetPluginsByExport(pluginAssemblies, pluginTypes), LazyThreadSafetyMode.ExecutionAndPublication);
