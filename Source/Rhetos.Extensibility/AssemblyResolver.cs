@@ -18,7 +18,6 @@
 */
 
 using Rhetos.Logging;
-using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -29,30 +28,6 @@ namespace Rhetos.Extensibility
 {
     public static class AssemblyResolver
     {
-        public static string[] GetRuntimeAssemblies(IConfiguration configuration)
-        {
-            var rhetosAppOptions = configuration.GetOptions<RhetosAppOptions>();
-
-            if (string.IsNullOrEmpty(rhetosAppOptions.RhetosRuntimePath))
-                throw new FrameworkException($"Run-time configuration option '{nameof(RhetosAppOptions)}.{nameof(RhetosAppOptions.RhetosRuntimePath)}' is not provided.");
-            string runtimeAssemblyFolder = Path.GetDirectoryName(rhetosAppOptions.RhetosRuntimePath);
-
-            IEnumerable<string> searchFolders;
-
-            if (rhetosAppOptions.AssemblyFolders != null && rhetosAppOptions.AssemblyFolders.Any())
-                searchFolders = rhetosAppOptions.AssemblyFolders;
-            else
-                searchFolders = new[] { runtimeAssemblyFolder };
-
-            var foundAssemblies = searchFolders
-                .Where(folder => Directory.Exists(folder))
-                .SelectMany(folder => Directory.GetFiles(folder, "*.dll", SearchOption.TopDirectoryOnly));
-
-            return new[] { rhetosAppOptions.RhetosRuntimePath }.Concat(foundAssemblies)
-                .Distinct()
-                .ToArray();
-        }
-
         /// <param name="warningOnDuplicateFiles">Suppress the warnings to avoid spamming the application run-time log. The warnings should show on build.</param>
         public static ResolveEventHandler GetResolveEventHandler(IEnumerable<string> assemblies, ILogProvider logProvider, bool warningOnDuplicateFiles)
         {

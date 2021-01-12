@@ -17,16 +17,19 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Logging;
-using Rhetos.Utilities;
-using Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources;
+using System.Collections.Generic;
 
-namespace Rhetos
+namespace Rhetos.Extensibility
 {
-    public interface IConfigurationBuilder
+    /// <summary>
+    /// Contains a list of all build-time plugin types.
+    /// Used internally for performance optimization.
+    /// To resolve the specific plugins, use <see cref="IPluginsContainer{TPlugin}"/>
+    /// or <see cref="INamedPlugins{TPlugin}"/> instead.
+    /// </summary>
+    public class PluginInfoCollection : List<PluginInfo>
     {
-        IConfigurationBuilder Add(IConfigurationSource source);
-        IConfigurationBuilder UseBuilderLogProvider(ILogProvider builderLogProvider);
-        IConfiguration Build();
+        public PluginInfoCollection(IEnumerable<PluginInfo> plugins) : base(plugins)
+        { }
     }
 }

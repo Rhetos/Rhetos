@@ -24,12 +24,23 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 
 namespace Rhetos.Utilities.Test
 {
     [TestClass]
     public class ConfigurationProviderTests
     {
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext context)
+        {
+            // different test runners have different entry assemblies
+            // this ensures that our 'app.config' is attached to correct one
+            var source = Path.Combine(context.DeploymentDirectory, "app.config");
+            var destination = Path.Combine(context.DeploymentDirectory, Path.GetFileName(Assembly.GetEntryAssembly().Location) + ".config");
+            File.Copy(source, destination, true);
+        }
+
         [TestMethod]
         public void AllKeys()
         {
@@ -596,7 +607,9 @@ namespace Rhetos.Utilities.Test
 
         private class TestOptions
         {
+#pragma warning disable 414
             private string PrivateField;
+#pragma warning restore 414
             private string PrivateProperty { get; set; }
             public string PublicField;
             public string PublicProperty { get; set; }

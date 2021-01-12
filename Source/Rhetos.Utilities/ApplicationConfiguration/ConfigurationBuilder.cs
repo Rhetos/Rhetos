@@ -30,11 +30,17 @@ namespace Rhetos
     public class ConfigurationBuilder : IConfigurationBuilder
     {
         private readonly List<IConfigurationSource> configurationSources = new List<IConfigurationSource>();
-        private readonly ILogProvider _logProvider;
+        private ILogProvider _builderLogProvider;
 
-        public ConfigurationBuilder(ILogProvider logProvider)
+        public ConfigurationBuilder(ILogProvider builderLogProvider = null)
         {
-            _logProvider = logProvider;
+            _builderLogProvider = builderLogProvider ?? LoggingDefaults.DefaultLogProvider;
+        }
+
+        public IConfigurationBuilder UseBuilderLogProvider(ILogProvider builderLogProvider)
+        {
+            _builderLogProvider = builderLogProvider;
+            return this;
         }
 
         public IConfigurationBuilder Add(IConfigurationSource source)
@@ -59,7 +65,7 @@ namespace Rhetos
                     configurationValues[sourceValue.Key] = sourceValue.Value;
                 }
             }
-            return new ConfigurationProvider(configurationValues, _logProvider);
+            return new ConfigurationProvider(configurationValues, _builderLogProvider);
         }
     }
 }

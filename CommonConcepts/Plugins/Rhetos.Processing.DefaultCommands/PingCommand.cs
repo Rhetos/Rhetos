@@ -17,19 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
 using Rhetos.Extensibility;
-using Rhetos.XmlSerialization;
 
 namespace Rhetos.Processing.DefaultCommands
 {
     [Export(typeof(ICommandImplementation))]
     [ExportMetadata(MefProvider.Implements, typeof(PingCommandInfo))]
-    class PingCommand : ICommandImplementation
+    public class PingCommand : ICommandImplementation
     {
         private readonly IDataTypeProvider _dataTypeProvider;
 

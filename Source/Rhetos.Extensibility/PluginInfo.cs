@@ -26,7 +26,7 @@ namespace Rhetos.Extensibility
     [DebuggerDisplay("{Type}")]
     public class PluginInfo
     {
-        public Type Type;
-        public Dictionary<string, object> Metadata;
+        public Type Type { get; set; }
+        public Dictionary<string, object> Metadata { get; set; }
     }
 }

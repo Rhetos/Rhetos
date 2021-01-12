@@ -105,6 +105,9 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
         private string GetDatabaseManifestToken()
         {
             _logger.Trace("Resolving ProviderManifestToken.");
+            if (string.IsNullOrEmpty(_connectionString))
+                throw new FrameworkException("Connection string is not provided.");
+
             using (var connection = new SqlConnection(_connectionString))
             {
                 return new DefaultManifestTokenResolver().ResolveManifestToken(connection);

@@ -20,10 +20,8 @@
 using Newtonsoft.Json;
 using Rhetos.Logging;
 using Rhetos.Utilities;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Text;
 
 namespace Rhetos.Deployment
 {
@@ -33,8 +31,6 @@ namespace Rhetos.Deployment
 
         private readonly ILogger _performanceLogger;
         private readonly string _dataMigrationScriptsFilePath;
-
-        public IEnumerable<string> Dependencies => new List<string>();
 
         public DataMigrationScriptsFile(IAssetsOptions assetsOptions, ILogProvider logProvider)
         {

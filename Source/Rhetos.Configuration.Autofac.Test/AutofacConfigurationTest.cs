@@ -35,15 +35,31 @@ namespace Rhetos.Configuration.Autofac.Test
     [TestClass]
     public class AutofacConfigurationTest
     {
+        private class RhetosHostTestBuilder : RhetosHostBuilderBase
+        {
+            protected override ContainerBuilder CreateContainerBuilder(IConfiguration configuration)
+            {
+                return RhetosContainerBuilder.CreateRunTimeContainerBuilder(configuration, _builderLogProvider,
+                    new List<Assembly> { Assembly.GetExecutingAssembly()}, new List<Type>());
+            }
+        }
+
         private class ApplicationDeploymentAccessor : ApplicationDeployment, ITestAccessor
         {
-            public ApplicationDeploymentAccessor(IConfiguration configuration, ILogProvider logProvider) :
-                base(configuration, logProvider)
-            { }
+            public ApplicationDeploymentAccessor(Action<IConfigurationBuilder> configureConfiguration, ILogProvider logProvider) : 
+                base(HostBuilderFactoryWithConfiguration(configureConfiguration), logProvider){}
 
-            public RhetosContainerBuilder CreateDbUpdateComponentsContainer() => this.Invoke("CreateDbUpdateComponentsContainer");
-
+            public new IRhetosHostBuilder CreateDbUpdateHostBuilder()
+            {
+                return base.CreateDbUpdateHostBuilder();
+            }
             public void AddAppInitializationComponents(ContainerBuilder builder) => this.Invoke("AddAppInitializationComponents", builder);
+
+            private static Func<IRhetosHostBuilder> HostBuilderFactoryWithConfiguration(Action<IConfigurationBuilder> configureConfiguration)
+            {
+                return () => new RhetosHostTestBuilder()
+                    .ConfigureConfiguration(configureConfiguration);
+            }
         }
 
         private class ApplicationBuildAccessor : ApplicationBuild, ITestAccessor
@@ -77,14 +93,13 @@ namespace Rhetos.Configuration.Autofac.Test
                 })
                 .AddKeyValue(ConfigurationProvider.GetKey((ConfigurationProviderOptions o) => o.LegacyKeysWarning), true)
                 .AddKeyValue(ConfigurationProvider.GetKey((LoggingOptions o) => o.DelayedLogTimout), 60.0)
-                .AddConfigurationManagerConfiguration()
                 .AddJsonFile(Path.Combine(rhetosAppRootPath, RhetosBuildEnvironment.ConfigurationFileName), optional: true)
                 .Build();
 
             return configuration;
         }
 
-        public IConfiguration GetRuntimeConfiguration()
+        public void GetRuntimeConfiguration(IConfigurationBuilder configurationBuilder)
         {
             string rhetosAppRootPath = AppDomain.CurrentDomain.BaseDirectory;
             string currentAssemblyPath = GetType().Assembly.Location;
@@ -94,34 +109,26 @@ namespace Rhetos.Configuration.Autofac.Test
                 .ToList();
 
             // Simulating common run-time configuration of Rhetos CLI.
-
-            var rhetosRuntime = new RhetosRuntime();
-
-            var configuration = rhetosRuntime.BuildConfiguration(new ConsoleLogProvider(), rhetosAppRootPath, configurationBuilder =>
-            {
-                configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((DatabaseOptions o) => o.SqlCommandTimeout), 0);
-                configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((ConfigurationProviderOptions o) => o.LegacyKeysWarning), true);
-                configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((LoggingOptions o) => o.DelayedLogTimout), 60.0);
-                configurationBuilder.AddConfigurationManagerConfiguration();
-                configurationBuilder.AddJsonFile(Path.Combine(rhetosAppRootPath, DbUpdateOptions.ConfigurationFileName), optional: true);
+            configurationBuilder
+                .AddKeyValue(ConfigurationProvider.GetKey((DatabaseOptions o) => o.SqlCommandTimeout), 0)
+                .AddKeyValue(ConfigurationProvider.GetKey((ConfigurationProviderOptions o) => o.LegacyKeysWarning), true)
+                .AddKeyValue(ConfigurationProvider.GetKey((LoggingOptions o) => o.DelayedLogTimout), 60.0)
+                .AddConfigurationManagerConfiguration()
+                .AddRhetosAppEnvironment(rhetosAppRootPath)
+                .AddJsonFile(Path.Combine(rhetosAppRootPath, DbUpdateOptions.ConfigurationFileName), optional: true)
                 // shortTransactions
-                configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((DbUpdateOptions o) => o.ShortTransactions), true);
+                .AddKeyValue(ConfigurationProvider.GetKey((DbUpdateOptions o) => o.ShortTransactions), true)
                 // skipRecompute
-                configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((DbUpdateOptions o) => o.SkipRecompute), true);
-
-                configurationBuilder
-                    .AddOptions(new RhetosAppOptions
-                    {
-                        RhetosRuntimePath = currentAssemblyPath,
-                    })
-                    .AddOptions(new PluginScannerOptions
-                    {
-                        // Ignore other MEF plugins from assemblies that might get bundled in the same testing output folder.
-                        IgnoreAssemblyFiles = allOtherAssemblies
-                    });
-            });
-
-            return configuration;
+                .AddKeyValue(ConfigurationProvider.GetKey((DbUpdateOptions o) => o.SkipRecompute), true)
+                .AddOptions(new RhetosAppOptions
+                {
+                    RhetosRuntimePath = currentAssemblyPath,
+                })
+                .AddOptions(new PluginScannerOptions
+                {
+                    // Ignore other MEF plugins from assemblies that might get bundled in the same testing output folder.
+                    IgnoreAssemblyFiles = allOtherAssemblies
+                });
         }
 
         private IEnumerable<string> PluginsFromThisAssembly()
@@ -168,17 +175,16 @@ namespace Rhetos.Configuration.Autofac.Test
         [TestMethod]
         public void CorrectRegistrationsDbUpdate()
         {
-            var configuration = GetRuntimeConfiguration();
-            var deployment = new ApplicationDeploymentAccessor(configuration, new NLogProvider());
-            var builder = deployment.CreateDbUpdateComponentsContainer();
+            var deployment = new ApplicationDeploymentAccessor(GetRuntimeConfiguration, new NLogProvider());
+            var rhetosHostBuilder = deployment.CreateDbUpdateHostBuilder();
 
-            using (var container = builder.Build())
+            using (var rhetosHost = rhetosHostBuilder.Build())
             {
-                var registrationsDump = DumpSortedRegistrations(container);
+                var registrationsDump = DumpSortedRegistrations(rhetosHost.Container);
                 System.Diagnostics.Trace.WriteLine(registrationsDump);
                 TestUtility.AssertAreEqualByLine(_expectedRegistrationsDbUpdate, registrationsDump);
 
-                TestAmbiguousRegistations(container,
+                TestAmbiguousRegistations(rhetosHost.Container,
                     expectedOverridenRegistrations: new Dictionary<Type, string> { { typeof(IUserInfo), "NullUserInfo" } });
             }
         }
@@ -186,16 +192,19 @@ namespace Rhetos.Configuration.Autofac.Test
         [TestMethod]
         public void CorrectRegistrationsRuntimeWithInitialization()
         {
-            var configuration = GetRuntimeConfiguration();
-            var deployment = new ApplicationDeploymentAccessor(configuration, new NLogProvider());
+            // we construct the object, but need only its 'almost' static .AddAppInitilizationComponents
+            var deployment = new ApplicationDeploymentAccessor(GetRuntimeConfiguration, new NLogProvider());
+            var rhetosHostBuilder = new RhetosHostTestBuilder()
+                .ConfigureConfiguration(GetRuntimeConfiguration)
+                .ConfigureContainer(deployment.AddAppInitializationComponents);
 
-            using (var container = new RhetosRuntime().BuildContainer(new NLogProvider(), configuration, deployment.AddAppInitializationComponents))
+            using (var rhetosHost = rhetosHostBuilder.Build())
             {
-                var registrationsDump = DumpSortedRegistrations(container);
+                var registrationsDump = DumpSortedRegistrations(rhetosHost.Container);
                 System.Diagnostics.Trace.WriteLine(registrationsDump);
                 TestUtility.AssertAreEqualByLine(_expectedRegistrationsRuntimeWithInitialization, registrationsDump);
 
-                TestAmbiguousRegistations(container,
+                TestAmbiguousRegistations(rhetosHost.Container,
                     expectedMultiplePlugins: new[] { "Rhetos.Dsl.IDslModelIndex" },
                     expectedOverridenRegistrations: new Dictionary<Type, string> { { typeof(IUserInfo), "ProcessUserInfo" } });
             }
@@ -259,7 +268,7 @@ Activator = CodeBuilder (ReflectionActivator), Services = [Rhetos.Compiler.ICode
 Activator = CodeGenerator (ReflectionActivator), Services = [Rhetos.Compiler.ICodeGenerator], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = ConceptDataMigrationGenerator (ReflectionActivator), Services = [Rhetos.Extensibility.IGenerator], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = ConceptMetadata (ReflectionActivator), Services = [Rhetos.Dsl.ConceptMetadata], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
-Activator = ConfigurationProvider (ProvidedInstanceActivator), Services = [Rhetos.Utilities.IConfiguration], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
+Activator = ConfigurationProvider (ProvidedInstanceActivator), Services = [Rhetos.Utilities.IConfiguration], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = ExternallyOwned
 Activator = DatabaseModelBuilder (ReflectionActivator), Services = [Rhetos.DatabaseGenerator.DatabaseModelBuilder], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = DatabaseModelDependencies (ReflectionActivator), Services = [Rhetos.DatabaseGenerator.DatabaseModelDependencies], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = DatabaseModelFile (ReflectionActivator), Services = [Rhetos.DatabaseGenerator.DatabaseModelFile], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
@@ -288,8 +297,10 @@ Activator = MsSqlUtility (ReflectionActivator), Services = [Rhetos.Utilities.ISq
 Activator = NLogProvider (ReflectionActivator), Services = [Rhetos.Logging.ILogProvider], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = NullImplementation (ReflectionActivator), Services = [Rhetos.DatabaseGenerator.IConceptDatabaseDefinition], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = NullUserInfo (ReflectionActivator), Services = [Rhetos.Utilities.IUserInfo], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
+Activator = PluginInfoCollection (DelegateActivator), Services = [Rhetos.Extensibility.PluginInfoCollection], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = ResourcesGenerator (ReflectionActivator), Services = [Rhetos.Extensibility.IGenerator], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = RhetosBuildEnvironment (DelegateActivator), Services = [Rhetos.Utilities.RhetosBuildEnvironment, Rhetos.Utilities.IAssetsOptions], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
+Activator = RhetosHostBuilderGenerator (ReflectionActivator), Services = [Rhetos.Extensibility.IGenerator], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = RhetosTargetEnvironment (DelegateActivator), Services = [Rhetos.Utilities.RhetosTargetEnvironment], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = SourceWriter (ReflectionActivator), Services = [Rhetos.Compiler.ISourceWriter], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = TestSecurityUserInfo (ReflectionActivator), Services = [Rhetos.Utilities.IUserInfo], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
@@ -299,7 +310,7 @@ Activator = XmlUtility (ReflectionActivator), Services = [Rhetos.Utilities.XmlUt
         const string _expectedRegistrationsDbUpdate =
 @"Activator = ConceptApplicationRepository (ReflectionActivator), Services = [Rhetos.DatabaseGenerator.IConceptApplicationRepository], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = ConceptDataMigrationExecuter (ReflectionActivator), Services = [Rhetos.DatabaseGenerator.IConceptDataMigrationExecuter], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
-Activator = ConfigurationProvider (ProvidedInstanceActivator), Services = [Rhetos.Utilities.IConfiguration], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
+Activator = ConfigurationProvider (ProvidedInstanceActivator), Services = [Rhetos.Utilities.IConfiguration], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = ExternallyOwned
 Activator = ConnectionString (ProvidedInstanceActivator), Services = [Rhetos.Utilities.ConnectionString], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = DatabaseAnalysis (ReflectionActivator), Services = [Rhetos.DatabaseGenerator.DatabaseAnalysis], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
 Activator = DatabaseCleaner (ReflectionActivator), Services = [Rhetos.Deployment.DatabaseCleaner], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope
@@ -330,7 +341,7 @@ Activator = XmlUtility (ReflectionActivator), Services = [Rhetos.Utilities.XmlUt
 @"Activator = AppSecurityOptions (DelegateActivator), Services = [Rhetos.Utilities.AppSecurityOptions], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = AuthorizationManager (ReflectionActivator), Services = [Rhetos.Security.IAuthorizationManager], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = ConceptMetadata (ReflectionActivator), Services = [Rhetos.Dsl.ConceptMetadata], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
-Activator = ConfigurationProvider (ProvidedInstanceActivator), Services = [Rhetos.Utilities.IConfiguration], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
+Activator = ConfigurationProvider (ProvidedInstanceActivator), Services = [Rhetos.Utilities.IConfiguration], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = ExternallyOwned
 Activator = ConnectionString (ProvidedInstanceActivator), Services = [Rhetos.Utilities.ConnectionString], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = DbUpdateOptions (DelegateActivator), Services = [Rhetos.Utilities.DbUpdateOptions], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope
 Activator = DelayedLogProvider (ReflectionActivator), Services = [Rhetos.Utilities.IDelayedLogProvider], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope

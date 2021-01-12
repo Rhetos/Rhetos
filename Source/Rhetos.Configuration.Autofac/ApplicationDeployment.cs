@@ -35,15 +35,15 @@ namespace Rhetos
 {
     public class ApplicationDeployment
     {
+        private readonly Func<IRhetosHostBuilder> _rhetosHostBuilderFactory;
         private readonly ILogger _logger;
-        private readonly IConfiguration _configuration;
         private readonly ILogProvider _logProvider;
 
-        public ApplicationDeployment(IConfiguration configuration, ILogProvider logProvider)
+        public ApplicationDeployment(Func<IRhetosHostBuilder> rhetosHostBuilderFactory, ILogProvider logProvider)
         {
-            _logger = logProvider.GetLogger(GetType().Name);
-            _configuration = configuration;
+            _rhetosHostBuilderFactory = rhetosHostBuilderFactory;
             _logProvider = logProvider;
+            _logger = logProvider.GetLogger(GetType().Name);
         }
 
         //=====================================================================
@@ -53,51 +53,63 @@ namespace Rhetos
             _logger.Info("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
 
-            var builder = CreateDbUpdateComponentsContainer();
+            var rhetosHostBuilder = CreateDbUpdateHostBuilder();
 
-            using (var container = builder.Build())
+            using (var rhetosHost = rhetosHostBuilder.Build())
             {
-                var performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance." + GetType().Name);
+                var performanceLogger = rhetosHost.Container.Resolve<ILogProvider>().GetLogger("Performance." + GetType().Name);
                 performanceLogger.Write(stopwatch, "Modules and plugins registered.");
-                ContainerBuilderPluginRegistration.LogRegistrationStatistics("Generating application", container, _logProvider);
+                ContainerBuilderPluginRegistration.LogRegistrationStatistics("Generating application", rhetosHost.Container, _logProvider);
 
-                container.Resolve<DatabaseDeployment>().UpdateDatabase();
+                rhetosHost.Container.Resolve<DatabaseDeployment>().UpdateDatabase();
             }
         }
 
-        private RhetosContainerBuilder CreateDbUpdateComponentsContainer()
+        protected IRhetosHostBuilder CreateDbUpdateHostBuilder()
         {
-            var builder = new RhetosContainerBuilder(_configuration, _logProvider, AssemblyResolver.GetRuntimeAssemblies(_configuration));
-            builder.RegisterModule(new CoreModule());
-            builder.RegisterModule(new DbUpdateModule());
-            builder.AddPluginModules();
-            builder.RegisterType<NullUserInfo>().As<IUserInfo>(); // Override runtime IUserInfo plugins. This container should not execute the application's business features.
-            return builder;
+            var hostBuilder = _rhetosHostBuilderFactory()
+                .UseBuilderLogProvider(_logProvider)
+                .UseCustomContainerConfiguration((configuration, builder, configureActions) =>
+                {
+                    builder.RegisterModule(new CoreModule());
+                    builder.AddPluginModules();
+
+                    CsUtility.InvokeAll(builder, configureActions);
+
+                    builder.RegisterModule(new DbUpdateModule());
+                    builder.RegisterType<NullUserInfo>()
+                        .As<IUserInfo>(); // Override runtime IUserInfo plugins. This container should not execute the application's business features.
+                });
+
+            return hostBuilder;
         }
 
         //=====================================================================
 
-        public void InitializeGeneratedApplication(IRhetosRuntime rhetosRuntime)
+        public void InitializeGeneratedApplication()
         {
             // Creating a new container builder instead of using builder.Update(), because of severe performance issues with the Update method.
 
             _logger.Info("Loading generated plugins.");
             var stopwatch = Stopwatch.StartNew();
+            var hostBuilder = _rhetosHostBuilderFactory()
+                .UseBuilderLogProvider(_logProvider)
+                .ConfigureContainer(AddAppInitializationComponents);
 
-            using (var container = rhetosRuntime.BuildContainer(_logProvider, _configuration, AddAppInitializationComponents))
+            using (var rhetosHost = hostBuilder.Build())
             {
                 // EfMappingViewsInitializer is manually executed before other initializers because of performance issues.
                 // It is needed for most of the initializer to run, but lazy initialization of EfMappingViews on first DbContext usage
                 // is not a good option because of significant hash check duration (it would not be applicable in run-time).
                 _logger.Info("Initializing EfMappingViews.");
-                var efMappingViewsInitializer = container.Resolve<EfMappingViewsInitializer>();
+                var efMappingViewsInitializer = rhetosHost.Container.Resolve<EfMappingViewsInitializer>();
                 efMappingViewsInitializer.Initialize();
 
-                var performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance." + GetType().Name);
-                var initializers = ApplicationInitialization.GetSortedInitializers(container);
+                var performanceLogger = rhetosHost.Container.Resolve<ILogProvider>().GetLogger("Performance." + GetType().Name);
+                var initializers = ApplicationInitialization.GetSortedInitializers(rhetosHost.Container);
 
                 performanceLogger.Write(stopwatch, "New modules and plugins registered.");
-                ContainerBuilderPluginRegistration.LogRegistrationStatistics("Initializing application", container, _logProvider);
+                ContainerBuilderPluginRegistration.LogRegistrationStatistics("Initializing application", rhetosHost.Container, _logProvider);
 
                 if (!initializers.Any())
                 {
@@ -106,7 +118,7 @@ namespace Rhetos
                 else
                 {
                     foreach (var initializer in initializers)
-                        ApplicationInitialization.ExecuteInitializer(container, initializer);
+                        ApplicationInitialization.ExecuteInitializer(rhetosHost.Container, initializer);
                 }
             }
         }

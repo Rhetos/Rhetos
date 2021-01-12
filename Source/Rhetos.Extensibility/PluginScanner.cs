@@ -30,6 +30,10 @@ using System.Threading;
 
 namespace Rhetos.Extensibility
 {
+    /// <summary>
+    /// Build-time plugin scanner.
+    /// See <see cref="RuntimePluginScanner"/> for runtime plugins.
+    /// </summary>
     public class PluginScanner : IPluginScanner
     {
         /// <summary>
@@ -47,10 +51,13 @@ namespace Rhetos.Extensibility
         /// It searches for type implementations in the provided list of assemblies.
         /// </summary>
         /// <param name="pluginAssemblies">List of DLL file paths that will be searched for plugins when invoking the method <see cref="FindPlugins"/>.</param>
-        public PluginScanner(IEnumerable<string> pluginAssemblies, string cacheFolder, ILogProvider logProvider, PluginScannerOptions pluginScannerOptions)
+        public PluginScanner(IEnumerable<string> pluginAssemblies, RhetosBuildEnvironment buildEnvironment, ILogProvider logProvider, PluginScannerOptions pluginScannerOptions)
         {
+            if (string.IsNullOrEmpty(buildEnvironment.CacheFolder))
+                throw new ArgumentException($"Configuration setting '{OptionsAttribute.GetConfigurationPath<RhetosBuildEnvironment>()}:{nameof(RhetosBuildEnvironment.CacheFolder)}' in not provided.");
+
             _pluginsByExport = new Lazy<MultiDictionary<string, PluginInfo>>(() => GetPluginsByExport(pluginAssemblies), LazyThreadSafetyMode.ExecutionAndPublication);
-            _pluginScannerCache = new PluginScannerCache(cacheFolder, logProvider, new FilesUtility(logProvider));
+            _pluginScannerCache = new PluginScannerCache(buildEnvironment.CacheFolder, logProvider, new FilesUtility(logProvider));
             _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _logger = logProvider.GetLogger(GetType().Name);
 
@@ -60,28 +67,16 @@ namespace Rhetos.Extensibility
         }
 
         /// <summary>
-        /// Finds the cache folder in either build-time or run-time configuration, since plugin scanner is used in both environments.
-        /// </summary>
-        public static string GetCacheFolder(IConfiguration configuration)
-        {
-            var rhetosBuildEnvironment = configuration.GetOptions<RhetosBuildEnvironment>();
-            var rhetosAppOptions = configuration.GetOptions<RhetosAppOptions>();
-            string runtimeAssemblyFolder = !string.IsNullOrEmpty(rhetosAppOptions.RhetosRuntimePath)
-                ? Path.GetDirectoryName(rhetosAppOptions.RhetosRuntimePath) : null;
-
-            string cacheFolder = rhetosBuildEnvironment.CacheFolder ?? runtimeAssemblyFolder;
-            if (cacheFolder == null)
-                throw new FrameworkException($"Missing configuration settings for build ({OptionsAttribute.GetConfigurationPath<RhetosBuildEnvironment>()}:{nameof(RhetosBuildEnvironment.CacheFolder)})" +
-                    $" or runtime ({OptionsAttribute.GetConfigurationPath<RhetosAppOptions>()}:{nameof(RhetosAppOptions.RhetosRuntimePath)}).");
-            return cacheFolder;
-        }
-
-        /// <summary>
         /// Returns plugins that are registered for the given interface, sorted by dependencies (MefPovider.DependsOn).
         /// </summary>
         public IEnumerable<PluginInfo> FindPlugins(Type pluginInterface)
         {
             return _pluginsByExport.Value.Get(pluginInterface.FullName);
+        }
+
+        public IEnumerable<PluginInfo> FindAllPlugins()
+        {
+            return _pluginsByExport.Value.SelectMany(x => x.Value);
         }
 
         private MultiDictionary<string, PluginInfo> GetPluginsByExport(IEnumerable<string> pluginAssemblies)
@@ -135,37 +130,28 @@ namespace Rhetos.Extensibility
 
                 bool cacheUpdated = false;
                 var cachedAssemblies = 0;
-                var pluginsByExport = new MultiDictionary<string, PluginInfo>();
-                var pluginsCount = 0;
+                var pluginsByExport = new List<(Type ExportType, PluginInfo Plugin)>();
 
                 foreach (var assemblyPath in assemblyPaths)
                 {
                     var assemblyModifiedToken = new FileInfo(assemblyPath).LastWriteTimeUtc.ToString("O");
-                    Dictionary<Type, List<PluginInfo>> exports;
+                    List<(Type ExportType, PluginInfo Plugin)> pluginsByExportForAssembly;
                     if (cache.Assemblies.TryGetValue(assemblyPath, out var cachedFileData) && cachedFileData.ModifiedTime == assemblyModifiedToken)
                     {
-                        exports = GetMefExportsForAssembly(assemblyPath, cachedFileData.TypesWithExports);
+                        pluginsByExportForAssembly = GetMefExportsForAssembly(assemblyPath, cachedFileData.TypesWithExports);
                         cachedAssemblies++;
                     }
                     else
                     {
                         _logger.Trace($"Assembly '{assemblyPath}' is not cached. Scanning all types.");
-                        exports = GetMefExportsForAssembly(assemblyPath);
+                        pluginsByExportForAssembly = GetMefExportsForAssembly(assemblyPath);
                     }
 
-                    foreach (var export in exports)
-                    {
-                        foreach (var plugin in export.Value)
-                        {
-                            pluginsByExport.Add(export.Key.FullName, plugin);
-                            pluginsCount++;
-                        }
-                    }
-
+                    pluginsByExport.AddRange(pluginsByExportForAssembly);
                     var newCachedFileData = new CachedFileData()
                     {
                         ModifiedTime = assemblyModifiedToken,
-                        TypesWithExports = exports.SelectMany(export => export.Value.Select(plugin => plugin.Type.AssemblyQualifiedName)).Distinct().ToList()
+                        TypesWithExports = pluginsByExportForAssembly.Select(export => export.Plugin.Type.AssemblyQualifiedName).Distinct().ToList()
                     };
                     if (!cache.Assemblies.ContainsKey(assemblyPath)
                         || !cache.Assemblies[assemblyPath].Equals(newCachedFileData))
@@ -175,23 +161,23 @@ namespace Rhetos.Extensibility
                     }
                 }
 
-                _logger.Trace($"Used cached data for {cachedAssemblies} out of total {assemblyPaths.Count} assemblies. {pluginsCount} total plugins loaded.");
-
                 if (cacheUpdated)
                     _pluginScannerCache.SavePluginsCacheData(cache);
 
-                foreach (var pluginsGroup in pluginsByExport)
-                    SortByDependency(pluginsGroup.Value);
+                var loadedPlugins = GroupAndSortByDependency(pluginsByExport);
+                var pluginsCount = loadedPlugins.Sum(x => x.Value.Count);
+
+                _logger.Trace($"Used cached data for {cachedAssemblies} out of total {assemblyPaths.Count} assemblies. {pluginsCount} total plugins loaded.");
 
                 _performanceLogger.Write(stopwatch, $"Loaded plugins ({pluginsCount}).");
 
-                return pluginsByExport;
+                return loadedPlugins;
             }
         }
 
-        private Dictionary<Type, List<PluginInfo>> GetMefExportsForAssembly(string assemblyPath, List<string> typesToCheck = null)
+        private List<(Type ExportType, PluginInfo Plugin)> GetMefExportsForAssembly(string assemblyPath, List<string> typesToCheck = null)
         {
-            if (typesToCheck != null && typesToCheck.Count == 0) return new Dictionary<Type, List<PluginInfo>>();
+            if (typesToCheck != null && typesToCheck.Count == 0) return new List<(Type Type, PluginInfo Plugin)>();
 
             var assembly = LoadAssembly(assemblyPath);
 
@@ -225,10 +211,24 @@ namespace Rhetos.Extensibility
                 _logger.Trace($"Same assembly loaded from '{actualPath}' instead of '{requestedPath}'.");
         }
 
-        private static Dictionary<Type, List<PluginInfo>> GetMefExportsForTypes(Type[] types)
+        internal static MultiDictionary<string, PluginInfo> GroupAndSortByDependency(List<(Type ExportType, PluginInfo Plugin)> exports)
+        {
+            var pluginsByExport = new MultiDictionary<string, PluginInfo>();
+            foreach (var export in exports)
+            {
+                pluginsByExport.Add(export.ExportType.FullName, export.Plugin);
+            }
+
+            foreach (var pluginsGroup in pluginsByExport)
+                SortByDependency(pluginsGroup.Value);
+
+            return pluginsByExport;
+        }
+
+        internal static List<(Type ExportType, PluginInfo Plugin)> GetMefExportsForTypes(Type[] types)
         {
             var allAttributes = types
-                .Select(type => new { type, customAttributeData = type.GetCustomAttributesData()})
+                .Select(type => new { type, customAttributeData = type.GetCustomAttributesData() })
                 .Select(info => new
                 {
                     info.type,
@@ -236,11 +236,11 @@ namespace Rhetos.Extensibility
                     metadata = info.customAttributeData.Where(attr => attr.AttributeType == typeof(ExportMetadataAttribute)).ToList()
                 });
 
-            var byExport = allAttributes.SelectMany(attr => attr.exports
-                .Select(export => new
-                {
-                    exportType = (Type)export.ConstructorArguments[0].Value,
-                    pluginInfo = new PluginInfo()
+            return allAttributes.SelectMany(attr => attr.exports
+                .Select(export => new ValueTuple<Type, PluginInfo>
+                (
+                    (Type)export.ConstructorArguments[0].Value,
+                    new PluginInfo()
                     {
                         Type = attr.type,
                         Metadata = attr.metadata
@@ -248,16 +248,10 @@ namespace Rhetos.Extensibility
                             .Concat(new[] { new KeyValuePair<string, object>("ExportTypeIdentity", ((Type)export.ConstructorArguments[0].Value)?.FullName) })
                             .ToDictionary(pair => pair.Key, pair => pair.Value)
                     }
-                }));
-
-            var groupedInfo = byExport
-                .GroupBy(info => info.exportType)
-                .ToDictionary(group => group.Key, group => group.Select(plugin => plugin.pluginInfo).ToList());
-
-            return groupedInfo;
+                ))).ToList();
         }
 
-        private void SortByDependency(List<PluginInfo> plugins)
+        internal static void SortByDependency(List<PluginInfo> plugins)
         {
             var dependencies = plugins
                 .Where(plugin => plugin.Metadata.ContainsKey(MefProvider.DependsOn))

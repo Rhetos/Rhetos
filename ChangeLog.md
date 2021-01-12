@@ -8,7 +8,8 @@
 2. Removed WcfWindowsUserInfo, IWindowsSecurity and WindowsSecurity from Rhetos framework. WindowsSecurity property on ExecutionContext is removed.
    * TODO: These classes might be implemented in a separate plugin package.
 3. Removed CleanupOldData executable
-4. Removed CreateAndSetDatabase executable
+4. Removed CreateAndSetDatabase executable.
+   * Use [sqlcmd](https://docs.microsoft.com/en-us/sql/tools/sqlcmd-utility) CLI utility to create a database.
 5. Removed CreateIISSite executable
 6. Removed DeployPackages executable
    * rhetos.exe is replacing DeployPackages.exe, see [Migrating from DeployPackages to Rhetos CLI](https://github.com/Rhetos/Rhetos/wiki/Migrating-from-DeployPackages-to-Rhetos-CLI).
@@ -30,6 +31,7 @@
 17. Removed IAssemblySource. ICodeGenerator methods return generated source as a string.
     * Custom code that called ExecutePlugins can use the string result directly, instead of IAssemblySource.GeneratedCode property.
     * Custom code should not use IAssemblySource.RegisteredReferences, since Rhetos no longer compiles assemblies.
+18. Removed Plugins class, use ContainerBuilderPluginRegistration instead. Resolve it from ContainerBuilder with extension method builder.GetPluginRegistration().
 
 ## 4.3.0 (TO BE RELEASED)
 

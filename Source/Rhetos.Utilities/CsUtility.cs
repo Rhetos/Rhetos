@@ -451,5 +451,11 @@ namespace Rhetos.Utilities
             }
             return hash;
         }
+
+        public static void InvokeAll<T>(T target, IEnumerable<Action<T>> actions)
+        {
+            foreach (var action in actions)
+                action.Invoke(target);
+        }
     }
 }

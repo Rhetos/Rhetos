@@ -17,16 +17,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System;
+using System.Collections.Generic;
+using System.Text;
 using Rhetos.Logging;
-using Rhetos.Utilities;
-using Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources;
 
-namespace Rhetos
+namespace Rhetos.Utilities
 {
-    public interface IConfigurationBuilder
+    public static class LoggingDefaults
     {
-        IConfigurationBuilder Add(IConfigurationSource source);
-        IConfigurationBuilder UseBuilderLogProvider(ILogProvider builderLogProvider);
-        IConfiguration Build();
+        public static ILogProvider DefaultLogProvider = new ConsoleLogProvider();
     }
 }
