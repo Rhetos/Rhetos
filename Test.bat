@@ -9,6 +9,7 @@ dotnet test Rhetos.sln --no-build || GOTO Error0
 @REM Using "RestoreForce" to make sure that the new version of local Rhetos NuGet packages are included in build.
 IF NOT EXIST CommonConcepts\CommonConcepts.Test\rhetos-app.local.settings.json COPY Tools\Configuration\Template.rhetos-app.local.settings.json CommonConcepts\CommonConcepts.Test\rhetos-app.local.settings.json
 dotnet build CommonConceptsTest.sln /t:restore /p:RestoreForce=True /t:rebuild --configuration %Config% || GOTO Error0
+CommonConcepts\CommonConcepts.Test\bin\Debug\net5.0\rhetos.exe dbupdate CommonConcepts\CommonConcepts.Test\bin\Debug\net5.0\CommonConcepts.Test.dll
 dotnet test CommonConceptsTest.sln --no-build || GOTO Error0
 
 @REM ================================================
