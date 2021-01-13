@@ -23,13 +23,14 @@
             IntermediateOutputFolder="$(BaseIntermediateOutputPath)Rhetos"
             TargetPath="$(TargetPath)"
             TargetAssetsFolder="$(TargetDir)RhetosAssets" />
+        <WriteLinesToFile Lines="@(RhetosBuild)" Overwrite="True" WriteOnlyWhenDifferent="True" File="$(RhetosBuildItemsFile)"/>
     </Target>
 
     <Target Name="ResolveBuildRhetosAppTargetInput">
         <Message Text="ResolveBuildRhetosAppTargetInput" /> 
         <ItemGroup>
+            <RhetosInput Include="$(RhetosBuildItemsFile)" />
             <RhetosInput Include="$(BaseIntermediateOutputPath)project.assets.json" />
-            <RhetosInput Include="$(BaseIntermediateOutputPath)\Rhetos\rhetos-project.assets.json" />
             <RhetosInput Include="rhetos-build.settings.json" />
         </ItemGroup>
     </Target>
