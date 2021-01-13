@@ -17,11 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Dom;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 namespace Rhetos.Utilities
 {
@@ -29,9 +26,6 @@ namespace Rhetos.Utilities
     public static class Paths
     {
         private static string _rhetosServerRootPath;
-        private static string _binFolder;
-        private static string _generatedFolder;
-        private static string _pluginsFolder;
         private static string _resourcesFolder;
         private static string _environment;
 
@@ -41,16 +35,9 @@ namespace Rhetos.Utilities
         public static void Initialize(IConfiguration configuration)
         {
             var runtimeEnvironment = configuration.GetOptions<RhetosAppEnvironment>();
-            var runtimeOptions = configuration.GetOptions<RhetosAppOptions>();
             var buildEnvironment = configuration.GetOptions<RhetosBuildEnvironment>();
 
-            string runtimeAssemblyFolder = !string.IsNullOrEmpty(runtimeOptions.RhetosRuntimePath)
-                ? Path.GetDirectoryName(runtimeOptions.RhetosRuntimePath) : null;
-
             _rhetosServerRootPath = buildEnvironment.ProjectFolder ?? runtimeEnvironment.ApplicationRootFolder;
-            _binFolder = runtimeAssemblyFolder;
-            _generatedFolder = buildEnvironment.GeneratedAssetsFolder ?? runtimeOptions.AssetsFolder;
-            _pluginsFolder = runtimeAssemblyFolder;
             _resourcesFolder = _rhetosServerRootPath != null ? Path.Combine(_rhetosServerRootPath, "Resources") : null;
 
             if (buildEnvironment?.ProjectFolder != null)
@@ -64,13 +51,6 @@ namespace Rhetos.Utilities
         public static string RhetosServerRootPath => PathOrError(_rhetosServerRootPath, "RhetosServerRootPath");
 
         public static string ResourcesFolder => AbsolutePathOrError(_resourcesFolder, "ResourcesFolder");
-
-        public static string BinFolder => AbsolutePathOrError(_binFolder, "BinFolder");
-
-        [Obsolete("If generating and reading assets files use IAssetsOptions.AssetsFolder instead. If used within SearchForAssembly, migrate to Rhetos.ProcessContainer instead.")]
-        public static string GeneratedFolder => AbsolutePathOrError(_generatedFolder, "GeneratedFolder");
-
-        public static string PluginsFolder => AbsolutePathOrError(_pluginsFolder, "PluginsFolder");
 
         private static string PathOrError(string path, string name)
         {

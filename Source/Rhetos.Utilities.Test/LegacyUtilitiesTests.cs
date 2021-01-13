@@ -49,36 +49,8 @@ namespace Rhetos.Utilities.Test
 
             TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.RhetosServerRootPath),
                 "Paths property 'RhetosServerRootPath' is not configured in 'unspecified' environment.");
-            TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.BinFolder), "BinFolder");
-            TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.GeneratedFolder), "GeneratedFolder");
-            TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.PluginsFolder), "PluginsFolder");
             TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.ResourcesFolder), "ResourcesFolder");
         }
-
-        [TestMethod]
-        public void PathsOnRuntimelEnvironment()
-        {
-            var configurationBuilder = new ConfigurationBuilder(new ConsoleLogProvider());
-            configurationBuilder.AddOptions(new RhetosAppEnvironment { ApplicationRootFolder = "." });
-            Paths.Initialize(configurationBuilder.Build());
-
-            Assert.IsNotNull(Paths.RhetosServerRootPath);
-            TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.GeneratedFolder),
-                "Paths property 'GeneratedFolder' is not configured in 'run-time' environment.");
-        }
-
-        [TestMethod]
-        public void PathsOnBuildEnvironment()
-        {
-            var configurationBuilder = new ConfigurationBuilder(new ConsoleLogProvider());
-            configurationBuilder.AddOptions(new RhetosBuildEnvironment { ProjectFolder = "." });
-            Paths.Initialize(configurationBuilder.Build());
-
-            Assert.IsNotNull(Paths.RhetosServerRootPath);
-            TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.GeneratedFolder),
-                "Paths property 'GeneratedFolder' is not configured in 'build' environment.");
-        }
-
 #pragma warning restore CS0618 // Type or member is obsolete
     }
 }
