@@ -661,10 +661,10 @@ namespace CommonConcepts.Test
                 // Check if the records are in the database.
                 var query = repository.TestStorage.SelfReferencing.Query(ids)
                     .Select(item => new { item.Name, ParentName = item.Parent.Name });
-                Assert.AreEqual("a:, b:a, c:b, d:c", TestUtility.Dump(query.ToList(), item => $"{item.Name}:{item.ParentName}"));
+                Assert.AreEqual("a:, b:a, c:b, d:c", TestUtility.DumpSorted(query.ToList(), item => $"{item.Name}:{item.ParentName}"));
 
                 repository.TestStorage.SelfReferencing.Delete(d, c, b, a);
-                Assert.AreEqual("", TestUtility.Dump(query.ToList(), item => $"{item.Name}:{item.ParentName}"));
+                Assert.AreEqual("", TestUtility.DumpSorted(query.ToList(), item => $"{item.Name}:{item.ParentName}"));
             }
 
             using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
@@ -677,10 +677,10 @@ namespace CommonConcepts.Test
                 // Check if the records are in the database.
                 var query = repository.TestStorage.SelfReferencing.Query(ids)
                     .Select(item => new { item.Name, ParentName = item.Parent.Name });
-                Assert.AreEqual("a:, b:a, c:b, d:c", TestUtility.Dump(query.ToList(), item => $"{item.Name}:{item.ParentName}"));
+                Assert.AreEqual("a:, b:a, c:b, d:c", TestUtility.DumpSorted(query.ToList(), item => $"{item.Name}:{item.ParentName}"));
 
                 repository.TestStorage.SelfReferencing.Delete(a, b, c, d);
-                Assert.AreEqual("", TestUtility.Dump(query.ToList(), item => $"{item.Name}:{item.ParentName}"));
+                Assert.AreEqual("", TestUtility.DumpSorted(query.ToList(), item => $"{item.Name}:{item.ParentName}"));
             }
         }
 
