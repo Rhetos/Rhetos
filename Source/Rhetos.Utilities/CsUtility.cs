@@ -374,6 +374,25 @@ namespace Rhetos.Utilities
                 return text;
         }
 
+        /// <summary>
+        /// Shortens the text if needed to match the limit.
+        /// If shortened, the text will end with hash value that represent the erased suffix.
+        /// This reduces name collisions if two string have same prefix longer then <paramref name="maxLength"/>.
+        /// </summary>
+        public static string LimitWithHash(this string text, int maxLength)
+        {
+            const int minimalLimit = 10;
+            if (maxLength < minimalLimit)
+                throw new ArgumentException($"Minimal limit for {nameof(LimitWithHash)} is {minimalLimit}.");
+
+            if (text.Length > maxLength)
+            {
+                var hashErasedPart = CsUtility.GetStableHashCode(text.Substring(maxLength - 9)).ToString("X").PadLeft(8, '0');
+                return text.Substring(0, maxLength - 9) + "_" + hashErasedPart;
+            }
+            return text;
+        }
+
         private static char[] lineSplitters = new char[] { '\r', '\n' };
 
         public static string FirstLine(string text)
@@ -435,6 +454,24 @@ namespace Rhetos.Utilities
                 byte[] hashBytes = hashing.ComputeHash(inputBytes).Take(16).ToArray();
                 return new Guid(hashBytes);
             }
+        }
+
+        /// <summary>
+        /// Standard GetHashCode() function in not guaranteed to return same result in different environments.
+        /// </summary>
+        public static int GetStableHashCode(string implementationName)
+        {
+            if (string.IsNullOrEmpty(implementationName))
+                return 0;
+
+            const int seed = 1737350767;
+            int hash = seed;
+            foreach (char c in implementationName)
+            {
+                hash += c;
+                hash *= seed;
+            }
+            return hash;
         }
     }
 }

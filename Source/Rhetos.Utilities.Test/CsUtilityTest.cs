@@ -313,5 +313,44 @@ Dictionary`2<List`1<InnerClass[]>, InnerClass>";
             Assert.AreEqual("  a\r\n  b", CsUtility.Indent("a\r\nb", 2));
             Assert.AreEqual("  a\r\n  b", CsUtility.Indent("a\nb", 2));
         }
+
+        [TestMethod]
+        public void LimitWithHash()
+        {
+            var tests = new (string Text, int Limit, string Expected)[]
+            {
+                ("a", 12, "a"),
+                ("aaaaaaaaaaaa", 12, "aaaaaaaaaaaa"),
+                ("aaaaaaaaaaaaa", 12, "aaa_E16AD69F"),
+                ("aaaaaaaaaaaab", 12, "aaa_48F8B50E"),
+                ("aaaaaaaaaaaa ", 12, "aaa_96655C70"),
+                ("aaaaaaaaaaaaaa", 12, "aaa_CEC53900"),
+                ("aaaaaaaaaaaa", 11, "aa_E16AD69F"),
+                ("aaaaaaaaaaaa", 10, "a_CEC53900"),
+                ("aaaaaaaaaaaa", 9, "ArgumentException: Minimal limit for LimitWithHash is 10."),
+            };
+
+            string report(string text, int limit, string result) => $"{text}, {limit} => {result}";
+
+            var expectedReport = string.Join(Environment.NewLine,
+                tests.Select(test  => report(test.Text, test.Limit, test.Expected)));
+
+            var actualReport = string.Join(Environment.NewLine,
+                tests.Select(test => report(test.Text, test.Limit, Try(() => test.Text.LimitWithHash(test.Limit)))));
+
+            Assert.AreEqual(expectedReport, actualReport);
+        }
+
+        private static string Try(Func<object> func)
+        {
+            try
+            {
+                return func().ToString();
+            }
+            catch (Exception e)
+            {
+                return $"{e.GetType().Name}: {e.Message}";
+            }
+        }
     }
 }
