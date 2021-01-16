@@ -106,7 +106,9 @@ namespace Rhetos
             _buildLogger.Info(() => $"Initializing Rhetos app from '{rhetosAppSettingsFilePath}'.");
             
             var configurationBuilder = new ConfigurationBuilder(_builderLogProvider)
-                .AddJsonFile(rhetosAppSettingsFilePath);
+                .AddJsonFile(rhetosAppSettingsFilePath)
+                .AddJsonFile(RhetosAppEnvironment.LocalConfigurationFileName, optional: true)
+                .AddKeyValue(ConfigurationProvider.GetKey((RhetosAppEnvironment o) => o.ApplicationRootFolder), Path.GetDirectoryName(rhetosAppSettingsFilePath));
 
             CsUtility.InvokeAll(configurationBuilder, _configureConfigurationActions);
 
@@ -125,6 +127,9 @@ namespace Rhetos
 
         protected abstract ContainerBuilder CreateContainerBuilder(IConfiguration configuration);
 
+#pragma warning disable S1172 // Unused method parameters should be removed
+        // Parameter "IConfiguration configuration" is not used here in default configuration,
+        // but is allowed as an option for custom configuration implementations.
         private void DefaultContainerConfiguration(IConfiguration configuration, ContainerBuilder builder, List<Action<ContainerBuilder>> customActions)
         {
             builder.AddRhetosRuntime();
@@ -132,5 +137,6 @@ namespace Rhetos
 
             CsUtility.InvokeAll(builder, customActions);
         }
+#pragma warning restore S1172
     }
 }
