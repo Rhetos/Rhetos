@@ -36,6 +36,9 @@ namespace CommonConcepts.Test.Helpers
         {
         }
 
+        /// <summary>
+        /// Provides basic runtime infrastructure for Rhetos framework: configuration settings and system components registration.
+        /// </summary>
         public static IRhetosHostBuilder CreateRhetosHostBuilder()
         {
             return new RhetosHostBuilder()

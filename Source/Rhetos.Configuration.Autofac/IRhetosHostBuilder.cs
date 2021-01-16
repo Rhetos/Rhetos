@@ -27,15 +27,36 @@ namespace Rhetos
 {
     public interface IRhetosHostBuilder
     {
+        /// <summary>
+        /// The specified <paramref name="logProvider"/> will be used during Rhetos host initialization.
+        /// If not specified, <see cref="IRhetosHostBuilder"/> will use default logging implementation
+        /// <see cref="LoggingDefaults.DefaultLogProvider"/>.
+        /// </summary>
+        /// <remarks>
+        /// This method configures logging only for host initialization.
+        /// To set a custom <see cref="ILogProvider"/> during application run-time, call <see cref="ConfigureContainer"/>.
+        /// </remarks>
         IRhetosHostBuilder UseBuilderLogProvider(ILogProvider logProvider);
 
+        /// <summary>
+        /// Adds or overrides configuration settings for Rhetos application.
+        /// </summary>
         IRhetosHostBuilder ConfigureConfiguration(Action<IConfigurationBuilder> configureAction);
 
         /// <summary>
         /// Configures services and plugins in the dependency injection container.
         /// </summary>
+        /// <remarks>
+        /// Implementation of <paramref name="configureAction"/> delegate may use Rhetos logging and plugins management components,
+        /// available from <see cref="ContainerBuilder"/> by extension methods in <see cref="ContainerBuilderExtensions"/> class.
+        /// </remarks>
         IRhetosHostBuilder ConfigureContainer(Action<ContainerBuilder> configureAction);
 
+        /// <summary>
+        /// Overrides default Rhetos components registrations
+        /// (<see cref="ContainerBuilderExtensions.AddRhetosRuntime(ContainerBuilder)"/>
+        /// and <see cref="ContainerBuilderExtensions.AddPluginModules(ContainerBuilder)"/>).
+        /// </summary>
         IRhetosHostBuilder UseCustomContainerConfiguration(Action<IConfiguration, ContainerBuilder, List<Action<ContainerBuilder>>> containerConfigurationAction);
 
         /// <summary>
@@ -49,8 +70,14 @@ namespace Rhetos
         IRhetosHostBuilder UseRootFolder(string rootFolder);
 
         /// <summary>
-        /// Create the <see cref="RhetosHost"/> instance that was previously configured by other <see cref="IRhetosHostBuilder"/> methods.
+        /// Create the <see cref="RhetosHost"/> instance, that serves as a wrapper around Rhetos system configuration and 
+        /// dependency injections container.
         /// </summary>
+        /// <remarks>
+        /// Internally, it builds the configuration and the dependency injections container,
+        /// as previously configured by calls to <see cref="ConfigureConfiguration(Action{IConfigurationBuilder})"/>
+        /// and <see cref="ConfigureContainer(Action{ContainerBuilder})"/> methods.
+        /// </remarks>
         RhetosHost Build();
     }
 }

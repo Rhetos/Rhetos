@@ -39,6 +39,12 @@ namespace Rhetos
         private readonly ILogger _logger;
         private readonly ILogProvider _logProvider;
 
+        /// <param name="rhetosHostBuilderFactory">
+        /// Full <see cref="IRhetosHostBuilder"/> is needed for <see cref="InitializeGeneratedApplication"/>,
+        /// while <see cref="UpdateDatabase"/> should work without runtime components registration
+        /// (only runtime configuration settings are required, for database connection and similar).
+        /// Since both sub-commands are now executed together, this is simplified to a single argument.
+        /// </param>
         public ApplicationDeployment(Func<IRhetosHostBuilder> rhetosHostBuilderFactory, ILogProvider logProvider)
         {
             _rhetosHostBuilderFactory = rhetosHostBuilderFactory;
@@ -65,7 +71,7 @@ namespace Rhetos
             }
         }
 
-        protected IRhetosHostBuilder CreateDbUpdateHostBuilder()
+        private IRhetosHostBuilder CreateDbUpdateHostBuilder()
         {
             var hostBuilder = _rhetosHostBuilderFactory()
                 .UseBuilderLogProvider(_logProvider)

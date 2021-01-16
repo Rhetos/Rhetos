@@ -62,7 +62,7 @@ namespace Rhetos
             buildCommand.Add(new Argument<DirectoryInfo>("project-root-folder", () => new DirectoryInfo(Environment.CurrentDirectory)) { Description = "Project folder where csproj file is located. If not specified, current working directory is used by default." });
             buildCommand.Add(new Option<bool>("--msbuild-format", false, "Adjust error output format for MSBuild integration."));
             buildCommand.Handler = CommandHandler.Create((DirectoryInfo projectRootFolder, bool msbuildFormat)
-                => ReportError(() => Build(projectRootFolder.FullName), msbuildFormat));
+                => ReportError(() => Build(projectRootFolder.FullName), "Build", msbuildFormat));
             rootCommand.AddCommand(buildCommand);
 
             var dbUpdateCommand = new Command("dbupdate", "Updates the database structure and initializes the application data in the database.");
@@ -70,18 +70,18 @@ namespace Rhetos
             dbUpdateCommand.Add(new Option<bool>("--short-transactions", "Commit transaction after creating or dropping each database object."));
             dbUpdateCommand.Add(new Option<bool>("--skip-recompute", "Skip automatic update of computed data with KeepSynchronized. See output log for data that needs updating."));
             dbUpdateCommand.Handler = CommandHandler.Create((FileInfo startupAssembly, bool shortTransactions, bool skipRecompute)
-                => ReportError(() => DbUpdate(startupAssembly.FullName, shortTransactions, skipRecompute)));
+                => ReportError(() => DbUpdate(startupAssembly.FullName, shortTransactions, skipRecompute), "DbUpdate", msBuildErrorFormat: false));
             rootCommand.AddCommand(dbUpdateCommand);
 
             return rootCommand.Invoke(args);
         }
 
-        private int ReportError(Action action, bool msBuildErrorFormat = false)
+        private int ReportError(Action action, string commandName, bool msBuildErrorFormat)
         {
             try
             {
                 action.Invoke();
-                Logger.Info("Done.");
+                Logger.Info($"{commandName} done.");
             }
             catch (DslSyntaxException dslException) when (msBuildErrorFormat)
             {

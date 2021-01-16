@@ -26,28 +26,64 @@ using Autofac;
 
 namespace Rhetos
 {
+    /// <summary>
+    /// <see cref="RhetosHost"/> is a helper class for accessing the Rhetos application's components.
+    /// This class is thread-safe: a single instance can be reused between threads to reduce the initialization time
+    /// (Entity Framework startup and plugin discovery, e.g.).
+    /// For each thread or unit of work, call <see cref="CreateScope(Action{ContainerBuilder})"/> to create
+    /// a new lifetime scope for the dependency injection container.
+    /// Note that created lifetime scope is <see cref="IDisposable"/>.
+    /// Each scope uses its own database transaction that is either committed or rolled back
+    /// when the instance is disposed, making data changes atomic.
+    /// </summary>
     public class RhetosHost : IDisposable
     {
         public static readonly string HostBuilderFactoryMethodName = "CreateRhetosHostBuilder";
 
+        /// <summary>
+        /// Dependency injection container.
+        /// </summary>
+        /// <remarks>
+        /// In most cases, the container <b>should not be used directly</b>.
+        /// Instead create a scope (unit of work) with <see cref="CreateScope(Action{ContainerBuilder})"/>,
+        /// and resolve components from it.
+        /// </remarks>
         public IContainer Container { get; }
+
+        private bool disposed;
 
         public RhetosHost(IContainer container)
         {
             this.Container = container;
         }
 
+        /// <summary>
+        /// Creates a thread-safe lifetime scope for dependency injection container,
+        /// in order to isolate a unit of work in a separate database transaction.
+        /// To commit changes to database, call <see cref="TransactionScopeContainer.CommitChanges"/> at the end of the 'using' block.
+        /// Note that created lifetime scope is <see cref="IDisposable"/>.
+        /// Transaction will be committed or rolled back when scope is disposed.
+        /// </summary>
+        /// <param name="registerScopeComponentsAction">
+        /// Register custom components that may override system and plugins services.
+        /// This is commonly used by utilities and tests that need to override host application's components or register additional plugins.
+        /// <para>
+        /// Note that the transaction-scope component registration might not affect singleton components.
+        /// Customize the behavior of singleton components with <see cref="IRhetosHostBuilder"/> methods,
+        /// before building the <see cref="RhetosHost"/> instance with <see cref="IRhetosHostBuilder.Build"/>.
+        /// </para>
+        /// </param>
         public TransactionScopeContainer CreateScope(Action<ContainerBuilder> registerScopeComponentsAction = null)
         {
             return new TransactionScopeContainer(Container, registerScopeComponentsAction);
         }
 
         /// <summary>
-        /// Finds and loads the runtime context of the main application.
+        /// Finds and loads the Rhetos runtime context of the main application.
         /// The application is expected to have an entry point (typically the Program class) with a
         /// static method that creates and configures a <see cref="IRhetosHostBuilder"/> instance,
         /// see <see cref="HostBuilderFactoryMethodName"/>.
-        /// The application should be created with Rhetos framework, or reference an assembly that
+        /// The specified application should be created with Rhetos framework, or reference an assembly that
         /// was created with Rhetos framework.
         /// </summary>
         /// <param name="hostFilePath">Path of the application's assembly file (.dll or .exe).</param>
@@ -103,9 +139,14 @@ namespace Rhetos
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing)
+            if (!disposed)
             {
-                Container?.Dispose();
+                if (disposing)
+                {
+                    Container?.Dispose();
+                }
+
+                disposed = true;
             }
         }
     }

@@ -71,7 +71,7 @@ namespace Rhetos.DatabaseGenerator
         }
 
         /// <summary>
-        /// Converts ConceptImplementationTypeName from <see cref="Type.AssemblyQualifiedName"/> to <see cref="Type.FullName"/>.
+        /// Converts ConceptImplementationTypeName from <see cref="Type.AssemblyQualifiedName"/> to short name (type.Name).
         /// </summary>
         protected string GetConceptImplementationType_SimpleName()
         {

@@ -51,11 +51,9 @@ namespace Rhetos.Configuration.Autofac.Test
             public ApplicationDeploymentAccessor(Action<IConfigurationBuilder> configureConfiguration, ILogProvider logProvider) : 
                 base(HostBuilderFactoryWithConfiguration(configureConfiguration), logProvider){}
 
-            public new IRhetosHostBuilder CreateDbUpdateHostBuilder()
-            {
-                return base.CreateDbUpdateHostBuilder();
-            }
-            public void AddAppInitializationComponents(ContainerBuilder builder) => this.Invoke("AddAppInitializationComponents", builder);
+            public IRhetosHostBuilder CreateDbUpdateHostBuilder() => this.Invoke(nameof(CreateDbUpdateHostBuilder));
+
+            public void AddAppInitializationComponents(ContainerBuilder builder) => this.Invoke(nameof(AddAppInitializationComponents), builder);
 
             private static Func<IRhetosHostBuilder> HostBuilderFactoryWithConfiguration(Action<IConfigurationBuilder> configureConfiguration)
             {

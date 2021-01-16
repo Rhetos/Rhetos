@@ -35,9 +35,11 @@ namespace Rhetos
         /// <summary>
         /// Initializes a dependency injection container with specified <see cref="IConfiguration"/>. 
         /// Registers <see cref="IConfiguration"/> instance to newly created container.
-        /// <see cref="ILogProvider"/> is not registered and is meant to be used during the lifetime of registration and container building process.
-        /// <see cref="LegacyUtilities"/> will also be initialized with the given configuration.
         /// </summary>
+        /// <remarks>
+        /// <see cref="ILogProvider"/> is not registered to container and is meant to be used during the lifetime of registration and container building process.
+        /// <see cref="LegacyUtilities"/> will also be initialized with the given configuration.
+        /// </remarks>
         public RhetosContainerBuilder(IConfiguration configuration, ILogProvider logProvider, IPluginScanner pluginScanner)
         {
             this.RegisterInstance(configuration).ExternallyOwned();
