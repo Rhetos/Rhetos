@@ -34,9 +34,11 @@ namespace Rhetos.Utilities.Test
         [ClassInitialize]
         public static void ClassInitialize(TestContext context)
         {
-            // different test runners have different entry assemblies
-            // this ensures that our 'app.config' is attached to correct one
-            var source = Path.Combine(context.DeploymentDirectory, "app.config");
+            // Different test runners have different entry assemblies.
+            // This ensures that our '.config' file is attached to the correct one.
+            // It is required for testing ConfigurationManagerSource class
+            // that uses System.Configuration.ConfigurationManager.
+            var source = Path.Combine(context.DeploymentDirectory, "TestRunner.config");
             var destination = Path.Combine(context.DeploymentDirectory, Path.GetFileName(Assembly.GetEntryAssembly().Location) + ".config");
             File.Copy(source, destination, true);
         }
