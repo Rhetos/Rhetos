@@ -76,7 +76,7 @@ namespace Rhetos.Deployment
             {
                 try
                 {
-                    _dataMigrationScriptsExecuter.Undo(dataMigrationReport.CreatedTags);
+                    _dataMigrationScriptsExecuter.Undo(dataMigrationReport.CreatedScripts);
                 }
                 catch (Exception undoException)
                 {

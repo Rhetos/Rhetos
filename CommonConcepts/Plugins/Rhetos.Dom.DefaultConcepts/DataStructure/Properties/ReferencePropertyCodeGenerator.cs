@@ -17,18 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rhetos.Dsl.DefaultConcepts;
-using System.Globalization;
-using System.ComponentModel.Composition;
-using Rhetos.Extensibility;
-using Rhetos.Dsl;
 using Rhetos.Compiler;
 using Rhetos.DatabaseGenerator.DefaultConcepts;
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Extensibility;
 using Rhetos.Utilities;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -42,6 +37,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             var referenceGuid = new PropertyInfo { DataStructure = info.DataStructure, Name = info.Name + "ID" };
             PropertyHelper.GenerateCodeForType(referenceGuid, codeBuilder, "Guid?");
+            PropertyHelper.GenerateStorageMapping(referenceGuid, codeBuilder, "System.Data.SqlDbType.UniqueIdentifier");
 
             if (DslUtility.IsQueryable(info.DataStructure) && DslUtility.IsQueryable(info.Referenced))
                 DataStructureQueryableCodeGenerator.AddNavigationPropertyWithBackingField(codeBuilder, info.DataStructure,
@@ -66,6 +62,10 @@ namespace Rhetos.Dom.DefaultConcepts
                         ((Rhetos.UserException)interpretedException).SystemMessage = " + CsUtility.QuotedString(systemMessage) + @";
                     ";
                     codeBuilder.InsertCode(onEnterInterpretSqlError, WritableOrmDataStructureCodeGenerator.OnDatabaseErrorTag, info.DataStructure);
+
+                    if (info.Referenced == info.DataStructure)
+                        codeBuilder.InsertCode($@"if (entity.{info.Name}ID != null && entity.{info.Name}ID != entity.ID) yield return entity.{info.Name}ID.Value;
+            ", WritableOrmDataStructureCodeGenerator.PersistenceStorageMapperDependencyResolutionTag, info.DataStructure);
                 }
 
                 if (info.Referenced is IWritableOrmDataStructure)
@@ -77,6 +77,7 @@ namespace Rhetos.Dom.DefaultConcepts
                         ((Rhetos.UserException)interpretedException).SystemMessage = " + CsUtility.QuotedString(systemMessage) + @";
                     ";
                     codeBuilder.InsertCode(onDeleteInterpretSqlError, WritableOrmDataStructureCodeGenerator.OnDatabaseErrorTag, info.Referenced);
+
                 }
             }
         }

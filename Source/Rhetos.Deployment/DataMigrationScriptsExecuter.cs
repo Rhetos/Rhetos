@@ -19,6 +19,7 @@
 
 using Rhetos.Logging;
 using Rhetos.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -27,11 +28,11 @@ namespace Rhetos.Deployment
 {
     public class DataMigrationScriptsExecuter
     {
-        protected readonly ISqlExecuter _sqlExecuter;
-        protected readonly ILogger _logger;
-        protected readonly DataMigrationScripts _dataMigrationScripts;
-        protected readonly SqlTransactionBatches _sqlTransactionBatches;
-        protected readonly DbUpdateOptions _dbUpdateOptions;
+        private readonly ISqlExecuter _sqlExecuter;
+        private readonly ILogger _logger;
+        private readonly DataMigrationScripts _dataMigrationScripts;
+        private readonly SqlTransactionBatches _sqlTransactionBatches;
+        private readonly DbUpdateOptions _dbUpdateOptions;
 
         public DataMigrationScriptsExecuter(ISqlExecuter sqlExecuter, ILogProvider logProvider, DataMigrationScripts dataMigrationScripts,
             DbUpdateOptions dbUpdateOptions, SqlTransactionBatches sqlTransactionBatches)
@@ -56,9 +57,11 @@ namespace Rhetos.Deployment
             LogScripts("Script in database", oldScripts);
 
             var newIndex = new HashSet<string>(newScripts.Select(s => s.Tag));
-            var oldIndex = new HashSet<string>(oldScripts.Select(s => s.Tag));
-            List<DataMigrationScript> toRemove = oldScripts.Where(os => !newIndex.Contains(os.Tag)).ToList();
-            List<DataMigrationScript> toExecute = newScripts.Where(ns => !oldIndex.Contains(ns.Tag)).ToList();
+            var oldIndex = oldScripts.ToDictionary(s => s.Tag);
+
+            var toRemove = oldScripts.Where(os => !newIndex.Contains(os.Tag)).ToList();
+            var toExecute = newScripts.Where(ns => !oldIndex.ContainsKey(ns.Tag)).ToList();
+            var toUpdate = newScripts.Where(ns => oldIndex.TryGetValue(ns.Tag, out var os) && os.Down != ns.Down).ToList();
 
             // "skipped" are the new scripts that are ordered *before* some old scripts that were already executed.
             List<DataMigrationScript> skipped = FindSkipedScriptsInEachPackage(oldScripts, newScripts);
@@ -80,22 +83,26 @@ namespace Rhetos.Deployment
                 }
             }
 
-            ApplyToDatabase(toRemove, toExecute);
+            ApplyToDatabase(toRemove, toExecute, toUpdate);
 
-            _logger.Info($"Executed {toExecute.Count} of {newScripts.Count} scripts.{skippedReport}");
+            int downgradeScriptsCount = toRemove.Count(script => !string.IsNullOrEmpty(script.Down));
+            string downgradeReport = downgradeScriptsCount > 0
+                ? $" Executed {downgradeScriptsCount} downgrade scripts."
+                : "";
 
-            return new DataMigrationReport { CreatedTags = toExecute.Select(s => s.Tag).ToList() };
+            _logger.Info($"Executed {toExecute.Count} of {newScripts.Count} scripts.{downgradeReport}{skippedReport}");
+
+            return new DataMigrationReport { CreatedScripts = toExecute };
         }
 
-        public void Undo(List<string> createdTags)
+        public void Undo(List<DataMigrationScript> createdScripts)
         {
-            _sqlExecuter.ExecuteSql(createdTags.Select(tag =>
-                "UPDATE Rhetos.DataMigrationScript SET Active = 0 WHERE Tag = " + SqlUtility.QuoteText(tag)));
+            ApplyToDatabase(createdScripts, new List<DataMigrationScript>(), new List<DataMigrationScript>(), logAsUndo: true);
         }
 
-        protected static readonly Regex ScriptLanguageRegex = new Regex(@"\((?<DatabaseLanguage>\w*)\).sql$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex ScriptLanguageRegex = new Regex(@"\((?<DatabaseLanguage>\w*)\).sql$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-        protected static List<DataMigrationScript> FindScriptsInOtherLanguages(IEnumerable<DataMigrationScript> newScripts, string databaseLanguage)
+        private static List<DataMigrationScript> FindScriptsInOtherLanguages(IEnumerable<DataMigrationScript> newScripts, string databaseLanguage)
         {
             return
                 (from script in newScripts
@@ -104,31 +111,63 @@ namespace Rhetos.Deployment
                  select script).ToList();
         }
 
-        protected void ApplyToDatabase(List<DataMigrationScript> toRemove, List<DataMigrationScript> toExecute)
+        private void ApplyToDatabase(
+            List<DataMigrationScript> toRemove,
+            List<DataMigrationScript> toExecute,
+            List<DataMigrationScript> toUpdate,
+            bool logAsUndo = false)
         {
-            LogScripts("Removing", toRemove, EventType.Info);
-            Undo(toRemove.Select(s => s.Tag).ToList());
+            var toRemoveReversed = toRemove.AsEnumerable().Reverse();
+            LogScripts(logAsUndo ? "Canceling" : "Removing", toRemoveReversed, EventType.Info);
+            try
+            {
+                _sqlTransactionBatches.Execute(toRemoveReversed.SelectMany(RemoveScriptAndMetadata));
+            }
+            catch (Exception e) when (toRemove.Any(s => !string.IsNullOrEmpty(s.Down)))
+            {
+                throw new FrameworkException("Error while executing data-migration scripts for downgrade." +
+                    " Review the inner exception and the \"down\" data-migration scripts in database," +
+                    " see table Rhetos.DataMigrationScript, column Down.", e);
+            }
 
             LogScripts("Executing", toExecute, EventType.Info);
-            _sqlTransactionBatches.Execute(toExecute
-                .SelectMany(script => new[]
-                {
-                    new SqlTransactionBatches.SqlScript { Sql = script.Content, IsBatch = true, Name = script.Path },
-                    new SqlTransactionBatches.SqlScript { Sql = SaveDataMigrationScriptMetadata(script), IsBatch = false, Name = null },
-                }));
+            _sqlTransactionBatches.Execute(toExecute.SelectMany(AddScriptAndMetadata));
+
+            LogScripts("Updating metadata", toUpdate, EventType.Info);
+            _sqlTransactionBatches.Execute(toUpdate.SelectMany(UpdateMetadata));
         }
 
-        protected static string SaveDataMigrationScriptMetadata(DataMigrationScript script)
+        private IEnumerable<SqlTransactionBatches.SqlScript> RemoveScriptAndMetadata(DataMigrationScript script)
         {
-            return string.Format(
+            string removeMetadata = $"UPDATE Rhetos.DataMigrationScript SET Active = 0 WHERE Tag = {SqlUtility.QuoteText(script.Tag)};";
+
+            if (!string.IsNullOrEmpty(script.Down))
+                yield return new SqlTransactionBatches.SqlScript { Sql = script.Down, IsBatch = true, Name = script.Path };
+            yield return new SqlTransactionBatches.SqlScript { Sql = removeMetadata, IsBatch = false, Name = null };
+        }
+
+        private IEnumerable<SqlTransactionBatches.SqlScript> AddScriptAndMetadata(DataMigrationScript script)
+        {
+            string addMetadata = string.Format(
                 "DELETE FROM Rhetos.DataMigrationScript WHERE Active = 0 AND Tag = {0};\r\n"
-                + "INSERT INTO Rhetos.DataMigrationScript (Tag, Path, Content, Active) VALUES ({0}, {1}, {2}, 1);",
+                + "INSERT INTO Rhetos.DataMigrationScript (Tag, Path, Content, Down, Active) VALUES ({0}, {1}, {2}, {3}, 1);",
                 SqlUtility.QuoteText(script.Tag),
                 SqlUtility.QuoteText(script.Path),
-                SqlUtility.QuoteText(script.Content));
+                SqlUtility.QuoteText(script.Content),
+                SqlUtility.QuoteText(script.Down));
+
+            yield return new SqlTransactionBatches.SqlScript { Sql = script.Content, IsBatch = true, Name = script.Path };
+            yield return new SqlTransactionBatches.SqlScript { Sql = addMetadata, IsBatch = false, Name = null };
         }
 
-        protected List<DataMigrationScript> FindSkipedScriptsInEachPackage(List<DataMigrationScript> oldScripts, List<DataMigrationScript> newScripts)
+        private IEnumerable<SqlTransactionBatches.SqlScript> UpdateMetadata(DataMigrationScript script)
+        {
+            string updateMetadata = $"UPDATE Rhetos.DataMigrationScript SET Down = {SqlUtility.QuoteText(script.Down)}" +
+                $" WHERE Tag = {SqlUtility.QuoteText(script.Tag)};";
+            yield return new SqlTransactionBatches.SqlScript { Sql = updateMetadata, IsBatch = false, Name = null };
+        }
+
+        private List<DataMigrationScript> FindSkipedScriptsInEachPackage(List<DataMigrationScript> oldScripts, List<DataMigrationScript> newScripts)
         {
             var oldIndex = new HashSet<string>(oldScripts.Select(s => s.Tag));
 
@@ -156,36 +195,35 @@ namespace Rhetos.Deployment
             return skipped.Where(newScript => !oldIndex.Contains(newScript.Tag)).ToList();
         }
 
-        protected static string GetFirstSubfolder(string path)
+        private static string GetFirstSubfolder(string path)
         {
             if (path.Contains("\\"))
                 return path.Substring(0, path.IndexOf('\\'));
             return "";
         }
 
-        protected void LogScripts(string msg, IEnumerable<DataMigrationScript> scripts, EventType eventType = EventType.Trace)
+        private void LogScripts(string msg, IEnumerable<DataMigrationScript> scripts, EventType eventType = EventType.Trace)
         {
             foreach (var script in scripts)
-                _logger.Write(eventType, () => $"{msg} {script.Path} (tag {script.Tag})");
+                _logger.Write(eventType, () => $"{msg} {script.Path} (tag {script.Tag}{(!string.IsNullOrEmpty(script.Down) ? ", with downgrade" : "")})");
         }
 
-        protected List<DataMigrationScript> LoadScriptsFromDatabase()
+        /// <summary>
+        /// The scripts are listed in the order in which they were executed.
+        /// </summary>
+        private List<DataMigrationScript> LoadScriptsFromDatabase()
         {
             var scripts = new List<DataMigrationScript>();
             _sqlExecuter.ExecuteReader(
-                "SELECT Tag, Path, Content FROM Rhetos.DataMigrationScript WHERE Active = 1 ORDER BY DateExecuted",
+                "SELECT Tag, Path, Content, Down FROM Rhetos.DataMigrationScript WHERE Active = 1 ORDER BY OrderExecuted",
                 reader => scripts.Add(new DataMigrationScript
-                    {
-                        Tag = reader.GetString(0),
-                        Path = reader.GetString(1),
-                        Content = reader.GetString(2)
-                    }));
+                {
+                    Tag = reader.GetString(0),
+                    Path = reader.GetString(1),
+                    Content = reader.GetString(2),
+                    Down = !reader.IsDBNull(3) ? reader.GetString(3) : null,
+                }));
             return scripts.ToList();
         }
-    }
-
-    public class DataMigrationReport
-    {
-        public List<string> CreatedTags { get; set; }
     }
 }

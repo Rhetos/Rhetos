@@ -31,9 +31,9 @@ namespace Rhetos.Dom.DefaultConcepts
     {
         private readonly ILogger _logger;
         private readonly RhetosAppOptions _rhetosAppOptions;
+        private readonly Lazy<PrincipalWriter> _principalWriter; // Lazy because it's rarely used.
         private readonly IQueryableRepository<IPrincipal> _principalRepository;
         private readonly IQueryableRepository<IPrincipalHasRole> _principalRolesRepository;
-        private readonly Lazy<GenericRepository<IPrincipal>> _principalGenericRepository; // Lazy because it's rarely used.
         private readonly IQueryableRepository<IRoleInheritsRole> _roleRolesRepository;
         private readonly IQueryableRepository<IPrincipalPermission> _principalPermissionRepository;
         private readonly IQueryableRepository<IRolePermission> _rolePermissionRepository;
@@ -43,13 +43,13 @@ namespace Rhetos.Dom.DefaultConcepts
         public AuthorizationDataLoader(
             ILogProvider logProvider,
             RhetosAppOptions rhetosAppOptions,
-            INamedPlugins<IRepository> repositories,
-            Lazy<GenericRepository<IPrincipal>> principalGenericRepository)
+            Lazy<PrincipalWriter> principalWriter,
+            INamedPlugins<IRepository> repositories)
         {
             _logger = logProvider.GetLogger(GetType().Name);
             _rhetosAppOptions = rhetosAppOptions;
+            _principalWriter = principalWriter;
             _principalRepository = (IQueryableRepository<IPrincipal>)repositories.GetPlugin("Common.Principal");
-            _principalGenericRepository = principalGenericRepository;
             _principalRolesRepository = (IQueryableRepository<IPrincipalHasRole>)repositories.GetPlugin("Common.PrincipalHasRole");
             _roleRolesRepository = (IQueryableRepository<IRoleInheritsRole>)repositories.GetPlugin("Common.RoleInheritsRole");
             _principalPermissionRepository = (IQueryableRepository<IPrincipalPermission>)repositories.GetPlugin("Common.PrincipalPermission");
@@ -70,40 +70,20 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var principal = new PrincipalInfo { ID = GetPrincipalID(username), Name = username };
 
-            if (principal.ID == default(Guid))
+            if (principal.ID != default)
             {
-                if (_rhetosAppOptions.AuthorizationAddUnregisteredPrincipals)
-                {
-                    _logger.Info(() =>
-                        $"Adding unregistered principal '{username}'. See {OptionsAttribute.GetConfigurationPath<RhetosAppOptions>()}:{nameof(RhetosAppOptions.AuthorizationAddUnregisteredPrincipals)} in configuration files.");
-                    var newPrincipal = _principalGenericRepository.Value.CreateInstance();
-                    newPrincipal.ID = Guid.NewGuid();
-                    newPrincipal.Name = username;
-                    try
-                    {
-                        _principalGenericRepository.Value.Insert(newPrincipal);
-                        principal.ID = newPrincipal.ID;
-                    }
-                    catch (System.Data.SqlClient.SqlException ex)
-                    {
-                        if (ex.Message.StartsWith("Cannot insert duplicate key row in object 'Common.Principal' with unique index 'IX_Principal_Name'"))
-                        {
-                            _logger.Warning(() => "Ignoring concurrent principal creation: " + ex.GetType().Name + ": " + ex.Message);
-                            principal.ID = GetPrincipalID(username);
-                            if (principal.ID == default(Guid))
-                                throw new FrameworkException("Cannot create the principal record for '" + username + "'.", ex);
-                        }
-                        else
-                            throw;
-                    }
-                }
-                else
-                {
-                    _logger.Warning($"There is no principal with the username '{username}' in Common.Principal.");
-                    throw new UserException($"Your account '{username}' is not registered in the system. Please contact the system administrator.");
-                }
+                return principal;
             }
-            return principal;
+            else if (_rhetosAppOptions.AuthorizationAddUnregisteredPrincipals)
+            {
+                _principalWriter.Value.SafeInsertPrincipal(ref principal);
+                return principal;
+            }
+            else
+            {
+                _logger.Warning($"There is no principal with the username '{username}' in Common.Principal.");
+                throw new UserException($"Your account '{username}' is not registered in the system. Please contact the system administrator.");
+            }
         }
 
         public IEnumerable<Guid> GetPrincipalRoles(IPrincipal principal)

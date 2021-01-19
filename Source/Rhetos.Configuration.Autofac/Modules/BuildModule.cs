@@ -68,7 +68,7 @@ namespace Rhetos.Configuration.Autofac.Modules
             // Generating data migration from SQL scripts:
 
             pluginRegistration.FindAndRegisterPlugins<IConceptDataMigration>(typeof(IConceptDataMigration<>));
-            builder.RegisterType<DataMigrationScriptsFile>();
+            builder.RegisterType<DataMigrationScriptsFile>().As<IDataMigrationScriptsFile>();
             builder.RegisterType<DataMigrationScriptsGenerator>().As<IGenerator>();
 
             // Generating data migration from plugins:

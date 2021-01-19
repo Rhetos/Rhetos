@@ -37,12 +37,12 @@ namespace Rhetos.Dsl.Test
 
         public IEnumerable<IConceptInfo> ExtractConcepts(MultiDictionary<string, IConceptParser> conceptParsers)
         {
-            return (IEnumerable<IConceptInfo>)this.Invoke("ExtractConcepts", conceptParsers);
+            return (IEnumerable<IConceptInfo>)this.Invoke(nameof(ExtractConcepts), conceptParsers);
         }
 
         public IConceptInfo ParseNextConcept(TokenReader tokenReader, Stack<IConceptInfo> context, MultiDictionary<string, IConceptParser> conceptParsers)
         {
-            return this.Invoke("ParseNextConcept", tokenReader, context, conceptParsers).Item1;
+            return this.Invoke(nameof(ParseNextConcept), tokenReader, context, conceptParsers).Item1;
         }
     }
 }

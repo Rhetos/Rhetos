@@ -1,0 +1,38 @@
+Module TestStorage
+{
+    Entity AllProperties
+    {
+        Binary BinaryProperty;
+        Bool BoolProperty;
+        Date DateProperty;
+        DateTime DateTimeProperty;
+        Decimal DecimalProperty;
+        Guid GuidProperty;
+        Integer IntegerProperty;
+        Money MoneyProperty;
+        ShortString ShortStringProperty;
+        LongString LongStringProperty;
+    }
+
+    Entity Simple
+    {
+        ShortString Name;
+    }
+
+    SqlQueryable DataStructureWithNoSaveMapping
+    "
+        SELECT ID, Name FROM TestStorage.Simple
+    "
+    {
+        ShortString Name;
+        AutoDetectSqlDependencies;
+    }
+
+    Entity EntityWithNoProperty;
+
+    Entity SelfReferencing
+    {
+        ShortString Name;
+        Reference Parent TestStorage.SelfReferencing;
+    }
+}

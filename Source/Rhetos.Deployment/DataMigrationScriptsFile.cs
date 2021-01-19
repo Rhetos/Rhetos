@@ -25,9 +25,9 @@ using System.IO;
 
 namespace Rhetos.Deployment
 {
-    public class DataMigrationScriptsFile
+    public class DataMigrationScriptsFile : IDataMigrationScriptsFile
     {
-        const string DataMigrationScriptsFileName = "DataMigrationScripts.json";
+        private const string DataMigrationScriptsFileName = "DataMigrationScripts.json";
 
         private readonly ILogger _performanceLogger;
         private readonly string _dataMigrationScriptsFilePath;

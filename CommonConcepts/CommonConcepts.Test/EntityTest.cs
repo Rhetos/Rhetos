@@ -592,11 +592,26 @@ namespace CommonConcepts.Test
 
                 repos.Insert(item1, item4);
 
-                var error = TestUtility.ShouldFail<Rhetos.ClientException>(
+                TestUtility.ShouldFail<Rhetos.ClientException>(
                     () => repos.Save(null, new[] { item1, item2, item3, item4 }, null, checkUserPermissions: true),
                     "Updating a record that does not exist in database.");
+            }
+        }
 
-                Assert.IsTrue(error.Message.Contains(item2.ID.ToString()) || error.Message.Contains(item3.ID.ToString()));
+        [TestMethod]
+        public void SaveInvalidRecord_UpdateKnownId()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var repos = container.Resolve<Common.DomRepository>().TestEntity.Principal;
+
+                var item1 = new TestEntity.Principal { Name = "1", ID = Guid.NewGuid() };
+
+                var error = TestUtility.ShouldFail<Rhetos.ClientException>(
+                    () => repos.Save(null, new[] { item1 }, null, checkUserPermissions: true),
+                    "Updating a record that does not exist in database.");
+
+                Assert.IsTrue(error.Message.Contains(item1.ID.ToString()));
             }
         }
 
@@ -614,11 +629,9 @@ namespace CommonConcepts.Test
 
                 repos.Insert(item1, item4);
 
-                var error = TestUtility.ShouldFail<Rhetos.FrameworkException>(
+                TestUtility.ShouldFail<Rhetos.FrameworkException>(
                     () => repos.Save(null, new[] { item1, item2, item3, item4 }, null, checkUserPermissions: false),
                     "Updating a record that does not exist in database.");
-
-                Assert.IsTrue(error.ToString().Contains(item2.ID.ToString()) || error.ToString().Contains(item3.ID.ToString()));
             }
         }
 

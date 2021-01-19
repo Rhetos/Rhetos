@@ -21,8 +21,7 @@ using Rhetos.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
+using System.Data.SqlClient;
 using System.Linq;
 
 namespace Rhetos.Dom.DefaultConcepts
@@ -75,89 +74,41 @@ namespace Rhetos.Dom.DefaultConcepts
                 items = items.Select(item => new TEntity { ID = item.ID }).ToList();
         }
 
-        public enum SaveOperation { None, Insert, Update, Delete };
-
-        public static void EntityFrameworkOptimizedSave<TEntity, TQueryableEntity>(
+        public static void WriteToDatabase<TEntity>(
             IEnumerable<TEntity> insertedNew,
             IEnumerable<TEntity> updatedNew,
             IEnumerable<TEntity> deletedIds,
-            Func<TEntity, TQueryableEntity> toNavigation,
+            IPersistenceStorage persistenceStorage,
             bool checkUserPermissions,
-            DbContext dbContext,
             ISqlUtility sqlUtility,
-            out SaveOperation saveOperation,
-            out DbUpdateException saveException,
+            out Exception saveException,
             out RhetosException interpretedException)
             where TEntity : class, IEntity
-            where TQueryableEntity : class, IEntity, TEntity
         {
-            saveOperation = SaveOperation.None;
             try
             {
-                if (deletedIds.Any())
-                {
-                    saveOperation = SaveOperation.Delete;
-                    dbContext.Configuration.AutoDetectChangesEnabled = false;
-                    foreach (var item in deletedIds.Select(toNavigation))
-                        dbContext.Entry(item).State = System.Data.Entity.EntityState.Deleted;
-                    dbContext.Configuration.AutoDetectChangesEnabled = true;
-                    dbContext.SaveChanges();
-                }
-
-                if (updatedNew.Any())
-                {
-                    saveOperation = SaveOperation.Update;
-                    dbContext.Configuration.AutoDetectChangesEnabled = false;
-                    foreach (var item in updatedNew.Select(toNavigation))
-                        dbContext.Entry(item).State = System.Data.Entity.EntityState.Modified;
-                    dbContext.Configuration.AutoDetectChangesEnabled = true;
-                    dbContext.SaveChanges();
-                }
-
-                if (insertedNew.Any())
-                {
-                    saveOperation = SaveOperation.Insert;
-                    dbContext.Set<TQueryableEntity>().AddRange(insertedNew.Select(toNavigation));
-                    dbContext.SaveChanges();
-                }
-
-                saveOperation = SaveOperation.None;
-                ((Rhetos.Persistence.IPersistenceCache)dbContext).ClearCache();
-
+                persistenceStorage.Save(insertedNew, updatedNew, deletedIds);
                 saveException = null;
                 interpretedException = null;
             }
-            catch (DbUpdateException e)
+            catch (NonexistentRecordException nre)
+            {
+                saveException = null;
+                interpretedException = null;
+                if (checkUserPermissions)
+                    throw new ClientException(nre.Message);
+                else
+                    ExceptionsUtility.Rethrow(nre);
+            }
+            catch (SqlException e)
             {
                 saveException = e;
-                ThrowIfSavingNonexistentId(saveException, checkUserPermissions, saveOperation);
                 interpretedException = sqlUtility.InterpretSqlException(saveException);
             }
         }
 
-        public static void ThrowIfSavingNonexistentId(DbUpdateException saveException, bool checkUserPermissions, SaveOperation saveOperation)
-        {
-            if (saveException.Message.StartsWith("Store update, insert, or delete statement affected an unexpected number of rows (0)."))
-            {
-                string message;
-                if (saveOperation == SaveOperation.Update)
-                    message = "Updating a record that does not exist in database.";
-                else if (saveOperation == SaveOperation.Delete)
-                    message = "Deleting a record that does not exist in database.";
-                else
-                    return;
-
-                if (saveException.Entries != null && saveException.Entries.Count() == 1 && saveException.Entries.First().Entity is IEntity entity)
-                    message += " ID=" + entity.ID.ToString();
-
-                if (checkUserPermissions)
-                    throw new ClientException(message);
-                else
-                    throw new FrameworkException(message, saveException);
-            }
-        }
-
-        public static void ThrowInterpretedException(bool checkUserPermissions, DbUpdateException saveException, RhetosException interpretedException, ISqlUtility sqlUtility, string tableName)
+        /// <param name="saveException">SqlException, or an exception that has SqlException as an inner exception (directly or indirectly).</param>
+        public static void ThrowInterpretedException(bool checkUserPermissions, Exception saveException, RhetosException interpretedException, ISqlUtility sqlUtility, string tableName)
         {
             if (checkUserPermissions)
                 MsSqlUtility.ThrowIfPrimaryKeyErrorOnInsert(interpretedException, tableName);

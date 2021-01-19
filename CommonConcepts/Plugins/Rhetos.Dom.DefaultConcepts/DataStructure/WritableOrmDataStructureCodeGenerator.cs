@@ -64,12 +64,19 @@ namespace Rhetos.Dom.DefaultConcepts
         /// Data is already saved to the database (but the SQL transaction has not yet been committed).</summary>
         public static readonly CsTag<DataStructureInfo> OnSaveValidateTag = "WritableOrm OnSaveValidate";
 
+        /// <summary>
+        /// Entity-specific interpretation of database errors.
+        /// </summary>
         public static readonly CsTag<DataStructureInfo> OnDatabaseErrorTag = "WritableOrm OnDatabaseError";
 
         /// <summary>The inserted code will be execute after recomputing and validations.
         /// Queries "inserted" and "updated" will return NEW data.
         /// Data is already saved to the database (but the SQL transaction has not yet been committed).</summary>
         public static readonly CsTag<DataStructureInfo> AfterSaveTag = "WritableOrm AfterSave";
+
+        public static readonly CsTag<DataStructureInfo> PersistenceStorageMapperPropertyMappingTag = "PersistenceStorageMapperPropertyMapping";
+
+        public static readonly CsTag<DataStructureInfo> PersistenceStorageMapperDependencyResolutionTag = "PersistenceStorageMapperDependencyResolution";
 
         protected static string MemberFunctionsSnippet(DataStructureInfo info)
         {
@@ -95,8 +102,8 @@ namespace Rhetos.Dom.DefaultConcepts
             " + ProcessedOldDataTag.Evaluate(info) + @"
 
             {{
-                DomHelper.EntityFrameworkOptimizedSave(insertedNew, updatedNew, deletedIds, item => item.ToNavigation(), checkUserPermissions, _executionContext.EntityFrameworkContext, _sqlUtility,
-                    out var saveOperation, out var saveException, out var interpretedException);
+                DomHelper.WriteToDatabase(insertedNew, updatedNew, deletedIds, _executionContext.PersistenceStorage, checkUserPermissions, _sqlUtility,
+                    out Exception saveException, out Rhetos.RhetosException interpretedException);
 
                 if (saveException != null)
                 {{
@@ -140,6 +147,37 @@ namespace Rhetos.Dom.DefaultConcepts
                 info.Name);
         }
 
+        protected static string PersistenceStorageMappingSnippet(DataStructureInfo info)
+        {
+            return
+    $@"public class {info.Module.Name}_{info.Name}_Mapper : IPersistenceStorageObjectMapper
+    {{
+        public PersistenceStorageObjectParameter[] GetParameters(IEntity genericEntity)
+        {{
+            var entity = ({info.Module}.{info.Name})genericEntity;
+            return new PersistenceStorageObjectParameter[]
+            {{
+                new PersistenceStorageObjectParameter(""ID"", new SqlParameter("""", System.Data.SqlDbType.UniqueIdentifier) {{ Value = entity.ID }}),
+                {PersistenceStorageMapperPropertyMappingTag.Evaluate(info)}
+            }};
+        }}
+    
+    	public IEnumerable<Guid> GetDependencies(IEntity genericEntity)
+        {{
+            var entity = ({info.Module}.{info.Name})genericEntity;
+            {PersistenceStorageMapperDependencyResolutionTag.Evaluate(info)}
+            yield break;
+        }}
+    
+    	public string GetTableName()
+        {{
+            return ""{((IOrmDataStructure)info).GetOrmSchema()}.{((IOrmDataStructure)info).GetOrmDatabaseObject()}"";
+        }}
+    }}
+
+    ";
+        }
+
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (DataStructureInfo)conceptInfo;
@@ -150,6 +188,11 @@ namespace Rhetos.Dom.DefaultConcepts
                 codeBuilder.InsertCode("IValidateRepository", RepositoryHelper.RepositoryInterfaces, info);
 
                 codeBuilder.InsertCode(MemberFunctionsSnippet(info), RepositoryHelper.RepositoryMembers, info);
+
+                codeBuilder.InsertCode(PersistenceStorageMappingSnippet(info), DomInitializationCodeGenerator.PersistenceStorageMappingsTag);
+                string registerRepository = $@"_mappings.Add(typeof({info.Module.Name}.{info.Name}), new {info.Module.Name}_{info.Name}_Mapper());
+            ";
+                codeBuilder.InsertCode(registerRepository, DomInitializationCodeGenerator.PersistenceStorageMappingRegistrationTag);
             }
         }
     }

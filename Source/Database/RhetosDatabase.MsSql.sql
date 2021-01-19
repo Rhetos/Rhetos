@@ -736,3 +736,15 @@ BEGIN
     ALTER TABLE Rhetos.DataMigrationScript ALTER COLUMN DateExecuted datetime2(3) NOT NULL;
     ALTER TABLE Rhetos.DataMigrationScript ADD CONSTRAINT DF_DataMigrationScript_LastModified DEFAULT (sysdatetime()) FOR DateExecuted;
 END
+
+IF NOT EXISTS (
+	SELECT *
+	FROM INFORMATION_SCHEMA.COLUMNS
+	WHERE 
+		TABLE_SCHEMA = N'Rhetos' AND
+		TABLE_NAME = N'DataMigrationScript' AND 
+		COLUMN_NAME = N'Down'
+)
+BEGIN
+	ALTER TABLE Rhetos.DataMigrationScript ADD Down nvarchar(max);
+END

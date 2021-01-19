@@ -224,8 +224,8 @@ namespace Rhetos.CommonConcepts.Test
             context.AuthorizationDataLoader = new AuthorizationDataLoader(
                 context.ConsoleLogProvider,
                 new RhetosAppOptions(),
-                new MockRepositories(principalRoles, principals, roleRoles, principalPermissions, rolePermissions, roles, commonClaims),
-                new Lazy<GenericRepository<IPrincipal>>(() => new TestGenericRepository<IPrincipal, IPrincipal>(principals)));
+                null,
+                new MockRepositories(principalRoles, principals, roleRoles, principalPermissions, rolePermissions, roles, commonClaims));
 
             if (useCache)
                 context.AuthorizationDataCache = new AuthorizationDataCache(

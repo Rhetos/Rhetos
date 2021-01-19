@@ -20,7 +20,10 @@
 using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Extensibility;
+using Rhetos.Processing;
+using Rhetos.Utilities;
 using System.ComponentModel.Composition;
+using System.IO;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -36,6 +39,8 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly string ReadableRepositoryBaseMembersTag = "/*ReadableRepositoryBaseMembers*/";
         public static readonly string QueryableRepositoryBaseMembersTag = "/*QueryableRepositoryBaseMembers*/";
         public static readonly string OrmRepositoryBaseMembersTag = "/*OrmRepositoryBaseMembers*/";
+        public static readonly string PersistenceStorageMappingRegistrationTag = "/*PersistenceStorageMappingRegistration*/";
+        public static readonly string PersistenceStorageMappingsTag = "/*PersistenceStorageMappings*/";
 
         private readonly CommonConceptsOptions _commonConceptsOptions;
         private readonly CommonConceptsDatabaseSettings _databaseSettings;
@@ -61,6 +66,7 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.InsertCodeToFile(GetModelSnippet(), $"{GeneratedSourceDirectories.Model}\\QueryExtensions");
             codeBuilder.InsertCodeToFile(GetOrmSnippet(), "EntityFrameworkContext");
             codeBuilder.InsertCodeToFile(GetRepositoriesSnippet(), GeneratedSourceDirectories.Repositories.ToString());
+            codeBuilder.InsertCodeToFile(GetPersistenceStorageMapperSnippet(), "PersistenceStorageMapper");
 
             codeBuilder.InsertCode("this.Configuration.UseDatabaseNullSemantics = _rhetosAppOptions.EntityFrameworkUseDatabaseNullSemantics;\r\n            ", EntityFrameworkContextInitializeTag);
         }
@@ -262,6 +268,9 @@ $@"namespace Common
         protected Lazy<Common.DomRepository> _repository;
         public Common.DomRepository Repository {{ get {{ return _repository.Value; }} }}
 
+        protected Lazy<Rhetos.Dom.DefaultConcepts.IPersistenceStorage> _persistenceStorage;
+        public Rhetos.Dom.DefaultConcepts.IPersistenceStorage PersistenceStorage {{ get {{ return _persistenceStorage.Value; }} }}
+
         public Rhetos.Logging.ILogProvider LogProvider {{ get; private set; }}
 
         public EntityFrameworkContext EntityFrameworkContext {{ get; private set; }}
@@ -276,6 +285,7 @@ $@"namespace Common
             Lazy<Rhetos.Security.IAuthorizationManager> authorizationManager,
             Lazy<Rhetos.Dom.DefaultConcepts.GenericRepositories> genericRepositories,
             Lazy<Common.DomRepository> repository,
+            Lazy<Rhetos.Dom.DefaultConcepts.IPersistenceStorage> persistenceStorage,
             Rhetos.Logging.ILogProvider logProvider{ModuleCodeGenerator.ExecutionContextConstructorArgumentTag},
             EntityFrameworkContext entityFrameworkContext)
         {{
@@ -285,6 +295,7 @@ $@"namespace Common
             _authorizationManager = authorizationManager;
             _genericRepositories = genericRepositories;
             _repository = repository;
+            _persistenceStorage = persistenceStorage;
             LogProvider = logProvider;
             EntityFrameworkContext = entityFrameworkContext;
             {ModuleCodeGenerator.ExecutionContextConstructorAssignmentTag}
@@ -314,6 +325,11 @@ $@"namespace Common
             builder.RegisterType<ExecutionContext>().InstancePerLifetimeScope();
             builder.RegisterInstance(Infrastructure.RegisteredInterfaceImplementations).ExternallyOwned();
             builder.RegisterInstance(Infrastructure.ApplyFiltersOnClientRead).ExternallyOwned();
+            builder.RegisterType<PersistenceStorage>().As<IPersistenceStorage>();
+            builder.RegisterType<SqlCommandBatch>().As<IPersistenceStorageCommandBatch>();
+            builder.RegisterType<PersistenceStorageObjectMappings>().As<IPersistenceStorageObjectMappings>().SingleInstance();
+
+            builder.Register(context => context.Resolve<IConfiguration>().GetOptions<CommonConceptsRuntimeOptions>()).SingleInstance();
             builder.RegisterInstance(new Rhetos.Dom.DefaultConcepts.CommonConceptsDatabaseSettings
             {{
                 UseLegacyMsSqlDateTime = {_databaseSettings.UseLegacyMsSqlDateTime.ToString().ToLowerInvariant()},
@@ -467,6 +483,47 @@ $@"namespace Common
     }}
 
     {ModuleCodeGenerator.CommonNamespaceMembersTag}{RestoreWarnings(_commonConceptsOptions)}
+}}
+";
+
+        private string GetPersistenceStorageMapperSnippet() =>
+$@"namespace Common
+{{
+    using System;
+    using Rhetos.Dom.DefaultConcepts;
+    using System.Collections.Generic;
+    using System.Data.SqlClient;
+
+    public class PersistenceStorageObjectMappings : IPersistenceStorageObjectMappings
+    {{
+        Dictionary<Type, IPersistenceStorageObjectMapper> _mappings = new Dictionary<Type, IPersistenceStorageObjectMapper>();
+
+        public PersistenceStorageObjectMappings()
+        {{
+            {PersistenceStorageMappingRegistrationTag}
+        }}
+
+        public IPersistenceStorageObjectMapper GetMapping(Type type)
+        {{
+            IPersistenceStorageObjectMapper mapper;
+            if(_mappings.TryGetValue(type, out mapper))
+                return mapper;
+            else
+                throw new Rhetos.FrameworkException($""There is no mapping associated with the type '{{type}}'. The mapping definition is required for database save operations."");
+        }}
+    }}
+
+    public static class PersistenceStorageHelper
+    {{
+        public static SqlParameter GetMoneySqlParameter(decimal? money)
+        {{
+            // Simulates automatic rounding by Entity Framework, for backward compatibility. See related issue https://github.com/Rhetos/Rhetos/issues/389.
+	        object dbValue = money != null ? (object)(((long)(money.Value * 100m)) / 100m) : DBNull.Value;
+            return new SqlParameter("""", System.Data.SqlDbType.Money) {{ Value = dbValue }};
+        }}
+    }}
+
+    {PersistenceStorageMappingsTag}
 }}
 ";
     }

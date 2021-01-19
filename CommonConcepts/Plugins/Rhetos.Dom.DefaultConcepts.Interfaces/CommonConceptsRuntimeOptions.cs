@@ -17,21 +17,18 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities;
-using System.Collections.Generic;
-
-namespace Rhetos.Deployment.Test
+namespace Rhetos.Dom.DefaultConcepts
 {
-    class DataMigration_Accessor : DataMigrationScriptsExecuter
+    /// <summary>
+    /// Run-time configuration.
+    /// </summary>
+    [Options("CommonConcepts")]
+    public class CommonConceptsRuntimeOptions
     {
-        public DataMigration_Accessor()
-            : base(null, new ConsoleLogProvider(), null, null, null)
-        {
-        }
-
-        new public List<DataMigrationScript> FindSkipedScriptsInEachPackage(List<DataMigrationScript> oldScripts, List<DataMigrationScript> newScripts)
-        {
-            return base.FindSkipedScriptsInEachPackage(oldScripts, newScripts);
-        }
+        /// <summary>
+        /// Number of records inserted updated or deleted in a single SQL command.
+        /// When saving a list of records with count larger then this limit, the list will be automatically split to batches.
+        /// </summary>
+        public int SaveSqlCommandBatchSize { get; set; } = 20;
     }
 }

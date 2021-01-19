@@ -47,8 +47,8 @@ namespace Rhetos.Configuration.Autofac.Modules
 
             // Executing data migration from SQL scripts:
 
-            builder.RegisterType<DataMigrationScriptsFile>();
-            builder.Register(context => context.Resolve<DataMigrationScriptsFile>().Load()).As<DataMigrationScripts>().SingleInstance();
+            builder.RegisterType<DataMigrationScriptsFile>().As<IDataMigrationScriptsFile>();
+            builder.Register(context => context.Resolve<IDataMigrationScriptsFile>().Load()).As<DataMigrationScripts>().SingleInstance();
             builder.RegisterType<DataMigrationScriptsExecuter>();
 
             // Executing data migration from plugins:

@@ -18,12 +18,7 @@
 */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
-using System.Globalization;
 using Rhetos.Compiler;
 
 namespace Rhetos.Dom.DefaultConcepts
@@ -59,6 +54,31 @@ namespace Rhetos.Dom.DefaultConcepts
                 codeBuilder.InsertCode(
                     string.Format(",\r\n                {0} = item.{0}", info.Name),
                     RepositoryHelper.AssignSimplePropertyTag, info.DataStructure);
+        }
+
+        public static void GenerateStorageCustomMapping(PropertyInfo info, ICodeBuilder codeBuilder, string sqlParameter)
+        {
+            if (info.DataStructure is IWritableOrmDataStructure)
+            {
+                var code = $@"new PersistenceStorageObjectParameter(""{info.Name}"", {sqlParameter}),
+                ";
+                codeBuilder.InsertCode(code, WritableOrmDataStructureCodeGenerator.PersistenceStorageMapperPropertyMappingTag, info.DataStructure);
+            }
+        }
+
+        public static void GenerateStorageMapping(PropertyInfo info, ICodeBuilder codeBuilder, string dbType, int precision = 0, int scale = 0)
+        {
+            if (info.DataStructure is IWritableOrmDataStructure)
+            {
+                string options = "";
+                if (precision > 0)
+                    options += $", Precision = {precision}";
+                if (scale > 0)
+                    options += $", Scale = {scale}";
+
+                var sqlParameter = $@"new SqlParameter("""", {dbType}) {{ Value = ((object)entity.{info.Name}) ?? DBNull.Value{options} }}";
+                GenerateStorageCustomMapping(info, codeBuilder, sqlParameter);
+            }
         }
     }
 }
