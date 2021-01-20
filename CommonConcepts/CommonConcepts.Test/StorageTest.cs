@@ -18,9 +18,7 @@
 */
 
 using Autofac;
-using CommonConcepts.Test.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos.Configuration.Autofac;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.TestCommon;
 using System;
@@ -54,9 +52,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveAllPropertiesTest()
         {
-            using (var container = new RhetosTestContainer())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
 
                 var entity = new TestStorage.AllProperties
                 {
@@ -109,9 +107,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InsertAllPropertiesWithNullValueTest()
         {
-            using (var container = new RhetosTestContainer())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
 
                 var entity = new TestStorage.AllProperties
                 {
@@ -137,9 +135,9 @@ namespace CommonConcepts.Test
         public void RollbackTransactionOnErrorTest()
         {
             var entityID = Guid.NewGuid();
-            using (var container = new RhetosTestContainer(commitChanges: true))
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
 
                 var entity = new TestStorage.Simple
                 {
@@ -149,11 +147,12 @@ namespace CommonConcepts.Test
                 context.PersistenceStorage.Insert(new List<TestStorage.Simple> { entity });
                 Assert.AreEqual(1, context.Repository.TestStorage.Simple.Load(x => x.ID == entityID).Count());
                 context.PersistenceTransaction.DiscardChanges();
+                scope.CommitChanges();
             }
 
-            using (var container = new RhetosTestContainer(commitChanges: false))
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
                 Assert.AreEqual(0, context.Repository.TestStorage.Simple.Load(x => x.ID == entityID).Count());
             }
         }
@@ -162,9 +161,9 @@ namespace CommonConcepts.Test
         public void DataStructureWithNoMappingTest()
         {
             var entityID = Guid.NewGuid();
-            using (var container = new RhetosTestContainer())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
 
                 var entity = new TestStorage.DataStructureWithNoSaveMapping
                 {
@@ -180,15 +179,15 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateOnEntityWithNoProperty()
         {
-            using (var container = new RhetosTestContainer())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
 
                 var entityID = Guid.NewGuid();
 
                 context.PersistenceStorage.Insert(new List<TestStorage.EntityWithNoProperty> { new TestStorage.EntityWithNoProperty { ID = entityID } });
 
-                var sqlCommandBatch = container.Resolve<IPersistenceStorageCommandBatch>();
+                var sqlCommandBatch = scope.Resolve<IPersistenceStorageCommandBatch>();
 
                 int rowCount1 = sqlCommandBatch
                     .Execute(new[]
@@ -228,9 +227,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void UpdateOnEntityWithNoPropertyWithRepository()
         {
-            using (var container = new RhetosTestContainer())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
 
                 var item = new TestStorage.EntityWithNoProperty();
                 context.Repository.TestStorage.EntityWithNoProperty.Insert(item);
@@ -247,9 +246,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void MoneyPropertySizeAndDecimals()
         {
-            using (var container = new RhetosTestContainer())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
 
                 var tests = new List<(decimal Save, decimal Load)>
                 {
@@ -287,9 +286,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DecimalPropertySizeAndDecimals()
         {
-            using (var container = new RhetosTestContainer())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
 
                 var tests = new List<(decimal Save, decimal Load)>
                 {
@@ -329,9 +328,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShortStringPropertySave()
         {
-            using (var container = new RhetosTestContainer())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
 
                 var tests = new List<string>
                 {
@@ -360,9 +359,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShortStringPropertyTooLong()
         {
-            using (var container = new RhetosTestContainer())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
 
                 var tests = new List<string>
                 {
@@ -379,7 +378,7 @@ namespace CommonConcepts.Test
                     };
                     TestUtility.ShouldFail<SqlException>(
                         () => context.PersistenceStorage.Insert(entity1),
-                        "String or binary data would be truncated in table 'RhetosFullTest.TestStorage.AllProperties', column 'ShortStringProperty'.");
+                        "String or binary data would be truncated in table", "TestStorage.AllProperties", "ShortStringProperty");
                 }
             }
         }
@@ -387,9 +386,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ShortStringPropertyTruncationErrorTest()
         {
-            using (var container = new RhetosTestContainer())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
 
                 var entity1 = new TestStorage.AllProperties
                 {
@@ -404,9 +403,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void LongStringPropertySave()
         {
-            using (var container = new RhetosTestContainer())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
 
                 var tests = new List<string>
                 {
@@ -436,10 +435,10 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void DateTimeSave()
         {
-            using (var container = new RhetosTestContainer())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
-                bool usingDateTime2 = !container.Resolve<CommonConceptsDatabaseSettings>().UseLegacyMsSqlDateTime;
+                var context = scope.Resolve<Common.ExecutionContext>();
+                bool usingDateTime2 = !scope.Resolve<CommonConceptsDatabaseSettings>().UseLegacyMsSqlDateTime;
 
                 var tests = new List<DateTime>
                 {
@@ -499,10 +498,10 @@ namespace CommonConcepts.Test
                 ("2020-12-28T19:46:25.1250000", "2020-12-28T19:46:25.1250000", "2020-12-28T19:46:25.1270000"),
             };
 
-            using (var container = new RhetosTestContainer())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
-                bool usingDateTime2 = !container.Resolve<CommonConceptsDatabaseSettings>().UseLegacyMsSqlDateTime;
+                var context = scope.Resolve<Common.ExecutionContext>();
+                bool usingDateTime2 = !scope.Resolve<CommonConceptsDatabaseSettings>().UseLegacyMsSqlDateTime;
 
                 foreach (var test in tests)
                 {
@@ -526,9 +525,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void RoundDatePropertyTest()
         {
-            using (var container = new RhetosTestContainer())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
 
                 var sampleDateTime = new DateTime(2020, 1, 1, 23, 59, 59);
                 var entity = new TestStorage.AllProperties
@@ -548,7 +547,7 @@ namespace CommonConcepts.Test
         {
             var commandBatchesLog = new PersistenceCommandsDecorator.Log();
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(builder =>
+            using (var scope = TestScope.Create(builder =>
                 {
                     builder.RegisterDecorator<PersistenceCommandsDecorator, IPersistenceStorageCommandBatch>();
                     builder.RegisterInstance(commandBatchesLog);
@@ -556,8 +555,8 @@ namespace CommonConcepts.Test
                 }
             ))
             {
-                var context = container.Resolve<Common.ExecutionContext>();
-                var persistenceStorage = container.Resolve<IPersistenceStorage>();
+                var context = scope.Resolve<Common.ExecutionContext>();
+                var persistenceStorage = scope.Resolve<IPersistenceStorage>();
 
                 {
                     var entities = GenerateSimpleEntities(2);
@@ -588,7 +587,7 @@ namespace CommonConcepts.Test
                 {
                     var entities = GenerateSimpleEntities(1);
 
-                    var commandBatch = container.Resolve<IPersistenceStorageCommandBatch>();
+                    var commandBatch = scope.Resolve<IPersistenceStorageCommandBatch>();
                     int rowCount = commandBatch.Execute(new[]
                     {
                         new PersistenceStorageCommand
@@ -650,9 +649,9 @@ namespace CommonConcepts.Test
 
             var ids = new[] { a.ID, b.ID, c.ID, d.ID };
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 // Insert would fail if the records are inserted to database in incorrect order,
                 // because of self-referencing FK constraint on column ParentID.
@@ -667,9 +666,9 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("", TestUtility.DumpSorted(query.ToList(), item => $"{item.Name}:{item.ParentName}"));
             }
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 // Testing with opposite initial ordering, just in case.
                 repository.TestStorage.SelfReferencing.Insert(a, b, c, d);
@@ -693,10 +692,10 @@ namespace CommonConcepts.Test
 
             var commandsMock = new PersistenceCommandsMock();
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
+            using (var scope = TestScope.Create(
                 builder => builder.RegisterInstance<IPersistenceStorageCommandBatch>(commandsMock)))
             {
-                var persistenceStorage = container.Resolve<IPersistenceStorage>();
+                var persistenceStorage = scope.Resolve<IPersistenceStorage>();
 
                 // Input is list for records: "Name:ParentName" or "Name" if it has no parent.
                 var tests = new (string Input, string ExpectedOrder)[]

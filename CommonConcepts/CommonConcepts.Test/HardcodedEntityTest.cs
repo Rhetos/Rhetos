@@ -18,13 +18,11 @@
 */
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos.Configuration.Autofac;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
 using System.Linq;
-using CommonConcepts.Test.Helpers;
 
 namespace CommonConcepts.Test
 {
@@ -127,9 +125,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HardcodedEntityWithCustomEntryIdentifierTest()
         {
-            using (var container = new RhetosTestContainer())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 Assert.AreEqual(new Guid("32AA7C09-ECFE-45E9-81B7-CB761D28F351"), repository.TestHardcodedEntity.HardcodedWithCustomIdentifier.Query().Single(x => x.Name == "Entry1").ID);
                 Assert.AreEqual(new Guid("213E77EE-F622-4487-8709-B30D280FB31E"), repository.TestHardcodedEntity.HardcodedWithCustomIdentifier.Query().Single(x => x.Name == "Entry2").ID);
@@ -140,9 +138,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void HardcodedEntityWithGeneratedEntryIdentifierTest()
         {
-            using (var container = new RhetosTestContainer())
+            using (var scope = TestScope.Create())
             {
-                var repository = container.Resolve<Common.DomRepository>();
+                var repository = scope.Resolve<Common.DomRepository>();
 
                 var entry3Id = repository.TestHardcodedEntity.HardcodedWithCustomIdentifier.Query().Single(x => x.Name == "Entry3").ID;
                 Assert.AreEqual(CsUtility.GenerateGuid("Entry3"), entry3Id);

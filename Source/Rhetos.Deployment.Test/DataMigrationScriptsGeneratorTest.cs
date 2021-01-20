@@ -148,7 +148,7 @@ namespace Rhetos.Deployment.Test
         {
             if (string.IsNullOrEmpty(sql))
                 return "-";
-            return sql.Substring(sql.IndexOf("\n") + 1).Trim();
+            return sql.Substring(sql.IndexOf('\n') + 1).Trim();
         }
 
         //=========================================================================================

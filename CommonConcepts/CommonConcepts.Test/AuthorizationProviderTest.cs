@@ -17,14 +17,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Autofac;
 using CommonConcepts.Test.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Persistence;
 using Rhetos.Security;
 using Rhetos.TestCommon;
+using Rhetos.Utilities;
 using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -113,9 +114,9 @@ namespace CommonConcepts.Test
             string testUserName = TestUserPrefix + Guid.NewGuid();
 
             RhetosAppOptions rhetosAppOptions;
-            using (var container = new RhetosTestContainer())
+            using (var scope = TestScope.Create())
             {
-                rhetosAppOptions = container.Resolve<RhetosAppOptions>();
+                rhetosAppOptions = scope.Resolve<RhetosAppOptions>();
             }
             rhetosAppOptions.AuthorizationAddUnregisteredPrincipals = true;
 
@@ -155,22 +156,23 @@ namespace CommonConcepts.Test
             // Recompute membership on authorization with multiple parallel requests:
             Parallel.For(0, threadCount, thread =>
             {
-                using (var container = new RhetosTestContainer(commitChanges))
+                using (var scope = TestScope.Create(builder => builder.RegisterInstance(rhetosAppOptions).ExternallyOwned()))
                 {
-                    container.InitializeSession += builder => builder.RegisterInstance(rhetosAppOptions).ExternallyOwned();
                     try
                     {
-                        var authorizationData = container.Resolve<AuthorizationDataLoader>();
+                        var authorizationData = scope.Resolve<AuthorizationDataLoader>();
 
                         // First call will automatically create a new principal, see AuthorizationAddUnregisteredPrincipals above.
                         // Other calls should return the same principal.
                         PrincipalInfo principal = authorizationData.GetPrincipal(testUserName);
                         report[thread] = principal;
+                        if (commitChanges)
+                            scope.CommitChanges();
                     }
                     catch (Exception e)
                     {
                         Console.WriteLine(e);
-                        container.Resolve<IPersistenceTransaction>().DiscardChanges();
+                        scope.Resolve<IPersistenceTransaction>().DiscardChanges();
                         throw;
                     }
                 }
@@ -182,11 +184,12 @@ namespace CommonConcepts.Test
 
         private static void DeleteTestPrincipals()
         {
-            using (var container = new RhetosTestContainer(commitChanges: true))
+            using (var scope = TestScope.Create())
             {
-                var principals = container.Resolve<Common.ExecutionContext>().GenericPrincipal();
+                var principals = scope.Resolve<Common.ExecutionContext>().GenericPrincipal();
                 var testPrincipals = principals.Load(p => p.Name.StartsWith(TestUserPrefix));
                 principals.Delete(testPrincipals);
+                scope.CommitChanges();
             }
         }
 

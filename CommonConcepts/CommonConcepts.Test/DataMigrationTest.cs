@@ -17,9 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Autofac;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos.Configuration.Autofac;
 using Rhetos.Deployment;
 using Rhetos.Logging;
 using Rhetos.Utilities;
@@ -65,32 +63,27 @@ namespace CommonConcepts.Test
 
         private string TestExecuteDataMigrationScripts(string[] scriptsDescriptions, out List<string> log, out List<string> sqlLog, bool skipScriptsWithWrongOrder = false)
         {
-            log = new List<string>();
+            var systemLog = new List<string>();
+            log = systemLog;
 
             var sqlExecuterLog = new SqlExecuterLog();
             sqlLog = sqlExecuterLog;
 
-            using (var container = new RhetosTestContainer())
+            using (var scope = TestScope.Create(
+                TestScope.ConfigureLogMonitor(systemLog) +
+                TestScope.ConfigureSqlExecuterMonitor(sqlExecuterLog)))
             {
-                container.InitializeSession += builder =>
-                {
-                    builder.RegisterInstance(sqlExecuterLog).ExternallyOwned();
-                    builder.RegisterDecorator<SqlExecuterMonitor, ISqlExecuter>();
-                };
-
-                container.AddLogMonitor(log);
-
-                var sqlExecuter = container.Resolve<ISqlExecuter>();
+                var sqlExecuter = scope.Resolve<ISqlExecuter>();
                 sqlExecuter.ExecuteSql("DELETE FROM Rhetos.DataMigrationScript");
 
-                var sqlBatches = container.Resolve<SqlTransactionBatches>();
+                var sqlBatches = scope.Resolve<SqlTransactionBatches>();
 
                 int deployment = 0;
                 foreach (string scriptsDescription in scriptsDescriptions)
                 {
                     sqlExecuter.ExecuteSql($"--DBUpdate: {++deployment}");
                     var dbUpdateOptions = new DbUpdateOptions() { DataMigrationSkipScriptsWithWrongOrder = skipScriptsWithWrongOrder };
-                    var dataMigration = new DataMigrationScriptsExecuter(sqlExecuter, container.Resolve<ILogProvider>(),
+                    var dataMigration = new DataMigrationScriptsExecuter(sqlExecuter, scope.Resolve<ILogProvider>(),
                             ParseDataMigrationScriptsFromScriptsDescription(scriptsDescription), dbUpdateOptions, sqlBatches);
                     dataMigration.Execute();
                 }

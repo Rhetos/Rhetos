@@ -17,12 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Configuration.Autofac;
-using Rhetos.Utilities;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace CommonConcepts.Test.Helpers
 {

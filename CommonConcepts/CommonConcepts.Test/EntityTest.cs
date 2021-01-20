@@ -17,9 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using CommonConcepts.Test.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos.Configuration.Autofac;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Logging;
 using Rhetos.TestCommon;
@@ -601,9 +599,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveInvalidRecord_UpdateKnownId()
         {
-            using (var container = new RhetosTestContainer())
+            using (var scope = TestScope.Create())
             {
-                var repos = container.Resolve<Common.DomRepository>().TestEntity.Principal;
+                var repos = scope.Resolve<Common.DomRepository>().TestEntity.Principal;
 
                 var item1 = new TestEntity.Principal { Name = "1", ID = Guid.NewGuid() };
 

@@ -30,7 +30,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CommonConcepts.Test.Helpers
+namespace CommonConcepts.Test
 {
     /// <summary>
     /// Helper class that manages Dependency Injection container for unit tests.
@@ -89,6 +89,15 @@ namespace CommonConcepts.Test.Helpers
                         log.Add("[" + eventType + "] " + (eventName != null ? (eventName + ": ") : "") + message());
                 }))
                 .As<ILogProvider>();
+        }
+
+        public static Action<ContainerBuilder> ConfigureSqlExecuterMonitor(SqlExecuterLog sqlExecuterLog)
+        {
+            return builder =>
+            {
+                builder.RegisterInstance(sqlExecuterLog).ExternallyOwned();
+                builder.RegisterDecorator<SqlExecuterMonitor, ISqlExecuter>();
+            };
         }
 
         public static Action<ContainerBuilder> ConfigureIgnoreClaims()

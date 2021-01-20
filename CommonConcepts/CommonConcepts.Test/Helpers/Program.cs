@@ -17,18 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Autofac;
 using Rhetos;
 using Rhetos.Logging;
 using Rhetos.Security;
 using Rhetos.Utilities;
 
-namespace CommonConcepts.Test.Helpers
+namespace CommonConcepts.Test
 {
     public static class Program
     {
