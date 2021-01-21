@@ -29,11 +29,11 @@ namespace Rhetos
     public abstract class RhetosHostBuilderBase : IRhetosHostBuilder
     {
         protected ILogProvider _builderLogProvider = LoggingDefaults.DefaultLogProvider;
-        private readonly List<Action<ContainerBuilder>> _configureContainerActions = new List<Action<ContainerBuilder>>();
-        private readonly List<Action<IConfigurationBuilder>> _configureConfigurationActions = new List<Action<IConfigurationBuilder>>();
-        private Action<IConfiguration, ContainerBuilder, List<Action<ContainerBuilder>>> _customContainerConfigurationAction ;
+        protected readonly List<Action<ContainerBuilder>> _configureContainerActions = new List<Action<ContainerBuilder>>();
+        protected readonly List<Action<IConfigurationBuilder>> _configureConfigurationActions = new List<Action<IConfigurationBuilder>>();
+        protected Action<IConfiguration, ContainerBuilder, List<Action<ContainerBuilder>>> _customContainerConfigurationAction ;
         protected ILogger _buildLogger;
-        private string _rootFolder;
+        protected string _rootFolder;
 
         public IRhetosHostBuilder UseBuilderLogProvider(ILogProvider logProvider)
         {

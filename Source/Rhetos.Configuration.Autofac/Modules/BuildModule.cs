@@ -37,6 +37,7 @@ namespace Rhetos.Configuration.Autofac.Modules
                 .As<RhetosBuildEnvironment>().As<IAssetsOptions>().SingleInstance();
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<RhetosTargetEnvironment>()).SingleInstance();
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<BuildOptions>()).SingleInstance().PreserveExistingDefaults();
+            builder.Register(context => context.Resolve<IConfiguration>().GetOptions<DatabaseSettings>()).SingleInstance();
 
             var pluginRegistration = builder.GetPluginRegistration();
             AddDatabaseGenerator(builder, pluginRegistration);
@@ -44,11 +45,11 @@ namespace Rhetos.Configuration.Autofac.Modules
             AddPersistence(builder, pluginRegistration);
             AddCompiler(builder, pluginRegistration);
             builder.RegisterType<DomGenerator>().As<IGenerator>();
+            builder.RegisterType<InitialDomCodeGenerator>();
             builder.RegisterType<ResourcesGenerator>().As<IGenerator>();
             builder.RegisterType<InstalledPackagesProvider>();
             builder.RegisterType<InstalledPackagesGenerator>().As<IGenerator>();
             builder.RegisterType<AppSettingsGenerator>().As<IGenerator>();
-            builder.RegisterType<RhetosHostBuilderGenerator>().As<IGenerator>();
 
             builder.RegisterType<ApplicationGenerator>();
             pluginRegistration.FindAndRegisterPlugins<IGenerator>();

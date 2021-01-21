@@ -42,11 +42,6 @@ namespace Rhetos.Utilities
         [AbsolutePathOption]
         public string AssetsFolder { get; set; }
 
-        /// <summary>
-        /// The value is configured automatically by Rhetos build if <see cref="BuildOptions.GenerateAppSettings"/> is enabled.
-        /// </summary>
-        public string DatabaseLanguage { get; set; }
-
         public bool EntityFrameworkUseDatabaseNullSemantics { get; set; } = true;
 
         public double AuthorizationCacheExpirationSeconds { get; set; } = 30;

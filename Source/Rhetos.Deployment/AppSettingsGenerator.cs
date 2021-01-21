@@ -76,9 +76,6 @@ namespace Rhetos.Deployment
 			configurationItems.Add(($"{OptionsAttribute.GetConfigurationPath<RhetosAppOptions>()}:{nameof(RhetosAppOptions.AssetsFolder)}",
 				FilesUtility.AbsoluteToRelativePath(_rhetosBuildEnvironment.ProjectFolder, _rhetosTargetEnvironment.TargetAssetsFolder)));
 
-			if (!string.IsNullOrEmpty(_buildOptions.DatabaseLanguage))
-				configurationItems.Add(($"{OptionsAttribute.GetConfigurationPath<RhetosAppOptions>()}:{nameof(RhetosAppOptions.DatabaseLanguage)}", _buildOptions.DatabaseLanguage));
-
 			return configurationItems.Where(item => item.Value != null);
         }
 

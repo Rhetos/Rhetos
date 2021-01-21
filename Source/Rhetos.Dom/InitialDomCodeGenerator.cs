@@ -18,33 +18,32 @@
 */
 
 using Rhetos.Compiler;
+using Rhetos.Dsl;
 using Rhetos.Extensibility;
+using Rhetos.Utilities;
 using System;
-using System.Collections.Generic;
 using System.Text;
 
 namespace Rhetos.Dom
 {
-    public class RhetosHostBuilderGenerator : IGenerator
+    public class InitialDomCodeGenerator : IConceptCodeGenerator
     {
-        public static readonly string PluginAssembliesTag = "/*RhetosHostBuilder.PluginAssemblies*/";
-        public static readonly string PluginTypesTag = "/*RhetosHostBuilder.PluginTypes*/";
+        public static readonly string RhetosHostBuilderInitialConfigurationTag = "/*RhetosHostBuilder.InitialConfiguration*/";
+        public static readonly string RhetosHostBuilderPluginAssembliesTag = "/*RhetosHostBuilder.PluginAssemblies*/";
+        public static readonly string RhetosHostBuilderPluginTypesTag = "/*RhetosHostBuilder.PluginTypes*/";
 
         private readonly PluginInfoCollection _plugins;
+        private readonly DatabaseSettings _databaseSettings;
 
-        private readonly ISourceWriter _sourceWriter;
-
-        public IEnumerable<string> Dependencies => Array.Empty<string>();
-
-        public RhetosHostBuilderGenerator(
-            ISourceWriter sourceWriter,
-            PluginInfoCollection plugins)
+        public InitialDomCodeGenerator(
+            PluginInfoCollection plugins,
+            DatabaseSettings databaseSettings)
         {
-            _sourceWriter = sourceWriter;
             _plugins = plugins;
+            _databaseSettings = databaseSettings;
         }
 
-        public void Generate()
+        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var addPlugins = new StringBuilder();
             foreach (var plugin in _plugins)
@@ -62,10 +61,26 @@ namespace Rhetos
 {{
     public class RhetosHostBuilder : RhetosHostBuilderBase
     {{
+        public RhetosHostBuilder()
+        {{
+            InitializeConfiguration();
+        }}
+
         protected override ContainerBuilder CreateContainerBuilder(IConfiguration configuration)
         {{
             var pluginScanner = new Rhetos.Extensibility.RuntimePluginScanner(GetPluginAssemblies(), GetPluginTypes(), _builderLogProvider);
             return new RhetosContainerBuilder(configuration, _builderLogProvider, pluginScanner);
+        }}
+
+        private void InitializeConfiguration()
+        {{
+            _configureConfigurationActions.Add((c) => {{
+                c.AddOptions(new Rhetos.Utilities.DatabaseSettings
+                {{
+                    DatabaseLanguage = ""{_databaseSettings.DatabaseLanguage}"",
+                }});
+            }});
+            {RhetosHostBuilderInitialConfigurationTag}
         }}
 
         private static IEnumerable<Assembly> GetPluginAssemblies()
@@ -73,7 +88,7 @@ namespace Rhetos
             return new Assembly[]
             {{
                 Assembly.GetExecutingAssembly(),
-                {PluginAssembliesTag}
+                {RhetosHostBuilderPluginAssembliesTag}
             }};
         }}
 
@@ -82,7 +97,7 @@ namespace Rhetos
             #pragma warning disable CS0618 // (Type or member is obsolete) Obsolete plugins can be registered without a warning, their usage will show a warning.
             return new Type[]
             {{
-                {addPlugins}{PluginTypesTag}
+                {addPlugins}{RhetosHostBuilderPluginTypesTag}
             }};
             #pragma warning restore CS0618
         }}
@@ -90,7 +105,7 @@ namespace Rhetos
 }}
 ";
 
-            _sourceWriter.Add("RhetosHostBuilder.cs", rhetosHostBuilderCode);
+            codeBuilder.InsertCodeToFile(rhetosHostBuilderCode, "RhetosHostBuilder");
         }
     }
 }

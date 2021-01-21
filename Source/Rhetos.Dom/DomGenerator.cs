@@ -29,22 +29,25 @@ namespace Rhetos.Dom
         private readonly IPluginsContainer<IConceptCodeGenerator> _pluginRepository;
         private readonly ICodeGenerator _codeGenerator;
         private readonly ISourceWriter _sourceWriter;
+        private readonly InitialDomCodeGenerator _initialDomCodeGenerator;
 
         public DomGenerator(
             IPluginsContainer<IConceptCodeGenerator> plugins,
             ICodeGenerator codeGenerator,
-            ISourceWriter sourceWriter)
+            ISourceWriter sourceWriter,
+            InitialDomCodeGenerator initialDomCodeGenerator)
         {
             _pluginRepository = plugins;
             _codeGenerator = codeGenerator;
             _sourceWriter = sourceWriter;
+            _initialDomCodeGenerator = initialDomCodeGenerator;
         }
 
         public IEnumerable<string> Dependencies => Array.Empty<string>();
 
         public void Generate()
         {
-            var sourceFiles = _codeGenerator.ExecutePluginsToFiles(_pluginRepository, "/*", "*/", null);
+            var sourceFiles = _codeGenerator.ExecutePluginsToFiles(_pluginRepository, "/*", "*/", _initialDomCodeGenerator);
 
             foreach (var sourceFile in sourceFiles)
                 _sourceWriter.Add(sourceFile.Key + ".cs", sourceFile.Value);

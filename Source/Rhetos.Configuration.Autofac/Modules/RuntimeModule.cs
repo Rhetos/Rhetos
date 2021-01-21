@@ -42,6 +42,8 @@ namespace Rhetos.Configuration.Autofac.Modules
 #pragma warning restore CS0618
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<RhetosAppOptions>())
                 .As<RhetosAppOptions>().As<IAssetsOptions>().SingleInstance();
+            builder.Register(context => context.Resolve<IConfiguration>().GetOptions<DatabaseSettings>()).SingleInstance();
+
             builder.RegisterType<DomLoader>().As<IDomainObjectModel>().SingleInstance();
             builder.RegisterType<PersistenceTransaction>().As<IPersistenceTransaction>().InstancePerLifetimeScope();
             builder.RegisterType<EfMappingViewsFileStore>().SingleInstance().PreserveExistingDefaults();

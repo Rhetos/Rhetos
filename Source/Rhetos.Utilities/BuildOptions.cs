@@ -25,8 +25,6 @@ namespace Rhetos.Utilities
     [Options("Rhetos:Build")]
     public class BuildOptions
     {
-        public string DatabaseLanguage { get; set; } = "MsSql";
-        
         public InitialConceptsSort InitialConceptsSort { get; set; } = InitialConceptsSort.Key;
         
         public ExcessDotInKey DslSyntaxExcessDotInKey { get; set; } = ExcessDotInKey.Ignore;

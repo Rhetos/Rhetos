@@ -64,9 +64,8 @@ namespace Rhetos.Utilities
 
             _connectionString = configuration.GetValue<string>($"ConnectionStrings:{RhetosConnectionStringName}:ConnectionString");
 
-            var runtimeOptions = configuration.GetOptions<RhetosAppOptions>();
-            var buildOptions = configuration.GetOptions<BuildOptions>();
-            _databaseLanguage = runtimeOptions.DatabaseLanguage ?? buildOptions.DatabaseLanguage;
+            var databaseSettings = configuration.GetOptions<DatabaseSettings>();
+            _databaseLanguage = databaseSettings.DatabaseLanguage;
             _nationalLanguage = configuration.GetValue(OracleSqlUtility.OracleNationalLanguageKey, "");
             InitializeProviderContext();
         }

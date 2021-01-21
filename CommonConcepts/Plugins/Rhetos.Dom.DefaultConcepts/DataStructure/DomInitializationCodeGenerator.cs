@@ -68,6 +68,7 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.InsertCodeToFile(GetRepositoriesSnippet(), GeneratedSourceDirectories.Repositories.ToString());
             codeBuilder.InsertCodeToFile(GetPersistenceStorageMapperSnippet(), "PersistenceStorageMapper");
 
+            codeBuilder.InsertCode(GetInitialConfigurationSnippet(), InitialDomCodeGenerator.RhetosHostBuilderInitialConfigurationTag);
             codeBuilder.InsertCode("this.Configuration.UseDatabaseNullSemantics = _rhetosAppOptions.EntityFrameworkUseDatabaseNullSemantics;\r\n            ", EntityFrameworkContextInitializeTag);
         }
 
@@ -79,6 +80,19 @@ namespace Rhetos.Dom.DefaultConcepts
         public static string RestoreWarnings(CommonConceptsOptions commonConceptsOptions)
         {
             return commonConceptsOptions.CompilerWarningsInGeneratedCode ? "" : $"\r\n\r\n    #pragma warning restore // See configuration setting {ConfigurationProvider.GetKey((CommonConceptsOptions o) => o.CompilerWarningsInGeneratedCode)}.";
+        }
+
+        private string GetInitialConfigurationSnippet()
+        {
+            return $@"
+            _configureConfigurationActions.Add((c) => {{
+                c.AddOptions(new Rhetos.Dom.DefaultConcepts.CommonConceptsDatabaseSettings
+                {{
+                    UseLegacyMsSqlDateTime = {_databaseSettings.UseLegacyMsSqlDateTime.ToString().ToLowerInvariant()},
+                    DateTimePrecision = {_databaseSettings.DateTimePrecision},
+                }});
+            }});
+            ";
         }
 
         private string GetModelSnippet() =>
@@ -330,11 +344,6 @@ $@"namespace Common
             builder.RegisterType<PersistenceStorageObjectMappings>().As<IPersistenceStorageObjectMappings>().SingleInstance();
 
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<CommonConceptsRuntimeOptions>()).SingleInstance();
-            builder.RegisterInstance(new Rhetos.Dom.DefaultConcepts.CommonConceptsDatabaseSettings
-            {{
-                UseLegacyMsSqlDateTime = {_databaseSettings.UseLegacyMsSqlDateTime.ToString().ToLowerInvariant()},
-                DateTimePrecision = {_databaseSettings.DateTimePrecision},
-            }});
             builder.Register<CommonConceptsOptions>(context => throw new NotImplementedException($""{{nameof(CommonConceptsOptions)}} is a build-time configuration, not available at run-time.""));
             
             {ModuleCodeGenerator.CommonAutofacConfigurationMembersTag}
