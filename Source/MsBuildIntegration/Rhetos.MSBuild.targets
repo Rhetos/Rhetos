@@ -8,7 +8,7 @@
             <RhetosBuild Include="DataMigration\**\*" />
         </ItemGroup>
         <ItemGroup>
-            <UpToDateCheckInput Include="@(RhetosBuild)" />
+            <UpToDateCheckInput Include="@(RhetosBuild)" Set="RhetosBuild" />
         </ItemGroup>
     </Target>
 
@@ -31,7 +31,7 @@
         <ItemGroup>
             <RhetosInput Include="$(RhetosBuildItemsFile)" />
             <RhetosInput Include="$(BaseIntermediateOutputPath)project.assets.json" />
-            <RhetosInput Include="rhetos-build.settings.json" />
+            <RhetosInput Include="$(RhetosBuildSettingsFile)" />
         </ItemGroup>
     </Target>
 

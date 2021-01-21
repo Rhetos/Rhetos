@@ -7,10 +7,18 @@
         <RhetosBuildCompleteFile>$(BaseIntermediateOutputPath)Rhetos\Rhetos.BuildComplete</RhetosBuildCompleteFile>
         <RhetosDatabaseUpdated>$(BaseIntermediateOutputPath)Rhetos\Rhetos.DatabaseUpdated</RhetosDatabaseUpdated>
         <RhetosGeneratedAssetsFolder Condition=" '$(RhetosGeneratedAssetsFolder)'=='' ">$(TargetDir)RhetosAssets\</RhetosGeneratedAssetsFolder>
+        <RhetosBuildSettingsFile>rhetos-build.settings.json</RhetosBuildSettingsFile>
     </PropertyGroup>
     <ItemGroup>
         <!-- RhetosOutput should not include files that are sometimes unchanged on build (because of internal optimizations).
         This would result with MSBuild running RhetosBuild target every time, even if there is nothing to do. -->
         <RhetosOutput Include="$(RhetosBuildCompleteFile)" />
+    </ItemGroup>
+    <ItemGroup>
+        <!--UpToDateCheckInput items are used only by Visual Studio for the FastUpToDateCheck feature that detemines if MSBuild should be called.
+        The timestamps of the files under the same "Set" values are compared when calling FastUpToDateCheck, 
+        that means if the RhetosBuildCompleteFile is older than RhetosBuildSettingsFile the FastUpToDateCheck will determine that it needs to run MSBuild. -->
+        <UpToDateCheckInput Include="$(RhetosBuildSettingsFile)" Set="RhetosBuild"/>
+        <UpToDateCheckOutput Include="$(RhetosBuildCompleteFile)" Set="RhetosBuild"/>
     </ItemGroup>
 </Project>
