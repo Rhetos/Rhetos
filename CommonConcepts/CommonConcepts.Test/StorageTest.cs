@@ -378,7 +378,7 @@ namespace CommonConcepts.Test
                     };
                     TestUtility.ShouldFail<SqlException>(
                         () => context.PersistenceStorage.Insert(entity1),
-                        "String or binary data would be truncated in table", "TestStorage.AllProperties", "ShortStringProperty");
+                        "String or binary data would be truncated"); // SQL Server 2019 includes table and column name, but older version do not.
                 }
             }
         }
