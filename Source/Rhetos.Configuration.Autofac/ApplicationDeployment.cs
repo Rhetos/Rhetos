@@ -75,7 +75,7 @@ namespace Rhetos
         {
             var hostBuilder = _rhetosHostBuilderFactory()
                 .UseBuilderLogProvider(_logProvider)
-                .UseCustomContainerConfiguration((configuration, builder, configureActions) =>
+                .OverrideContainerConfiguration((configuration, builder, configureActions) =>
                 {
                     // Custom configuration from "configureActions" parameter is intentionally ignored.
                     // It is intended for application runtime and AppInitialization container.
