@@ -28,13 +28,14 @@
 15. Removed LegacyPathsOptions class, specific for build process with DeployPackages.
 16. Removed methods ICodeBuilder.AddReference and AddReferencesFromDependency.
     * Calls to this methods can be removed from custom code, since since Rhetos no longer compiles assemblies directly.
-17. Removed IAssemblySource. ICodeGenerator methods return generated source as a string.
+17. Removed IAssemblySource. ICodeGenerator.ExecutePlugins returns generated source as a string.
     * Custom code that called ExecutePlugins can use the string result directly, instead of IAssemblySource.GeneratedCode property.
-    * Custom code should not use IAssemblySource.RegisteredReferences, since Rhetos no longer compiles assemblies.
+    * Code that used IAssemblySource.RegisteredReferences can be safely removed, since Rhetos no longer compiles assemblies.
 18. Removed Plugins class, use ContainerBuilderPluginRegistration instead. Resolve it from ContainerBuilder with extension method builder.GetPluginRegistration().
-19. Removed support for source code compilation. Removed class AssemblyGenerator and interface IAssemblyGenerator.
+19. Removed support for source code compilation. Removed IAssemblyGenerator.
     Removed options Debug and AssemblyGeneratorErrorReportLimit from Build options.
-    * If you need to compile a generated source code a better approach would be to include the generated source code inside a C# project and leave the compilation to Visual Studio or MSBuild.
+    * Custom code that used IAssemblyGenerator.Generate to generate application's source and library should now use ISourceWriter.Add instead. This will simply add the generated source files into the project that will be compiled as a part of the Rhetos application.
+    * If you need to compile the generated source code to a separate library, include the generated source code inside a separate C# project and leave the compilation to Visual Studio or MSBuild.
 
 ## 4.3.0 (TO BE RELEASED)
 

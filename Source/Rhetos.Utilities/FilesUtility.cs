@@ -125,11 +125,18 @@ namespace Rhetos.Utilities
             }
         }
 
+        /// <summary>
+        /// Creates the target directory if required. Retries if copying fails.
+        /// If the destination file exists, copying will fail. See <see cref="SafeCopyFile(string, string, bool)"/> for the overwrite option.
+        /// </summary>
         public void SafeCopyFile(string sourceFile, string destinationFile)
         {
             SafeCopyFile(sourceFile, destinationFile, false);
         }
 
+        /// <summary>
+        /// Creates the target directory if required. Retries if copying fails.
+        /// </summary>
         public void SafeCopyFile(string sourceFile, string destinationFile, bool overwrite)
         {
             try

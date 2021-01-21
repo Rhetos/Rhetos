@@ -95,6 +95,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Dom.DefaultConcepts"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.DatabaseGenerator.DefaultConcepts", "CommonConcepts\Plugins\Rhetos.DatabaseGenerator.DefaultConcepts\Rhetos.DatabaseGenerator.DefaultConcepts.csproj", "{1E878DA9-9848-4F9B-8AF6-ED958E2EC7F1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Extensibility.TestReference", "Source\Rhetos.Extensibility.TestReference\Rhetos.Extensibility.TestReference.csproj", "{18F12C46-AC7B-4E86-9BBE-953EB4BA7BD2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -261,6 +263,10 @@ Global
 		{1E878DA9-9848-4F9B-8AF6-ED958E2EC7F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1E878DA9-9848-4F9B-8AF6-ED958E2EC7F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1E878DA9-9848-4F9B-8AF6-ED958E2EC7F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{18F12C46-AC7B-4E86-9BBE-953EB4BA7BD2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18F12C46-AC7B-4E86-9BBE-953EB4BA7BD2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18F12C46-AC7B-4E86-9BBE-953EB4BA7BD2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18F12C46-AC7B-4E86-9BBE-953EB4BA7BD2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -306,6 +312,7 @@ Global
 		{683A3344-852E-473A-A2FA-5B1F56F9FE1C} = {2D001517-CE8E-4902-8C0A-0EA13C134830}
 		{A3C49552-6DB1-46D0-A390-ADD212E7235C} = {2212BF93-7EC1-447E-BF78-8C845E257E88}
 		{1E878DA9-9848-4F9B-8AF6-ED958E2EC7F1} = {2212BF93-7EC1-447E-BF78-8C845E257E88}
+		{18F12C46-AC7B-4E86-9BBE-953EB4BA7BD2} = {0124322E-2731-48E8-910C-957E37181628}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4B8D1BEA-EAAA-484D-B00D-1D23226A5A90}
