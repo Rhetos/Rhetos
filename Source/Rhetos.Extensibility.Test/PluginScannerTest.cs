@@ -22,6 +22,7 @@ using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
 using System.IO;
+using System.Linq;
 
 namespace Rhetos.Extensibility.Test
 {
@@ -30,29 +31,52 @@ namespace Rhetos.Extensibility.Test
     {
         /// <summary>
         /// PluginsScanner uses <see cref="CsUtility.ReportTypeLoadException"/> to analyze and report type load exceptions,
-        /// a common issue when using incompatible plugin versions.
+        /// this feature helps detect and debug common issues with incompatible plugin versions or packages with incomplete dependencies.
         /// </summary>
         [TestMethod]
         public void AnalyzeAndReportTypeLoadException()
         {
-            var incompatibleAssemblies = new[] { GetIncompatibleAssemblyPath() };
-            //TODO: Check if this was the intended behavior from the start
-            var assemblyResolver = AssemblyResolver.GetResolveEventHandler(incompatibleAssemblies, new ConsoleLogProvider(), false);
-            AppDomain.CurrentDomain.AssemblyResolve += assemblyResolver;
-            var pluginsScanner = new PluginScanner(incompatibleAssemblies, new RhetosBuildEnvironment { CacheFolder = "." }, new ConsoleLogProvider(), new PluginScannerOptions());
+            // The "TestReference" project is used because it has dependencies to libraries that are not available in the current project.
+            string incompatibleAssemblyPath = FindIncompatibleAssemblyPath("Rhetos.Extensibility.TestReference");
+
+            // Copying the "TestReference" assembly to local folder, to avoid automatic detection of dependency libraries that exist in its original location.
+            // The goal is to try loading the test assembly without dependencies available.
+            CopyAssemblyToLocalFolder(ref incompatibleAssemblyPath);
+
+            // Searching for plugins in the "TestReference" assembly should fail because is references dependency that is not available.
+            var pluginsScanner = new PluginScanner(new[] { incompatibleAssemblyPath }, new RhetosBuildEnvironment { CacheFolder = "." }, new ConsoleLogProvider(), new PluginScannerOptions());
             TestUtility.ShouldFail<FrameworkException>(
-                () => pluginsScanner.FindPlugins(typeof(IGenerator)),
+                () => pluginsScanner.FindPlugins(typeof(ICloneable)),
                 "Please check if the assembly is missing or has a different version.",
-                "'Rhetos.RestGenerator.dll' throws FileNotFoundException: Could not load file or assembly 'Rhetos.Compiler.Interfaces, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null'. The system cannot find the file specified.");
-            AppDomain.CurrentDomain.AssemblyResolve -= assemblyResolver;
+                // The error shout report: (1) the assembly that causes the error, and (2) the missing assembly that is required for the first one to load.
+                "'Rhetos.Extensibility.TestReference.dll' throws FileNotFoundException: Could not load file or assembly 'Microsoft.Extensions.Primitives, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60'. The system cannot find the file specified.");
         }
 
-        private static string GetIncompatibleAssemblyPath()
+        private static string FindIncompatibleAssemblyPath(string testReferenceProject)
         {
-            string oldAssemblyPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), @".nuget\packages\rhetos.restgenerator\2.1.0\lib\net451\Rhetos.RestGenerator.dll");
-            if (!File.Exists(oldAssemblyPath))
-                Assert.Fail($"Invalid unit test setup: Cannot find the assembly Rhetos.RestGenerator at path '{oldAssemblyPath}'.");
-            return oldAssemblyPath;
+            string startFolder = Directory.GetCurrentDirectory();
+            var sourceFolder = new DirectoryInfo(startFolder);
+            while (true)
+            {
+                if (Directory.Exists(Path.Combine(sourceFolder.FullName, testReferenceProject)))
+                    break;
+                if (sourceFolder.Parent == null)
+                    throw new ArgumentException($"Invalid unit test setup: Cannot find test reference project '{testReferenceProject}'.");
+                sourceFolder = sourceFolder.Parent;
+            }
+
+            string testReferenceAssemblyPath = Path.Combine(sourceFolder.FullName, testReferenceProject, $@"bin\Debug\net5.0\{testReferenceProject}.dll");
+            if (!File.Exists(testReferenceAssemblyPath))
+                Assert.Fail($"Invalid unit test setup: Cannot find the test reference assembly '{testReferenceAssemblyPath}'. Make sure the build has passed successfully.");
+            return testReferenceAssemblyPath;
+        }
+
+        private void CopyAssemblyToLocalFolder(ref string incompatibleAssemblyPath)
+        {
+            string localFolder = Path.GetDirectoryName(GetType().Assembly.Location);
+            string newAssemblyPath = Path.Combine(localFolder, Path.GetFileName(incompatibleAssemblyPath));
+            new FilesUtility(new ConsoleLogProvider()).SafeCopyFile(incompatibleAssemblyPath, newAssemblyPath, overwrite: true);
+            incompatibleAssemblyPath = newAssemblyPath;
         }
     }
 }
