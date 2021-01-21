@@ -547,8 +547,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ErrorHandling_RowPermissionsFilterReturnsDuplicateID()
         {
-            using (var scope = TestScope.Create(
-                TestScope.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(builder => builder.ConfigureIgnoreClaims()))
             {
                 var repository = scope.Resolve<Common.DomRepository>();
                 var readCommand = scope.Resolve<IPluginsContainer<ICommandImplementation>>().GetPlugins().OfType<ReadCommand>().Single();
@@ -839,8 +838,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveInvalidRecordWithPermission_Insert()
         {
-            using (var scope = TestScope.Create(
-                TestScope.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(builder => builder.ConfigureIgnoreClaims()))
             {
                 var processingEngine = scope.Resolve<IProcessingEngine>();
 
@@ -862,8 +860,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveInvalidRecordWithPermission_Update()
         {
-            using (var scope = TestScope.Create(
-                TestScope.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(builder => builder.ConfigureIgnoreClaims()))
             {
                 var processingEngine = scope.Resolve<IProcessingEngine>();
 
@@ -880,8 +877,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveInvalidRecordWithPermission_Delete()
         {
-            using (var scope = TestScope.Create(
-                TestScope.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(builder => builder.ConfigureIgnoreClaims()))
             {
                 var processingEngine = scope.Resolve<IProcessingEngine>();
 
@@ -898,8 +894,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveInvalidRecordWithoutPermission_Insert()
         {
-            using (var scope = TestScope.Create(
-                TestScope.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(builder => builder.ConfigureIgnoreClaims()))
             {
                 var processingEngine = scope.Resolve<IProcessingEngine>();
 
@@ -921,8 +916,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveInvalidRecordWithoutPermission_Update()
         {
-            using (var scope = TestScope.Create(
-                TestScope.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(builder => builder.ConfigureIgnoreClaims()))
             {
                 var processingEngine = scope.Resolve<IProcessingEngine>();
 
@@ -939,8 +933,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SaveInvalidRecordWithoutPermission_Delete()
         {
-            using (var scope = TestScope.Create(
-                TestScope.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(builder => builder.ConfigureIgnoreClaims()))
             {
                 var processingEngine = scope.Resolve<IProcessingEngine>();
 

@@ -219,8 +219,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ProcessingEngineUniqueConstraintError()
         {
-            using (var scope = TestScope.Create(
-                TestScope.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(builder => builder.ConfigureIgnoreClaims()))
             {
                 var processingEngine = scope.Resolve<IProcessingEngine>();
                 var saveDuplicates = new SaveEntityCommandInfo

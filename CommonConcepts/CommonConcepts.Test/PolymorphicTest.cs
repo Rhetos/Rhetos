@@ -143,8 +143,7 @@ namespace CommonConcepts.Test
         public void Simple_Browse()
         {
             foreach (bool useDatabaseNullSemantics in new[] { false, true })
-                using (var scope = TestScope.Create(
-                    TestScope.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
+                using (var scope = TestScope.Create(builder => builder.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
                 {
                     var repository = scope.Resolve<Common.DomRepository>();
 
@@ -369,8 +368,7 @@ namespace CommonConcepts.Test
         public void Disjunctive()
         {
             foreach (bool useDatabaseNullSemantics in new[] { false, true })
-                using (var scope = TestScope.Create(
-                    TestScope.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
+                using (var scope = TestScope.Create(builder => builder.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
                 {
                     var repository = scope.Resolve<Common.DomRepository>();
 
@@ -403,8 +401,7 @@ namespace CommonConcepts.Test
         public void MultipleImplementations()
         {
             foreach (bool useDatabaseNullSemantics in new[] { false, true })
-                using (var scope = TestScope.Create(
-                    TestScope.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
+                using (var scope = TestScope.Create(builder => builder.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
                 {
                     var repository = scope.Resolve<Common.DomRepository>();
 

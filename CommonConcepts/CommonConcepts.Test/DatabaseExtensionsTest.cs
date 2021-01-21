@@ -47,8 +47,7 @@ namespace CommonConcepts.Test
             // Test SQL:
 
             foreach (bool useDatabaseNullSemantics in new[] { false, true })
-                using (var scope = TestScope.Create(
-                    TestScope.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
+                using (var scope = TestScope.Create(builder => builder.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
                 {
 
                     scope.Resolve<ISqlExecuter>().ExecuteSql(

@@ -291,9 +291,9 @@ namespace CommonConcepts.Test
         public string TestPermissionsCachingOnChange(Action<Common.ExecutionContext> change, bool[] expectedPermissionsAfterChange, Action<Common.ExecutionContext> init = null)
         {
             var log = new List<string>();
-            using (var scope = TestScope.Create(
-                TestScope.ConfigureLogMonitor(log) +
-                TestScope.ConfigureFakeUser(User1Name)))
+            using (var scope = TestScope.Create(builder => builder
+                .ConfigureLogMonitor(log)
+                .ConfigureFakeUser(User1Name)))
             {   
                 var context = scope.Resolve<Common.ExecutionContext>();
                 var authorizationManager = scope.Resolve<IAuthorizationManager>();

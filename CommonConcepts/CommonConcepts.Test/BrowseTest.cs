@@ -258,8 +258,7 @@ namespace CommonConcepts.Test.OldConcepts
         public void UniqueReferenceCascadeDelete()
         {
             foreach (bool useDatabaseNullSemantics in new[] { false, true })
-                using (var scope = TestScope.Create(
-                    TestScope.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
+                using (var scope = TestScope.Create(builder => builder.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
                 {
                     var repository = scope.Resolve<Common.DomRepository>();
 
