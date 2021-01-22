@@ -53,7 +53,7 @@ namespace Rhetos
             return this;
         }
 
-        public IRhetosHostBuilder UseCustomContainerConfiguration(Action<IConfiguration, ContainerBuilder, List<Action<ContainerBuilder>>> containerConfigurationAction)
+        public IRhetosHostBuilder OverrideContainerConfiguration(Action<IConfiguration, ContainerBuilder, List<Action<ContainerBuilder>>> containerConfigurationAction)
         {
             _customContainerConfigurationAction = containerConfigurationAction;
             return this;

@@ -29,6 +29,6 @@ namespace Rhetos.Utilities
         /// <summary>
         /// Returns <see cref="ConsoleLogProvider"/> by default.
         /// </summary>
-        public static ILogProvider DefaultLogProvider = new ConsoleLogProvider();
+        public static readonly ILogProvider DefaultLogProvider = new ConsoleLogProvider();
     }
 }

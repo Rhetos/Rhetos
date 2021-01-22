@@ -71,8 +71,7 @@ namespace CommonConcepts.Test
 
             // Simulate client request: Reading all documents (access denied)
 
-            using (var scope = TestScope.Create(
-                TestScope.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(builder => builder.ConfigureIgnoreClaims()))
             {
                 var processingEngine = scope.Resolve<IProcessingEngine>();
                 var serverCommand = new ReadCommandInfo
@@ -88,8 +87,7 @@ namespace CommonConcepts.Test
 
             // Simulate client request: Reading the user's documents
 
-            using (var scope = TestScope.Create(
-                TestScope.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(builder => builder.ConfigureIgnoreClaims()))
             {
                 var processingEngine = scope.Resolve<IProcessingEngine>();
                 var serverCommand = new ReadCommandInfo
@@ -162,8 +160,7 @@ namespace CommonConcepts.Test
 
             // Simulate client request: Reading all documents (access denied)
 
-            using (var scope = TestScope.Create(
-                TestScope.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(builder => builder.ConfigureIgnoreClaims()))
             {
                 var processingEngine = scope.Resolve<IProcessingEngine>();
                 var serverCommand = new ReadCommandInfo
@@ -179,8 +176,7 @@ namespace CommonConcepts.Test
 
             // Simulate client request: Reading the user's documents
 
-            using (var scope = TestScope.Create(
-                TestScope.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(builder => builder.ConfigureIgnoreClaims()))
             {
                 var processingEngine = scope.Resolve<IProcessingEngine>();
                 var serverCommand = new ReadCommandInfo
@@ -197,8 +193,7 @@ namespace CommonConcepts.Test
 
             // Simulate client request: Edit doc1 (ok)
 
-            using (var scope = TestScope.Create(
-                TestScope.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(builder => builder.ConfigureIgnoreClaims()))
             {
                 var repository = scope.Resolve<Common.DomRepository>();
                 var doc1 = repository.DemoRowPermissions2.Document.Query().Where(d => d.Title == "doc1").Single();
@@ -221,8 +216,7 @@ namespace CommonConcepts.Test
 
             // Simulate client request: Edit doc4 (access denied)
 
-            using (var scope = TestScope.Create(
-                TestScope.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(builder => builder.ConfigureIgnoreClaims()))
             {
                 var repository = scope.Resolve<Common.DomRepository>();
                 var doc4 = repository.DemoRowPermissions2.Document.Query().Where(d => d.Title == "doc4").Single();

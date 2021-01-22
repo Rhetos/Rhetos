@@ -580,7 +580,7 @@ namespace CommonConcepts.Test
             using (var scope = TestScope.Create())
             {
                 DeleteOldData(scope);
-                TestScope.CheckForParallelism(scope.Resolve<ISqlExecuter>(), threadCount);
+                TestUtilities.CheckForParallelism(scope.Resolve<ISqlExecuter>(), threadCount);
                 scope.CommitChanges();
             }
 

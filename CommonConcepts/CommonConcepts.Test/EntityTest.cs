@@ -353,8 +353,7 @@ namespace CommonConcepts.Test
         public void CascadeDelete()
         {
             var log = new List<string>();
-            using (var scope = TestScope.Create(
-                TestScope.ConfigureLogMonitor(log, EventType.Info)))
+            using (var scope = TestScope.Create(builder => builder.ConfigureLogMonitor(log, EventType.Info)))
             {
                 var repository = scope.Resolve<Common.DomRepository>();
 
@@ -682,8 +681,7 @@ namespace CommonConcepts.Test
         public void DeleteUpdateInsert_ConflictUnique()
         {
             foreach (bool useDatabaseNullSemantics in new[] { false, true })
-                using (var scope = TestScope.Create(
-                    TestScope.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
+                using (var scope = TestScope.Create(builder => builder.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
                 {
                     scope.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestEntity.UniqueEntity");
                     var r = scope.Resolve<Common.DomRepository>().TestEntity.UniqueEntity;

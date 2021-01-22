@@ -39,8 +39,7 @@ namespace CommonConcepts.Test
         public void OnSaveUpdateAndValidate()
         {
             var log = new List<string>();
-            using (var scope = TestScope.Create(
-                TestScope.ConfigureLogMonitor(log, EventType.Info)))
+            using (var scope = TestScope.Create(builder => builder.ConfigureLogMonitor(log, EventType.Info)))
             {
                 scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestDataStructure.SaveTesterBase" });
 
@@ -110,8 +109,7 @@ namespace CommonConcepts.Test
         public void AutomaticallyDeleteExtensionWithBusinessLogic()
         {
             var log = new List<string>();
-            using (var scope = TestScope.Create(
-                TestScope.ConfigureLogMonitor(log)))
+            using (var scope = TestScope.Create(builder => builder.ConfigureLogMonitor(log)))
             {
                 var repository = scope.Resolve<Common.DomRepository>();
 

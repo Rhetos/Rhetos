@@ -69,9 +69,9 @@ namespace CommonConcepts.Test
             var sqlExecuterLog = new SqlExecuterLog();
             sqlLog = sqlExecuterLog;
 
-            using (var scope = TestScope.Create(
-                TestScope.ConfigureLogMonitor(systemLog) +
-                TestScope.ConfigureSqlExecuterMonitor(sqlExecuterLog)))
+            using (var scope = TestScope.Create(builder => builder
+                .ConfigureLogMonitor(systemLog)
+                .ConfigureSqlExecuterMonitor(sqlExecuterLog)))
             {
                 var sqlExecuter = scope.Resolve<ISqlExecuter>();
                 sqlExecuter.ExecuteSql("DELETE FROM Rhetos.DataMigrationScript");

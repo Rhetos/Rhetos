@@ -57,7 +57,7 @@ namespace Rhetos
         /// (<see cref="ContainerBuilderExtensions.AddRhetosRuntime(ContainerBuilder)"/>
         /// and <see cref="ContainerBuilderExtensions.AddPluginModules(ContainerBuilder)"/>).
         /// </summary>
-        IRhetosHostBuilder UseCustomContainerConfiguration(Action<IConfiguration, ContainerBuilder, List<Action<ContainerBuilder>>> containerConfigurationAction);
+        IRhetosHostBuilder OverrideContainerConfiguration(Action<IConfiguration, ContainerBuilder, List<Action<ContainerBuilder>>> containerConfigurationAction);
 
         /// <summary>
         /// This method is intended for external applications that reference the generated Rhetos application

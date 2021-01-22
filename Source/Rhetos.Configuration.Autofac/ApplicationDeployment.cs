@@ -75,16 +75,17 @@ namespace Rhetos
         {
             var hostBuilder = _rhetosHostBuilderFactory()
                 .UseBuilderLogProvider(_logProvider)
-                .UseCustomContainerConfiguration((configuration, builder, configureActions) =>
+                .OverrideContainerConfiguration((configuration, builder, configureActions) =>
                 {
+                    // Custom configuration from "configureActions" parameter is intentionally ignored.
+                    // It is intended for application runtime and AppInitialization container.
+                    // DbUpdate container can be customized by standard plugin classes with Export attribute
+                    // or in a Autofac.Module plugin implementation if more control is needed
+                    // (also with Export attribute on the Module).
                     builder.RegisterModule(new CoreModule());
-                    builder.AddPluginModules();
-
-                    CsUtility.InvokeAll(builder, configureActions);
-
                     builder.RegisterModule(new DbUpdateModule());
-                    builder.RegisterType<NullUserInfo>()
-                        .As<IUserInfo>(); // Override runtime IUserInfo plugins. This container should not execute the application's business features.
+                    builder.AddPluginModules();
+                    builder.RegisterType<NullUserInfo>().As<IUserInfo>(); // Override any runtime IUserInfo plugins. This container should not execute the application's business features, so IUserInfo is not expected to be used.
                 });
 
             return hostBuilder;

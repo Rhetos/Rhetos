@@ -125,8 +125,7 @@ namespace CommonConcepts.Test
             var itemsIds = items.Select(item => item.ID);
 
             var log = new List<string>();
-            using (var scope = TestScope.Create(
-                TestScope.ConfigureLogMonitor(log)))
+            using (var scope = TestScope.Create(builder => builder.ConfigureLogMonitor(log)))
             {
                 var repository = scope.Resolve<Common.DomRepository>();
                 var sqlExecuter = scope.Resolve<ISqlExecuter>();

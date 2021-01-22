@@ -18,15 +18,13 @@
 */
 
 using CommonConcepts.Test.Helpers;
-using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos.Dom.DefaultConcepts;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
-using Rhetos.Configuration.Autofac;
-using Rhetos.Dom.DefaultConcepts;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace CommonConcepts.Test
@@ -279,8 +277,7 @@ namespace CommonConcepts.Test
         public void ChangesOnReferenced()
         {
             var log = new List<string>();
-            using (var scope = TestScope.Create(
-                TestScope.ConfigureLogMonitor(log)))
+            using (var scope = TestScope.Create(builder => builder.ConfigureLogMonitor(log)))
             {
                 var repository = scope.Resolve<Common.DomRepository>();
                 var test = repository.TestChangesOnReferenced;
@@ -353,8 +350,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void KeepSyncRepositoryMembers()
         {
-            using (var scope = TestScope.Create(
-                TestScope.ConfigureFakeUser("bb")))
+            using (var scope = TestScope.Create(builder => builder.ConfigureFakeUser("bb")))
             {
                 scope.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestComputedFrom.KeepSyncRepositoryMembers");
                 var repository = scope.Resolve<Common.DomRepository>();

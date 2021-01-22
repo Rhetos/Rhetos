@@ -39,9 +39,9 @@ namespace CommonConcepts.Test
         public void LogCommandDescription()
         {
             var log = new List<string>();
-            using (var scope = TestScope.Create(
-                TestScope.ConfigureLogMonitor(log) +
-                TestScope.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(builder => builder
+                .ConfigureLogMonitor(log)
+                .ConfigureIgnoreClaims()))
             {
                 var processingEngine = scope.Resolve<IProcessingEngine>();
                 var readPrincipals = new ReadCommandInfo
@@ -76,9 +76,9 @@ namespace CommonConcepts.Test
         public void LogCommandClientErrorDescription()
         {
             var log = new List<string>();
-            using (var scope = TestScope.Create(
-                TestScope.ConfigureLogMonitor(log) +
-                TestScope.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(builder => builder
+                .ConfigureLogMonitor(log)
+                .ConfigureIgnoreClaims()))
             {
                 var processingEngine = scope.Resolve<IProcessingEngine>();
                 var saveDuplicates = new SaveEntityCommandInfo
@@ -117,9 +117,9 @@ namespace CommonConcepts.Test
         public void LogCommandServerErrorDescription()
         {
             var log = new List<string>();
-            using (var scope = TestScope.Create(
-                TestScope.ConfigureLogMonitor(log) +
-                TestScope.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(builder => builder
+                .ConfigureLogMonitor(log)
+                .ConfigureIgnoreClaims()))
             {
                 var readCommandError = new ReadCommandInfo() { DataSource = "TestRowPermissions.ErrorData", ReadRecords = true, Filters = new[] { new FilterCriteria("duplicateSecondItem") } };
                 var processingEngine = scope.Resolve<IProcessingEngine>();
@@ -206,8 +206,7 @@ namespace CommonConcepts.Test
 
         private TResult Exec<TResult>(ICommandInfo command)
         {
-            using (var scope = TestScope.Create(
-                TestScope.ConfigureIgnoreClaims()))
+            using (var scope = TestScope.Create(builder => builder.ConfigureIgnoreClaims()))
             {
                 var processingEngine = scope.Resolve<IProcessingEngine>();
                 var result = processingEngine.Execute(new[] { command });

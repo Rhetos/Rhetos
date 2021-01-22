@@ -87,8 +87,7 @@ namespace CommonConcepts.Test
         public void AllowSave()
         {
             foreach (bool useDatabaseNullSemantics in new[] { false, true })
-                using (var scope = TestScope.Create(
-                    TestScope.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
+                using (var scope = TestScope.Create(builder => builder.ConfigureUseDatabaseNullSemantics(useDatabaseNullSemantics)))
                 {
                     var simple = scope.Resolve<Common.DomRepository>().TestAllowSave.Simple;
                     var s1 = new TestAllowSave.Simple { Code = 1, Name = "a", CodeAS = null, NameAS = null };
