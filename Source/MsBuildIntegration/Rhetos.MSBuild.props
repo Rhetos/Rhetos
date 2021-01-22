@@ -2,7 +2,7 @@
     <PropertyGroup>
         <RhetosCliExecutablePath>$(MSBuildThisFileDirectory)..\tools\rhetos.exe</RhetosCliExecutablePath>
         <RhetosBuild Condition=" '$(RhetosBuild)'=='' ">True</RhetosBuild>
-        <RhetosDeploy Condition=" '$(RhetosDeploy)'=='' and ('$(OutputType)' == 'Exe' or '$(OutputType)'=='WinExe') ">True</RhetosDeploy>
+        <RhetosDeploy Condition=" '$(RhetosDeploy)'=='' ">True</RhetosDeploy>
         <RhetosBuildItemsFile>$(BaseIntermediateOutputPath)Rhetos\Rhetos.BuildItems</RhetosBuildItemsFile>
         <RhetosBuildCompleteFile>$(BaseIntermediateOutputPath)Rhetos\Rhetos.BuildComplete</RhetosBuildCompleteFile>
         <RhetosDatabaseUpdated>$(BaseIntermediateOutputPath)Rhetos\Rhetos.DatabaseUpdated</RhetosDatabaseUpdated>
