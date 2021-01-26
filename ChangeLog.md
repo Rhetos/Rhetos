@@ -37,6 +37,10 @@
     * Custom code that used IAssemblyGenerator.Generate to generate application's source and library should now use ISourceWriter.Add instead. This will simply add the generated source files into the project that will be compiled as a part of the Rhetos application.
     * If you need to compile the generated source code to a separate library, include the generated source code inside a separate C# project and leave the compilation to Visual Studio or MSBuild.
 20. The property DatabaseLanguage is now located in the class DatabaseSettings instead of BuildOptions during build time and RhetosAppOptions during runtime.
+21. Removed Paths class.
+    * Code that generates or reads assets files should use IAssetsOptions.AssetsFolder instead.
+    * Code that uses Paths class for Rhetos components initialization (for example SearchForAssembly) should be refactored to use RhetosHost class instead.
+    * TODO: Currently, only part of the class is removed.
 
 ## 4.3.0 (TO BE RELEASED)
 
