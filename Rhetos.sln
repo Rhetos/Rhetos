@@ -95,7 +95,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Dom.DefaultConcepts"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.DatabaseGenerator.DefaultConcepts", "CommonConcepts\Plugins\Rhetos.DatabaseGenerator.DefaultConcepts\Rhetos.DatabaseGenerator.DefaultConcepts.csproj", "{1E878DA9-9848-4F9B-8AF6-ED958E2EC7F1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Extensibility.TestReference", "Source\Rhetos.Extensibility.TestReference\Rhetos.Extensibility.TestReference.csproj", "{18F12C46-AC7B-4E86-9BBE-953EB4BA7BD2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Extensibility.TestReference", "Source\Rhetos.Extensibility.TestReference\Rhetos.Extensibility.TestReference.csproj", "{18F12C46-AC7B-4E86-9BBE-953EB4BA7BD2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
