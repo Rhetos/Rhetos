@@ -23,6 +23,9 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Configuration.Autofac.Modules
 {
+    /// <summary>
+    /// Common components for all contexts (rhetos build, dbupdate, application runtime).
+    /// </summary>
     public class CoreModule : Module
     {
         protected override void Load(ContainerBuilder builder)
@@ -32,6 +35,7 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<LoggingOptions>()).SingleInstance().PreserveExistingDefaults();
             builder.RegisterType<XmlUtility>().SingleInstance();
             builder.RegisterType<FilesUtility>().SingleInstance();
+            builder.Register(context => context.Resolve<IConfiguration>().GetOptions<DatabaseSettings>()).SingleInstance();
             builder.RegisterType(DatabaseTypes.GetSqlUtilityType(SqlUtility.DatabaseLanguage)).As<ISqlUtility>().InstancePerLifetimeScope();
 
             base.Load(builder);

@@ -41,9 +41,10 @@ namespace Rhetos
     public class ProcessContainer : IDisposable
     {
         private readonly Lazy<IRhetosHostBuilder> _rhetosHostBuilder;
-        private readonly Lazy<IContainer> _rhetosIocContainer;
+        private readonly Lazy<RhetosHost> _rhetosIocContainer;
 
-        public IConfiguration Configuration => _rhetosIocContainer.Value.Resolve<IConfiguration>();
+        public IConfiguration Configuration => throw new NotSupportedException($"Resolve IConfiguration from the transaction scope," +
+            $" see {nameof(ProcessContainer)}.{nameof(CreateTransactionScopeContainer)} method.");
 
         /// <param name="rhetosAppAssemblyPath">
         /// Path to assembly where the CreateRhetosHostBuilder method is located.
@@ -64,10 +65,10 @@ namespace Rhetos
             logProvider = logProvider ?? LoggingDefaults.DefaultLogProvider;
 
             _rhetosHostBuilder = new Lazy<IRhetosHostBuilder>(() => RhetosHost.FindBuilder(rhetosAppAssemblyPath), LazyThreadSafetyMode.ExecutionAndPublication);
-            _rhetosIocContainer = new Lazy<IContainer>(() => BuildProcessContainer(logProvider, addCustomConfiguration, registerCustomComponents), LazyThreadSafetyMode.ExecutionAndPublication);
+            _rhetosIocContainer = new Lazy<RhetosHost>(() => BuildProcessContainer(logProvider, addCustomConfiguration, registerCustomComponents), LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
-        private IContainer BuildProcessContainer(ILogProvider logProvider, Action<IConfigurationBuilder> addCustomConfiguration,
+        private RhetosHost BuildProcessContainer(ILogProvider logProvider, Action<IConfigurationBuilder> addCustomConfiguration,
             Action<ContainerBuilder> registerCustomComponents)
         {
             // The values for rhetosRuntime and configuration are resolved before the call to Stopwatch.StartNew
@@ -91,7 +92,7 @@ namespace Rhetos
                 .Build();
 
             logProvider.GetLogger("Performance." + GetType().Name).Write(sw, $"Built IoC container");
-            return rhetosHost.Container;
+            return rhetosHost;
         }
 
         /// <summary>
@@ -108,7 +109,7 @@ namespace Rhetos
         /// </param>
         public TransactionScopeContainer CreateTransactionScopeContainer(Action<ContainerBuilder> registerCustomComponents = null)
         {
-            return new TransactionScopeContainer(_rhetosIocContainer.Value, registerCustomComponents);
+            return _rhetosIocContainer.Value.CreateScope(registerCustomComponents);
         }
 
         #region Static helper for singleton ProcessContainer. Useful optimization for LINQPad scripts that reuse the external static instance after recompiling the script.

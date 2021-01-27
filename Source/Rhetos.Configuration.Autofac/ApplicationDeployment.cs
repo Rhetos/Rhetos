@@ -20,8 +20,8 @@
 using Autofac;
 using Rhetos.Configuration.Autofac.Modules;
 using Rhetos.Deployment;
-using Rhetos.Extensibility;
 using Rhetos.Logging;
+using Rhetos.Persistence;
 using Rhetos.Security;
 using Rhetos.Utilities;
 using System;
@@ -29,7 +29,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Rhetos.Persistence;
 
 namespace Rhetos
 {
@@ -59,36 +58,37 @@ namespace Rhetos
             _logger.Info("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
 
-            var rhetosHostBuilder = CreateDbUpdateHostBuilder();
+            var rhetosHostBuilder = _rhetosHostBuilderFactory()
+                .UseBuilderLogProvider(_logProvider)
+                .OverrideContainerConfiguration(SetDbUpdateComponents);
 
             using (var rhetosHost = rhetosHostBuilder.Build())
+            using (var scope = rhetosHost.CreateScope())
             {
-                var performanceLogger = rhetosHost.Container.Resolve<ILogProvider>().GetLogger("Performance." + GetType().Name);
+                var performanceLogger = scope.Resolve<ILogProvider>().GetLogger("Performance." + GetType().Name);
                 performanceLogger.Write(stopwatch, "Modules and plugins registered.");
-                ContainerBuilderPluginRegistration.LogRegistrationStatistics("Generating application", rhetosHost.Container, _logProvider);
-
-                rhetosHost.Container.Resolve<DatabaseDeployment>().UpdateDatabase();
+                scope.LogRegistrationStatistics("UpdateDatabase component registrations", _logProvider);
+                scope.Resolve<DatabaseDeployment>().UpdateDatabase();
             }
         }
 
-        private IRhetosHostBuilder CreateDbUpdateHostBuilder()
+        private void SetDbUpdateComponents(IConfiguration configuration, ContainerBuilder builder, List<Action<ContainerBuilder>> configureActions)
         {
-            var hostBuilder = _rhetosHostBuilderFactory()
-                .UseBuilderLogProvider(_logProvider)
-                .OverrideContainerConfiguration((configuration, builder, configureActions) =>
-                {
-                    // Custom configuration from "configureActions" parameter is intentionally ignored.
-                    // It is intended for application runtime and AppInitialization container.
-                    // DbUpdate container can be customized by standard plugin classes with Export attribute
-                    // or in a Autofac.Module plugin implementation if more control is needed
-                    // (also with Export attribute on the Module).
-                    builder.RegisterModule(new CoreModule());
-                    builder.RegisterModule(new DbUpdateModule());
-                    builder.AddPluginModules();
-                    builder.RegisterType<NullUserInfo>().As<IUserInfo>(); // Override any runtime IUserInfo plugins. This container should not execute the application's business features, so IUserInfo is not expected to be used.
-                });
+            // DbUpdate overrides default runtime components with OverrideContainerConfiguration,
+            // because it does not require full runtime context.
+            // Instead it registers only basic CoreModule and part of the runtime from DbUpdateModule.
+            // AddPluginModules allow custom override of DbUpdate components if needed.
 
-            return hostBuilder;
+            // Custom configuration from "configureActions" parameter is intentionally ignored.
+            // It is intended for application runtime and AppInitialization container.
+            // DbUpdate container can be customized by standard plugin classes with Export attribute
+            // or in a Autofac.Module plugin implementation if more control is needed
+            // (also with Export attribute on the Module).
+
+            builder.RegisterModule(new CoreModule());
+            builder.RegisterModule(new DbUpdateModule());
+            builder.AddPluginModules();
+            builder.RegisterType<NullUserInfo>().As<IUserInfo>(); // Override any runtime IUserInfo plugins. This container should not execute the application's business features, so IUserInfo is not expected to be used.
         }
 
         //=====================================================================
@@ -99,24 +99,29 @@ namespace Rhetos
 
             _logger.Info("Loading generated plugins.");
             var stopwatch = Stopwatch.StartNew();
-            var hostBuilder = _rhetosHostBuilderFactory()
+
+            var rhetosHostBuilder = _rhetosHostBuilderFactory()
                 .UseBuilderLogProvider(_logProvider)
                 .ConfigureContainer(AddAppInitializationComponents);
 
-            using (var rhetosHost = hostBuilder.Build())
+            using (var rhetosHost = rhetosHostBuilder.Build())
             {
-                // EfMappingViewsInitializer is manually executed before other initializers because of performance issues.
-                // It is needed for most of the initializer to run, but lazy initialization of EfMappingViews on first DbContext usage
-                // is not a good option because of significant hash check duration (it would not be applicable in run-time).
-                _logger.Info("Initializing EfMappingViews.");
-                var efMappingViewsInitializer = rhetosHost.Container.Resolve<EfMappingViewsInitializer>();
-                efMappingViewsInitializer.Initialize();
+                Type[] initializers;
+                using (var scope = rhetosHost.CreateScope())
+                {
+                    // EfMappingViewsInitializer is manually executed before other initializers because of performance issues.
+                    // It is needed for most of the initializer to run, but lazy initialization of EfMappingViews on first DbContext usage
+                    // is not a good option because of significant hash check duration (it would not be applicable in run-time).
+                    _logger.Info("Initializing EfMappingViews.");
+                    var efMappingViewsInitializer = scope.Resolve<EfMappingViewsInitializer>();
+                    efMappingViewsInitializer.Initialize();
 
-                var performanceLogger = rhetosHost.Container.Resolve<ILogProvider>().GetLogger("Performance." + GetType().Name);
-                var initializers = ApplicationInitialization.GetSortedInitializers(rhetosHost.Container);
+                    var performanceLogger = scope.Resolve<ILogProvider>().GetLogger("Performance." + GetType().Name);
+                    initializers = ApplicationInitialization.GetSortedInitializers(scope);
 
-                performanceLogger.Write(stopwatch, "New modules and plugins registered.");
-                ContainerBuilderPluginRegistration.LogRegistrationStatistics("Initializing application", rhetosHost.Container, _logProvider);
+                    performanceLogger.Write(stopwatch, "New modules and plugins registered.");
+                    scope.LogRegistrationStatistics("InitializeApplication component registrations", _logProvider);
+                }
 
                 if (!initializers.Any())
                 {
@@ -124,8 +129,8 @@ namespace Rhetos
                 }
                 else
                 {
-                    foreach (var initializer in initializers)
-                        ApplicationInitialization.ExecuteInitializer(rhetosHost.Container, initializer);
+                    foreach (Type initializerType in initializers)
+                        ApplicationInitialization.ExecuteInitializer(rhetosHost, initializerType, _logProvider);
                 }
             }
         }

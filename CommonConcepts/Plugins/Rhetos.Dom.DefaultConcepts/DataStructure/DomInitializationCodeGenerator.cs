@@ -85,8 +85,8 @@ namespace Rhetos.Dom.DefaultConcepts
         private string GetInitialConfigurationSnippet()
         {
             return $@"
-            _configureConfigurationActions.Add((c) => {{
-                c.AddOptions(new Rhetos.Dom.DefaultConcepts.CommonConceptsDatabaseSettings
+            ConfigureConfiguration(builder => {{
+                builder.AddOptions(new Rhetos.Dom.DefaultConcepts.CommonConceptsDatabaseSettings
                 {{
                     UseLegacyMsSqlDateTime = {_databaseSettings.UseLegacyMsSqlDateTime.ToString().ToLowerInvariant()},
                     DateTimePrecision = {_databaseSettings.DateTimePrecision},

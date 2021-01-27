@@ -142,11 +142,14 @@ namespace Rhetos
                 var builder = RhetosHost.FindBuilder(startupAssembly);
                 builder.ConfigureConfiguration(configurationBuilder =>
                 {
+                    // Default settings for dbupdate command:
                     configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((DatabaseOptions o) => o.SqlCommandTimeout), 0);
                     configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((ConfigurationProviderOptions o) => o.LegacyKeysWarning), true);
                     configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((LoggingOptions o) => o.DelayedLogTimout), 60.0);
+                    // Standard configuration files can override the default settings:
                     configurationBuilder.AddConfigurationManagerConfiguration();
                     configurationBuilder.AddJsonFile(DbUpdateOptions.ConfigurationFileName, optional: true);
+                    // CLI switches can override the settings from configuration files:
                     if (shortTransactions)
                         configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((DbUpdateOptions o) => o.ShortTransactions), shortTransactions);
                     if (skipRecompute)

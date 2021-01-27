@@ -18,6 +18,8 @@
 */
 
 using Autofac;
+using Rhetos.Extensibility;
+using Rhetos.Logging;
 using Rhetos.Persistence;
 using System;
 
@@ -86,6 +88,11 @@ namespace Rhetos
             }
 
             disposed = true;
+        }
+
+        internal void LogRegistrationStatistics(string title, ILogProvider logProvider)
+        {
+            ContainerBuilderPluginRegistration.LogRegistrationStatistics(title, _lifetimeScope.Value, logProvider);
         }
     }
 }

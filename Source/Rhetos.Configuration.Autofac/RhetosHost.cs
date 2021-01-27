@@ -27,7 +27,7 @@ using Autofac;
 namespace Rhetos
 {
     /// <summary>
-    /// <see cref="RhetosHost"/> is a helper class for accessing the Rhetos application's components.
+    /// <see cref="RhetosHost"/> is a helper class for accessing the Rhetos application's components (DI container).
     /// This class is thread-safe: a single instance can be reused between threads to reduce the initialization time
     /// (Entity Framework startup and plugin discovery, e.g.).
     /// For each thread or unit of work, call <see cref="CreateScope(Action{ContainerBuilder})"/> to create
@@ -48,7 +48,7 @@ namespace Rhetos
         /// Instead create a scope (unit of work) with <see cref="CreateScope(Action{ContainerBuilder})"/>,
         /// and resolve components from it.
         /// </remarks>
-        public IContainer Container { get; }
+        private IContainer Container { get; }
 
         private bool disposed;
 

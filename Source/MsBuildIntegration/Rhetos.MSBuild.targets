@@ -58,6 +58,7 @@
             <RhetosAssets Include="obj\Rhetos\RhetosAssets\**" />
             <None Include="@(RhetosAssets)" CopyToOutputDirectory="PreserveNewest" Link="RhetosAssets\%(RecursiveDir)%(Filename)%(Extension)"/>
 
+            <!-- The generated source is kept with binaries because in some cases we cannot guarantee that the newly generated code would be identical to the one in production. Some internal caching build optimizations may result with different ordering of the generated features. -->
             <RhetosDebugSources Include="obj\Rhetos\RhetosSource\**\*.cs" />
             <None Include="@(RhetosDebugSources)" CopyToOutputDirectory="PreserveNewest" Link="RhetosDebugSource\%(RecursiveDir)%(Filename)%(Extension)"/>
 
@@ -67,6 +68,8 @@
 
     </Target>
 
+    <!-- Checking for Rhetos.Utilities.dll is a simple heuristics to determine if the project output is executable and can be used for dbupdate command.
+    Libraries don't output dependencies by default. More complex cases should be configured manually by $(RhetosDeploy) property. -->
     <Target Name="DeployRhetosApp" DependsOnTargets="BuildRhetosApp;CopyFilesToOutputDirectory" AfterTargets="Build" Condition="'$(RhetosDeploy)'=='True' And Exists('$(RhetosBuildCompleteFile)') And Exists('$(TargetDir)\Rhetos.Utilities.dll')"
         Inputs="$(RhetosBuildCompleteFile)" Outputs="$(RhetosDatabaseUpdated)">
         <Message Text="DeployRhetosApp" />

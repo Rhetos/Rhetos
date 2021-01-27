@@ -17,13 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Autofac;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Persistence;
 using Rhetos.Utilities;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace Rhetos.Deployment
@@ -35,10 +33,10 @@ namespace Rhetos.Deployment
     /// </summary>
     public static class ApplicationInitialization
     {
-        public static IEnumerable<Type> GetSortedInitializers(IContainer container)
+        public static Type[] GetSortedInitializers(TransactionScopeContainer scope)
         {
             // The plugins in the container are sorted by their dependencies defined in ExportMetadata attribute (static typed):
-            var initializers = GetInitializers(container);
+            var initializers = scope.Resolve<IPluginsContainer<IServerInitializer>>().GetPlugins();
 
             // Additional sorting by loosely-typed dependencies from the Dependencies property:
             var initNames = initializers.Select(init => init.GetType().FullName).ToList();
@@ -47,12 +45,7 @@ namespace Rhetos.Deployment
 
             var sortedInitializers = initializers.ToArray();
             Graph.SortByGivenOrder(sortedInitializers, initNames.ToArray(), init => init.GetType().FullName);
-            return sortedInitializers.Select(initializer => initializer.GetType()).ToList();
-        }
-
-        private static IEnumerable<IServerInitializer> GetInitializers(IContainer container)
-        {
-            return container.Resolve<IPluginsContainer<IServerInitializer>>().GetPlugins();
+            return sortedInitializers.Select(initializer => initializer.GetType()).ToArray();
         }
 
         /// <summary>
@@ -60,14 +53,14 @@ namespace Rhetos.Deployment
         /// This method does not conform to the standard IoC design pattern.
         /// It uses IoC container directly because it needs to handle a special scope control (separate database connections) and error handling.
         /// </summary>
-        public static void ExecuteInitializer(IContainer container, Type initializerType)
+        public static void ExecuteInitializer(RhetosHost container, Type initializerType, ILogProvider logProvider)
         {
-            var logger = container.Resolve<ILogProvider>().GetLogger(nameof(ApplicationInitialization));
+            var logger = logProvider.GetLogger(nameof(ApplicationInitialization));
             
             Exception originalException = null;
             try
             {
-                using (var initializerScope = container.BeginLifetimeScope())
+                using (var initializerScope = container.CreateScope())
                     try
                     {
                         logger.Info($"Initialization {initializerType.Name}.");

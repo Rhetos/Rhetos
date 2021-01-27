@@ -4,7 +4,14 @@
 
 ### Breaking changes
 
-1. Rhetos no longer supports .NET Framework.
+1. Migrated from .NET Framework to .NET 5. Rhetos no longer supports .NET Framework applications and plugins.
+   * Migrate the existing applications to .NET 5. Migrate the existing plugin libraries to .NET Standard 2.0 or .NET Standard 2.1.
+   * TODO: Link to article with common issues when migrating C# code from .NET Framework to .NET 5.
+   * Default string sort is different (for example `items.OrderBy(item => item.Name)` on in-memory objects). The new sort works cleaner; previously there was some complicated behavior with combination of '-' and numbers.
+   * Searching for end-of-line with `text.IndexOf("\n")` returns -1 if the string contains "\r\n". It works correctly if the text contains "\n" without "\r".
+     `string.IndexOf("\r\n")` returns position correctly, but it does not support UNIX file format.
+     `string.Replace` and `string.Contains` do not have this issue.
+     Solution: Convert `.IndexOf("\n")` to `s.IndexOf('\n')` or `.IndexOf("\n", StringComparison.Ordinal)`.
 2. Removed WcfWindowsUserInfo, IWindowsSecurity and WindowsSecurity from Rhetos framework. WindowsSecurity property on ExecutionContext is removed.
    * TODO: These classes might be implemented in a separate plugin package.
 3. Removed CleanupOldData executable
@@ -37,6 +44,10 @@
     * Custom code that used IAssemblyGenerator.Generate to generate application's source and library should now use ISourceWriter.Add instead. This will simply add the generated source files into the project that will be compiled as a part of the Rhetos application.
     * If you need to compile the generated source code to a separate library, include the generated source code inside a separate C# project and leave the compilation to Visual Studio or MSBuild.
 20. The property DatabaseLanguage is now located in the class DatabaseSettings instead of BuildOptions during build time and RhetosAppOptions during runtime.
+21. Removed Paths class.
+    * Code that generates or reads assets files should use IAssetsOptions.AssetsFolder instead.
+    * Code that uses Paths class for Rhetos components initialization (for example SearchForAssembly) should be refactored to use RhetosHost class instead.
+    * TODO: Currently, only part of the class is removed.
 
 ## 4.3.0 (TO BE RELEASED)
 

@@ -76,7 +76,7 @@ namespace Rhetos
             {
                 var performanceLogger = container.Resolve<ILogProvider>().GetLogger("Performance." + GetType().Name);
                 performanceLogger.Write(stopwatch, "Modules and plugins registered.");
-                ContainerBuilderPluginRegistration.LogRegistrationStatistics("Generating application", container, _logProvider);
+                ContainerBuilderPluginRegistration.LogRegistrationStatistics("Rhetos build component registrations", container, _logProvider);
                 
                 container.Resolve<ApplicationGenerator>().ExecuteGenerators();
             }

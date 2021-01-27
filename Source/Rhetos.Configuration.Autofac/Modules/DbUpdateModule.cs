@@ -32,7 +32,6 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<RhetosAppOptions>())
                 .As<RhetosAppOptions>().As<IAssetsOptions>().SingleInstance();
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<DbUpdateOptions>()).SingleInstance().PreserveExistingDefaults();
-            builder.Register(context => context.Resolve<IConfiguration>().GetOptions<DatabaseSettings>()).SingleInstance();
 
             builder.RegisterType<DatabaseDeployment>();
             builder.RegisterType<DatabaseCleaner>();

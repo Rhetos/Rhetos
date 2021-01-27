@@ -19,6 +19,11 @@
 
 namespace Rhetos.Utilities
 {
+    /// <summary>
+    /// This class is available at both build-time and run-time.
+    /// In build-time it is configurable by build settings.
+    /// In run-time it is hardcoded, returning settings from the build.
+    /// </summary>
     [Options("Rhetos:Build")]
     public class DatabaseSettings
     {
