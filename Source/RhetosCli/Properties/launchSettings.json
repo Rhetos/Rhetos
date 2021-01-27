@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "build CommonConcepts.Test": {
+      "commandName": "Project",
+      "commandLineArgs": "build \"..\\..\\..\\..\\..\\CommonConcepts\\CommonConcepts.Test\""
+    },
+    "dbupdate CommonConcepts.Test": {
+      "commandName": "Project",
+      "commandLineArgs": "dbupdate \"..\\..\\..\\..\\..\\CommonConcepts\\CommonConcepts.Test\\bin\\Debug\\net5.0\\CommonConcepts.Test.dll\""
+    }
+  }
+}
+
