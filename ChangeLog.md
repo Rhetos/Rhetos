@@ -5,7 +5,7 @@
 ### Breaking changes
 
 1. Migrated from .NET Framework to .NET 5. Rhetos no longer supports .NET Framework applications and plugins.
-   * Migrate the existing applications to .NET 5. Migrate the existing plugin libraries to .NET Standard 2.0 or .NET Standard 2.1.
+   * Migrate the existing applications to .NET 5. Migrate the existing plugin libraries to .NET Standard 2.1.
    * TODO: Link to article with common issues when migrating C# code from .NET Framework to .NET 5.
    * Default string sort is different (for example `items.OrderBy(item => item.Name)` on in-memory objects). The new sort works cleaner; previously there was some complicated behavior with combination of '-' and numbers.
    * Searching for end-of-line with `text.IndexOf("\n")` returns -1 if the string contains "\r\n". It works correctly if the text contains "\n" without "\r".
