@@ -4,7 +4,14 @@
 
 ### Breaking changes
 
-1. Rhetos no longer supports .NET Framework.
+1. Migrated from .NET Framework to .NET 5. Rhetos no longer supports .NET Framework applications and plugins.
+   * Migrate the existing applications to .NET 5. Migrate the existing plugin libraries to .NET Standard 2.0 or .NET Standard 2.1.
+   * TODO: Link to article with common issues when migrating C# code from .NET Framework to .NET 5.
+   * Default string sort is different (for example `items.OrderBy(item => item.Name)` on in-memory objects). The new sort works cleaner; previously there was some complicated behavior with combination of '-' and numbers.
+   * Searching for end-of-line with `text.IndexOf("\n")` returns -1 if the string contains "\r\n". It works correctly if the text contains "\n" without "\r".
+     `string.IndexOf("\r\n")` returns position correctly, but it does not support UNIX file format.
+     `string.Replace` and `string.Contains` do not have this issue.
+     Solution: Convert `.IndexOf("\n")` to `s.IndexOf('\n')` or `.IndexOf("\n", StringComparison.Ordinal)`.
 2. Removed WcfWindowsUserInfo, IWindowsSecurity and WindowsSecurity from Rhetos framework. WindowsSecurity property on ExecutionContext is removed.
    * TODO: These classes might be implemented in a separate plugin package.
 3. Removed CleanupOldData executable
