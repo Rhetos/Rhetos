@@ -45,7 +45,6 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<DatabaseSettings>()).SingleInstance();
 
             builder.RegisterType<DomLoader>().As<IDomainObjectModel>().SingleInstance();
-            builder.RegisterType<PersistenceTransaction>().As<IPersistenceTransaction>().InstancePerLifetimeScope();
             builder.RegisterType<EfMappingViewsFileStore>().SingleInstance().PreserveExistingDefaults();
             builder.RegisterType<EfMappingViewCacheFactory>().SingleInstance().PreserveExistingDefaults();
             builder.RegisterModule(new DatabaseRuntimeModule());

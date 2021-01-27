@@ -23,6 +23,9 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Configuration.Autofac.Modules
 {
+    /// <summary>
+    /// Common components for all contexts (rhetos build, dbupdate, application runtime).
+    /// </summary>
     public class CoreModule : Module
     {
         protected override void Load(ContainerBuilder builder)

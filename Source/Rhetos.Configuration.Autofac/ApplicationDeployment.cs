@@ -74,11 +74,17 @@ namespace Rhetos
 
         private void SetDbUpdateComponents(IConfiguration configuration, ContainerBuilder builder, List<Action<ContainerBuilder>> configureActions)
         {
+            // DbUpdate overrides default runtime components with OverrideContainerConfiguration,
+            // because it does not require full runtime context.
+            // Instead it registers only basic CoreModule and part of the runtime from DbUpdateModule.
+            // AddPluginModules allow custom override of DbUpdate components if needed.
+
             // Custom configuration from "configureActions" parameter is intentionally ignored.
             // It is intended for application runtime and AppInitialization container.
             // DbUpdate container can be customized by standard plugin classes with Export attribute
             // or in a Autofac.Module plugin implementation if more control is needed
             // (also with Export attribute on the Module).
+
             builder.RegisterModule(new CoreModule());
             builder.RegisterModule(new DbUpdateModule());
             builder.AddPluginModules();
