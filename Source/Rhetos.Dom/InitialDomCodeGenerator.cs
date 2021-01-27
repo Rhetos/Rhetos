@@ -74,10 +74,10 @@ namespace Rhetos
 
         private void InitializeConfiguration()
         {{
-            _configureConfigurationActions.Add((c) => {{
-                c.AddOptions(new Rhetos.Utilities.DatabaseSettings
+            ConfigureConfiguration(builder => {{
+                builder.AddOptions(new Rhetos.Utilities.DatabaseSettings
                 {{
-                    DatabaseLanguage = ""{_databaseSettings.DatabaseLanguage}"",
+                    DatabaseLanguage = {CsUtility.QuotedString(_databaseSettings.DatabaseLanguage)},
                 }});
             }});
             {RhetosHostBuilderInitialConfigurationTag}

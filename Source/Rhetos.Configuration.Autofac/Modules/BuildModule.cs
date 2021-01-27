@@ -37,7 +37,6 @@ namespace Rhetos.Configuration.Autofac.Modules
                 .As<RhetosBuildEnvironment>().As<IAssetsOptions>().SingleInstance();
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<RhetosTargetEnvironment>()).SingleInstance();
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<BuildOptions>()).SingleInstance().PreserveExistingDefaults();
-            builder.Register(context => context.Resolve<IConfiguration>().GetOptions<DatabaseSettings>()).SingleInstance();
 
             var pluginRegistration = builder.GetPluginRegistration();
             AddDatabaseGenerator(builder, pluginRegistration);
