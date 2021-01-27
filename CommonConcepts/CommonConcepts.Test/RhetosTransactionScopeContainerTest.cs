@@ -21,6 +21,7 @@ using CommonConcepts.Test.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Persistence;
 using Rhetos.Utilities;
 using System;
 using System.Linq;
@@ -139,6 +140,36 @@ namespace CommonConcepts.Test
                     Assert.AreEqual(initialCount + 1, context.Repository.TestEntity.BaseEntity.Query().Count());
                 }
             });
+        }
+
+        [TestMethod]
+        public void DiscardInvalidatesCommit()
+        {
+            var id1 = Guid.NewGuid();
+            var id2 = Guid.NewGuid();
+
+            using (var scope = TestScope.Create())
+            {
+                var context = scope.Resolve<Common.ExecutionContext>();
+                context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id1 });
+                scope.Resolve<IPersistenceTransaction>().DiscardChanges();
+                scope.CommitChanges();
+            }
+
+            using (var scope = TestScope.Create())
+            {
+                var context = scope.Resolve<Common.ExecutionContext>();
+                context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id2 });
+                scope.CommitChanges();
+                scope.Resolve<IPersistenceTransaction>().DiscardChanges();
+            }
+
+            using (var scope = TestScope.Create())
+            {
+                var context = scope.Resolve<Common.ExecutionContext>();
+                Assert.IsFalse(context.Repository.TestEntity.BaseEntity.Query(new[] { id1 }).Any(), "Discard before commit.");
+                Assert.IsFalse(context.Repository.TestEntity.BaseEntity.Query(new[] { id2 }).Any(), "Commit before discard.");
+            }
         }
     }
 }
