@@ -67,13 +67,13 @@ namespace Rhetos.Deployment
                         var initializers = initializerScope.Resolve<IPluginsContainer<IServerInitializer>>().GetPlugins();
                         IServerInitializer initializer = initializers.Single(i => i.GetType() == initializerType);
                         initializer.Initialize();
+                        initializerScope.CommitChanges();
                     }
                     catch (Exception ex)
                     {
                         // Some exceptions result with invalid SQL transaction state that results with another exception on disposal of this 'using' block.
                         // The original exception is logged here to make sure that it is not overridden.
                         originalException = ex;
-                        initializerScope.Resolve<IPersistenceTransaction>().DiscardChanges();
                         ExceptionsUtility.Rethrow(ex);
                     }
             }

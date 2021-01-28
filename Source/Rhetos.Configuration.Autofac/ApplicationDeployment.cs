@@ -69,6 +69,7 @@ namespace Rhetos
                 performanceLogger.Write(stopwatch, "Modules and plugins registered.");
                 scope.LogRegistrationStatistics("UpdateDatabase component registrations", _logProvider);
                 scope.Resolve<DatabaseDeployment>().UpdateDatabase();
+                scope.CommitChanges();
             }
         }
 
@@ -121,6 +122,7 @@ namespace Rhetos
 
                     performanceLogger.Write(stopwatch, "New modules and plugins registered.");
                     scope.LogRegistrationStatistics("InitializeApplication component registrations", _logProvider);
+                    scope.CommitChanges();
                 }
 
                 if (!initializers.Any())
