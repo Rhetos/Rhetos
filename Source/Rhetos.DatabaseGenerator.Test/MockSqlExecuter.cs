@@ -26,7 +26,7 @@ namespace Rhetos.DatabaseGenerator.Test
 {
     public class MockSqlExecuter : ISqlExecuter
     {
-        public List<Tuple<List<string>, bool>> ExecutedScriptsWithTransaction { get; private set; } = new List<Tuple<List<string>, bool>>();
+        public List<(List<string> Scripts, bool UseTransaction)> ExecutedScriptsWithTransaction { get; private set; } = new List<(List<string> Scripts, bool UseTransaction)>();
 
         public void ExecuteReader(string command, Action<System.Data.Common.DbDataReader> action)
         {
@@ -41,7 +41,7 @@ namespace Rhetos.DatabaseGenerator.Test
         public void ExecuteSql(IEnumerable<string> commands, bool useTransaction,
             Action<int> beforeExecute, Action<int> afterExecute)
         {
-            ExecutedScriptsWithTransaction.Add(Tuple.Create(commands.ToList(), useTransaction));
+            ExecutedScriptsWithTransaction.Add((commands.ToList(), useTransaction));
         }
     }
 }
