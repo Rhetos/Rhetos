@@ -1,14 +1,15 @@
 <Project>
     <UsingTask AssemblyFile="RhetosVSIntegration.dll" TaskName="RhetosVSIntegration.ResolveRhetosProjectAssets" />
 
-    <Target Name="ResolveRhetosBuildItems" BeforeTargets="ResolveRhetosProjectAssets">
+    <Target Name="ResolveRhetosBuildItems" BeforeTargets="ResolveRhetosProjectAssets;CollectUpToDateCheckInputDesignTime">
         <Message Text="ResolveRhetosBuildItems" />
         <ItemGroup>
             <RhetosBuild Include="DslScripts\**\*" />
             <RhetosBuild Include="DataMigration\**\*" />
+            <RhetosBuildSettings Include="$(RhetosBuildSettingsFile)" Condition="Exists('$(RhetosBuildSettingsFile)')" />
         </ItemGroup>
         <ItemGroup>
-            <UpToDateCheckInput Include="@(RhetosBuild)" Set="RhetosBuild" />
+            <UpToDateCheckInput Include="@(RhetosBuild);@(RhetosBuildSettings)" Set="RhetosBuild"/>
         </ItemGroup>
     </Target>
 
@@ -23,7 +24,7 @@
             IntermediateOutputFolder="$(BaseIntermediateOutputPath)Rhetos"
             TargetPath="$(TargetPath)"
             TargetAssetsFolder="$(TargetDir)RhetosAssets" />
-        <WriteLinesToFile Lines="@(RhetosBuild)" Overwrite="True" WriteOnlyWhenDifferent="True" File="$(RhetosBuildItemsFile)"/>
+        <WriteLinesToFile Lines="@(RhetosBuild);@(RhetosBuildSettings)" Overwrite="True" WriteOnlyWhenDifferent="True" File="$(RhetosBuildItemsFile)"/>
     </Target>
 
     <Target Name="ResolveBuildRhetosAppTargetInput">
@@ -31,7 +32,7 @@
         <ItemGroup>
             <RhetosInput Include="$(RhetosBuildItemsFile)" />
             <RhetosInput Include="$(BaseIntermediateOutputPath)project.assets.json" />
-            <RhetosInput Include="$(RhetosBuildSettingsFile)" />
+            <RhetosInput Include="@(RhetosBuildSettings)" />
         </ItemGroup>
     </Target>
 
