@@ -17,17 +17,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
-using System.Text;
-using System.Data.Common;
-using System.Data.SqlClient;
-using System.Globalization;
 using Rhetos.Logging;
 using Rhetos.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Data.Common;
+using System.Data.SqlClient;
 using System.Diagnostics;
+using System.Linq;
+using System.Text;
 
 namespace Rhetos.Persistence
 {
@@ -40,7 +38,8 @@ namespace Rhetos.Persistence
         private readonly IPersistenceTransaction _persistenceTransaction;
 
         /// <summary>
-        /// This constructor is typically used in deployment time, when persistence transaction does not exist.
+        /// This constructor is typically used in deployment time, when shared persistence transaction does not exist.
+        /// It results with each Execute command call creating and committing its own transaction.
         /// </summary>
         public MsSqlExecuter(ConnectionString connectionString, ILogProvider logProvider, IUserInfo userInfo)
             : this(connectionString, logProvider, userInfo, null)
@@ -48,8 +47,11 @@ namespace Rhetos.Persistence
         }
 
         /// <summary>
-        /// This constructor is typically used in run-time, when persistence transaction is active, in order to execute
-        /// the SQL queries in the same transaction.
+        /// This constructor is typically used in run-time, when shared persistence transaction is active,
+        /// in order to execute the SQL queries in the same transaction.
+        /// It results with each Execute command call participating in a shared transaction that will be committed
+        /// at the end of the lifetime scope (for example, at the end of the web request).
+        /// The exception here is ExecuteSql command called with useTransaction=false, which is not recommended at standard application runtime.
         /// </summary>
         public MsSqlExecuter(ConnectionString connectionString, ILogProvider logProvider, IUserInfo userInfo, IPersistenceTransaction persistenceTransaction)
         {
@@ -185,17 +187,16 @@ namespace Rhetos.Persistence
 
                     command = connection.CreateCommand();
                     command.CommandTimeout = SqlUtility.SqlCommandTimeout;
-                    if (createOwnConnection)
+                    if (useTransaction)
                     {
-                        if (useTransaction)
+                        if (createOwnConnection)
                         {
                             createdTransaction = connection.BeginTransaction();
                             command.Transaction = createdTransaction;
                         }
-                    }
-                    else
-                        if (useTransaction)
+                        else
                             command.Transaction = _persistenceTransaction.Transaction;
+                    }
 
                     if (createOwnConnection)
                         SetContextInfo(command.Connection, command.Transaction);

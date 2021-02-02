@@ -36,11 +36,11 @@ namespace Rhetos
         {
             using (var scope = TestScope.Create())
             {
-                var lifetimeScope = (Lazy<ILifetimeScope>)scope.GetType()
+                var lifetimeScope = (ILifetimeScope)scope.GetType()
                     .GetField("_lifetimeScope", BindingFlags.NonPublic | BindingFlags.Instance)
                     .GetValue(scope);
 
-                var registrations = lifetimeScope.Value.ComponentRegistry.Registrations
+                var registrations = lifetimeScope.ComponentRegistry.Registrations
                     .Select(registration => registration.ToString())
                     .OrderBy(text => text)
                     // Removing repository class registrations. This test is focused on system components, not business features in test DSL scripts.
