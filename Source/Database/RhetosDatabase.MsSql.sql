@@ -455,6 +455,19 @@ BEGIN
 		DROP CONSTRAINT DF_AppliedConcept_ConceptInfoKey;
 END
 
+
+/*
+DataMigrationFreshRows table is used for internal optimization of DataMigrationUse procedure for 'ID' column.
+If DataMigrationFreshRows contains some table's name, this means that the corresponding migration table has updated data:
+same rows and same values in common columns as the main table.
+In that case, calling Rhetos.DataMigrationUse stored procedure for the 'ID' column will simply reuse the existing data
+in the migration table without reviewing and updating data in the migration table.
+Since each data-migration script is expected to keep the migration table in sync (with DataMigrationUse and DataMigrationApply),
+the record in DataMigrationFreshRows can stay valid during deployment process.
+DataMigrationFreshRows is cleaned by Rhetos CLI before and after deployment, to make sure that stale backup data in migration table
+is not unintentionally used, because any use of the application (even the application initialization phase of deployment)
+can modify the application data, making the migration tables outdated.
+*/
 IF OBJECT_ID('Rhetos.DataMigrationFreshRows') IS NULL
 CREATE TABLE Rhetos.DataMigrationFreshRows
 (

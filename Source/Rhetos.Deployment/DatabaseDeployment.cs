@@ -33,6 +33,7 @@ namespace Rhetos.Deployment
         private readonly DataMigrationScriptsExecuter _dataMigrationScriptsExecuter;
         private readonly IDatabaseGenerator _databaseGenerator;
         private readonly IConceptDataMigrationExecuter _dataMigrationFromCodeExecuter;
+        private readonly DbUpdateOptions _options;
 
         public DatabaseDeployment(
             ILogProvider logProvider,
@@ -40,7 +41,8 @@ namespace Rhetos.Deployment
             DatabaseCleaner databaseCleaner,
             DataMigrationScriptsExecuter dataMigrationScriptsExecuter,
             IDatabaseGenerator databaseGenerator,
-            IConceptDataMigrationExecuter dataMigrationFromCodeExecuter)
+            IConceptDataMigrationExecuter dataMigrationFromCodeExecuter,
+            DbUpdateOptions options)
         {
             _logger = logProvider.GetLogger(GetType().Name);
             _sqlExecuter = sqlExecuter;
@@ -48,6 +50,7 @@ namespace Rhetos.Deployment
             _dataMigrationScriptsExecuter = dataMigrationScriptsExecuter;
             _databaseGenerator = databaseGenerator;
             _dataMigrationFromCodeExecuter = dataMigrationFromCodeExecuter;
+            _options = options;
         }
 
         public void UpdateDatabase()
@@ -58,9 +61,13 @@ namespace Rhetos.Deployment
             _logger.Info("Preparing Rhetos database.");
             PrepareRhetosDatabase();
 
+            // Since IPersistenceTransaction is not registered in the parent container scope,
+            // the commands below will not be part of a single shared database transaction.
+            // Instead, each command will commit its changes to the database separately.
+
             _logger.Info("Cleaning old migration data.");
             _databaseCleaner.RemoveRedundantMigrationColumns();
-            _databaseCleaner.RefreshDataMigrationRows();
+            _databaseCleaner.RefreshDataMigrationRows(); // Resets the data-migration optimization cache, to avoid using stale backup data from old migration tables.
 
             _logger.Info("Executing data migration scripts.");
             _dataMigrationFromCodeExecuter.ExecuteBeforeDataMigrationScripts();
@@ -72,22 +79,27 @@ namespace Rhetos.Deployment
             {
                 _databaseGenerator.UpdateDatabaseStructure();
             }
-            catch (Exception ex)
+            catch (Exception mainException)
             {
                 try
                 {
-                    _dataMigrationScriptsExecuter.Undo(dataMigrationReport.CreatedScripts);
+                    if (_options.RepeatDataMigrationsAfterFailedUpdate)
+                        _dataMigrationScriptsExecuter.Undo(dataMigrationReport.CreatedScripts);
                 }
-                catch (Exception undoException)
+                catch (Exception cleanupException)
                 {
-                    _logger.Info(undoException.ToString());
+                    _logger.Info(cleanupException.ToString());
                 }
-                ExceptionsUtility.Rethrow(ex);
+                ExceptionsUtility.Rethrow(mainException);
             }
 
             _logger.Info("Deleting redundant migration data.");
             _databaseCleaner.RemoveRedundantMigrationColumns();
-            _databaseCleaner.RefreshDataMigrationRows();
+            _databaseCleaner.RefreshDataMigrationRows(); // Resets the data-migration optimization cache again.
+            // Invalidation the cache *after* upgrade is useful for developers that might develop new data-migration scripts and
+            // manually execute them on database, to avoid unintentionally using the old migration data.
+            // The migration data might become stale on successful deployment, if any IServerInitializer plugin modifies the main data,
+            // for example after-deploy scripts or KeepSynchronized concepts.
         }
 
         private void PrepareRhetosDatabase()
