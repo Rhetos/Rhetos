@@ -219,7 +219,7 @@ namespace Rhetos.Persistence
                     if (command != null && !string.IsNullOrWhiteSpace(command.CommandText))
                         _logger.Error("Unable to execute SQL query:\r\n" + command.CommandText.Limit(1000000));
 
-                    string msg = $"{ex.GetType().Name} has occurred{ReportSqlName(command)}:\r\n{ReportSqlErrors(ex)}";
+                    string msg = $"{ex.GetType().Name} has occurred{ReportSqlName(command)}: {ReportSqlErrors(ex)}";
                     throw new FrameworkException(msg, ex);
                 }
             }
@@ -258,27 +258,24 @@ namespace Rhetos.Persistence
             }
         }
 
-        private static string ReportSqlErrors(SqlException ex)
+        private static string ReportSqlErrors(SqlException exception)
         {
-            StringBuilder sb = new StringBuilder();
-            SqlError[] errors = new SqlError[ex.Errors.Count];
-            ex.Errors.CopyTo(errors, 0);
-            foreach (var err in errors.OrderBy(e => e.LineNumber))
-            {
-                if (err.Class > 0)
-                {
-                    sb.Append("Msg ").Append(err.Number);
-                    sb.Append(", Level ").Append(err.Class);
-                    sb.Append(", State ").Append(err.State);
-                    if (!string.IsNullOrEmpty(err.Procedure))
-                        sb.Append(", Procedure ").Append(err.Procedure);
-                    sb.Append(", Line ").Append(err.LineNumber);
-                    sb.AppendLine();
-                }
-                sb.AppendLine(err.Message);
-            }
+            SqlError[] errors = new SqlError[exception.Errors.Count];
+            exception.Errors.CopyTo(errors, 0);
+            // If there is only one simple error, it will be reported in a single line (most likely)
+            // to improve integration with Visual Studio.
+            return string.Join(Environment.NewLine, errors.Select(ReportSqlError));
+        }
 
-            return sb.ToString();
+        private static string ReportSqlError(SqlError e)
+        {
+            string errorProcedure = !string.IsNullOrEmpty(e.Procedure)
+                ? $", Procedure {e.Procedure}"
+                : "";
+            string errorMetadata = e.Class > 0
+                ? $"Msg {e.Number}, Level {e.Class}, State {e.State}{errorProcedure}, Line {e.LineNumber}: "
+                : "";
+            return errorMetadata + e.Message;
         }
     }
 }
