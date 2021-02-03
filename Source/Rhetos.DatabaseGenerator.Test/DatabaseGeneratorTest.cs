@@ -103,14 +103,26 @@ namespace Rhetos.DatabaseGenerator.Test
 
             TestUtility.Dump(
                 sqlExecuter.ExecutedScriptsWithTransaction,
-                script => (script.Item2 ? "tran" : "notran")
-                    + string.Concat(script.Item1.Select(sql => "\r\n  - " + sql.Replace('\r', ' ').Replace('\n', ' '))));
+                script => (script.UseTransaction ? "tran" : "notran")
+                    + string.Concat(script.Scripts.Select(sql => "\r\n  - " + sql.Replace('\r', ' ').Replace('\n', ' '))));
 
             return
-                (Report: string.Join(", ", sqlExecuter.ExecutedScriptsWithTransaction.SelectMany(script => script.Item1)),
+                (Report: string.Join(", ", sqlExecuter.ExecutedScriptsWithTransaction.SelectMany(script => RemoveName(script.Scripts))),
                 SqlExecuter: sqlExecuter,
                 RemovedConcepts: conceptApplicationRepository.DeletedLog,
                 InsertedConcepts: conceptApplicationRepository.InsertedLog.ToList());
+        }
+
+        private IEnumerable<string> RemoveName(IEnumerable<string> scripts) => scripts.Select(RemoveName);
+
+        private string RemoveName(string script)
+        {
+            if (!script.StartsWith("--Name: "))
+                return script;
+            var eol = script.IndexOf("\n", StringComparison.Ordinal);
+            if (eol < 0)
+                return script;
+            return script.Substring(eol + 1);
         }
 
         #endregion Helper methods
@@ -338,7 +350,7 @@ namespace Rhetos.DatabaseGenerator.Test
 
             string executedSqlReport = string.Concat(
                 dbUpdate.SqlExecuter.ExecutedScriptsWithTransaction
-                    .Select(scripts => (scripts.Item2 ? "TRAN" : "NOTRAN") + ": " + string.Join(", ", scripts.Item1) + ". "))
+                    .Select(scripts => (scripts.UseTransaction ? "TRAN" : "NOTRAN") + ": " + string.Join(", ", RemoveName(scripts.Scripts)) + ". "))
                     .Replace(SqlUtility.NoTransactionTag, "")
                     .Trim();
 
@@ -356,5 +368,31 @@ namespace Rhetos.DatabaseGenerator.Test
         private static string FormatLines(string s) => _whitespaces.Replace(s, " ").Trim().Replace(". ", ".\r\n");
 
         private static readonly Regex _whitespaces = new Regex(@"\s+");
+
+        [TestMethod]
+        public void ScriptSplitter()
+        {
+            var oldApplications = new List<DatabaseObject>();
+
+            var newApplications = CreateConceptApplications(
+                new SimpleConcept("A", $"SQL1{SqlUtility.ScriptSplitterTag}SQL2", "dataA2"));
+
+            string expected = "SQL1, SQL2, ins SimpleConcept A";
+
+            Assert.AreEqual(expected, DatabaseGeneratorUpdateDatabase(oldApplications, newApplications).Report);
+        }
+
+        [TestMethod]
+        public void ScriptSplitterTrim()
+        {
+            var oldApplications = new List<DatabaseObject>();
+
+            var newApplications = CreateConceptApplications(
+                new SimpleConcept("A", $"\r\n SQL1\t \t{SqlUtility.ScriptSplitterTag}\nSQL2   \n", "dataA2"));
+
+            string expected = "SQL1, SQL2, ins SimpleConcept A";
+
+            Assert.AreEqual(expected, DatabaseGeneratorUpdateDatabase(oldApplications, newApplications).Report);
+        }
     }
 }

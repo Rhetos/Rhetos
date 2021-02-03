@@ -139,6 +139,36 @@ Module TestSqlWorkarounds
 			SET @dropView = 'DROP VIEW TestSqlWorkarounds.' + @dropView;
 			EXEC (@dropView);";
 
+
+	SqlObject WithTransactionBase
+		"CREATE VIEW TestSqlWorkarounds.WithTransactionBase AS SELECT a=1"
+		"DROP VIEW TestSqlWorkarounds.WithTransactionBase";
+
+	SqlObject WithoutTransactionBase
+		"/*DatabaseGenerator:NoTransaction*/ CREATE VIEW TestSqlWorkarounds.WithoutTransactionBase AS SELECT a=1"
+		"/*DatabaseGenerator:NoTransaction*/ DROP VIEW TestSqlWorkarounds.WithoutTransactionBase";
+
+	SqlObject WithoutTransactionBaseDependentOnWith
+		"/*DatabaseGenerator:NoTransaction*/ CREATE VIEW TestSqlWorkarounds.WithoutTransactionBaseDependentOnWith AS SELECT * FROM TestSqlWorkarounds.WithTransactionBase"
+		"/*DatabaseGenerator:NoTransaction*/ DROP VIEW TestSqlWorkarounds.WithoutTransactionBaseDependentOnWith"
+	{
+		SqlDependsOnSqlObject TestSqlWorkarounds.WithTransactionBase;
+	}
+
+	SqlObject WithoutTransactionBaseDependentOnWithout
+		"/*DatabaseGenerator:NoTransaction*/ CREATE VIEW TestSqlWorkarounds.WithoutTransactionBaseDependentOnWithout AS SELECT * FROM TestSqlWorkarounds.WithoutTransactionBase"
+		"/*DatabaseGenerator:NoTransaction*/ DROP VIEW TestSqlWorkarounds.WithoutTransactionBaseDependentOnWithout"
+	{
+		SqlDependsOnSqlObject TestSqlWorkarounds.WithoutTransactionBase;
+	}
+
+	SqlObject WithTransactionBaseDependentOnWithout
+		"CREATE VIEW TestSqlWorkarounds.WithTransactionBaseDependentOnWithout AS SELECT * FROM TestSqlWorkarounds.WithoutTransactionBase"
+		"DROP VIEW TestSqlWorkarounds.WithTransactionBaseDependentOnWithout"
+	{
+		SqlDependsOnSqlObject TestSqlWorkarounds.WithoutTransactionBase;
+	}
+
 	SqlObject DependsOnIndex 'PRINT 1' 'PRINT 2'
 	{
 		SqlDependsOnIndex TestSqlWorkarounds.TestIndex.'A B';

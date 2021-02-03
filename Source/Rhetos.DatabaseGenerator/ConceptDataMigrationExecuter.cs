@@ -47,7 +47,7 @@ namespace Rhetos.DatabaseGenerator
         {
             _logger.Info(() => $"Executing {_scripts.Value.BeforeDataMigration.Count()} before-data-migration scripts.");
             _sqlExecuter.Execute(_scripts.Value.BeforeDataMigration.Select(x => 
-                new SqlTransactionBatches.SqlScript
+                new SqlBatchScript
                 {
                     Sql = x,
                     IsBatch = true
@@ -58,7 +58,7 @@ namespace Rhetos.DatabaseGenerator
         {
             _logger.Info(() => $"Executing {_scripts.Value.AfterDataMigration.Count()} after-data-migration scripts.");
             _sqlExecuter.Execute(_scripts.Value.AfterDataMigration.Reverse().Select(x =>
-                new SqlTransactionBatches.SqlScript
+                new SqlBatchScript
                 {
                     Sql = x,
                     IsBatch = true

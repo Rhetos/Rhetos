@@ -17,16 +17,30 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Utilities;
 using System;
 using System.Data.Common;
 
 namespace Rhetos.Persistence
 {
     /// <summary>
-    /// Similar to the "unit of work" pattern.
+    /// Represents a common transaction that will be used during a single lifetime scope (for example, in a single web request),
+    /// similar to the "unit of work" pattern.
     /// </summary>
+    /// <remarks>
+    /// Some components (for example components that are executed during database upgrade) do not use <see cref="IPersistenceTransaction"/>,
+    /// because they need more specific control over database transactions.
+    /// For those use cases see usage of <see cref="DbUpdateOptions.ShortTransactions"/> or <see cref="SqlUtility.NoTransactionTag"/>.
+    /// </remarks>
     public interface IPersistenceTransaction : IDisposable
     {
+        /// <summary>
+        /// Marks the transaction as valid, to be committed at the end of the lifetime scope (on Dispose).
+        /// If <see cref="CommitChanges"/> is not called, the transaction will be rolled back.
+        /// If <see cref="DiscardChanges"/> is also called, it will override any earlier or later call to <see cref="CommitChanges"/>.
+        /// </summary>
+        void CommitChanges();
+
         /// <summary>
         /// DiscardChanges marks the transaction as invalid. The changes will be discarded (rollback executed) on Dispose.
         /// </summary>
@@ -34,7 +48,7 @@ namespace Rhetos.Persistence
 
         /// <summary>
         /// Use for cleanup code, such as deleting temporary data that may be used until the transaction is closed.
-        /// This event will not be invoked if the transaction rollback was executed (see <see cref="DiscardChanges()"/>).
+        /// This event will not be invoked if the transaction rollback was executed (see <see cref="CommitChanges"/> and <see cref="DiscardChanges"/>).
         /// </summary>
         event Action BeforeClose;
 

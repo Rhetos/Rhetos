@@ -26,6 +26,7 @@ using System.Linq;
 namespace Rhetos.Utilities
 {
 
+
     /// <summary>
     /// This class adds additional functionality over ISqlExecuter for executing a batch SQL scripts (custom transaction handling and reporting),
     /// while allowing ISqlExecuter implementations to focus on the database technology.
@@ -45,28 +46,17 @@ namespace Rhetos.Utilities
             _delayedLogger = delayedLogProvider.GetLogger(nameof(SqlTransactionBatches));
         }
 
-        [DebuggerDisplay("{Name ?? CsUtility.Limit(Sql, 100)}")]
-        public class SqlScript
-        {
-            public string Name;
-            public string Sql;
-            /// <summary>
-            /// If the script is a batch, it will be split by a batch separator ("GO") before executing each part separately.
-            /// </summary>
-            public bool IsBatch;
-        };
-
         /// <summary>
         /// 1. Splits the scripts by the SQL batch delimiter ("GO", for Microsoft SQL Server). See <see cref="SqlUtility.SplitBatches(string)"/>.
         /// 2. Detects and applies the transaction usage tag. See <see cref="SqlUtility.NoTransactionTag"/> and <see cref="SqlUtility.ScriptSupportsTransaction(string)"/>.
         /// 3. Reports progress (Info level) after each minute.
         /// 4. Prefixes each SQL script with a comment containing the script's name.
         /// </summary>
-        public void Execute(IEnumerable<SqlScript> sqlScripts)
+        public void Execute(IEnumerable<SqlBatchScript> sqlScripts)
         {
             var scriptParts = sqlScripts
                 .SelectMany(script => script.IsBatch
-                    ? SqlUtility.SplitBatches(script.Sql).Select(scriptPart => new SqlScript { Name = script.Name, Sql = scriptPart, IsBatch = false })
+                    ? SqlUtility.SplitBatches(script.Sql).Select(scriptPart => new SqlBatchScript { Name = script.Name, Sql = scriptPart, IsBatch = false })
                     : new[] { script })
                 .Where(script => !string.IsNullOrWhiteSpace(script.Sql));
 
@@ -75,7 +65,7 @@ namespace Rhetos.Utilities
                 {
                     UseTransaction = group.Key,
                     // The empty NoTransactionTag script is used by the DatabaseGenerator to split transactions.
-                    // This is why there scrips are removed *after* grouping 
+                    // This is why empty scrips are removed *after* grouping.
                     Scripts = group.Items.Where(s => !string.Equals(s.Sql, SqlUtility.NoTransactionTag, StringComparison.Ordinal)).ToList()
                 })
                 .Where(group => group.Scripts.Count > 0) // Cleanup after removing the empty NoTransactionTag scripts.

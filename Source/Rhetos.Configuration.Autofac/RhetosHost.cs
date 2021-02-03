@@ -120,12 +120,20 @@ namespace Rhetos
             var currentAcl = AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly());
             currentAcl.Resolving += (AssemblyLoadContext acl, AssemblyName assemblyName) =>
             {
-                return acl.LoadFromAssemblyPath(assemblyDependencyResolver.ResolveAssemblyToPath(assemblyName));
+                string assemblyPath = assemblyDependencyResolver.ResolveAssemblyToPath(assemblyName);
+                if (assemblyPath != null)
+                    return acl.LoadFromAssemblyPath(assemblyPath);
+                else
+                    return null;
             };
 
             currentAcl.ResolvingUnmanagedDll += (Assembly assembly, string assemblyName) =>
             {
-                return NativeLibrary.Load(assemblyDependencyResolver.ResolveUnmanagedDllToPath(assemblyName));
+                string libraryPath = assemblyDependencyResolver.ResolveUnmanagedDllToPath(assemblyName);
+                if (libraryPath != null)
+                    return NativeLibrary.Load(libraryPath);
+                else
+                    return IntPtr.Zero;
             };
 
             return currentAcl.LoadFromAssemblyPath(hostFilename);

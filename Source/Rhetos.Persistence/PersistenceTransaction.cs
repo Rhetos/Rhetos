@@ -37,7 +37,8 @@ namespace Rhetos.Persistence
         private DbConnection _connection;
         private DbTransaction _transaction;
         private bool _disposed;
-        private bool _discard;
+        private bool _discardOnDispose;
+        private bool _commitOnDispose;
         static int _counter = 0;
 
         public PersistenceTransaction(ILogProvider logProvider, ConnectionString connectionString, IUserInfo userInfo)
@@ -48,36 +49,50 @@ namespace Rhetos.Persistence
             _persistenceTransactionId = Interlocked.Increment(ref _counter);
         }
 
+        public void CommitChanges()
+        {
+            _commitOnDispose = true;
+        }
+
         public void DiscardChanges()
         {
-            _discard = true;
+            _discardOnDispose = true;
         }
 
         public event Action BeforeClose;
 
-        public void Dispose()
+        protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
             {
-                _logger.Trace(() => "Disposing (" + _persistenceTransactionId + ").");
-                if (_discard)
-                    Rollback();
-                else
-                    Commit();
-            }
+                if (disposing)
+                {
+                    _logger.Trace(() => "Disposing (" + _persistenceTransactionId + ").");
+                    if (_commitOnDispose && !_discardOnDispose)
+                        Commit();
+                    else
+                        Rollback();
+                }
 
-            BeforeClose = null;
-            _disposed = true;
+                BeforeClose = null;
+                _disposed = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
 
         public void CommitAndReconnect()
         {
             string callerInfo = GetCaller();
-            _logger.Warning(() => "CommitAndReconnect is obsolete. Please upgrade to a latest version of the Rhetos plugin '" + callerInfo + "'.");
+            _logger.Warning(() => "CommitAndReconnect is obsolete, this call is ignored. Please upgrade to a latest version of the Rhetos plugin '" + callerInfo + "'.");
 
             if (_disposed)
                 throw new FrameworkException("Trying to commit and reconnect a disposed persistence transaction.");
-            if (_discard)
+            if (_discardOnDispose)
                 throw new FrameworkException("Trying to commit and reconnect a discarded persistence transaction.");
 
             _logger.Trace(() => "CommitAndReconnect (" + _persistenceTransactionId + ").");
@@ -88,13 +103,12 @@ namespace Rhetos.Persistence
         {
             try
             {
-                var callStack = new StackTrace().GetFrames();
                 return new StackTrace().GetFrame(2).GetMethod().DeclaringType.AssemblyQualifiedName;
             }
             catch
             {
                 return "";
-            };
+            }
         }
 
         private void Commit()

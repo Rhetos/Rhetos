@@ -53,6 +53,14 @@ namespace Rhetos.Deployment
             return report;
         }
 
+        /// <summary>
+        /// Invalidates (resets) the data-migration optimization cache to make sure that next DataMigrationUse call
+        /// will update the migration table.
+        /// </summary>
+        /// <remarks>
+        /// If the DataMigrationFreshRows contains a table name for some entity, calling Rhetos.DataMigrationUse stored procedure
+        /// for 'ID' column would simply reuse the existing data in the migration table without reviewing and updating data in the migration table.
+        /// </remarks>
         public string RefreshDataMigrationRows()
         {
             if (SqlUtility.DatabaseLanguage != "MsSql")

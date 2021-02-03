@@ -60,14 +60,14 @@ namespace Rhetos.Deployment
             Exception originalException = null;
             try
             {
-                using (var initializerScope = container.CreateScope())
+                using (var scope = container.CreateScope())
                     try
                     {
                         logger.Info($"Initialization {initializerType.Name}.");
-                        var initializers = initializerScope.Resolve<IPluginsContainer<IServerInitializer>>().GetPlugins();
+                        var initializers = scope.Resolve<IPluginsContainer<IServerInitializer>>().GetPlugins();
                         IServerInitializer initializer = initializers.Single(i => i.GetType() == initializerType);
                         initializer.Initialize();
-                        initializerScope.CommitChanges();
+                        scope.CommitChanges();
                     }
                     catch (Exception ex)
                     {

@@ -26,7 +26,10 @@ using System.Text;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-    public class SqlCommandBatch : IPersistenceStorageCommandBatch
+	/// <summary>
+	/// Helper class for saving data from entities (POCO classes) directly to database.
+	/// </summary>
+	public class SqlCommandBatch : IPersistenceStorageCommandBatch
 	{
 		private readonly IPersistenceTransaction _persistenceTransaction;
 		private readonly IPersistenceStorageObjectMappings _persistenceMappingConfiguration;

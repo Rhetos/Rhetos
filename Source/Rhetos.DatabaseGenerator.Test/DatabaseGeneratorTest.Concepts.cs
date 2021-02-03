@@ -112,7 +112,7 @@ namespace Rhetos.DatabaseGenerator.Test
 
         public static string RemoveQuery(string createQuery)
         {
-            if (createQuery.StartsWith(SqlUtility.NoTransactionTag))
+            if (!SqlUtility.ScriptSupportsTransaction(createQuery))
                 return SqlUtility.NoTransactionTag + "drop-" + createQuery.Substring(SqlUtility.NoTransactionTag.Length);
             else
                 return "drop-" + createQuery;

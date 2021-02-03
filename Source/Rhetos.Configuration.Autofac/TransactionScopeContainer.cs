@@ -28,12 +28,11 @@ namespace Rhetos
     /// <summary>
     /// Dependency Injection container which scope is the same as the scope of the database transaction, for executing a single unit of work.
     /// Note that the changes in database will be rolled back by default.
-    /// To commit changes to database, call <see cref="CommitChanges"/> at the end of the 'using' block.
+    /// To commit changes to database, call <see cref="CommitChanges"/> at the end of the 'using' block (transaction will be committed on dispose).
     /// </summary>
     public class TransactionScopeContainer : IDisposable
     {
-        private bool _commitChanges = false;
-        private readonly Lazy<ILifetimeScope> _lifetimeScope;
+        private readonly ILifetimeScope _lifetimeScope;
 
         /// <param name="iocContainer">
         /// The Dependency Injection container used to create the transaction scope container.
@@ -48,12 +47,12 @@ namespace Rhetos
         /// </param>
         public TransactionScopeContainer(IContainer iocContainer, Action<ContainerBuilder> registerCustomComponents = null)
         {
-            _lifetimeScope = new Lazy<ILifetimeScope>(() => registerCustomComponents != null ? iocContainer.BeginLifetimeScope(registerCustomComponents) : iocContainer.BeginLifetimeScope());
+            _lifetimeScope = registerCustomComponents != null ? iocContainer.BeginLifetimeScope(registerCustomComponents) : iocContainer.BeginLifetimeScope();
         }
 
         public T Resolve<T>()
         {
-            return _lifetimeScope.Value.Resolve<T>();
+            return _lifetimeScope.Resolve<T>();
         }
 
         /// <summary>
@@ -62,7 +61,7 @@ namespace Rhetos
         /// </summary>
         public void CommitChanges()
         {
-            _commitChanges = true;
+            _lifetimeScope.Resolve<IPersistenceTransaction>().CommitChanges();
         }
 
         private bool disposed = false; // Standard IDisposable pattern to detect redundant calls.
@@ -80,11 +79,7 @@ namespace Rhetos
 
             if (disposing)
             {
-                if (!_commitChanges && _lifetimeScope.IsValueCreated)
-                    _lifetimeScope.Value.Resolve<IPersistenceTransaction>().DiscardChanges();
-
-                if (_lifetimeScope.IsValueCreated)
-                    _lifetimeScope.Value.Dispose();
+                _lifetimeScope.Dispose();
             }
 
             disposed = true;
@@ -92,7 +87,7 @@ namespace Rhetos
 
         internal void LogRegistrationStatistics(string title, ILogProvider logProvider)
         {
-            ContainerBuilderPluginRegistration.LogRegistrationStatistics(title, _lifetimeScope.Value, logProvider);
+            ContainerBuilderPluginRegistration.LogRegistrationStatistics(title, _lifetimeScope, logProvider);
         }
     }
 }

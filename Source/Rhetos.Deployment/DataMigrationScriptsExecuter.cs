@@ -137,16 +137,16 @@ namespace Rhetos.Deployment
             _sqlTransactionBatches.Execute(toUpdate.SelectMany(UpdateMetadata));
         }
 
-        private IEnumerable<SqlTransactionBatches.SqlScript> RemoveScriptAndMetadata(DataMigrationScript script)
+        private IEnumerable<SqlBatchScript> RemoveScriptAndMetadata(DataMigrationScript script)
         {
             string removeMetadata = $"UPDATE Rhetos.DataMigrationScript SET Active = 0 WHERE Tag = {SqlUtility.QuoteText(script.Tag)};";
 
             if (!string.IsNullOrEmpty(script.Down))
-                yield return new SqlTransactionBatches.SqlScript { Sql = script.Down, IsBatch = true, Name = script.Path };
-            yield return new SqlTransactionBatches.SqlScript { Sql = removeMetadata, IsBatch = false, Name = null };
+                yield return new SqlBatchScript { Sql = script.Down, IsBatch = true, Name = script.Path };
+            yield return new SqlBatchScript { Sql = removeMetadata, IsBatch = false, Name = null };
         }
 
-        private IEnumerable<SqlTransactionBatches.SqlScript> AddScriptAndMetadata(DataMigrationScript script)
+        private IEnumerable<SqlBatchScript> AddScriptAndMetadata(DataMigrationScript script)
         {
             string addMetadata = string.Format(
                 "DELETE FROM Rhetos.DataMigrationScript WHERE Active = 0 AND Tag = {0};\r\n"
@@ -156,15 +156,15 @@ namespace Rhetos.Deployment
                 SqlUtility.QuoteText(script.Content),
                 SqlUtility.QuoteText(script.Down));
 
-            yield return new SqlTransactionBatches.SqlScript { Sql = script.Content, IsBatch = true, Name = script.Path };
-            yield return new SqlTransactionBatches.SqlScript { Sql = addMetadata, IsBatch = false, Name = null };
+            yield return new SqlBatchScript { Sql = script.Content, IsBatch = true, Name = script.Path };
+            yield return new SqlBatchScript { Sql = addMetadata, IsBatch = false, Name = null };
         }
 
-        private IEnumerable<SqlTransactionBatches.SqlScript> UpdateMetadata(DataMigrationScript script)
+        private IEnumerable<SqlBatchScript> UpdateMetadata(DataMigrationScript script)
         {
             string updateMetadata = $"UPDATE Rhetos.DataMigrationScript SET Down = {SqlUtility.QuoteText(script.Down)}" +
                 $" WHERE Tag = {SqlUtility.QuoteText(script.Tag)};";
-            yield return new SqlTransactionBatches.SqlScript { Sql = updateMetadata, IsBatch = false, Name = null };
+            yield return new SqlBatchScript { Sql = updateMetadata, IsBatch = false, Name = null };
         }
 
         private List<DataMigrationScript> FindSkipedScriptsInEachPackage(List<DataMigrationScript> oldScripts, List<DataMigrationScript> newScripts)

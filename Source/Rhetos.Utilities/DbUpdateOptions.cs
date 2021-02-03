@@ -25,7 +25,22 @@ namespace Rhetos.Utilities
         public static readonly string ConfigurationFileName = "rhetos-dbupdate.settings.json";
 
         public bool ShortTransactions { get; set; } = false;
+
         public bool DataMigrationSkipScriptsWithWrongOrder { get; set; } = false;
+
         public bool SkipRecompute { get; set; } = false;
+
+        /// <summary>
+        /// If database update fails (modifying database structure based on new DSL model),
+        /// the data-migration scripts that were executed in the current dbupdate command will be executed again
+        /// the next time.
+        /// This feature was always enabled before Rhetos v5.
+        /// </summary>
+        /// <remarks>
+        /// Generally this feature is not needed, because (1) data-migration scripts always leave migration tables in sync with main tables,
+        /// and (2) database updates are coupled with data backup/restore from migration tables and Rhetos metadata updates.
+        /// This option is left configurable to support any special cases that might require multiple executions of data-migration scrips.
+        /// </remarks>
+        public bool RepeatDataMigrationsAfterFailedUpdate { get; set; } = false;
     }
 }
