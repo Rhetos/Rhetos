@@ -27,6 +27,7 @@ using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
+using System.Linq;
 
 namespace Rhetos
 {
@@ -46,13 +47,11 @@ namespace Rhetos
             }
         }
 
-        private ILogProvider LogProvider { get; }
-        private ILogger Logger { get; }
+        private readonly ILogProvider _logProvider;
 
         public Program()
         {
-            LogProvider = new NLogProvider();
-            Logger = LogProvider.GetLogger("Rhetos");
+            _logProvider = new NLogProvider();
         }
 
         public int Run(string[] args)
@@ -63,7 +62,7 @@ namespace Rhetos
             buildCommand.Add(new Argument<DirectoryInfo>("project-root-folder", () => new DirectoryInfo(Environment.CurrentDirectory)) { Description = "Project folder where csproj file is located. If not specified, current working directory is used by default." });
             buildCommand.Add(new Option<bool>("--msbuild-format", false, "Adjust error output format for MSBuild integration."));
             buildCommand.Handler = CommandHandler.Create((DirectoryInfo projectRootFolder, bool msbuildFormat)
-                => ReportError(() => Build(projectRootFolder.FullName), "Build", msbuildFormat));
+                => SafeExecuteCommand(() => Build(projectRootFolder.FullName), "Build", msbuildFormat));
             rootCommand.AddCommand(buildCommand);
 
             var dbUpdateCommand = new Command("dbupdate", "Updates the database structure and initializes the application data in the database.");
@@ -78,7 +77,7 @@ namespace Rhetos
             dbUpdateCommand.Handler =
                 CommandHandler.Create((FileInfo startupAssembly, bool shortTransactions, bool skipRecompute, bool executeCommandInCurrentProcess) => {
                     if(executeCommandInCurrentProcess)
-                        ReportError(() => DbUpdate(startupAssembly.FullName, shortTransactions, skipRecompute), "DbUpdate", msBuildErrorFormat: false);
+                        SafeExecuteCommand(() => DbUpdate(startupAssembly.FullName, shortTransactions, skipRecompute), "DbUpdate", msBuildErrorFormat: false);
                     else
                         InvokeDbUpdateAsExternalProcess(startupAssembly.FullName, args);
                 });
@@ -87,30 +86,31 @@ namespace Rhetos
             return rootCommand.Invoke(args);
         }
 
-        private int ReportError(Action action, string commandName, bool msBuildErrorFormat)
+        private int SafeExecuteCommand(Action action, string commandName, bool msBuildErrorFormat)
         {
+            var logger = _logProvider.GetLogger("Rhetos " + commandName);
+            logger.Info(() => "Logging configured.");
             try
             {
-                Logger.Info(() => "Logging configured.");
                 action.Invoke();
-                Logger.Info($"{commandName} done.");
+                logger.Info($"Done.");
             }
             catch (DslSyntaxException dslException) when (msBuildErrorFormat)
             {
                 PrintCanonicalError(dslException);
 
                 // Detailed exception info is logged as additional information, not as an error, to avoid duplicate error reporting.
-                Logger.Info(dslException.ToString());
+                logger.Info(dslException.ToString());
 
                 return 1;
             }
             catch (Exception e)
             {
-                Logger.Error(e.ToString());
+                logger.Error(e.ToString());
 
                 string typeLoadReport = CsUtility.ReportTypeLoadException(e);
                 if (typeLoadReport != null)
-                    Logger.Error(typeLoadReport);
+                    logger.Error(typeLoadReport);
 
                 if (Environment.UserInteractive)
                     PrintErrorSummary(e);
@@ -123,14 +123,14 @@ namespace Rhetos
 
         private void Build(string projectRootPath)
         {
-            var rhetosProjectContent = new RhetosProjectContentProvider(projectRootPath, LogProvider).Load();
+            var rhetosProjectContent = new RhetosProjectContentProvider(projectRootPath, _logProvider).Load();
 
             if (FilesUtility.IsInsideDirectory(AppDomain.CurrentDomain.BaseDirectory, Path.Combine(projectRootPath, "bin")))
                 throw new FrameworkException($"Rhetos build command cannot be run from the generated application folder." +
                     $" Visual Studio integration runs it automatically from Rhetos NuGet package tools folder." +
                     $" You can run it manually from Package Manager Console, since the tools folder it is included in PATH.");
 
-            var configuration = new ConfigurationBuilder(LogProvider)
+            var configuration = new ConfigurationBuilder(_logProvider)
                 .AddOptions(rhetosProjectContent.RhetosBuildEnvironment)
                 .AddOptions(rhetosProjectContent.RhetosTargetEnvironment)
                 .AddKeyValue(ConfigurationProvider.GetKey((ConfigurationProviderOptions o) => o.LegacyKeysWarning), true)
@@ -140,9 +140,9 @@ namespace Rhetos
                 .Build();
 
             var projectAssets = rhetosProjectContent.RhetosProjectAssets;
-            AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolver.GetResolveEventHandler(projectAssets.Assemblies, LogProvider, true);
+            AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolver.GetResolveEventHandler(projectAssets.Assemblies, _logProvider, true);
 
-            var build = new ApplicationBuild(configuration, LogProvider, projectAssets.Assemblies, projectAssets.InstalledPackages);
+            var build = new ApplicationBuild(configuration, _logProvider, projectAssets.Assemblies, projectAssets.InstalledPackages);
             build.ReportLegacyPluginsFolders();
             build.GenerateApplication();
         }
@@ -170,7 +170,7 @@ namespace Rhetos
                 return builder;
             }
 
-            var deployment = new ApplicationDeployment(CreateHostBuilder, LogProvider);
+            var deployment = new ApplicationDeployment(CreateHostBuilder, _logProvider);
             deployment.UpdateDatabase();
             deployment.InitializeGeneratedApplication();
         }
@@ -190,6 +190,10 @@ namespace Rhetos
             Console.WriteLine($"Rhetos CLI location: {System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName}");
         }
 
+        /// <summary>
+        /// Outputs error in canonical message format. This format can be recognized by MSBuild and reported in IDE with link directly to position in source file.
+        /// See https://github.com/dotnet/msbuild/blob/master/src/Shared/CanonicalError.cs for more details.
+        /// </summary>
         public static void PrintCanonicalError(DslSyntaxException dslException)
         {
             string origin = dslException.FilePosition?.CanonicalOrigin ?? "Rhetos DSL";
@@ -201,15 +205,17 @@ namespace Rhetos
             Console.ForegroundColor = oldColor;
         }
 
-        private int InvokeDbUpdateAsExternalProcess(string rhetosHostDllPath, string[] args)
+        private int InvokeDbUpdateAsExternalProcess(string rhetosHostDllPath, string[] baseArgs)
         {
+            var logger = _logProvider.GetLogger("Rhetos DbUpdate base");
+
             var newArgs = new List<string>();
             newArgs.Add("exec");
 
             var runtimeConfigPath = Path.ChangeExtension(rhetosHostDllPath, "runtimeconfig.json");
             if (!File.Exists(runtimeConfigPath))
             {
-                Logger.Error($"Missing {runtimeConfigPath} file required to run the dbupdate command on {rhetosHostDllPath}.");
+                logger.Error($"Missing {runtimeConfigPath} file required to run the dbupdate command on {rhetosHostDllPath}.");
                 return 1;
             }
 
@@ -224,12 +230,14 @@ namespace Rhetos
             }
             else
             {
-                Logger.Warning($"The file {depsFile} was not found. This can cause a 'DllNotFoundException' during the program execution.");
+                logger.Warning($"The file {depsFile} was not found. This can cause a 'DllNotFoundException' during the program execution.");
             }
 
             newArgs.Add(GetType().Assembly.Location);
-            newArgs.AddRange(args);
+            newArgs.AddRange(baseArgs);
             newArgs.Add(ExecuteCommandInCurrentProcessOptionName);
+
+            logger.Trace(() => "dotnet args: " + string.Join(", ", newArgs.Select(arg => "\"" + (arg ?? "null") + "\"")));
             return Exe.Run("dotnet", newArgs);
         }
     }
