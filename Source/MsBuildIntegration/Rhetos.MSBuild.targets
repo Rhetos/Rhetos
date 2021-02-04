@@ -40,7 +40,7 @@
     <Target Name="BuildRhetosApp" DependsOnTargets="ResolveRhetosProjectAssets;ResolveBuildRhetosAppTargetInput" BeforeTargets="CoreCompile" Condition="'$(RhetosBuild)'=='True' and $(BuildingProject)=='True'" Inputs="@(RhetosInput);@(RhetosBuild);@(ReferencePath)" Outputs="@(RhetosOutput)">
         <Message Text="BuildRhetosApp" />
         <Delete Files="$(RhetosBuildCompleteFile)" />
-        <Exec Command="&quot;$(RhetosCliExecutablePath)&quot; build &quot;$(ProjectDir).&quot; --msbuild-format" CustomErrorRegularExpression="\[Error\]" CustomWarningRegularExpression="\[Warn\]" />
+        <Exec Command="&quot;$(RhetosCliExecutablePath)&quot; build &quot;$(ProjectDir).&quot; --msbuild-format" CustomErrorRegularExpression="\[Error\]" CustomWarningRegularExpression="\[(Warn|Warning)\]" />
         <WriteLinesToFile File="$(RhetosBuildCompleteFile)" Lines="" Overwrite="true" />
     </Target>
 
@@ -75,7 +75,7 @@
     <Target Name="DeployRhetosApp" DependsOnTargets="BuildRhetosApp;CopyFilesToOutputDirectory" AfterTargets="Build" Condition="'$(RhetosDeploy)'=='True' And Exists('$(RhetosBuildCompleteFile)') And Exists('$(TargetDir)\Rhetos.Utilities.dll')"
         Inputs="$(RhetosBuildCompleteFile)" Outputs="$(RhetosDatabaseUpdated)">
         <Message Text="DeployRhetosApp" />
-        <Exec Command="&quot;$(TargetDir)rhetos.exe&quot; dbupdate &quot;$(TargetDir)\$(AssemblyName).dll&quot;" CustomErrorRegularExpression="\[Error\]" CustomWarningRegularExpression="\[Warn\]" />
+        <Exec Command="&quot;$(TargetDir)rhetos.exe&quot; dbupdate &quot;$(TargetDir)\$(AssemblyName).dll&quot;" CustomErrorRegularExpression="\[Error\]" CustomWarningRegularExpression="\[(Warn|Warning)\]" />
         <WriteLinesToFile File="$(RhetosDatabaseUpdated)" Lines="" Overwrite="true" />
     </Target>
 </Project>
