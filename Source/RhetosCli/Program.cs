@@ -23,6 +23,7 @@ using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
+using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
@@ -31,6 +32,8 @@ namespace Rhetos
 {
     public class Program
     {
+        static readonly string ExecuteCommandInCurrentProcessOptionName = "--execute-command-in-current-process";
+
         public static int Main(string[] args)
         {
             try
@@ -54,8 +57,6 @@ namespace Rhetos
 
         public int Run(string[] args)
         {
-            Logger.Info(() => "Logging configured.");
-
             var rootCommand = new RootCommand();
             var buildCommand = new Command("build", "Generates C# code, database model file and other project assets.");
             // CurrentDirectory by default, because rhetos.exe on *build* is expected to be located in NuGet package cache.
@@ -69,8 +70,18 @@ namespace Rhetos
             dbUpdateCommand.Add(new Argument<FileInfo>("startup-assembly") { Description = "Startup assembly of the host application." });
             dbUpdateCommand.Add(new Option<bool>("--short-transactions", "Commit transaction after creating or dropping each database object."));
             dbUpdateCommand.Add(new Option<bool>("--skip-recompute", "Skip automatic update of computed data with KeepSynchronized. See output log for data that needs updating."));
-            dbUpdateCommand.Handler = CommandHandler.Create((FileInfo startupAssembly, bool shortTransactions, bool skipRecompute)
-                => ReportError(() => DbUpdate(startupAssembly.FullName, shortTransactions, skipRecompute), "DbUpdate", msBuildErrorFormat: false));
+            //Lack of this switch means that the dbupdate command should start the command rhetos.exe dbupdate
+            //in another process with the host applications runtimeconfig.json and deps.json files
+            var executeCommandInCurrentProcessOption = new Option<bool>(ExecuteCommandInCurrentProcessOptionName);
+            executeCommandInCurrentProcessOption.IsHidden = true;
+            dbUpdateCommand.Add(executeCommandInCurrentProcessOption);
+            dbUpdateCommand.Handler =
+                CommandHandler.Create((FileInfo startupAssembly, bool shortTransactions, bool skipRecompute, bool executeCommandInCurrentProcess) => {
+                    if(executeCommandInCurrentProcess)
+                        ReportError(() => DbUpdate(startupAssembly.FullName, shortTransactions, skipRecompute), "DbUpdate", msBuildErrorFormat: false);
+                    else
+                        InvokeDbUpdateAsExternalProcess(startupAssembly.FullName, args);
+                });
             rootCommand.AddCommand(dbUpdateCommand);
 
             return rootCommand.Invoke(args);
@@ -80,6 +91,7 @@ namespace Rhetos
         {
             try
             {
+                Logger.Info(() => "Logging configured.");
                 action.Invoke();
                 Logger.Info($"{commandName} done.");
             }
@@ -187,6 +199,38 @@ namespace Rhetos
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(canonicalError);
             Console.ForegroundColor = oldColor;
+        }
+
+        private int InvokeDbUpdateAsExternalProcess(string rhetosHostDllPath, string[] args)
+        {
+            var newArgs = new List<string>();
+            newArgs.Add("exec");
+
+            var runtimeConfigPath = Path.ChangeExtension(rhetosHostDllPath, "runtimeconfig.json");
+            if (!File.Exists(runtimeConfigPath))
+            {
+                Logger.Error($"Missing {runtimeConfigPath} file required to run the dbupdate command on {rhetosHostDllPath}.");
+                return 1;
+            }
+
+            newArgs.Add("--runtimeconfig");
+            newArgs.Add(runtimeConfigPath);
+
+            var depsFile = Path.ChangeExtension(rhetosHostDllPath, "deps.json");
+            if (File.Exists(depsFile))
+            {
+                newArgs.Add("--depsfile");
+                newArgs.Add(depsFile);
+            }
+            else
+            {
+                Logger.Warning($"The file {depsFile} was not found. This can cause a 'DllNotFoundException' during the program execution.");
+            }
+
+            newArgs.Add(GetType().Assembly.Location);
+            newArgs.AddRange(args);
+            newArgs.Add(ExecuteCommandInCurrentProcessOptionName);
+            return Exe.Run("dotnet", newArgs);
         }
     }
 }
