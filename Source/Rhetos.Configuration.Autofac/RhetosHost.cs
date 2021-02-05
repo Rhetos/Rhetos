@@ -92,7 +92,7 @@ namespace Rhetos
             if (!File.Exists(hostFilePath))
                 throw new ArgumentException($"Please specify the host application assembly file. File '{hostFilePath}' does not exist.");
 
-            var startupAssembly = ResolveStartupAssembly(hostFilePath);
+            var startupAssembly = Assembly.LoadFrom(hostFilePath);
             if (startupAssembly == null)
                 throw new FrameworkException($"Could not resolve assembly from path '{hostFilePath}'.");
 
@@ -112,31 +112,6 @@ namespace Rhetos
             var rhetosHostBuilder = (IRhetosHostBuilder)method.Invoke(null, new object[] { });
             rhetosHostBuilder.UseRootFolder(Path.GetDirectoryName(hostFilePath)); // use host directory as root for all RhetosHostBuilder operations
             return rhetosHostBuilder;
-        }
-
-        private static Assembly ResolveStartupAssembly(string hostFilename)
-        {
-            var assemblyDependencyResolver = new AssemblyDependencyResolver(hostFilename);
-            var currentAcl = AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly());
-            currentAcl.Resolving += (AssemblyLoadContext acl, AssemblyName assemblyName) =>
-            {
-                string assemblyPath = assemblyDependencyResolver.ResolveAssemblyToPath(assemblyName);
-                if (assemblyPath != null)
-                    return acl.LoadFromAssemblyPath(assemblyPath);
-                else
-                    return null;
-            };
-
-            currentAcl.ResolvingUnmanagedDll += (Assembly assembly, string assemblyName) =>
-            {
-                string libraryPath = assemblyDependencyResolver.ResolveUnmanagedDllToPath(assemblyName);
-                if (libraryPath != null)
-                    return NativeLibrary.Load(libraryPath);
-                else
-                    return IntPtr.Zero;
-            };
-
-            return currentAcl.LoadFromAssemblyPath(hostFilename);
         }
 
         public void Dispose()
