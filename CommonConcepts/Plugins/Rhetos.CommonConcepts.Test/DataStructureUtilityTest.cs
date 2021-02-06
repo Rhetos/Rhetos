@@ -19,11 +19,8 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.TestCommon;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Rhetos.CommonConcepts.Test
 {
@@ -44,6 +41,58 @@ namespace Rhetos.CommonConcepts.Test
             {
                 TestUtility.ShouldFail<FrameworkException>(() => DataStructureUtility.SplitModuleName("abc"), "abc", "format", "module.name");
                 TestUtility.ShouldFail<FrameworkException>(() => DataStructureUtility.SplitModuleName(""), "format", "module.name");
+            }
+        }
+
+        [TestMethod]
+        public void IsAssemblyQualifiedNameTest_False()
+        {
+            var tests = new[]
+            {
+                "a",
+                "UserQuery+C",
+                "List<Tuple<string, string>>",
+                "Tuple<string, string>",
+                "(a, b, c)",
+                "Dict<int, string[]>",
+                "Dict<int, string[]>[]",
+                "Dict<string[], int>[]",
+                "Dict<string[], int>",
+            };
+            foreach (var test in tests)
+            {
+                var repositoryUses = new RepositoryUsesInfo { PropertyType = test };
+                Assert.IsFalse(repositoryUses.HasAssemblyQualifiedName(), $"Test input: {test}");
+            }
+        }
+
+        [TestMethod]
+        public void IsAssemblyQualifiedNameTest_True()
+        {
+            var tests = new[]
+            {
+                "UserQuery+C, query_quytvu, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null",
+                "UserQuery+C, query_quytvu, Version=0.0.0.0",
+                "UserQuery+C, query_quytvu",
+                "UserQuery.C, query_quytvu, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null",
+                "UserQuery.C, query_quytvu, Version=0.0.0.0",
+                "UserQuery.C, query_quytvu",
+                "a, b",
+                "a.b, c.d",
+                "a, x.y",
+                "UserQuery+C, x.y",
+                "List<Tuple<string, string>>, x.y",
+                "Tuple<string, string>, x.y",
+                "(a, b, c), x.y",
+                "Dict<int, string[]>, x.y",
+                "Dict<int, string[]>[], x.y",
+                "Dict<string[], int>[], x.y",
+                "Dict<string[], int>, x.y",
+            };
+            foreach (var test in tests)
+            {
+                var repositoryUses = new RepositoryUsesInfo { PropertyType = test };
+                Assert.IsTrue(repositoryUses.HasAssemblyQualifiedName(), $"Test input: {test}");
             }
         }
     }

@@ -33,7 +33,7 @@ using System.Text;
 namespace CommonConcepts.Test
 {
     [TestClass]
-    public class DomRepositoryConcepts
+    public class DomRepositoryConceptsTest
     {
         [TestMethod]
         public void OnSaveUpdateAndValidate()
@@ -166,6 +166,24 @@ namespace CommonConcepts.Test
                 TestUtility.ShouldFail<Rhetos.UserException>(
                     () => context.Repository.TestDataStructure.SaveTester.Delete(testItem),
                     "Cannot change locked base name 456");
+            }
+        }
+
+        [TestMethod]
+        public void RepositoryWithDependencyInjectionTest()
+        {
+            using (var container = new RhetosTestContainer())
+            {
+                var context = container.Resolve<Common.ExecutionContext>();
+                var depentencyReport = context.Repository.TestDataStructure.RepositoryWithDependencyInjection.Load();
+
+                Assert.AreEqual(
+                    "Rhetos.Utilities.ConsoleLogProvider, System.Func`1[Rhetos.Logging.ILogProvider], Common.DomRepository, Rhetos.Utilities.ConsoleLogProvider",
+                    depentencyReport.Single().Report);
+
+                int commandsCount = depentencyReport.Single().CommandsCount.Value;
+                int minCommandsCount = 3;
+                Assert.IsTrue(commandsCount >= minCommandsCount, $"Expected commandsCount {commandsCount} >= {minCommandsCount}.");
             }
         }
     }

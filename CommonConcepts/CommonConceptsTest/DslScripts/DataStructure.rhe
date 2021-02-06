@@ -412,6 +412,24 @@ Module TestDataStructure
 		RepositoryUses '_logProvider' 'Rhetos.Logging.ILogProvider, Rhetos.Logging.Interfaces';
 	}
 
+	Computed RepositoryWithDependencyInjection 'repository => new[]
+		{
+			new RepositoryWithDependencyInjection
+			{
+				Report = $"{_logProvider.GetType()}, {_logProviderFactory.GetType()}, {_domRepository2.GetType()}, {_logProviderFactory.Invoke().GetType().ToString()}",
+				CommandsCount = _commands.Count()
+			}
+		}'
+	{
+		LongString Report;
+		Integer CommandsCount;
+
+		RepositoryUses '_logProvider' 'Rhetos.Logging.ILogProvider, Rhetos.Logging.Interfaces'; // Simplified AssemblyQualifiedName, for DeployPackages build that requires ExternalReference to the assembly.
+		RepositoryUses '_logProviderFactory' 'Func<Rhetos.Logging.ILogProvider>'; // C# syntax, for Rhetos CLI or DeployPackages application that have predefined references to the required assembly.
+		RepositoryUses '_domRepository2' 'Common.DomRepository'; // Using a type from the generated source code.
+		RepositoryUses '_commands' 'IEnumerable<Rhetos.Processing.ICommandInfo>'; // Using special resolvers from DI container.
+	}
+
 	Entity TestMethod
 	{
 		ShortString Name;
