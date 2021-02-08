@@ -611,7 +611,7 @@ AS
 			SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RETURN @Error END
 
 			DECLARE @PKName SYSNAME = LEFT('PK_' + @TableName, 128);
-            EXEC ('CREATE TABLE [' + @MigrationSchemaName + '].[' + @TableName + '] (ID UNIQUEIDENTIFIER NOT NULL CONSTRAINT [' + @PKName + '] PRIMARY KEY NONCLUSTERED)');
+            EXEC ('CREATE TABLE [' + @MigrationSchemaName + '].[' + @TableName + '] (ID UNIQUEIDENTIFIER NOT NULL CONSTRAINT [' + @PKName + '] PRIMARY KEY CLUSTERED)');
 			SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RETURN @Error END
 
 			DELETE FROM Rhetos.DataMigrationFreshRows WHERE OriginalSchemaName = @SchemaName AND TableName = @TableName;
