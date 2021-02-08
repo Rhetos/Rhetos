@@ -17,16 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
 using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
-using System.Collections;
+using System.Collections.Concurrent;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -45,7 +41,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var info = (KeepSynchronizedOnChangedItemsInfo) conceptInfo;
 
-            string uniqueName = (_uniqueNumber++).ToString();
+            string uniqueName = GetUniqueNameSuffix(info);
 
             codeBuilder.InsertCode(
                 FilterOldItemsBeforeSaveSnippet(info.UpdateOnChange.DependsOn, info.UpdateOnChange.FilterType, info.UpdateOnChange.FilterFormula, uniqueName),
@@ -56,21 +52,28 @@ namespace Rhetos.Dom.DefaultConcepts
                 WritableOrmDataStructureCodeGenerator.OnSaveTag1, info.UpdateOnChange.DependsOn);
         }
 
-        private static int _uniqueNumber = 1;
+        private static readonly ConcurrentDictionary<(string, string), int> _uniqueNumberByDependsOnAndTarget = new ConcurrentDictionary<(string, string), int>();
+
+        /// <summary>
+        /// The generated variables are placed in "DependsOn" repository. They contain "Target" in the name,
+        /// and additional disambiguation is made by additional counter by DependsOn and Target.
+        /// </summary>
+        private static string GetUniqueNameSuffix(KeepSynchronizedOnChangedItemsInfo info)
+        {
+            var key = (info.UpdateOnChange.DependsOn.GetKey(), info.KeepSynchronized.EntityComputedFrom.Target.GetKey());
+            int uniqueNumber = _uniqueNumberByDependsOnAndTarget.AddOrUpdate(key, 1, (_, oldValue) => oldValue + 1);
+            return DslUtility.NameOptionalModule(info.KeepSynchronized.EntityComputedFrom.Target, info.UpdateOnChange.DependsOn.Module)
+                + uniqueNumber;
+        }
 
         private static string FilterOldItemsBeforeSaveSnippet(DataStructureInfo hookOnSaveEntity, string filterType, string filterFormula, string uniqueName)
         {
-            return string.Format(
-            @"Func<IEnumerable<Common.Queryable.{0}_{1}>, {2}> filterLoadKeepSynchronizedOnChangedItems{3} =
-                {4};
-            {2} filterKeepSynchronizedOnChangedItems{3}Old = filterLoadKeepSynchronizedOnChangedItems{3}(updated.Concat(deleted));
+            return
+            $@"Func<IEnumerable<Common.Queryable.{hookOnSaveEntity.Module.Name}_{hookOnSaveEntity.Name}>, {filterType}> filterLoadKeepSynchronizedOnChangedItems{uniqueName} =
+                {filterFormula};
+            {filterType} filterKeepSynchronizedOnChangedItems{uniqueName}Old = filterLoadKeepSynchronizedOnChangedItems{uniqueName}(updated.Concat(deleted));
 
-            ",
-                hookOnSaveEntity.Module.Name,
-                hookOnSaveEntity.Name,
-                filterType,
-                uniqueName,
-                filterFormula);
+            ";
         }
 
         private static string FilterAndRecomputeAfterSave(KeepSynchronizedOnChangedItemsInfo info, string filterType, string uniqueName)
