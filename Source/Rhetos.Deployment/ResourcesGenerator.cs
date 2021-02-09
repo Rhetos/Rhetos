@@ -37,14 +37,20 @@ namespace Rhetos.Deployment
         private readonly InstalledPackages _installedPackages;
         private readonly ILogProvider _logProvider;
         private readonly BuildOptions _buildOptions;
+        private readonly RhetosBuildEnvironment _rhetosBuildEnvironment;
         private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
 
-        public ResourcesGenerator(InstalledPackages installedPackages, ILogProvider logProvider, BuildOptions buildOptions)
+        public ResourcesGenerator(
+            InstalledPackages installedPackages,
+            ILogProvider logProvider,
+            BuildOptions buildOptions,
+            RhetosBuildEnvironment rhetosBuildEnvironment)
         {
             _installedPackages = installedPackages;
             _logProvider = logProvider;
             _buildOptions = buildOptions;
+            _rhetosBuildEnvironment = rhetosBuildEnvironment;
             _logger = logProvider.GetLogger(GetType().Name);
             _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
         }
@@ -59,20 +65,35 @@ namespace Rhetos.Deployment
         {
             var stopwatch = Stopwatch.StartNew();
             var _fileSyncer = new FileSyncer(_logProvider);
-            _fileSyncer.AddDestinations(Paths.ResourcesFolder); // Even if there are no packages, the old folder content must be emptied.
+            _fileSyncer.AddDestinations(_rhetosBuildEnvironment.GeneratedAssetsFolder); // Even if there are no packages, the old folder content must be emptied.
 
             const string ResourcesPathPrefix = @"Resources\";
+            const string HostApplicationResourcesPathPrefix = @"Resources\Rhetos\";
 
             var resourceFiles = _installedPackages.Packages
                 .SelectMany(package => package.ContentFiles
                     .Where(file => file.InPackagePath.StartsWith(ResourcesPathPrefix))
-                    .Where(file => !file.PhysicalPath.StartsWith(Paths.ResourcesFolder)) // Prevent from including the generated output folder as in input.
+                    .Where(file => !file.PhysicalPath.StartsWith(_rhetosBuildEnvironment.ProjectFolder)) // Prevent from including the generated output folder as in input.
                     .Select(file => new
                     {
                         Package = package,
                         Source = file.PhysicalPath,
                         Target = Path.Combine(SimplifyPackageName(package.Id), file.InPackagePath.Substring(ResourcesPathPrefix.Length))
                     }))
+                //The resource files that are used by Rhetos are located in the Resources folder of a nuget package.
+                //We also want to add the posibility that a Rhetos resource file can be added in the current project by the application developer.
+                //The Resources folder can be used as in any other nuget Rhetos package but this way unwanted files could be copied in the RhetosAssets folder
+                //because the Resources folder in a project is usually used to store other resorce files.
+                .Union(_installedPackages.Packages
+                    .SelectMany(package => package.ContentFiles
+                        .Where(file => file.PhysicalPath.StartsWith(_rhetosBuildEnvironment.ProjectFolder)) // Prevent from including the generated output folder as in input.
+                        .Where(file => file.InPackagePath.StartsWith(HostApplicationResourcesPathPrefix))
+                        .Select(file => new
+                        {
+                            Package = package,
+                            Source = file.PhysicalPath,
+                            Target = Path.Combine(SimplifyPackageName(package.Id), file.InPackagePath.Substring(HostApplicationResourcesPathPrefix.Length))
+                        })))
                 .ToList();
 
             var similarPackages = resourceFiles.Select(file => file.Package).Distinct()
@@ -84,10 +105,10 @@ namespace Rhetos.Deployment
                     + $"\r\nPackage 2: {similarPackages.Last().ReportIdVersionRequestSource()}");
 
             foreach (var file in resourceFiles)
-                _fileSyncer.AddFile(file.Source, Paths.ResourcesFolder, file.Target);
+                _fileSyncer.AddFile(file.Source, _rhetosBuildEnvironment.GeneratedAssetsFolder, file.Target);
 
             _logger.Info($"Copying {resourceFiles.Count} resource files.");
-            _fileSyncer.UpdateDestination();
+            _fileSyncer.UpdateDestination(false, false);
 
             _performanceLogger.Write(stopwatch, "Resources generated.");
         }

@@ -30,7 +30,6 @@ namespace Rhetos
         public static void Initialize(IConfiguration configuration)
         {
 #pragma warning disable CS0618 // Type or member is obsolete
-            Paths.Initialize(configuration);
             ConfigUtility.Initialize(configuration);
             SqlUtility.Initialize(configuration);
             Configuration.Initialize(configuration);

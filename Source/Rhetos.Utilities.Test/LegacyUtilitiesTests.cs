@@ -40,17 +40,6 @@ namespace Rhetos.Utilities.Test
             Assert.IsFalse(string.IsNullOrEmpty(SqlUtility.ConnectionString));
             Assert.AreEqual(31, SqlUtility.SqlCommandTimeout);
         }
-
-        [TestMethod]
-        public void PathsOnNullEnvironment()
-        {
-            var configuration = new ConfigurationBuilder(new ConsoleLogProvider()).Build();
-            Paths.Initialize(configuration);
-
-            TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.RhetosServerRootPath),
-                "Paths property 'RhetosServerRootPath' is not configured in 'unspecified' environment.");
-            TestUtility.ShouldFail<FrameworkException>(() => Console.WriteLine(Paths.ResourcesFolder), "ResourcesFolder");
-        }
 #pragma warning restore CS0618 // Type or member is obsolete
     }
 }

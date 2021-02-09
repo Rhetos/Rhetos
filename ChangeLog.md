@@ -47,7 +47,7 @@
 21. Removed Paths class.
     * Code that generates or reads assets files should use IAssetsOptions.AssetsFolder instead.
     * Code that uses Paths class for Rhetos components initialization (for example SearchForAssembly) should be refactored to use RhetosHost class instead.
-    * TODO: Currently, only part of the class is removed.
+    * Code that uses the ResourcesFolder should use  IAssetsOptions.AssetsFolder instead.
 
 ## 4.3.0 (TO BE RELEASED)
 

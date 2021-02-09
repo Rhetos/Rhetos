@@ -6,6 +6,7 @@
         <ItemGroup>
             <RhetosBuild Include="DslScripts\**\*" />
             <RhetosBuild Include="DataMigration\**\*" />
+            <RhetosBuild Include="Resources\Rhetos\**\*" />
             <RhetosBuildSettings Include="$(RhetosBuildSettingsFile)" Condition="Exists('$(RhetosBuildSettingsFile)')" />
         </ItemGroup>
         <ItemGroup>
