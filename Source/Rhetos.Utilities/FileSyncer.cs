@@ -104,7 +104,7 @@ namespace Rhetos.Utilities
         }
 
         /// <param name="deleteSource">Deleting the source files might improve performance because it moves the files instead of copying them.</param>
-        public void UpdateDestination(bool deleteSource = false)
+        public void UpdateDestination(bool deleteSource = false, bool emptyDestinationFolder = true)
         {
             var sw = Stopwatch.StartNew();
 
@@ -117,7 +117,8 @@ namespace Rhetos.Utilities
 
             foreach (var destination in _filesByDestination)
             {
-                _filesUtility.EmptyDirectory(destination.Key);
+                if(emptyDestinationFolder)
+                    _filesUtility.EmptyDirectory(destination.Key);
                 countDestination++;
 
                 foreach (var copyFile in destination.Value)
