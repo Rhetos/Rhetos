@@ -92,7 +92,13 @@ namespace Rhetos
             if (!File.Exists(hostFilePath))
                 throw new ArgumentException($"Please specify the host application assembly file. File '{hostFilePath}' does not exist.");
 
-            var startupAssembly = Assembly.LoadFrom(hostFilePath);
+            //The Assembly.LoadFrom method will load the Assembly in the DefaultLoadContext.
+            //In most cases this will work but wen using Linqpad this can lead to unexpected behavuour when comparing types because
+            //linqpad will load the reference assemblies in another context.
+            //The Assembly.Load(AssemblyName) method will load the Assembly in the AssemblyLoadContext.CurrentContextualReflectionContext if it is set or AssemblyLoadContext.Default
+            //and we are using this behaviour because if needed the application developer can change the AssemblyLoadContext.CurrentContextualReflectionContext
+            //with AssemblyLoadContext.EnterContextualReflection
+            var startupAssembly = (AssemblyLoadContext.CurrentContextualReflectionContext ?? AssemblyLoadContext.Default).LoadFromAssemblyPath(hostFilePath);
             if (startupAssembly == null)
                 throw new FrameworkException($"Could not resolve assembly from path '{hostFilePath}'.");
 

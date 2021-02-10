@@ -60,7 +60,7 @@ namespace RhetosVSIntegration
             if (invalidProjectContentFiles.Any())
                 throw new FrameworkException("Could not resolve the full path for the Rhetos input files " + string.Join(", ", invalidProjectContentFiles.Select(x => x.ItemSpec)).Limit(1000));
 
-            var assembliesInReferencedProjects = Assemblies.Where(x => !string.IsNullOrEmpty(x.GetMetadata("Project"))).Select(x => new { x.ItemSpec, FullPath = x.GetMetadata("FullPath") });
+            var assembliesInReferencedProjects = Assemblies.Where(x => !string.IsNullOrEmpty(x.GetMetadata("MSBuildSourceProjectFile"))).Select(x => new { x.ItemSpec, FullPath = x.GetMetadata("FullPath") });
             var invalidAssembliesInReferencedProjects = assembliesInReferencedProjects.Where(x => string.IsNullOrEmpty(x.FullPath));
             if (invalidAssembliesInReferencedProjects.Any())
                 throw new FrameworkException("Could not resolve the full path for the referenced assemblies " + string.Join(", ", invalidAssembliesInReferencedProjects.Select(x => x.ItemSpec)).Limit(1000));
