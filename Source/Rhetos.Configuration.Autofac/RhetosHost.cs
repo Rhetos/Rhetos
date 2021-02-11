@@ -40,21 +40,13 @@ namespace Rhetos
     {
         public static readonly string HostBuilderFactoryMethodName = "CreateRhetosHostBuilder";
 
-        /// <summary>
-        /// Dependency injection container.
-        /// </summary>
-        /// <remarks>
-        /// In most cases, the container <b>should not be used directly</b>.
-        /// Instead create a scope (unit of work) with <see cref="CreateScope(Action{ContainerBuilder})"/>,
-        /// and resolve components from it.
-        /// </remarks>
-        private IContainer Container { get; }
+        private readonly IContainer _container;
 
         private bool disposed;
 
         public RhetosHost(IContainer container)
         {
-            this.Container = container;
+            _container = container;
         }
 
         /// <summary>
@@ -75,8 +67,18 @@ namespace Rhetos
         /// </param>
         public TransactionScopeContainer CreateScope(Action<ContainerBuilder> registerScopeComponentsAction = null)
         {
-            return new TransactionScopeContainer(Container, registerScopeComponentsAction);
+            return new TransactionScopeContainer(_container, registerScopeComponentsAction);
         }
+
+        /// <summary>
+        /// Provides direct access to the internal DI container.
+        /// </summary>
+        /// <remarks>
+        /// In most cases this method should not be called directly.
+        /// Instead create a scope (unit of work) with <see cref="CreateScope"/>,
+        /// and resolve components from it.
+        /// </remarks>
+        public IContainer GetRootContainer() => _container;
 
         /// <summary>
         /// Finds and loads the Rhetos runtime context of the main application.
@@ -109,7 +111,7 @@ namespace Rhetos
             if (method.ReturnType != typeof(IRhetosHostBuilder))
                 throw new FrameworkException($"Static method '{entryPointType.FullName}.{HostBuilderFactoryMethodName}' has incorrect return type. Expected return type is {nameof(IRhetosHostBuilder)}.");
 
-            var rhetosHostBuilder = (IRhetosHostBuilder)method.Invoke(null, new object[] { });
+            var rhetosHostBuilder = (IRhetosHostBuilder)method.Invoke(null, Array.Empty<object>());
             rhetosHostBuilder.UseRootFolder(Path.GetDirectoryName(hostFilePath)); // use host directory as root for all RhetosHostBuilder operations
             return rhetosHostBuilder;
         }
@@ -126,7 +128,7 @@ namespace Rhetos
             {
                 if (disposing)
                 {
-                    Container?.Dispose();
+                    _container?.Dispose();
                 }
 
                 disposed = true;
