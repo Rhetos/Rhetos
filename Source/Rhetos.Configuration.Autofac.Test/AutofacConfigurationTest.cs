@@ -180,11 +180,11 @@ namespace Rhetos.Configuration.Autofac.Test
 
             using (var rhetosHost = rhetosHostBuilder.Build())
             {
-                var registrationsDump = DumpSortedRegistrations(GetContainer(rhetosHost));
+                var registrationsDump = DumpSortedRegistrations(rhetosHost.GetRootContainer());
                 System.Diagnostics.Trace.WriteLine(registrationsDump);
                 TestUtility.AssertAreEqualByLine(_expectedRegistrationsDbUpdate, registrationsDump);
 
-                TestAmbiguousRegistations(GetContainer(rhetosHost),
+                TestAmbiguousRegistations(rhetosHost.GetRootContainer(),
                     expectedOverridenRegistrations: new Dictionary<Type, string> { { typeof(IUserInfo), "NullUserInfo" } });
             }
         }
@@ -200,19 +200,14 @@ namespace Rhetos.Configuration.Autofac.Test
 
             using (var rhetosHost = rhetosHostBuilder.Build())
             {
-                var registrationsDump = DumpSortedRegistrations(GetContainer(rhetosHost));
+                var registrationsDump = DumpSortedRegistrations(rhetosHost.GetRootContainer());
                 System.Diagnostics.Trace.WriteLine(registrationsDump);
                 TestUtility.AssertAreEqualByLine(_expectedRegistrationsRuntimeWithInitialization, registrationsDump);
 
-                TestAmbiguousRegistations(GetContainer(rhetosHost),
+                TestAmbiguousRegistations(rhetosHost.GetRootContainer(),
                     expectedMultiplePlugins: new[] { "Rhetos.Dsl.IDslModelIndex" },
                     expectedOverridenRegistrations: new Dictionary<Type, string> { { typeof(IUserInfo), "ProcessUserInfo" } });
             }
-        }
-
-        private IContainer GetContainer(RhetosHost rhetosHost)
-        {
-            return (IContainer)rhetosHost.GetType().GetProperty("Container", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(rhetosHost);
         }
 
         private string DumpSortedRegistrations(IContainer container)
