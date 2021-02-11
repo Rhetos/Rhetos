@@ -282,7 +282,8 @@ namespace Rhetos.Deployment
         private IEnumerable<IPackageFile> FilterCompatibleLibFiles(IEnumerable<IPackageFile> files)
         {
             IEnumerable<IPackageFile> compatibleLibFiles;
-            var allLibFiles = files.Where(file => file.Path.StartsWith(@"lib\"));
+            var allLibFiles = files.Where(file => file.Path.StartsWith(@"lib\")
+                && Path.GetFileName(file.Path) != "_._"); // Microsoft's convention for empty folders in NuGet packages.
             if (VersionUtility.TryGetCompatibleItems(SystemUtility.GetTargetFramework(), allLibFiles, out compatibleLibFiles))
                 return compatibleLibFiles;
             else
