@@ -77,9 +77,9 @@ namespace Rhetos
             dbUpdateCommand.Handler =
                 CommandHandler.Create((FileInfo startupAssembly, bool shortTransactions, bool skipRecompute, bool executeCommandInCurrentProcess) => {
                     if(executeCommandInCurrentProcess)
-                        SafeExecuteCommand(() => DbUpdate(startupAssembly.FullName, shortTransactions, skipRecompute), "DbUpdate", msBuildErrorFormat: false);
+                        return SafeExecuteCommand(() => DbUpdate(startupAssembly.FullName, shortTransactions, skipRecompute), "DbUpdate", msBuildErrorFormat: false);
                     else
-                        InvokeDbUpdateAsExternalProcess(startupAssembly.FullName, args);
+                        return InvokeDbUpdateAsExternalProcess(startupAssembly.FullName, args);
                 });
             rootCommand.AddCommand(dbUpdateCommand);
 
