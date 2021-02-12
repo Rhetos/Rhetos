@@ -109,7 +109,7 @@ namespace Rhetos.Configuration.Autofac
                         }
                 }
 
-                _unitOfWorkScope = _processContainer.CreateTransactionScopeContainer(InitializeSession);
+                _unitOfWorkScope = _processContainer.CreateScope(InitializeSession);
                 if (_commitChanges)
                     _unitOfWorkScope.CommitChanges();
             }

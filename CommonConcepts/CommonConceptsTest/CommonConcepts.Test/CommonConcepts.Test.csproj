@@ -176,7 +176,7 @@
     <Compile Include="Helpers\RhetosProcessHelper.cs" />
     <Compile Include="Helpers\SqlExecuterMonitor.cs" />
     <Compile Include="StorageTest.cs" />
-    <Compile Include="RhetosTransactionScopeContainerTest.cs" />
+    <Compile Include="RhetosUnitOfWorkScopeTest.cs" />
     <Compile Include="HardcodedEntityTest.cs" />
     <Compile Include="Helpers\PrincipalHelper.cs" />
     <Compile Include="EFOptimizationTest.cs" />

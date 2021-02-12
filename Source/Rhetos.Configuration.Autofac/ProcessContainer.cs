@@ -32,8 +32,8 @@ namespace Rhetos
     /// <see cref="ProcessContainer"/> is a helper class for accessing the generated application object model in unit tests and command-line utilities.
     /// This class is thread-safe: a single instance can be reused between threads to reduce the initialization time
     /// (Entity Framework startup and plugin discovery).
-    /// For each unit of work, call <see cref="CreateTransactionScopeContainer(Action{ContainerBuilder})"/> to create
-    /// a lifetime-scope dependency injection container.
+    /// For each unit of work, call <see cref="CreateScope(Action{ContainerBuilder})"/> to create
+    /// a lifetime-scope for the dependency injection container.
     /// Each child container uses its own database transaction that is either committed or rolled back
     /// when the instance is disposed, making data changes atomic.
     /// <see cref="ProcessContainer"/> overrides the main application's DI components to use <see cref="ProcessUserInfo"/>
@@ -109,7 +109,7 @@ namespace Rhetos
         /// Customize the behavior of singleton components in <see cref="ProcessContainer"/> constructor.
         /// </para>
         /// </param>
-        public UnitOfWorkScope CreateTransactionScopeContainer(Action<ContainerBuilder> registerCustomComponents = null)
+        public UnitOfWorkScope CreateScope(Action<ContainerBuilder> registerCustomComponents = null)
         {
             return new UnitOfWorkScope(_rhetosIocContainer.Value, registerCustomComponents);
         }
@@ -142,7 +142,7 @@ namespace Rhetos
         /// Customize the behavior of singleton components in <see cref="ProcessContainer"/> constructor.
         /// </para>
         /// </param>
-        public static UnitOfWorkScope CreateTransactionScopeContainer(string applicationFolder = null, Action<ContainerBuilder> registerCustomComponents = null)
+        public static UnitOfWorkScope CreateScope(string applicationFolder = null, Action<ContainerBuilder> registerCustomComponents = null)
         {
             if (_singleContainer == null)
                 lock (_singleContainerLock)
@@ -153,11 +153,11 @@ namespace Rhetos
                     }
 
             if (_singleContainerApplicationFolder != applicationFolder)
-                throw new FrameworkException($"Static {nameof(ProcessContainer)}.{nameof(CreateTransactionScopeContainer)} cannot be used for different" +
+                throw new FrameworkException($"Static {nameof(ProcessContainer)}.{nameof(CreateScope)} cannot be used for different" +
                     $" application contexts: Provided folder 1: '{_singleContainerApplicationFolder}', folder 2: '{applicationFolder}'." +
                     $" Use a {nameof(ProcessContainer)} instances instead.");
 
-            return _singleContainer.CreateTransactionScopeContainer(registerCustomComponents);
+            return _singleContainer.CreateScope(registerCustomComponents);
         }
 
         #endregion

@@ -57,7 +57,7 @@ void Main()
 	string applicationFolder = Path.GetDirectoryName(Util.CurrentQueryPath);
 	ConsoleLogger.MinLevel = EventType.Info; // Use EventType.Trace for more detailed log.
 	
-	using (var container = ProcessContainer.CreateTransactionScopeContainer(applicationFolder))
+	using (var container = ProcessContainer.CreateScope(applicationFolder))
     {
         var context = container.Resolve<Common.ExecutionContext>();
         var repository = context.Repository;

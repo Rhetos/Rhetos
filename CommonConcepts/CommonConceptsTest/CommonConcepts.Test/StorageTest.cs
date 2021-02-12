@@ -548,7 +548,7 @@ namespace CommonConcepts.Test
         {
             var commandBatchesLog = new PersistenceCommandsDecorator.Log();
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(builder =>
+            using (var container = RhetosProcessHelper.CreateScope(builder =>
                 {
                     builder.RegisterDecorator<PersistenceCommandsDecorator, IPersistenceStorageCommandBatch>();
                     builder.RegisterInstance(commandBatchesLog);
@@ -650,7 +650,7 @@ namespace CommonConcepts.Test
 
             var ids = new[] { a.ID, b.ID, c.ID, d.ID };
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = RhetosProcessHelper.CreateScope())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -667,7 +667,7 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("", TestUtility.DumpSorted(query.ToList(), item => $"{item.Name}:{item.ParentName}"));
             }
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = RhetosProcessHelper.CreateScope())
             {
                 var repository = container.Resolve<Common.DomRepository>();
 
@@ -693,7 +693,7 @@ namespace CommonConcepts.Test
 
             var commandsMock = new PersistenceCommandsMock();
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer(
+            using (var container = RhetosProcessHelper.CreateScope(
                 builder => builder.RegisterInstance<IPersistenceStorageCommandBatch>(commandsMock)))
             {
                 var persistenceStorage = container.Resolve<IPersistenceStorage>();

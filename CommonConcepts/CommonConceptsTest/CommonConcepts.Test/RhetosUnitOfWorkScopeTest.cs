@@ -30,21 +30,21 @@ using System.Threading.Tasks;
 namespace CommonConcepts.Test
 {
     [TestClass]
-    public class RhetosTransactionScopeContainerTest
+    public class RhetosUnitOfWorkScopeTest
     {
         [TestMethod]
         public void ExplicitCommit()
         {
             var id1 = Guid.NewGuid();
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = RhetosProcessHelper.CreateScope())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
                 context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id1 });
                 container.CommitChanges();
             }
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = RhetosProcessHelper.CreateScope())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
                 Assert.IsTrue(context.Repository.TestEntity.BaseEntity.Query(new[] { id1 }).Any());
@@ -58,7 +58,7 @@ namespace CommonConcepts.Test
 
             try
             {
-                using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+                using (var container = RhetosProcessHelper.CreateScope())
                 {
                     var context = container.Resolve<Common.ExecutionContext>();
                     context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id1 });
@@ -73,7 +73,7 @@ namespace CommonConcepts.Test
                 Console.WriteLine($"{ex.GetType().Name}: {ex.Message}");
             }
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = RhetosProcessHelper.CreateScope())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
                 Assert.IsFalse(context.Repository.TestEntity.BaseEntity.Query(new[] { id1 }).Any());
@@ -81,7 +81,7 @@ namespace CommonConcepts.Test
         }
 
         /// <summary>
-        /// This is not an intended usage of RhetosTransactionScopeContainer because an unhandled exception will
+        /// This is not an intended usage of UnitOfWorkScope because an unhandled exception will
         /// incorrectly commit the transaction, but currently the framework allows it.
         /// </summary>
         [TestMethod]
@@ -91,7 +91,7 @@ namespace CommonConcepts.Test
 
             try
             {
-                using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+                using (var container = RhetosProcessHelper.CreateScope())
                 {
                     container.CommitChanges(); // CommitChanges is incorrectly places at this position.
                     var context = container.Resolve<Common.ExecutionContext>();
@@ -104,7 +104,7 @@ namespace CommonConcepts.Test
                 Console.WriteLine($"{ex.GetType().Name}: {ex.Message}");
             }
 
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = RhetosProcessHelper.CreateScope())
             {
                 var context = container.Resolve<Common.ExecutionContext>();
                 Assert.IsTrue(context.Repository.TestEntity.BaseEntity.Query(new[] { id1 }).Any()); // The transaction is committed because of incorrect implementation pattern above.
@@ -117,7 +117,7 @@ namespace CommonConcepts.Test
             const int threadCount = 2;
 
             int initialCount;
-            using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+            using (var container = RhetosProcessHelper.CreateScope())
             {
                 RhetosProcessHelper.CheckForParallelism(container.Resolve<ISqlExecuter>(), threadCount);
 
@@ -129,7 +129,7 @@ namespace CommonConcepts.Test
 
             Parallel.For(0, threadCount, thread =>
             {
-                using (var container = RhetosProcessHelper.CreateTransactionScopeContainer())
+                using (var container = RhetosProcessHelper.CreateScope())
                 {
                     var context = container.Resolve<Common.ExecutionContext>();
 
