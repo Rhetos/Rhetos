@@ -170,9 +170,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void RepositoryWithDependencyInjectionTest()
         {
-            using (var container = new RhetosTestContainer())
+            using (var scope = TestScope.Create())
             {
-                var context = container.Resolve<Common.ExecutionContext>();
+                var context = scope.Resolve<Common.ExecutionContext>();
                 var depentencyReport = context.Repository.TestDataStructure.RepositoryWithDependencyInjection.Load();
 
                 Assert.AreEqual(

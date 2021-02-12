@@ -38,10 +38,11 @@ namespace Rhetos.Dom.DefaultConcepts
 
             if (info.HasAssemblyQualifiedName())
             {
-                // Legacy DLL reference management for build with DeployPackages.
+                // Support for legacy PropertyType format that includes assembly name.
+                // It supports only types that are available at build-time, not including types from current project or generated code.
                 Type type = Type.GetType(info.PropertyType);
                 if (type == null)
-                    throw new DslSyntaxException(info, "Could not find type '" + info.PropertyType + "'.");
+                    throw new DslSyntaxException(info, "Could not find type '" + info.PropertyType + "'. Use a simple type name as written in C# code, with namespace included.");
                 typeName = type.ToString();
             }
             else
