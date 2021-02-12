@@ -34,13 +34,22 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var info = (RepositoryUsesInfo)conceptInfo;
 
-            var type = Type.GetType(info.PropertyType);
-            if (type == null)
-                throw new DslSyntaxException(info, "Could not find type '" + info.PropertyType + "'.");
+            string typeName;
 
-            codeBuilder.InsertCode("private readonly " + type.FullName + " " + info.PropertyName + ";\r\n        ", RepositoryHelper.RepositoryPrivateMembers, info.DataStructure);
-            codeBuilder.InsertCode(", " + type.FullName + " " + info.PropertyName, RepositoryHelper.ConstructorArguments, info.DataStructure);
-            codeBuilder.InsertCode("this." + info.PropertyName + " = " + info.PropertyName + ";\r\n            ", RepositoryHelper.ConstructorCode, info.DataStructure);
+            if (info.HasAssemblyQualifiedName())
+            {
+                // Legacy DLL reference management for build with DeployPackages.
+                Type type = Type.GetType(info.PropertyType);
+                if (type == null)
+                    throw new DslSyntaxException(info, "Could not find type '" + info.PropertyType + "'.");
+                typeName = type.ToString();
+            }
+            else
+                typeName = info.PropertyType;
+
+            codeBuilder.InsertCode($"private readonly {typeName} {info.PropertyName};\r\n        ", RepositoryHelper.RepositoryPrivateMembers, info.DataStructure);
+            codeBuilder.InsertCode($", {typeName} {info.PropertyName}", RepositoryHelper.ConstructorArguments, info.DataStructure);
+            codeBuilder.InsertCode($"this.{info.PropertyName} = {info.PropertyName};\r\n            ", RepositoryHelper.ConstructorCode, info.DataStructure);
         }
     }
 }

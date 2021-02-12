@@ -17,12 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rhetos.Dsl;
 using System.ComponentModel.Composition;
+using System.Text.RegularExpressions;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
@@ -44,15 +41,28 @@ namespace Rhetos.Dsl.DefaultConcepts
         public string PropertyName { get; set; }
 
         /// <summary>
-        /// Assembly qualified name (loosely defined).
-        /// The type name does not need to contain Version, Culture or PublicKeyToken if you are referencing a local assembly in the application's folder.
+        /// C# property type.
+        /// It may require using the full name with namespace, if the namespace is not available in default 'using' statements.
         /// The type will be resolved from IoC container.
         /// </summary>
+        /// <remarks>
+        /// For application that use DeployPackages build process, instead of Rhetos CLI, the property value should be the assembly qualified name,
+        /// but it does not need to contain Version, Culture or PublicKeyToken if you are referencing a local assembly in the application's folder.
+        /// </remarks>
         public string PropertyType { get; set; }
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
         {
-            return new[] { new ModuleExternalReferenceInfo { Module = DataStructure.Module, TypeOrAssembly = PropertyType } };
+            if (HasAssemblyQualifiedName())
+                yield return new ModuleExternalReferenceInfo { Module = DataStructure.Module, TypeOrAssembly = PropertyType };
         }
+
+        /// <summary>
+        /// Simple heuristics for legacy feature activation (DeployPackages build references).
+        /// It does not need to detect all cases, since any new code should use C# type syntax.
+        /// </summary>
+        public bool HasAssemblyQualifiedName() => _isAssemblyQualifiedNameRegex.IsMatch(PropertyType);
+
+        private static readonly Regex _isAssemblyQualifiedNameRegex = new Regex(@",[^\>\)\]]*$");
     }
 }
