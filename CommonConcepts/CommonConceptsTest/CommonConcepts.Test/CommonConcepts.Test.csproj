@@ -176,7 +176,6 @@
     <Compile Include="Helpers\RhetosProcessHelper.cs" />
     <Compile Include="Helpers\SqlExecuterMonitor.cs" />
     <Compile Include="StorageTest.cs" />
-    <Compile Include="RhetosUnitOfWorkScopeTest.cs" />
     <Compile Include="HardcodedEntityTest.cs" />
     <Compile Include="Helpers\PrincipalHelper.cs" />
     <Compile Include="EFOptimizationTest.cs" />
@@ -193,6 +192,7 @@
     <Compile Include="MultipleValidationsTest.cs" />
     <Compile Include="ProcessingEngineTest.cs" />
     <Compile Include="DslUtilityIntegrationTest.cs" />
+    <Compile Include="UnitOfWorkScopeTest.cs" />
     <Compile Include="UserRequiredPropertyTest.cs" />
     <Compile Include="RowPermissionsRulesTest.cs" />
     <Compile Include="RowPermissionsDemo.cs" />

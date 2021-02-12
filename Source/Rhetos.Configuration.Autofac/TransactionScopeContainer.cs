@@ -25,7 +25,7 @@ namespace Rhetos
     /// <summary>
     /// Dependency Injection container which scope is the same as the scope of the database transaction, for executing a single unit of work.
     /// Note that the changes in database will be rolled back by default.
-    /// To commit changes to database, call <see cref="UnitOfWorkScope.CommitOnDispose"/> method on this instance, at the end of the 'using' block.
+    /// To commit changes to database, call <see cref="UnitOfWorkScope.CommitAndClose"/> method on this instance, at the end of the 'using' block.
     /// </summary>
     [Obsolete("Use " + nameof(UnitOfWorkScope) + " instead.")]
     public class TransactionScopeContainer : UnitOfWorkScope
@@ -50,7 +50,7 @@ namespace Rhetos
         /// The changes are not committed immediately, they will be committed on DI container disposal.
         /// Call this method at the end of the 'using' block to mark the current database transaction to be committed.
         /// </summary>
-        [Obsolete("Use " + nameof(CommitOnDispose) + " instead.")]
+        [Obsolete("Use " + nameof(CommitAndClose) + " or " + nameof(CommitOnDispose) + " instead.")]
         public void CommitChanges() => CommitOnDispose();
     }
 }

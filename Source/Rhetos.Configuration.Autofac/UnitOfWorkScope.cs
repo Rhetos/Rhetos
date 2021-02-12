@@ -26,7 +26,7 @@ namespace Rhetos
     /// <summary>
     /// Dependency Injection container which scope is the same as the scope of the database transaction, for executing a single unit of work.
     /// Note that the changes in database will be rolled back by default.
-    /// To commit changes to database, call <see cref="CommitOnDispose"/> at the end of the 'using' block.
+    /// To commit changes to database, call <see cref="CommitAndClose"/> at the end of the 'using' block.
     /// </summary>
     public class UnitOfWorkScope : IDisposable
     {
@@ -64,6 +64,19 @@ namespace Rhetos
         public void CommitOnDispose()
         {
             _commitChanges = true;
+        }
+
+        /// <summary>
+        /// Commits and closes the database transaction for the current unit of work (lifetime scope).
+        /// It is a good practice to put the call as the last statement in the using block.
+        /// </summary>
+        /// <remarks>
+        /// After calling this method, any later database operation in the current scope might result with an error.
+        /// The transaction will be rolled back, instead of committed, if <see cref="IPersistenceTransaction.DiscardChanges"/> method was called earlier.
+        /// </remarks>
+        public void CommitAndClose()
+        {
+            _lifetimeScope.Value.Resolve<IPersistenceTransaction>().Dispose();
         }
 
         private bool disposed = false; // Standard IDisposable pattern.
