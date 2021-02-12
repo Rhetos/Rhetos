@@ -99,7 +99,7 @@ namespace Rhetos
 
         /// <summary>
         /// This method creates a thread-safe lifetime scope DI container to isolate unit of work in a separate database transaction.
-        /// To commit changes to database, call <see cref="TransactionScopeContainer.CommitChanges"/> at the end of the 'using' block.
+        /// To commit changes to database, call <see cref="UnitOfWorkScope.CommitChanges"/> at the end of the 'using' block.
         /// </summary>
         /// <param name="registerCustomComponents">
         /// Register custom components that may override system and plugins services.
@@ -109,9 +109,9 @@ namespace Rhetos
         /// Customize the behavior of singleton components in <see cref="ProcessContainer"/> constructor.
         /// </para>
         /// </param>
-        public TransactionScopeContainer CreateTransactionScopeContainer(Action<ContainerBuilder> registerCustomComponents = null)
+        public UnitOfWorkScope CreateTransactionScopeContainer(Action<ContainerBuilder> registerCustomComponents = null)
         {
-            return new TransactionScopeContainer(_rhetosIocContainer.Value, registerCustomComponents);
+            return new UnitOfWorkScope(_rhetosIocContainer.Value, registerCustomComponents);
         }
 
         #region Static helper for singleton ProcessContainer. Useful optimization for LINQPad scripts that reuse the external static instance after recompiling the script.
@@ -122,7 +122,7 @@ namespace Rhetos
 
         /// <summary>
         /// This method creates a thread-safe lifetime scope DI container to isolate unit of work in a separate database transaction.
-        /// To commit changes to database, call <see cref="TransactionScopeContainer.CommitChanges"/> at the end of the 'using' block.
+        /// To commit changes to database, call <see cref="UnitOfWorkScope.CommitChanges"/> at the end of the 'using' block.
         /// <para>
         /// In most cases it is preferred to use a <see cref="ProcessContainer"/> instance instead of this static method, for better control over the DI container.
         /// The static method is useful in some special cases, for example to optimize LINQPad scripts that can reuse the external static instance
@@ -142,7 +142,7 @@ namespace Rhetos
         /// Customize the behavior of singleton components in <see cref="ProcessContainer"/> constructor.
         /// </para>
         /// </param>
-        public static TransactionScopeContainer CreateTransactionScopeContainer(string applicationFolder = null, Action<ContainerBuilder> registerCustomComponents = null)
+        public static UnitOfWorkScope CreateTransactionScopeContainer(string applicationFolder = null, Action<ContainerBuilder> registerCustomComponents = null)
         {
             if (_singleContainer == null)
                 lock (_singleContainerLock)

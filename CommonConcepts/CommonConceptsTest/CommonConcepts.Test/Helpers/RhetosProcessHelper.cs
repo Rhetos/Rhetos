@@ -36,9 +36,9 @@ namespace CommonConcepts.Test.Helpers
     {
         /// <summary>
         /// Creates a thread-safe lifetime scope DI container to isolate unit of work in a separate database transaction.
-        /// To commit changes to database, call <see cref="TransactionScopeContainer.CommitChanges"/> at the end of the 'using' block.
+        /// To commit changes to database, call <see cref="UnitOfWorkScope.CommitChanges"/> at the end of the 'using' block.
         /// </summary>
-        public static TransactionScopeContainer CreateTransactionScopeContainer(Action<ContainerBuilder> registerCustomComponents = null)
+        public static UnitOfWorkScope CreateTransactionScopeContainer(Action<ContainerBuilder> registerCustomComponents = null)
         {
             return ProcessContainer.CreateTransactionScopeContainer(registerCustomComponents);
         }

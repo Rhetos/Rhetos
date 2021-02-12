@@ -28,7 +28,7 @@ namespace Rhetos
     /// Note that the changes in database will be rolled back by default.
     /// To commit changes to database, call <see cref="CommitChanges"/> at the end of the 'using' block.
     /// </summary>
-    public class TransactionScopeContainer : IDisposable
+    public class UnitOfWorkScope : IDisposable
     {
         private bool _commitChanges = false;
         private readonly Lazy<ILifetimeScope> _lifetimeScope;
@@ -44,7 +44,7 @@ namespace Rhetos
         /// Customize the behavior of singleton components in <see cref="ProcessContainer"/> constructor.
         /// </para>
         /// </param>
-        public TransactionScopeContainer(IContainer iocContainer, Action<ContainerBuilder> registerCustomComponents = null)
+        public UnitOfWorkScope(IContainer iocContainer, Action<ContainerBuilder> registerCustomComponents = null)
         {
             _lifetimeScope = new Lazy<ILifetimeScope>(() => registerCustomComponents != null ? iocContainer.BeginLifetimeScope(registerCustomComponents) : iocContainer.BeginLifetimeScope());
         }
