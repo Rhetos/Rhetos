@@ -41,7 +41,7 @@ namespace CommonConcepts.Test
             {
                 var context = container.Resolve<Common.ExecutionContext>();
                 context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id1 });
-                container.CommitChanges();
+                container.CommitOnDispose();
             }
 
             using (var container = RhetosProcessHelper.CreateScope())
@@ -64,7 +64,7 @@ namespace CommonConcepts.Test
                     context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id1 });
                     throw new FrameworkException(nameof(RollbackByDefault)); // The exception that is not handled within transaction scope.
 #pragma warning disable CS0162 // Unreachable code detected
-                    container.CommitChanges();
+                    container.CommitOnDispose();
 #pragma warning restore CS0162 // Unreachable code detected
                 }
             }
@@ -93,7 +93,7 @@ namespace CommonConcepts.Test
             {
                 using (var container = RhetosProcessHelper.CreateScope())
                 {
-                    container.CommitChanges(); // CommitChanges is incorrectly places at this position.
+                    container.CommitOnDispose(); // CommitOnDispose is incorrectly places at this position.
                     var context = container.Resolve<Common.ExecutionContext>();
                     context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id1 });
                     throw new FrameworkException(nameof(EarlyCommit)); // The exception is not handled within transaction scope to discard the transaction.

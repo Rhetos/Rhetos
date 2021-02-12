@@ -26,7 +26,7 @@ namespace Rhetos
     /// <summary>
     /// Dependency Injection container which scope is the same as the scope of the database transaction, for executing a single unit of work.
     /// Note that the changes in database will be rolled back by default.
-    /// To commit changes to database, call <see cref="CommitChanges"/> at the end of the 'using' block.
+    /// To commit changes to database, call <see cref="CommitOnDispose"/> at the end of the 'using' block.
     /// </summary>
     public class UnitOfWorkScope : IDisposable
     {
@@ -55,15 +55,18 @@ namespace Rhetos
         }
 
         /// <summary>
-        /// The changes are not committed immediately, they will be committed on DI container disposal.
-        /// Call this method at the end of the 'using' block to mark the current database transaction to be committed.
+        /// Indicates that all operations within the scope are completed successfully, and the transaction can be committed when the <see cref="UnitOfWorkScope"/> is disposed.
+        /// It is a good practice to put the call as the last statement in the using block.
         /// </summary>
-        public void CommitChanges()
+        /// <remarks>
+        /// This method call will be ignored if the database transaction is discarded by <see cref="IPersistenceTransaction.DiscardChanges()"/>.
+        /// </remarks>
+        public void CommitOnDispose()
         {
             _commitChanges = true;
         }
 
-        private bool disposed = false; // Standard IDisposable pattern to detect redundant calls.
+        private bool disposed = false; // Standard IDisposable pattern.
 
         public void Dispose()
         {

@@ -111,7 +111,7 @@ namespace Rhetos.Configuration.Autofac
 
                 _unitOfWorkScope = _processContainer.CreateScope(InitializeSession);
                 if (_commitChanges)
-                    _unitOfWorkScope.CommitChanges();
+                    _unitOfWorkScope.CommitOnDispose();
             }
         }
 

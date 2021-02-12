@@ -55,19 +55,28 @@ namespace Rhetos.Persistence
 
         public event Action BeforeClose;
 
-        public void Dispose()
+        protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
             {
-                _logger.Trace(() => "Disposing (" + _persistenceTransactionId + ").");
-                if (_discard)
-                    Rollback();
-                else
-                    Commit();
-            }
+                if (disposing)
+                {
+                    _logger.Trace(() => "Disposing (" + _persistenceTransactionId + ").");
+                    if (_discard)
+                        Rollback();
+                    else
+                        Commit();
+                }
 
-            BeforeClose = null;
-            _disposed = true;
+                BeforeClose = null;
+                _disposed = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
 
         public void CommitAndReconnect()
@@ -88,13 +97,12 @@ namespace Rhetos.Persistence
         {
             try
             {
-                var callStack = new StackTrace().GetFrames();
                 return new StackTrace().GetFrame(2).GetMethod().DeclaringType.AssemblyQualifiedName;
             }
             catch
             {
                 return "";
-            };
+            }
         }
 
         private void Commit()

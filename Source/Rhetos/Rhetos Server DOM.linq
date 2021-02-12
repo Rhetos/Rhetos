@@ -86,6 +86,6 @@ void Main()
             
         Console.WriteLine("Done.");
 		
-		//container.CommitChanges(); // Database transaction is rolled back by default.
+		//container.CommitOnDispose(); // Database transaction is rolled back by default.
     }
 }
