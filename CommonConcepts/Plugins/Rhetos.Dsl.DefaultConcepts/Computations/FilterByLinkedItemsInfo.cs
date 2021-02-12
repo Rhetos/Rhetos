@@ -58,11 +58,6 @@ namespace Rhetos.Dsl.DefaultConcepts
                                    Parameter = Parameter,
                                    Expression = GetFilterExpression(this)
                                },
-                           new ModuleExternalReferenceInfo
-                               {
-                                   Module = new ModuleInfo {Name = Source.Module.Name},
-                                   TypeOrAssembly = typeof (DslUtility).AssemblyQualifiedName
-                               }
                        };
         }
 

@@ -60,7 +60,6 @@ namespace Rhetos.Dsl.DefaultConcepts
         public IEnumerable<IConceptInfo> CreateNewConcepts(ImplementsQueryableInterfaceInfo conceptInfo, IDslModel existingConcepts)
         {
             var newConcepts = new List<IConceptInfo>();
-            newConcepts.Add(new ModuleExternalReferenceInfo { Module = conceptInfo.DataStructure.Module, TypeOrAssembly = conceptInfo.InterfaceType });
 
             var interfaceProperties = conceptInfo.GetInterfaceType().GetProperties();
             var interfacePropertiesIndex = interfaceProperties.ToDictionary(ip => ip.Name);

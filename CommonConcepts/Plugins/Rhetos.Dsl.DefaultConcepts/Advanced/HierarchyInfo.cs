@@ -176,7 +176,6 @@ namespace Rhetos.Dsl.DefaultConcepts
             {
                 // Computing the hierarchy information:
                 computedDataStructure,
-                new ModuleExternalReferenceInfo { Module = computedDataStructure.Module, TypeOrAssembly = @"Rhetos.Dom.DefaultConcepts.HierarchyItem, Rhetos.Dom.DefaultConcepts" },
                 new DataStructureExtendsInfo { Extension = computedDataStructure, Base = conceptInfo.DataStructure },
                 new IntegerPropertyInfo { DataStructure = computedDataStructure, Name = "LeftIndex" },
                 new IntegerPropertyInfo { DataStructure = computedDataStructure, Name = "RightIndex" },

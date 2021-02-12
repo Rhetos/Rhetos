@@ -29,7 +29,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("RepositoryUses")]
-    public class RepositoryUsesInfo : IConceptInfo, IMacroConcept
+    public class RepositoryUsesInfo : IConceptInfo
     {
         [ConceptKey]
         public DataStructureInfo DataStructure { get; set; }
@@ -50,12 +50,6 @@ namespace Rhetos.Dsl.DefaultConcepts
         /// but it does not need to contain Version, Culture or PublicKeyToken if you are referencing a local assembly in the application's folder.
         /// </remarks>
         public string PropertyType { get; set; }
-
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
-        {
-            if (HasAssemblyQualifiedName())
-                yield return new ModuleExternalReferenceInfo { Module = DataStructure.Module, TypeOrAssembly = PropertyType };
-        }
 
         /// <summary>
         /// Simple heuristics for legacy feature activation (DeployPackages build references).
