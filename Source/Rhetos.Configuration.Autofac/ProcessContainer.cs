@@ -111,8 +111,14 @@ namespace Rhetos
         /// </param>
         public UnitOfWorkScope CreateScope(Action<ContainerBuilder> registerCustomComponents = null)
         {
-            return new UnitOfWorkScope(_rhetosIocContainer.Value, registerCustomComponents);
+#pragma warning disable CS0618 // Type or member is obsolete. It provides a derivation of UnitOfWorkScope for legacy methods.
+            return new TransactionScopeContainer(_rhetosIocContainer.Value, registerCustomComponents);
+#pragma warning restore CS0618
         }
+
+        [Obsolete("Use " + nameof(CreateScope) + " instead.")]
+        public TransactionScopeContainer CreateTransactionScopeContainer(Action<ContainerBuilder> registerCustomComponents = null)
+            => (TransactionScopeContainer)CreateScope(registerCustomComponents);
 
         #region Static helper for singleton ProcessContainer. Useful optimization for LINQPad scripts that reuse the external static instance after recompiling the script.
 
@@ -159,6 +165,10 @@ namespace Rhetos
 
             return _singleContainer.CreateScope(registerCustomComponents);
         }
+
+        [Obsolete("Use " + nameof(CreateScope) + " instead.")]
+        public static TransactionScopeContainer CreateTransactionScopeContainer(string applicationFolder = null, Action<ContainerBuilder> registerCustomComponents = null)
+            => (TransactionScopeContainer)CreateScope(applicationFolder, registerCustomComponents);
 
         #endregion
 
