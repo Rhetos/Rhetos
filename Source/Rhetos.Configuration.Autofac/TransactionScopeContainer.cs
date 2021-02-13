@@ -35,14 +35,14 @@ namespace Rhetos
         private readonly ILifetimeScope _lifetimeScope;
 
         /// <param name="iocContainer">
-        /// The Dependency Injection container used to create the transaction scope container.
+        /// The Dependency Injection container for the transaction scope.
         /// </param>
         /// <param name="registerCustomComponents">
-        /// Register custom components that may override system and plugins services.
+        /// Register custom components that may override system and plugins services previously registered in <paramref name="iocContainer"/>.
         /// This is commonly used by utilities and tests that need to override host application's components or register additional plugins.
         /// <para>
         /// Note that the transaction-scope component registration might not affect singleton components.
-        /// Customize the behavior of singleton components in <see cref="ProcessContainer"/> constructor.
+        /// Customize the behavior of singleton components in <see cref="IRhetosHostBuilder"/> implementation.
         /// </para>
         /// </param>
         public TransactionScopeContainer(IContainer iocContainer, Action<ContainerBuilder> registerCustomComponents = null)
