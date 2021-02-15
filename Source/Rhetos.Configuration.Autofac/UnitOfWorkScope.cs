@@ -18,6 +18,8 @@
 */
 
 using Autofac;
+using Rhetos.Extensibility;
+using Rhetos.Logging;
 using Rhetos.Persistence;
 using System;
 
@@ -65,7 +67,8 @@ namespace Rhetos
         /// </remarks>
         public void CommitOnDispose()
         {
-            _lifetimeScope.Resolve<IPersistenceTransaction>().CommitChanges();
+            var transaction = _lifetimeScope.Resolve<IPersistenceTransaction>();
+            transaction.CommitChanges();
         }
 
         /// <summary>
@@ -78,7 +81,9 @@ namespace Rhetos
         /// </remarks>
         public void CommitAndClose()
         {
-            _lifetimeScope.Resolve<IPersistenceTransaction>().Dispose();
+            var transaction = _lifetimeScope.Resolve<IPersistenceTransaction>();
+            transaction.CommitChanges();
+            transaction.Dispose();
         }
 
         internal void LogRegistrationStatistics(string title, ILogProvider logProvider)

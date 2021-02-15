@@ -33,7 +33,7 @@ namespace Rhetos.Deployment
     /// </summary>
     public static class ApplicationInitialization
     {
-        public static Type[] GetSortedInitializers(TransactionScopeContainer scope)
+        public static Type[] GetSortedInitializers(UnitOfWorkScope scope)
         {
             // The plugins in the container are sorted by their dependencies defined in ExportMetadata attribute (static typed):
             var initializers = scope.Resolve<IPluginsContainer<IServerInitializer>>().GetPlugins();

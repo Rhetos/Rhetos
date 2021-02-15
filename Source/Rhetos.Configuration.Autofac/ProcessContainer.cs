@@ -164,7 +164,7 @@ namespace Rhetos
 
         [Obsolete("Use " + nameof(CreateScope) + " instead.")]
         public static TransactionScopeContainer CreateTransactionScopeContainer(string rhetosAppAssemblyPath, Action<ContainerBuilder> registerCustomComponents = null)
-            => (TransactionScopeContainer)CreateScope(rhetosAppAssemblyPathnFolder, registerCustomComponents);
+            => (TransactionScopeContainer)CreateScope(rhetosAppAssemblyPath, registerCustomComponents);
 
         #endregion
 

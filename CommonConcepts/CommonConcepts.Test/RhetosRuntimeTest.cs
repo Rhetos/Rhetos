@@ -36,7 +36,7 @@ namespace Rhetos
         {
             using (var scope = TestScope.Create())
             {
-                var lifetimeScope = (ILifetimeScope)scope.GetType()
+                var lifetimeScope = (ILifetimeScope)typeof(UnitOfWorkScope)
                     .GetField("_lifetimeScope", BindingFlags.NonPublic | BindingFlags.Instance)
                     .GetValue(scope);
 

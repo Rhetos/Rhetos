@@ -89,7 +89,7 @@ namespace Rhetos.Configuration.Autofac
 
             if (disposing)
             {
-                unitOfWorkScope?.Dispose();
+                _unitOfWorkScope?.Dispose();
             }
 
             disposed = true;
