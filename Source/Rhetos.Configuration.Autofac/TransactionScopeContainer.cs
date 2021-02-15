@@ -18,7 +18,6 @@
 */
 
 using Autofac;
-using Rhetos.Persistence;
 using System;
 
 namespace Rhetos
@@ -26,13 +25,11 @@ namespace Rhetos
     /// <summary>
     /// Dependency Injection container which scope is the same as the scope of the database transaction, for executing a single unit of work.
     /// Note that the changes in database will be rolled back by default.
-    /// To commit changes to database, call <see cref="CommitChanges"/> at the end of the 'using' block.
+    /// To commit changes to database, call <see cref="UnitOfWorkScope.CommitAndClose"/> method on this instance, at the end of the 'using' block.
     /// </summary>
-    public class TransactionScopeContainer : IDisposable
+    [Obsolete("Use " + nameof(UnitOfWorkScope) + " instead.")]
+    public class TransactionScopeContainer : UnitOfWorkScope
     {
-        private bool _commitChanges = false;
-        private readonly Lazy<ILifetimeScope> _lifetimeScope;
-
         /// <param name="iocContainer">
         /// The Dependency Injection container used to create the transaction scope container.
         /// </param>
@@ -44,48 +41,16 @@ namespace Rhetos
         /// Customize the behavior of singleton components in <see cref="ProcessContainer"/> constructor.
         /// </para>
         /// </param>
-        public TransactionScopeContainer(IContainer iocContainer, Action<ContainerBuilder> registerCustomComponents = null)
+        [Obsolete("Use " + nameof(UnitOfWorkScope) + " instead.")]
+        public TransactionScopeContainer(IContainer iocContainer, Action<ContainerBuilder> registerCustomComponents = null) : base(iocContainer, registerCustomComponents)
         {
-            _lifetimeScope = new Lazy<ILifetimeScope>(() => registerCustomComponents != null ? iocContainer.BeginLifetimeScope(registerCustomComponents) : iocContainer.BeginLifetimeScope());
-        }
-
-        public T Resolve<T>()
-        {
-            return _lifetimeScope.Value.Resolve<T>();
         }
 
         /// <summary>
         /// The changes are not committed immediately, they will be committed on DI container disposal.
         /// Call this method at the end of the 'using' block to mark the current database transaction to be committed.
         /// </summary>
-        public void CommitChanges()
-        {
-            _commitChanges = true;
-        }
-
-        private bool disposed = false; // Standard IDisposable pattern to detect redundant calls.
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposed)
-                return;
-
-            if (disposing)
-            {
-                if (!_commitChanges && _lifetimeScope.IsValueCreated)
-                    _lifetimeScope.Value.Resolve<IPersistenceTransaction>().DiscardChanges();
-
-                if (_lifetimeScope.IsValueCreated)
-                    _lifetimeScope.Value.Dispose();
-            }
-
-            disposed = true;
-        }
+        [Obsolete("Use " + nameof(CommitAndClose) + " or " + nameof(CommitOnDispose) + " instead.")]
+        public void CommitChanges() => CommitOnDispose();
     }
 }

@@ -26,7 +26,7 @@ using System.Linq;
 namespace Rhetos.Configuration.Autofac
 {
     /// <summary>
-    /// RhetosTestContainer is a legacy wrapper around <see cref="ProcessContainer"/> and <see cref="TransactionScopeContainer"/>.
+    /// RhetosTestContainer is a legacy wrapper around <see cref="ProcessContainer"/> and <see cref="UnitOfWorkScope"/>.
     /// For new projects use those classes directly.
     /// Inherit this class and override virtual functions to customize it.
     /// </summary>
@@ -40,11 +40,11 @@ namespace Rhetos.Configuration.Autofac
         // Instance per test or session:
         protected bool _commitChanges;
         protected string _explicitRhetosServerFolder;
-        protected TransactionScopeContainer _rhetosTransactionScope;
+        protected UnitOfWorkScope _unitOfWorkScope;
         public event Action<ContainerBuilder> InitializeSession;
 
         /// <param name="commitChanges">
-        /// Whether database updates (by ORM repositories) will be committed or rollbacked.
+        /// Whether database updates (by ORM repositories) will be committed or rolled back.
         /// </param>
         /// <param name="rhetosServerFolder">
         /// If not set, the class will try to automatically locate Rhetos server, looking from current directory.
@@ -64,13 +64,13 @@ namespace Rhetos.Configuration.Autofac
         /// </summary>
         public void Initialize()
         {
-            InitializeRhetosTransactionScopeContainer();
+            InitializeUnitOfWorkScope();
         }
 
         public T Resolve<T>()
         {
-            InitializeRhetosTransactionScopeContainer();
-            return _rhetosTransactionScope.Resolve<T>();
+            InitializeUnitOfWorkScope();
+            return _unitOfWorkScope.Resolve<T>();
         }
 
         private bool disposed = false; // Standard IDisposable pattern to detect redundant calls.
@@ -88,16 +88,16 @@ namespace Rhetos.Configuration.Autofac
 
             if (disposing)
             {
-                if (_rhetosTransactionScope != null)
-                    _rhetosTransactionScope.Dispose();
+                if (_unitOfWorkScope != null)
+                    _unitOfWorkScope.Dispose();
             }
 
             disposed = true;
         }
 
-        private void InitializeRhetosTransactionScopeContainer()
+        private void InitializeUnitOfWorkScope()
         {
-            if (_rhetosTransactionScope == null)
+            if (_unitOfWorkScope == null)
             {
                 if (_processContainer == null)
                 {
@@ -109,9 +109,9 @@ namespace Rhetos.Configuration.Autofac
                         }
                 }
 
-                _rhetosTransactionScope = _processContainer.CreateTransactionScopeContainer(InitializeSession);
+                _unitOfWorkScope = _processContainer.CreateScope(InitializeSession);
                 if (_commitChanges)
-                    _rhetosTransactionScope.CommitChanges();
+                    _unitOfWorkScope.CommitOnDispose();
             }
         }
 

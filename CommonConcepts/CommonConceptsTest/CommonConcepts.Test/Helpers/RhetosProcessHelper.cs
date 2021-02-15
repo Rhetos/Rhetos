@@ -36,16 +36,16 @@ namespace CommonConcepts.Test.Helpers
     {
         /// <summary>
         /// Creates a thread-safe lifetime scope DI container to isolate unit of work in a separate database transaction.
-        /// To commit changes to database, call <see cref="TransactionScopeContainer.CommitChanges"/> at the end of the 'using' block.
+        /// To commit changes to database, call <see cref="UnitOfWorkScope.CommitAndClose"/> at the end of the 'using' block.
         /// </summary>
-        public static TransactionScopeContainer CreateTransactionScopeContainer(Action<ContainerBuilder> registerCustomComponents = null)
+        public static UnitOfWorkScope CreateScope(Action<ContainerBuilder> registerCustomComponents = null)
         {
-            return ProcessContainer.CreateTransactionScopeContainer(registerCustomComponents);
+            return ProcessContainer.CreateScope(registerCustomComponents);
         }
 
         /// <summary>
         /// Shared DI container to be reused between tests, to reduce initialization time for each test.
-        /// Each test should create a child container with <see cref="CreateTransactionScopeContainer"/> to start a 'using' block.
+        /// Each test should create a child container with <see cref="CreateScope"/> to start a 'using' block.
         /// </summary>
         public static ProcessContainer ProcessContainer = new ProcessContainer(FindRhetosApplicationFolder());
 

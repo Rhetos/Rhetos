@@ -57,7 +57,7 @@ void Main()
 	string applicationFolder = Path.GetDirectoryName(Util.CurrentQueryPath);
 	ConsoleLogger.MinLevel = EventType.Info; // Use EventType.Trace for more detailed log.
 	
-	using (var container = ProcessContainer.CreateTransactionScopeContainer(applicationFolder))
+	using (var container = ProcessContainer.CreateScope(applicationFolder))
     {
         var context = container.Resolve<Common.ExecutionContext>();
         var repository = context.Repository;
@@ -86,6 +86,6 @@ void Main()
             
         Console.WriteLine("Done.");
 		
-		//container.CommitChanges(); // Database transaction is rolled back by default.
+		//container.CommitOnDispose(); // Database transaction is rolled back by default.
     }
 }
