@@ -31,13 +31,14 @@ namespace Rhetos
     public class UnitOfWorkScope : IDisposable
     {
         private bool _commitChanges = false;
-        private readonly Lazy<ILifetimeScope> _lifetimeScope;
+        private readonly ILifetimeScope _lifetimeScope;
+        private bool disposed;
 
         /// <param name="iocContainer">
-        /// The Dependency Injection container used to create the transaction scope container.
+        /// The Dependency Injection container for the transaction scope.
         /// </param>
         /// <param name="registerCustomComponents">
-        /// Register custom components that may override system and plugins services.
+        /// Register custom components that may override system and plugins services previously registered in <paramref name="iocContainer"/>.
         /// This is commonly used by utilities and tests that need to override host application's components or register additional plugins.
         /// <para>
         /// Note that the transaction-scope component registration might not affect singleton components.
@@ -46,12 +47,14 @@ namespace Rhetos
         /// </param>
         public UnitOfWorkScope(IContainer iocContainer, Action<ContainerBuilder> registerCustomComponents = null)
         {
-            _lifetimeScope = new Lazy<ILifetimeScope>(() => registerCustomComponents != null ? iocContainer.BeginLifetimeScope(registerCustomComponents) : iocContainer.BeginLifetimeScope());
+            _lifetimeScope = registerCustomComponents != null
+                ? iocContainer.BeginLifetimeScope(registerCustomComponents)
+                : iocContainer.BeginLifetimeScope();
         }
 
         public T Resolve<T>()
         {
-            return _lifetimeScope.Value.Resolve<T>();
+            return _lifetimeScope.Resolve<T>();
         }
 
         /// <summary>
@@ -76,32 +79,28 @@ namespace Rhetos
         /// </remarks>
         public void CommitAndClose()
         {
-            _lifetimeScope.Value.Resolve<IPersistenceTransaction>().Dispose();
-        }
-
-        private bool disposed = false; // Standard IDisposable pattern.
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            _lifetimeScope.Resolve<IPersistenceTransaction>().Dispose();
         }
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposed)
-                return;
-
-            if (disposing)
+            if (!disposed)
             {
-                if (!_commitChanges && _lifetimeScope.IsValueCreated)
-                    _lifetimeScope.Value.Resolve<IPersistenceTransaction>().DiscardChanges();
+                if (disposing)
+                {
+                    if (!_commitChanges)
+                        _lifetimeScope.Resolve<IPersistenceTransaction>().DiscardChanges();
+                    _lifetimeScope.Dispose();
+                }
 
-                if (_lifetimeScope.IsValueCreated)
-                    _lifetimeScope.Value.Dispose();
+                disposed = true;
             }
+        }
 
-            disposed = true;
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }
