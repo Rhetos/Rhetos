@@ -31,8 +31,8 @@ namespace Rhetos
     /// <see cref="ProcessContainer"/> is a helper class for accessing the generated application object model in unit tests and command-line utilities.
     /// This class is thread-safe: a single instance can be reused between threads to reduce the initialization time
     /// (Entity Framework startup and plugin discovery).
-    /// For each unit of work, call <see cref="CreateTransactionScopeContainer(Action{ContainerBuilder})"/> to create
-    /// a lifetime-scope dependency injection container.
+    /// For each unit of work, call <see cref="CreateScope(Action{ContainerBuilder})"/> to create
+    /// a lifetime-scope for the dependency injection container.
     /// Each child container uses its own database transaction that is either committed or rolled back
     /// when the instance is disposed, making data changes atomic.
     /// <see cref="ProcessContainer"/> overrides the main application's DI components to use <see cref="ProcessUserInfo"/>
@@ -97,7 +97,7 @@ namespace Rhetos
 
         /// <summary>
         /// This method creates a thread-safe lifetime scope DI container to isolate unit of work in a separate database transaction.
-        /// To commit changes to database, call <see cref="TransactionScopeContainer.CommitChanges"/> at the end of the 'using' block.
+        /// To commit changes to database, call <see cref="UnitOfWorkScope.CommitAndClose"/> at the end of the 'using' block.
         /// </summary>
         /// <param name="registerCustomComponents">
         /// Register custom components that may override system and plugins services.
@@ -107,10 +107,16 @@ namespace Rhetos
         /// Customize the behavior of singleton components in <see cref="ProcessContainer"/> constructor.
         /// </para>
         /// </param>
-        public TransactionScopeContainer CreateTransactionScopeContainer(Action<ContainerBuilder> registerCustomComponents = null)
+        public UnitOfWorkScope CreateScope(Action<ContainerBuilder> registerCustomComponents = null)
         {
+#pragma warning disable CS0618 // Type or member is obsolete. It provides a derivation of UnitOfWorkScope for legacy methods.
             return _rhetosIocContainer.Value.CreateScope(registerCustomComponents);
+#pragma warning restore CS0618
         }
+
+        [Obsolete("Use " + nameof(CreateScope) + " instead.")]
+        public TransactionScopeContainer CreateTransactionScopeContainer(Action<ContainerBuilder> registerCustomComponents = null)
+            => (TransactionScopeContainer)CreateScope(registerCustomComponents);
 
         #region Static helper for singleton ProcessContainer. Useful optimization for LINQPad scripts that reuse the external static instance after recompiling the script.
 
@@ -120,7 +126,7 @@ namespace Rhetos
 
         /// <summary>
         /// This method creates a thread-safe lifetime scope DI container to isolate unit of work in a separate database transaction.
-        /// To commit changes to database, call <see cref="TransactionScopeContainer.CommitChanges"/> at the end of the 'using' block.
+        /// To commit changes to database, call <see cref="UnitOfWorkScope.CommitAndClose"/> at the end of the 'using' block.
         /// </summary>
         /// <remarks>
         /// In most cases it is preferred to use a <see cref="ProcessContainer"/> instance, instead of this static method, for better control over the DI container.
@@ -138,7 +144,7 @@ namespace Rhetos
         /// Customize the behavior of singleton components in <see cref="ProcessContainer"/> constructor.
         /// </para>
         /// </param>
-        public static TransactionScopeContainer CreateTransactionScopeContainer(string rhetosAppAssemblyPath, Action<ContainerBuilder> registerCustomComponents = null)
+        public static UnitOfWorkScope CreateScope(string rhetosAppAssemblyPath, Action<ContainerBuilder> registerCustomComponents = null)
         {
             if (_singleContainer == null)
                 lock (_singleContainerLock)
@@ -149,12 +155,16 @@ namespace Rhetos
                     }
 
             if (_singleContainerAssemblyPath != rhetosAppAssemblyPath)
-                throw new FrameworkException($"Static {nameof(ProcessContainer)}.{nameof(CreateTransactionScopeContainer)} cannot be used for different" +
+                throw new FrameworkException($"Static {nameof(ProcessContainer)}.{nameof(CreateScope)} cannot be used for different" +
                     $" application contexts: Provided folder 1: '{_singleContainerAssemblyPath}', folder 2: '{rhetosAppAssemblyPath}'." +
                     $" Use a {nameof(ProcessContainer)} instances instead.");
 
-            return _singleContainer.CreateTransactionScopeContainer(registerCustomComponents);
+            return _singleContainer.CreateScope(registerCustomComponents);
         }
+
+        [Obsolete("Use " + nameof(CreateScope) + " instead.")]
+        public static TransactionScopeContainer CreateTransactionScopeContainer(string rhetosAppAssemblyPath, Action<ContainerBuilder> registerCustomComponents = null)
+            => (TransactionScopeContainer)CreateScope(rhetosAppAssemblyPathnFolder, registerCustomComponents);
 
         #endregion
 

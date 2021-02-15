@@ -18,9 +18,6 @@
 */
 
 using Autofac;
-using Rhetos.Extensibility;
-using Rhetos.Logging;
-using Rhetos.Persistence;
 using System;
 
 namespace Rhetos
@@ -28,66 +25,32 @@ namespace Rhetos
     /// <summary>
     /// Dependency Injection container which scope is the same as the scope of the database transaction, for executing a single unit of work.
     /// Note that the changes in database will be rolled back by default.
-    /// To commit changes to database, call <see cref="CommitChanges"/> at the end of the 'using' block (transaction will be committed on dispose).
+    /// To commit changes to database, call <see cref="UnitOfWorkScope.CommitAndClose"/> method on this instance, at the end of the 'using' block.
     /// </summary>
-    public class TransactionScopeContainer : IDisposable
+    [Obsolete("Use " + nameof(UnitOfWorkScope) + " instead.")]
+    public class TransactionScopeContainer : UnitOfWorkScope
     {
-        private readonly ILifetimeScope _lifetimeScope;
-
         /// <param name="iocContainer">
-        /// The Dependency Injection container for the transaction scope.
+        /// The Dependency Injection container used to create the transaction scope container.
         /// </param>
         /// <param name="registerCustomComponents">
-        /// Register custom components that may override system and plugins services previously registered in <paramref name="iocContainer"/>.
+        /// Register custom components that may override system and plugins services.
         /// This is commonly used by utilities and tests that need to override host application's components or register additional plugins.
         /// <para>
         /// Note that the transaction-scope component registration might not affect singleton components.
-        /// Customize the behavior of singleton components in <see cref="IRhetosHostBuilder"/> implementation.
+        /// Customize the behavior of singleton components in <see cref="ProcessContainer"/> constructor.
         /// </para>
         /// </param>
-        public TransactionScopeContainer(IContainer iocContainer, Action<ContainerBuilder> registerCustomComponents = null)
+        [Obsolete("Use " + nameof(UnitOfWorkScope) + " instead.")]
+        public TransactionScopeContainer(IContainer iocContainer, Action<ContainerBuilder> registerCustomComponents = null) : base(iocContainer, registerCustomComponents)
         {
-            _lifetimeScope = registerCustomComponents != null ? iocContainer.BeginLifetimeScope(registerCustomComponents) : iocContainer.BeginLifetimeScope();
-        }
-
-        public T Resolve<T>()
-        {
-            return _lifetimeScope.Resolve<T>();
         }
 
         /// <summary>
         /// The changes are not committed immediately, they will be committed on DI container disposal.
         /// Call this method at the end of the 'using' block to mark the current database transaction to be committed.
         /// </summary>
-        public void CommitChanges()
-        {
-            _lifetimeScope.Resolve<IPersistenceTransaction>().CommitChanges();
-        }
-
-        private bool disposed = false; // Standard IDisposable pattern to detect redundant calls.
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposed)
-                return;
-
-            if (disposing)
-            {
-                _lifetimeScope.Dispose();
-            }
-
-            disposed = true;
-        }
-
-        internal void LogRegistrationStatistics(string title, ILogProvider logProvider)
-        {
-            ContainerBuilderPluginRegistration.LogRegistrationStatistics(title, _lifetimeScope, logProvider);
-        }
+        [Obsolete("Use " + nameof(CommitAndClose) + " or " + nameof(CommitOnDispose) + " instead.")]
+        public void CommitChanges() => CommitOnDispose();
     }
 }
