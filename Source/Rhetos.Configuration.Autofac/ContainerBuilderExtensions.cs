@@ -21,6 +21,7 @@ using Rhetos;
 using Rhetos.Configuration.Autofac.Modules;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
+using Rhetos.Utilities;
 
 namespace Autofac
 {
@@ -36,6 +37,19 @@ namespace Autofac
                 return iLogProvider;
 
             throw new FrameworkException($"{nameof(ContainerBuilder)} does not contain an entry for {nameof(ILogProvider)}. " +
+                $"This container was probably not created as {nameof(RhetosContainerBuilder)}.");
+        }
+
+        /// <summary>
+        /// Extension method which resolves <see cref="IConfiguration"/> instance from properly initialized <see cref="RhetosContainerBuilder"/>.
+        /// </summary>
+        public static IConfiguration GetConfiguration(this ContainerBuilder builder)
+        {
+            var key = nameof(IConfiguration);
+            if (builder.Properties.TryGetValue(key, out var configuration) && (configuration is IConfiguration iConfiguration))
+                return iConfiguration;
+
+            throw new FrameworkException($"{nameof(ContainerBuilder)} does not contain an entry for {nameof(IConfiguration)}. " +
                 $"This container was probably not created as {nameof(RhetosContainerBuilder)}.");
         }
 
