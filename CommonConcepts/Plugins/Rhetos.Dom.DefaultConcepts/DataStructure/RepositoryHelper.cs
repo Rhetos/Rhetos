@@ -20,6 +20,7 @@
 using Rhetos.Compiler;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Utilities;
+using System;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -33,6 +34,8 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly CsTag<DataStructureInfo> RepositoryMembers = "RepositoryMembers";
         public static readonly CsTag<DataStructureInfo> ConstructorArguments = "RepositoryConstructorArguments";
         public static readonly CsTag<DataStructureInfo> ConstructorCode = "RepositoryConstructorCode";
+        public static readonly CsTag<DataStructureInfo> ReadParameterTypesTag = "ReadParameterTypes";
+        
 
         // Readable repository:
         public static readonly CsTag<DataStructureInfo> BeforeQueryTag = "RepositoryBeforeQuery";
@@ -94,6 +97,15 @@ namespace Rhetos.Dom.DefaultConcepts
             }
 
             codeBuilder.InsertCode($"Common.ReadableRepositoryBase<{module}.{entity}>", OverrideBaseTypeTag, info);
+
+            codeBuilder.InsertCode(
+        $@"public static readonly KeyValuePair<string, Type>[] ReadParameterTypes = new KeyValuePair<string, Type>[]
+        {{
+            {ReadParameterTypesTag.Evaluate(info)}
+        }};
+        
+        ",
+                RepositoryMembers, info);
         }
 
         public static void GenerateQueryableRepository(DataStructureInfo info, ICodeBuilder codeBuilder, string queryFunctionBody = null, string loadFunctionBody = null)

@@ -25,7 +25,7 @@ using System.Threading.Tasks;
 
 namespace CommonConcepts.Test
 {
-    public static class TestUtilities
+    public static class ConcurrencyUtility
     {
         private static int _checkedForParallelismThreadCount = 0;
 

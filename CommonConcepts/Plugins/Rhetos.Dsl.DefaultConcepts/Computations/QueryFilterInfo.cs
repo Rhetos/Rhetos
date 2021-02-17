@@ -22,7 +22,7 @@ using System.ComponentModel.Composition;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// Base concepts for queryable filters.
+    /// Base concept for queryable filters.
     /// This concept assumes that there will be a <c>Filter</c> method implemented in the repository class,
     /// with parameters <c>(IQueryable&lt;DataStructureType&gt; query, ParameterType filterParameter)</c>,
     /// returning a subset of data from the given <c>query</c>.

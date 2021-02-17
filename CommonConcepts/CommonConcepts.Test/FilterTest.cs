@@ -833,5 +833,80 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("si0, si1", TestUtility.DumpSorted(legacyFilterMethod, item => item.Name));
             }
         }
+
+        [TestMethod]
+        public void DataStructureReadParameters_Basic()
+        {
+            using (var scope = TestScope.Create())
+            {
+                var readParameters = scope.Resolve<IDataStructureReadParameters>().GetReadParameters(
+                    "TestFilter.MultipleReadTypes",
+                    extendedSet: false);
+
+                var expected = @"
+CommonFilter2: TestFilter.CommonFilter2
+IEnumerable<MultipleReadTypes>: System.Collections.Generic.IEnumerable`1[TestFilter.MultipleReadTypes]
+List<TestFilter.MultipleReadTypes>: System.Collections.Generic.List`1[TestFilter.MultipleReadTypes]
+QueryFilter1: TestFilter.QueryFilter1
+string[]: System.String[]
+System.Collections.Generic.IEnumerable<System.Guid>: System.Collections.Generic.IEnumerable`1[System.Guid]
+System.Guid: System.Guid
+TestFilter.CommonFilter2: TestFilter.CommonFilter2
+TestFilter.FilterBy1: TestFilter.FilterBy1
+TestFilter.ItemFilter1: TestFilter.ItemFilter1
+TestFilter.Query1: TestFilter.Query1
+";
+                Assert.AreEqual(
+                    string.Join("\r\n", expected.Split("\r\n").Where(line => !string.IsNullOrWhiteSpace(line)).OrderBy(x => x)),
+                    string.Join("\r\n", readParameters.Select(rp => rp.ToString()).OrderBy(x => x)));
+            }
+        }
+
+        [TestMethod]
+        public void DataStructureReadParameters_Extended()
+        {
+            using (var scope = TestScope.Create())
+            {
+                var readParameters = scope.Resolve<IDataStructureReadParameters>().GetReadParameters(
+                    "TestFilter.MultipleReadTypes",
+                    extendedSet: true);
+
+                var expected = @"
+CommonFilter2: TestFilter.CommonFilter2
+
+IEnumerable<MultipleReadTypes>: System.Collections.Generic.IEnumerable`1[TestFilter.MultipleReadTypes]
+MultipleReadTypes[]: TestFilter.MultipleReadTypes[]
+
+List<TestFilter.MultipleReadTypes>: System.Collections.Generic.List`1[TestFilter.MultipleReadTypes]
+
+QueryFilter1: TestFilter.QueryFilter1
+
+string[]: System.String[]
+
+System.Collections.Generic.IEnumerable<System.Guid>: System.Collections.Generic.IEnumerable`1[System.Guid]
+IEnumerable<System.Guid>: System.Collections.Generic.IEnumerable`1[System.Guid]
+System.Guid[]: System.Guid[]
+Guid[]: System.Guid[]
+
+System.Guid: System.Guid
+Guid: System.Guid
+
+TestFilter.CommonFilter2: TestFilter.CommonFilter2
+CommonFilter2: TestFilter.CommonFilter2
+
+TestFilter.FilterBy1: TestFilter.FilterBy1
+FilterBy1: TestFilter.FilterBy1
+
+TestFilter.ItemFilter1: TestFilter.ItemFilter1
+ItemFilter1: TestFilter.ItemFilter1
+
+TestFilter.Query1: TestFilter.Query1
+Query1: TestFilter.Query1
+";
+                Assert.AreEqual(
+                    string.Join("\r\n", expected.Split("\r\n").Distinct().Where(line => !string.IsNullOrWhiteSpace(line)).OrderBy(x => x)),
+                    string.Join("\r\n", readParameters.Select(rp => rp.ToString()).OrderBy(x => x)));
+            }
+        }
     }
 }
