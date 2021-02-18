@@ -47,6 +47,7 @@ namespace Rhetos
             // make properties accessible to modules which are provided with new/unique instance of ContainerBuilder
             this.Properties.Add(nameof(IPluginScanner), pluginScanner);
             this.Properties.Add(nameof(ILogProvider), logProvider);
+            this.Properties.Add(nameof(IConfiguration), configuration);
 
             // this is a patch/mock to provide backward compatibility for all usages of old static classes
             LegacyUtilities.Initialize(configuration);
