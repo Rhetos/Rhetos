@@ -17,9 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.Collections.Generic;
-using System.IO;
-
 namespace Rhetos.Utilities
 {
     /// <summary>
@@ -30,14 +27,12 @@ namespace Rhetos.Utilities
     {
         /// <summary>
         /// Main Rhetos application's assembly file that is used for bootstrapping Rhetos application via IRhetosHostBuilder implementation.
-        /// The value is configured automatically by Rhetos build if <see cref="BuildOptions.GenerateAppSettings"/> is enabled.
         /// </summary>
         [AbsolutePathOption]
         public string RhetosRuntimePath { get; set; }
 
         /// <summary>
         /// Run-time assets folder.
-        /// The value is configured automatically by Rhetos build if <see cref="BuildOptions.GenerateAppSettings"/> is enabled.
         /// </summary>
         [AbsolutePathOption]
         public string AssetsFolder { get; set; }

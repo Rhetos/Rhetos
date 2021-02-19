@@ -91,7 +91,7 @@ namespace Rhetos
                 if (!string.IsNullOrEmpty(_rootFolder))
                 {
                     Directory.SetCurrentDirectory(_rootFolder);
-                    _buildLogger.Info($"Using '{_rootFolder}' as root folder for {nameof(Build)} operation.");
+                    _buildLogger.Trace($"Using specified '{_rootFolder}' as root folder for {nameof(Build)} operation.");
                 }
                 else
                 {
@@ -115,19 +115,8 @@ namespace Rhetos
 
         private IConfiguration BuildConfiguration()
         {
-            var rhetosAppSettingsFilePath = Path.GetFullPath(RhetosAppEnvironment.ConfigurationFileName);
-            if (!File.Exists(rhetosAppSettingsFilePath))
-                throw new FrameworkException($"Unable to initialize RhetosHost. Rhetos app settings file '{rhetosAppSettingsFilePath}' not found.");
-
-            _buildLogger.Info(() => $"Initializing Rhetos app from '{rhetosAppSettingsFilePath}'.");
-            
-            var configurationBuilder = new ConfigurationBuilder(_builderLogProvider)
-                .AddJsonFile(rhetosAppSettingsFilePath)
-                .AddJsonFile(RhetosAppEnvironment.LocalConfigurationFileName, optional: true)
-                .AddKeyValue(ConfigurationProvider.GetKey((RhetosAppEnvironment o) => o.ApplicationRootFolder), Path.GetDirectoryName(rhetosAppSettingsFilePath));
-
+            var configurationBuilder = new ConfigurationBuilder(_builderLogProvider);
             CsUtility.InvokeAll(configurationBuilder, _configureConfigurationActions);
-
             return configurationBuilder.Build();
         }
 

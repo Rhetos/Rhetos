@@ -73,6 +73,7 @@ namespace Rhetos
         /// This method solves the issue of relative paths in application's configuration, by making sure
         /// that the base folder that is used for loading configuration by external utility applications,
         /// is the same as the one used by the main host application.
+        /// AppDomain.CurrentDomain.BaseDirectory is used by default.
         /// </para>
         /// </remarks>
         IRhetosHostBuilder UseRootFolder(string rootFolder);

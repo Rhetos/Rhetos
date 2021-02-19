@@ -94,7 +94,7 @@ namespace Rhetos
         /// </para>
         /// </remarks>
         /// <param name="rhetosHostAssemblyPath">
-        /// Path of the application's assembly file (.dll or .exe).
+        /// Path to assembly where the CreateRhetosHostBuilder method is located.
         /// </param>
         /// <returns>It returns a IRhetosHostBuilder that is created and configuration by the referenced main application (<paramref name="rhetosHostAssemblyPath"/>).</returns>
         public static IRhetosHostBuilder FindBuilder(string rhetosHostAssemblyPath)
