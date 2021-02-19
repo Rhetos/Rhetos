@@ -81,7 +81,7 @@ namespace Rhetos
         {{
             return new Assembly[]
             {{
-                Assembly.GetExecutingAssembly(),
+                typeof(RhetosHostBuilderExtensions).Assembly,
                 {RhetosHostBuilderPluginAssembliesTag}
             }};
         }}
@@ -98,7 +98,6 @@ namespace Rhetos
     }}
 }}
 ";
-
             codeBuilder.InsertCodeToFile(rhetosHostBuilderCode, "RhetosHostBuilderExtensions");
         }
     }
