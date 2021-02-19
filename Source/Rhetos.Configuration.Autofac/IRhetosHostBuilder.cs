@@ -22,6 +22,8 @@ using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.Reflection;
 
 namespace Rhetos
 {
@@ -68,6 +70,22 @@ namespace Rhetos
         /// method directly from the custom application code.
         /// </remarks>
         IRhetosHostBuilder UseRootFolder(string rootFolder);
+
+        /// <summary>
+        /// The assemblies will be scanned for plugins while building the
+        /// dependency injection container.
+        /// Plugin is a class marked with <see cref="ExportAttribute"/>,
+        /// and optionally additional metadata in <see cref="ExportMetadataAttribute"/>.
+        /// </summary>
+        IRhetosHostBuilder AddPluginAssemblies(IEnumerable<Assembly> assemblies);
+
+        /// <summary>
+        /// The types will be scanned for plugins while building the
+        /// dependency injection container.
+        /// Plugin is a class marked with <see cref="ExportAttribute"/>,
+        /// and optionally additional metadata in <see cref="ExportMetadataAttribute"/>.
+        /// </summary>
+        IRhetosHostBuilder AddPluginTypes(IEnumerable<Type> types);
 
         /// <summary>
         /// Create the <see cref="RhetosHost"/> instance, that serves as a wrapper around Rhetos system configuration and 

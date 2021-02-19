@@ -22,7 +22,6 @@ using System;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
 namespace Rhetos.Utilities
@@ -33,7 +32,7 @@ namespace Rhetos.Utilities
         public static int SqlCommandTimeout { get; private set; } = 30;
         public static string DatabaseLanguage => CheckIfInitialized(_databaseLanguage, "database language");
         public static string NationalLanguage => CheckIfInitialized(_nationalLanguage, "national language");
-        public static string ConnectionString => CheckIfInitialized(_connectionString, $"connection string (name=\"{RhetosConnectionStringName}\")");
+        public static string ConnectionString => CheckIfInitialized(_connectionString, $"connection string '{RhetosConnectionStringName}' (settings key \"{ConnectionStringConfigurationKey}\")");
         public static string ProviderName => CheckIfInitialized(_providerName, "provider name");
 
         private static bool _initialized = false;
@@ -45,13 +44,14 @@ namespace Rhetos.Utilities
         private static string _providerName;
 
         private const string RhetosConnectionStringName = "ServerConnectionString";
+        private const string ConnectionStringConfigurationKey = "ConnectionStrings:" + RhetosConnectionStringName + ":ConnectionString";
 
         private static T CheckIfInitialized<T>(T value, string property)
         {
             if (!_initialized)
                 throw new FrameworkException("SqlUtility has not been initialized. Call LegacyUtilities.Initialize() at application startup.");
             else if (value == null)
-                throw new FrameworkException($"SqlUtility has not been initialized correctly: Value for {property} is not specified.");
+                throw new FrameworkException($"Configuration value for {property} is not specified.");
             return value;
         }
 
@@ -62,7 +62,8 @@ namespace Rhetos.Utilities
             var dbOptions = configuration.GetOptions<DatabaseOptions>();
             SqlCommandTimeout = dbOptions.SqlCommandTimeout;
 
-            _connectionString = configuration.GetValue<string>($"ConnectionStrings:{RhetosConnectionStringName}:ConnectionString");
+            
+            _connectionString = configuration.GetValue<string>(ConnectionStringConfigurationKey);
 
             var databaseSettings = configuration.GetOptions<DatabaseSettings>();
             _databaseLanguage = databaseSettings.DatabaseLanguage;

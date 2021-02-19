@@ -35,14 +35,11 @@ namespace Rhetos.Configuration.Autofac.Test
     [TestClass]
     public class AutofacConfigurationTest
     {
-        private class RhetosHostTestBuilder : RhetosHostBuilderBase
+        private class RhetosHostTestBuilder : RhetosHostBuilder
         {
-            protected override ContainerBuilder CreateContainerBuilder(IConfiguration configuration)
+            public RhetosHostTestBuilder()
             {
-                var pluginAssemblies = new[] { Assembly.GetExecutingAssembly() };
-                var pluginTypes = Array.Empty<Type>();
-                var pluginScanner = new RuntimePluginScanner(pluginAssemblies, pluginTypes, _builderLogProvider);
-                return new RhetosContainerBuilder(configuration, _builderLogProvider, pluginScanner);
+                AddPluginAssemblies(new[] { Assembly.GetExecutingAssembly() });
             }
         }
 

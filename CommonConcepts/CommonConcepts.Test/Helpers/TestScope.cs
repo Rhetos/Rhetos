@@ -40,13 +40,13 @@ namespace CommonConcepts.Test
         /// </remarks>
         public static TransactionScopeContainer Create(Action<ContainerBuilder> registerCustomComponents = null)
         {
-            return RhetosHost.CreateScope(registerCustomComponents);
+            return _rhetosHost.CreateScope(registerCustomComponents);
         }
 
         /// <summary>
         /// Reusing a single shared static DI container between tests, to reduce initialization time for each test.
         /// Each test should create a child scope with <see cref="TestScope.Create"/> method to start a 'using' block.
         /// </summary>
-        private static readonly RhetosHost RhetosHost = Program.CreateRhetosHostBuilder().Build();
+        private static readonly RhetosHost _rhetosHost = Program.CreateRhetosHostBuilder().Build();
     }
 }

@@ -84,8 +84,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private string GetInitialConfigurationSnippet()
         {
-            return $@"
-            ConfigureConfiguration(builder => {{
+            return
+            $@"hostBuilder.ConfigureConfiguration(builder => {{
                 builder.AddOptions(new Rhetos.Dom.DefaultConcepts.CommonConceptsDatabaseSettings
                 {{
                     UseLegacyMsSqlDateTime = {_databaseSettings.UseLegacyMsSqlDateTime.ToString().ToLowerInvariant()},
