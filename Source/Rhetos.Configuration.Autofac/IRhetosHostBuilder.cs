@@ -62,12 +62,18 @@ namespace Rhetos
         IRhetosHostBuilder OverrideContainerConfiguration(Action<IConfiguration, ContainerBuilder, List<Action<ContainerBuilder>>> containerConfigurationAction);
 
         /// <summary>
-        /// This method is intended for external applications that reference the generated Rhetos application
-        /// (CLI utilities, for example) to specify the Rhetos app root folder.
+        /// Sets base directory for the application's configuration.
         /// </summary>
         /// <remarks>
-        /// In most cases, the root folder is automatically configured, and there is no need to call this
-        /// method directly from the custom application code.
+        /// This method is intended for external applications that reference the generated Rhetos application
+        /// (CLI utilities, for example) to specify the application's root folder.
+        /// In most cases, the root folder is automatically configured by <see cref="RhetosHost.FindBuilder(string)"/>,
+        /// and there is no need to call this method directly from the custom application code.
+        /// <para>
+        /// This method solves the issue of relative paths in application's configuration, by making sure
+        /// that the base folder that is used for loading configuration by external utility applications,
+        /// is the same as the one used by the main host application.
+        /// </para>
         /// </remarks>
         IRhetosHostBuilder UseRootFolder(string rootFolder);
 

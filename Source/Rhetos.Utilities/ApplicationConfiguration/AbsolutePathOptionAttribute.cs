@@ -23,7 +23,7 @@ using System;
 namespace Rhetos
 {
     /// <summary>
-    /// When reading this configuration setting, any relative path will be converted to absolute.
+    /// When reading this setting from a configuration file, any relative path will be converted to absolute.
     /// The base folder is specified by configuration source (<see cref="IConfigurationSource"/>) implementation of <see cref="IConfigurationSourceFolder"/>.
     /// If the configuration source reads configuration file, the base folder should match the file location.
     /// </summary>
