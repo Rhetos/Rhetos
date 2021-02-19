@@ -51,7 +51,8 @@ namespace Rhetos.Dom
                 addPlugins.Append($"typeof({plugin.Type.FullName}),{Environment.NewLine}                ");
             }
 
-            var rhetosHostBuilderCode = $@"using Autofac;
+            var rhetosHostBuilderCode =
+$@"using Autofac;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
@@ -59,28 +60,21 @@ using System.Reflection;
 
 namespace Rhetos
 {{
-    public class RhetosHostBuilder : RhetosHostBuilderBase
+    public static class RhetosHostBuilderExtensions
     {{
-        public RhetosHostBuilder()
+        public static IRhetosHostBuilder ConfigureRhetosHostDefaults(this IRhetosHostBuilder hostBuilder)
         {{
-            InitializeConfiguration();
-        }}
-
-        protected override ContainerBuilder CreateContainerBuilder(IConfiguration configuration)
-        {{
-            var pluginScanner = new Rhetos.Extensibility.RuntimePluginScanner(GetPluginAssemblies(), GetPluginTypes(), _builderLogProvider);
-            return new RhetosContainerBuilder(configuration, _builderLogProvider, pluginScanner);
-        }}
-
-        private void InitializeConfiguration()
-        {{
-            ConfigureConfiguration(builder => {{
-                builder.AddOptions(new Rhetos.Utilities.DatabaseSettings
-                {{
-                    DatabaseLanguage = {CsUtility.QuotedString(_databaseSettings.DatabaseLanguage)},
-                }});
-            }});
+            hostBuilder
+                .ConfigureConfiguration(containerBuilder => {{
+                    containerBuilder.AddOptions(new Rhetos.Utilities.DatabaseSettings
+                    {{
+                        DatabaseLanguage = {CsUtility.QuotedString(_databaseSettings.DatabaseLanguage)},
+                    }});
+                }})
+                .AddPluginAssemblies(GetPluginAssemblies())
+                .AddPluginTypes(GetPluginTypes());
             {RhetosHostBuilderInitialConfigurationTag}
+            return hostBuilder;
         }}
 
         private static IEnumerable<Assembly> GetPluginAssemblies()
@@ -105,7 +99,7 @@ namespace Rhetos
 }}
 ";
 
-            codeBuilder.InsertCodeToFile(rhetosHostBuilderCode, "RhetosHostBuilder");
+            codeBuilder.InsertCodeToFile(rhetosHostBuilderCode, "RhetosHostBuilderExtensions");
         }
     }
 }

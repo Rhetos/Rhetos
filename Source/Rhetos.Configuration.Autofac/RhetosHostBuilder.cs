@@ -18,22 +18,26 @@
 */
 
 using Autofac;
+using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 
 namespace Rhetos
 {
-    public abstract class RhetosHostBuilderBase : IRhetosHostBuilder
+    public class RhetosHostBuilder : IRhetosHostBuilder
     {
-        protected ILogProvider _builderLogProvider = LoggingDefaults.DefaultLogProvider;
-        protected readonly List<Action<ContainerBuilder>> _configureContainerActions = new List<Action<ContainerBuilder>>();
-        protected readonly List<Action<IConfigurationBuilder>> _configureConfigurationActions = new List<Action<IConfigurationBuilder>>();
-        protected Action<IConfiguration, ContainerBuilder, List<Action<ContainerBuilder>>> _customContainerConfigurationAction ;
-        protected ILogger _buildLogger;
-        protected string _rootFolder;
+        private ILogProvider _builderLogProvider = LoggingDefaults.DefaultLogProvider;
+        private readonly List<Action<ContainerBuilder>> _configureContainerActions = new List<Action<ContainerBuilder>>();
+        private readonly List<Action<IConfigurationBuilder>> _configureConfigurationActions = new List<Action<IConfigurationBuilder>>();
+        private Action<IConfiguration, ContainerBuilder, List<Action<ContainerBuilder>>> _customContainerConfigurationAction;
+        private readonly List<Assembly> _pluginAssemblies = new List<Assembly>();
+        private readonly List<Type> _pluginTypes = new List<Type>();
+        private ILogger _buildLogger;
+        private string _rootFolder;
 
         public IRhetosHostBuilder UseBuilderLogProvider(ILogProvider logProvider)
         {
@@ -65,6 +69,18 @@ namespace Rhetos
             return this;
         }
 
+        public IRhetosHostBuilder AddPluginAssemblies(IEnumerable<Assembly> assemblies)
+        {
+            _pluginAssemblies.AddRange(assemblies);
+            return this;
+        }
+
+        public IRhetosHostBuilder AddPluginTypes(IEnumerable<Type> types)
+        {
+            _pluginTypes.AddRange(types);
+            return this;
+        }
+
         public RhetosHost Build()
         {
             var restoreCurrentDirectory = Environment.CurrentDirectory;
@@ -88,7 +104,7 @@ namespace Rhetos
             }
             catch (Exception e)
             {
-                _buildLogger.Error(() => $"Error during {nameof(RhetosHostBuilderBase)}.{nameof(Build)}: {e}");
+                _buildLogger.Error(() => $"Error during {nameof(RhetosHostBuilder)}.{nameof(Build)}: {e}");
                 throw;
             }
             finally
@@ -117,15 +133,14 @@ namespace Rhetos
 
         private IContainer BuildContainer(IConfiguration configuration)
         {
-            var builder = CreateContainerBuilder(configuration);
+            var pluginScanner = new RuntimePluginScanner(_pluginAssemblies, _pluginTypes, _builderLogProvider);
+            var builder = new RhetosContainerBuilder(configuration, _builderLogProvider, pluginScanner);
 
             var configurationAction = _customContainerConfigurationAction ?? DefaultContainerConfiguration;
             configurationAction(configuration, builder, _configureContainerActions);
 
             return builder.Build();
         }
-
-        protected abstract ContainerBuilder CreateContainerBuilder(IConfiguration configuration);
 
 #pragma warning disable S1172 // Unused method parameters should be removed
         // Parameter "IConfiguration configuration" is not used here in default configuration,

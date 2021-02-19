@@ -22,6 +22,7 @@ using Rhetos;
 using Rhetos.Logging;
 using Rhetos.Security;
 using Rhetos.Utilities;
+using System;
 
 namespace CommonConcepts.Test
 {
@@ -29,6 +30,7 @@ namespace CommonConcepts.Test
     {
         public static void Main()
         {
+            Console.WriteLine("This is a placeholder application for unit testing. Its features are executed by unit tests.");
         }
 
         /// <summary>
@@ -37,6 +39,7 @@ namespace CommonConcepts.Test
         public static IRhetosHostBuilder CreateRhetosHostBuilder()
         {
             return new RhetosHostBuilder()
+                .ConfigureRhetosHostDefaults()
                 .ConfigureConfiguration(builder =>
                 {
                     builder.AddJsonFile(RhetosAppEnvironment.LocalConfigurationFileName);
