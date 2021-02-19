@@ -683,7 +683,7 @@ namespace CommonConcepts.Test
 
             using (var scope = TestScope.Create())
             {
-                TestUtilities.CheckForParallelism(scope.Resolve<ISqlExecuter>(), threadCount);
+                ConcurrencyUtility.CheckForParallelism(scope.Resolve<ISqlExecuter>(), threadCount);
                 DeleteOldData(scope);
                 scope.CommitChanges();
             }
@@ -777,7 +777,7 @@ namespace CommonConcepts.Test
             using (var scope = TestScope.Create())
             {
                 var sqlExecuter = scope.Resolve<ISqlExecuter>();
-                TestUtilities.CheckForParallelism(sqlExecuter, threadCount);
+                ConcurrencyUtility.CheckForParallelism(sqlExecuter, threadCount);
                 DeleteOldData(scope);
 
                 coldStartInsert(scope.Resolve<Common.ExecutionContext>());

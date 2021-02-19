@@ -250,7 +250,7 @@ namespace CommonConcepts.Test
             int initialCount;
             using (var scope = TestScope.Create())
             {
-                TestUtilities.CheckForParallelism(scope.Resolve<ISqlExecuter>(), threadCount);
+                ConcurrencyUtility.CheckForParallelism(scope.Resolve<ISqlExecuter>(), threadCount);
 
                 var context = scope.Resolve<Common.ExecutionContext>();
                 initialCount = context.Repository.TestEntity.BaseEntity.Query().Count();

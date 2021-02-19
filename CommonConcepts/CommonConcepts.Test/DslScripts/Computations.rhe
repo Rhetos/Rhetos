@@ -394,6 +394,32 @@ Module TestFilter
 
         QueryFilter 'HashSet<string>' '(query, parameter) => query.Where(item => parameter.Contains(item.Name))';
     }
+
+    // DataStructureReadParameters
+
+    Entity MultipleReadTypes
+    {
+        ShortString Name;
+
+        ItemFilter ItemFilter1 'item => item.Name.StartsWith("a")';
+        QueryFilter QueryFilter1 '(query, parameter) => query.Where(item => item.Name.StartsWith("b"))';
+        FilterBy 'TestFilter.FilterBy1' '(repos, parameter) => new[] { new TestFilter.MultipleReadTypes { Name = "c" } }';
+        Query 'TestFilter.Query1' 'parameter => Query().Where(item => item.Name.StartsWith("d"))';
+
+        ItemFilter CommonFilter2 'item => item.Name.StartsWith("e")';
+        FilterBy CommonFilter2 '(repos, parameter) => new[] { new TestFilter.MultipleReadTypes { Name = "f" } }';
+        Query 'TestFilter.CommonFilter2' 'parameter => Query().Where(item => item.Name.StartsWith("g"))';
+
+        ComposableFilterBy 'string[]' '(query, repos, filter) => query.Where(item => item.Name.StartsWith("h"))';
+        QueryFilter 'IEnumerable<MultipleReadTypes>' '(query, parameter) => query.Where(item => item.Name.StartsWith("i"))';
+        FilterBy 'List<TestFilter.MultipleReadTypes>' '(repos, parameter) => new[] { new TestFilter.MultipleReadTypes { Name = "j" } }';
+        Query 'System.Guid' 'parameter => Query().Where(item => item.Name.StartsWith("k"))';
+    }
+
+    Parameter QueryFilter1;
+    Parameter FilterBy1;
+    Parameter Query1;
+    Parameter CommonFilter2;
 }
 
 Module TestFilter2;
