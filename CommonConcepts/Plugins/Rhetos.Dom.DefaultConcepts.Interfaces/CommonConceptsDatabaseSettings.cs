@@ -21,7 +21,7 @@ namespace Rhetos.Dom.DefaultConcepts
 {
     /// <summary>
     /// This class is available at both build-time and run-time.
-    /// In build-time it is configurable by build settings (see <see cref="Rhetos.Utilities.RhetosBuildEnvironment.ConfigurationFileName"/>).
+    /// In build-time it is configurable in build settings (see <see cref="Rhetos.Utilities.RhetosBuildEnvironment.ConfigurationFileName"/>).
     /// In run-time it is hardcoded, returning settings from the build.
     /// </summary>
     [Options("CommonConcepts")]
