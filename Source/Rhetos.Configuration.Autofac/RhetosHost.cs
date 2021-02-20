@@ -18,6 +18,7 @@
 */
 
 using Autofac;
+using Rhetos.Utilities;
 using System;
 using System.IO;
 using System.Reflection;
@@ -129,7 +130,13 @@ namespace Rhetos
                 throw new FrameworkException($"Static method '{entryPointType.FullName}.{HostBuilderFactoryMethodName}' has incorrect return type. Expected return type is {nameof(IRhetosHostBuilder)}.");
 
             var rhetosHostBuilder = (IRhetosHostBuilder)method.Invoke(null, Array.Empty<object>());
-            rhetosHostBuilder.UseRootFolder(Path.GetDirectoryName(rhetosHostAssemblyPath)); // use host directory as root for all RhetosHostBuilder operations
+
+            // Overriding Rhetos host application's location settings, because the default values might be incorrect when the host assembly is executed
+            // from another process with FindBuilder. For example, it could have different AppDomain.BaseDirectory, or the assembly copied in shadow directory.
+            rhetosHostBuilder.UseRootFolder(Path.GetDirectoryName(rhetosHostAssemblyPath)); // Use host assembly directory as root for all RhetosHostBuilder operations.
+            rhetosHostBuilder.ConfigureConfiguration(configurationBuilder => configurationBuilder.AddKeyValue(
+                ConfigurationProvider.GetKey((RhetosAppOptions o) => o.RhetosRuntimePath),
+                rhetosHostAssemblyPath)); // Override the RhetosRuntimePath to make sure it references the original assembly location, not a shadow copy (for applications such as LINQPad).
             return rhetosHostBuilder;
         }
 
