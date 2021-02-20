@@ -27,8 +27,8 @@
 10. Removed IService from the Rhetos framework
     * TODO: A new design is needed to support custom services in ASP.NET Core.
 11. SOAP API implementation is removed from Rhetos framework (IServerApplication).
-12. Rhetos.TestCommon.dll is moved to a separate NuGet package.
-    * If your build fails with error `......`, add a NuGet package reference to "Rhetos.TestCommon".
+12. *Rhetos.TestCommon.dll* is moved to a separate NuGet package.
+    * If your build fails with error `'TestCommon' does not exist` or `'TestUtility' does not exist`, add a NuGet package reference to "Rhetos.TestCommon".
 13. Removed LINQPad scripts from the Rhetos framework.
     * TODO: Implement them in a separate NuGet package.
 14. TestUtility.DumpSorted may return items in a different order, because the default string comparer is different between .NET Framework and .NET 5.
@@ -45,14 +45,15 @@
     * If you need to compile the generated source code to a separate library, include the generated source code inside a separate C# project and leave the compilation to Visual Studio or MSBuild.
 20. The property DatabaseLanguage is now located in the class DatabaseSettings instead of BuildOptions during build time and RhetosAppOptions during runtime.
 21. Removed Paths class.
-    * Code that generates or reads assets files should use IAssetsOptions.AssetsFolder instead.
-    * Code that uses Paths class for Rhetos components initialization (for example SearchForAssembly) should be refactored to use RhetosHost class instead.
-    * Code that uses the ResourcesFolder should use  IAssetsOptions.AssetsFolder instead.
+    * Custom code that uses Paths class for Rhetos components initialization (for example SearchForAssembly) should be refactored to use RhetosHost class instead.
+    * Custom code that generates or reads assets files should use IAssetsOptions.AssetsFolder instead.
+    * Custom code that uses Paths.ResourcesFolder should use  IAssetsOptions.AssetsFolder instead.
+    * Custom code that uses Paths.RhetosServerRootPath might use RhetosAppOptions.CacheFolder or Path.GetDirectoryName on RhetosAppOptions.RhetosRuntimePath instead, if the intention was to find the binaries folder.
 22. Removed RhetosAppEnvironment class and AddRhetosAppEnvironment method.
     * Configuration files "rhetos-app.settings.json" and "rhetos-app.local.settings.json" are no longer automatically loaded. If you want to use the same files from Rhetos v4, load them in your application in Program.CreateRhetosHostBuilder method:
       `return new RhetosHostBuilder().ConfigureRhetosHostDefaults().ConfigureConfiguration(builder => builder.AddJsonFile("rhetos-app.settings.json").AddJsonFile("rhetos-app.local.settings.json"));`
 23. Run-time configuration no longer depends on "rhetos-app.settings.json" file.
-    * "Rhetos:App:AssetsFolder" setting may be removed from "rhetos-app.settings.json" file.
+    * Rhetos:App:AssetsFolder and Rhetos:App:RhetosRuntimePath settings may be removed from this file.
     * The file may be deleted if empty.
 
 ## 4.3.0 (TO BE RELEASED)

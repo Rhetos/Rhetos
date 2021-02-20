@@ -31,6 +31,9 @@ namespace Rhetos.Utilities
         /// <summary>
         /// Main Rhetos application's assembly file that is used for initializing Rhetos application via IRhetosHostBuilder implementation.
         /// </summary>
+        /// <remarks>
+        /// The value is automatically set by generated application code. It may be customized by standard runtime configuration.
+        /// </remarks>
         [AbsolutePathOption]
         public string RhetosRuntimePath { get; set; }
 
