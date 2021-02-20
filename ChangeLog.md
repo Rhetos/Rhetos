@@ -51,6 +51,9 @@
 22. Removed RhetosAppEnvironment class and AddRhetosAppEnvironment method.
     * Configuration files "rhetos-app.settings.json" and "rhetos-app.local.settings.json" are no longer automatically loaded. If you want to use the same files from Rhetos v4, load them in your application in Program.CreateRhetosHostBuilder method:
       `return new RhetosHostBuilder().ConfigureRhetosHostDefaults().ConfigureConfiguration(builder => builder.AddJsonFile("rhetos-app.settings.json").AddJsonFile("rhetos-app.local.settings.json"));`
+23. Run-time configuration no longer depends on "rhetos-app.settings.json" file.
+    * "Rhetos:App:AssetsFolder" setting may be removed from "rhetos-app.settings.json" file.
+    * The file may be deleted if empty.
 
 ## 4.3.0 (TO BE RELEASED)
 
