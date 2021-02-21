@@ -38,25 +38,20 @@ namespace Rhetos.Configuration.Autofac
 
         // Instance per test or session:
         protected bool _commitChanges;
-        protected string _applicationFolder;
+        protected string _rhetosAppAssemblyPath;
         protected UnitOfWorkScope _unitOfWorkScope;
         public event Action<ContainerBuilder> InitializeSession;
 
         /// <param name="commitChanges">
         /// Whether database updates (by ORM repositories) will be committed or rolled back.
         /// </param>
-        /// <param name="applicationFolder">
-        /// Folder where the Rhetos configuration file is located (see <see cref="RhetosAppEnvironment.ConfigurationFileName"/>),
-        /// or any subfolder.
-        /// If not specified, the current application's base directory is used by default.
+        /// <param name="rhetosAppAssemblyPath">
+        /// Path to assembly where the CreateRhetosHostBuilder method is located.
         /// </param>
-        public RhetosTestContainer(bool commitChanges = false, string applicationFolder = null)
+        public RhetosTestContainer(string rhetosAppAssemblyPath, bool commitChanges = false)
         {
-            if (applicationFolder != null && !Directory.Exists(applicationFolder))
-                throw new ArgumentException("The given folder does not exist: " + Path.GetFullPath(applicationFolder) + ".");
-
             _commitChanges = commitChanges;
-            _applicationFolder = applicationFolder;
+            _rhetosAppAssemblyPath = rhetosAppAssemblyPath;
         }
 
         /// <summary>
@@ -104,7 +99,7 @@ namespace Rhetos.Configuration.Autofac
                     lock (_containerInitializationLock)
                         if (_processContainer == null)
                         {
-                            _processContainer = new ProcessContainer(_applicationFolder, new ConsoleLogProvider(),
+                            _processContainer = new ProcessContainer(_rhetosAppAssemblyPath, new ConsoleLogProvider(),
                                 configurationBuilder => configurationBuilder.AddConfigurationManagerConfiguration());
                         }
                 }

@@ -40,10 +40,9 @@ namespace CommonConcepts.Test
         {
             return new RhetosHostBuilder()
                 .ConfigureRhetosHostDefaults()
-                .ConfigureConfiguration(builder =>
-                {
-                    builder.AddJsonFile(RhetosAppEnvironment.LocalConfigurationFileName);
-                })
+                .ConfigureConfiguration(builder => builder
+                    .AddJsonFile("rhetos-app.local.settings.json")
+                )
                 .ConfigureContainer(builder =>
                 {
                     builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();

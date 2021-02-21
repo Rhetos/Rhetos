@@ -36,12 +36,6 @@ namespace Rhetos.Utilities
         public bool BuildResourcesFolder { get; set; } = false;
 
         /// <summary>
-        /// Creates or updates Rhetos runtime configuration file (<see cref="RhetosAppEnvironment.ConfigurationFileName"/>)
-        /// with essential information on application structure.
-        /// </summary>
-        public bool GenerateAppSettings { get; set; } = false;
-
-        /// <summary>
         /// Specifies maximum number of parallel threads while executing generators. 0 = unlimited.
         /// </summary>
         public int MaxExecuteGeneratorsParallelism { get; set; } = 0;

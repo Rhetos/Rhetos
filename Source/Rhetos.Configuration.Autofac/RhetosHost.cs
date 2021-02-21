@@ -17,12 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Autofac;
+using Rhetos.Utilities;
 using System;
 using System.IO;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Runtime.Loader;
-using Autofac;
 
 namespace Rhetos
 {
@@ -82,17 +82,28 @@ namespace Rhetos
 
         /// <summary>
         /// Finds and loads the Rhetos runtime context of the main application.
-        /// The application is expected to have an entry point (typically the Program class) with a
+        /// </summary>
+        /// <remarks>
+        /// This method is intended to be called by a utility application that needs to use Rhetos runtime features
+        /// of a referenced application or assembly built with Rhetos framework.
+        /// <para>
+        /// The referenced assembly is expected to have an entry point (typically the Program class) with a
         /// static method that creates and configures a <see cref="IRhetosHostBuilder"/> instance,
         /// see <see cref="HostBuilderFactoryMethodName"/>.
         /// The specified application should be created with Rhetos framework, or reference an assembly that
         /// was created with Rhetos framework.
-        /// </summary>
-        /// <param name="hostFilePath">Path of the application's assembly file (.dll or .exe).</param>
-        public static IRhetosHostBuilder FindBuilder(string hostFilePath)
+        /// </para>
+        /// </remarks>
+        /// <param name="rhetosHostAssemblyPath">
+        /// Path to assembly where the CreateRhetosHostBuilder method is located.
+        /// </param>
+        /// <returns>It returns a IRhetosHostBuilder that is created and configuration by the referenced main application (<paramref name="rhetosHostAssemblyPath"/>).</returns>
+        public static IRhetosHostBuilder FindBuilder(string rhetosHostAssemblyPath)
         {
-            if (!File.Exists(hostFilePath))
-                throw new ArgumentException($"Please specify the host application assembly file. File '{hostFilePath}' does not exist.");
+            // Using the full path for better error reporting. If the absolute path is not provided, assuming the caller utility's location as the base path.
+            rhetosHostAssemblyPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, rhetosHostAssemblyPath));
+            if (!File.Exists(rhetosHostAssemblyPath))
+                throw new ArgumentException($"Please specify the host application assembly file. File '{rhetosHostAssemblyPath}' does not exist.");
 
             // The Assembly.LoadFrom method would load the Assembly in the DefaultLoadContext.
             // In most cases this will work but when using LINQPad this can lead to unexpected behavior when comparing types because
@@ -101,9 +112,9 @@ namespace Rhetos
             // the AssemblyLoadContext.CurrentContextualReflectionContext, if it is set, or AssemblyLoadContext.Default.
             // We are using this behavior because if needed the application developer can change the AssemblyLoadContext.CurrentContextualReflectionContext
             // with AssemblyLoadContext.EnterContextualReflection.
-            var startupAssembly = (AssemblyLoadContext.CurrentContextualReflectionContext ?? AssemblyLoadContext.Default).LoadFromAssemblyPath(hostFilePath);
+            var startupAssembly = (AssemblyLoadContext.CurrentContextualReflectionContext ?? AssemblyLoadContext.Default).LoadFromAssemblyPath(rhetosHostAssemblyPath);
             if (startupAssembly == null)
-                throw new FrameworkException($"Could not resolve assembly from path '{hostFilePath}'.");
+                throw new FrameworkException($"Could not resolve assembly from path '{rhetosHostAssemblyPath}'.");
 
             var entryPointType = startupAssembly?.EntryPoint?.DeclaringType;
             if (entryPointType == null)
@@ -119,7 +130,13 @@ namespace Rhetos
                 throw new FrameworkException($"Static method '{entryPointType.FullName}.{HostBuilderFactoryMethodName}' has incorrect return type. Expected return type is {nameof(IRhetosHostBuilder)}.");
 
             var rhetosHostBuilder = (IRhetosHostBuilder)method.Invoke(null, Array.Empty<object>());
-            rhetosHostBuilder.UseRootFolder(Path.GetDirectoryName(hostFilePath)); // use host directory as root for all RhetosHostBuilder operations
+
+            // Overriding Rhetos host application's location settings, because the default values might be incorrect when the host assembly is executed
+            // from another process with FindBuilder. For example, it could have different AppDomain.BaseDirectory, or the assembly copied in shadow directory.
+            rhetosHostBuilder.UseRootFolder(Path.GetDirectoryName(rhetosHostAssemblyPath)); // Use host assembly directory as root for all RhetosHostBuilder operations.
+            rhetosHostBuilder.ConfigureConfiguration(configurationBuilder => configurationBuilder.AddKeyValue(
+                ConfigurationProvider.GetKey((RhetosAppOptions o) => o.RhetosRuntimePath),
+                rhetosHostAssemblyPath)); // Override the RhetosRuntimePath to make sure it references the original assembly location, not a shadow copy (for applications such as LINQPad).
             return rhetosHostBuilder;
         }
 

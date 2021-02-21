@@ -17,7 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.Collections.Generic;
+using System;
 using System.IO;
 
 namespace Rhetos.Utilities
@@ -29,23 +29,47 @@ namespace Rhetos.Utilities
     public class RhetosAppOptions : IAssetsOptions
     {
         /// <summary>
-        /// Main Rhetos application's assembly file that is used for bootstrapping Rhetos application via IRhetosHostBuilder implementation.
-        /// The value is configured automatically by Rhetos build if <see cref="BuildOptions.GenerateAppSettings"/> is enabled.
+        /// Main Rhetos application's assembly file that is used for initializing Rhetos application via IRhetosHostBuilder implementation.
         /// </summary>
+        /// <remarks>
+        /// The value is automatically set by generated application code. It may be customized by standard runtime configuration.
+        /// </remarks>
         [AbsolutePathOption]
         public string RhetosRuntimePath { get; set; }
 
+        private string _assetsFolder;
+
         /// <summary>
         /// Run-time assets folder.
-        /// The value is configured automatically by Rhetos build if <see cref="BuildOptions.GenerateAppSettings"/> is enabled.
         /// </summary>
+        /// <remarks>
+        /// If not configured, default value is "RhetosAssets" subfolder where <see cref="RhetosRuntimePath"/> is located.
+        /// </remarks>
         [AbsolutePathOption]
-        public string AssetsFolder { get; set; }
+        public string AssetsFolder { get => _assetsFolder ?? GetDirectory(RhetosRuntimePath, "RhetosAssets"); set => _assetsFolder = value; }
+
+        private string _cacheFolder;
+
+        /// <summary>
+        /// Run-time cache folder.
+        /// </summary>
+        /// <remarks>
+        /// If not configured, default value is the folder where <see cref="RhetosRuntimePath"/> is located.
+        /// <see cref="AssetsFolder"/> is not practical for runtime cache during development, because it is deleted on each build.
+        /// </remarks>
+        public string CacheFolder { get => _cacheFolder ?? GetDirectory(RhetosRuntimePath, "."); set => _cacheFolder = value; }
 
         public bool EntityFrameworkUseDatabaseNullSemantics { get; set; } = true;
 
         public double AuthorizationCacheExpirationSeconds { get; set; } = 30;
 
         public bool AuthorizationAddUnregisteredPrincipals { get; set; } = false;
+
+        private string GetDirectory(string baseFilePath, string directoryRelativePath)
+        {
+            return !string.IsNullOrEmpty(baseFilePath)
+                ? Path.GetFullPath(Path.Combine(Path.GetDirectoryName(baseFilePath), directoryRelativePath))
+                : null;
+        }
     }
 }

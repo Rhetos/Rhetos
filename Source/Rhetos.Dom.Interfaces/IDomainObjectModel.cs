@@ -30,6 +30,10 @@ namespace Rhetos.Dom
     /// </summary>
     public enum GeneratedSourceDirectories { Model, Orm, Repositories };
 
+    /// <summary>
+    /// Provides C# types from the generated object model.
+    /// Use the extension method <see cref="DomainObjectModelExtensions.GetType"/> to resolve a type by name.
+    /// </summary>
     public interface IDomainObjectModel
     {
         IEnumerable<Assembly> Assemblies { get; }

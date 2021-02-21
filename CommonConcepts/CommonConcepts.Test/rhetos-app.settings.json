@@ -1,8 +1,0 @@
-{
-  "Rhetos": {
-    "App": {
-      "RhetosRuntimePath": "CommonConcepts.Test.dll",
-      "AssetsFolder": "RhetosAssets"
-    }
-  }
-}

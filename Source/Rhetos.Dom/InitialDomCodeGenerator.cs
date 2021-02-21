@@ -62,15 +62,30 @@ namespace Rhetos
 {{
     public static class RhetosHostBuilderExtensions
     {{
+        /// <summary>
+        /// Initializes a new instance of <see cref=""RhetosHostBuilder""/> class with pre-configured defaults.
+        /// </summary>
+        /// <remarks>
+        /// The following defaults are applied:
+        /// <list type=""bullet"">
+        /// <item>Build-time configuration settings that are hard-coded in runtime environment:
+        ///     <see cref=""RhetosAppOptions.RhetosRuntimePath""/> and <see cref=""DatabaseSettings""/></item>.
+        /// <item>Registers plugin types from dependent libraries, and the current assembly for additional plugin discovery.</item>
+        /// <item>Various plugin packages may add additional configuration settings and components registration.</item>
+        /// </list>
+        /// </remarks>
         public static IRhetosHostBuilder ConfigureRhetosHostDefaults(this IRhetosHostBuilder hostBuilder)
         {{
             hostBuilder
-                .ConfigureConfiguration(containerBuilder => {{
-                    containerBuilder.AddOptions(new Rhetos.Utilities.DatabaseSettings
-                    {{
-                        DatabaseLanguage = {CsUtility.QuotedString(_databaseSettings.DatabaseLanguage)},
-                    }});
-                }})
+                .ConfigureConfiguration(containerBuilder => containerBuilder
+                    .AddKeyValue(
+                        ConfigurationProvider.GetKey((RhetosAppOptions o) => o.RhetosRuntimePath),
+                        typeof(RhetosHostBuilderExtensions).Assembly.Location)
+                    .AddOptions(new Rhetos.Utilities.DatabaseSettings
+                        {{
+                            DatabaseLanguage = {CsUtility.QuotedString(_databaseSettings.DatabaseLanguage)},
+                        }})
+                    )
                 .AddPluginAssemblies(GetPluginAssemblies())
                 .AddPluginTypes(GetPluginTypes());
             {RhetosHostBuilderInitialConfigurationTag}
@@ -81,7 +96,7 @@ namespace Rhetos
         {{
             return new Assembly[]
             {{
-                Assembly.GetExecutingAssembly(),
+                typeof(RhetosHostBuilderExtensions).Assembly,
                 {RhetosHostBuilderPluginAssembliesTag}
             }};
         }}
@@ -98,7 +113,6 @@ namespace Rhetos
     }}
 }}
 ";
-
             codeBuilder.InsertCodeToFile(rhetosHostBuilderCode, "RhetosHostBuilderExtensions");
         }
     }

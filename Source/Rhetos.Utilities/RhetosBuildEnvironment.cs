@@ -33,7 +33,7 @@ namespace Rhetos.Utilities
         public string ProjectFolder { get; set; }
 
         /// <summary>
-        /// Assembly that will contains the generated object model.
+        /// Assembly that will contain the generated object model.
         /// </summary>
         public string OutputAssemblyName { get; set; }
 
