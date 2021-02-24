@@ -1,0 +1,26 @@
+﻿<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Rhetos.Host.Net</id>
+    <version>5.0.0-dev</version>
+    <authors>Omega software</authors>
+    <owners>Omega software</owners>
+    <licenseUrl>http://opensource.org/licenses/AGPL-3.0</licenseUrl>
+    <projectUrl>https://github.com/rhetos/rhetos</projectUrl>
+    <description>Rhetos extensions for .NET host applications.</description>
+    <copyright>Copyright Omega software 2013</copyright>
+    <tags>Rhetos</tags>
+    <dependencies>
+      <dependency id="Rhetos" version="[5.0.0-dev,5.1.0)" />
+      <dependency id="Microsoft.Extensions.Logging" version="5.0.0" />
+      <dependency id="Microsoft.Extensions.Logging.Console" version="5.0.0" />
+      <dependency id="Microsoft.Extensions.Logging.Debug" version="5.0.0" />
+      <dependency id="Microsoft.Extensions.Logging.EventLog" version="5.0.0" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="Rhetos.Host.Net\bin\Debug\net5.0\Rhetos.Host.Net.dll" target="lib\net5.0" />
+    <file src="Rhetos.Host.Net\bin\Debug\net5.0\Rhetos.Host.Net.pdb" target="lib\net5.0" />
+    <file src="Rhetos.Host.Net\bin\Debug\net5.0\Rhetos.Host.Net.xml" target="lib\net5.0" />
+  </files>
+</package>

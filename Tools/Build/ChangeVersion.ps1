@@ -60,4 +60,4 @@ Else
 
 [string]$nextFrameworkVersion=$version.Major.ToString() + '.' + ($version.Minor + 1).ToString() + '.0'
 
-RegexReplace '*.nuspec' '(dependency id=\"Rhetos(\.MSBuild)?\" version=\").*?(\")' ('${1}[' + $minFrameworkVersion + ',' + $nextFrameworkVersion + ')${3}')
+RegexReplace '*.nuspec' '(dependency id=\"Rhetos.*\" version=\").*?(\")' ('${1}[' + $minFrameworkVersion + ',' + $nextFrameworkVersion + ')${2}')
