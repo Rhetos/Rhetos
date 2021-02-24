@@ -13,14 +13,6 @@
     <dependencies>
       <dependency id="Rhetos" version="[5.0.0-dev,5.1.0)" />
     </dependencies>
-    <contentFiles>
-      <files include="any/any/rhetos.exe" buildAction="None" copyToOutput="true" />
-      <files include="any/any/rhetos.dll" buildAction="None" copyToOutput="true" />
-      <files include="any/any/rhetos.pdb" buildAction="None" copyToOutput="true" />
-      <files include="any/any/rhetos.deps.json" buildAction="None" copyToOutput="true" />
-      <files include="any/any/rhetos.runtimeconfig.json" buildAction="None" copyToOutput="true" />
-      <files include="any/any/nlog.config" buildAction="None" copyToOutput="true" />
-    </contentFiles>
   </metadata>
   <files>
     <file src="RhetosCli\bin\Debug\net5.0\*.dll" target="tools" />
