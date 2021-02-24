@@ -1,0 +1,42 @@
+﻿<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Rhetos.Host</id>
+    <version>5.0.0-dev</version>
+    <authors>Omega software</authors>
+    <owners>Omega software</owners>
+    <licenseUrl>http://opensource.org/licenses/AGPL-3.0</licenseUrl>
+    <projectUrl>https://github.com/rhetos/rhetos</projectUrl>
+    <description>MSBuild integration with Rhetos CLI, for Rhetos DSL framework.</description>
+    <copyright>Copyright Omega software 2013</copyright>
+    <tags>Rhetos</tags>
+    <dependencies>
+      <dependency id="Rhetos" version="[5.0.0-dev,5.1.0)" />
+    </dependencies>
+    <contentFiles>
+      <files include="any/any/rhetos.exe" buildAction="None" copyToOutput="true" />
+      <files include="any/any/rhetos.dll" buildAction="None" copyToOutput="true" />
+      <files include="any/any/rhetos.pdb" buildAction="None" copyToOutput="true" />
+      <files include="any/any/rhetos.deps.json" buildAction="None" copyToOutput="true" />
+      <files include="any/any/rhetos.runtimeconfig.json" buildAction="None" copyToOutput="true" />
+      <files include="any/any/nlog.config" buildAction="None" copyToOutput="true" />
+    </contentFiles>
+  </metadata>
+  <files>
+    <file src="MsBuildIntegration\Rhetos.Host.targets" target="build" />
+    
+    <file src="RhetosCli\bin\Debug\net5.0\rhetos.exe" target="contentFiles/any/any" />
+    <file src="RhetosCli\bin\Debug\net5.0\rhetos.dll" target="contentFiles/any/any" />
+    <file src="RhetosCli\bin\Debug\net5.0\rhetos.pdb" target="contentFiles/any/any" />
+    <!-- When invoking rhetos.exe, dotnet will search for the Microsoft.Win32.SystemEvents.dll in the output folder because the dll is specified in the rhetos.dpes.json file
+    but an ASP.NET project will not have it because this dll is located in Microsoft.AspNetCore.App runtime folder and will throw an error.
+    As the Microsoft.Win32.SystemEvents.dll is not used when calling the "rhetos dbupdate" command
+    (the dependencies are needed only whem calling the dbupdate with the execute-command-in-current-process flag but in this case
+    the rhetos.exe program will be started by itself with the host application deps.json and runtimeconfig.json files)
+    we are ommiting the rhetos.desp.json file as a wrokaround so that dotnet will not try to search for this dependency
+    instead it will load only the assembyl when needed that are located inside the bin folder (for the other assembies will throw an error). -->
+    <!-- <file src="RhetosCli\bin\Debug\net5.0\rhetos.deps.json" target="contentFiles/any/any" /> -->
+    <file src="RhetosCli\bin\Debug\net5.0\rhetos.runtimeconfig.json" target="contentFiles/any/any" />
+    <file src="RhetosCli\bin\Debug\net5.0\nlog.config" target="contentFiles/any/any" />
+  </files>
+</package>
