@@ -48,7 +48,7 @@
     * Custom code that uses Paths class for Rhetos components initialization (for example SearchForAssembly) should be refactored to use RhetosHost class instead.
     * Custom code that generates or reads assets files should use IAssetsOptions.AssetsFolder instead.
     * Custom code that uses Paths.ResourcesFolder should use  IAssetsOptions.AssetsFolder instead.
-    * Custom code that uses Paths.RhetosServerRootPath might use RhetosAppOptions.CacheFolder or Path.GetDirectoryName on RhetosAppOptions.RhetosRuntimePath instead, if the intention was to find the binaries folder.
+    * Custom code that uses Paths.RhetosServerRootPath might use RhetosAppOptions.RhetosHostFolder instead, if the intention was to find the binaries folder.
 22. Removed RhetosAppEnvironment class and AddRhetosAppEnvironment method.
     * Configuration files "rhetos-app.settings.json" and "rhetos-app.local.settings.json" are no longer automatically loaded. If you want to use the same files from Rhetos v4, load them in your application in Program.CreateRhetosHostBuilder method:
       `return new RhetosHostBuilder().ConfigureRhetosHostDefaults().ConfigureConfiguration(builder => builder.AddJsonFile("rhetos-app.settings.json").AddJsonFile("rhetos-app.local.settings.json"));`

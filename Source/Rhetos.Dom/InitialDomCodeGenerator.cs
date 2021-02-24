@@ -69,7 +69,7 @@ namespace Rhetos
         /// The following defaults are applied:
         /// <list type=""bullet"">
         /// <item>Build-time configuration settings that are hard-coded in runtime environment:
-        ///     <see cref=""RhetosAppOptions.RhetosRuntimePath""/> and <see cref=""DatabaseSettings""/></item>.
+        ///     <see cref=""RhetosAppOptions.RhetosAppAssemblyName""/>, <see cref=""RhetosAppOptions.RhetosHostFolder""/> and <see cref=""DatabaseSettings""/></item>.
         /// <item>Registers plugin types from dependent libraries, and the current assembly for additional plugin discovery.</item>
         /// <item>Various plugin packages may add additional configuration settings and components registration.</item>
         /// </list>
@@ -79,8 +79,11 @@ namespace Rhetos
             hostBuilder
                 .ConfigureConfiguration(containerBuilder => containerBuilder
                     .AddKeyValue(
-                        ConfigurationProvider.GetKey((RhetosAppOptions o) => o.RhetosRuntimePath),
-                        typeof(RhetosHostBuilderExtensions).Assembly.Location)
+                        ConfigurationProvider.GetKey((RhetosAppOptions o) => o.RhetosAppAssemblyName),
+                        typeof(RhetosHostBuilderExtensions).Assembly.GetName().Name)
+                    .AddKeyValue(
+                        ConfigurationProvider.GetKey((RhetosAppOptions o) => o.RhetosHostFolder),
+                        AppContext.BaseDirectory)
                     .AddOptions(new Rhetos.Utilities.DatabaseSettings
                         {{
                             DatabaseLanguage = {CsUtility.QuotedString(_databaseSettings.DatabaseLanguage)},

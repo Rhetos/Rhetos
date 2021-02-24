@@ -40,7 +40,7 @@ namespace Rhetos.Dom
 
         private List<Assembly> LoadObjectModel()
         {
-            return new List<Assembly> { Assembly.Load(Path.GetFileNameWithoutExtension(_rhetosAppOptions.RhetosRuntimePath)) };
+            return new List<Assembly> { Assembly.Load(_rhetosAppOptions.RhetosAppAssemblyName) };
         }
     }
 }
