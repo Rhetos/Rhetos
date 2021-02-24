@@ -4,7 +4,7 @@
       <_RhetosHostAppAssemblies Include="@(ReferencePath)" Condition="'%(ReferencePath.MSBuildSourceProjectFile)' != ''" />
     </ItemGroup>  
     <PropertyGroup>
-      <_RhetosServerDomLinqPadScriptPath>$(BaseIntermediateOutputPath)Rhetos\LinqPad\Rhetos server DOM.linq</_RhetosServerDomLinqPadScriptPath>
+      <_RhetosServerDomLinqPadScriptPath>$(BaseIntermediateOutputPath)Rhetos\LinqPad\Rhetos DOM.linq</_RhetosServerDomLinqPadScriptPath>
       <_RhetosHostAppLinqPadReferences>@(_RhetosHostAppAssemblies -> '&lt;Reference Relative="..\%(Filename)%(Extension)"&gt;%(Filename)%(Extension)&lt;/Reference&gt;', '
   ')</_RhetosHostAppLinqPadReferences>
       <_RhetosServerDomLinqPadScript>
@@ -71,10 +71,9 @@
 
 void Main()
 {
-	string applicationFolder = Path.GetDirectoryName(Util.CurrentQueryPath)%3B
-	ConsoleLogger.MinLevel = EventType.Info%3B // Use EventType.Trace for more detailed log.
-	
-    var container = new Rhetos.ProcessContainer(Path.Combine(Path.GetDirectoryName(Util.CurrentQueryPath), @"..\$(AssemblyName).dll"))%3B
+    ConsoleLogger.MinLevel = EventType.Info%3B // Use EventType.Trace for more detailed log.
+    string rhetosHostAssemblyPath = Path.Combine(Path.GetDirectoryName(Util.CurrentQueryPath), @"..\$(AssemblyName).dll")%3B
+    var container = new Rhetos.ProcessContainer(rhetosHostAssemblyPath)%3B
     using (var scope = container.CreateScope())
     {
         var context = scope.Resolve<Common.ExecutionContext>()%3B
@@ -103,8 +102,8 @@ void Main()
             .Dump("Common.Principal log")%3B
             
         Console.WriteLine("Done.")%3B
-		
-		//container.CommitChanges()%3B // Database transaction is rolled back by default.
+        
+        //scope.CommitAndClose()%3B // Database transaction is rolled back by default.
     }
 }
 ]]>
