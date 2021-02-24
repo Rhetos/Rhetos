@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <!--TODO: The reference to the Microsoft.AspNetCore.App framework is added as a workaround for building application that are based on Microsoft.AspNetCore.App.
-  A better approach would be to find the referenced framework and its location and during the build process to load its assemblies if needd.
+  A better approach would be to find the referenced framework and its location and during the build process to load its assemblies if needed.
   This should be fixed before the final release of the 5.0.0 version.
   -->
   <ItemGroup>
