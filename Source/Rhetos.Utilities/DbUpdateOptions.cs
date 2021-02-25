@@ -37,10 +37,17 @@ namespace Rhetos.Utilities
         /// This feature was always enabled before Rhetos v5.
         /// </summary>
         /// <remarks>
-        /// Generally this feature is not needed, because (1) data-migration scripts always leave migration tables in sync with main tables,
+        /// This feature prevents data corruption in rare cases when the migration data is obsolete, but not yet applied to the main table.
+        /// For example, if a column is renamed and a migration script successfully copies data from old column to a new column,
+        /// but the database update fails for some other cause, leaving the new data in the migration table. In that case, if the application
+        /// is used (even though the update failed) and the user or some service modifies the data in the old column, the next dbupdate
+        /// would not migrate the newly entered data from the old column to the new one, because this migration script has already been executed.
+        /// <para>
+        /// Generally this feature is not needed if the application is not used after a failed dbupdate,
+        /// because (1) data-migration scripts always leave migration tables in sync with main tables,
         /// and (2) database updates are coupled with data backup/restore from migration tables and Rhetos metadata updates.
-        /// This option is left configurable to support any special cases that might require multiple executions of data-migration scrips.
+        /// </para>
         /// </remarks>
-        public bool RepeatDataMigrationsAfterFailedUpdate { get; set; } = false;
+        public bool RepeatDataMigrationsAfterFailedUpdate { get; set; } = true;
     }
 }
