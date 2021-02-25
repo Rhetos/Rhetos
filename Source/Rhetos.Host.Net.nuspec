@@ -11,7 +11,7 @@
     <copyright>Copyright Omega software 2013</copyright>
     <tags>Rhetos</tags>
     <dependencies>
-      <dependency id="Rhetos" version="[5.0.0-dev,5.1.0)" />
+      <dependency id="Rhetos.Host" version="[5.0.0-dev,5.1.0)" />
       <dependency id="Microsoft.Extensions.Logging" version="5.0.0" />
       <dependency id="Microsoft.Extensions.Logging.Console" version="5.0.0" />
       <dependency id="Microsoft.Extensions.Logging.Debug" version="5.0.0" />
