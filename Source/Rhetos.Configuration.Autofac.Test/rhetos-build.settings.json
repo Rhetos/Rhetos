@@ -1,8 +1,6 @@
 ﻿{
   "TestBuildSettings": "TestValue",
   "ConnectionStrings": {
-    "ServerConnectionString": {
-      "ConnectionString": "Data Source=TestSql;Initial Catalog=TestDb;Integrated Security=True"
-    }
+    "RhetosConnectionString": "Data Source=TestSql;Initial Catalog=TestDb;Integrated Security=True"
   }
 }

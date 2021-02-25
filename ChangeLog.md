@@ -55,6 +55,27 @@
 23. Run-time configuration no longer depends on "rhetos-app.settings.json" file.
     * Rhetos:App:AssetsFolder and Rhetos:App:RhetosRuntimePath settings may be removed from this file.
     * The file may be deleted if empty.
+24. ServerConnectionString is renamed to RhetosConnectionString. When using config file change the name of the connection string to RhetosConnectionString. For json configurations change the configuration from
+
+    ```json
+    {
+        "ConnectionStrings": {
+            "ServerConnectionString":{
+                "ConnectionString": "Database connection string"
+            }
+        }
+    }
+    ```
+
+    to
+
+    ```json
+    {
+        "ConnectionStrings": {
+            "RhetosConnectionString": "Database connection string"
+        }
+    }
+    ```
 
 ## 4.3.0 (TO BE RELEASED)
 

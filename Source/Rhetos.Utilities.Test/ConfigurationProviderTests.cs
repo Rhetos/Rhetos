@@ -290,7 +290,7 @@ namespace Rhetos.Utilities.Test
                 .AddConfigurationManagerConfiguration()
                 .Build();
 
-            Assert.IsTrue(provider.AllKeys.Contains("ConnectionStrings:ServerConnectionString:Name"));
+            Assert.IsTrue(provider.AllKeys.Contains("ConnectionStrings:RhetosConnectionString"));
             Assert.AreEqual(31, provider.GetValue("Rhetos:Database:SqlCommandTimeout", 0));
             Assert.AreEqual("TestSettingValue", provider.GetValue("AdditionalTestSetting", "", "TestSection"));
         }
@@ -302,8 +302,8 @@ namespace Rhetos.Utilities.Test
                 .AddConfigurationManagerConfiguration()
                 .Build();
 
-            var connectionStringName = provider.GetValue<string>($"ConnectionStrings:ServerConnectionString:Name");
-            Assert.AreEqual("ServerConnectionString", connectionStringName);
+            var connectionString = provider.GetValue<string>($"ConnectionStrings:RhetosConnectionString");
+            Assert.IsTrue(connectionString.Contains("Catalog=DummyDatabaseName;"));
         }
 
 
@@ -314,7 +314,7 @@ namespace Rhetos.Utilities.Test
                 .AddConfigurationFile("TestCfg.config")
                 .Build();
 
-            Assert.IsTrue(provider.AllKeys.Contains("ConnectionStrings:TestConnectionString:Name"));
+            Assert.IsTrue(provider.AllKeys.Contains("ConnectionStrings:TestConnectionString"));
             Assert.AreEqual(99, provider.GetValue("TestCfgValue", 0));
         }
 
