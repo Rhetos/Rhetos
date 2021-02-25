@@ -103,6 +103,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Host.Net", "Source\R
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Host.AspNet", "Source\Rhetos.Host.AspNet\Rhetos.Host.AspNet.csproj", "{10E35BC5-FD35-4FCF-8511-1EF0E5B847A6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Host.AspNet.Test", "Source\Rhetos.Host.AspNet.Test\Rhetos.Host.AspNet.Test.csproj", "{5F24785B-47E3-487B-AF38-889EF440A97C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -281,6 +283,10 @@ Global
 		{10E35BC5-FD35-4FCF-8511-1EF0E5B847A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{10E35BC5-FD35-4FCF-8511-1EF0E5B847A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{10E35BC5-FD35-4FCF-8511-1EF0E5B847A6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F24785B-47E3-487B-AF38-889EF440A97C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F24785B-47E3-487B-AF38-889EF440A97C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F24785B-47E3-487B-AF38-889EF440A97C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F24785B-47E3-487B-AF38-889EF440A97C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -329,6 +335,7 @@ Global
 		{18F12C46-AC7B-4E86-9BBE-953EB4BA7BD2} = {0124322E-2731-48E8-910C-957E37181628}
 		{029BB710-9BEC-412D-BB05-0ED3E3EA3C6A} = {56257C0A-67DA-452F-BB55-EC51FD6107A9}
 		{10E35BC5-FD35-4FCF-8511-1EF0E5B847A6} = {56257C0A-67DA-452F-BB55-EC51FD6107A9}
+		{5F24785B-47E3-487B-AF38-889EF440A97C} = {56257C0A-67DA-452F-BB55-EC51FD6107A9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4B8D1BEA-EAAA-484D-B00D-1D23226A5A90}

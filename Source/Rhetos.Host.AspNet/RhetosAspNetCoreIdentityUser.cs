@@ -26,36 +26,47 @@ namespace Rhetos.Host.AspNet
 {
     public class RhetosAspNetCoreIdentityUser : IUserInfo
     {
-        public bool IsUserRecognized => !string.IsNullOrEmpty(UserName);
-        public string UserName => userNameValueGenerator.Value;
-        public string Workstation => workstationValueGenerator.Value;
+        public bool IsUserRecognized => !string.IsNullOrEmpty(_userName.Value);
 
-        private readonly Lazy<string> userNameValueGenerator;
-        private readonly Lazy<string> workstationValueGenerator;
+        /// <remarks>
+        /// The exception prevents custom code to accidentally use an unauthenticated username
+        /// as an empty string in authorization logic, database queries and similar features.
+        /// <see cref="IsUserRecognized"/> should be check first where unauthenticated users
+        /// are supported.
+        /// </remarks>
+        public string UserName => IsUserRecognized ? _userName.Value : throw new ClientException("User is not authenticated.");
+
+        public string Workstation => _workstation.Value;
+
+        private readonly Lazy<string> _userName;
+        private readonly Lazy<string> _workstation;
 
         public RhetosAspNetCoreIdentityUser(IHttpContextAccessor httpContextAccessor)
         {
-            workstationValueGenerator = new Lazy<string>(() => GetWorkstation(httpContextAccessor.HttpContext));
-            userNameValueGenerator = new Lazy<string>(() => GetUserName(httpContextAccessor.HttpContext?.User));
+            _workstation = new Lazy<string>(() => GetWorkstation(httpContextAccessor.HttpContext), false);
+            _userName = new Lazy<string>(() => GetUserName(httpContextAccessor.HttpContext), false);
         }
 
-        private string GetUserName(ClaimsPrincipal httpContextUser)
+        private static string GetUserName(HttpContext httpContext)
         {
-            var userNameFromContext = httpContextUser?.Identity?.Name;
-            if (string.IsNullOrEmpty(userNameFromContext))
-                throw new InvalidOperationException($"No username found while trying to resolve user from HttpContext.");
-
-            return userNameFromContext;
+            var identity = httpContext?.User?.Identity;
+            if (identity?.IsAuthenticated == true)
+                return identity.Name;
+            else
+                return null;
         }
 
-        private string GetWorkstation(HttpContext httpContext)
+        private static string GetWorkstation(HttpContext httpContext)
         {
-            return httpContext.Connection?.RemoteIpAddress?.ToString();
+            var ipAddress = httpContext?.Connection?.RemoteIpAddress;
+            if (ipAddress != null)
+                return ipAddress.ToString() + " port " + httpContext.Connection.RemotePort;
+            else
+                return null;
         }
 
-        public string Report()
-        {
-            return $"{nameof(RhetosAspNetCoreIdentityUser)}(UserName='{UserName}')";
-        }
+        public string Report() => ReportUserNameOrAnonymous() + "," + _workstation.Value;
+
+        private string ReportUserNameOrAnonymous() => IsUserRecognized ? _userName.Value : "<anonymous>";
     }
 }
