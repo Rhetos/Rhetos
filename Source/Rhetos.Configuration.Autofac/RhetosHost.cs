@@ -135,8 +135,8 @@ namespace Rhetos
             // from another process with FindBuilder. For example, it could have different AppDomain.BaseDirectory, or the assembly copied in shadow directory.
             rhetosHostBuilder.UseRootFolder(Path.GetDirectoryName(rhetosHostAssemblyPath)); // Use host assembly directory as root for all RhetosHostBuilder operations.
             rhetosHostBuilder.ConfigureConfiguration(configurationBuilder => configurationBuilder.AddKeyValue(
-                ConfigurationProvider.GetKey((RhetosAppOptions o) => o.RhetosRuntimePath),
-                rhetosHostAssemblyPath)); // Override the RhetosRuntimePath to make sure it references the original assembly location, not a shadow copy (for applications such as LINQPad).
+                ConfigurationProvider.GetKey((RhetosAppOptions o) => o.RhetosHostFolder),
+                Path.GetDirectoryName(rhetosHostAssemblyPath))); // Override the RhetosHostFolder to make sure it is set to the original host folder location, not a shadow copy (for applications such as LINQPad).
             return rhetosHostBuilder;
         }
 

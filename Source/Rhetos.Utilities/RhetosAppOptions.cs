@@ -29,13 +29,21 @@ namespace Rhetos.Utilities
     public class RhetosAppOptions : IAssetsOptions
     {
         /// <summary>
-        /// Main Rhetos application's assembly file that is used for initializing Rhetos application via IRhetosHostBuilder implementation.
+        /// Host application folder.
         /// </summary>
         /// <remarks>
         /// The value is automatically set by generated application code. It may be customized by standard runtime configuration.
         /// </remarks>
         [AbsolutePathOption]
-        public string RhetosRuntimePath { get; set; }
+        public string RhetosHostFolder { get; set; }
+
+        /// <summary>
+        /// Rhetos application's assembly name where the generated code is located including the Domain Object Model.
+        /// </summary>
+        /// <remarks>
+        /// The value is automatically set by generated application code. It may be customized by standard runtime configuration.
+        /// </remarks>
+        public string RhetosAppAssemblyName { get; set; }
 
         private string _assetsFolder;
 
@@ -43,10 +51,10 @@ namespace Rhetos.Utilities
         /// Run-time assets folder.
         /// </summary>
         /// <remarks>
-        /// If not configured, default value is "RhetosAssets" subfolder where <see cref="RhetosRuntimePath"/> is located.
+        /// If not configured, default value is "RhetosAssets" subfolder in <see cref="RhetosHostFolder"/>.
         /// </remarks>
         [AbsolutePathOption]
-        public string AssetsFolder { get => _assetsFolder ?? GetDirectory(RhetosRuntimePath, "RhetosAssets"); set => _assetsFolder = value; }
+        public string AssetsFolder { get => _assetsFolder ?? GetDirectory(RhetosHostFolder, "RhetosAssets"); set => _assetsFolder = value; }
 
         private string _cacheFolder;
 
@@ -54,10 +62,10 @@ namespace Rhetos.Utilities
         /// Run-time cache folder.
         /// </summary>
         /// <remarks>
-        /// If not configured, default value is the folder where <see cref="RhetosRuntimePath"/> is located.
-        /// <see cref="AssetsFolder"/> is not practical for runtime cache during development, because it is deleted on each build.
+        /// If not configured, default value is <see cref="RhetosHostFolder"/>.
         /// </remarks>
-        public string CacheFolder { get => _cacheFolder ?? GetDirectory(RhetosRuntimePath, "."); set => _cacheFolder = value; }
+        [AbsolutePathOption]
+        public string CacheFolder { get => _cacheFolder ?? GetDirectory(RhetosHostFolder, "."); set => _cacheFolder = value; } // AssetsFolder is not useful for runtime cache during development, because it is deleted on each build.
 
         public bool EntityFrameworkUseDatabaseNullSemantics { get; set; } = true;
 
@@ -65,10 +73,10 @@ namespace Rhetos.Utilities
 
         public bool AuthorizationAddUnregisteredPrincipals { get; set; } = false;
 
-        private string GetDirectory(string baseFilePath, string directoryRelativePath)
+        private static string GetDirectory(string baseFolderPath, string directoryRelativePath)
         {
-            return !string.IsNullOrEmpty(baseFilePath)
-                ? Path.GetFullPath(Path.Combine(Path.GetDirectoryName(baseFilePath), directoryRelativePath))
+            return !string.IsNullOrEmpty(baseFolderPath)
+                ? Path.GetFullPath(Path.Combine(baseFolderPath, directoryRelativePath))
                 : null;
         }
     }

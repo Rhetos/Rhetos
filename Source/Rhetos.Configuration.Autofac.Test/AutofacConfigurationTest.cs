@@ -115,7 +115,8 @@ namespace Rhetos.Configuration.Autofac.Test
                 .AddKeyValue(ConfigurationProvider.GetKey((DbUpdateOptions o) => o.SkipRecompute), true)
                 .AddOptions(new RhetosAppOptions
                 {
-                    RhetosRuntimePath = currentAssemblyPath,
+                    RhetosHostFolder = Path.GetDirectoryName(currentAssemblyPath),
+                    RhetosAppAssemblyName = Path.GetFileNameWithoutExtension(currentAssemblyPath)
                 })
                 .AddOptions(new PluginScannerOptions
                 {
