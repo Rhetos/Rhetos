@@ -43,8 +43,8 @@ namespace Rhetos.Utilities
         private static string _connectionString;
         private static string _providerName;
 
-        private const string RhetosConnectionStringName = "ServerConnectionString";
-        private const string ConnectionStringConfigurationKey = "ConnectionStrings:" + RhetosConnectionStringName + ":ConnectionString";
+        private const string RhetosConnectionStringName = "RhetosConnectionString";
+        private const string ConnectionStringConfigurationKey = "ConnectionStrings:" + RhetosConnectionStringName;
 
         private static T CheckIfInitialized<T>(T value, string property)
         {

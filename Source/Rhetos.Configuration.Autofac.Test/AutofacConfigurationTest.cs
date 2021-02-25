@@ -134,7 +134,7 @@ namespace Rhetos.Configuration.Autofac.Test
         {
             var configuration = GetBuildConfiguration();
             Assert.AreEqual("TestValue", configuration.GetValue<string>("TestBuildSettings"));
-            var connectionsString = configuration.GetValue<string>($"ConnectionStrings:ServerConnectionString:ConnectionString");
+            var connectionsString = configuration.GetValue<string>($"ConnectionStrings:RhetosConnectionString");
             TestUtility.AssertContains(connectionsString, new[] { "TestSql", "TestDb" });
         }
 
