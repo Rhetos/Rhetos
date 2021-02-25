@@ -1,0 +1,23 @@
+﻿<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Rhetos.Host.AspNet</id>
+    <version>5.0.0-dev</version>
+    <authors>Omega software</authors>
+    <owners>Omega software</owners>
+    <licenseUrl>http://opensource.org/licenses/AGPL-3.0</licenseUrl>
+    <projectUrl>https://github.com/rhetos/rhetos</projectUrl>
+    <description>Rhetos extensions for ASP.NET Core host applications.</description>
+    <copyright>Copyright Omega software 2013</copyright>
+    <tags>Rhetos</tags>
+    <dependencies>
+      <dependency id="Rhetos.Host.Net" version="[5.0.0-dev,5.1.0)" />
+      <dependency id="Microsoft.AspNetCore.Http" version="2.2.2" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="Rhetos.Host.AspNet\bin\Debug\net5.0\Rhetos.Host.AspNet.dll" target="lib\net5.0" />
+    <file src="Rhetos.Host.AspNet\bin\Debug\net5.0\Rhetos.Host.AspNet.pdb" target="lib\net5.0" />
+    <file src="Rhetos.Host.AspNet\bin\Debug\net5.0\Rhetos.Host.AspNet.xml" target="lib\net5.0" />
+  </files>
+</package>
