@@ -12,8 +12,12 @@
     <tags>Rhetos</tags>
     <dependencies>
       <dependency id="Rhetos.Host.Net" version="[5.0.0-dev,5.1.0)" />
-      <dependency id="Microsoft.AspNetCore.Http" version="2.2.2" />
     </dependencies>
+    <frameworkReferences>
+      <group targetFramework="net5.0">
+        <frameworkReference name="Microsoft.AspNetCore.App" />
+      </group>
+    </frameworkReferences>
   </metadata>
   <files>
     <file src="Rhetos.Host.AspNet\bin\Debug\net5.0\Rhetos.Host.AspNet.dll" target="lib\net5.0" />

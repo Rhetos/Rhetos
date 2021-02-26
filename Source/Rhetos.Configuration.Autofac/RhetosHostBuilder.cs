@@ -36,7 +36,6 @@ namespace Rhetos
         private Action<IConfiguration, ContainerBuilder, List<Action<ContainerBuilder>>> _customContainerConfigurationAction;
         private readonly List<Assembly> _pluginAssemblies = new List<Assembly>();
         private readonly List<Type> _pluginTypes = new List<Type>();
-        private ILogger _buildLogger;
         private string _rootFolder;
 
         public IRhetosHostBuilder UseBuilderLogProvider(ILogProvider logProvider)
@@ -85,27 +84,23 @@ namespace Rhetos
         {
             var restoreCurrentDirectory = Environment.CurrentDirectory;
 
-            _buildLogger = _builderLogProvider.GetLogger(nameof(RhetosHost));
+            var buildLogger = _builderLogProvider.GetLogger(nameof(RhetosHost));
             try
             {
                 if (!string.IsNullOrEmpty(_rootFolder))
                 {
+                    buildLogger.Trace($"Using specified '{_rootFolder}' as root folder for {nameof(RhetosHost)} configuration.");
                     Directory.SetCurrentDirectory(_rootFolder);
-                    _buildLogger.Trace($"Using specified '{_rootFolder}' as root folder for {nameof(Build)} operation.");
                 }
                 else
                 {
+                    buildLogger.Trace($"Using base directory '{AppDomain.CurrentDomain.BaseDirectory}' as root folder for {nameof(RhetosHost)} configuration.");
                     Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
                 }
 
                 var configuration = BuildConfiguration();
                 var rhetosContainer = BuildContainer(configuration);
                 return new RhetosHost(rhetosContainer);
-            }
-            catch (Exception e)
-            {
-                _buildLogger.Error(() => $"Error during {nameof(RhetosHostBuilder)}.{nameof(Build)}: {e}");
-                throw;
             }
             finally
             {

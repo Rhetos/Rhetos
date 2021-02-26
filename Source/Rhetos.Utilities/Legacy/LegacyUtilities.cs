@@ -24,7 +24,7 @@ namespace Rhetos
     public static class LegacyUtilities
     {
         /// <summary>
-        /// Use to initialize obsolete static utilities <see cref="Paths"/>, <see cref="ConfigUtility"/>, <see cref="Configuration"/> and <see cref="SqlUtility"/> 
+        /// Use to initialize obsolete static utilities <see cref="ConfigUtility"/>, <see cref="Configuration"/> and <see cref="SqlUtility"/> 
         /// prior to using any of their methods. This will bind those utilities to configuration source compliant with new configuration convention.
         /// </summary>
         public static void Initialize(IConfiguration configuration)
