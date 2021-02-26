@@ -67,7 +67,6 @@ namespace Rhetos.Host.AspNet.Test
         public ConnectionInfo ConnectionOverride { get; set; }
         public override ConnectionInfo Connection => ConnectionOverride;
         public override WebSocketManager WebSockets => throw new NotImplementedException();
-        public override Microsoft.AspNetCore.Http.Authentication.AuthenticationManager Authentication => throw new NotImplementedException();
         public override ClaimsPrincipal User { get; set; }
         public override IDictionary<object, object> Items { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public override IServiceProvider RequestServices { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
@@ -92,7 +91,6 @@ namespace Rhetos.Host.AspNet.Test
         public override IPAddress LocalIpAddress { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public override int LocalPort { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public override X509Certificate2 ClientCertificate { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
         public override Task<X509Certificate2> GetClientCertificateAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
     }
 }
