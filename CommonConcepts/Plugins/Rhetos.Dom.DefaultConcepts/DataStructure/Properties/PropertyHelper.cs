@@ -48,7 +48,6 @@ namespace Rhetos.Dom.DefaultConcepts
         public static void GenerateCodeForType(PropertyInfo info, ICodeBuilder codeBuilder, string propertyType)
         {
             codeBuilder.InsertCode(PropertySnippet(info, propertyType), DataStructureCodeGenerator.BodyTag, info.DataStructure);
-            codeBuilder.InsertCode("[DataMember]", AttributeTag, info);
 
             if (DslUtility.IsQueryable(info.DataStructure))
                 codeBuilder.InsertCode(

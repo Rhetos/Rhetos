@@ -26,10 +26,8 @@ using System.Threading.Tasks;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-    [DataContract]
     public abstract class EntityBase<T> : IEntity, IEquatable<T> where T : class, IEntity
     {
-        [DataMember]
         public Guid ID { get; set; }
 
         public override int GetHashCode()
