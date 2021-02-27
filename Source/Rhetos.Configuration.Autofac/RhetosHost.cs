@@ -129,7 +129,7 @@ namespace Rhetos
             if (method.ReturnType != typeof(IRhetosHostBuilder))
                 throw new FrameworkException($"Static method '{entryPointType.FullName}.{HostBuilderFactoryMethodName}' has incorrect return type. Expected return type is {nameof(IRhetosHostBuilder)}.");
 
-            var rhetosHostBuilder = (IRhetosHostBuilder)method.Invoke(null, Array.Empty<object>());
+            var rhetosHostBuilder = (IRhetosHostBuilder)method.InvokeEx(null, Array.Empty<object>());
 
             // Overriding Rhetos host application's location settings, because the default values might be incorrect when the host assembly is executed
             // from another process with FindBuilder. For example, it could have different AppDomain.BaseDirectory, or the assembly copied in shadow directory.
