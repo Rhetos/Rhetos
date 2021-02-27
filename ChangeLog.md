@@ -56,7 +56,6 @@
     * Rhetos:App:AssetsFolder and Rhetos:App:RhetosRuntimePath settings may be removed from this file.
     * The file may be deleted if empty.
 24. ServerConnectionString is renamed to RhetosConnectionString. When using config file change the name of the connection string to RhetosConnectionString. For json configurations change the configuration from
-
     ```json
     {
         "ConnectionStrings": {
@@ -66,9 +65,7 @@
         }
     }
     ```
-
     to
-
     ```json
     {
         "ConnectionStrings": {
@@ -76,6 +73,8 @@
         }
     }
     ```
+25. User authentication is no longer managed by Rhetos plugins.
+    * To enable Windows authentication, follow the standard instructions for ASP.NET Core applications: [Configure Windows Authentication in ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core/security/authentication/windowsauth?view=aspnetcore-5.0&tabs=netcore-cli). In a typical development environment it is enough to simply add `services.AddAuthentication` to Startup, and modify the two lines in `launchSettings.json`, as described in the article above.
 
 ## 4.3.0 (TO BE RELEASED)
 
