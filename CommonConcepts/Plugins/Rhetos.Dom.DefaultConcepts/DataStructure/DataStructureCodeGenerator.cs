@@ -49,7 +49,6 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             DataStructureInfo info = (DataStructureInfo)conceptInfo;
             codeBuilder.InsertCode(CodeSnippet(info), ModuleCodeGenerator.NamespaceMembersTag, info.Module);
-            codeBuilder.InsertCode("[DataContract]", AttributesTag, info);
         }
 
         public static void AddInterfaceAndReference(ICodeBuilder codeBuilder, Type type, DataStructureInfo dataStructureInfo)
