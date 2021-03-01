@@ -4,101 +4,53 @@
 
 ### Breaking changes
 
-1. Migrated from .NET Framework to .NET 5. Rhetos no longer supports .NET Framework applications and plugins.
-   * Migrate the existing applications to .NET 5. Migrate the existing plugin libraries to .NET Standard 2.1.
-   * TODO: Link to article with common issues when migrating C# code from .NET Framework to .NET 5.
-   * Default string sort is different (for example `items.OrderBy(item => item.Name)` on in-memory objects). The new sort works cleaner; previously there was some complicated behavior with combination of '-' and numbers.
-   * Searching for end-of-line with `text.IndexOf("\n")` returns -1 if the string contains "\r\n". It works correctly if the text contains "\n" without "\r".
-     `string.IndexOf("\r\n")` returns position correctly, but it does not support UNIX file format.
-     `string.Replace` and `string.Contains` do not have this issue.
-     Solution: Convert `.IndexOf("\n")` to `s.IndexOf('\n')` or `.IndexOf("\n", StringComparison.Ordinal)`.
-2. Removed WcfWindowsUserInfo, IWindowsSecurity and WindowsSecurity from Rhetos framework. WindowsSecurity property on ExecutionContext is removed.
-   * TODO: These classes might be implemented in a separate plugin package.
-3. Removed CleanupOldData executable
-4. Removed CreateAndSetDatabase executable.
-   * Use [sqlcmd](https://docs.microsoft.com/en-us/sql/tools/sqlcmd-utility) CLI utility to create a database.
-5. Removed CreateIISSite executable
-6. Removed DeployPackages executable
-   * rhetos.exe is replacing DeployPackages.exe, see [Migrating from DeployPackages to Rhetos CLI](https://github.com/Rhetos/Rhetos/wiki/Migrating-from-DeployPackages-to-Rhetos-CLI).
-7. Removed support for WCF in Rhetos framework. That means that Rhetos.Web assembly is also removed from the Rhetos framework.
-8. Removed PackageDownloader and PackageDownloaderOptions class because the NuGet package management is done by MSBuild or dotnet CLI.
-9. Removed IHomePageSnippet from the Rhetos framework
-    * TODO: The support for IHomePageSnippet will be probably left to a rhetos plugin that will support the ASP.NET Core.
-10. Removed IService from the Rhetos framework
-    * TODO: A new design is needed to support custom services in ASP.NET Core.
-11. SOAP API implementation is removed from Rhetos framework (IServerApplication).
-12. *Rhetos.TestCommon.dll* is moved to a separate NuGet package.
-    * If your build fails with error `'TestCommon' does not exist` or `'TestUtility' does not exist`, add a NuGet package reference to "Rhetos.TestCommon".
-13. Removed LINQPad scripts from the Rhetos framework.
-    * TODO: Implement them in a separate NuGet package.
-14. TestUtility.DumpSorted may return items in a different order, because the default string comparer is different between .NET Framework and .NET 5.
-15. Removed LegacyPathsOptions class, specific for build process with DeployPackages.
-16. Removed methods ICodeBuilder.AddReference and AddReferencesFromDependency.
-    * Calls to this methods can be removed from custom code, since since Rhetos no longer compiles assemblies directly.
-17. Removed IAssemblySource. ICodeGenerator.ExecutePlugins returns generated source as a string.
-    * Custom code that called ExecutePlugins can use the string result directly, instead of IAssemblySource.GeneratedCode property.
-    * Code that used IAssemblySource.RegisteredReferences can be safely removed, since Rhetos no longer compiles assemblies.
-18. Removed Plugins class, use ContainerBuilderPluginRegistration instead. Resolve it from ContainerBuilder with extension method builder.GetPluginRegistration().
-19. Removed support for source code compilation. Removed IAssemblyGenerator.
-    Removed options Debug and AssemblyGeneratorErrorReportLimit from Build options.
-    * Custom code that used IAssemblyGenerator.Generate to generate application's source and library should now use ISourceWriter.Add instead. This will simply add the generated source files into the project that will be compiled as a part of the Rhetos application.
-    * If you need to compile the generated source code to a separate library, include the generated source code inside a separate C# project and leave the compilation to Visual Studio or MSBuild.
-20. The property DatabaseLanguage is now located in the class DatabaseSettings instead of BuildOptions during build time and RhetosAppOptions during runtime.
-21. Removed Paths class.
+1. Migrated from .NET Framework to **.NET 5**. Rhetos framework no longer supports .NET Framework plugins.
+   * When upgrading existing Rhetos applications to Rhetos 5.0, migrate the applications and plugin libraries to .NET 5.
+   * Hint: Review custom application code for [Behavior changes when comparing strings on .NET 5](https://docs.microsoft.com/en-us/dotnet/standard/base-types/string-comparison-net-5-plus),
+     for example, `text.IndexOf("\n")` or `items.OrderBy(item => item.Name)` may return different result on .NET 5 (this does not affect Entity Framework queries).
+2. Removed obsolete CLI utilities:
+   * DeployPackages.exe - rhetos.exe is replacing DeployPackages.exe, see [Migrating from DeployPackages to Rhetos CLI](https://github.com/Rhetos/Rhetos/wiki/Migrating-from-DeployPackages-to-Rhetos-CLI).
+   * CreateAndSetDatabase.exe - Use [sqlcmd](https://docs.microsoft.com/en-us/sql/tools/sqlcmd-utility) instead to create a new database.
+   * CleanupOldData.exe
+   * CreateIISSite.exe
+3. SOAP API implementation has been removed from Rhetos framework. Removed IServerApplication interface.
+4. Windows authentication is no longer enabled by default. Removed IWindowsSecurity interface.
+   * To enable it, follow the standard instructions for ASP.NET Core applications: [Configure Windows Authentication in ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core/security/authentication/windowsauth?view=aspnetcore-5.0&tabs=netcore-cli). In a typical development environment it is enough to simply add `services.AddAuthentication` to Startup, and modify the two lines in `launchSettings.json`, as described in the article above.
+5. Removed IService interface from the Rhetos framework.
+   * Instead of using IService, register and initialize custom services explicitly in Startup.cs (ASP.NET Core convention).
+6. Removed IHomePageSnippet interface from the Rhetos framework. The default homepage is no longer available.
+7. Removed methods ICodeBuilder.AddReference and AddReferencesFromDependency.
+   * Calls to these methods can be removed from custom code, since Rhetos no longer compiles assemblies directly.
+8. Removed IAssemblySource interface. ICodeGenerator.ExecutePlugins returns generated source as a string.
+   * Custom code that called ExecutePlugins can use the string result directly, instead of IAssemblySource.GeneratedCode property.
+   * Code that used IAssemblySource.RegisteredReferences can be safely removed, since Rhetos no longer compiles assemblies.
+9. Removed IAssemblyGenerator, and options Debug and AssemblyGeneratorErrorReportLimit from Build settings.
+    * Custom code that uses IAssemblyGenerator.Generate to generate application's source and library should now use ISourceWriter.Add instead. This will simply add the generated source files into the project that will be compiled by MSBuild as a part of the Rhetos application.
+    * If you need to compile the generated source code to a *separate* library, include the generated source code inside a separate C# project and leave the compilation to Visual Studio or MSBuild.
+10. Removed LegacyPathsOptions class, specific for build process with DeployPackages.
+11. Removed Plugins class
+    * Use ContainerBuilderPluginRegistration instead. Get it from ContainerBuilder with extension method builder.GetPluginRegistration().
+12. Removed Paths class.
     * Custom code that uses Paths class for Rhetos components initialization (for example SearchForAssembly) should be refactored to use RhetosHost class instead.
     * Custom code that generates or reads assets files should use IAssetsOptions.AssetsFolder instead.
     * Custom code that uses Paths.ResourcesFolder should use IAssetsOptions.AssetsFolder instead.
     * Custom code that uses Paths.RhetosServerRootPath may use RhetosAppOptions.CacheFolder or RhetosAppOptions.RhetosHostFolder instead.
-22. Removed RhetosAppEnvironment class and AddRhetosAppEnvironment method.
+13. Removed RhetosAppEnvironment class and AddRhetosAppEnvironment method.
     * Configuration files "rhetos-app.settings.json" and "rhetos-app.local.settings.json" are no longer automatically loaded. If you want to use the same files from Rhetos v4, load them in your application in Program.CreateRhetosHostBuilder method:
       `return new RhetosHostBuilder().ConfigureRhetosHostDefaults().ConfigureConfiguration(builder => builder.AddJsonFile("rhetos-app.settings.json").AddJsonFile("rhetos-app.local.settings.json"));`
-23. Run-time configuration no longer depends on "rhetos-app.settings.json" file.
+14. The property DatabaseLanguage is moved from classes BuildOptions and RhetosAppOptions to class DatabaseSettings.
+15. *Rhetos.TestCommon.dll* is moved to a separate NuGet package.
+    * If your build fails with error `'TestCommon' does not exist` or `'TestUtility' does not exist`, add a NuGet package reference to "Rhetos.TestCommon".
+    * Note that TestUtility.DumpSorted method may return items in a different order, because the default string comparer is different between .NET Framework and .NET 5.
+16. Run-time configuration no longer depends on "rhetos-app.settings.json" file (from Rhetos v4).
     * Rhetos:App:AssetsFolder and Rhetos:App:RhetosRuntimePath settings may be removed from this file.
     * The file may be deleted if empty.
-24. ServerConnectionString is renamed to RhetosConnectionString. When using config file change the name of the connection string to RhetosConnectionString. For json configurations change the configuration from
-
-    ```json
-    {
-        "ConnectionStrings": {
-            "ServerConnectionString":{
-                "ConnectionString": "Database connection string"
-            }
-        }
-    }
-    ```
-
-    to
-
-    ```json
-    {
-        "ConnectionStrings": {
-            "RhetosConnectionString": "Database connection string"
-        }
-    }
-
-25. User authentication is no longer managed by Rhetos plugins.
-    * To enable Windows authentication, follow the standard instructions for ASP.NET Core applications: [Configure Windows Authentication in ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core/security/authentication/windowsauth?view=aspnetcore-5.0&tabs=netcore-cli). In a typical development environment it is enough to simply add `services.AddAuthentication` to Startup, and modify the two lines in `launchSettings.json`, as described in the article above.
-26. When using APS.NET Core the configuration in web.config should also be migrated.
-    How the migration is done depends on the web server which is used.
-    * IIS still uses the web.config file for server specific configuration.
-    The web.config file is not added autoamtically when creating an empty ASP.NET Core application so you need to add it manually.
-    The `system.serviceModel` section in web.config is WCF specific so it is not used anymore.
-    The system.web section is ASP.NET specific and it is not used anymore but some of its configuration can be set under the system.webserver section which is IIS sepcific.
-        1. The `system.web:httpRuntime maxUrlLength` value can be set under the `system.webServer: security:requestFiltering requestLimits maxUrl` attribute.
-        2. The `system.web:httpRuntime maxQueryStringLength` value can be set under the `system.webServer:security:requestFiltering:requestLimits maxQueryString` attribute.
-        3. The `system.web:httpRuntime maxRequestLength` value can be set under the `system.webServer:security:requestFiltering:requestLimits maxAllowedContentLength` attribute.
-    * For Kestrel you can follow the instructions on https://docs.microsoft.com/en-us/aspnet/core/fundamentals/servers/kestrel/options?view=aspnetcore-5.0.
-
-    * To configure the limit of each multipart body, in the startup class you need to call
-
-        ```CS
-        services.Configure<FormOptions>(options =>
-        {
-            options.MultipartBodyLengthLimit = multipartBodyLengthValue;
-        });
-        ```
-
-        This is required when using the Rhetos.LightMDS package if you want to increase the file upload size limit.
+17. Database configuration option is renamed from ServerConnectionString to RhetosConnectionString, and formatting changed to a single string.
+    * Modify existing configuration in json file from `{ "ConnectionStrings": { "ServerConnectionString":{ "ConnectionString": "database connection string" } } }` to `{ "ConnectionStrings": { "RhetosConnectionString": "database connection string" } }`.
+18. Removed support for WCF, new Rhetos applications should use APS.NET Core instead.
+    * When migrating existing Rhetos application to APS.NET Core, the configuration in web.config should also be migrated,
+      see [Migrating from WCF to ASP.NET Core](https://github.com/Rhetos/Rhetos/wiki/Migrating-from-WCF-to-ASP-NET-Core).
+19. Removed NuGet package management from Rhetos framework. Removed classes PackageDownloader and PackageDownloaderOptions.
 
 ## 4.3.0 (TO BE RELEASED)
 
