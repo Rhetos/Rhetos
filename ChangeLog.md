@@ -56,6 +56,7 @@
     * Rhetos:App:AssetsFolder and Rhetos:App:RhetosRuntimePath settings may be removed from this file.
     * The file may be deleted if empty.
 24. ServerConnectionString is renamed to RhetosConnectionString. When using config file change the name of the connection string to RhetosConnectionString. For json configurations change the configuration from
+
     ```json
     {
         "ConnectionStrings": {
@@ -65,16 +66,39 @@
         }
     }
     ```
+
     to
+
     ```json
     {
         "ConnectionStrings": {
             "RhetosConnectionString": "Database connection string"
         }
     }
-    ```
+
 25. User authentication is no longer managed by Rhetos plugins.
     * To enable Windows authentication, follow the standard instructions for ASP.NET Core applications: [Configure Windows Authentication in ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core/security/authentication/windowsauth?view=aspnetcore-5.0&tabs=netcore-cli). In a typical development environment it is enough to simply add `services.AddAuthentication` to Startup, and modify the two lines in `launchSettings.json`, as described in the article above.
+26. When using APS.NET Core the configuration in web.config should also be migrated.
+    How the migration is done depends on the web server which is used.
+    * IIS still uses the web.config file for server specific configuration.
+    The web.config file is not added autoamtically when creating an empty ASP.NET Core application so you need to add it manually.
+    The `system.serviceModel` section in web.config is WCF specific so it is not used anymore.
+    The system.web section is ASP.NET specific and it is not used anymore but some of its configuration can be set under the system.webserver section which is IIS sepcific.
+        1. The `system.web:httpRuntime maxUrlLength` value can be set under the `system.webServer: security:requestFiltering requestLimits maxUrl` attribute.
+        2. The `system.web:httpRuntime maxQueryStringLength` value can be set under the `system.webServer:security:requestFiltering:requestLimits maxQueryString` attribute.
+        3. The `system.web:httpRuntime maxRequestLength` value can be set under the `system.webServer:security:requestFiltering:requestLimits maxAllowedContentLength` attribute.
+    * For Kestrel you can follow the instructions on https://docs.microsoft.com/en-us/aspnet/core/fundamentals/servers/kestrel/options?view=aspnetcore-5.0.
+
+    * To configure the limit of each multipart body, in the startup class you need to call
+
+        ```CS
+        services.Configure<FormOptions>(options =>
+        {
+            options.MultipartBodyLengthLimit = multipartBodyLengthValue;
+        });
+        ```
+
+        This is required when using the Rhetos.LightMDS package if you want to increase the file upload size limit.
 
 ## 4.3.0 (TO BE RELEASED)
 
