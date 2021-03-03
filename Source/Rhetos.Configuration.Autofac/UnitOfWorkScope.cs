@@ -30,7 +30,7 @@ namespace Rhetos
     /// </summary>
     public class UnitOfWorkScope : IDisposable
     {
-        private bool _commitChanges = false;
+        protected bool _commitChanges = false;
         private readonly ILifetimeScope _lifetimeScope;
         private bool disposed;
 
@@ -58,18 +58,6 @@ namespace Rhetos
         }
 
         /// <summary>
-        /// Indicates that all operations within the scope are completed successfully, and the transaction can be committed when the <see cref="UnitOfWorkScope"/> is disposed.
-        /// It is a good practice to put the call as the last statement in the using block.
-        /// </summary>
-        /// <remarks>
-        /// This method call will be ignored if the database transaction is discarded by <see cref="IPersistenceTransaction.DiscardChanges()"/>.
-        /// </remarks>
-        public void CommitOnDispose()
-        {
-            _commitChanges = true;
-        }
-
-        /// <summary>
         /// Commits and closes the database transaction for the current unit of work (lifetime scope).
         /// It is a good practice to put the call as the last statement in the using block.
         /// </summary>
@@ -79,7 +67,21 @@ namespace Rhetos
         /// </remarks>
         public void CommitAndClose()
         {
-            _lifetimeScope.Resolve<IPersistenceTransaction>().Dispose();
+            var transaction = _lifetimeScope.Resolve<IPersistenceTransaction>();
+            transaction.Dispose();
+        }
+
+        /// <summary>
+        /// Discards and closes the database transaction for the current unit of work (lifetime scope).
+        /// </summary>
+        /// <remarks>
+        /// After calling this method, any later database operation in the current scope might result with an error.
+        /// </remarks>
+        public void RollbackAndClose()
+        {
+            var transaction = _lifetimeScope.Resolve<IPersistenceTransaction>();
+            transaction.DiscardChanges();
+            transaction.Dispose();
         }
 
         protected virtual void Dispose(bool disposing)

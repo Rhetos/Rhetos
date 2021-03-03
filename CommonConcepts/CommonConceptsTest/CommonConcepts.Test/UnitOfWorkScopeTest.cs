@@ -39,11 +39,11 @@ namespace CommonConcepts.Test
         {
             var id1 = Guid.NewGuid();
 
-            using (var scope = RhetosProcessHelper.CreateScope())
+            using (var scope = RhetosProcessHelper.ProcessContainer.CreateTransactionScopeContainer())
             {
                 var context = scope.Resolve<Common.ExecutionContext>();
                 context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id1, Name = TestNamePrefix + Guid.NewGuid() });
-                scope.CommitOnDispose();
+                scope.CommitChanges();
             }
 
             using (var scope = RhetosProcessHelper.CreateScope())
@@ -79,13 +79,13 @@ namespace CommonConcepts.Test
 
             TestUtility.ShouldFail<FrameworkException>(() =>
                 {
-                    using (var scope = RhetosProcessHelper.CreateScope())
+                    using (var scope = RhetosProcessHelper.ProcessContainer.CreateTransactionScopeContainer())
                     {
                         var context = scope.Resolve<Common.ExecutionContext>();
                         context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id1, Name = TestNamePrefix + Guid.NewGuid() });
                         throw new FrameworkException(nameof(RollbackByDefault)); // The exception that is not handled within transaction scope.
 #pragma warning disable CS0162 // Unreachable code detected
-                        scope.CommitOnDispose();
+                        scope.CommitChanges();
 #pragma warning restore CS0162 // Unreachable code detected
                     }
                 },
@@ -99,7 +99,7 @@ namespace CommonConcepts.Test
         }
 
         /// <summary>
-        /// This is not an intended usage of UnitOfWorkScope because CommitOnDispose should be called at the end of the using block.
+        /// This is not an intended usage of UnitOfWorkScope because CommitChanges should be called at the end of the using block.
         /// Here an unhandled exception incorrectly commits the transaction, but currently the framework allows it.
         /// </summary>
         [TestMethod]
@@ -110,11 +110,11 @@ namespace CommonConcepts.Test
 
             TestUtility.ShouldFail<FrameworkException>(() =>
                 {
-                    using (var scope = RhetosProcessHelper.CreateScope())
+                    using (var scope = RhetosProcessHelper.ProcessContainer.CreateTransactionScopeContainer())
                     {
                         var context = scope.Resolve<Common.ExecutionContext>();
                         context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id1, Name = TestNamePrefix + Guid.NewGuid() });
-                        scope.CommitOnDispose(); // CommitOnDispose is incorrectly placed at this position.
+                        scope.CommitChanges(); // CommitChanges is incorrectly placed at this position.
                         context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id2, Name = TestNamePrefix + Guid.NewGuid() });
                         throw new FrameworkException(nameof(EarlyCommitOnDispose)); // The exception is not handled within transaction scope to discard the transaction.
                     }

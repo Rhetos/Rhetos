@@ -20,6 +20,7 @@
 using CommonConcepts.Test.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos;
+using Rhetos.Configuration.Autofac;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Logging;
 using Rhetos.Persistence;
@@ -44,7 +45,7 @@ namespace CommonConcepts.Test
             var id1 = Guid.NewGuid();
             var log = new List<string>();
 
-            using (var scope = RhetosProcessHelper.CreateScope())
+            using (var scope = new RhetosTestContainer(commitChanges: true))
             {
                 var transaction = scope.Resolve<IPersistenceTransaction>();
                 transaction.BeforeClose += () => log.Add("before");
@@ -52,7 +53,6 @@ namespace CommonConcepts.Test
 
                 var repository = scope.Resolve<Common.DomRepository>();
                 repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id1, Name = TestNamePrefix + Guid.NewGuid() });
-                scope.CommitOnDispose();
             }
 
             Assert.AreEqual("before, after", TestUtility.Dump(log));

@@ -18,6 +18,7 @@
 */
 
 using Autofac;
+using Rhetos.Persistence;
 using System;
 
 namespace Rhetos
@@ -47,10 +48,16 @@ namespace Rhetos
         }
 
         /// <summary>
-        /// The changes are not committed immediately, they will be committed on DI container disposal.
+        /// The transaction is <b>not committed immediately</b>, it will be committed on DI container disposal.
         /// Call this method at the end of the 'using' block to mark the current database transaction to be committed.
         /// </summary>
-        [Obsolete("Use " + nameof(CommitAndClose) + " or " + nameof(CommitOnDispose) + " instead.")]
-        public void CommitChanges() => CommitOnDispose();
+        /// <remarks>
+        /// This method call will be ignored if the database transaction is discarded by <see cref="IPersistenceTransaction.DiscardChanges()"/>.
+        /// </remarks>
+        [Obsolete("Use " + nameof(CommitAndClose) + " instead, to commit the transaction immediately.")]
+        public void CommitChanges()
+        {
+            _commitChanges = true;
+        }
     }
 }
