@@ -69,13 +69,4 @@
         </ItemGroup>
 
     </Target>
-
-    <!-- Checking for Rhetos.Utilities.dll is a simple heuristics to determine if the project output is executable and can be used for dbupdate command.
-    Libraries don't output dependencies by default. More complex cases should be configured manually by $(RhetosDeploy) property. -->
-    <Target Name="DeployRhetosApp" DependsOnTargets="BuildRhetosApp;CopyFilesToOutputDirectory" AfterTargets="Build" Condition="'$(RhetosDeploy)'=='True' And Exists('$(RhetosBuildCompleteFile)') And Exists('$(TargetDir)\Rhetos.Utilities.dll')"
-        Inputs="$(RhetosBuildCompleteFile)" Outputs="$(RhetosDatabaseUpdated)">
-        <Message Text="DeployRhetosApp" />
-        <Exec Command="&quot;$(TargetDir)rhetos.exe&quot; dbupdate &quot;$(TargetDir)\$(AssemblyName).dll&quot;" CustomErrorRegularExpression="\[Error\]" CustomWarningRegularExpression="\[(Warn|Warning)\]" />
-        <WriteLinesToFile File="$(RhetosDatabaseUpdated)" Lines="" Overwrite="true" />
-    </Target>
 </Project>

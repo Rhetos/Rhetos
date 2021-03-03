@@ -1,119 +1,133 @@
 <Project>
-  <Target Name="RhetosGenerateLinqPadScripts" DependsOnTargets="ResolveReferences" BeforeTargets="AssignTargetPaths">
-    <ItemGroup>
-      <_RhetosHostAppAssemblies Include="@(ReferencePath)" Condition="'%(ReferencePath.MSBuildSourceProjectFile)' != ''" />
-    </ItemGroup>  
-    <PropertyGroup>
-      <_RhetosServerDomLinqPadScriptPath>$(BaseIntermediateOutputPath)Rhetos\LinqPad\Rhetos DOM.linq</_RhetosServerDomLinqPadScriptPath>
-      <_RhetosHostAppLinqPadReferences>@(_RhetosHostAppAssemblies -> '&lt;Reference Relative="..\%(Filename)%(Extension)"&gt;%(Filename)%(Extension)&lt;/Reference&gt;', '
-  ')</_RhetosHostAppLinqPadReferences>
-      <_RhetosServerDomLinqPadScript>
-<![CDATA[
-<Query Kind="Program">
-  <Reference Relative="..\$(AssemblyName).dll">$(AssemblyName).dll</Reference>
-  <Reference Relative="..\$(AssemblyName).deps.json">$(AssemblyName).deps.json</Reference>
-  <Reference Relative="..\$(AssemblyName).runtimeconfig.json">$(AssemblyName).runtimeconfig.json</Reference>
-  $(_RhetosHostAppLinqPadReferences)
-  <Reference Relative="..\EntityFramework.dll">..\EntityFramework.dll</Reference>
-  <Reference Relative="..\EntityFramework.SqlServer.dll">..\EntityFramework.SqlServer.dll</Reference>
-  <Reference Relative="..\Microsoft.CodeAnalysis.CSharp.dll">..\Microsoft.CodeAnalysis.CSharp.dll</Reference>
-  <Reference Relative="..\Microsoft.CodeAnalysis.dll">..\Microsoft.CodeAnalysis.dll</Reference>
-  <Reference Relative="..\Microsoft.Win32.SystemEvents.dll">..\Microsoft.Win32.SystemEvents.dll</Reference>
-  <Reference Relative="..\Newtonsoft.Json.dll">..\Newtonsoft.Json.dll</Reference>
-  <Reference Relative="..\NLog.dll">..\NLog.dll</Reference>
-  <Reference Relative="..\Oracle.ManagedDataAccess.dll">..\Oracle.ManagedDataAccess.dll</Reference>
-  <Reference Relative="..\Rhetos.Compiler.dll">..\Rhetos.Compiler.dll</Reference>
-  <Reference Relative="..\Rhetos.Compiler.Interfaces.dll">..\Rhetos.Compiler.Interfaces.dll</Reference>
-  <Reference Relative="..\Rhetos.Configuration.Autofac.dll">..\Rhetos.Configuration.Autofac.dll</Reference>
-  <Reference Relative="..\Rhetos.DatabaseGenerator.DefaultConcepts.dll">..\Rhetos.DatabaseGenerator.DefaultConcepts.dll</Reference>
-  <Reference Relative="..\Rhetos.DatabaseGenerator.dll">..\Rhetos.DatabaseGenerator.dll</Reference>
-  <Reference Relative="..\Rhetos.DatabaseGenerator.Interfaces.dll">..\Rhetos.DatabaseGenerator.Interfaces.dll</Reference>
-  <Reference Relative="..\Rhetos.Deployment.dll">..\Rhetos.Deployment.dll</Reference>
-  <Reference Relative="..\Rhetos.Deployment.Interfaces.dll">..\Rhetos.Deployment.Interfaces.dll</Reference>
-  <Reference Relative="..\Rhetos.Dom.DefaultConcepts.dll">..\Rhetos.Dom.DefaultConcepts.dll</Reference>
-  <Reference Relative="..\Rhetos.Dom.DefaultConcepts.Interfaces.dll">..\Rhetos.Dom.DefaultConcepts.Interfaces.dll</Reference>
-  <Reference Relative="..\Rhetos.Dom.dll">..\Rhetos.Dom.dll</Reference>
-  <Reference Relative="..\Rhetos.Dom.Interfaces.dll">..\Rhetos.Dom.Interfaces.dll</Reference>
-  <Reference Relative="..\Rhetos.Dsl.DefaultConcepts.dll">..\Rhetos.Dsl.DefaultConcepts.dll</Reference>
-  <Reference Relative="..\Rhetos.Dsl.dll">..\Rhetos.Dsl.dll</Reference>
-  <Reference Relative="..\Rhetos.Dsl.Interfaces.dll">..\Rhetos.Dsl.Interfaces.dll</Reference>
-  <Reference Relative="..\Rhetos.Extensibility.dll">..\Rhetos.Extensibility.dll</Reference>
-  <Reference Relative="..\Rhetos.Extensibility.Interfaces.dll">..\Rhetos.Extensibility.Interfaces.dll</Reference>
-  <Reference Relative="..\Rhetos.Logging.dll">..\Rhetos.Logging.dll</Reference>
-  <Reference Relative="..\Rhetos.Logging.Interfaces.dll">..\Rhetos.Logging.Interfaces.dll</Reference>
-  <Reference Relative="..\Rhetos.Persistence.dll">..\Rhetos.Persistence.dll</Reference>
-  <Reference Relative="..\Rhetos.Persistence.Interfaces.dll">..\Rhetos.Persistence.Interfaces.dll</Reference>
-  <Reference Relative="..\Rhetos.Processing.DefaultCommands.dll">..\Rhetos.Processing.DefaultCommands.dll</Reference>
-  <Reference Relative="..\Rhetos.Processing.DefaultCommands.Interfaces.dll">..\Rhetos.Processing.DefaultCommands.Interfaces.dll</Reference>
-  <Reference Relative="..\Rhetos.Processing.dll">..\Rhetos.Processing.dll</Reference>
-  <Reference Relative="..\Rhetos.Processing.Interfaces.dll">..\Rhetos.Processing.Interfaces.dll</Reference>
-  <Reference Relative="..\Rhetos.Security.dll">..\Rhetos.Security.dll</Reference>
-  <Reference Relative="..\Rhetos.Security.Interfaces.dll">..\Rhetos.Security.Interfaces.dll</Reference>
-  <Reference Relative="..\Rhetos.Utilities.dll">..\Rhetos.Utilities.dll</Reference>
-  <Reference Relative="..\Rhetos.XmlSerialization.dll">..\Rhetos.XmlSerialization.dll</Reference>
-  <Namespace>Autofac</Namespace>
-  <Namespace>Oracle.ManagedDataAccess.Client</Namespace>
-  <Namespace>Rhetos</Namespace>
-  <Namespace>Rhetos.Configuration.Autofac</Namespace>
-  <Namespace>Rhetos.Dom</Namespace>
-  <Namespace>Rhetos.Dom.DefaultConcepts</Namespace>
-  <Namespace>Rhetos.Dsl</Namespace>
-  <Namespace>Rhetos.Dsl.DefaultConcepts</Namespace>
-  <Namespace>Rhetos.Logging</Namespace>
-  <Namespace>Rhetos.Persistence</Namespace>
-  <Namespace>Rhetos.Security</Namespace>
-  <Namespace>Rhetos.Utilities</Namespace>
-  <Namespace>System.Data.Entity</Namespace>
-  <Namespace>System.DirectoryServices</Namespace>
-  <Namespace>System.Runtime.Serialization.Json</Namespace>
-  <Namespace>System.Xml.Serialization</Namespace>
-</Query>
+    <Target Name="ResolveDeployRhetosAppInput" DependsOnTargets="CopyFilesToOutputDirectory" BeforeTargets="DeployRhetosApp">
+        <Message Text="ResolveDeployRhetosAppInput" />
+        <ItemGroup>
+            <_DeployRhetosAppInput Include="$(TargetDir)**\*" />
+        </ItemGroup>
+    </Target>
 
-void Main()
-{
-    ConsoleLogger.MinLevel = EventType.Info%3B // Use EventType.Trace for more detailed log.
-    string rhetosHostAssemblyPath = Path.Combine(Path.GetDirectoryName(Util.CurrentQueryPath), @"..\$(AssemblyName).dll")%3B
-    var container = new Rhetos.ProcessContainer(rhetosHostAssemblyPath)%3B
-    using (var scope = container.CreateScope())
+    <Target Name="DeployRhetosApp" DependsOnTargets="CopyFilesToOutputDirectory" AfterTargets="Build" Condition="'$(RhetosDeploy)'=='True'"
+        Inputs="@(_DeployRhetosAppInput)" Outputs="$(RhetosDatabaseUpdated)">
+        <Message Text="DeployRhetosApp" />
+        <Exec Command="&quot;$(TargetDir)rhetos.exe&quot; dbupdate &quot;$(TargetDir)\$(AssemblyName).dll&quot;" CustomErrorRegularExpression="\[Error\]" CustomWarningRegularExpression="\[(Warn|Warning)\]" />
+        <WriteLinesToFile File="$(RhetosDatabaseUpdated)" Lines="" Overwrite="true" />
+    </Target>
+
+    <Target Name="RhetosGenerateLinqPadScripts" DependsOnTargets="ResolveReferences" BeforeTargets="AssignTargetPaths">
+        <ItemGroup>
+        <_RhetosHostAppAssemblies Include="@(ReferencePath)" Condition="'%(ReferencePath.MSBuildSourceProjectFile)' != ''" />
+        </ItemGroup>  
+        <PropertyGroup>
+        <_RhetosServerDomLinqPadScriptPath>$(BaseIntermediateOutputPath)Rhetos\LinqPad\Rhetos DOM.linq</_RhetosServerDomLinqPadScriptPath>
+        <_RhetosHostAppLinqPadReferences>@(_RhetosHostAppAssemblies -> '&lt;Reference Relative="..\%(Filename)%(Extension)"&gt;%(Filename)%(Extension)&lt;/Reference&gt;', '
+    ')</_RhetosHostAppLinqPadReferences>
+        <_RhetosServerDomLinqPadScript>
+    <![CDATA[
+    <Query Kind="Program">
+    <Reference Relative="..\$(AssemblyName).dll">$(AssemblyName).dll</Reference>
+    <Reference Relative="..\$(AssemblyName).deps.json">$(AssemblyName).deps.json</Reference>
+    <Reference Relative="..\$(AssemblyName).runtimeconfig.json">$(AssemblyName).runtimeconfig.json</Reference>
+    $(_RhetosHostAppLinqPadReferences)
+    <Reference Relative="..\EntityFramework.dll">..\EntityFramework.dll</Reference>
+    <Reference Relative="..\EntityFramework.SqlServer.dll">..\EntityFramework.SqlServer.dll</Reference>
+    <Reference Relative="..\Microsoft.CodeAnalysis.CSharp.dll">..\Microsoft.CodeAnalysis.CSharp.dll</Reference>
+    <Reference Relative="..\Microsoft.CodeAnalysis.dll">..\Microsoft.CodeAnalysis.dll</Reference>
+    <Reference Relative="..\Microsoft.Win32.SystemEvents.dll">..\Microsoft.Win32.SystemEvents.dll</Reference>
+    <Reference Relative="..\Newtonsoft.Json.dll">..\Newtonsoft.Json.dll</Reference>
+    <Reference Relative="..\NLog.dll">..\NLog.dll</Reference>
+    <Reference Relative="..\Oracle.ManagedDataAccess.dll">..\Oracle.ManagedDataAccess.dll</Reference>
+    <Reference Relative="..\Rhetos.Compiler.dll">..\Rhetos.Compiler.dll</Reference>
+    <Reference Relative="..\Rhetos.Compiler.Interfaces.dll">..\Rhetos.Compiler.Interfaces.dll</Reference>
+    <Reference Relative="..\Rhetos.Configuration.Autofac.dll">..\Rhetos.Configuration.Autofac.dll</Reference>
+    <Reference Relative="..\Rhetos.DatabaseGenerator.DefaultConcepts.dll">..\Rhetos.DatabaseGenerator.DefaultConcepts.dll</Reference>
+    <Reference Relative="..\Rhetos.DatabaseGenerator.dll">..\Rhetos.DatabaseGenerator.dll</Reference>
+    <Reference Relative="..\Rhetos.DatabaseGenerator.Interfaces.dll">..\Rhetos.DatabaseGenerator.Interfaces.dll</Reference>
+    <Reference Relative="..\Rhetos.Deployment.dll">..\Rhetos.Deployment.dll</Reference>
+    <Reference Relative="..\Rhetos.Deployment.Interfaces.dll">..\Rhetos.Deployment.Interfaces.dll</Reference>
+    <Reference Relative="..\Rhetos.Dom.DefaultConcepts.dll">..\Rhetos.Dom.DefaultConcepts.dll</Reference>
+    <Reference Relative="..\Rhetos.Dom.DefaultConcepts.Interfaces.dll">..\Rhetos.Dom.DefaultConcepts.Interfaces.dll</Reference>
+    <Reference Relative="..\Rhetos.Dom.dll">..\Rhetos.Dom.dll</Reference>
+    <Reference Relative="..\Rhetos.Dom.Interfaces.dll">..\Rhetos.Dom.Interfaces.dll</Reference>
+    <Reference Relative="..\Rhetos.Dsl.DefaultConcepts.dll">..\Rhetos.Dsl.DefaultConcepts.dll</Reference>
+    <Reference Relative="..\Rhetos.Dsl.dll">..\Rhetos.Dsl.dll</Reference>
+    <Reference Relative="..\Rhetos.Dsl.Interfaces.dll">..\Rhetos.Dsl.Interfaces.dll</Reference>
+    <Reference Relative="..\Rhetos.Extensibility.dll">..\Rhetos.Extensibility.dll</Reference>
+    <Reference Relative="..\Rhetos.Extensibility.Interfaces.dll">..\Rhetos.Extensibility.Interfaces.dll</Reference>
+    <Reference Relative="..\Rhetos.Logging.dll">..\Rhetos.Logging.dll</Reference>
+    <Reference Relative="..\Rhetos.Logging.Interfaces.dll">..\Rhetos.Logging.Interfaces.dll</Reference>
+    <Reference Relative="..\Rhetos.Persistence.dll">..\Rhetos.Persistence.dll</Reference>
+    <Reference Relative="..\Rhetos.Persistence.Interfaces.dll">..\Rhetos.Persistence.Interfaces.dll</Reference>
+    <Reference Relative="..\Rhetos.Processing.DefaultCommands.dll">..\Rhetos.Processing.DefaultCommands.dll</Reference>
+    <Reference Relative="..\Rhetos.Processing.DefaultCommands.Interfaces.dll">..\Rhetos.Processing.DefaultCommands.Interfaces.dll</Reference>
+    <Reference Relative="..\Rhetos.Processing.dll">..\Rhetos.Processing.dll</Reference>
+    <Reference Relative="..\Rhetos.Processing.Interfaces.dll">..\Rhetos.Processing.Interfaces.dll</Reference>
+    <Reference Relative="..\Rhetos.Security.dll">..\Rhetos.Security.dll</Reference>
+    <Reference Relative="..\Rhetos.Security.Interfaces.dll">..\Rhetos.Security.Interfaces.dll</Reference>
+    <Reference Relative="..\Rhetos.Utilities.dll">..\Rhetos.Utilities.dll</Reference>
+    <Reference Relative="..\Rhetos.XmlSerialization.dll">..\Rhetos.XmlSerialization.dll</Reference>
+    <Namespace>Autofac</Namespace>
+    <Namespace>Oracle.ManagedDataAccess.Client</Namespace>
+    <Namespace>Rhetos</Namespace>
+    <Namespace>Rhetos.Configuration.Autofac</Namespace>
+    <Namespace>Rhetos.Dom</Namespace>
+    <Namespace>Rhetos.Dom.DefaultConcepts</Namespace>
+    <Namespace>Rhetos.Dsl</Namespace>
+    <Namespace>Rhetos.Dsl.DefaultConcepts</Namespace>
+    <Namespace>Rhetos.Logging</Namespace>
+    <Namespace>Rhetos.Persistence</Namespace>
+    <Namespace>Rhetos.Security</Namespace>
+    <Namespace>Rhetos.Utilities</Namespace>
+    <Namespace>System.Data.Entity</Namespace>
+    <Namespace>System.DirectoryServices</Namespace>
+    <Namespace>System.Runtime.Serialization.Json</Namespace>
+    <Namespace>System.Xml.Serialization</Namespace>
+    </Query>
+
+    void Main()
     {
-        var context = scope.Resolve<Common.ExecutionContext>()%3B
-        var repository = context.Repository%3B
+        ConsoleLogger.MinLevel = EventType.Info%3B // Use EventType.Trace for more detailed log.
+        string rhetosHostAssemblyPath = Path.Combine(Path.GetDirectoryName(Util.CurrentQueryPath), @"..\$(AssemblyName).dll")%3B
+        var container = new Rhetos.ProcessContainer(rhetosHostAssemblyPath)%3B
+        using (var scope = container.CreateScope())
+        {
+            var context = scope.Resolve<Common.ExecutionContext>()%3B
+            var repository = context.Repository%3B
 
-        // Query data from the `Common.Claim` table:
-        
-        var claims = repository.Common.Claim.Query()
-            .Where(c => c.ClaimResource.StartsWith("Common.") && c.ClaimRight == "New")
-            .ToSimple()%3B // Removes ORM navigation properties from the loaded objects.
+            // Query data from the `Common.Claim` table:
             
-        claims.ToString().Dump("Common.Claims SQL query")%3B
-        claims.Dump("Common.Claims items")%3B
-        
-        // Add and remove a `Common.Principal`:
-        
-        var testUser = new Common.Principal { Name = "Test123", ID = Guid.NewGuid() }%3B
-        repository.Common.Principal.Insert(new[] { testUser })%3B
-        repository.Common.Principal.Delete(new[] { testUser })%3B
-        
-        // Print logged events for the `Common.Principal`:
-        
-        repository.Common.LogReader.Query()
-            .Where(log => log.TableName == "Common.Principal" && log.ItemId == testUser.ID)
-            .ToList()
-            .Dump("Common.Principal log")%3B
+            var claims = repository.Common.Claim.Query()
+                .Where(c => c.ClaimResource.StartsWith("Common.") && c.ClaimRight == "New")
+                .ToSimple()%3B // Removes ORM navigation properties from the loaded objects.
+                
+            claims.ToString().Dump("Common.Claims SQL query")%3B
+            claims.Dump("Common.Claims items")%3B
             
-        Console.WriteLine("Done.")%3B
-        
-        //scope.CommitAndClose()%3B // Database transaction is rolled back by default.
+            // Add and remove a `Common.Principal`:
+            
+            var testUser = new Common.Principal { Name = "Test123", ID = Guid.NewGuid() }%3B
+            repository.Common.Principal.Insert(new[] { testUser })%3B
+            repository.Common.Principal.Delete(new[] { testUser })%3B
+            
+            // Print logged events for the `Common.Principal`:
+            
+            repository.Common.LogReader.Query()
+                .Where(log => log.TableName == "Common.Principal" && log.ItemId == testUser.ID)
+                .ToList()
+                .Dump("Common.Principal log")%3B
+                
+            Console.WriteLine("Done.")%3B
+            
+            //scope.CommitAndClose()%3B // Database transaction is rolled back by default.
+        }
     }
-}
-]]>
-      </_RhetosServerDomLinqPadScript>
-    </PropertyGroup>
-    <WriteLinesToFile Lines="$(_RhetosServerDomLinqPadScript)" Overwrite="True" WriteOnlyWhenDifferent="True"
-        File="$(_RhetosServerDomLinqPadScriptPath)" />
-    <ItemGroup>
-      <_RhetosLinqPad Include="$(_RhetosServerDomLinqPadScriptPath)" />
-      <None Include="@(_RhetosLinqPad)" CopyToOutputDirectory="PreserveNewest" Link="LinqPad\%(Filename)%(Extension)" />
-    </ItemGroup>
-  </Target>
+    ]]>
+        </_RhetosServerDomLinqPadScript>
+        </PropertyGroup>
+        <WriteLinesToFile Lines="$(_RhetosServerDomLinqPadScript)" Overwrite="True" WriteOnlyWhenDifferent="True"
+            File="$(_RhetosServerDomLinqPadScriptPath)" />
+        <ItemGroup>
+        <_RhetosLinqPad Include="$(_RhetosServerDomLinqPadScriptPath)" />
+        <None Include="@(_RhetosLinqPad)" CopyToOutputDirectory="PreserveNewest" Link="LinqPad\%(Filename)%(Extension)" />
+        </ItemGroup>
+    </Target>
 </Project>

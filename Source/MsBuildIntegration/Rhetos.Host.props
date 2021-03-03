@@ -1,0 +1,6 @@
+<Project>
+    <PropertyGroup>
+        <RhetosDeploy Condition=" '$(RhetosDeploy)'=='' ">True</RhetosDeploy>
+        <RhetosDatabaseUpdated>$(BaseIntermediateOutputPath)Rhetos\Rhetos.DatabaseUpdated</RhetosDatabaseUpdated>
+    </PropertyGroup>
+</Project>
