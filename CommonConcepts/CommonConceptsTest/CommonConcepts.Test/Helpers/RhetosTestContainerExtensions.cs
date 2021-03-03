@@ -50,6 +50,17 @@ namespace CommonConcepts.Test
                 .As<ILogProvider>();
         }
 
+        public static ContainerBuilder AddLogMonitor(this ContainerBuilder builder, List<string> log, EventType minLevel = EventType.Trace)
+        {
+            builder.RegisterInstance(new ConsoleLogProvider((eventType, eventName, message) =>
+                {
+                    if (eventType >= minLevel)
+                        log.Add("[" + eventType + "] " + (eventName != null ? (eventName + ": ") : "") + message());
+                }))
+                .As<ILogProvider>();
+            return builder;
+        }
+
         /// <summary>
         /// Turns off claim-based permissions check.
         /// </summary>

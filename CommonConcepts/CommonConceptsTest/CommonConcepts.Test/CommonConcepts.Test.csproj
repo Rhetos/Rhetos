@@ -192,6 +192,7 @@
     <Compile Include="MultipleValidationsTest.cs" />
     <Compile Include="ProcessingEngineTest.cs" />
     <Compile Include="DslUtilityIntegrationTest.cs" />
+    <Compile Include="PersistenceTransactionTest.cs" />
     <Compile Include="UnitOfWorkScopeTest.cs" />
     <Compile Include="UserRequiredPropertyTest.cs" />
     <Compile Include="RowPermissionsRulesTest.cs" />

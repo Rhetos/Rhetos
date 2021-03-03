@@ -20,9 +20,11 @@
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
+using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 
 namespace Rhetos.Persistence
@@ -54,22 +56,29 @@ namespace Rhetos.Persistence
         }
 
         public event Action BeforeClose;
+        public event Action AfterClose;
 
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
             {
-                if (disposing)
+                try
                 {
-                    _logger.Trace(() => "Disposing (" + _persistenceTransactionId + ").");
-                    if (_discard)
-                        Rollback();
-                    else
-                        Commit();
+                    if (disposing)
+                    {
+                        _logger.Trace(() => "Disposing (" + _persistenceTransactionId + ").");
+                        if (_discard)
+                            Rollback();
+                        else
+                            Commit();
+                    }
                 }
-
-                BeforeClose = null;
-                _disposed = true;
+                finally
+                {
+                    BeforeClose = null;
+                    AfterClose = null;
+                    _disposed = true;
+                }
             }
         }
 
@@ -108,64 +117,91 @@ namespace Rhetos.Persistence
         private void Commit()
         {
             _logger.Trace(() => "Committing (" + _persistenceTransactionId + ").");
-            if (BeforeClose != null)
-            {
-                BeforeClose();
-                BeforeClose = null;
-            }
+            var exceptions = new List<Exception>();
 
-            if (_transaction != null)
-            {
-                _logger.Trace(() => "Committing transaction (" + _persistenceTransactionId + ").");
-                _transaction.Commit();
-                _transaction = null;
-            }
-            if (_connection != null)
-            {
-                _logger.Trace(() => "Closing connection (" + _persistenceTransactionId + ").");
-                _connection.Close();
-                _connection = null;
-            }
+            Try(
+                BeforeClose,
+                () => BeforeClose = null,
+                exceptions);
+
+            Try(
+                !exceptions.Any() ? (Action)CommitTransaction : (Action)RollbackTransaction,
+                () => _transaction = null,
+                exceptions);
+
+            Try(
+                CloseConnection,
+                () => _connection = null,
+                exceptions);
+
+            if (exceptions.Any())
+                ExceptionsUtility.Rethrow(exceptions.First());
+
+            AfterClose?.Invoke();
+            AfterClose = null;
         }
 
         private void Rollback()
         {
             _logger.Trace(() => "Rolling back (" + _persistenceTransactionId + ").");
+            var exceptions = new List<Exception>();
             BeforeClose = null;
-            try
-            {
-                if (_transaction != null)
-                {
-                    _logger.Trace(() => "Rolling back transaction (" + _persistenceTransactionId + ").");
-                    _transaction.Rollback();
-                }
-            }
-            catch (Exception ex)
-            {
-                // Failure on rollback should be ignored to allow other cleanup code to be executed. Also, a previously handled database connection error may have triggered the rollback.
-                _logger.Trace("Error on transaction rollback when canceling persistence transaction, it can be safely ignored. " + ex);
-            }
-            finally
-            {
-                _transaction = null;
-            }
+            AfterClose = null;
 
+            Try(
+                RollbackTransaction,
+                () => _transaction = null,
+                exceptions);
+
+            Try(
+                CloseConnection,
+                () => _connection = null,
+                exceptions);
+
+            // Failure on rollback should be ignored to allow other cleanup code to be executed. Also, a previously handled database connection error may have triggered the rollback.
+            if (exceptions.Any())
+                _logger.Trace("Error on rollback, it can be safely ignored. " + exceptions.First());
+        }
+
+        private static void Try(Action action, Action cleanup, List<Exception> exceptions)
+        {
             try
             {
-                if (_connection != null)
-                {
-                    _logger.Trace(() => "Closing connection (" + _persistenceTransactionId + ").");
-                    _connection.Close();
-                }
+                action?.Invoke();
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                // Failure when canceling connection should be ignored to allow other cleanup code to be executed. Also, a previously handled database connection error may have triggered the rollback.
-                _logger.Trace("Error on connection close when canceling persistence transaction, it can be safely ignored. " + ex);
+                exceptions.Add(e);
             }
             finally
             {
-                _connection = null;
+                cleanup?.Invoke();
+            }
+        }
+
+        private void CommitTransaction()
+        {
+            if (_transaction != null)
+            {
+                _logger.Trace(() => "Committing transaction (" + _persistenceTransactionId + ").");
+                _transaction.Commit();
+            }
+        }
+
+        private void RollbackTransaction()
+        {
+            if (_transaction != null)
+            {
+                _logger.Trace(() => "Rolling back transaction (" + _persistenceTransactionId + ").");
+                _transaction.Rollback();
+            }
+        }
+        private void CloseConnection()
+        {
+            if (_connection != null)
+            {
+                _logger.Trace(() => "Closing connection (" + _persistenceTransactionId + ").");
+                _connection.Close();
             }
         }
 

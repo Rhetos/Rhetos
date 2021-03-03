@@ -39,6 +39,14 @@ namespace Rhetos.Persistence
         event Action BeforeClose;
 
         /// <summary>
+        /// Use for optional notification that do not affect validity of the operation executed in this transaction.
+        /// If the <see cref="AfterClose"/> event <b>fails</b>, any data modifications from the current transaction will
+        /// remain in the database.
+        /// This event will not be invoked if the transaction rollback was executed (see <see cref="DiscardChanges()"/>).
+        /// </summary>
+        event Action AfterClose;
+
+        /// <summary>
         /// Drops the database connection and creates a new one to release the database locks.
         /// This method should not be used during regular server run-time because it splits the unit of work
         /// making it impossible to rollback the whole session in case of a need.
