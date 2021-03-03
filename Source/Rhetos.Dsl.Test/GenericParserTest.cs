@@ -21,6 +21,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Dsl;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
+using System;
 using System.Collections.Generic;
 
 namespace Rhetos.Dsl.Test
@@ -114,7 +115,7 @@ namespace Rhetos.Dsl.Test
         public void ParseNotEnoughParametersInSingleConceptDescription()
         {
             var simpleParser = new GenericParserHelper<SimpleConceptInfo>("module");
-            TestUtility.ShouldFail<FrameworkException>(
+            TestUtility.ShouldFail<InvalidOperationException>(
                 () => simpleParser.QuickParse("module { entiti e }"),
                 "SimpleConceptInfo",
                 "Special",
@@ -221,7 +222,7 @@ namespace Rhetos.Dsl.Test
         {
             var enclosedParser = new GenericParserHelper<EnclosedConceptInfoLevel2>("enclosedlevel2");
             var root = new SimpleConceptInfo { Name = "a" };
-            TestUtility.ShouldFail<FrameworkException>(
+            TestUtility.ShouldFail<InvalidOperationException>(
                 () => enclosedParser.QuickParse("enclosedlevel2 a b c"),
                 "\".\"");
         }
@@ -230,7 +231,7 @@ namespace Rhetos.Dsl.Test
         public void ParseEnclosedInWrongConcept()
         {
             var parser = new GenericParserHelper<EnclosedConceptInfo>("enclosed");
-                TestUtility.ShouldFail<FrameworkException>(
+                TestUtility.ShouldFail<InvalidOperationException>(
                     () => parser.QuickParse(
                         "enclosed myparent.myname",
                         new ComplexConceptInfo { Name = "c", SimpleConceptInfo = new SimpleConceptInfo { Name = "s" } }),
@@ -404,7 +405,7 @@ namespace Rhetos.Dsl.Test
 
             Assert.AreEqual("LikeModule Module1", parser.QuickParse("Module Module1").GetUserDescription());
 
-            TestUtility.ShouldFail<FrameworkException>(
+            TestUtility.ShouldFail<InvalidOperationException>(
                 () => parser.QuickParse("Module Module1", new LikeModule { Name = "Module0" }),
                 "cannot be nested");
         }
@@ -478,7 +479,7 @@ namespace Rhetos.Dsl.Test
         public void Recursive_Root()
         {
             string dsl = "menu a b";
-            TestUtility.ShouldFail<FrameworkException>(
+            TestUtility.ShouldFail<InvalidOperationException>(
                 () => new GenericParserHelper<LeftRecursiveCI>("menu").QuickParse(dsl),
                 "Recursive concept LeftRecursiveCI cannot be used as a root");
         }
@@ -507,7 +508,7 @@ namespace Rhetos.Dsl.Test
         public void InterfaceReference_ErrorIfNotEnclosed()
         {
             string dsl = "intref parent data";
-            TestUtility.ShouldFail<FrameworkException>(
+            TestUtility.ShouldFail<InvalidOperationException>(
                 () => new GenericParserHelper<InterfaceReferenceConceptInfo>("intref").QuickParse(dsl),
                 "Member of type IConceptInfo can only be nested within the referenced parent concept. It must be a first member or marked with ConceptParentAttribute.");
         }

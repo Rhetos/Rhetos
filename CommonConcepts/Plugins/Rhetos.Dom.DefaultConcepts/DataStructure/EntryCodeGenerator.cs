@@ -37,8 +37,8 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var info = (EntryInfo)conceptInfo;
 
-            codeBuilder.InsertCode($@"
-        public static readonly Guid {info.Name} = new Guid(""{info.GetIdentifier()}"");", DataStructureCodeGenerator.BodyTag, info.HardcodedEntity);
+            codeBuilder.InsertCode($@"public static readonly Guid {info.Name} = new Guid(""{info.GetIdentifier()}"");
+        ", DataStructureCodeGenerator.BodyTag, info.HardcodedEntity);
         }
     }
 }

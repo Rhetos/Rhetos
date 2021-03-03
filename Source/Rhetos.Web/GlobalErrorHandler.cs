@@ -30,28 +30,28 @@ namespace Rhetos.Web
 {
     public class GlobalErrorHandler : IErrorHandler
     {
-        private readonly ILogger Logger;
+        private readonly ILogger _logger;
 
         public GlobalErrorHandler(ILogProvider logProvider)
         {
-            this.Logger = logProvider.GetLogger("GlobalErrorHandler");
+            _logger = logProvider.GetLogger("GlobalErrorHandler");
         }
 
         public bool HandleError(Exception error)
         {
             if (error is UserException)
-                Logger.Trace(error.ToString);
+                _logger.Trace(error.ToString);
             else if (error is LegacyClientException legacyException)
             {
                 if (legacyException.Severe)
-                    Logger.Info(legacyException.ToString);
+                    _logger.Info(legacyException.ToString);
                 else
-                    Logger.Trace(legacyException.ToString);
+                    _logger.Trace(legacyException.ToString);
             }
             else if (error is ClientException)
-                Logger.Info(error.ToString);
+                _logger.Info(error.ToString);
             else
-                Logger.Error(error.ToString);
+                _logger.Error(error.ToString);
             return false;
         }
 

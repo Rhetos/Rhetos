@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Utilities;
 using System;
 
 namespace Rhetos
@@ -52,6 +53,33 @@ namespace Rhetos
             SystemMessage = systemMessage;
         }
 
+        /// <summary>
+        /// User error message localization with parameters.
+        /// </summary>
+        /// <param name="message">
+        /// Error message for the end user.
+        /// Use parameters similar to <see cref="string.Format(string, object[])"/> to simplify localization, for example "Value of {0} should be less then {1}.".
+        /// Single message translation can be used in multiple scenarios with different parameter values.
+        /// </param>
+        /// <param name="messageParameters">
+        /// Parameters for string <paramref name="message"/>, similar to <see cref="string.Format(string, object[])"/>.
+        /// </param>
+        public UserException(string message, object[] messageParameters) : base(message)
+        {
+            MessageParameters = messageParameters;
+        }
+
+        /// <summary>
+        /// User error message localization with parameters, error metadata and inner exception.
+        /// </summary>
+        /// <param name="message">
+        /// Error message for the end user.
+        /// Use parameters similar to <see cref="string.Format(string, object[])"/> to simplify localization, for example "Value of {0} should be less then {1}.".
+        /// Single message translation can be used in multiple scenarios with different parameter values.
+        /// </param>
+        /// <param name="messageParameters">
+        /// Parameters for string <paramref name="message"/>, similar to <see cref="string.Format(string, object[])"/>.
+        /// </param>
         public UserException(string message, object[] messageParameters, string systemMessage, Exception inner) : base(message, inner)
         {
             MessageParameters = messageParameters;
