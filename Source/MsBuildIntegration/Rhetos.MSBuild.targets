@@ -8,7 +8,7 @@
             ProjectContentFiles="@(RhetosBuild)"
             Assemblies="@(ReferencePath)"
             AssemblyName="$(AssemblyName)"
-            GeneratedAssetsFolder="obj\Rhetos\RhetosAssets"
+            GeneratedAssetsFolder="obj\Rhetos\Assets"
             IntermediateOutputFolder="$(BaseIntermediateOutputPath)Rhetos"
             TargetPath="$(TargetPath)"
             TargetAssetsFolder="$(TargetDir)RhetosAssets" />
@@ -25,7 +25,7 @@
     <Target Name="AddRhetosSourceFiles" DependsOnTargets="BuildRhetosApp" BeforeTargets="CoreCompile">
         <Message Text="AddRhetosSourceFiles" />
         <ItemGroup>
-            <RhetosSourceFiles Include="obj\Rhetos\RhetosSource\**\*.cs" />
+            <RhetosSourceFiles Include="obj\Rhetos\Source\**\*.cs" />
             <Compile Include="@(RhetosSourceFiles)" />
         </ItemGroup>
         <WriteLinesToFile Lines="@(RhetosSourceFiles -> '%(FullPath)')" Overwrite="True" WriteOnlyWhenDifferent="True" File="$(BaseIntermediateOutputPath)Rhetos\RhetosGeneratedSourceFiles.txt"/>
@@ -50,7 +50,7 @@
 
         <!--Assets folder-->
         <ItemGroup>
-            <_RhetosAssetsFilesToCopy Include="obj\Rhetos\RhetosAssets\**" />
+            <_RhetosAssetsFilesToCopy Include="obj\Rhetos\Assets\**" />
         </ItemGroup>        
         <Copy SourceFiles="@(_RhetosAssetsFilesToCopy)" Retries="$(CopyRetryCount)" RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
             DestinationFiles="@(_RhetosAssetsFilesToCopy->'$(TargetDir)RhetosAssets\%(RecursiveDir)%(Filename)%(Extension)')" 
