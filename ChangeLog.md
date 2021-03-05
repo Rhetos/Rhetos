@@ -1,10 +1,10 @@
 ﻿# Rhetos release notes
 
-## 4.3.0 (TO BE RELEASED)
+## 4.3.0 (2021-03-05)
 
 ### New features
 
-* **DateTime** property concept can now create *datetime2* database column type,
+* **DateTime** property concept now supports *datetime2* database column type,
   instead of obsolete *datetime* column type (issue #101).
   Legacy *datetime* type is currently enabled *by default*, for backward compatibility.
   See [Migrating an existing application from datetime to datetime2](https://github.com/Rhetos/Rhetos/wiki/Migrating-from-DateTime-to-DateTime2).
@@ -13,6 +13,7 @@
   For example, when using a custom script to optimize some part of the database upgrade/downgrade process.
 * Custom ID value can be specified for Entry of a **Hardcoded** entity
   (see [documentation](https://github.com/Rhetos/Rhetos/wiki/simple-read-only-entities-and-codetables)).
+* AfterClose event in IPersistenceTransaction.
 
 ### Internal improvements
 
@@ -20,14 +21,17 @@
   * Entity Framework is still used for querying data, and EF DbContext may still be used for writing to database where specifically needed.
   * This change allows for different performances optimizations and simpler internal design,
     because of a mismatch in write approach between Rhetos and Entity Framework
-    (developers use explicit insert/update/delete operations in Rhetos).
+    (developers use explicit write operations in Rhetos).
 * Bugfix: Rhetos build is sometimes not triggered by MSBuild, if an input file was deleted.
-* Bugfix: Some database schemas were created with incorrect owner (an admin account that created the schema, instead of dbo), depending on database configuration (issue #92). Note that this is not an application security issue. On older Rhetos versions it might have caused database update to fail, if a database schema needed to be dropped.
+* Bugfix: Some database schemas were created with incorrect owner (an admin account, instead of dbo), depending on database configuration. This is not an application security issue. On older Rhetos versions it might have caused database update to fail, if a database schema needed to be dropped (issue #92).
 * Bugfix: Incorrect "method is obsolete" warning on Load method, with description "Use Load(ids) or Query(ids) method.".
 * Bugfix: AuthorizationAddUnregisteredPrincipals on parallel requests may result with deadlock in database or a unique index constraint error.
 * Data-migration performance improvement. "Use" and "apply" operations on large migration tables are roughly 2x faster.
-* **RepositoryUses** supports types from generated Rhetos application that are not available from build-time dependencies.
-* Minor improvements in build performance and error reporting.
+* **RepositoryUses** concept supports types from generated Rhetos application that were not available from build-time dependencies.
+* Cleaner internal scope management: UnitOfWorkScope, CommitAndClose, RollbackAndClose.
+  "Obsolete" warnings on old infrastructure (TransactionScopeContainer).
+* Simpler UserException constructor for localization (message, parameters).
+* Minor improvements in build performance and error handling.
 
 ## 4.2.0 (2020-10-26)
 
