@@ -51,6 +51,18 @@
     * When migrating existing Rhetos application to APS.NET Core, the configuration in web.config should also be migrated,
       see [Migrating from WCF to ASP.NET Core](https://github.com/Rhetos/Rhetos/wiki/Migrating-from-WCF-to-ASP-NET-Core).
 19. Removed NuGet package management from Rhetos framework. Removed classes PackageDownloader and PackageDownloaderOptions.
+20. To migrate the Entity Framework configuration first you will need to add the App.config file to the project. Add the App.config file as a plain text file in the project root. Using the App.config is required because Entity Framework 6 still uses the `ConfigurationManager` class to load its configuration. To configure Entity Framework configuration you will need to use the entityFramework section as before. An example of the config file will look like this
+    ```xml
+            <?xml version="1.0" encoding="utf-8"?>
+            <configuration>
+                <configSections>
+                    <section name="entityFramework" type="System.Data.Entity.Internal.ConfigFile.EntityFrameworkSection, EntityFramework" />
+                </configSections>
+                <entityFramework>
+                    <queryCache size="10000" cleaningIntervalInSeconds="60" />
+                </entityFramework>
+            </configuration>
+    ```
 
 ## 4.3.0 (TO BE RELEASED)
 
