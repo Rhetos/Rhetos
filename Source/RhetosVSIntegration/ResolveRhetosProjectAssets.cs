@@ -74,7 +74,7 @@ namespace RhetosVSIntegration
                 OutputAssemblyName = AssemblyName,
                 CacheFolder = Path.GetFullPath(Path.Combine(ProjectDirectory, IntermediateOutputFolder)),
                 GeneratedAssetsFolder = Path.GetFullPath(Path.Combine(ProjectDirectory, GeneratedAssetsFolder)),
-                GeneratedSourceFolder = Path.GetFullPath(Path.Combine(ProjectDirectory, IntermediateOutputFolder, "RhetosSource")),
+                GeneratedSourceFolder = Path.GetFullPath(Path.Combine(ProjectDirectory, IntermediateOutputFolder, "Source")),
             };
 
             var rhetosTargetEnvironment = new RhetosTargetEnvironment

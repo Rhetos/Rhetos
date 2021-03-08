@@ -39,7 +39,7 @@ namespace Rhetos.Configuration.Autofac
         // Instance per test or session:
         protected bool _commitChanges;
         protected string _rhetosAppAssemblyPath;
-        protected UnitOfWorkScope _unitOfWorkScope;
+        protected TransactionScopeContainer _transactionScope;
         public event Action<ContainerBuilder> InitializeSession;
 
         /// <param name="commitChanges">
@@ -66,7 +66,7 @@ namespace Rhetos.Configuration.Autofac
         public T Resolve<T>()
         {
             InitializeUnitOfWorkScope();
-            return _unitOfWorkScope.Resolve<T>();
+            return _transactionScope.Resolve<T>();
         }
 
         private bool disposed = false; // Standard IDisposable pattern to detect redundant calls.
@@ -84,7 +84,7 @@ namespace Rhetos.Configuration.Autofac
 
             if (disposing)
             {
-                _unitOfWorkScope?.Dispose();
+                _transactionScope?.Dispose();
             }
 
             disposed = true;
@@ -92,7 +92,7 @@ namespace Rhetos.Configuration.Autofac
 
         private void InitializeUnitOfWorkScope()
         {
-            if (_unitOfWorkScope == null)
+            if (_transactionScope == null)
             {
                 if (_processContainer == null)
                 {
@@ -104,9 +104,9 @@ namespace Rhetos.Configuration.Autofac
                         }
                 }
 
-                _unitOfWorkScope = _processContainer.CreateScope(InitializeSession);
+                _transactionScope = _processContainer.CreateTransactionScopeContainer(InitializeSession);
                 if (_commitChanges)
-                    _unitOfWorkScope.CommitOnDispose();
+                    _transactionScope.CommitChanges();
             }
         }
     }

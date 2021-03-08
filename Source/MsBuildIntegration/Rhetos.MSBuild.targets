@@ -21,7 +21,7 @@
             ProjectContentFiles="@(RhetosBuild)"
             Assemblies="@(ReferencePath)"
             AssemblyName="$(AssemblyName)"
-            GeneratedAssetsFolder="obj\Rhetos\RhetosAssets"
+            GeneratedAssetsFolder="obj\Rhetos\Assets"
             IntermediateOutputFolder="$(BaseIntermediateOutputPath)Rhetos"
             TargetPath="$(TargetPath)"
             TargetAssetsFolder="$(TargetDir)RhetosAssets" />
@@ -47,7 +47,7 @@
     <Target Name="AddRhetosSourceFiles" DependsOnTargets="BuildRhetosApp" BeforeTargets="CoreCompile">
         <Message Text="AddRhetosSourceFiles" />
         <ItemGroup>
-            <RhetosSourceFiles Include="obj\Rhetos\RhetosSource\**\*.cs" />
+            <RhetosSourceFiles Include="obj\Rhetos\Source\**\*.cs" />
             <Compile Include="@(RhetosSourceFiles)" />
         </ItemGroup>
         <WriteLinesToFile Lines="@(RhetosSourceFiles -> '%(FullPath)')" Overwrite="True" WriteOnlyWhenDifferent="True" File="$(BaseIntermediateOutputPath)Rhetos\RhetosGeneratedSourceFiles.txt"/>
@@ -57,11 +57,11 @@
         <Message Text="MarkRhetosGeneratedFilesToCopyToOutput" />
 
         <ItemGroup>
-            <RhetosAssets Include="obj\Rhetos\RhetosAssets\**" />
+            <RhetosAssets Include="obj\Rhetos\Assets\**" />
             <None Include="@(RhetosAssets)" CopyToOutputDirectory="PreserveNewest" Link="RhetosAssets\%(RecursiveDir)%(Filename)%(Extension)"/>
 
             <!-- The generated source is kept with binaries because in some cases we cannot guarantee that the newly generated code would be identical to the one in production. Some internal caching build optimizations may result with different ordering of the generated features. -->
-            <RhetosDebugSources Include="obj\Rhetos\RhetosSource\**\*.cs" />
+            <RhetosDebugSources Include="obj\Rhetos\Source\**\*.cs" />
             <None Include="@(RhetosDebugSources)" CopyToOutputDirectory="PreserveNewest" Link="RhetosDebugSource\%(RecursiveDir)%(Filename)%(Extension)"/>
 
             <PluginScannerJson Include="$(BaseIntermediateOutputPath)Rhetos\PluginScanner.json" />

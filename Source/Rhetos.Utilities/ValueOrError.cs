@@ -51,7 +51,7 @@ namespace Rhetos.Utilities
             get
             {
                 if (IsError)
-                    throw new FrameworkException(Error + " Reading the Value property while the Error property is set.");
+                    throw new InvalidOperationException(Error + " Reading the Value property while the Error property is set.");
                 return _value;
             }
         }
@@ -59,7 +59,7 @@ namespace Rhetos.Utilities
         private readonly string _error;
         public string Error
         {
-            get { return _error;  }
+            get { return _error; }
         }
 
         public bool IsError
@@ -79,7 +79,7 @@ namespace Rhetos.Utilities
         protected ValueOrError(T value, string error)
         {
             if (value != null && error != null)
-                throw new FrameworkException(string.Format("Both value and error are returned. Value {0}, error {1}.", value, error));
+                throw new ArgumentException(string.Format("Both value and error are returned. Value {0}, error {1}.", value, error));
             _value = value;
             _error = error;
         }
@@ -87,7 +87,7 @@ namespace Rhetos.Utilities
         public static implicit operator ValueOrError<T>(T value)
         {
             if (value is IValueOrError)
-                throw new FrameworkException("Should not wrap a ValueOrError into another ValueOrError. Probably unexpected implicit casting. Use ChangeType<> function to change type of value in ValueOrError.");
+                throw new ArgumentException($"Should not wrap a ValueOrError into another ValueOrError. Probably unexpected implicit casting. Use {nameof(ChangeType)} method to change type of value in ValueOrError.");
             return new ValueOrError<T>(value, null);
         }
 
@@ -103,7 +103,7 @@ namespace Rhetos.Utilities
             {
                 newValue = _value as TNew;
                 if (newValue == null)
-                    throw new Exception(string.Format("Cannot cast {0} to {1}.", typeof(T).Name, typeof(TNew).Name));
+                    throw new InvalidOperationException(string.Format("Cannot cast {0} to {1}.", typeof(T).Name, typeof(TNew).Name));
             }
             return new ValueOrError<TNew>(newValue, _error);
         }

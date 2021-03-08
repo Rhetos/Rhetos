@@ -183,7 +183,7 @@ namespace Rhetos.Extensibility
 
             var types = typesToCheck == null
                 ? assembly.GetTypes()
-                : typesToCheck.Select(type => Type.GetType(type)).ToArray();
+                : typesToCheck.Select(type => Type.GetType(type) ?? throw new FrameworkException($"Plugin type {type} not found. Check if correct version of the assembly is available.")).ToArray();
 
             return GetMefExportsForTypes(types);
         }

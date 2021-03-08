@@ -59,19 +59,6 @@ namespace Rhetos
         }
 
         /// <summary>
-        /// Indicates that all operations within the scope are completed successfully, and the transaction can be committed when the <see cref="UnitOfWorkScope"/> is disposed.
-        /// It is a good practice to put the call as the last statement in the using block.
-        /// </summary>
-        /// <remarks>
-        /// This method call will be ignored if the database transaction is discarded by <see cref="IPersistenceTransaction.DiscardChanges()"/>.
-        /// </remarks>
-        public void CommitOnDispose()
-        {
-            var transaction = _lifetimeScope.Resolve<IPersistenceTransaction>();
-            transaction.CommitChanges();
-        }
-
-        /// <summary>
         /// Commits and closes the database transaction for the current unit of work (lifetime scope).
         /// It is a good practice to put the call as the last statement in the using block.
         /// </summary>
@@ -83,6 +70,19 @@ namespace Rhetos
         {
             var transaction = _lifetimeScope.Resolve<IPersistenceTransaction>();
             transaction.CommitChanges();
+            transaction.Dispose();
+        }
+
+        /// <summary>
+        /// Discards and closes the database transaction for the current unit of work (lifetime scope).
+        /// </summary>
+        /// <remarks>
+        /// After calling this method, any later database operation in the current scope might result with an error.
+        /// </remarks>
+        public void RollbackAndClose()
+        {
+            var transaction = _lifetimeScope.Resolve<IPersistenceTransaction>();
+            transaction.DiscardChanges();
             transaction.Dispose();
         }
 
