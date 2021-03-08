@@ -80,10 +80,10 @@ namespace Rhetos.Deployment
                         Source = file.PhysicalPath,
                         Target = Path.Combine(SimplifyPackageName(package.Id), file.InPackagePath.Substring(ResourcesPathPrefix.Length))
                     }))
-                //The resource files that are used by Rhetos are located in the Resources folder of a nuget package.
-                //We also want to add the posibility that a Rhetos resource file can be added in the current project by the application developer.
-                //The Resources folder can be used as in any other nuget Rhetos package but this way unwanted files could be copied in the RhetosAssets folder
-                //because the Resources folder in a project is usually used to store other resorce files.
+                //The resource files that are used by Rhetos are located in the Resources folder of a NuGet package.
+                //We also want to add the possibility that a Rhetos resource file can be added in the current project by the application developer.
+                //The Resources folder can be used as in any other NuGet Rhetos package but this way unwanted files could be copied in the RhetosAssets folder
+                //because the Resources folder in a project is usually used to store other resource files.
                 .Union(_installedPackages.Packages
                     .SelectMany(package => package.ContentFiles
                         .Where(file => file.PhysicalPath.StartsWith(_rhetosBuildEnvironment.ProjectFolder)) // Prevent from including the generated output folder as in input.

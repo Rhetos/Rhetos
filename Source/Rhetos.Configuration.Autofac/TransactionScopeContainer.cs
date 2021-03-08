@@ -57,7 +57,7 @@ namespace Rhetos
         [Obsolete("Use " + nameof(CommitAndClose) + " instead, to commit the transaction immediately.")]
         public void CommitChanges()
         {
-            _commitChanges = true;
+            Resolve<IPersistenceTransaction>().CommitChanges();
         }
     }
 }

@@ -45,9 +45,10 @@ namespace CommonConcepts.Test
             var id1 = Guid.NewGuid();
             var log = new List<string>();
 
-            using (var scope = new RhetosTestContainer(commitChanges: true))
+            using (var scope = TestScope.Create())
             {
                 var transaction = scope.Resolve<IPersistenceTransaction>();
+                transaction.CommitChanges();
                 transaction.BeforeClose += () => log.Add("before");
                 transaction.AfterClose += () => log.Add("after");
 
@@ -57,7 +58,7 @@ namespace CommonConcepts.Test
 
             Assert.AreEqual("before, after", TestUtility.Dump(log));
 
-            using (var scope = RhetosProcessHelper.CreateScope())
+            using (var scope = TestScope.Create())
             {
                 var context = scope.Resolve<Common.ExecutionContext>();
                 Assert.IsTrue(context.Repository.TestEntity.BaseEntity.Query(new[] { id1 }).Any());
@@ -70,7 +71,7 @@ namespace CommonConcepts.Test
             var id1 = Guid.NewGuid();
             var log = new List<string>();
 
-            using (var scope = RhetosProcessHelper.CreateScope())
+            using (var scope = TestScope.Create())
             {
                 var transaction = scope.Resolve<IPersistenceTransaction>();
                 transaction.BeforeClose += () => log.Add("before");
@@ -82,7 +83,7 @@ namespace CommonConcepts.Test
 
             Assert.AreEqual("", TestUtility.Dump(log));
 
-            using (var scope = RhetosProcessHelper.CreateScope())
+            using (var scope = TestScope.Create())
             {
                 var context = scope.Resolve<Common.ExecutionContext>();
                 Assert.IsFalse(context.Repository.TestEntity.BaseEntity.Query(new[] { id1 }).Any());
@@ -97,8 +98,8 @@ namespace CommonConcepts.Test
             var systemLog = new List<string>();
             string testName = TestNamePrefix + Guid.NewGuid();
 
-            using (var scope = RhetosProcessHelper.CreateScope(builder =>
-                builder.AddLogMonitor(systemLog, EventType.Trace)))
+            using (var scope = TestScope.Create(builder =>
+                builder.ConfigureLogMonitor(systemLog, EventType.Trace)))
             {
                 var transaction = scope.Resolve<IPersistenceTransaction>();
                 transaction.BeforeClose += () => log.Add("before1");
@@ -124,7 +125,7 @@ namespace CommonConcepts.Test
 
             Assert.AreEqual("before1", TestUtility.Dump(log));
 
-            using (var scope = RhetosProcessHelper.CreateScope())
+            using (var scope = TestScope.Create())
             {
                 var context = scope.Resolve<Common.ExecutionContext>();
                 Assert.IsFalse(context.Repository.TestEntity.BaseEntity.Query(new[] { id1 }).Any());
@@ -139,8 +140,8 @@ namespace CommonConcepts.Test
             var systemLog = new List<string>();
             string testName = TestNamePrefix + Guid.NewGuid();
 
-            using (var scope = RhetosProcessHelper.CreateScope(builder =>
-                builder.AddLogMonitor(systemLog, EventType.Trace)))
+            using (var scope = TestScope.Create(builder =>
+                builder.ConfigureLogMonitor(systemLog, EventType.Trace)))
             {
                 var transaction = scope.Resolve<IPersistenceTransaction>();
                 transaction.BeforeClose += () => log.Add("before");
@@ -166,7 +167,7 @@ namespace CommonConcepts.Test
 
             Assert.AreEqual("before, after1", TestUtility.Dump(log));
 
-            using (var scope = RhetosProcessHelper.CreateScope())
+            using (var scope = TestScope.Create())
             {
                 var context = scope.Resolve<Common.ExecutionContext>();
                 Assert.IsTrue(context.Repository.TestEntity.BaseEntity.Query(new[] { id1 }).Any());
@@ -181,8 +182,8 @@ namespace CommonConcepts.Test
             var systemLog = new List<string>();
             string testName = TestNamePrefix + Guid.NewGuid();
 
-            using (var scope = RhetosProcessHelper.CreateScope(builder =>
-                builder.AddLogMonitor(systemLog, EventType.Trace)))
+            using (var scope = TestScope.Create(builder =>
+                builder.ConfigureLogMonitor(systemLog, EventType.Trace)))
             {
                 var transaction = scope.Resolve<IPersistenceTransaction>();
                 transaction.BeforeClose += () => log.Add("before");
@@ -203,7 +204,7 @@ namespace CommonConcepts.Test
                 string.Join(Environment.NewLine, systemLog),
                 new[] { "This SqlTransaction has completed; it is no longer usable.", "Closing connection" });
 
-            using (var scope = RhetosProcessHelper.CreateScope())
+            using (var scope = TestScope.Create())
             {
                 var context = scope.Resolve<Common.ExecutionContext>();
                 Assert.IsFalse(context.Repository.TestEntity.BaseEntity.Query(new[] { id1 }).Any());
@@ -218,8 +219,8 @@ namespace CommonConcepts.Test
             var systemLog = new List<string>();
             string testName = TestNamePrefix + Guid.NewGuid();
 
-            using (var scope = RhetosProcessHelper.CreateScope(builder =>
-                builder.AddLogMonitor(systemLog, EventType.Trace)))
+            using (var scope = TestScope.Create(builder =>
+                builder.ConfigureLogMonitor(systemLog, EventType.Trace)))
             {
                 var transaction = scope.Resolve<IPersistenceTransaction>();
                 transaction.BeforeClose += () => log.Add("before1");
@@ -249,7 +250,7 @@ namespace CommonConcepts.Test
 
             Assert.AreEqual("before1", TestUtility.Dump(log));
             // Failure on rollback should not throw an exception, to allow other cleanup code to be executed. Also, a previously handled database connection error may have triggered the rollback.
-            using (var scope = RhetosProcessHelper.CreateScope())
+            using (var scope = TestScope.Create())
             {
                 var context = scope.Resolve<Common.ExecutionContext>();
                 Assert.IsFalse(context.Repository.TestEntity.BaseEntity.Query(new[] { id1 }).Any());
@@ -264,8 +265,8 @@ namespace CommonConcepts.Test
             var systemLog = new List<string>();
             string testName = TestNamePrefix + Guid.NewGuid();
 
-            using (var scope = RhetosProcessHelper.CreateScope(builder =>
-                builder.AddLogMonitor(systemLog, EventType.Trace)))
+            using (var scope = TestScope.Create(builder =>
+                builder.ConfigureLogMonitor(systemLog, EventType.Trace)))
             {
                 var transaction = scope.Resolve<IPersistenceTransaction>();
                 transaction.BeforeClose += () => log.Add("before");
@@ -294,7 +295,7 @@ namespace CommonConcepts.Test
 
             Assert.AreEqual("before", TestUtility.Dump(log));
 
-            using (var scope = RhetosProcessHelper.CreateScope())
+            using (var scope = TestScope.Create())
             {
                 var context = scope.Resolve<Common.ExecutionContext>();
                 Assert.IsFalse(context.Repository.TestEntity.BaseEntity.Query(new[] { id1 }).Any());
@@ -306,7 +307,7 @@ namespace CommonConcepts.Test
         [ClassCleanup]
         public static void ClassCleanup()
         {
-            using (var scope = RhetosProcessHelper.CreateScope())
+            using (var scope = TestScope.Create())
             {
                 var context = scope.Resolve<Common.ExecutionContext>();
                 var testItems = context.Repository.TestEntity.BaseEntity.Load(item => item.Name.StartsWith(TestNamePrefix));
