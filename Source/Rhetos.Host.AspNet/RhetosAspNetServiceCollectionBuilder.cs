@@ -28,16 +28,16 @@ namespace Rhetos.Host.AspNet
     public class RhetosAspNetServiceCollectionBuilder
     {
         public IServiceCollection Services { get; }
-        public RhetosHost RhetosHost { get; }
-        public RhetosAspNetServiceCollectionBuilder(IServiceCollection serviceCollection, RhetosHost rhetosHost)
+        public RhetosAspNetServiceCollectionBuilder(IServiceCollection serviceCollection)
         {
             Services = serviceCollection;
-            RhetosHost = rhetosHost;
         }
 
         public RhetosAspNetServiceCollectionBuilder UseAspNetCoreIdentityUser()
         {
             Services.AddHttpContextAccessor();
+
+            // not using TryAdd, allows subsequent calls to override previous ones
             Services.AddScoped<IUserInfo, RhetosAspNetCoreIdentityUser>();
             return this;
         }
