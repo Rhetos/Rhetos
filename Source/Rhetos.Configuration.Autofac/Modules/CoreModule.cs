@@ -30,7 +30,6 @@ namespace Rhetos.Configuration.Autofac.Modules
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterType<NLogProvider>().As<ILogProvider>().SingleInstance();
             builder.RegisterType<DelayedLogProvider>().As<IDelayedLogProvider>().SingleInstance();
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<LoggingOptions>()).SingleInstance().PreserveExistingDefaults();
             builder.RegisterType<XmlUtility>().SingleInstance();

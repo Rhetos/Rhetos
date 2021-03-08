@@ -19,7 +19,7 @@
       <files include="any/any/rhetos.pdb" buildAction="None" copyToOutput="true" />
       <files include="any/any/rhetos.deps.json" buildAction="None" copyToOutput="true" />
       <files include="any/any/rhetos.runtimeconfig.json" buildAction="None" copyToOutput="true" />
-      <files include="any/any/nlog.config" buildAction="None" copyToOutput="true" />
+      <files include="any/any/rhetos.exe.nlog" buildAction="None" copyToOutput="true" />
     </contentFiles>
   </metadata>
   <files>
@@ -38,6 +38,6 @@
     instead it will load only the assembyl when needed that are located inside the bin folder (for the other assembies will throw an error). -->
     <!-- <file src="RhetosCli\bin\Debug\net5.0\rhetos.deps.json" target="contentFiles/any/any" /> -->
     <file src="RhetosCli\bin\Debug\net5.0\rhetos.runtimeconfig.json" target="contentFiles/any/any" />
-    <file src="RhetosCli\bin\Debug\net5.0\nlog.config" target="contentFiles/any/any" />
+    <file src="RhetosCli\bin\Debug\net5.0\rhetos.exe.nlog" target="contentFiles/any/any" />
   </files>
 </package>

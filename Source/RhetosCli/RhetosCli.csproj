@@ -27,7 +27,7 @@
   </ItemGroup>  
   
   <ItemGroup>
-    <None Update="nlog.config">
+    <None Update="rhetos.exe.nlog">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

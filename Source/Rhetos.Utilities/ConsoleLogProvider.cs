@@ -18,9 +18,6 @@
 */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Rhetos.Logging;
 
 namespace Rhetos.Utilities
@@ -29,8 +26,15 @@ namespace Rhetos.Utilities
 
     public class ConsoleLogProvider : ILogProvider
     {
+        private readonly EventType _minLogLevel;
+
         public ConsoleLogProvider()
         {
+        }
+
+        public ConsoleLogProvider(IConfiguration configuration)
+        {
+            _minLogLevel = configuration.GetValue("Rhetos:ConsoleLogger:MinLogLevel", ConsoleLogger.DefaultMinLogLevel);
         }
 
         public ConsoleLogProvider(LogMonitor logMonitor)
@@ -40,7 +44,7 @@ namespace Rhetos.Utilities
 
         public ILogger GetLogger(string eventName)
         {
-            return new ConsoleLogger(eventName, _logMonitor);
+            return new ConsoleLogger(_minLogLevel, eventName, _logMonitor);
         }
 
         private readonly LogMonitor _logMonitor;
@@ -50,17 +54,23 @@ namespace Rhetos.Utilities
     {
         private readonly LogMonitor _logMonitor;
 
-        public ConsoleLogger(string eventName = null, LogMonitor logMonitor = null)
+        private readonly EventType _minLogLevel;
+
+        public ConsoleLogger(string eventName = null, LogMonitor logMonitor = null) : this(DefaultMinLogLevel, eventName, logMonitor)
+        {}
+
+        public ConsoleLogger(EventType minLogLevel, string eventName = null, LogMonitor logMonitor = null)
         {
             Name = eventName;
             _logMonitor = logMonitor;
+            _minLogLevel = minLogLevel;
         }
 
         public void Write(EventType eventType, Func<string> logMessage)
         {
             string message = null;
 
-            if (eventType >= MinLevel)
+            if (eventType >= (MinLevel ?? _minLogLevel))
             {
                 try
                 {
@@ -80,13 +90,23 @@ namespace Rhetos.Utilities
 
         private static void Write(EventType eventType, string eventName, string message)
         {
-            Console.WriteLine(
-                "[" + eventType + "] "
-                + (eventName != null ? (eventName + ": ") : "")
-                + message);
+            if(Environment.UserInteractive)
+                Console.WriteLine(
+                    "[" + eventType + "] "
+                    + (eventName != null ? (eventName + ": ") : "")
+                    + message);
         }
 
-        public static EventType MinLevel { get; set; } = EventType.Info;
+        /// <summary>
+        /// This property is used to set the minimum log level of the <see cref="ConsoleLogger"/>.
+        /// It overrides the Rhetos:ConsoleLogger:MinLogLevel in <see cref="IConfiguration"/>.
+        /// </summary>
+        /// <remarks>
+        /// If you want to use the minimum configuration level from <see cref="IConfiguration"/> just set the propety to null.
+        /// </remarks>
+        public static EventType? MinLevel { get; set; }
+
+        internal static readonly EventType DefaultMinLogLevel = EventType.Info;
 
         public string Name { get; }
     }

@@ -186,7 +186,7 @@ namespace Rhetos
             Console.WriteLine($"{ex.GetType().Name}: {ExceptionsUtility.MessageForLog(ex)}");
             Console.WriteLine("=============================================");
             Console.WriteLine();
-            Console.WriteLine("See RhetosCli.log for more information on error. Enable TraceLog in nlog.config for even more details.");
+            Console.WriteLine("See RhetosCli.log for more information on error. Enable TraceLog in rhetos.exe.nlog for even more details.");
             Console.WriteLine($"Rhetos CLI location: {System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName}");
         }
 

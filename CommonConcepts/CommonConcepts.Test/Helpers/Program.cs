@@ -19,7 +19,6 @@
 
 using Autofac;
 using Rhetos;
-using Rhetos.Logging;
 using Rhetos.Security;
 using Rhetos.Utilities;
 using System;
@@ -46,7 +45,6 @@ namespace CommonConcepts.Test
                 .ConfigureContainer(builder =>
                 {
                     builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();
-                    builder.RegisterType<ConsoleLogProvider>().As<ILogProvider>();
                 });
         }
     }
