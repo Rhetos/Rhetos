@@ -23,6 +23,7 @@ using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Logging;
 using Rhetos.Persistence;
 using Rhetos.TestCommon;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -295,6 +296,48 @@ namespace CommonConcepts.Test
                 var context = scope.Resolve<Common.ExecutionContext>();
                 Assert.IsFalse(context.Repository.TestEntity.BaseEntity.Query(new[] { id1 }).Any());
             }
+        }
+
+        [TestMethod]
+        public void OriginalErrorReportedOnDispose()
+        {
+            // This behavior is specifically needed for ApplicationInitialization.ExecuteInitializer method,
+            // because it was a common issue on deployment: if an initializer error was related to the database
+            // connection, it would not be reported. Instead, the deployment tool would report "failed rollback"
+            // exception, that was thrown on IPersistenceTransaction.Dispose().
+
+            var log = new List<string>();
+
+            TestUtility.ShouldFail<FrameworkException>(
+                () =>
+                {
+                    using (var scope = TestScope.Create(builder => builder.ConfigureLogMonitor(log)))
+                    {
+                        var sqlExecuter = scope.Resolve<ISqlExecuter>();
+                        var tran = scope.Resolve<IPersistenceTransaction>();
+
+                        // Opening the transaction.
+                        sqlExecuter.ExecuteSql("PRINT 1");
+
+                        // Causing unexpected transaction state, that will result with an error later when IPersistenceTransaction is disposed and it tries to rollback the transaction.
+                        ((DbTransaction)tran.GetType().GetField("_transaction", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(tran)).Rollback();
+
+                        log.Clear();
+                        // The "original" error. It is expected to be reported, even if rollback fails after this error.
+                        sqlExecuter.ExecuteSql("RAISERROR('ErrorReportingOnDispose-TestError', 16, 10)");
+                    }
+                },
+                // When disposing the scope, the transaction rollback will fail, but that error should not "override" the original exception.
+                // The original exception should be reported.
+                "ErrorReportingOnDispose-TestError");
+
+            // Making sure that the rollback really failed:
+            TestUtility.AssertContains(
+                string.Join(Environment.NewLine, log),
+                new[] {
+                    "Error on rollback, it can be safely ignored.",
+                    "InvalidOperationException: This SqlTransaction has completed; it is no longer usable."
+                });
         }
 
         private const string TestNamePrefix = "RhetosPersistenceTransactionTest_";

@@ -19,7 +19,6 @@
 
 using Rhetos.Extensibility;
 using Rhetos.Logging;
-using Rhetos.Persistence;
 using Rhetos.Utilities;
 using System;
 using System.Linq;
@@ -57,35 +56,13 @@ namespace Rhetos.Deployment
         {
             var logger = logProvider.GetLogger(nameof(ApplicationInitialization));
             
-            Exception originalException = null;
-            try
+            using (var scope = container.CreateScope())
             {
-                using (var scope = container.CreateScope())
-                    try
-                    {
-                        logger.Info($"Initialization {initializerType.Name}.");
-                        var initializers = scope.Resolve<IPluginsContainer<IServerInitializer>>().GetPlugins();
-                        IServerInitializer initializer = initializers.Single(i => i.GetType() == initializerType);
-                        initializer.Initialize();
-                        scope.CommitChanges();
-                    }
-                    catch (Exception ex)
-                    {
-                        // Some exceptions result with invalid SQL transaction state that results with another exception on disposal of this 'using' block.
-                        // The original exception is logged here to make sure that it is not overridden.
-                        originalException = ex;
-                        ExceptionsUtility.Rethrow(ex);
-                    }
-            }
-            catch (Exception ex)
-            {
-                if (originalException != null && ex != originalException)
-                {
-                    logger.Error($"Error on cleanup: {ex}");
-                    ExceptionsUtility.Rethrow(originalException);
-                }
-                else
-                    ExceptionsUtility.Rethrow(ex);
+                logger.Info($"Initialization {initializerType.Name}.");
+                var initializers = scope.Resolve<IPluginsContainer<IServerInitializer>>().GetPlugins();
+                IServerInitializer initializer = initializers.Single(i => i.GetType() == initializerType);
+                initializer.Initialize();
+                scope.CommitAndClose();
             }
         }
     }

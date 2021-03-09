@@ -17,7 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using CommonConcepts.Test.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos;
 using Rhetos.Dom.DefaultConcepts;
@@ -114,7 +113,7 @@ namespace CommonConcepts.Test
                     {
                         var context = scope.Resolve<Common.ExecutionContext>();
                         context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id1, Name = TestNamePrefix + Guid.NewGuid() });
-                        scope.Resolve<IPersistenceTransaction>().CommitChanges(); // CommitOnDispose is incorrectly placed at this position.
+                        scope.Resolve<IPersistenceTransaction>().CommitChanges(); // Commit-on-dispose is incorrectly placed at this position.
                         context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id2, Name = TestNamePrefix + Guid.NewGuid() });
                         throw new FrameworkException(nameof(EarlyCommitOnDispose)); // The exception is not handled within transaction scope to discard the transaction.
                     }
