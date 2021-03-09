@@ -320,7 +320,7 @@ namespace CommonConcepts.Test
             }
         }
 
-        private static Guid ReadConceptId(string conceptInfoKey, TransactionScopeContainer scope)
+        private static Guid ReadConceptId(string conceptInfoKey, UnitOfWorkScope scope)
         {
             Guid id = Guid.Empty;
             scope.Resolve<ISqlExecuter>().ExecuteReader(
@@ -331,7 +331,7 @@ namespace CommonConcepts.Test
             return id;
         }
 
-        private static List<Tuple<Guid, Guid>> ReadConceptDependencies(IEnumerable<Guid> conceptsId, TransactionScopeContainer scope)
+        private static List<Tuple<Guid, Guid>> ReadConceptDependencies(IEnumerable<Guid> conceptsId, UnitOfWorkScope scope)
         {
             var dependencies = new List<Tuple<Guid, Guid>>();
             string ids = string.Join(", ", conceptsId.Select(id => SqlUtility.QuoteGuid(id)));

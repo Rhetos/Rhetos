@@ -87,7 +87,7 @@ namespace CommonConcepts.Test
             }
         }
 
-        private static DateTime DbTime(TransactionScopeContainer scope)
+        private static DateTime DbTime(UnitOfWorkScope scope)
         {
             return SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>());
         }

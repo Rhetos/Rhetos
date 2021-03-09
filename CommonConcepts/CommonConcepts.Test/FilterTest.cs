@@ -38,7 +38,7 @@ namespace CommonConcepts.Test
     [TestClass]
     public class FilterTest
     {
-        private static ReadCommandResult ExecuteCommand(ReadCommandInfo commandInfo, TransactionScopeContainer scope)
+        private static ReadCommandResult ExecuteCommand(ReadCommandInfo commandInfo, UnitOfWorkScope scope)
         {
             var commands = scope.Resolve<IIndex<Type, IEnumerable<ICommandImplementation>>>();
             var readCommand = (ReadCommand)commands[typeof(ReadCommandInfo)].Single();
@@ -139,7 +139,7 @@ namespace CommonConcepts.Test
                 context.EntityFrameworkContext.Database.ExecuteSqlCommand("DELETE FROM Test10.Simple");
                 repository.Test10.Simple.Insert(new[] { new Test10.Simple { ID = commitCheckId } });
 
-                scope.CommitChanges();
+                scope.CommitAndClose();
             }
 
             using (var scope = TestScope.Create())
@@ -360,7 +360,7 @@ namespace CommonConcepts.Test
             }
         }
 
-        private static string ReportFilteredBrowse(TransactionScopeContainer scope, ReadCommandInfo readCommandInfo)
+        private static string ReportFilteredBrowse(UnitOfWorkScope scope, ReadCommandInfo readCommandInfo)
         {
             readCommandInfo.DataSource = "TestFilter.ComposableFilterBrowse";
 
@@ -585,7 +585,7 @@ namespace CommonConcepts.Test
             }
         }
 
-        private static void TestClientRead<T>(TransactionScopeContainer scope, string expected, Func<T, object> reporter, ReadCommandInfo readCommand = null)
+        private static void TestClientRead<T>(UnitOfWorkScope scope, string expected, Func<T, object> reporter, ReadCommandInfo readCommand = null)
             where T : class, IEntity
         {
             readCommand = readCommand ?? new ReadCommandInfo();

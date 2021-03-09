@@ -68,7 +68,7 @@ namespace CommonConcepts.Test
                 r.Common.PrincipalPermission.Insert(new Common.PrincipalPermission { PrincipalID = principal1.ID, ClaimID = claim1.ID, IsAuthorized = true });
                 r.Common.RolePermission.Insert(new Common.RolePermission { RoleID = role2.ID, ClaimID = claim2.ID, IsAuthorized = true });
                 
-                scope.CommitChanges();
+                scope.CommitAndClose();
             }
         }
 
@@ -83,7 +83,7 @@ namespace CommonConcepts.Test
                 c.GenericPrincipal().Delete(oldData);
                 r.Common.Role.Delete(r.Common.Role.Load(p => p.Name.StartsWith(RolePrefix)));
                 
-                scope.CommitChanges();
+                scope.CommitAndClose();
             }
         }
 

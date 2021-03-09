@@ -45,7 +45,7 @@ namespace CommonConcepts.Test
         static string _rowPermissionsReadFilter = "Common.RowPermissionsReadItems";
         static string _rowPermissionsWriteFilter = "Common.RowPermissionsWriteItems";
 
-        private static ReadCommandResult ExecuteReadCommand(ReadCommandInfo commandInfo, TransactionScopeContainer scope)
+        private static ReadCommandResult ExecuteReadCommand(ReadCommandInfo commandInfo, UnitOfWorkScope scope)
         {
             var commands = scope.Resolve<IIndex<Type, IEnumerable<ICommandImplementation>>>();
             var readCommand = (ReadCommand)commands[typeof(ReadCommandInfo)].Single();
@@ -518,7 +518,7 @@ namespace CommonConcepts.Test
             }
         }
         
-        string ReadErrorData(TransactionScopeContainer scope, string testName)
+        string ReadErrorData(UnitOfWorkScope scope, string testName)
         {
             Console.WriteLine("Test: " + testName);
             var readCommand = new ReadCommandInfo() { DataSource = "TestRowPermissions.ErrorData", ReadRecords = true, Filters = new[] { new FilterCriteria(testName) } };
@@ -574,7 +574,7 @@ namespace CommonConcepts.Test
             }
         }
 
-        private void ExecuteSaveCommand(SaveEntityCommandInfo saveInfo, TransactionScopeContainer scope)
+        private void ExecuteSaveCommand(SaveEntityCommandInfo saveInfo, UnitOfWorkScope scope)
         {
             var commandImplementations = scope.Resolve<IPluginsContainer<ICommandImplementation>>();
             var saveCommand = commandImplementations.GetImplementations(saveInfo.GetType()).Single();
@@ -583,8 +583,6 @@ namespace CommonConcepts.Test
 
         private T[] TestWrite<T>(T[] initial, T[] insertItems, T[] updateItems, T[] deleteItems, string expectedException) where T : class, IEntity
         {
-            // we need to use commitChanges == true to validate rollbacks on bad inserts and updates
-           
             // initialize and persist
             using (var scope = TestScope.Create())
             {
@@ -595,7 +593,7 @@ namespace CommonConcepts.Test
                 // save initial data
                 gRepository.Save(initial, null, null);
 
-                scope.CommitChanges();
+                scope.CommitAndClose(); // We need to write the test data to validate rollbacks on bad inserts and updates.
             }
 
             // attempt to write test data
@@ -615,7 +613,7 @@ namespace CommonConcepts.Test
                 else
                     TestUtility.ShouldFail(() => ExecuteSaveCommand(saveCommand, scope), expectedException);
 
-                scope.CommitChanges();
+                scope.CommitAndClose();
             } // closing the scope makes transactions rollback for failed commands
 
             // read final state and cleanup
@@ -627,7 +625,7 @@ namespace CommonConcepts.Test
                 // cleanup
                 finalRepository.Save(null, null, allData);
 
-                scope.CommitChanges();
+                scope.CommitAndClose();
                 // return state of repository before cleanup
                 return allData;
             }
@@ -767,7 +765,7 @@ namespace CommonConcepts.Test
                     Assert.IsTrue(Enumerable.Range(5, 86).All(a => values.Contains(a)));
                 }
 
-                scope.CommitChanges();
+                scope.CommitAndClose();
             }
             
             // illegal insert

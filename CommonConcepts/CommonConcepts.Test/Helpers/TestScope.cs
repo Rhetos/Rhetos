@@ -38,7 +38,7 @@ namespace CommonConcepts.Test
         /// Use helper methods in <see cref="TestScopeContainerBuilderExtensions"/> to configuring components
         /// from the <paramref name="registerCustomComponents"/> delegate.
         /// </remarks>
-        public static TransactionScopeContainer Create(Action<ContainerBuilder> registerCustomComponents = null)
+        public static UnitOfWorkScope Create(Action<ContainerBuilder> registerCustomComponents = null)
         {
             return _rhetosHost.CreateScope(registerCustomComponents);
         }

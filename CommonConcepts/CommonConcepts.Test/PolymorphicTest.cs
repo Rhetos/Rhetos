@@ -115,7 +115,7 @@ namespace CommonConcepts.Test
             }
         }
 
-        private static void CheckColumns(TransactionScopeContainer scope, string expectedColumns, string schema, string table)
+        private static void CheckColumns(UnitOfWorkScope scope, string expectedColumns, string schema, string table)
         {
             var sqlExecuter = scope.Resolve<ISqlExecuter>();
             var actualColumns = new List<string>();

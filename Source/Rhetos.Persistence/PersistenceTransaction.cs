@@ -164,8 +164,10 @@ namespace Rhetos.Persistence
                 () => _connection = null,
                 exceptions);
 
-            // Failure on rollback should be ignored to allow other cleanup code to be executed. Also, a previously handled database connection error may have triggered the rollback.
+            // Failure on rollback should be ignored to allow other cleanup code to be executed, and also to avoid masking the original exception on transaction disposal.
             if (exceptions.Any())
+                // Logging the error with low severity level, because the Rollback method is called after some other error is caught and reported.
+                // The rollback might fail if the main error closed the transaction or database connection, this is expected behavior.
                 _logger.Trace("Error on rollback, it can be safely ignored. " + exceptions.First());
         }
 

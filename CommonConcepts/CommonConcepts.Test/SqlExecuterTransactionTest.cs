@@ -85,7 +85,7 @@ namespace CommonConcepts.Test
                 // Initial empty state:
                 Assert.AreEqual("", TestUtility.DumpSorted(repository.TestEntity.BaseEntity.Load(ids), item => item.Name));
 
-                // Write using SqlExecuter in it's own transaction, ignoring "commitChanges: false" on the persistence transaction:
+                // Write using SqlExecuter in it's own transaction, unrelated to the main scope's transaction that will be rolled back (by default).
                 sqlExecuter.ExecuteSql(new[]
                     {
                         "DELETE FROM TestEntity.BaseEntity",

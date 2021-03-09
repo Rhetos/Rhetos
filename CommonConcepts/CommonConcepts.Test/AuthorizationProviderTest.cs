@@ -158,23 +158,14 @@ namespace CommonConcepts.Test
             {
                 using (var scope = TestScope.Create(builder => builder.RegisterInstance(rhetosAppOptions).ExternallyOwned()))
                 {
-                    try
-                    {
-                        var authorizationData = scope.Resolve<AuthorizationDataLoader>();
+                    var authorizationData = scope.Resolve<AuthorizationDataLoader>();
 
-                        // First call will automatically create a new principal, see AuthorizationAddUnregisteredPrincipals above.
-                        // Other calls should return the same principal.
-                        PrincipalInfo principal = authorizationData.GetPrincipal(testUserName);
-                        report[thread] = principal;
-                        if (commitChanges)
-                            scope.CommitChanges();
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                        scope.Resolve<IPersistenceTransaction>().DiscardChanges();
-                        throw;
-                    }
+                    // First call will automatically create a new principal, see AuthorizationAddUnregisteredPrincipals above.
+                    // Other calls should return the same principal.
+                    PrincipalInfo principal = authorizationData.GetPrincipal(testUserName);
+                    report[thread] = principal;
+                    if (commitChanges)
+                        scope.CommitAndClose();
                 }
             });
 
@@ -189,7 +180,7 @@ namespace CommonConcepts.Test
                 var principals = scope.Resolve<Common.ExecutionContext>().GenericPrincipal();
                 var testPrincipals = principals.Load(p => p.Name.StartsWith(TestUserPrefix));
                 principals.Delete(testPrincipals);
-                scope.CommitChanges();
+                scope.CommitAndClose();
             }
         }
 

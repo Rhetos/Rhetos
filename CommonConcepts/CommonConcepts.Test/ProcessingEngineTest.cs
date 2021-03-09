@@ -212,9 +212,9 @@ namespace CommonConcepts.Test
                 var result = processingEngine.Execute(new[] { command });
                 if (!result.Success)
                     throw new ApplicationException(result.UserMessage + ", " + result.SystemMessage);
-                var results =  (TResult)result.CommandResults.Single().Data?.Value;
+                var results = (TResult)result.CommandResults.Single().Data?.Value;
 
-                scope.CommitChanges();
+                scope.CommitAndClose();
                 return results;
             }
         }

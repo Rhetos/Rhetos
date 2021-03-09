@@ -87,7 +87,7 @@ namespace CommonConcepts.Test
 
                             context.Repository.TestFullTextSearch.SimpleFTS.Recompute();
 
-                            scope.CommitChanges();
+                            scope.CommitAndClose();
                         }
 
                         // Wait for SQL Server to populate the full-text search index:
@@ -123,7 +123,7 @@ namespace CommonConcepts.Test
                                 }
                             }
 
-                            scope.CommitChanges();
+                            scope.CommitAndClose();
                         }
 
                         DataPrepared = true;

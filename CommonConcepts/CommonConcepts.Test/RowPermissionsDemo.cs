@@ -66,7 +66,7 @@ namespace CommonConcepts.Test
                 var doc2 = new DemoRowPermissions1.Document { Title = "doc2", DivisionID = div2.ID };
                 repository.DemoRowPermissions1.Document.Insert(new[] { doc1, doc2 });
 
-                scope.CommitChanges();
+                scope.CommitAndClose();
             }
 
             // Simulate client request: Reading all documents (access denied)
@@ -155,7 +155,7 @@ namespace CommonConcepts.Test
                 var doc4 = new DemoRowPermissions2.Document { Title = "doc4", DivisionID = div1.ID, Created = DateTime.Now.AddYears(-1) };
                 repository.DemoRowPermissions2.Document.Insert(new[] { doc1, doc2, doc3, doc4 });
 
-                scope.CommitChanges();
+                scope.CommitAndClose();
             }
 
             // Simulate client request: Reading all documents (access denied)
@@ -304,7 +304,7 @@ namespace CommonConcepts.Test
                 var app3 = new DemoRowPermissions2.DocumentApproval { ID = doc3.ID, ApprovedByID = emp2.ID, Note = "app3" };
                 repository.DemoRowPermissions2.DocumentApproval.Insert(new[] { app1, app2, app3 });
 
-                scope.CommitChanges();
+                scope.CommitAndClose();
             }
 
             // Test the current user's row permissions:
@@ -406,7 +406,7 @@ namespace CommonConcepts.Test
                     principalRepository.Insert((IEntity)principal);
                 }
 
-                scope.CommitChanges();
+                scope.CommitAndClose();
             }
         }
 

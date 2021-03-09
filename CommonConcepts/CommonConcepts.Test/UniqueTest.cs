@@ -41,7 +41,7 @@ namespace CommonConcepts.Test
             private readonly Common.ExecutionContext _executionContext;
             private readonly Common.DomRepository _repository;
 
-            public EntityHelper(TransactionScopeContainer scope)
+            public EntityHelper(UnitOfWorkScope scope)
             {
                 _executionContext = scope.Resolve<Common.ExecutionContext>();
                 _repository = scope.Resolve<Common.DomRepository>();

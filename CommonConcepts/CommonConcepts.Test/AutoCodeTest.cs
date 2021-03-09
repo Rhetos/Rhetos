@@ -37,7 +37,7 @@ namespace CommonConcepts.Test
     [TestClass]
     public class AutoCodeTest
     {
-        private static void DeleteOldData(TransactionScopeContainer scope)
+        private static void DeleteOldData(UnitOfWorkScope scope)
         {
             scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                 {
@@ -685,7 +685,7 @@ namespace CommonConcepts.Test
             {
                 ConcurrencyUtility.CheckForParallelism(scope.Resolve<ISqlExecuter>(), threadCount);
                 DeleteOldData(scope);
-                scope.CommitChanges();
+                scope.CommitAndClose();
             }
 
             for (int test = 1; test <= testCount; test++)
@@ -702,7 +702,7 @@ namespace CommonConcepts.Test
                     Parallel.For(0, threadCount, process =>
                     {
                         action(process, repositories[process]);
-                        containers[process].CommitChanges();
+                        containers[process].CommitAndClose();
                         containers[process].Dispose();
                         containers[process] = null;
                     });
@@ -782,7 +782,7 @@ namespace CommonConcepts.Test
 
                 coldStartInsert(scope.Resolve<Common.ExecutionContext>());
                 
-                scope.CommitChanges();
+                scope.CommitAndClose();
             }
 
             var containers = Enumerable.Range(0, threadCount).Select(t => TestScope.Create()).ToArray();
@@ -808,7 +808,7 @@ namespace CommonConcepts.Test
                     }
                     finally
                     {
-                        containers[thread].CommitChanges();
+                        containers[thread].CommitAndClose();
                         containers[thread].Dispose();
                         containers[thread] = null;
                     }

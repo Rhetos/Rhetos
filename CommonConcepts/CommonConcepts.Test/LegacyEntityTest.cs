@@ -36,7 +36,7 @@ namespace CommonConcepts.Test
     {
         private static readonly Guid GuidA = Guid.NewGuid();
         private static readonly Guid GuidB = Guid.NewGuid();
-        private static void InitializeData(TransactionScopeContainer scope)
+        private static void InitializeData(UnitOfWorkScope scope)
         {
             scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                 {
@@ -49,13 +49,13 @@ namespace CommonConcepts.Test
                 });
         }
 
-        static string ReportLegacy1(TransactionScopeContainer scope, Common.DomRepository domRepository)
+        static string ReportLegacy1(UnitOfWorkScope scope, Common.DomRepository domRepository)
         {
             var loaded = domRepository.Test13.Legacy1.Query().Select(l1 => l1.Name);
             return string.Join(", ", loaded.OrderBy(x => x));
         }
 
-        static string ReportLegacy2(TransactionScopeContainer scope, Common.DomRepository domRepository)
+        static string ReportLegacy2(UnitOfWorkScope scope, Common.DomRepository domRepository)
         {
             var loaded = domRepository.Test13.Legacy2.Query().Select(l2 => l2.Leg1.Name + " " + l2.NameNew + " " + l2.Same);
             return string.Join(", ", loaded.OrderBy(x => x));

@@ -38,7 +38,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void CreatedColumns()
         {
-            using (Rhetos.TransactionScopeContainer scope = TestScope.Create())
+            using (var scope = TestScope.Create())
             {
                 var sql = @"SELECT
                         OBJECT_NAME(object_id) + '.' + name

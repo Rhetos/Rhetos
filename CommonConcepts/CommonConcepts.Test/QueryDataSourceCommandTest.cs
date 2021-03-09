@@ -41,7 +41,7 @@ namespace CommonConcepts.Test
     [TestClass]
     public class QueryDataSourceCommandTest
     {
-        private static void InitializeData(TransactionScopeContainer scope)
+        private static void InitializeData(UnitOfWorkScope scope)
         {
             scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                 {
@@ -54,7 +54,7 @@ namespace CommonConcepts.Test
                 });
         }
 
-        private static string ReportCommandResult(TransactionScopeContainer scope, QueryDataSourceCommandInfo info, bool sort = false)
+        private static string ReportCommandResult(UnitOfWorkScope scope, QueryDataSourceCommandInfo info, bool sort = false)
         {
             var commands = scope.Resolve<IIndex<Type, IEnumerable<ICommandImplementation>>>();
             var queryDataSourceCommand = (QueryDataSourceCommand)commands[typeof(QueryDataSourceCommandInfo)].Single();
@@ -171,7 +171,7 @@ namespace CommonConcepts.Test
 
         //====================================================================
 
-        private static string ReportCommandResult2(TransactionScopeContainer scope, QueryDataSourceCommandInfo info, bool sort = false)
+        private static string ReportCommandResult2(UnitOfWorkScope scope, QueryDataSourceCommandInfo info, bool sort = false)
         {
             var commands = scope.Resolve<IIndex<Type, IEnumerable<ICommandImplementation>>>();
             var queryDataSourceCommand = (QueryDataSourceCommand)commands[typeof(QueryDataSourceCommandInfo)].Single();

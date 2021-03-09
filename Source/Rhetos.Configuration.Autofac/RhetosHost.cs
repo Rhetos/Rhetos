@@ -52,7 +52,7 @@ namespace Rhetos
         /// <summary>
         /// Creates a thread-safe lifetime scope for dependency injection container,
         /// in order to isolate a unit of work in a separate database transaction.
-        /// To commit changes to database, call <see cref="TransactionScopeContainer.CommitChanges"/> at the end of the 'using' block.
+        /// To commit changes to database, call <see cref="UnitOfWorkScope.CommitAndClose"/> at the end of the 'using' block.
         /// Note that created lifetime scope is <see cref="IDisposable"/>.
         /// Transaction will be committed or rolled back when scope is disposed.
         /// </summary>
@@ -65,9 +65,9 @@ namespace Rhetos
         /// before building the <see cref="RhetosHost"/> instance with <see cref="IRhetosHostBuilder.Build"/>.
         /// </para>
         /// </param>
-        public TransactionScopeContainer CreateScope(Action<ContainerBuilder> registerScopeComponentsAction = null)
+        public UnitOfWorkScope CreateScope(Action<ContainerBuilder> registerScopeComponentsAction = null)
         {
-            return new TransactionScopeContainer(_container, registerScopeComponentsAction);
+            return new UnitOfWorkScope(_container, registerScopeComponentsAction);
         }
 
         /// <summary>

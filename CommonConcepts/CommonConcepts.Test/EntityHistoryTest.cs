@@ -78,7 +78,7 @@ namespace CommonConcepts.Test
             return new DateTime(2001, 1, 1).AddDays(d-1);
         }
 
-        private static DateTime GetServerTime(TransactionScopeContainer scope)
+        private static DateTime GetServerTime(UnitOfWorkScope scope)
         {
             var serverTime = SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>());
             Console.WriteLine("Server time: " + serverTime.ToString("o") + ". Local time: " + DateTime.Now.ToString("o") + ".");
