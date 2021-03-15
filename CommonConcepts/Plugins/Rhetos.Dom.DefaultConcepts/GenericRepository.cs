@@ -372,7 +372,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private IEnumerable<TEntityInterface> ExecuteGenericFilter(IEnumerable<FilterCriteria> genericFilter, bool preferQuery, IEnumerable<TEntityInterface> items = null)
         {
-            var filterObjects = _genericFilterHelper.ToFilterObjects(genericFilter);
+            var filterObjects = _genericFilterHelper.ToFilterObjects(EntityName, genericFilter);
 
             foreach (var filter in filterObjects)
             {

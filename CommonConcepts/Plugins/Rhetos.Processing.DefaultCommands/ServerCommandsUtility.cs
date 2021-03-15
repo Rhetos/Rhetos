@@ -31,16 +31,16 @@ namespace Rhetos.Processing.DefaultCommands
     {
         private readonly ILogger _logger;
         private readonly ApplyFiltersOnClientRead _applyFiltersOnClientRead;
-        private readonly IDomainObjectModel _domainObjectModel;
+        private readonly GenericFilterHelper _genericFilterHelper;
 
         public ServerCommandsUtility(
             ILogProvider logProvider,
             ApplyFiltersOnClientRead applyFiltersOnClientRead,
-            IDomainObjectModel domainObjectModel)
+            GenericFilterHelper genericFilterHelper)
         {
             _logger = logProvider.GetLogger(GetType().Name);
             _applyFiltersOnClientRead = applyFiltersOnClientRead;
-            _domainObjectModel = domainObjectModel;
+            _genericFilterHelper = genericFilterHelper;
         }
 
         /// <summary>
@@ -50,8 +50,9 @@ namespace Rhetos.Processing.DefaultCommands
         {
             if (validateObjects == null) return true;
             var validateItems = (IEntity[])validateObjects;
-            var filterType = _domainObjectModel.GetType(filterName);
-            var filterMethodInfo = genericRepository.Reflection.RepositoryQueryableFilterMethod(filterType);
+            
+            var filterType = _genericFilterHelper.GetFilterType(genericRepository.EntityName, filterName);
+            var filterMethodInfo = filterType == null ? null : genericRepository.Reflection.RepositoryQueryableFilterMethod(filterType);
 
             if (filterMethodInfo != null)
             {

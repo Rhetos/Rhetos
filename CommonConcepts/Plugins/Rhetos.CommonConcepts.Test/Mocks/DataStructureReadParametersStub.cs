@@ -17,17 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Dom;
+using Rhetos.Dom.DefaultConcepts;
 using System.Collections.Generic;
-using System.Reflection;
 
 namespace Rhetos.CommonConcepts.Test.Mocks
 {
-    class DomainObjectModelMock : IDomainObjectModel
+    class DataStructureReadParametersStub : IDataStructureReadParameters
     {
-        public IEnumerable<Assembly> Assemblies
-        {
-            get { return new[] { GetType().Assembly }; }
-        }
+        public IEnumerable<DataStructureReadParameter> GetReadParameters(string dataStuctureFullName, bool extendedSet) => new List<DataStructureReadParameter>();
     }
 }

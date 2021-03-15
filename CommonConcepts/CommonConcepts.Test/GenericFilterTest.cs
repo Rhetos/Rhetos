@@ -102,7 +102,7 @@ namespace CommonConcepts.Test
             using (var scope = TestScope.Create())
             {
                 var gfh = scope.Resolve<GenericFilterHelper>();
-                var filters = gfh.ToFilterObjects(propertyFiltersCriteria);
+                var filters = gfh.ToFilterObjects(typeof(TEntity).FullName, propertyFiltersCriteria);
                 var propertyFilters = (IEnumerable<PropertyFilter>)filters.Single().Parameter;
                 var propertyFilterExpression = (Expression<Func<TEntity, bool>>)gfh.ToExpression(propertyFilters, typeof(TEntity));
                 return propertyFilterExpression;

@@ -43,21 +43,21 @@ namespace Rhetos.CommonConcepts.Test.Mocks
                     DomainObjectModel = new DomainObjectModelMock(),
                     Repositories = new Lazy<IIndex<string, IRepository>>(() => new RepositoryIndexMock<TEntityInterface, TEntity>(items)),
                     LogProvider = new ConsoleLogProvider(),
-                    GenericFilterHelper = new GenericFilterHelper(new DomainObjectModelMock()),
+                    GenericFilterHelper = new GenericFilterHelper(new DomainObjectModelMock(), new DataStructureReadParametersStub()),
                     DelayedLogProvider = new DelayedLogProvider(new LoggingOptions { DelayedLogTimout = 0 }, null),
     },
                 new RegisteredInterfaceImplementations { { typeof(TEntityInterface), typeof(TEntity).FullName }})
         {
         }
 
-        public TestGenericRepository(IRepository repository)
+        public TestGenericRepository(IRepository repository, Dictionary<Type, Type[]> readParameters = null)
             : base(
                 new GenericRepositoryParameters
                 {
                     DomainObjectModel = new DomainObjectModelMock(),
                     Repositories = new Lazy<IIndex<string, IRepository>>(() => new RepositoryIndexMock(typeof(TEntity), repository)),
                     LogProvider = new ConsoleLogProvider(),
-                    GenericFilterHelper = new GenericFilterHelper(new DomainObjectModelMock()),
+                    GenericFilterHelper = new GenericFilterHelper(new DomainObjectModelMock(), CreateDataStructureReadParameters(repository, typeof(TEntity))),
                     DelayedLogProvider = new DelayedLogProvider(new LoggingOptions { DelayedLogTimout = 0 }, null),
                 },
                 new RegisteredInterfaceImplementations { { typeof(TEntityInterface), typeof(TEntity).FullName } })
@@ -70,6 +70,13 @@ namespace Rhetos.CommonConcepts.Test.Mocks
             {
                 return (RepositoryMock<TEntityInterface, TEntity>)EntityRepository;
             }
+        }
+
+        private static DataStructureReadParameters CreateDataStructureReadParameters(IRepository repository, Type type)
+        {
+            var repositoryNamedPluginsMock = new RepositoryNamedPluginsMock();
+            repositoryNamedPluginsMock.Plugins[type.FullName] = new IRepository[] { repository };
+            return new DataStructureReadParameters(repositoryNamedPluginsMock);
         }
     }
 }

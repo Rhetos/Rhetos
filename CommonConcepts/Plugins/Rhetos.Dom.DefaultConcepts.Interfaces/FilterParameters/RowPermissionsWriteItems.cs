@@ -17,17 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Dom;
-using System.Collections.Generic;
-using System.Reflection;
-
-namespace Rhetos.CommonConcepts.Test.Mocks
+namespace Common
 {
-    class DomainObjectModelMock : IDomainObjectModel
+    public class RowPermissionsWriteItems
     {
-        public IEnumerable<Assembly> Assemblies
-        {
-            get { return new[] { GetType().Assembly }; }
-        }
     }
 }

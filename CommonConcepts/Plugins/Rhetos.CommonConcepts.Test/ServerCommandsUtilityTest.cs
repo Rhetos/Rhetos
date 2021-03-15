@@ -38,7 +38,7 @@ namespace Rhetos.CommonConcepts.Test
         {
             queryDataSourceCommandInfo.DataSource = typeof(ServerCommandsUtilityTest.SimpleEntity).FullName;
             var commandInfo = queryDataSourceCommandInfo.ToReadCommandInfo();
-            var serverCommandsUtility = new ServerCommandsUtility(new ConsoleLogProvider(), new ApplyFiltersOnClientRead(), new DomainObjectModelMock());
+            var serverCommandsUtility = new ServerCommandsUtility(new ConsoleLogProvider(), new ApplyFiltersOnClientRead(), new GenericFilterHelper(new DomainObjectModelMock(), new DataStructureReadParametersStub()));
             var commandResult = serverCommandsUtility.ExecuteReadCommand(commandInfo, genericRepository);
             return QueryDataSourceCommandResult.FromReadCommandResult(commandResult);
         }
@@ -94,6 +94,9 @@ namespace Rhetos.CommonConcepts.Test
             {
                 return source.Where(item => item.Name.Contains(pattern));
             }
+
+            public static readonly KeyValuePair<string, Type>[] ReadParameterTypes = new KeyValuePair<string, Type>[]
+            {};
         }
 
         class ExplicitQueryDataSourceCommandRepository : IRepository

@@ -433,6 +433,16 @@ namespace Rhetos.CommonConcepts.Test
                 AddLog("EF"); // Using enumerable filter ...
                 return items.Select(item => new SimpleEntity { Name = item.Name + "_ef" });
             }
+
+            public static readonly KeyValuePair<string, Type>[] ReadParameterTypes = new KeyValuePair<string, Type>[]
+            {
+                new KeyValuePair<string, Type>(typeof(ISimpleEntity).FullName, typeof(ISimpleEntity)),
+                new KeyValuePair<string, Type>(typeof(NamedFilter).FullName, typeof(NamedFilter)),
+                new KeyValuePair<string, Type>(typeof(ContainsFilter).FullName, typeof(ContainsFilter)),
+                new KeyValuePair<string, Type>(typeof(EnumerableFilter).FullName, typeof(EnumerableFilter)),
+                new KeyValuePair<string, Type>(typeof(LoaderParameter).FullName, typeof(LoaderParameter)),
+                new KeyValuePair<string, Type>(typeof(QueryLoaderFilter).FullName, typeof(QueryLoaderFilter))
+            };
         }
 
         string TestIListIQueryable(IEnumerable items)
@@ -703,6 +713,9 @@ namespace Rhetos.CommonConcepts.Test
             {
                 return new[] { new SimpleEntity { Name = parameter.ToString() } }.AsQueryable();
             }
+
+            public static readonly KeyValuePair<string, Type>[] ReadParameterTypes = new KeyValuePair<string, Type>[]
+            {};
         }
 
         [TestMethod]
