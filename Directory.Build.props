@@ -1,6 +1,6 @@
 ﻿<Project>
   <PropertyGroup>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>9.0</LangVersion>
     <Company>Omega software</Company>
     <Copyright>Copyright (C) Omega software 2017</Copyright>
     <AssemblyVersion>5.0.0</AssemblyVersion>
