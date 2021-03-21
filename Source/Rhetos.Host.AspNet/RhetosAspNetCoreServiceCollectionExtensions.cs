@@ -32,7 +32,7 @@ namespace Microsoft.Extensions.DependencyInjection
             serviceCollection.AddOptions();
             if (configureRhetosHost != null)
             {
-                serviceCollection.Configure<RhetosBuilderOptions>(o => o.rhetosHostBuilderConfigureActions.Add(configureRhetosHost));
+                serviceCollection.Configure<RhetosHostBuilderOptions>(o => o.ConfigureActions.Add(configureRhetosHost));
             }
 
             serviceCollection.TryAddSingleton(serviceProvider => CreateRhetosHost(serviceProvider));
@@ -46,8 +46,8 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             var rhetosHostBuilder = new RhetosHostBuilder();
 
-            var options = serviceProvider.GetRequiredService<IOptions<RhetosBuilderOptions>>();
-            foreach (var rhetosHostBuilderConfigureAction in options.Value.rhetosHostBuilderConfigureActions)
+            var options = serviceProvider.GetRequiredService<IOptions<RhetosHostBuilderOptions>>();
+            foreach (var rhetosHostBuilderConfigureAction in options.Value.ConfigureActions)
             {
                 rhetosHostBuilderConfigureAction(rhetosHostBuilder);
             }

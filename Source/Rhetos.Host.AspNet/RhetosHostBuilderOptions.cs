@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace Rhetos.Host.AspNet
 {
-    public class RhetosBuilderOptions
+    internal class RhetosHostBuilderOptions
     {
-        public List<Action<IRhetosHostBuilder>> rhetosHostBuilderConfigureActions = new List<Action<IRhetosHostBuilder>>();
+        public List<Action<IRhetosHostBuilder>> ConfigureActions { get; set; } = new List<Action<IRhetosHostBuilder>>();
     }
 }
