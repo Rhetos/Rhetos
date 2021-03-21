@@ -17,11 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
 
 namespace Rhetos
@@ -36,8 +32,8 @@ namespace Rhetos
                     var key = configurationItem.Key;
                     if (configurationToMap is IConfigurationSection configurationSection && !string.IsNullOrEmpty(configurationSection.Path))
                     {
-                        var regex = new Regex($"^{configurationSection.Path}:");
-                        key = regex.Replace(key, "");
+                        if (key.StartsWith(configurationSection.Path + ":"))
+                            key = key.Substring(configurationSection.Path.Length + 1);
                     }
                     builder.AddKeyValue(key, configurationItem.Value);
                 }
