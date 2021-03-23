@@ -18,6 +18,8 @@
 */
 
 using System;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 using Rhetos;
 using Rhetos.Host.AspNet;
 
@@ -27,15 +29,30 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         public static RhetosAspNetServiceCollectionBuilder AddRhetos(this IServiceCollection serviceCollection, Action<IRhetosHostBuilder> configureRhetosHost = null)
         {
-            var rhetosHostBuilder = new RhetosHostBuilder();
-            configureRhetosHost?.Invoke(rhetosHostBuilder);
-            var rhetosHost = rhetosHostBuilder.Build();
-                
-            serviceCollection.AddSingleton(rhetosHost);
-            serviceCollection.AddScoped<RhetosScopeServiceProvider>();
-            serviceCollection.AddScoped(typeof(IRhetosComponent<>), typeof(RhetosComponent<>));
+            serviceCollection.AddOptions();
+            if (configureRhetosHost != null)
+            {
+                serviceCollection.Configure<RhetosHostBuilderOptions>(o => o.ConfigureActions.Add(configureRhetosHost));
+            }
 
-            return new RhetosAspNetServiceCollectionBuilder(serviceCollection, rhetosHost);
+            serviceCollection.TryAddSingleton(serviceProvider => CreateRhetosHost(serviceProvider));
+            serviceCollection.TryAddScoped<RhetosScopeServiceProvider>();
+            serviceCollection.TryAddScoped(typeof(IRhetosComponent<>), typeof(RhetosComponent<>));
+
+            return new RhetosAspNetServiceCollectionBuilder(serviceCollection);
+        }
+
+        private static RhetosHost CreateRhetosHost(IServiceProvider serviceProvider)
+        {
+            var rhetosHostBuilder = new RhetosHostBuilder();
+
+            var options = serviceProvider.GetRequiredService<IOptions<RhetosHostBuilderOptions>>();
+            foreach (var rhetosHostBuilderConfigureAction in options.Value.ConfigureActions)
+            {
+                rhetosHostBuilderConfigureAction(rhetosHostBuilder);
+            }
+
+            return rhetosHostBuilder.Build();
         }
     }
 }
