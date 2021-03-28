@@ -1,0 +1,33 @@
+﻿@using Microsoft.Extensions.Options
+@using Rhetos.Host.AspNet.Dashboard
+
+@{
+    Layout = null;
+}
+
+@inject IOptions<DashboardOptions> dashboardViewComponentOptions
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Index</title>
+</head>
+<body>
+<h1>Rhetos Dashboard</h1>
+    
+@{
+	var snippets = dashboardViewComponentOptions.Value.DashboardSnippets
+		.OrderBy(a => a.Order)
+		.ThenBy(a => a.DisplayName);
+
+	foreach (var snippet in snippets)
+	{
+		<h2>@snippet.DisplayName</h2>
+		@await Component.InvokeAsync(snippet.ViewComponentType);
+	}
+}
+
+</body>
+</html>

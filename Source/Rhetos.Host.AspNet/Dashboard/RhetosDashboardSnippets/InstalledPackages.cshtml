@@ -1,0 +1,15 @@
+﻿@model List<Rhetos.Deployment.InstalledPackage>
+
+<table>
+	<thead>
+	</thead>
+	<tbody>
+	@foreach (var package in Model)
+	{
+		<tr>
+			<td>@package.Id</td>
+			<td style="text-align: right">@package.Version</td>
+		</tr>
+	}
+	</tbody>
+</table>
