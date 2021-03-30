@@ -39,10 +39,10 @@ namespace Rhetos.Security
     {
         #region IUserInfoAdmin implementation
 
-        public bool IsUserRecognized { get { return _isUserRecognized.Value; } }
+        public bool IsUserRecognized => _isUserRecognized.Value;
         public string UserName { get { CheckIfUserRecognized(); return _userName.Value; } }
-        public string Workstation { get { CheckIfUserRecognized(); return _workstation.Value; } }
-        public string Report() { return UserName + "," + Workstation; }
+        public string Workstation => _workstation.Value;
+        public string Report() => ReportUserNameOrAnonymous() + "," + _workstation.Value;
         public bool IsBuiltInAdministrator => IsUserRecognized && _windowsSecurity.IsBuiltInAdministrator(_windowsIdentity.Value);
 
         #endregion
@@ -151,5 +151,7 @@ namespace Rhetos.Security
             }
             return wi.Name + ", " + authenticationType + ", LocalAdmin=" + new WindowsPrincipal(wi).IsInRole(WindowsBuiltInRole.Administrator);
         }
+
+        private string ReportUserNameOrAnonymous() => IsUserRecognized ? _userName.Value : "<anonymous>";
     }
 }
