@@ -26,6 +26,14 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// <summary>
     /// Adds the private C# property to the data structure's repository class. The property value will be resolved from IoC container.
     /// It is typically a system component that is required in some function in the repository class (entity filter or action implementation, e.g.).
+    /// 
+    /// PropertyType parameter:
+    /// It is a C# property type as written in C# source.
+    /// It may require using the full name with namespace, if the namespace is not available from repository class or default 'using' statements.
+    /// The type will be resolved from IoC container.
+    /// Remarks:
+    /// For application that uses DeployPackages build process, instead of Rhetos CLI, the property value should be the assembly qualified name,
+    /// but it does not need to contain Version, Culture or PublicKeyToken if you are referencing a local assembly in the application's folder.
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("RepositoryUses")]
@@ -40,15 +48,6 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public string PropertyName { get; set; }
 
-        /// <summary>
-        /// C# property type.
-        /// It may require using the full name with namespace, if the namespace is not available in default 'using' statements.
-        /// The type will be resolved from IoC container.
-        /// </summary>
-        /// <remarks>
-        /// For application that use DeployPackages build process, instead of Rhetos CLI, the property value should be the assembly qualified name,
-        /// but it does not need to contain Version, Culture or PublicKeyToken if you are referencing a local assembly in the application's folder.
-        /// </remarks>
         public string PropertyType { get; set; }
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
