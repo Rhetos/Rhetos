@@ -45,7 +45,7 @@ namespace Rhetos
         /// Customize the behavior of singleton components in <see cref="ProcessContainer"/> constructor.
         /// </para>
         /// </param>
-        public UnitOfWorkScope(IContainer iocContainer, Action<ContainerBuilder> registerCustomComponents = null)
+        public UnitOfWorkScope(ILifetimeScope iocContainer, Action<ContainerBuilder> registerCustomComponents = null)
         {
             _lifetimeScope = registerCustomComponents != null
                 ? iocContainer.BeginLifetimeScope(registerCustomComponents)

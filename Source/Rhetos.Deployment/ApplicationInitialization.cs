@@ -35,7 +35,7 @@ namespace Rhetos.Deployment
     /// </summary>
     public static class ApplicationInitialization
     {
-        public static IEnumerable<Type> GetSortedInitializers(IContainer container)
+        public static IEnumerable<Type> GetSortedInitializers(IComponentContext container)
         {
             // The plugins in the container are sorted by their dependencies defined in ExportMetadata attribute (static typed):
             var initializers = GetInitializers(container);
@@ -50,7 +50,7 @@ namespace Rhetos.Deployment
             return sortedInitializers.Select(initializer => initializer.GetType()).ToList();
         }
 
-        private static IEnumerable<IServerInitializer> GetInitializers(IContainer container)
+        private static IEnumerable<IServerInitializer> GetInitializers(IComponentContext container)
         {
             return container.Resolve<IPluginsContainer<IServerInitializer>>().GetPlugins();
         }
@@ -60,7 +60,7 @@ namespace Rhetos.Deployment
         /// This method does not conform to the standard IoC design pattern.
         /// It uses IoC container directly because it needs to handle a special scope control (separate database connections) and error handling.
         /// </summary>
-        public static void ExecuteInitializer(IContainer container, Type initializerType)
+        public static void ExecuteInitializer(ILifetimeScope container, Type initializerType)
         {
             var logger = container.Resolve<ILogProvider>().GetLogger(nameof(ApplicationInitialization));
             

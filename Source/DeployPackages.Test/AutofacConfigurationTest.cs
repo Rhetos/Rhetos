@@ -198,7 +198,7 @@ namespace DeployPackages.Test
             }
         }
 
-        private string DumpSortedRegistrations(IContainer container)
+        private string DumpSortedRegistrations(IComponentContext container)
         {
             var registrations = container.ComponentRegistry.Registrations
                     .Select(registration => registration.ToString())
@@ -208,7 +208,7 @@ namespace DeployPackages.Test
             return string.Join(Environment.NewLine, registrations);
         }
 
-        private void TestAmbiguousRegistations(IContainer container, IEnumerable<string> expectedMultiplePlugins = null, IDictionary<Type, string> expectedOverridenRegistrations = null)
+        private void TestAmbiguousRegistations(IComponentContext container, IEnumerable<string> expectedMultiplePlugins = null, IDictionary<Type, string> expectedOverridenRegistrations = null)
         {
             expectedMultiplePlugins = expectedMultiplePlugins ?? Array.Empty<string>();
             expectedOverridenRegistrations = expectedOverridenRegistrations ?? new Dictionary<Type, string> { };

@@ -43,7 +43,7 @@ namespace Rhetos
         /// </para>
         /// </param>
         [Obsolete("Use " + nameof(UnitOfWorkScope) + " instead.")]
-        public TransactionScopeContainer(IContainer iocContainer, Action<ContainerBuilder> registerCustomComponents = null) : base(iocContainer, registerCustomComponents)
+        public TransactionScopeContainer(ILifetimeScope iocContainer, Action<ContainerBuilder> registerCustomComponents = null) : base(iocContainer, registerCustomComponents)
         {
         }
 
