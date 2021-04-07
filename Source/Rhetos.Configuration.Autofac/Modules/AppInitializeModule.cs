@@ -30,7 +30,7 @@ namespace Rhetos.Configuration.Autofac.Modules
         {
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<DbUpdateOptions>()).SingleInstance().PreserveExistingDefaults();
             builder.RegisterType<EfMappingViewsInitializer>().SingleInstance();
-            builder.GetPluginRegistration().FindAndRegisterPlugins<IServerInitializer>();
+            builder.GetRhetosPluginRegistration().FindAndRegisterPlugins<IServerInitializer>();
             base.Load(builder);
         }
     }

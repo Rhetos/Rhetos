@@ -73,21 +73,22 @@ namespace Rhetos
                 builder.RegisterType<RhetosService>().As<RhetosService>().As<IServerApplication>();
                 builder.RegisterType<Rhetos.Web.GlobalErrorHandler>();
                 builder.RegisterType<WebServices>();
-                builder.GetPluginRegistration().FindAndRegisterPlugins<IService>();
+                builder.GetRhetosPluginRegistration().FindAndRegisterPlugins<IService>();
             }
 
-            builder.AddPluginModules();
+            builder.AddRhetosPluginModules();
 
             if (_isHost)
             {
                 // HomePageServiceInitializer must be register after other core services and plugins to allow routing overrides.
                 builder.RegisterType<HomePageService>().InstancePerLifetimeScope();
                 builder.RegisterType<HomePageServiceInitializer>().As<IService>();
-                builder.GetPluginRegistration().FindAndRegisterPlugins<IHomePageSnippet>();
+                builder.GetRhetosPluginRegistration().FindAndRegisterPlugins<IHomePageSnippet>();
             }
 
-            registerCustomComponents?.Invoke(builder);
+            // >> Register additional application components here. <<
 
+            registerCustomComponents?.Invoke(builder);
             return builder.Build();
         }
     }

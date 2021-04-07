@@ -88,7 +88,7 @@ namespace Rhetos
             builder.RegisterModule(new CoreModule());
             builder.RegisterModule(new CorePluginsModule());
             builder.RegisterModule(new BuildModule());
-            builder.AddPluginModules();
+            builder.AddRhetosPluginModules();
             builder.RegisterType<NullUserInfo>().As<IUserInfo>(); // Override runtime IUserInfo plugins. This container should not execute the application's business features.
 #pragma warning disable CS0618 // Registering obsolete IInstalledPackages for backward compatibility.
             builder.RegisterInstance(_installedPackages).As<IInstalledPackages>().As<InstalledPackages>();

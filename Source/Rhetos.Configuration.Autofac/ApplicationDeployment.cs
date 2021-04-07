@@ -70,7 +70,7 @@ namespace Rhetos
             var builder = new RhetosContainerBuilder(_configuration, _logProvider, AssemblyResolver.GetRuntimeAssemblies(_configuration));
             builder.RegisterModule(new CoreModule());
             builder.RegisterModule(new DbUpdateModule());
-            builder.AddPluginModules();
+            builder.AddRhetosPluginModules();
             builder.RegisterType<NullUserInfo>().As<IUserInfo>(); // Override runtime IUserInfo plugins. This container should not execute the application's business features.
             return builder;
         }

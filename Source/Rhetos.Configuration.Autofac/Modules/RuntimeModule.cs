@@ -48,7 +48,7 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.RegisterType<EfMappingViewCacheFactory>().SingleInstance().PreserveExistingDefaults();
             builder.RegisterModule(new DatabaseRuntimeModule());
 
-            var pluginRegistration = builder.GetPluginRegistration();
+            var pluginRegistration = builder.GetRhetosPluginRegistration();
             AddDsl(builder, pluginRegistration);
             AddSecurity(builder, pluginRegistration);
             AddUtilities(builder, pluginRegistration);

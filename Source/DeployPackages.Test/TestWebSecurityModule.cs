@@ -32,7 +32,7 @@ namespace DeployPackages.Test
             // CheckOverride is implemented here as a legacy feature:
             // WcfWindowsUserInfo is correctly expected here for runtime registration, but this plugin module is also
             // registered at build-time, so this specific CheckOverride should be ignored by Rhetos framework at build time.
-            builder.GetPluginRegistration().CheckOverride<IUserInfo, TestWebSecurityUserInfo>(typeof(WcfWindowsUserInfo));
+            builder.GetRhetosPluginRegistration().CheckOverride<IUserInfo, TestWebSecurityUserInfo>(typeof(WcfWindowsUserInfo));
 
             builder.RegisterType<TestWebSecurityUserInfo>().As<IUserInfo>();
             base.Load(builder);
