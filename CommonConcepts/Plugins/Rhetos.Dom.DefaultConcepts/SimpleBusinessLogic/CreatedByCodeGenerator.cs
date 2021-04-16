@@ -37,7 +37,8 @@ namespace Rhetos.Dom.DefaultConcepts
             var info = (CreatedByInfo)conceptInfo;
 
             string createdByValue =
-            @"{
+            @"if (_executionContext.UserInfo.IsUserRecognized)
+            {
                 var userName = _executionContext.UserInfo.UserName;
                 var userIds = _domRepository.Common.Principal.Query(p => p.Name == userName).Select(p => p.ID).ToList();
 

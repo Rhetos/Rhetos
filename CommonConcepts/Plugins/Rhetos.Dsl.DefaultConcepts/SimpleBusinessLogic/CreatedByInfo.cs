@@ -27,6 +27,8 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
     /// Writes the current user's ID when saving a new record.
+    /// It should be applied on a Reference property that references Common.Principal.
+    /// It is often used together with concepts DenyUserEdit and SystemRequired.
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("CreatedBy")]

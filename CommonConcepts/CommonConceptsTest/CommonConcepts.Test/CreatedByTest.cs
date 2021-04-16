@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Autofac;
 using CommonConcepts.Test.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Configuration.Autofac;
@@ -127,6 +128,32 @@ namespace CommonConcepts.Test
                     () => repository.TestCreatedBy.WithConstraints.Insert(new[] { testItem1, testItem2 }, checkUserPermissions: true),
                     "It is not allowed to directly enter", "Author");
             }
+        }
+
+        [TestMethod]
+        public void SupportsAnonymous()
+        {
+            using (var scope = RhetosProcessHelper.CreateScope(builder => builder.RegisterType<AnonUser>().As<IUserInfo>()))
+            {
+                var repository = scope.Resolve<Common.DomRepository>();
+
+                var testSimple = new TestCreatedBy.Simple();
+                repository.TestCreatedBy.Simple.Insert(testSimple);
+                Assert.IsNull(repository.TestCreatedBy.Simple.Load(new[] { testSimple.ID }).Single().AuthorID);
+
+                var testWithConstraints = new TestCreatedBy.WithConstraints();
+                TestUtility.ShouldFail<Rhetos.UserException>(
+                    () => repository.TestCreatedBy.WithConstraints.Insert(testWithConstraints),
+                    "required property", "Author");
+            }
+        }
+
+        private class AnonUser : IUserInfo
+        {
+            public bool IsUserRecognized => false;
+            public string UserName => throw new InvalidOperationException("Application should not try to read UserName if " + nameof(IsUserRecognized) + " is false.");
+            public string Workstation => null;
+            public string Report() => "<anonymous>";
         }
     }
 }
