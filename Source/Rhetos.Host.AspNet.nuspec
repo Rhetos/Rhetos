@@ -23,7 +23,5 @@
     <file src="Rhetos.Host.AspNet\bin\Debug\net5.0\Rhetos.Host.AspNet.dll" target="lib\net5.0" />
     <file src="Rhetos.Host.AspNet\bin\Debug\net5.0\Rhetos.Host.AspNet.pdb" target="lib\net5.0" />
     <file src="Rhetos.Host.AspNet\bin\Debug\net5.0\Rhetos.Host.AspNet.xml" target="lib\net5.0" />
-    <file src="Rhetos.Host.AspNet\bin\Debug\net5.0\Rhetos.Host.AspNet.Views.dll" target="lib\net5.0" />
-    <file src="Rhetos.Host.AspNet\bin\Debug\net5.0\Rhetos.Host.AspNet.Views.pdb" target="lib\net5.0" />
   </files>
 </package>

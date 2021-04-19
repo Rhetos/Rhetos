@@ -15,30 +15,15 @@ namespace Microsoft.Extensions.DependencyInjection
                 .AddControllersWithViews()
                 .AddApplicationPart(typeof(RhetosDashboardController).Assembly);
 
-            rhetosBuilder.AddDashboardSnippet(typeof(ServerStatusSnippet),"Server Status", 99);
-            rhetosBuilder.AddDashboardSnippet(typeof(InstalledPackagesSnippet), "Installed Packages", 100);
+            rhetosBuilder.AddDashboardSnippet<ServerStatusSnippet>();
+            rhetosBuilder.AddDashboardSnippet<InstalledPackagesSnippet>();
 
             return rhetosBuilder;
         }
 
-        public static RhetosAspNetServiceCollectionBuilder AddDashboardSnippet(this RhetosAspNetServiceCollectionBuilder rhetosBuilder,
-            Type dashboardSnippetViewComponentType, string displayName = "", int order = 0)
+        public static RhetosAspNetServiceCollectionBuilder AddDashboardSnippet<T>(this RhetosAspNetServiceCollectionBuilder rhetosBuilder) where T : class, IDashboardSnippet
         {
-            rhetosBuilder.Services.Configure<DashboardOptions>(o =>
-            {
-                if (o.DashboardSnippets.Any(a => a.ViewComponentType == dashboardSnippetViewComponentType))
-                    return;
-
-                var snippetInfo = new DashboardSnippetInfo()
-                {
-                    DisplayName = displayName,
-                    ViewComponentType = dashboardSnippetViewComponentType,
-                    Order = order
-                };
-
-                o.DashboardSnippets.Add(snippetInfo);
-            });
-
+            rhetosBuilder.Services.AddScoped<IDashboardSnippet, T>();
             return rhetosBuilder;
         }
     }
