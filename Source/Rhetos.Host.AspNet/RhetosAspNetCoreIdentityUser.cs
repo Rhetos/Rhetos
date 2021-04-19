@@ -18,7 +18,6 @@
 */
 
 using System;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Rhetos.Utilities;
 
@@ -29,12 +28,12 @@ namespace Rhetos.Host.AspNet
         public bool IsUserRecognized => !string.IsNullOrEmpty(_userName.Value);
 
         /// <remarks>
-        /// The exception prevents custom code to accidentally use an unauthenticated username
-        /// as an empty string in authorization logic, database queries and similar features.
-        /// <see cref="IsUserRecognized"/> should be check first where unauthenticated users
-        /// are supported.
+        /// The exception prevents custom code from accidentally using an unauthenticated username
+        /// as an empty string or null in authorization logic, database queries and similar features.
+        /// The error is most probably caused by a feature implementation that does not support unauthenticated users (anonymous authentication).
+        /// To support anonymous authentication, check <see cref="IsUserRecognized"/> before using the <see cref="UserName"/> property.
         /// </remarks>
-        public string UserName => IsUserRecognized ? _userName.Value : throw new ClientException("User is not authenticated.");
+        public string UserName => IsUserRecognized ? _userName.Value : throw new ClientException("This operation is not supported for anonymous user.");
 
         public string Workstation => _workstation.Value;
 
