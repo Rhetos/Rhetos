@@ -47,7 +47,7 @@ namespace Rhetos.Host.AspNet.Test
             var userInfo = new RhetosAspNetCoreIdentityUser(httpContextAccessor);
             Assert.AreEqual(
                 "IsUserRecognized: False" +
-                ", UserName: ClientException: User is not authenticated." +
+                ", UserName: ClientException: This operation is not supported for anonymous user." +
                 ", Workstation: " +
                 ", Report: <anonymous>,",
                 GenerateReport(userInfo));
@@ -60,7 +60,7 @@ namespace Rhetos.Host.AspNet.Test
             var userInfo = new RhetosAspNetCoreIdentityUser(httpContextAccessor);
             Assert.AreEqual(
                 "IsUserRecognized: False" +
-                ", UserName: ClientException: User is not authenticated." +
+                ", UserName: ClientException: This operation is not supported for anonymous user." +
                 ", Workstation: " +
                 ", Report: <anonymous>,",
                 GenerateReport(userInfo));
