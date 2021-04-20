@@ -62,10 +62,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Source\Rhetos.Utilities\Rhetos.Utilities.csproj">
-      <Project>{71E63722-57BC-41DF-9FF5-57ECC67E4BC1}</Project>
-      <Name>Rhetos.Utilities</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Source\Rhetos.Utilities\Rhetos.Utilities.csproj">
       <Project>{71e63722-57bc-41df-9ff5-57ecc67e4bc1}</Project>
       <Name>Rhetos.Utilities</Name>
     </ProjectReference>
