@@ -52,10 +52,10 @@ namespace Rhetos.Host.AspNet
 
         public void Write(EventType eventType, Func<string> logMessage)
         {
-            _logger.Log(MapEventTypeToLogevel(eventType), 0, logMessage, null, (state, exception) => state());
+            _logger.Log(MapEventTypeToLogLevel(eventType), 0, logMessage, null, (state, exception) => state());
         }
 
-        public LogLevel MapEventTypeToLogevel(EventType eventType)
+        public LogLevel MapEventTypeToLogLevel(EventType eventType)
         {
             switch (eventType)
             {

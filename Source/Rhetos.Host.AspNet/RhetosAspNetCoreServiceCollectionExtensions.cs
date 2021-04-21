@@ -32,8 +32,7 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         public static RhetosAspNetServiceCollectionBuilder AddRhetos(
             this IServiceCollection serviceCollection,
-            Action<IRhetosHostBuilder> configureRhetosHost = null,
-            Action<IServiceProvider, IRhetosHostBuilder> configureRhetosHostIntegration = null)
+            Action<IRhetosHostBuilder> configureRhetosHost = null)
         {
             serviceCollection.AddOptions();
             if (configureRhetosHost != null)
@@ -41,17 +40,38 @@ namespace Microsoft.Extensions.DependencyInjection
                 serviceCollection.Configure<RhetosHostBuilderOptions>(o => o.ConfigureActions.Add(configureRhetosHost));
             }
 
-            serviceCollection.Configure<RhetosHostBuilderOptions>(o => o.ConfigureIntegrationActions.Add(ConfigureLogProvider));
-            if (configureRhetosHostIntegration != null)
-            {
-                serviceCollection.Configure<RhetosHostBuilderOptions>(o => o.ConfigureIntegrationActions.Add(configureRhetosHostIntegration));
-            }
-
             serviceCollection.TryAddSingleton(serviceProvider => CreateRhetosHost(serviceProvider));
             serviceCollection.TryAddScoped<RhetosScopeServiceProvider>();
             serviceCollection.TryAddScoped(typeof(IRhetosComponent<>), typeof(RhetosComponent<>));
 
             return new RhetosAspNetServiceCollectionBuilder(serviceCollection);
+        }
+
+        /// <summary>
+        /// Customize the Rhetos IoC container so it can use specific services from the <see cref="IServiceProvider"/>.
+        /// Only services that are registered as singleton in the <see cref="IServiceProvider"/> can be used inside the Rhetos IoC container.
+        /// </summary>
+        /// <param name="rhetosServiceCollectionBuilder"></param>
+        /// <param name="configureRhetosHostIntegration"></param>
+        /// <returns></returns>
+        public static RhetosAspNetServiceCollectionBuilder AddServices(
+            this RhetosAspNetServiceCollectionBuilder rhetosServiceCollectionBuilder,
+            Action<IServiceProvider, IRhetosHostBuilder> configureRhetosHostIntegration)
+        {
+            rhetosServiceCollectionBuilder.Services.Configure<RhetosHostBuilderOptions>(o => o.ConfigureIntegrationActions.Add(configureRhetosHostIntegration));
+            
+            return rhetosServiceCollectionBuilder;
+        }
+
+        /// <summary>
+        /// Configures Rhetos logging so that it uses the <see cref="Microsoft.Extensions.Logging.ILogger"/> implementation registered in the <see cref="IServiceCollection"/>
+        /// </summary>
+        /// <param name="rhetosServiceCollectionBuilder"></param>
+        /// <returns></returns>
+        public static RhetosAspNetServiceCollectionBuilder AddLoggingIntegration(
+            this RhetosAspNetServiceCollectionBuilder rhetosServiceCollectionBuilder)
+        {
+            return rhetosServiceCollectionBuilder.AddServices(ConfigureLogProvider);
         }
 
         private static RhetosHost CreateRhetosHost(IServiceProvider serviceProvider)
