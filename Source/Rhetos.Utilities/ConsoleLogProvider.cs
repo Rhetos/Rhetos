@@ -90,11 +90,10 @@ namespace Rhetos.Utilities
 
         private static void Write(EventType eventType, string eventName, string message)
         {
-            if(Environment.UserInteractive)
-                Console.WriteLine(
-                    "[" + eventType + "] "
-                    + (eventName != null ? (eventName + ": ") : "")
-                    + message);
+            Console.WriteLine(
+                "[" + eventType + "] "
+                + (eventName != null ? (eventName + ": ") : "")
+                + message);
         }
 
         /// <summary>
