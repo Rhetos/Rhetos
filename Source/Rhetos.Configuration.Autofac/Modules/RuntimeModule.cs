@@ -22,6 +22,7 @@ using Rhetos.Deployment;
 using Rhetos.Dom;
 using Rhetos.Dsl;
 using Rhetos.Extensibility;
+using Rhetos.Logging;
 using Rhetos.Persistence;
 using Rhetos.Processing;
 using Rhetos.Security;
@@ -34,6 +35,7 @@ namespace Rhetos.Configuration.Autofac.Modules
     {
         protected override void Load(ContainerBuilder builder)
         {
+            builder.RegisterType<ConsoleLogProvider>().As<ILogProvider>().SingleInstance();
             builder.RegisterType<InstalledPackagesProvider>();
             builder.Register(context => context.Resolve<InstalledPackagesProvider>().Load())
 #pragma warning disable CS0618 // Registering obsolete IInstalledPackages for backward compatibility.

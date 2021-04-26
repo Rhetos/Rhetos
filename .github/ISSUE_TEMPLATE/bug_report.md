@@ -21,7 +21,7 @@ Module Bookstore
 
 **Error message**
 If an error occurs on deployment, copy the ERROR SUMMARY here.
-For internal server error in web API, please copy the exception details from RhetosServer.log, and remove any sensitive data.
+For internal server error in web API, please copy the exception details from the log, and remove any sensitive data.
 
 **Expected behavior**
 A clear and concise description of what you expected to happen.

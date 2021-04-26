@@ -45,7 +45,7 @@ namespace Rhetos
             // This message does not use SeeLogMessage for remove redundant substring,
             // to simplify string template extraction from source for localized error messages.
             return localizer[
-                "Internal server error occurred. See RhetosServer.log for more information. ({0}, {1})",
+                "Internal server error occurred. Check the log for more information. ({0}, {1})",
                 exception.GetType().Name,
                 DateTime.Now.ToString("s")];
         }
@@ -53,7 +53,7 @@ namespace Rhetos
         public static string SeeLogMessage(Exception exception)
         {
             return string.Format(
-                "See RhetosServer.log for more information. ({0}, {1})",
+                "Check the log for more information. ({0}, {1})",
                 exception.GetType().Name,
                 DateTime.Now.ToString("s"));
         }

@@ -1,4 +1,18 @@
 <Project>
+  <Target Name="ResolveDeployRhetosAppInput" DependsOnTargets="CopyFilesToOutputDirectory" BeforeTargets="DeployRhetosApp">
+    <Message Text="ResolveDeployRhetosAppInput" />
+    <ItemGroup>
+      <_DeployRhetosAppInput Include="$(TargetDir)**\*" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="DeployRhetosApp" DependsOnTargets="CopyFilesToOutputDirectory" AfterTargets="Build" Condition="'$(RhetosDeploy)'=='True'"
+    Inputs="@(_DeployRhetosAppInput)" Outputs="$(RhetosDatabaseUpdated)">
+    <Message Text="DeployRhetosApp" />
+    <Exec Command="&quot;$(TargetDir)rhetos.exe&quot; dbupdate &quot;$(TargetDir)\$(AssemblyName).dll&quot;" CustomErrorRegularExpression="\[Error\]" CustomWarningRegularExpression="\[(Warn|Warning)\]" />
+    <WriteLinesToFile File="$(RhetosDatabaseUpdated)" Lines="" Overwrite="true" />
+  </Target>
+
   <Target Name="RhetosGenerateLinqPadScripts" DependsOnTargets="ResolveReferences" BeforeTargets="AssignTargetPaths">
     <ItemGroup>
       <_RhetosHostAppAssemblies Include="@(ReferencePath)" Condition="'%(ReferencePath.MSBuildSourceProjectFile)' != ''" />

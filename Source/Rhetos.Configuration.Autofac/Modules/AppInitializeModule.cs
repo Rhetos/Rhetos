@@ -19,6 +19,7 @@
 
 using Autofac;
 using Rhetos.Extensibility;
+using Rhetos.Logging;
 using Rhetos.Persistence;
 using Rhetos.Utilities;
 
@@ -28,6 +29,7 @@ namespace Rhetos.Configuration.Autofac.Modules
     {
         protected override void Load(ContainerBuilder builder)
         {
+            builder.RegisterType<NLogProvider>().As<ILogProvider>().SingleInstance();
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<DbUpdateOptions>()).SingleInstance().PreserveExistingDefaults();
             builder.RegisterType<EfMappingViewsInitializer>().SingleInstance();
             builder.GetPluginRegistration().FindAndRegisterPlugins<IServerInitializer>();

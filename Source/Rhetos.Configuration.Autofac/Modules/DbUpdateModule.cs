@@ -20,6 +20,7 @@
 using Autofac;
 using Rhetos.DatabaseGenerator;
 using Rhetos.Deployment;
+using Rhetos.Logging;
 using Rhetos.Utilities;
 
 namespace Rhetos.Configuration.Autofac.Modules
@@ -28,6 +29,7 @@ namespace Rhetos.Configuration.Autofac.Modules
     {
         protected override void Load(ContainerBuilder builder)
         {
+            builder.RegisterType<NLogProvider>().As<ILogProvider>().SingleInstance();
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<RhetosAppOptions>())
                 .As<RhetosAppOptions>().As<IAssetsOptions>().SingleInstance();
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<DbUpdateOptions>()).SingleInstance().PreserveExistingDefaults();
