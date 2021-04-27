@@ -17,7 +17,6 @@
       <files include="any/any/rhetos.exe" buildAction="None" copyToOutput="true" />
       <files include="any/any/rhetos.dll" buildAction="None" copyToOutput="true" />
       <files include="any/any/rhetos.pdb" buildAction="None" copyToOutput="true" />
-      <files include="any/any/rhetos.deps.json" buildAction="None" copyToOutput="true" />
       <files include="any/any/rhetos.runtimeconfig.json" buildAction="None" copyToOutput="true" />
       <files include="any/any/rhetos.exe.nlog" buildAction="None" copyToOutput="true" />
     </contentFiles>
@@ -29,13 +28,13 @@
     <file src="RhetosCli\bin\Debug\net5.0\rhetos.exe" target="contentFiles/any/any" />
     <file src="RhetosCli\bin\Debug\net5.0\rhetos.dll" target="contentFiles/any/any" />
     <file src="RhetosCli\bin\Debug\net5.0\rhetos.pdb" target="contentFiles/any/any" />
-    <!-- When invoking rhetos.exe, dotnet will search for the Microsoft.Win32.SystemEvents.dll in the output folder because the dll is specified in the rhetos.dpes.json file
-    but an ASP.NET project will not have it because this dll is located in Microsoft.AspNetCore.App runtime folder and will throw an error.
+    <!-- When invoking rhetos.exe, dotnet will search for the Microsoft.Win32.SystemEvents.dll in the output folder because the DLL is specified in the rhetos.deps.json file
+    but an ASP.NET project will not have it because this DLL is located in Microsoft.AspNetCore.App runtime folder and will throw an error.
     As the Microsoft.Win32.SystemEvents.dll is not used when calling the "rhetos dbupdate" command
-    (the dependencies are needed only whem calling the dbupdate with the execute-command-in-current-process flag but in this case
+    (the dependencies are needed only when calling the dbupdate with the execute-command-in-current-process flag but in this case
     the rhetos.exe program will be started by itself with the host application deps.json and runtimeconfig.json files)
-    we are ommiting the rhetos.desp.json file as a wrokaround so that dotnet will not try to search for this dependency
-    instead it will load only the assembyl when needed that are located inside the bin folder (for the other assembies will throw an error). -->
+    we are committing the rhetos.deps.json file as a workaround so that dotnet will not try to search for this dependency
+    instead it will load only the assembly when needed that are located inside the bin folder (for the other assemblies will throw an error). -->
     <!-- <file src="RhetosCli\bin\Debug\net5.0\rhetos.deps.json" target="contentFiles/any/any" /> -->
     <file src="RhetosCli\bin\Debug\net5.0\rhetos.runtimeconfig.json" target="contentFiles/any/any" />
     <file src="RhetosCli\bin\Debug\net5.0\rhetos.exe.nlog" target="contentFiles/any/any" />
