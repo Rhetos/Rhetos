@@ -118,10 +118,4 @@
         UniqueMultiple 'Role Claim' { Clustered; }
         Logging { AllProperties; }
     }
-    
-	//=====================================================
-	// ROW PERMISSIONS PARAMETERS:
-	
-	Parameter RowPermissionsReadItems;
-	Parameter RowPermissionsWriteItems;
 }

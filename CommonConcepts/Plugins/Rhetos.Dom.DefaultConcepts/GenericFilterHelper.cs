@@ -37,10 +37,14 @@ namespace Rhetos.Dom.DefaultConcepts
     public class GenericFilterHelper
     {
         readonly IDomainObjectModel _domainObjectModel;
+        private readonly IDataStructureReadParameters _dataStructureReadParameters;
 
-        public GenericFilterHelper(IDomainObjectModel domainObjectModel)
+        public GenericFilterHelper(
+            IDomainObjectModel domainObjectModel,
+            IDataStructureReadParameters dataStructureReadParameters)
         {
             _domainObjectModel = domainObjectModel;
+            _dataStructureReadParameters = dataStructureReadParameters;
         }
 
         //================================================================
@@ -511,15 +515,25 @@ namespace Rhetos.Dom.DefaultConcepts
             }
         }
 
-        private Type GetSpecificFilterType(string filterName)
+        public Type GetFilterType(string dataStructureFullName, string filterName)
         {
-            if (string.IsNullOrEmpty(filterName))
-                throw new ArgumentNullException("filterName");
+            Type filterType = null;
 
-            Type filterType = _domainObjectModel.GetType(filterName) ?? Type.GetType(filterName);
+            List<Type> matchingTypes = _dataStructureReadParameters.GetReadParameters(dataStructureFullName, true)
+                .Where(f => f.Name.Equals(filterName)).Select(f => f.Type).Distinct().ToList();
+
+            if (matchingTypes.Count > 1)
+                throw new ClientException($"Filter type '{filterName}' is ambiguous ({matchingTypes.First().FullName}, {matchingTypes.Last().FullName})." +
+                    $" Please specify full filter name.");
+
+            if (matchingTypes.Count == 1)
+                filterType = matchingTypes.Single();
 
             if (filterType == null)
-                throw new ClientException(string.Format("Unknown filter type '{0}'.", filterName));
+                filterType = _domainObjectModel.GetType(filterName);
+
+            if (filterType == null)
+                filterType = Type.GetType(filterName);
 
             return filterType;
         }
@@ -530,7 +544,7 @@ namespace Rhetos.Dom.DefaultConcepts
             public object Parameter;
         }
 
-        public IList<FilterObject> ToFilterObjects(IEnumerable<FilterCriteria> genericFilter)
+        public IList<FilterObject> ToFilterObjects(string dataStructureFullName, IEnumerable<FilterCriteria> genericFilter)
         {
             CsUtility.Materialize(ref genericFilter);
 
@@ -555,7 +569,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 {
                     var filterObject = new FilterObject
                     {
-                        FilterType = GetSpecificFilterType(filter.Filter),
+                        FilterType = GetFilterType(dataStructureFullName, filter.Filter),
                         Parameter = filter.Value
                     };
 
