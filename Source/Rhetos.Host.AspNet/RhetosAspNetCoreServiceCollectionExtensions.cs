@@ -32,7 +32,7 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         public static RhetosAspNetServiceCollectionBuilder AddRhetos(
             this IServiceCollection serviceCollection,
-            Action<IRhetosHostBuilder> configureRhetosHost = null)
+            Action<IServiceProvider, IRhetosHostBuilder> configureRhetosHost = null)
         {
             serviceCollection.AddOptions();
             if (configureRhetosHost != null)
@@ -48,22 +48,6 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Customize the Rhetos IoC container so it can use specific services from the <see cref="IServiceProvider"/>.
-        /// Only services that are registered as singleton in the <see cref="IServiceProvider"/> can be used inside the Rhetos IoC container.
-        /// </summary>
-        /// <param name="rhetosServiceCollectionBuilder"></param>
-        /// <param name="configureRhetosHostIntegration"></param>
-        /// <returns></returns>
-        public static RhetosAspNetServiceCollectionBuilder AddServices(
-            this RhetosAspNetServiceCollectionBuilder rhetosServiceCollectionBuilder,
-            Action<IServiceProvider, IRhetosHostBuilder> configureRhetosHostIntegration)
-        {
-            rhetosServiceCollectionBuilder.Services.Configure<RhetosHostBuilderOptions>(o => o.ConfigureIntegrationActions.Add(configureRhetosHostIntegration));
-            
-            return rhetosServiceCollectionBuilder;
-        }
-
-        /// <summary>
         /// Configures Rhetos logging so that it uses the <see cref="Microsoft.Extensions.Logging.ILogger"/> implementation registered in the <see cref="IServiceCollection"/>
         /// </summary>
         /// <param name="rhetosServiceCollectionBuilder"></param>
@@ -71,7 +55,8 @@ namespace Microsoft.Extensions.DependencyInjection
         public static RhetosAspNetServiceCollectionBuilder AddLoggingIntegration(
             this RhetosAspNetServiceCollectionBuilder rhetosServiceCollectionBuilder)
         {
-            return rhetosServiceCollectionBuilder.AddServices(ConfigureLogProvider);
+            rhetosServiceCollectionBuilder.Services.Configure<RhetosHostBuilderOptions>(o => o.ConfigureActions.Add(ConfigureLogProvider));
+            return rhetosServiceCollectionBuilder;
         }
 
         private static RhetosHost CreateRhetosHost(IServiceProvider serviceProvider)
@@ -82,12 +67,7 @@ namespace Microsoft.Extensions.DependencyInjection
             
             foreach (var rhetosHostBuilderConfigureAction in options.Value.ConfigureActions)
             {
-                rhetosHostBuilderConfigureAction(rhetosHostBuilder);
-            }
-
-            foreach (var rhetosHostBuilderConfigureIntegrationAction in options.Value.ConfigureIntegrationActions)
-            {
-                rhetosHostBuilderConfigureIntegrationAction(serviceProvider, rhetosHostBuilder);
+                rhetosHostBuilderConfigureAction(serviceProvider, rhetosHostBuilder);
             }
 
             return rhetosHostBuilder.Build();

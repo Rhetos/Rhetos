@@ -24,7 +24,6 @@ namespace Rhetos.Host.AspNet
 {
     internal class RhetosHostBuilderOptions
     {
-        public List<Action<IRhetosHostBuilder>> ConfigureActions { get; set; } = new List<Action<IRhetosHostBuilder>>();
-        public List<Action<IServiceProvider, IRhetosHostBuilder>> ConfigureIntegrationActions = new List<Action<IServiceProvider, IRhetosHostBuilder>>();
+        public List<Action<IServiceProvider, IRhetosHostBuilder>> ConfigureActions { get; set; } = new List<Action<IServiceProvider, IRhetosHostBuilder>>();
     }
 }
