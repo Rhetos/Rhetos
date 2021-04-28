@@ -57,7 +57,7 @@ namespace Rhetos
         /// <summary>
         /// Overrides default Rhetos components registrations
         /// (<see cref="ContainerBuilderExtensions.AddRhetosRuntime(ContainerBuilder)"/>
-        /// and <see cref="ContainerBuilderExtensions.AddPluginModules(ContainerBuilder)"/>).
+        /// and <see cref="ContainerBuilderExtensions.AddRhetosPluginModules(ContainerBuilder)"/>).
         /// </summary>
         IRhetosHostBuilder OverrideContainerConfiguration(Action<IConfiguration, ContainerBuilder, List<Action<ContainerBuilder>>> containerConfigurationAction);
 

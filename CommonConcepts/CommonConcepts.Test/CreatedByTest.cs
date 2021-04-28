@@ -20,13 +20,10 @@
 using Autofac;
 using CommonConcepts.Test.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos.Configuration.Autofac;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace CommonConcepts.Test
@@ -133,7 +130,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void SupportsAnonymous()
         {
-            using (var scope = RhetosProcessHelper.CreateScope(builder => builder.RegisterType<AnonUser>().As<IUserInfo>()))
+            using (var scope = TestScope.Create(builder => builder.RegisterType<AnonUser>().As<IUserInfo>()))
             {
                 var repository = scope.Resolve<Common.DomRepository>();
 

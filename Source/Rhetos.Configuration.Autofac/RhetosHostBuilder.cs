@@ -132,7 +132,7 @@ namespace Rhetos
         private void DefaultContainerConfiguration(IConfiguration configuration, ContainerBuilder builder, List<Action<ContainerBuilder>> customActions)
         {
             builder.AddRhetosRuntime();
-            builder.AddPluginModules();
+            builder.AddRhetosPluginModules();
 
             CsUtility.InvokeAll(builder, customActions);
         }
