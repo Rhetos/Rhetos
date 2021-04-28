@@ -27,7 +27,7 @@ namespace Rhetos.Configuration.Autofac.Modules
     {
         protected override void Load(ContainerBuilder builder)
         {
-            var pluginRegistration = builder.GetPluginRegistration();
+            var pluginRegistration = builder.GetRhetosPluginRegistration();
 
             AddDsl(builder, pluginRegistration);
             AddExtensibility(builder);

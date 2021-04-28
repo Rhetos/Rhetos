@@ -36,7 +36,7 @@ namespace Rhetos.Dom.DefaultConcepts
             PropertyHelper.GenerateStorageMapping(info, codeBuilder, "System.Data.SqlDbType.NVarChar"); // Size is automatically set by SqlProperty, it should not be specified in storage mapping, to avoid automatic truncating longer strings.
 
             if (info.DataStructure is IWritableOrmDataStructure)
-                codeBuilder.InsertCode(LimitStringLengthOnSaveSnippet(info), WritableOrmDataStructureCodeGenerator.ArgumentValidationTag, info.DataStructure);
+                codeBuilder.InsertCode(LimitStringLengthOnSaveSnippet(info), WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.DataStructure);
 
             // TODO: Implement error handling of the maximum length for filter parameters and any other data (sent from client) that is used in a way other than Save function.
         }

@@ -505,7 +505,7 @@ $@"namespace Common
 
     public class PersistenceStorageObjectMappings : IPersistenceStorageObjectMappings
     {{
-        Dictionary<Type, IPersistenceStorageObjectMapper> _mappings = new Dictionary<Type, IPersistenceStorageObjectMapper>();
+        private readonly Dictionary<Type, IPersistenceStorageObjectMapper> _mappings = new Dictionary<Type, IPersistenceStorageObjectMapper>();
 
         public PersistenceStorageObjectMappings()
         {{

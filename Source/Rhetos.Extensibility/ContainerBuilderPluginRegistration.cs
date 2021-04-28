@@ -176,13 +176,13 @@ namespace Rhetos.Extensibility
 
         #region Log registration statistics
 
-        public static void LogRegistrationStatistics(string title, ILifetimeScope scope, ILogProvider logProvider)
+        public static void LogRegistrationStatistics(string title, IComponentContext container, ILogProvider logProvider)
         {
             var logger = logProvider.GetLogger("Plugins");
             logger.Trace(() => title + ":\r\n" + string.Join("\r\n", GetRegistrationStatistics(scope)));
         }
 
-        private static IEnumerable<string> GetRegistrationStatistics(ILifetimeScope scope)
+        private static IEnumerable<string> GetRegistrationStatistics(IComponentContext container)
         {
             var registrations = scope.ComponentRegistry.Registrations
                 .SelectMany(r => r.Services.Select(s => new { pluginInterface = GetServiceType(s), pluginType = r.Activator.LimitType, registration = r }))

@@ -88,7 +88,7 @@ namespace Rhetos
 
             builder.RegisterModule(new CoreModule());
             builder.RegisterModule(new DbUpdateModule());
-            builder.AddPluginModules();
+            builder.AddRhetosPluginModules();
             builder.RegisterType<NullUserInfo>().As<IUserInfo>(); // Override any runtime IUserInfo plugins. This container should not execute the application's business features, so IUserInfo is not expected to be used.
         }
 

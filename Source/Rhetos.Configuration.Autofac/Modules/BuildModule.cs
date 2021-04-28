@@ -40,7 +40,7 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<RhetosTargetEnvironment>()).SingleInstance();
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<BuildOptions>()).SingleInstance().PreserveExistingDefaults();
 
-            var pluginRegistration = builder.GetPluginRegistration();
+            var pluginRegistration = builder.GetRhetosPluginRegistration();
             AddDatabaseGenerator(builder, pluginRegistration);
             AddDsl(builder, pluginRegistration);
             AddPersistence(builder, pluginRegistration);

@@ -50,7 +50,7 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.RegisterType<PersistenceTransaction>().As<IPersistenceTransaction>().InstancePerLifetimeScope(); // IPersistenceTransaction is only available on runtime, not on DbUpdate (in DatabaseRuntimeModule), because dbupdate needs more control over transaction management.
             builder.RegisterModule(new DatabaseRuntimeModule());
 
-            var pluginRegistration = builder.GetPluginRegistration();
+            var pluginRegistration = builder.GetRhetosPluginRegistration();
             AddDsl(builder, pluginRegistration);
             AddSecurity(builder, pluginRegistration);
             AddUtilities(builder, pluginRegistration);

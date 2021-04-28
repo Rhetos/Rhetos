@@ -276,7 +276,7 @@ The changes from this release are not included in versions 4.0.0 - 4.2.0.
 
 ### Internal improvements
 
-* Bugfix: Read command with row permissions filter is not be optimized in some situations, resulting with an additional database query.
+* Bugfix: Read command with row permissions filter is not optimized in some situations, resulting with an additional database query.
 
 ## 3.2.0 (2020-08-20)
 
