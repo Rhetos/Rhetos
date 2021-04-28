@@ -22,8 +22,10 @@ using Microsoft.Build.Utilities;
 using Rhetos;
 using Rhetos.Deployment;
 using Rhetos.Utilities;
+using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 
 namespace RhetosVSIntegration
 {
@@ -54,6 +56,20 @@ namespace RhetosVSIntegration
         public string TargetAssetsFolder { get; set; }
 
         public override bool Execute()
+        {
+            var assemblyResolver = CreateAssemblyResolver();
+            AppDomain.CurrentDomain.AssemblyResolve += assemblyResolver;
+            try
+            {
+                return GenerateRhetosProjectAssetsFile();
+            }
+            finally
+            {
+                AppDomain.CurrentDomain.AssemblyResolve -= assemblyResolver;
+            }
+        }
+
+        private bool GenerateRhetosProjectAssetsFile()
         {
             var resolvedProjectContentFiles = ProjectContentFiles.Select(x => new { x.ItemSpec, FullPath = x.GetMetadata("FullPath") });
             var invalidProjectContentFiles = resolvedProjectContentFiles.Where(x => string.IsNullOrEmpty(x.FullPath));
@@ -97,6 +113,30 @@ namespace RhetosVSIntegration
             FilesUtility.SafeTouch(rhetosProjectAssetsFileProvider.ProjectAssetsFilePath);
 
             return true;
+        }
+
+        /// <summary>
+        /// Using custom assembly resolver to fix the issue with dependency version incompatibility when running this task from MSBuild or Visual Studio:
+        ///   The "ResolveRhetosProjectAssets" task failed unexpectedly. System.IO.FileNotFoundException: Could not load file or assembly 'Newtonsoft.Json, Version=9.0.0.0, ...
+        /// See https://github.com/Rhetos/Rhetos/issues/432 for more details.
+        /// </summary>
+        /// <returns>
+        /// Assembly resolver for loading local assemblies that ignores the assembly version.
+        /// </returns>
+        private ResolveEventHandler CreateAssemblyResolver()
+        {
+            var folder = Path.GetDirectoryName(GetType().Assembly.Location);
+            var assembliesByName = Directory.GetFiles(folder, "*.dll").ToDictionary(path => Path.GetFileNameWithoutExtension(path));
+
+            return new ResolveEventHandler((object sender, ResolveEventArgs args) =>
+            {
+                string requiredAssemblyName = new AssemblyName(args.Name).Name;
+
+                if (assembliesByName.TryGetValue(requiredAssemblyName, out string path))
+                    return Assembly.LoadFrom(path);
+                
+                return null;
+            });
         }
     }
 }
