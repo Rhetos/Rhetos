@@ -38,7 +38,7 @@ namespace Rhetos.CommonConcepts.Test
         {
             queryDataSourceCommandInfo.DataSource = typeof(ServerCommandsUtilityTest.SimpleEntity).FullName;
             var commandInfo = queryDataSourceCommandInfo.ToReadCommandInfo();
-            var serverCommandsUtility = new ServerCommandsUtility(new ConsoleLogProvider(), new ApplyFiltersOnClientRead(), new GenericFilterHelper(new DomainObjectModelMock(), new DataStructureReadParametersStub()));
+            var serverCommandsUtility = new ServerCommandsUtility(new ConsoleLogProvider(), new ApplyFiltersOnClientRead());
             var commandResult = serverCommandsUtility.ExecuteReadCommand(commandInfo, genericRepository);
             return QueryDataSourceCommandResult.FromReadCommandResult(commandResult);
         }

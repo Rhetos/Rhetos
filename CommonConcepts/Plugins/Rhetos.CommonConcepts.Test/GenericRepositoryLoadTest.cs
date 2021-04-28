@@ -337,7 +337,8 @@ namespace Rhetos.CommonConcepts.Test
             {
                 _items = items;
             }
-            IEnumerable<SimpleEntity> _items = null;
+            
+            private readonly IEnumerable<SimpleEntity> _items = null;
 
             public List<string> _log = new List<string>();
             public string Log { get { return string.Join(", ", _log); } }
@@ -417,7 +418,6 @@ namespace Rhetos.CommonConcepts.Test
 
             public static readonly KeyValuePair<string, Type>[] ReadParameterTypes = new KeyValuePair<string, Type>[]
             {
-                new KeyValuePair<string, Type>(typeof(ISimpleEntity).FullName, typeof(ISimpleEntity)),
                 new KeyValuePair<string, Type>(typeof(NamedFilter).FullName, typeof(NamedFilter)),
                 new KeyValuePair<string, Type>(typeof(ContainsFilter).FullName, typeof(ContainsFilter)),
                 new KeyValuePair<string, Type>(typeof(EnumerableFilter).FullName, typeof(EnumerableFilter)),

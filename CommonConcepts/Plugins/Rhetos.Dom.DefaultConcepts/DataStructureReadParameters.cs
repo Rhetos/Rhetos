@@ -48,7 +48,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static readonly string[] _defaultNamespaces = new string[]
         {
-            "Common.",
+            "Common.", // TODO: Should be removed. Configurable for backward compatibility.
             "System.",
             "System.Collections.Generic.",
             "Rhetos.Dom.DefaultConcepts.",

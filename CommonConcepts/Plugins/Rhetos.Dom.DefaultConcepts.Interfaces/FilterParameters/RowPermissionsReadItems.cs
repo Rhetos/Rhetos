@@ -19,6 +19,10 @@
 
 namespace Common
 {
+    /// <summary>
+    /// Filter type for row permissions "read" filter.
+    /// The filter returns items that the current user is allowed to read.
+    /// </summary>
     public class RowPermissionsReadItems
     {
     }

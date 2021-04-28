@@ -64,7 +64,7 @@ namespace Rhetos.Processing.DefaultCommands
 
             var updateDeleteItems = ConcatenateNullable(saveInfo.DataToDelete, saveInfo.DataToUpdate);
             if (updateDeleteItems != null)
-                if (!_serverCommandsUtility.CheckAllItemsWithinFilter(updateDeleteItems, RowPermissionsWriteInfo.FilterName, genericRepository))
+                if (!_serverCommandsUtility.CheckAllItemsWithinFilter(updateDeleteItems, typeof(Common.RowPermissionsWriteItems), genericRepository))
                 {
                     _persistenceTransaction.DiscardChanges();
                     Guid? missingId;
@@ -81,7 +81,7 @@ namespace Rhetos.Processing.DefaultCommands
             var insertUpdateItems = ConcatenateNullable(saveInfo.DataToInsert, saveInfo.DataToUpdate);
             // We rely that this call will only use IDs of the items, because other data might be dirty.
             if (insertUpdateItems != null)
-                if (!_serverCommandsUtility.CheckAllItemsWithinFilter(insertUpdateItems, RowPermissionsWriteInfo.FilterName, genericRepository))
+                if (!_serverCommandsUtility.CheckAllItemsWithinFilter(insertUpdateItems, typeof(Common.RowPermissionsWriteItems), genericRepository))
                 {
                     _persistenceTransaction.DiscardChanges();
                     throw new UserException("You are not authorized to write some or all of the provided data. Insufficient permissions to apply the new data.", $"DataStructure:{saveInfo.Entity}.");

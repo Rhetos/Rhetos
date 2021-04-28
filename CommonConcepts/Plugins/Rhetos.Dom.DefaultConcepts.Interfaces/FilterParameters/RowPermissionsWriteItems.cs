@@ -19,6 +19,10 @@
 
 namespace Common
 {
+    /// <summary>
+    /// Filter type for row permissions "write" filter.
+    /// The filter returns items that the current user is allowed to write (insert, update, delete).
+    /// </summary>
     public class RowPermissionsWriteItems
     {
     }

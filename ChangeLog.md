@@ -47,6 +47,8 @@ Changes in behavior:
                 </entityFramework>
             </configuration>
     ```
+13. IDomainObjectModel.GetType no longer returns types for "Common.RowPermissionsReadItems" and "Common.RowPermissionsWriteItems". For example `GetType(RowPermissionsReadInfo.FilterName)` and `GetType(RowPermissionsWriteInfo.FilterName)` will return null.
+    * Use `typeof(Common.RowPermissionsReadItems)` and `typeof(Common.RowPermissionsWriteItems)` instead.
 
 Changes in Rhetos libraries API:
 

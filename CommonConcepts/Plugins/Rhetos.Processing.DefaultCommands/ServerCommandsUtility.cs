@@ -17,7 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Dom;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Logging;
 using Rhetos.Utilities;
@@ -31,28 +30,24 @@ namespace Rhetos.Processing.DefaultCommands
     {
         private readonly ILogger _logger;
         private readonly ApplyFiltersOnClientRead _applyFiltersOnClientRead;
-        private readonly GenericFilterHelper _genericFilterHelper;
 
         public ServerCommandsUtility(
             ILogProvider logProvider,
-            ApplyFiltersOnClientRead applyFiltersOnClientRead,
-            GenericFilterHelper genericFilterHelper)
+            ApplyFiltersOnClientRead applyFiltersOnClientRead)
         {
             _logger = logProvider.GetLogger(GetType().Name);
             _applyFiltersOnClientRead = applyFiltersOnClientRead;
-            _genericFilterHelper = genericFilterHelper;
         }
 
         /// <summary>
-        /// Checks if all items are within filter 'filterName'. Works with materialized items.
+        /// Checks if all items are within the given filter. Works with materialized items.
         /// </summary>
-        public bool CheckAllItemsWithinFilter(object[] validateObjects, string filterName, GenericRepository<IEntity> genericRepository)
+        public bool CheckAllItemsWithinFilter(object[] validateObjects, Type filterType, GenericRepository<IEntity> genericRepository)
         {
             if (validateObjects == null) return true;
             var validateItems = (IEntity[])validateObjects;
-            
-            var filterType = _genericFilterHelper.GetFilterType(genericRepository.EntityName, filterName);
-            var filterMethodInfo = filterType == null ? null : genericRepository.Reflection.RepositoryQueryableFilterMethod(filterType);
+
+            var filterMethodInfo = genericRepository.Reflection.RepositoryQueryableFilterMethod(filterType); // TODO: After implementing repository metadata for available filter parameters (loader, query, filter, queryFilter), it should be used here instead of RepositoryQueryableFilterMethod.
 
             if (filterMethodInfo != null)
             {
@@ -63,7 +58,7 @@ namespace Rhetos.Processing.DefaultCommands
                         "Error while checking {2}: Loaded items have duplicate IDs ({0}:{1}).",
                         genericRepository.EntityName, duplicateId, filterType.Name));
 
-                var allowedGivenItemsFilter = new[] { new FilterCriteria { Filter = filterName }, new FilterCriteria(itemsIds) };
+                var allowedGivenItemsFilter = new[] { new FilterCriteria { Filter = filterType.AssemblyQualifiedName }, new FilterCriteria(itemsIds) };
                 var allowedGivenItemsQuery = (IQueryable<IEntity>)genericRepository.Read(allowedGivenItemsFilter, preferQuery: true);
                 int allowedItemsCount = allowedGivenItemsQuery.Count();
 
@@ -154,10 +149,9 @@ namespace Rhetos.Processing.DefaultCommands
 
         private void AutoApplyFilters(ReadCommandInfo commandInfo)
         {
-            List<ApplyFilterWhere> applyFilters;
-            if (_applyFiltersOnClientRead.TryGetValue(commandInfo.DataSource, out applyFilters))
+            if (_applyFiltersOnClientRead.TryGetValue(commandInfo.DataSource, out List<ApplyFilterWhere> applyFilters))
             {
-                commandInfo.Filters = commandInfo.Filters ?? new FilterCriteria[] { };
+                commandInfo.Filters ??= Array.Empty<FilterCriteria>();
 
                 var newFilters = applyFilters
                     .Where(applyFilter => applyFilter.Where == null || applyFilter.Where(commandInfo))
@@ -173,14 +167,15 @@ namespace Rhetos.Processing.DefaultCommands
 
         private static int SmartCount(IEnumerable<IEntity> items)
         {
-            var query = items as IQueryable<IEntity>;
-            return query != null ? query.Count() : items.Count();
+            return items is IQueryable<IEntity> query
+                ? query.Count()
+                : items.Count();
         }
 
-        private Guid? FindDuplicate(List<Guid> ids)
+        private static Guid? FindDuplicate(List<Guid> ids)
         {
-            if (ids.Distinct().Count() != ids.Count())
-                return ids.GroupBy(id => id).Where(group => group.Count() > 1).First().Key;
+            if (ids.Distinct().Count() != ids.Count)
+                return ids.GroupBy(id => id).First(group => group.Count() > 1).Key;
             return null;
         }
     }

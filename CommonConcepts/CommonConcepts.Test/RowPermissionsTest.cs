@@ -118,8 +118,8 @@ namespace CommonConcepts.Test
                 {
                     var cReadAll = new ReadCommandInfo()
                     {
-                            DataSource = "TestRowPermissions.SimpleRP",
-                            ReadRecords = true,
+                        DataSource = "TestRowPermissions.SimpleRP",
+                        ReadRecords = true,
                     };
                     TestUtility.ShouldFail(() => ExecuteReadCommand(cReadAll, scope), _readException);
                 }
@@ -127,9 +127,9 @@ namespace CommonConcepts.Test
                 {
                     var cReadAll = new ReadCommandInfo()
                     {
-                            DataSource = "TestRowPermissions.SimpleRP",
-                            ReadRecords = true,
-                            Filters = new FilterCriteria[] { }
+                        DataSource = "TestRowPermissions.SimpleRP",
+                        ReadRecords = true,
+                        Filters = new FilterCriteria[] { }
                     };
                     TestUtility.ShouldFail(() => ExecuteReadCommand(cReadAll, scope), _readException);
                 }
@@ -137,8 +137,8 @@ namespace CommonConcepts.Test
                 {
                     var cReadCountOnly = new ReadCommandInfo()
                     {
-                            DataSource = "TestRowPermissions.SimpleRP",
-                            ReadTotalCount = true,
+                        DataSource = "TestRowPermissions.SimpleRP",
+                        ReadTotalCount = true,
                     };
                     var result = ExecuteReadCommand(cReadCountOnly, scope);
                     Assert.AreEqual(4001, result.TotalCount);
@@ -146,15 +146,15 @@ namespace CommonConcepts.Test
 
 
                 var orderByValue = new OrderByProperty[] { new OrderByProperty() { Property = "value", Descending = false } };
-               
+
                 {
                     var cRead1500_2500 = new ReadCommandInfo()
                     {
-                            DataSource = "TestRowPermissions.SimpleRP",
-                            ReadRecords = true,
-                            Skip = 1500,
-                            Top = 1001,
-                            OrderByProperties = orderByValue,
+                        DataSource = "TestRowPermissions.SimpleRP",
+                        ReadRecords = true,
+                        Skip = 1500,
+                        Top = 1001,
+                        OrderByProperties = orderByValue,
                     };
                     var result = ExecuteReadCommand(cRead1500_2500, scope);
                     Assert.AreEqual(1001, result.Records.Count());
@@ -232,8 +232,8 @@ namespace CommonConcepts.Test
                     {
                         DataSource = "TestRowPermissions.SimpleRP",
                         ReadRecords = true,
-                        Filters = new FilterCriteria[] 
-                            { 
+                        Filters = new FilterCriteria[]
+                            {
                                 new FilterCriteria() { Property = "value", Operation = "greater", Value = 2499 },
                                 new FilterCriteria() { Property = "value", Operation = "less", Value = 2501 }
                             }
@@ -248,7 +248,7 @@ namespace CommonConcepts.Test
                     {
                         DataSource = "TestRowPermissions.SimpleRP",
                         ReadRecords = true,
-                        Filters = new FilterCriteria[] { new FilterCriteria()  
+                        Filters = new FilterCriteria[] { new FilterCriteria()
                             { Filter = _rowPermissionsReadFilter } }
                     };
                     var result = ExecuteReadCommand(cPermissionFilter, scope);
@@ -265,7 +265,7 @@ namespace CommonConcepts.Test
             using (var scope = TestScope.Create())
             {
                 var context = scope.Resolve<Common.ExecutionContext>();
-                var currentUserName = context.UserInfo.UserName; 
+                var currentUserName = context.UserInfo.UserName;
                 var permRepository = scope.Resolve<GenericRepository<TestRowPermissions.ComplexRPPermissions>>();
 
                 ComplexRPPermissions[] perms = new ComplexRPPermissions[]
@@ -292,7 +292,7 @@ namespace CommonConcepts.Test
                     var values = ((ComplexRP[])result.Records).Select(a => a.value);
                     Assert.IsTrue(Enumerable.Range(5, 86).All(a => values.Contains(a)));
                 }
-                
+
                 // add item filter
                 {
                     var cAllowedFilter = new ReadCommandInfo()
@@ -300,7 +300,7 @@ namespace CommonConcepts.Test
                         DataSource = "TestRowPermissions.ComplexRP",
                         ReadRecords = true,
                         Filters = new FilterCriteria[]
-                        { 
+                        {
                             new FilterCriteria() { Filter = _rowPermissionsReadFilter },
                             new FilterCriteria() { Filter = "TestRowPermissions.Value10" }
                         }
@@ -309,7 +309,7 @@ namespace CommonConcepts.Test
                     var values = ((ComplexRP[])result.Records).Select(a => a.value);
                     Assert.IsTrue(Enumerable.Range(11, 80).All(a => values.Contains(a)));
                 }
-                
+
                 // try invalid range
                 {
                     var cInvalidRange = new ReadCommandInfo()
@@ -317,11 +317,11 @@ namespace CommonConcepts.Test
                         DataSource = "TestRowPermissions.ComplexRP",
                         ReadRecords = true,
                         Filters = new FilterCriteria[]
-                        { 
+                        {
                             new FilterCriteria() { Property = "value", Operation = "greater", Value = 50 },
                         }
                     };
-                    
+
                     TestUtility.ShouldFail(() => ExecuteReadCommand(cInvalidRange, scope), _readException);
                 }
 
@@ -331,7 +331,7 @@ namespace CommonConcepts.Test
                         DataSource = "TestRowPermissions.ComplexRP",
                         ReadRecords = true,
                         Filters = new FilterCriteria[]
-                        { 
+                        {
                             new FilterCriteria() { Property = "value", Operation = "less", Value = 2 },
                         }
                     };
@@ -344,7 +344,7 @@ namespace CommonConcepts.Test
                         DataSource = "TestRowPermissions.ComplexRP",
                         ReadRecords = true,
                         Filters = new FilterCriteria[]
-                        { 
+                        {
                             new FilterCriteria() { Property = "value", Operation = "less", Value = 60 },
                             new FilterCriteria() { Property = "value", Operation = "greater", Value = 50 },                        }
                     };
@@ -358,7 +358,7 @@ namespace CommonConcepts.Test
                         DataSource = "TestRowPermissions.ComplexRP",
                         ReadRecords = true,
                         Filters = new FilterCriteria[]
-                        { 
+                        {
                             new FilterCriteria() { Property = "value", Operation = "greater", Value = 200 },
                         }
                     };
@@ -396,7 +396,7 @@ namespace CommonConcepts.Test
                         DataSource = "TestRowPermissions.ComplexRP",
                         ReadRecords = true,
                         Filters = new FilterCriteria[]
-                        { 
+                        {
                             new FilterCriteria() { Property = "ID", Operation = "equal", Value = items[91].ID },
                         }
                     };
@@ -517,7 +517,7 @@ namespace CommonConcepts.Test
                 }
             }
         }
-        
+
         string ReadErrorData(UnitOfWorkScope scope, string testName)
         {
             Console.WriteLine("Test: " + testName);
@@ -695,7 +695,7 @@ namespace CommonConcepts.Test
                 Assert.AreEqual(legal1.Count(), result.Count());
                 Assert.IsTrue(result.All(a => a.value == 1999));
             }
-            
+
             // legal delete
             {
                 var delete = legal1.Take(50).ToArray();
@@ -734,7 +734,7 @@ namespace CommonConcepts.Test
             CancelTestOnSlowServer();
 
             var items = Enumerable.Range(0, 101).Select(a => new ComplexRP() { ID = Guid.NewGuid(), value = a }).ToArray();
-            
+
             using (var scope = TestScope.Create())
             {
                 var context = scope.Resolve<Common.ExecutionContext>();
@@ -767,7 +767,7 @@ namespace CommonConcepts.Test
 
                 scope.CommitAndClose();
             }
-            
+
             // illegal insert
             {
                 var result = TestWrite(null, items, null, null, _writeException);
@@ -809,7 +809,7 @@ namespace CommonConcepts.Test
                 var toDelete = legal.Take(10).ToArray();
                 var result = TestWrite(legal, null, null, toDelete, null);
                 Assert.AreEqual(legal.Count() - 10, result.Count());
-                var resIDs= result.Select(a => a.ID).ToList();
+                var resIDs = result.Select(a => a.ID).ToList();
                 Assert.IsTrue(toDelete.All(a => !resIDs.Contains(a.ID)));
             }
         }
@@ -1000,6 +1000,19 @@ namespace CommonConcepts.Test
                     repository.TestRowPermissionsInheritToQuery.DetailQuery.Query(new Common.RowPermissionsReadItems())
                         .Where(item => item.Simple.GroupID == groupID)
                         .Select(item => item.Info)));
+            }
+        }
+
+        [TestMethod]
+        public void FilterCriteriaRowPermissions()
+        {
+            using (var scope = TestScope.Create())
+            {
+                var repository = scope.Resolve<Common.DomRepository>();
+
+                var filter = new FilterCriteria { Filter = "Common.RowPermissionsReadItems" };
+                var q = repository.TestRowPermissions.SimpleRP.Query(filter);
+                TestUtility.AssertContains(q.ToString(), "1500", "2500"); // Check in the query contains the row permissions filter.
             }
         }
     }

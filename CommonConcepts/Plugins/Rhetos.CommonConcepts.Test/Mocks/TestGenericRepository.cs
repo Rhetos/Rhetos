@@ -36,7 +36,7 @@ namespace Rhetos.CommonConcepts.Test.Mocks
         where TEntityInterface : class, IEntity
         where TEntity : class, TEntityInterface
     {
-        public TestGenericRepository(IEnumerable<TEntity> items = null)
+        public TestGenericRepository(IEnumerable<TEntity> items)
             : base(
                 new GenericRepositoryParameters
                 {
@@ -50,7 +50,7 @@ namespace Rhetos.CommonConcepts.Test.Mocks
         {
         }
 
-        public TestGenericRepository(IRepository repository, Dictionary<Type, Type[]> readParameters = null)
+        public TestGenericRepository(IRepository repository)
             : base(
                 new GenericRepositoryParameters
                 {

@@ -17,9 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Processing.DefaultCommands;
+using Rhetos.Utilities;
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
@@ -28,9 +30,6 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Text.RegularExpressions;
-using Rhetos.Processing.DefaultCommands;
-using Rhetos.Utilities;
-using System.Collections;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -89,7 +88,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 {
                     // Constant value should be of same type as the member it is compared to.
                     object convertedValue;
-                    if (filter.Value == null || propertyBasicType.IsAssignableFrom(filter.Value.GetType()))
+                    if (filter.Value == null || propertyBasicType.IsInstanceOfType(filter.Value))
                         convertedValue = filter.Value;
 
                     // Guid object's type was not automatically recognized when deserializing from JSON:
@@ -517,13 +516,19 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public Type GetFilterType(string dataStructureFullName, string filterName)
         {
+            if (string.IsNullOrEmpty(filterName))
+                throw new ArgumentNullException("filterName");
+
             Type filterType = null;
+
+            // This method tries reading _dataStructureReadParameters before using Type.GetType, to support simplified names of the filters
+            // (instead of assembly qualified names only) for the filters that are specified on the given data structure in the DSL model.
 
             List<Type> matchingTypes = _dataStructureReadParameters.GetReadParameters(dataStructureFullName, true)
                 .Where(f => f.Name.Equals(filterName)).Select(f => f.Type).Distinct().ToList();
 
             if (matchingTypes.Count > 1)
-                throw new ClientException($"Filter type '{filterName}' is ambiguous ({matchingTypes.First().FullName}, {matchingTypes.Last().FullName})." +
+                throw new ClientException($"Filter type '{filterName}' on '{dataStructureFullName}' is ambiguous ({matchingTypes.First().FullName}, {matchingTypes.Last().FullName})." +
                     $" Please specify full filter name.");
 
             if (matchingTypes.Count == 1)
@@ -535,13 +540,16 @@ namespace Rhetos.Dom.DefaultConcepts
             if (filterType == null)
                 filterType = Type.GetType(filterName);
 
+            if (filterType == null)
+                throw new ClientException($"Unknown filter type '{filterName}' on '{dataStructureFullName}'.");
+
             return filterType;
         }
 
         public class FilterObject
         {
-            public Type FilterType;
-            public object Parameter;
+            public Type FilterType { get; set; }
+            public object Parameter { get; set; }
         }
 
         public IList<FilterObject> ToFilterObjects(string dataStructureFullName, IEnumerable<FilterCriteria> genericFilter)
