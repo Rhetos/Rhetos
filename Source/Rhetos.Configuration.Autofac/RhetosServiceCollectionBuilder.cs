@@ -18,12 +18,16 @@
 */
 
 using System;
-using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Rhetos.Host.AspNet
+namespace Rhetos
 {
-    internal class RhetosHostBuilderOptions
+    public class RhetosServiceCollectionBuilder
     {
-        public List<Action<IServiceProvider, IRhetosHostBuilder>> ConfigureActions { get; set; } = new List<Action<IServiceProvider, IRhetosHostBuilder>>();
+        public IServiceCollection Services { get; }
+        public RhetosServiceCollectionBuilder(IServiceCollection serviceCollection)
+        {
+            Services = serviceCollection;
+        }
     }
 }

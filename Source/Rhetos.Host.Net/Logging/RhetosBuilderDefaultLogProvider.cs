@@ -31,7 +31,7 @@ namespace Rhetos.Host.Net.Logging
 
         public Rhetos.Logging.ILogger GetLogger(string eventName)
         {
-            return new RhetosNetCoreLogger(loggerFactory.Value.CreateLogger(eventName), eventName);
+            return new HostLogger(eventName, loggerFactory.Value.CreateLogger(eventName));
         }
 
         private static ILoggerFactory CreateLoggerFactory()

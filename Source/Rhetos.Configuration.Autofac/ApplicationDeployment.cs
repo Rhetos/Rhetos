@@ -34,19 +34,19 @@ namespace Rhetos
 {
     public class ApplicationDeployment
     {
-        private readonly Func<IRhetosHostBuilder> _rhetosHostBuilderFactory;
+        private readonly Func<Action<IRhetosHostBuilder>, RhetosHost> _rhetosHostFactory;
         private readonly ILogger _logger;
         private readonly ILogProvider _logProvider;
 
-        /// <param name="rhetosHostBuilderFactory">
+        /// <param name="rhetosHostFactory">
         /// Full <see cref="IRhetosHostBuilder"/> is needed for <see cref="InitializeGeneratedApplication"/>,
         /// while <see cref="UpdateDatabase"/> should work without runtime components registration
         /// (only runtime configuration settings are required, for database connection and similar).
         /// Since both sub-commands are now executed together, this is simplified to a single argument.
         /// </param>
-        public ApplicationDeployment(Func<IRhetosHostBuilder> rhetosHostBuilderFactory, ILogProvider logProvider)
+        public ApplicationDeployment(Func<Action<IRhetosHostBuilder>, RhetosHost> rhetosHostFactory, ILogProvider logProvider)
         {
-            _rhetosHostBuilderFactory = rhetosHostBuilderFactory;
+            _rhetosHostFactory = rhetosHostFactory;
             _logProvider = logProvider;
             _logger = logProvider.GetLogger(GetType().Name);
         }
@@ -58,11 +58,13 @@ namespace Rhetos
             _logger.Info("Loading plugins.");
             var stopwatch = Stopwatch.StartNew();
 
-            var rhetosHostBuilder = _rhetosHostBuilderFactory()
-                .UseBuilderLogProvider(_logProvider)
-                .OverrideContainerConfiguration(SetDbUpdateComponents);
+            Action<IRhetosHostBuilder> configureRhetosHost = builder =>
+            {
+                builder.UseBuilderLogProvider(_logProvider)
+                    .OverrideContainerConfiguration(SetDbUpdateComponents);
+            };
 
-            using (var rhetosHost = rhetosHostBuilder.Build())
+            using (var rhetosHost = _rhetosHostFactory(configureRhetosHost))
             using (var scope = rhetosHost.CreateScope())
             {
                 var performanceLogger = scope.Resolve<ILogProvider>().GetLogger("Performance." + GetType().Name);
@@ -101,11 +103,13 @@ namespace Rhetos
             _logger.Info("Loading generated plugins.");
             var stopwatch = Stopwatch.StartNew();
 
-            var rhetosHostBuilder = _rhetosHostBuilderFactory()
-                .UseBuilderLogProvider(_logProvider)
-                .ConfigureContainer(AddAppInitializationComponents);
+            Action<IRhetosHostBuilder> configureRhetosHost = builder =>
+            {
+                builder.UseBuilderLogProvider(_logProvider)
+                    .ConfigureContainer(AddAppInitializationComponents);
+            };
 
-            using (var rhetosHost = rhetosHostBuilder.Build())
+            using (var rhetosHost = _rhetosHostFactory(configureRhetosHost))
             {
                 Type[] initializers;
                 using (var scope = rhetosHost.CreateScope())
