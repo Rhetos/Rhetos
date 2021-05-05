@@ -17,21 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Rhetos.Host.AspNet
+namespace Rhetos
 {
-    internal sealed class RhetosComponent<T> : IRhetosComponent<T>
+    public interface IRhetosComponent<out T>
     {
-        public T Value { get; }
-
-        public RhetosComponent(RhetosScopeServiceProvider rhetosScopeServiceProvider)
-        {
-            Value = rhetosScopeServiceProvider.Resolve<T>();
-        }
+        T Value { get; }
     }
 }

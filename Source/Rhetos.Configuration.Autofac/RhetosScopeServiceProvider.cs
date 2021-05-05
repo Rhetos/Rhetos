@@ -17,29 +17,30 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Extensions.DependencyInjection;
+using Autofac;
 using Rhetos.Utilities;
+using System;
 
-namespace Rhetos.Host.AspNet
+namespace Rhetos
 {
-    public class RhetosAspNetServiceCollectionBuilder
+    internal sealed class RhetosScopeServiceProvider : IDisposable
     {
-        public IServiceCollection Services { get; }
-        public RhetosAspNetServiceCollectionBuilder(IServiceCollection serviceCollection)
+        private readonly UnitOfWorkScope unitOfWorkScope;
+
+        public RhetosScopeServiceProvider(RhetosHost rhetosHost, IUserInfo rhetosUser)
         {
-            Services = serviceCollection;
+            unitOfWorkScope = rhetosHost.CreateScope(builder => builder.RegisterInstance(rhetosUser));
         }
 
-        public RhetosAspNetServiceCollectionBuilder UseAspNetCoreIdentityUser()
+        public T Resolve<T>()
         {
-            Services.AddHttpContextAccessor();
+            return unitOfWorkScope.Resolve<T>();
+        }
 
-            // not using TryAdd, allows subsequent calls to override previous ones
-            Services.AddScoped<IUserInfo, RhetosAspNetCoreIdentityUser>();
-            return this;
+        public void Dispose()
+        {
+            unitOfWorkScope.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

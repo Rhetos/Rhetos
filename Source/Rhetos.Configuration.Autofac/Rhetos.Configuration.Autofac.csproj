@@ -5,6 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Rhetos.DatabaseGenerator\Rhetos.DatabaseGenerator.csproj" />
     <ProjectReference Include="..\Rhetos.Deployment\Rhetos.Deployment.csproj" />
     <ProjectReference Include="..\Rhetos.Dom\Rhetos.Dom.csproj" />
