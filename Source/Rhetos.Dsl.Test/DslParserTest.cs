@@ -280,8 +280,7 @@ namespace Rhetos.Dsl.Test
         public void DslParser_MultipleFiles()
         {
             var concepts = DslParserParse("simple a b;", "simple c d;");
-            Assert.AreEqual("InitializationConcept, SIMPLE a, SIMPLE c", TestUtility.DumpSorted(concepts,
-                c => c is InitializationConcept ? "InitializationConcept" : c.GetUserDescription()));
+            Assert.AreEqual("SIMPLE a, SIMPLE c", TestUtility.DumpSorted(concepts, c => c.GetUserDescription()));
         }
 
         [TestMethod]
@@ -348,14 +347,12 @@ namespace Rhetos.Dsl.Test
             var grammar = new IConceptInfo[] { new SimpleConceptInfo(), new AlternativeConcept1(), new AlternativeConcept2() };
             var parsedConcepts = new TestDslParser(dsl, grammar).ParsedConcepts;
 
+            // IAlternativeInitializationConcept should be parsed, but not yet initialized.
             Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+SimpleConceptInfo Name=s Data=d", parsedConcepts.OfType<SimpleConceptInfo>().Single().GetErrorDescription());
-            Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+AlternativeConcept1 Parent=s Name=a1 RefToParent=ref.s", parsedConcepts.OfType<AlternativeConcept1>().Single().GetErrorDescription());
-            Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+AlternativeConcept2 Alter1=s.a1 Name=a2 Data=d2", parsedConcepts.OfType<AlternativeConcept2>().Single().GetErrorDescription());
-            Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+RefConceptInfo Name=ref Reference=s", parsedConcepts.OfType<RefConceptInfo>().Single().GetErrorDescription());
+            Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+AlternativeConcept1 Parent=s Name=<null> RefToParent=<null>", parsedConcepts.OfType<AlternativeConcept1>().Single().GetErrorDescription());
+            Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+AlternativeConcept2 Alter1=s.a1 Name=<null> Data=d2", parsedConcepts.OfType<AlternativeConcept2>().Single().GetErrorDescription());
 
-            // References are not yet resolved when evaluating IAlternativeInitializationConcept, so the SimpleConceptInfo reference does not have a value of the Data property:
-            Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+SimpleConceptInfo Name=s Data=<null>", parsedConcepts.OfType<RefConceptInfo>().Single().Reference.GetErrorDescription(),
-                "This test does not describe the wanted behavior, it just describes the current state of the parser.");
+            Assert.AreEqual("alter1, alter2, SIMPLE", TestUtility.DumpSorted(parsedConcepts, c => c.GetKeywordOrTypeName()));
         }
 
         [TestMethod]
@@ -365,13 +362,12 @@ namespace Rhetos.Dsl.Test
             var grammar = new IConceptInfo[] { new SimpleConceptInfo(), new AlternativeConcept1(), new AlternativeConcept2() };
             var parsedConcepts = new TestDslParser(dsl, grammar).ParsedConcepts;
 
+            // IAlternativeInitializationConcept should be parsed, but not yet initialized.
             Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+SimpleConceptInfo Name=s Data=d", parsedConcepts.OfType<SimpleConceptInfo>().Single().GetErrorDescription());
-            Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+AlternativeConcept1 Parent=s Name=a1 RefToParent=ref.s", parsedConcepts.OfType<AlternativeConcept1>().Single().GetErrorDescription());
-            Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+AlternativeConcept2 Alter1=s.a1 Name=a2 Data=d2", parsedConcepts.OfType<AlternativeConcept2>().Single().GetErrorDescription());
-            Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+RefConceptInfo Name=ref Reference=s", parsedConcepts.OfType<RefConceptInfo>().Single().GetErrorDescription());
+            Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+AlternativeConcept1 Parent=s Name=<null> RefToParent=<null>", parsedConcepts.OfType<AlternativeConcept1>().Single().GetErrorDescription());
+            Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+AlternativeConcept2 Alter1=s.<null> Name=<null> Data=d2", parsedConcepts.OfType<AlternativeConcept2>().Single().GetErrorDescription());
 
-            // Embedded concepts have the parent reference resolved during parsing, so the SimpleConceptInfo reference has a value of the Data property:
-            Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+SimpleConceptInfo Name=s Data=d", parsedConcepts.OfType<RefConceptInfo>().Single().Reference.GetErrorDescription());
+            Assert.AreEqual("alter1, alter2, SIMPLE", TestUtility.DumpSorted(parsedConcepts, c => c.GetKeywordOrTypeName()));
         }
 
         [ConceptKeyword("alterror1")]

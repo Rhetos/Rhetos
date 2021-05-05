@@ -81,22 +81,10 @@ namespace Rhetos.Dsl
         {
             var parsers = _dslGrammar.CreateGenericParsers(_onMemberRead);
             var parsedConcepts = ExtractConcepts(parsers);
-            var alternativeInitializationGeneratedReferences = InitializeAlternativeInitializationConcepts(parsedConcepts);
-            return new[] { CreateInitializationConcept() }
-                .Concat(parsedConcepts)
-                .Concat(alternativeInitializationGeneratedReferences)
-                .ToList();
+            return parsedConcepts;
         }
 
-        private IConceptInfo CreateInitializationConcept()
-        {
-            return new InitializationConcept
-            {
-                RhetosVersion = SystemUtility.GetRhetosVersion()
-            };
-        }
-
-        private IEnumerable<IConceptInfo> ExtractConcepts(MultiDictionary<string, IConceptParser> conceptParsers)
+        private List<IConceptInfo> ExtractConcepts(MultiDictionary<string, IConceptParser> conceptParsers)
         {
             var stopwatch = Stopwatch.StartNew();
 
@@ -316,14 +304,6 @@ namespace Rhetos.Dsl
                 context.Pop();
                 _onUpdateContext?.Invoke(tokenReader, context, false);
             }
-        }
-
-        private IEnumerable<IConceptInfo> InitializeAlternativeInitializationConcepts(IEnumerable<IConceptInfo> parsedConcepts)
-        {
-            var stopwatch = Stopwatch.StartNew();
-            var newConcepts = AlternativeInitialization.InitializeNonparsableProperties(parsedConcepts, _logger);
-            _performanceLogger.Write(stopwatch, "InitializeAlternativeInitializationConcepts (" + newConcepts.Count() + " new concepts created).");
-            return newConcepts;
         }
     }
 }

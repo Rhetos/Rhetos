@@ -148,13 +148,18 @@ namespace Rhetos.Dsl.Test
 
         //=========================================================================
 
+        public static string GetReport(IEnumerable<IConceptInfo> concepts)
+        {
+            // Removes build version from the InitializationConcept.
+            return TestUtility.DumpSorted(concepts, c => c is InitializationConcept ? "InitializationConcept" : c.GetUserDescription());
+        }
 
         [TestMethod]
         public void OrganizeConceptsByKey_RemoveDuplicate()
         {
             var concepts = new List<IConceptInfo> { new SimpleConceptInfo("a", "aaa"), new SimpleConceptInfo("a", "aaa") };
             var newConcepts = DslModelFromConcepts(concepts);
-            Assert.AreEqual(1, newConcepts.Count);
+            Assert.AreEqual("InitializationConcept, SIMPLE a", GetReport(newConcepts));
         }
 
         [TestMethod]
@@ -250,12 +255,11 @@ namespace Rhetos.Dsl.Test
             concepts.Add(new SimpleConceptInfo("a", "aaa"));
 
             List<IConceptInfo> cleared = DslModelFromConcepts(concepts);
-            Assert.AreEqual(2, cleared.Count);
-            Assert.AreEqual("a", (cleared[0] as SimpleConceptInfo).Name);
-            Assert.AreEqual("b", (cleared[1] as SimpleConceptInfo).Name);
+            Assert.AreEqual("InitializationConcept, SIMPLE a, SIMPLE b", GetReport(cleared));
+
+            Assert.AreEqual("a", (cleared[1] as SimpleConceptInfo).Name);
+            Assert.AreEqual("b", (cleared[2] as SimpleConceptInfo).Name);
         }
-
-
 
         //===================================================================================
 
@@ -295,13 +299,14 @@ namespace Rhetos.Dsl.Test
         {
             var c1 = new SimpleConceptInfo { Name = "n1", Data = "" };
             var c2 = new RefConceptInfo { Name = "n2", Reference = c1 };
-            List<IConceptInfo> concepts = new List<IConceptInfo>() { c2, c1 };
+            var concepts = new List<IConceptInfo>() { c2, c1 };
 
             concepts = DslModelFromConcepts(concepts);
 
-            Assert.AreEqual(2, concepts.Count);
-            Assert.AreEqual(c1, concepts[0]);
-            Assert.AreEqual(c2, concepts[1]);
+            Assert.AreEqual("InitializationConcept, REF n2.n1, SIMPLE n1", GetReport(concepts));
+
+            Assert.AreSame(c1, concepts[1]);
+            Assert.AreSame(c2, concepts[2]);
         }
 
         //===================================================================================
@@ -331,13 +336,10 @@ namespace Rhetos.Dsl.Test
                                                   new SimpleConceptInfo("a", ""),
                                                   new MacroConceptInfo("b")
                                               };
-            List<string> expected = new List<string> {"SIMPLE a", "MACRO b", "SIMPLE b1", "SIMPLE b2"};
 
-            List<string> actual = DslModelFromConcepts(concepts).Select(c => c.GetUserDescription()).ToList();
-
-            expected.Sort();
-            actual.Sort();
-            Assert.AreEqual(string.Join(", ", expected), string.Join(", ", actual));
+            Assert.AreEqual(
+                "InitializationConcept, MACRO b, SIMPLE a, SIMPLE b1, SIMPLE b2",
+                GetReport(DslModelFromConcepts(concepts)));
         }
 
         [ConceptKeyword("SECONDLEVELMACRO")]
@@ -364,16 +366,10 @@ namespace Rhetos.Dsl.Test
                                                   new MacroConceptInfo("a"),
                                                   new SecondLevelMacroConceptInfo("b")
                                               };
-            List<string> expected = new List<string>
-                                        {
-                                            "MACRO a", "SIMPLE a1", "SIMPLE a2",
-                                            "SECONDLEVELMACRO b", "MACRO bx", "SIMPLE bx1", "SIMPLE bx2"
-                                        };
-            List<string> actual = DslModelFromConcepts(concepts).Select(c => c.GetUserDescription()).ToList();
 
-            expected.Sort();
-            actual.Sort();
-            Assert.AreEqual(string.Join(", ", expected), string.Join(", ", actual));
+            Assert.AreEqual(
+                "InitializationConcept, MACRO a, MACRO bx, SECONDLEVELMACRO b, SIMPLE a1, SIMPLE a2, SIMPLE bx1, SIMPLE bx2",
+                GetReport(DslModelFromConcepts(concepts)));
         }
 
         class RecursiveMacroConceptInfo : IMacroConcept
@@ -384,28 +380,18 @@ namespace Rhetos.Dsl.Test
             public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
             {
                 int v = int.Parse(Value);
-                if (v == existingConcepts.Count())
-                    return new List<IConceptInfo> { new RecursiveMacroConceptInfo((v + 1).ToString()) };
-                return null;
+                return new List<IConceptInfo> { new RecursiveMacroConceptInfo((v + 1).ToString()) };
             }
         }
 
         [TestMethod]
-        [ExpectedException(typeof(DslSyntaxException))]
         public void ExpandMacroConcepts_InfiniteLoop()
         {
-            try
-            {
-                List<IConceptInfo> concepts = new List<IConceptInfo> { new RecursiveMacroConceptInfo("1") };
-                DslModelFromConcepts(concepts);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine(ex.Message);
-                Assert.IsTrue(ex.Message.Contains("infinite loop"), ex.Message);
-                Assert.IsTrue(ex.Message.Contains("RecursiveMacroConceptInfo"), ex.Message);
-                throw;
-            }
+            var concepts = new List<IConceptInfo> { new RecursiveMacroConceptInfo("1") };
+            TestUtility.ShouldFail<DslSyntaxException>(
+                () => DslModelFromConcepts(concepts),
+                "infinite loop",
+                "RecursiveMacroConceptInfo");
         }
 
         [TestMethod]
@@ -416,12 +402,9 @@ namespace Rhetos.Dsl.Test
                                                   new SimpleConceptInfo("b1", ""),
                                                   new MacroConceptInfo("b")
                                               };
-            List<string> expected = new List<string> { "MACRO b", "SIMPLE b1", "SIMPLE b2" };
-            List<string> actual = DslModelFromConcepts(concepts).Select(c => c.GetUserDescription()).ToList();
-
-            expected.Sort();
-            actual.Sort();
-            Assert.AreEqual(string.Join(", ", expected), string.Join(", ", actual));
+            Assert.AreEqual(
+                "InitializationConcept, MACRO b, SIMPLE b1, SIMPLE b2",
+                GetReport(DslModelFromConcepts(concepts)));
         }
 
         [TestMethod]
@@ -500,7 +483,109 @@ namespace Rhetos.Dsl.Test
                                               };
 
             var result = DslModelFromConcepts(concepts);
-            Assert.AreEqual("MULTIPASS2 x, REF r.2, SIMPLE 0, SIMPLE 1, SIMPLE 2", TestUtility.DumpSorted(result, item => item.GetUserDescription()));
+            Assert.AreEqual("InitializationConcept, MULTIPASS2 x, REF r.2, SIMPLE 0, SIMPLE 1, SIMPLE 2", GetReport(result));
+        }
+
+        //===================================================================================
+        // IAlternativeInitializationConcept:
+
+        [ConceptKeyword("alter1")]
+        class AlternativeConcept1 : IAlternativeInitializationConcept
+        {
+            [ConceptKey]
+            public SimpleConceptInfo Parent { get; set; }
+            [ConceptKey]
+            public string Name { get; set; }
+            public RefConceptInfo RefToParent { get; set; }
+
+            public IEnumerable<string> DeclareNonparsableProperties()
+            {
+                return new[] { "Name", "RefToParent" };
+            }
+
+            public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+            {
+                Name = "a1";
+                RefToParent = new RefConceptInfo { Name = "ref", Reference = new SimpleConceptInfo { Name = Parent.Name, Data = Parent.Data } };
+
+                createdConcepts = new[] { RefToParent };
+            }
+        }
+
+        [ConceptKeyword("alter2")]
+        class AlternativeConcept2 : IAlternativeInitializationConcept
+        {
+            [ConceptKey]
+            public AlternativeConcept1 Alter1 { get; set; }
+            [ConceptKey]
+            public string Name { get; set; }
+            public string Data { get; set; }
+
+            public IEnumerable<string> DeclareNonparsableProperties()
+            {
+                return new[] { "Name" };
+            }
+
+            public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+            {
+                Name = "a2";
+                createdConcepts = null;
+            }
+        }
+
+        [TestMethod]
+        public void InitiallyParsedAlternativeInitializationConceptTest()
+        {
+            string dsl = "SIMPLE s d; ALTER1 s; ALTER2 s.a1 d2;";
+            var grammar = new IConceptInfo[] { new SimpleConceptInfo(), new AlternativeConcept1(), new AlternativeConcept2() };
+
+            var parsedConcepts = new TestDslParser(dsl, grammar).ParsedConcepts;
+            var dslModelConcepts = DslModelFromConcepts(parsedConcepts);
+
+            var s = dslModelConcepts.OfType<SimpleConceptInfo>().Single();
+            var a1 = dslModelConcepts.OfType<AlternativeConcept1>().Single();
+            var a2 = dslModelConcepts.OfType<AlternativeConcept2>().Single();
+            var r = dslModelConcepts.OfType<RefConceptInfo>().Single();
+
+            Assert.AreEqual("Rhetos.Dsl.Test.DslModelTest+SimpleConceptInfo Name=s Data=d", s.GetErrorDescription());
+            Assert.AreEqual("Rhetos.Dsl.Test.DslModelTest+AlternativeConcept1 Parent=s Name=a1 RefToParent=ref.s", a1.GetErrorDescription());
+            Assert.AreEqual("Rhetos.Dsl.Test.DslModelTest+AlternativeConcept2 Alter1=s.a1 Name=a2 Data=d2", a2.GetErrorDescription());
+            Assert.AreEqual("Rhetos.Dsl.Test.DslModelTest+RefConceptInfo Name=ref Reference=s", r.GetErrorDescription());
+            Assert.AreEqual("Rhetos.Dsl.Test.DslModelTest+SimpleConceptInfo Name=s Data=d", r.Reference.GetErrorDescription());
+
+            Assert.AreSame(s, a1.Parent);
+            Assert.AreSame(r, a1.RefToParent);
+            Assert.AreSame(a1, a2.Alter1);
+            Assert.AreSame(s, r.Reference);
+
+            Assert.AreEqual("alter1, alter2, InitializationConcept, REF, SIMPLE", TestUtility.DumpSorted(dslModelConcepts, c => c.GetKeywordOrTypeName()));
+        }
+
+        [TestMethod]
+        public void InitiallyParsedAlternativeInitializationConcept_Embedded()
+        {
+            string dsl = "SIMPLE s d { ALTER1 { ALTER2 d2; } }";
+            var grammar = new IConceptInfo[] { new SimpleConceptInfo(), new AlternativeConcept1(), new AlternativeConcept2() };
+            var parsedConcepts = new TestDslParser(dsl, grammar).ParsedConcepts;
+            var dslModelConcepts = DslModelFromConcepts(parsedConcepts);
+
+            var s = dslModelConcepts.OfType<SimpleConceptInfo>().Single();
+            var a1 = dslModelConcepts.OfType<AlternativeConcept1>().Single();
+            var a2 = dslModelConcepts.OfType<AlternativeConcept2>().Single();
+            var r = dslModelConcepts.OfType<RefConceptInfo>().Single();
+
+            Assert.AreEqual("Rhetos.Dsl.Test.DslModelTest+SimpleConceptInfo Name=s Data=d", s.GetErrorDescription());
+            Assert.AreEqual("Rhetos.Dsl.Test.DslModelTest+AlternativeConcept1 Parent=s Name=a1 RefToParent=ref.s", a1.GetErrorDescription());
+            Assert.AreEqual("Rhetos.Dsl.Test.DslModelTest+AlternativeConcept2 Alter1=s.a1 Name=a2 Data=d2", a2.GetErrorDescription());
+            Assert.AreEqual("Rhetos.Dsl.Test.DslModelTest+RefConceptInfo Name=ref Reference=s", r.GetErrorDescription());
+            Assert.AreEqual("Rhetos.Dsl.Test.DslModelTest+SimpleConceptInfo Name=s Data=d", r.Reference.GetErrorDescription());
+
+            Assert.AreSame(s, a1.Parent);
+            Assert.AreSame(r, a1.RefToParent);
+            Assert.AreSame(a1, a2.Alter1);
+            Assert.AreSame(s, r.Reference);
+
+            Assert.AreEqual("alter1, alter2, InitializationConcept, REF, SIMPLE", TestUtility.DumpSorted(dslModelConcepts, c => c.GetKeywordOrTypeName()));
         }
     }
 }
