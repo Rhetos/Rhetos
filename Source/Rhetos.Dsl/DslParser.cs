@@ -27,23 +27,23 @@ using Rhetos.Logging;
 
 namespace Rhetos.Dsl
 {
+    /// <summary>
+    /// Performs the syntax analysis of DSL scripts, after the scripts are converted to a list of tokens.
+    /// </summary>
     public class DslParser : IDslParser
     {
         private readonly Tokenizer _tokenizer;
-        private readonly IConceptInfo[] _conceptInfoPlugins;
+        private readonly DslGrammar _dslGrammar;
         private readonly ILogger _performanceLogger;
         private readonly ILogger _logger;
-        private readonly ILogger _keywordsLogger;
         private readonly ExcessDotInKey _legacySyntax;
 
-
-        public DslParser(Tokenizer tokenizer, IConceptInfo[] conceptInfoPlugins, ILogProvider logProvider, BuildOptions buildOptions)
+        public DslParser(Tokenizer tokenizer, DslGrammar dslGrammar, ILogProvider logProvider, BuildOptions buildOptions)
         {
             _tokenizer = tokenizer;
-            _conceptInfoPlugins = conceptInfoPlugins;
+            _dslGrammar = dslGrammar;
             _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
-            _logger = logProvider.GetLogger("DslParser");
-            _keywordsLogger = logProvider.GetLogger("DslParser.Keywords");
+            _logger = logProvider.GetLogger(GetType().Name);
             _legacySyntax = buildOptions.DslSyntaxExcessDotInKey;
         }
 
@@ -77,11 +77,9 @@ namespace Rhetos.Dsl
         }
         //=================================================================
 
-        
-
         private List<IConceptInfo> GetConcepts()
         {
-            var parsers = CreateGenericParsers();
+            var parsers = _dslGrammar.CreateGenericParsers(_onMemberRead);
             var parsedConcepts = ExtractConcepts(parsers);
             var alternativeInitializationGeneratedReferences = InitializeAlternativeInitializationConcepts(parsedConcepts);
             return new[] { CreateInitializationConcept() }
@@ -96,33 +94,6 @@ namespace Rhetos.Dsl
             {
                 RhetosVersion = SystemUtility.GetRhetosVersion()
             };
-        }
-
-        private MultiDictionary<string,IConceptParser> CreateGenericParsers()
-        {
-            var stopwatch = Stopwatch.StartNew();
-
-            var conceptMetadata = _conceptInfoPlugins
-                .Select(conceptInfo => conceptInfo.GetType())
-                .Distinct()
-                .Select(conceptInfoType => new
-                            {
-                                conceptType = conceptInfoType,
-                                conceptKeyword = ConceptInfoHelper.GetKeyword(conceptInfoType)
-                            })
-                .Where(cm => cm.conceptKeyword != null)
-                .ToList();
-
-            _keywordsLogger.Trace(() => string.Join(" ", conceptMetadata.Select(cm => cm.conceptKeyword).OrderBy(keyword => keyword).Distinct()));
-
-            var result = conceptMetadata.ToMultiDictionary(x => x.conceptKeyword, x =>
-            {
-                var parser = new GenericParser(x.conceptType, x.conceptKeyword);
-                parser.OnMemberRead += _onMemberRead;
-                return (IConceptParser) parser;
-            }, StringComparer.OrdinalIgnoreCase);
-            _performanceLogger.Write(stopwatch, "CreateGenericParsers.");
-            return result;
         }
 
         private IEnumerable<IConceptInfo> ExtractConcepts(MultiDictionary<string, IConceptParser> conceptParsers)

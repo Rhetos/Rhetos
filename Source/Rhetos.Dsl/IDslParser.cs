@@ -21,6 +21,9 @@ using System.Collections.Generic;
 
 namespace Rhetos.Dsl
 {
+    /// <summary>
+    /// Performs the syntax analysis of DSL scripts.
+    /// </summary>
     public interface IDslParser
     {
         IEnumerable<IConceptInfo> ParsedConcepts { get; }

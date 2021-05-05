@@ -25,31 +25,27 @@ using System.Linq;
 
 namespace Rhetos.Dsl
 {
+    /// <summary>
+    /// Performs the lexical analysis for DSL scripts: Transforms source text into a list of tokens.
+    /// </summary>
     public class Tokenizer
     {
         private readonly IDslScriptsProvider _dslScriptsProvider;
         private readonly FilesUtility _filesUtility;
-        List<Token> _tokens = null;
-        readonly object _tokensLock = new object();
+        private readonly Lazy<List<Token>> _tokens;
 
         public Tokenizer(IDslScriptsProvider dslScriptsProvider, FilesUtility filesUtility)
         {
             _dslScriptsProvider = dslScriptsProvider;
             _filesUtility = filesUtility;
+            _tokens = new Lazy<List<Token>>(ParseTokens);
         }
 
-        public List<Token> GetTokens()
-        {
-            if (_tokens == null)
-                lock (_tokensLock)
-                    if (_tokens == null)
-                        ParseTokens();
-            return _tokens;
-        }
+        public List<Token> GetTokens() => _tokens.Value;
 
-        private void ParseTokens()
+        private List<Token> ParseTokens()
         {
-            _tokens = new List<Token>();
+            var tokens = new List<Token>();
 
             foreach (var dslScript in _dslScriptsProvider.DslScripts)
             {
@@ -68,11 +64,13 @@ namespace Rhetos.Dsl
                     t.PositionEndInDslScript = scriptPosition;
 
                     if (t.Type != TokenType.Comment)
-                        _tokens.Add(t);
+                        tokens.Add(t);
                 }
 
-                _tokens.Add(new Token { DslScript = dslScript, PositionInDslScript = dslScript.Script.Length, PositionEndInDslScript = dslScript.Script.Length, Type = TokenType.EndOfFile, Value = "" });
+                tokens.Add(new Token { DslScript = dslScript, PositionInDslScript = dslScript.Script.Length, PositionEndInDslScript = dslScript.Script.Length, Type = TokenType.EndOfFile, Value = "" });
             }
+
+            return tokens;
         }
     }
 

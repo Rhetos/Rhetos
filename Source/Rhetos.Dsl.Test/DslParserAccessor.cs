@@ -29,7 +29,7 @@ namespace Rhetos.Dsl.Test
         public TestDslParser(string dsl, IConceptInfo[] conceptInfoPlugins = null)
             : base (
                 new TestTokenizer(dsl),
-                conceptInfoPlugins ?? Array.Empty<IConceptInfo>(),
+                new DslGrammar(conceptInfoPlugins ?? Array.Empty<IConceptInfo>(), new ConsoleLogProvider()),
                 new ConsoleLogProvider(),
                 new BuildOptions())
         {
