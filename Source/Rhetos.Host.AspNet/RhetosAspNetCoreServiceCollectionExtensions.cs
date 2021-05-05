@@ -30,7 +30,14 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class RhetosAspNetCoreServiceCollectionExtensions
     {
-        public static RhetosAspNetServiceCollectionBuilder AddRhetos(
+        /// <summary>
+        /// Adds services required to run <see cref="RhetosHost"/> to the specified <see cref="IServiceCollection"/>,
+        /// and allows scoped Rhetos components to be resolved within scope of HTTP request as <see cref="IRhetosComponent{T}"/>.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="RhetosAspNetServiceCollectionBuilder"/> that can be used to add additional Rhetos-specific services to <see cref="IServiceCollection"/>.
+        /// </returns>
+        public static RhetosAspNetServiceCollectionBuilder AddRhetosHost(
             this IServiceCollection serviceCollection,
             Action<IServiceProvider, IRhetosHostBuilder> configureRhetosHost = null)
         {

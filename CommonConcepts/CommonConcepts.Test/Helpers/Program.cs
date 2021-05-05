@@ -38,7 +38,7 @@ namespace CommonConcepts.Test
         public static IRhetosHostBuilder CreateRhetosHostBuilder()
         {
             return new RhetosHostBuilder()
-                .ConfigureRhetosHostDefaults()
+                .ConfigureRhetosAppDefaults()
                 .ConfigureConfiguration(builder => builder
                     .AddJsonFile("rhetos-app.local.settings.json")
                 )

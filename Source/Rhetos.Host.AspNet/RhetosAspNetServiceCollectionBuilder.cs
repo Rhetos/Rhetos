@@ -25,9 +25,13 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Host.AspNet
 {
+    /// <summary>
+    /// Used for adding Rhetos-specific services to <see cref="IServiceCollection"/>.
+    /// </summary>
     public class RhetosAspNetServiceCollectionBuilder
     {
         public IServiceCollection Services { get; }
+
         public RhetosAspNetServiceCollectionBuilder(IServiceCollection serviceCollection)
         {
             Services = serviceCollection;

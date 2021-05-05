@@ -34,13 +34,16 @@ namespace Rhetos.Dom
 
         private readonly PluginInfoCollection _plugins;
         private readonly DatabaseSettings _databaseSettings;
+        private readonly RhetosBuildEnvironment _rhetosBuildEnvironment;
 
         public InitialDomCodeGenerator(
             PluginInfoCollection plugins,
-            DatabaseSettings databaseSettings)
+            DatabaseSettings databaseSettings,
+            RhetosBuildEnvironment rhetosBuildEnvironment)
         {
             _plugins = plugins;
             _databaseSettings = databaseSettings;
+            _rhetosBuildEnvironment = rhetosBuildEnvironment;
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
@@ -63,18 +66,18 @@ namespace Rhetos
     public static class RhetosHostBuilderExtensions
     {{
         /// <summary>
-        /// Initializes a new instance of <see cref=""RhetosHostBuilder""/> class with pre-configured defaults.
+        /// Configures <see cref=""IRhetosHostBuilder""/> with defaults for <i>{_rhetosBuildEnvironment.OutputAssemblyName}</i> Rhetos app.
         /// </summary>
         /// <remarks>
         /// The following defaults are applied:
         /// <list type=""bullet"">
         /// <item>Build-time configuration settings that are hard-coded in runtime environment:
         ///     <see cref=""RhetosAppOptions.RhetosAppAssemblyName""/>, <see cref=""RhetosAppOptions.RhetosHostFolder""/> and <see cref=""DatabaseSettings""/></item>.
-        /// <item>Registers plugin types from dependent libraries, and the current assembly for additional plugin discovery.</item>
+        /// <item>Registers plugin types from referenced libraries, and the current assembly for additional plugin discovery.</item>
         /// <item>Various plugin packages may add additional configuration settings and components registration.</item>
         /// </list>
         /// </remarks>
-        public static IRhetosHostBuilder ConfigureRhetosHostDefaults(this IRhetosHostBuilder hostBuilder)
+        public static IRhetosHostBuilder ConfigureRhetosAppDefaults(this IRhetosHostBuilder hostBuilder)
         {{
             hostBuilder
                 .ConfigureConfiguration(containerBuilder => containerBuilder
