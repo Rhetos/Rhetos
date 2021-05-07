@@ -42,9 +42,9 @@ namespace Rhetos.Utilities
 
     public class NullUserInfo : IUserInfo
     {
-        public bool IsUserRecognized { get { return false; } }
-        public string UserName { get { return null; } }
-        public string Workstation { get { return null; } }
-        public string Report() { return null; }
+        public bool IsUserRecognized => false;
+        public string UserName => throw new FrameworkException($"This operation is not supported for {nameof(NullUserInfo)}.");
+        public string Workstation => null;
+        public string Report() => nameof(NullUserInfo);
     }
 }
