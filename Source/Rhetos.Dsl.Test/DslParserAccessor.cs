@@ -20,19 +20,33 @@
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace Rhetos.Dsl.Test
 {
     class TestDslParser : DslParser, ITestAccessor
     {
-        public TestDslParser(string dsl, IConceptInfo[] conceptInfoPlugins = null)
+        private readonly DslGrammar grammar;
+
+        public TestDslParser(string dsl)
+            : this(dsl, Array.Empty<IConceptInfo>())
+        {
+        }
+
+        public TestDslParser(string dsl, IConceptInfo[] conceptInfoPlugins)
+            : this(dsl, DslGrammarHelper.CreateDslGrammar(conceptInfoPlugins))
+        {
+        }
+
+        public TestDslParser(string dsl, DslGrammar grammar)
             : base (
                 new TestTokenizer(dsl),
-                new DslGrammar(conceptInfoPlugins ?? Array.Empty<IConceptInfo>(), new ConsoleLogProvider()),
+                grammar,
                 new ConsoleLogProvider(),
                 new BuildOptions())
         {
+            this.grammar = grammar;
         }
 
         public IEnumerable<IConceptInfo> ExtractConcepts(MultiDictionary<string, IConceptParser> conceptParsers)
@@ -42,7 +56,12 @@ namespace Rhetos.Dsl.Test
 
         public IConceptInfo ParseNextConcept(TokenReader tokenReader, Stack<IConceptInfo> context, MultiDictionary<string, IConceptParser> conceptParsers)
         {
-            return this.Invoke(nameof(ParseNextConcept), tokenReader, context, conceptParsers).Item1;
+            var newContext = context == null ? null
+                : new Stack<ConceptSyntaxNode>(context.Select(ci => grammar.CreateConceptSyntaxNode(ci)).Reverse());
+
+            var parsedNode = this.Invoke(nameof(ParseNextConcept), tokenReader, newContext, conceptParsers).Item1;
+
+            return ConceptInfoHelper.CreateConceptInfo(parsedNode);
         }
     }
 }

@@ -47,51 +47,44 @@ namespace Rhetos.Dsl
             _legacySyntax = buildOptions.DslSyntaxExcessDotInKey;
         }
 
-        public IEnumerable<IConceptInfo> ParsedConcepts => GetConcepts();
+        public IEnumerable<IConceptInfo> ParsedConcepts => ConvertNodesToConceptInfos(GetConcepts());
 
         public delegate void OnKeywordEvent(ITokenReader tokenReader, string keyword);
-        public delegate void OnMemberReadEvent(ITokenReader tokenReader, IConceptInfo conceptInfo, ConceptMember conceptMember, ValueOrError<object> valueOrError);
-        public delegate void OnUpdateContextEvent(ITokenReader tokenReader, Stack<IConceptInfo> context, bool isOpening);
+        public delegate void OnMemberReadEvent(ITokenReader tokenReader, ConceptSyntaxNode conceptInfo, ConceptMemberSyntax conceptMember, ValueOrError<object> valueOrError);
+        public delegate void OnUpdateContextEvent(ITokenReader tokenReader, Stack<ConceptSyntaxNode> context, bool isOpening);
 
-        private event OnKeywordEvent _onKeyword;
-        private event OnMemberReadEvent _onMemberRead;
-        private event OnUpdateContextEvent _onUpdateContext;
+        public event OnKeywordEvent OnKeyword;
+        public event OnMemberReadEvent OnMemberRead;
+        public event OnUpdateContextEvent OnUpdateContext;
 
-        public IEnumerable<IConceptInfo> ParseConceptsWithCallbacks(OnKeywordEvent onKeyword,
-            OnMemberReadEvent onMemberRead,
-            OnUpdateContextEvent onUpdateContext)
-        {
-            try
-            {
-                _onKeyword += onKeyword;
-                _onMemberRead += onMemberRead;
-                _onUpdateContext += onUpdateContext;
-                return GetConcepts();
-            }
-            finally
-            {
-                _onKeyword -= onKeyword;
-                _onMemberRead -= onMemberRead;
-                _onUpdateContext -= onUpdateContext;
-            }
-        }
         //=================================================================
 
-        private List<IConceptInfo> GetConcepts()
+        private List<IConceptInfo> ConvertNodesToConceptInfos(List<ConceptSyntaxNode> nodes)
         {
-            var parsers = _dslGrammar.CreateGenericParsers(_onMemberRead);
+            var stopwatch = Stopwatch.StartNew();
+            var keepReferences = new Dictionary<ConceptSyntaxNode, IConceptInfo>();
+            var conceptInfos = new List<IConceptInfo>(nodes.Count);
+            foreach (var node in nodes)
+                conceptInfos.Add(ConceptInfoHelper.CreateConceptInfo(node, keepReferences));
+            _performanceLogger.Write(stopwatch, nameof(ConvertNodesToConceptInfos));
+            return conceptInfos;
+        }
+
+        private List<ConceptSyntaxNode> GetConcepts()
+        {
+            var parsers = _dslGrammar.CreateGenericParsers(OnMemberRead);
             var parsedConcepts = ExtractConcepts(parsers);
             return parsedConcepts;
         }
 
-        private List<IConceptInfo> ExtractConcepts(MultiDictionary<string, IConceptParser> conceptParsers)
+        private List<ConceptSyntaxNode> ExtractConcepts(MultiDictionary<string, IConceptParser> conceptParsers)
         {
             var stopwatch = Stopwatch.StartNew();
 
             TokenReader tokenReader = new TokenReader(_tokenizer.GetTokens(), 0);
 
-            var newConcepts = new List<IConceptInfo>();
-            var context = new Stack<IConceptInfo>();
+            var newConcepts = new List<ConceptSyntaxNode>();
+            var context = new Stack<ConceptSyntaxNode>();
             var warnings = new List<string>();
 
             tokenReader.SkipEndOfFile();
@@ -104,7 +97,7 @@ namespace Rhetos.Dsl
                     warnings.AddRange(parsed.Warnings);
 
                 UpdateContextForNextConcept(tokenReader, context, parsed.ConceptInfo);
-                _onKeyword?.Invoke(tokenReader, null);
+                OnKeyword?.Invoke(tokenReader, null);
 
                 if (context.Count == 0)
                     tokenReader.SkipEndOfFile();
@@ -132,9 +125,9 @@ namespace Rhetos.Dsl
             return newConcepts;
         }
 
-        class Interpretation { public IConceptInfo ConceptInfo; public TokenReader NextPosition; public List<string> Warnings; }
+        class Interpretation { public ConceptSyntaxNode Node; public TokenReader NextPosition; public List<string> Warnings; }
 
-        private (IConceptInfo ConceptInfo, List<string> Warnings) ParseNextConcept(TokenReader tokenReader, Stack<IConceptInfo> context, MultiDictionary<string, IConceptParser> conceptParsers)
+        private (ConceptSyntaxNode ConceptInfo, List<string> Warnings) ParseNextConcept(TokenReader tokenReader, Stack<ConceptSyntaxNode> context, MultiDictionary<string, IConceptParser> conceptParsers)
         {
             var errorReports = new List<Func<(string formattedError, string simpleError)>>();
             List<Interpretation> possibleInterpretations = new List<Interpretation>();
@@ -142,7 +135,7 @@ namespace Rhetos.Dsl
             var keywordReader = new TokenReader(tokenReader).ReadText(); // Peek, without changing the original tokenReader's position.
             var keyword = keywordReader.IsError ? null : keywordReader.Value;
 
-            _onKeyword?.Invoke(tokenReader, keyword);
+            OnKeyword?.Invoke(tokenReader, keyword);
             if (keyword != null)
             {
                 foreach (var conceptParser in conceptParsers.Get(keyword))
@@ -153,7 +146,7 @@ namespace Rhetos.Dsl
                     if (!conceptInfoOrError.IsError)
                         possibleInterpretations.Add(new Interpretation
                         {
-                            ConceptInfo = conceptInfoOrError.Value,
+                            Node = conceptInfoOrError.Value,
                             NextPosition = nextPosition,
                             Warnings = warnings
                         });
@@ -194,7 +187,7 @@ namespace Rhetos.Dsl
             {
                 var interpretations = new List<string>();
                 for (int i = 0; i < possibleInterpretations.Count; i++)
-                    interpretations.Add($"{i + 1}. {possibleInterpretations[i].ConceptInfo.GetType().AssemblyQualifiedName}");
+                    interpretations.Add($"{i + 1}. {possibleInterpretations[i].Node.Concept.AssemblyQualifiedName}");
 
                 var simpleMessage = $"Ambiguous syntax. There are multiple possible interpretations of keyword '{keyword}': {string.Join(", ", interpretations)}.";
                 var (dslScript, position) = tokenReader.GetPositionInScript();
@@ -205,7 +198,7 @@ namespace Rhetos.Dsl
             var parsedStatement = possibleInterpretations.Single();
 
             tokenReader.CopyFrom(parsedStatement.NextPosition);
-            return (parsedStatement.ConceptInfo, parsedStatement.Warnings);
+            return (parsedStatement.Node, parsedStatement.Warnings);
         }
 
         private void Disambiguate(List<Interpretation> possibleInterpretations)
@@ -225,8 +218,8 @@ namespace Rhetos.Dsl
             var interpretationParameters = possibleInterpretations
                 .Select(i =>
                 {
-                    var firstMemberType = ConceptMembers.Get(i.ConceptInfo).First().ValueType;
-                    return new { Interpretation = i, FirstParameter = firstMemberType, NestingOptions = GetNestingOptions(firstMemberType) };
+                    var firstMember = i.Node.Concept.Members.First();
+                    return new { Interpretation = i, FirstParameter = firstMember.ConceptType, NestingOptions = GetNestingOptions(firstMember) };
                 })
                 .ToList();
             var couldBeNested = new HashSet<Interpretation>();
@@ -235,10 +228,10 @@ namespace Rhetos.Dsl
                     if (i1 != i2 && i2.NestingOptions.Skip(1).Contains(i1.FirstParameter))
                     {
                         couldBeNested.Add(i2.Interpretation);
-                        _logger.Trace(() => $"Interpretation {i1.Interpretation.ConceptInfo.GetType().Name}" +
-                            $" has priority over {i2.Interpretation.ConceptInfo.GetType().Name}," +
-                            $" because the second one could be nested in {i2.FirstParameter.Name} to force that interpretation." +
-                            $" Statement: {i1.Interpretation.ConceptInfo.GetUserDescription()}.");
+                        _logger.Trace(() => $"Interpretation {i1.Interpretation.Node.Concept.TypeName}" +
+                            $" has priority over {i2.Interpretation.Node.Concept.TypeName}," +
+                            $" because the second one could be nested in {i2.FirstParameter.TypeName} to force that interpretation." +
+                            $" Statement: {i1.Interpretation.Node.GetUserDescription()}.");
                     }
             var flatestInterpretations = possibleInterpretations.Except(couldBeNested).ToList();
             if (flatestInterpretations.Count == 1)
@@ -248,42 +241,41 @@ namespace Rhetos.Dsl
             }
         }
 
-        private static List<Type> GetNestingOptions(Type conceptType)
+        private static List<ConceptType> GetNestingOptions(ConceptMemberSyntax conceptMember)
         {
-            var options = new List<Type>();
-            while (!options.Contains(conceptType)) // Recursive concept are possible.
+            var options = new List<ConceptType>();
+            while (!options.Contains(conceptMember.ConceptType)) // Recursive concept are possible.
             {
-                options.Add(conceptType);
-                if (typeof(IConceptInfo).IsAssignableFrom(conceptType))
-                    conceptType = ConceptMembers.Get(conceptType).First().ValueType;
+                options.Add(conceptMember.ConceptType);
+                if (conceptMember.IsConceptInfo)
+                    conceptMember = conceptMember.ConceptType.Members.First();
             }
             return options;
         }
 
-        private string ReportPreviousConcept(IConceptInfo conceptInfo)
+        private string ReportPreviousConcept(ConceptSyntaxNode node)
         {
             var sb = new StringBuilder();
-
-            if (conceptInfo != null)
+            if (node != null)
             {
-                sb.AppendFormat("Previous concept: {0}", conceptInfo.GetUserDescription()).AppendLine();
-                var properties = conceptInfo.GetType().GetProperties().ToList();
-                properties.ForEach(it =>
-                    sb.AppendFormat("Property {0} ({1}) = {2}",
-                        it.Name,
-                        it.PropertyType.Name,
-                        it.GetValue(conceptInfo, null) ?? "<null>")
-                        .AppendLine());
+                sb.AppendFormat("Previous concept: {0}", node.GetUserDescription()).AppendLine();
+
+                foreach (var m in node.Concept.Members)
+                    sb.AppendFormat("Property '{0}' ({1}) = {2}",
+                        m.Name,
+                        m.IsStringType ? "string" : m.IsConceptInfoInterface ? "IConceptInfo" : m.ConceptType.TypeName,
+                        m.GetMemberValue(node)?.ToString() ?? "<null>")
+                        .AppendLine();
             }
             return sb.ToString();
         }
 
-        private void UpdateContextForNextConcept(TokenReader tokenReader, Stack<IConceptInfo> context, IConceptInfo conceptInfo)
+        private void UpdateContextForNextConcept(TokenReader tokenReader, Stack<ConceptSyntaxNode> context, ConceptSyntaxNode conceptInfo)
         {
             if (tokenReader.TryRead("{"))
             {
                 context.Push(conceptInfo);
-                _onUpdateContext?.Invoke(tokenReader, context, true);
+                OnUpdateContext?.Invoke(tokenReader, context, true);
             }
             else if (!tokenReader.TryRead(";"))
             {
@@ -302,7 +294,7 @@ namespace Rhetos.Dsl
 
                 }
                 context.Pop();
-                _onUpdateContext?.Invoke(tokenReader, context, false);
+                OnUpdateContext?.Invoke(tokenReader, context, false);
             }
         }
     }

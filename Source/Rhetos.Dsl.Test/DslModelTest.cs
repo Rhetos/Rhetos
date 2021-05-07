@@ -19,7 +19,6 @@
 
 using Autofac.Features.Indexed;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos.Extensibility;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
@@ -135,7 +134,7 @@ namespace Rhetos.Dsl.Test
         {
             var nullDslParser = new DslParser(
                 new TestTokenizer(dsl),
-                new DslGrammar(conceptInfoPluginsForGenericParser, new ConsoleLogProvider()),
+                DslGrammarHelper.CreateDslGrammar(conceptInfoPluginsForGenericParser),
                 new ConsoleLogProvider(),
                 new BuildOptions());
             Console.WriteLine("Parsed concepts:");
@@ -144,7 +143,6 @@ namespace Rhetos.Dsl.Test
             var dslModel = NewDslModel(nullDslParser, conceptInfoPluginsForGenericParser);
             return dslModel.Concepts.ToList();
         }
-
 
         //=========================================================================
 

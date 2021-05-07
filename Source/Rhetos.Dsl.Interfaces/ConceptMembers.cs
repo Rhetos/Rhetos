@@ -28,7 +28,7 @@ namespace Rhetos.Dsl
 {
     public static class ConceptMembers
     {
-        private static Dictionary<Type, ConceptMember[]> _cache = new Dictionary<Type, ConceptMember[]>();
+        private static readonly Dictionary<Type, ConceptMember[]> _cache = new Dictionary<Type, ConceptMember[]>();
 
         public static ConceptMember[] Get(IConceptInfo conceptInfo)
         {
@@ -74,6 +74,9 @@ namespace Rhetos.Dsl
                         return diff;
                     return a.SortOrder2 - b.SortOrder2;
                 });
+
+            for (int i = 0; i < conceptMembers.Length; i++)
+                conceptMembers[i].Index = i;
 
             if (!conceptMembers.Any(m => m.IsKey))
                 throw new FrameworkException(

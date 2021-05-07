@@ -17,54 +17,119 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Logging;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using Rhetos.Utilities;
-using Rhetos.Logging;
 
 namespace Rhetos.Dsl
 {
     public class DslGrammar
     {
-        private readonly IConceptInfo[] _conceptInfoPlugins;
         private readonly ILogger _keywordsLogger;
         private readonly ILogger _performanceLogger;
 
-        public DslGrammar(IConceptInfo[] conceptInfoPlugins, ILogProvider logProvider)
+        public ConceptType[] ConceptTypes { get; } // This is DslSyntax.
+
+        public DslGrammar(IEnumerable<IConceptInfo> conceptInfoPlugins, ILogProvider logProvider)
         {
-            _conceptInfoPlugins = conceptInfoPlugins;
             _keywordsLogger = logProvider.GetLogger("DslParser.Keywords"); // Legacy logger name.
             _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
+            ConceptTypes = CreateDslSyntax(conceptInfoPlugins.Select(ci => ci.GetType()));
+        }
+
+        private static ConceptType[] CreateDslSyntax(IEnumerable<Type> conceptInfoTypes)
+        {
+            var types = conceptInfoTypes
+                .Distinct()
+                .ToDictionary(
+                    conceptInfoType => conceptInfoType,
+                    conceptInfoType => CreateConceptTypeWithoutMembers(conceptInfoType));
+
+            foreach (var type in types)
+                type.Value.Members = ConceptMembers.Get(type.Key)
+                    .Select(conceptMember =>
+                    {
+                        var memberSyntax = new ConceptMemberSyntax();
+                        ConceptMemberBase.Copy(conceptMember, memberSyntax);
+                        memberSyntax.ConceptType = memberSyntax.IsConceptInfo && !memberSyntax.IsConceptInfoInterface
+                            ? types.GetValue(conceptMember.ValueType, $"{nameof(DslGrammar)} does not contain concept type '{conceptMember.ValueType}', referenced by {type.Key}.{conceptMember.Name}.")
+                            : null;
+                        return memberSyntax;
+                    })
+                    .ToArray();
+
+            return types.Values.ToArray();
+        }
+
+        private static ConceptType CreateConceptTypeWithoutMembers(Type conceptInfoType)
+        {
+            if (!typeof(IConceptInfo).IsAssignableFrom(conceptInfoType))
+                throw new ArgumentException($"Type '{conceptInfoType}' is not an implementation of '{typeof(IConceptInfo)}'.");
+            if (typeof(IConceptInfo) == conceptInfoType)
+                throw new ArgumentException($"{nameof(ConceptType)} cannot be created from {nameof(IConceptInfo)} interface. An implementation class is required.");
+
+            return new ConceptType
+            {
+                AssemblyQualifiedName = conceptInfoType.AssemblyQualifiedName,
+                BaseTypesAssemblyQualifiedName = GetBaseConceptInfoTypes(conceptInfoType),
+                BaseTypeName = ConceptInfoHelper.BaseConceptInfoType(conceptInfoType).Name,
+                TypeName = conceptInfoType.Name,
+                Keyword = ConceptInfoHelper.GetKeyword(conceptInfoType),
+                Members = null // Will be set later, to avoid recursive dependencies when creating this objects.
+            };
+        }
+
+        private static string[] GetBaseConceptInfoTypes(Type t)
+        {
+            var baseTypes = new List<Type>();
+
+            while (true)
+            {
+                Type baseType = t.BaseType;
+                if (typeof(IConceptInfo).IsAssignableFrom(baseType))
+                {
+                    baseTypes.Add(baseType);
+                    t = baseType;
+                }
+                else
+                    break;
+            }
+
+            if (!baseTypes.Any())
+                return Array.Empty<string>();
+            else
+            {
+                baseTypes.Reverse();
+                return baseTypes.Select(t => t.AssemblyQualifiedName).ToArray();
+            }
         }
 
         public MultiDictionary<string, IConceptParser> CreateGenericParsers(DslParser.OnMemberReadEvent onMemberRead)
         {
             var stopwatch = Stopwatch.StartNew();
 
-            var conceptMetadata = _conceptInfoPlugins
-                .Select(conceptInfo => conceptInfo.GetType())
-                .Distinct()
-                .Select(conceptInfoType => new
-                {
-                    conceptType = conceptInfoType,
-                    conceptKeyword = ConceptInfoHelper.GetKeyword(conceptInfoType)
-                })
-                .Where(cm => cm.conceptKeyword != null)
+            var parsableConcepts = ConceptTypes
+                .Where(c => c.Keyword != null)
                 .ToList();
 
-            _keywordsLogger.Trace(() => string.Join(" ", conceptMetadata.Select(cm => cm.conceptKeyword).OrderBy(keyword => keyword).Distinct()));
+            var parsers = parsableConcepts.ToMultiDictionary(
+                concept => concept.Keyword,
+                concept =>
+                {
+                    var parser = new GenericParser(concept);
+                    parser.OnMemberRead += onMemberRead;
+                    return (IConceptParser)parser;
+                },
+                StringComparer.OrdinalIgnoreCase);
 
-            var result = conceptMetadata.ToMultiDictionary(x => x.conceptKeyword, x =>
-            {
-                var parser = new GenericParser(x.conceptType, x.conceptKeyword);
-                parser.OnMemberRead += onMemberRead;
-                return (IConceptParser)parser;
-            }, StringComparer.OrdinalIgnoreCase);
             _performanceLogger.Write(stopwatch, "CreateGenericParsers.");
-            return result;
+
+            _keywordsLogger.Trace(() => string.Join(" ", parsers.Select(p => p.Key).OrderBy(keyword => keyword)));
+
+            return parsers;
         }
     }
 }

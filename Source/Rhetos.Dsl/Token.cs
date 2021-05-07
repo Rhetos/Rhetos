@@ -20,6 +20,7 @@
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -27,6 +28,7 @@ namespace Rhetos.Dsl
 {
     public enum TokenType { Text, Special, Comment, EndOfFile };
 
+    [DebuggerDisplay("{Type}: {Value}")]
     public class Token
     {
         public string Value;

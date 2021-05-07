@@ -17,17 +17,26 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities;
-using System.Collections.Generic;
+using System;
 
 namespace Rhetos.Dsl
 {
-    public interface IConceptParser
+    public class ConceptMemberSyntax : ConceptMemberBase
     {
         /// <summary>
-        /// If the keyword is not recognized return empty error string.
-        /// If the keyword is recognized, but the syntax is wrong, return error description.
+        /// If a member references a concrete concept, this property describes type of that concept.
+        /// It is set only if <see cref="ConceptMemberBase.IsConceptInfo"/> is true and <see cref="ConceptMemberBase.IsConceptInfoInterface"/> is false, null otherwise.
         /// </summary>
-        ValueOrError<ConceptSyntaxNode> Parse(ITokenReader tokenReader, Stack<ConceptSyntaxNode> context, out List<string> warnings);
+        public ConceptType ConceptType { get; set; }
+
+        public void SetMemberValue(ConceptSyntaxNode node, object value)
+        {
+            node.Parameters[Index] = value;
+        }
+
+        public object GetMemberValue(ConceptSyntaxNode node)
+        {
+            return node.Parameters[Index];
+        }
     }
 }

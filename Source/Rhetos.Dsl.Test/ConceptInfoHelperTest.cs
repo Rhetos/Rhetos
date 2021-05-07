@@ -132,19 +132,12 @@ namespace Rhetos.Dsl.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(FrameworkException))]
         public void GetKey_DerivationMustNotHaveKey()
         {
-            try
-            {
-                new DerivedWithKeyInfo("a", "b", "c").GetKey();
-            }
-            catch (Exception ex)
-            {
-                Assert.IsTrue(ex.Message.Contains("DerivedWithKeyInfo"));
-                Assert.IsTrue(ex.Message.Contains("Extra"));
-                throw;
-            }
+            TestUtility.ShouldFail<FrameworkException>(
+                () => Console.WriteLine(new DerivedWithKeyInfo("a", "b", "c").GetKey()),
+                "DerivedWithKeyInfo",
+                "Extra");
         }
 
         [TestMethod]
