@@ -31,14 +31,14 @@ namespace Rhetos.Dsl
     public class DslSyntaxFileGenerator : IGenerator
     {
         private readonly IDslSyntax _dslSyntax;
-        private readonly IAssetsOptions _assetsOptions;
+        private readonly RhetosBuildEnvironment _rhetosBuildEnvironment;
         private readonly ILogger _performanceLogger;
         public static readonly string DslSyntaxFileName = "DslSyntax.json";
 
-        public DslSyntaxFileGenerator(IDslSyntax dslSyntax, IAssetsOptions assetsOptions, ILogProvider logProvider)
+        public DslSyntaxFileGenerator(IDslSyntax dslSyntax, RhetosBuildEnvironment rhetosBuildEnvironment, ILogProvider logProvider)
         {
             _dslSyntax = dslSyntax;
-            _assetsOptions = assetsOptions;
+            _rhetosBuildEnvironment = rhetosBuildEnvironment;
             _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
         }
 
@@ -54,7 +54,7 @@ namespace Rhetos.Dsl
                 Formatting = Formatting.Indented,
             };
 
-            JsonUtility.SerializeToFile(_dslSyntax, Path.Combine(_assetsOptions.AssetsFolder, DslSyntaxFileName), serializerSettings);
+            JsonUtility.SerializeToFile(_dslSyntax, Path.Combine(_rhetosBuildEnvironment.CacheFolder, DslSyntaxFileName), serializerSettings);
             _performanceLogger.Write(sw, nameof(Generate));
         }
 

@@ -37,6 +37,9 @@ namespace Rhetos.Utilities
         /// </summary>
         public string OutputAssemblyName { get; set; }
 
+        /// <summary>
+        /// Build cache folder. It may be reused between builds.
+        /// </summary>
         public string CacheFolder { get; set; }
 
         public string GeneratedAssetsFolder { get; set; }
