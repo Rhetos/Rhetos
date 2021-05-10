@@ -24,21 +24,24 @@ using System.Linq;
 
 namespace Rhetos.Dsl
 {
-    public class DslGrammar : IDslGrammar
+    public class DslSyntaxFromPlugins : IDslSyntax
     {
-        public ConceptType[] ConceptTypes { get; } // This is DslSyntax.
+        private readonly Lazy<ConceptType[]> _conceptTypes;
+
+        public ConceptType[] ConceptTypes => _conceptTypes.Value;
 
         public ExcessDotInKey ExcessDotInKey { get; }
 
         public string DatabaseLanguage { get; }
 
-        public string Version => SystemUtility.GetRhetosVersion();
+        public string Version { get; }
 
-        public DslGrammar(IEnumerable<IConceptInfo> conceptInfoPlugins, BuildOptions buildOptions, DatabaseSettings databaseSettings)
+        public DslSyntaxFromPlugins(IEnumerable<IConceptInfo> conceptInfoPlugins, BuildOptions buildOptions, DatabaseSettings databaseSettings)
         {
-            ConceptTypes = CreateDslSyntax(conceptInfoPlugins.Select(ci => ci.GetType()));
+            _conceptTypes = new Lazy<ConceptType[]>(() => CreateDslSyntax(conceptInfoPlugins.Select(ci => ci.GetType())));
             ExcessDotInKey = buildOptions.DslSyntaxExcessDotInKey;
             DatabaseLanguage = databaseSettings.DatabaseLanguage;
+            Version = SystemUtility.GetRhetosVersion();
         }
 
         private static ConceptType[] CreateDslSyntax(IEnumerable<Type> conceptInfoTypes)
@@ -56,7 +59,7 @@ namespace Rhetos.Dsl
                         var memberSyntax = new ConceptMemberSyntax();
                         ConceptMemberBase.Copy(conceptMember, memberSyntax);
                         memberSyntax.ConceptType = memberSyntax.IsConceptInfo && !memberSyntax.IsConceptInfoInterface
-                            ? types.GetValue(conceptMember.ValueType, $"{nameof(DslGrammar)} does not contain concept type '{conceptMember.ValueType}', referenced by {type.Key}.{conceptMember.Name}.")
+                            ? types.GetValue(conceptMember.ValueType, $"{nameof(DslSyntaxFromPlugins)} does not contain concept type '{conceptMember.ValueType}', referenced by {type.Key}.{conceptMember.Name}.")
                             : null;
                         return memberSyntax;
                     })

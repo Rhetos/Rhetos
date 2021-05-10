@@ -32,10 +32,10 @@ namespace Rhetos.Dsl
     {
         private readonly IDslScriptsProvider _dslScriptsProvider;
         private readonly FilesUtility _filesUtility;
-        private readonly IDslGrammar _grammar;
+        private readonly IDslSyntax _grammar;
         private readonly Lazy<List<Token>> _tokens;
 
-        public Tokenizer(IDslScriptsProvider dslScriptsProvider, FilesUtility filesUtility, IDslGrammar grammar)
+        public Tokenizer(IDslScriptsProvider dslScriptsProvider, FilesUtility filesUtility, IDslSyntax grammar)
         {
             _dslScriptsProvider = dslScriptsProvider;
             _filesUtility = filesUtility;
@@ -81,9 +81,9 @@ namespace Rhetos.Dsl
     {
         private readonly static char[] Whitespaces = { ' ', '\t', '\n', '\r' };
         private static readonly HashSet<char> invalidPathChars = new HashSet<char>(Path.GetInvalidPathChars());
-        private readonly IDslGrammar _grammar;
+        private readonly IDslSyntax _grammar;
 
-        public TokenizerInternals(IDslGrammar grammar)
+        public TokenizerInternals(IDslSyntax grammar)
         {
             _grammar = grammar;
         }

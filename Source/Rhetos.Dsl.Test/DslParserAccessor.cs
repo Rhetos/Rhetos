@@ -27,7 +27,7 @@ namespace Rhetos.Dsl.Test
 {
     class TestDslParser : DslParser, ITestAccessor
     {
-        private readonly DslGrammar grammar;
+        private readonly DslSyntaxFromPlugins grammar;
 
         public TestDslParser(string dsl)
             : this(dsl, Array.Empty<IConceptInfo>())
@@ -39,7 +39,7 @@ namespace Rhetos.Dsl.Test
         {
         }
 
-        public TestDslParser(string dsl, DslGrammar grammar)
+        public TestDslParser(string dsl, DslSyntaxFromPlugins grammar)
             : base (
                 new TestTokenizer(dsl),
                 grammar,

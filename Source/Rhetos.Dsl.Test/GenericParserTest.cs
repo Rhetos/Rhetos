@@ -30,7 +30,7 @@ namespace Rhetos.Dsl.Test
     class GenericParserHelper<TConceptInfo> : IConceptParser where TConceptInfo : IConceptInfo, new()
     {
         public TokenReader tokenReader;
-        public DslGrammar DslGrammar;
+        public DslSyntaxFromPlugins DslGrammar;
         public GenericParser GenericParser;
 
         public GenericParserHelper(string overrideKeyword = null)
@@ -38,7 +38,7 @@ namespace Rhetos.Dsl.Test
         {
         }
 
-        public GenericParserHelper(DslGrammar grammar, string overrideKeyword = null)
+        public GenericParserHelper(DslSyntaxFromPlugins grammar, string overrideKeyword = null)
         {
             DslGrammar = grammar;
             ConceptType conceptType = DslGrammar.GetConceptType(typeof(TConceptInfo), overrideKeyword);

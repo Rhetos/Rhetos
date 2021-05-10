@@ -28,7 +28,7 @@ namespace Rhetos.Dsl.Test
 {
     public static class DslGrammarHelper
     {
-        public static ConceptSyntaxNode CreateConceptSyntaxNode(this DslGrammar grammar, IConceptInfo ci)
+        public static ConceptSyntaxNode CreateConceptSyntaxNode(this DslSyntaxFromPlugins grammar, IConceptInfo ci)
         {
             var conceptInfoType = ci.GetType();
             var node = new ConceptSyntaxNode(grammar.GetConceptType(conceptInfoType));
@@ -64,7 +64,7 @@ namespace Rhetos.Dsl.Test
             return node;
         }
 
-        public static ConceptType GetConceptType(this DslGrammar grammar, Type conceptInfoType, string overrideKeyword = null)
+        public static ConceptType GetConceptType(this DslSyntaxFromPlugins grammar, Type conceptInfoType, string overrideKeyword = null)
         {
             var conceptType = grammar.ConceptTypes.Single(ct => ct.AssemblyQualifiedName == conceptInfoType.AssemblyQualifiedName);
             if (overrideKeyword != null)
@@ -75,17 +75,17 @@ namespace Rhetos.Dsl.Test
         /// <summary>
         /// The grammar will also include all related concepts, referenced by the provided concept's members.
         /// </summary>
-        public static DslGrammar CreateDslGrammar(params IConceptInfo[] conceptInfos)
+        public static DslSyntaxFromPlugins CreateDslGrammar(params IConceptInfo[] conceptInfos)
             => CreateDslGrammar(conceptInfos.Select(ci => ci.GetType()).ToArray());
 
         /// <summary>
         /// The grammar will also include all related concepts, referenced by the provided concept's members.
         /// </summary>
-        public static DslGrammar CreateDslGrammar(params Type[] conceptInfoTypes)
+        public static DslSyntaxFromPlugins CreateDslGrammar(params Type[] conceptInfoTypes)
         {
             var relatedConcepts = GetAllRelatedConceptInfoTypes(conceptInfoTypes);
             var relatedConceptPrototypes = relatedConcepts.Select(c => (IConceptInfo)Activator.CreateInstance(c)).ToList();
-            var grammar = new DslGrammar(relatedConceptPrototypes, new BuildOptions(), new DatabaseSettings());
+            var grammar = new DslSyntaxFromPlugins(relatedConceptPrototypes, new BuildOptions(), new DatabaseSettings());
             return grammar;
         }
 

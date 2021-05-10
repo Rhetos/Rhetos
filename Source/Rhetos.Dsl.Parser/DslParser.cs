@@ -33,12 +33,12 @@ namespace Rhetos.Dsl
     public class DslParser : IDslParser
     {
         private readonly Tokenizer _tokenizer;
-        private readonly IDslGrammar _grammar;
+        private readonly IDslSyntax _grammar;
         private readonly ILogger _keywordsLogger;
         private readonly ILogger _performanceLogger;
         private readonly ILogger _logger;
 
-        public DslParser(Tokenizer tokenizer, IDslGrammar dslGrammar, ILogProvider logProvider)
+        public DslParser(Tokenizer tokenizer, IDslSyntax dslGrammar, ILogProvider logProvider)
         {
             _tokenizer = tokenizer;
             _grammar = dslGrammar;
