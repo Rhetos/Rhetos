@@ -206,7 +206,7 @@ namespace Rhetos.Processing
                     else
                     {
                         userMessage = null;
-                        systemMessage = FrameworkException.GetInternalServerErrorMessage(_localizer, ex);
+                        systemMessage = ErrorReporting.GetInternalServerErrorMessage(_localizer, ex);
                     }
 
                     return LogAndReturnError(commandResults, "Command failed: " + commandInfo + ".", systemMessage, userMessage, ex, commands, executionId);

@@ -43,8 +43,7 @@ namespace Rhetos.Dsl.Test
             : base (
                 new TestTokenizer(dsl),
                 grammar,
-                new ConsoleLogProvider(),
-                new BuildOptions())
+                new ConsoleLogProvider())
         {
             this.grammar = grammar;
         }

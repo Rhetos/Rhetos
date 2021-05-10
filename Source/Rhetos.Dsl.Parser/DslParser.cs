@@ -33,20 +33,18 @@ namespace Rhetos.Dsl
     public class DslParser : IDslParser
     {
         private readonly Tokenizer _tokenizer;
-        private readonly IDslGrammar _dslGrammar;
+        private readonly IDslGrammar _grammar;
         private readonly ILogger _keywordsLogger;
         private readonly ILogger _performanceLogger;
         private readonly ILogger _logger;
-        private readonly ExcessDotInKey _legacySyntax;
 
-        public DslParser(Tokenizer tokenizer, IDslGrammar dslGrammar, ILogProvider logProvider, BuildOptions buildOptions)
+        public DslParser(Tokenizer tokenizer, IDslGrammar dslGrammar, ILogProvider logProvider)
         {
             _tokenizer = tokenizer;
-            _dslGrammar = dslGrammar;
+            _grammar = dslGrammar;
             _keywordsLogger = logProvider.GetLogger("DslParser.Keywords"); // Legacy logger name.
             _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _logger = logProvider.GetLogger(GetType().Name);
-            _legacySyntax = buildOptions.DslSyntaxExcessDotInKey;
         }
 
         public IEnumerable<ConceptSyntaxNode> ParsedConcepts => GetConcepts();
@@ -63,7 +61,7 @@ namespace Rhetos.Dsl
 
         private List<ConceptSyntaxNode> GetConcepts()
         {
-            var parsers = CreateGenericParsers(_dslGrammar.ConceptTypes);
+            var parsers = CreateGenericParsers(_grammar.ConceptTypes);
             var parsedConcepts = ExtractConcepts(parsers);
             return parsedConcepts;
         }
@@ -130,12 +128,12 @@ namespace Rhetos.Dsl
 
             foreach (string warning in warnings)
             {
-                if (_legacySyntax == ExcessDotInKey.Ignore)
+                if (_grammar.ExcessDotInKey == ExcessDotInKey.Ignore)
                     _logger.Trace(warning);
                 else
                     _logger.Warning(warning);
             }
-            if (_legacySyntax == ExcessDotInKey.Error && warnings.Any())
+            if (_grammar.ExcessDotInKey == ExcessDotInKey.Error && warnings.Any())
                 throw new DslSyntaxException(warnings.First());
 
             return newConcepts;

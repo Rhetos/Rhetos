@@ -10,12 +10,12 @@
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.7.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.1" />
     <PackageReference Include="Autofac" Version="4.9.4" />
-    <PackageReference Include="System.Text.Encoding.CodePages" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Rhetos.Dom.Interfaces\Rhetos.Dom.Interfaces.csproj" />
     <ProjectReference Include="..\Rhetos.Logging.Interfaces\Rhetos.Logging.Interfaces.csproj" />
+    <ProjectReference Include="..\Rhetos.Utilities.Interfaces\Rhetos.Utilities.Interfaces.csproj" />
   </ItemGroup>
 
 </Project>

@@ -72,6 +72,7 @@ Changes in Rhetos libraries API:
    * Custom code that uses Paths.ResourcesFolder should use IAssetsOptions.AssetsFolder instead.
    * Custom code that uses Paths.RhetosServerRootPath may use RhetosAppOptions.CacheFolder or RhetosAppOptions.RhetosHostFolder instead.
 8. The property DatabaseLanguage is moved from classes BuildOptions and RhetosAppOptions to class DatabaseSettings.
+9. GetInternalServerErrorMessage method moved from FrameworkException class to Rhetos.Utilities.ErrorReporting.
 
 ## 4.3.0 (2021-03-05)
 

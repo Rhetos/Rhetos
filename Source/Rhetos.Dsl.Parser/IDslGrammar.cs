@@ -17,10 +17,29 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Utilities;
+
 namespace Rhetos.Dsl
 {
     public interface IDslGrammar
     {
+        /// <summary>
+        /// Semantic Versioning 2.0.0.
+        /// </summary>
+        string Version { get; }
+
         ConceptType[] ConceptTypes { get; }
+
+        /// <summary>
+        /// Value is initially configured from BuildOptions class.
+        /// It is persisted as a part of <see cref="IDslGrammar"/> to be available to the external language server.
+        /// </summary>
+        ExcessDotInKey ExcessDotInKey { get; }
+
+        /// <summary>
+        /// Value is initially configured from DatabaseSettings class.
+        /// It is persisted as a part of <see cref="IDslGrammar"/> to be available to the external language server.
+        /// </summary>
+        string DatabaseLanguage { get; }
     }
 }

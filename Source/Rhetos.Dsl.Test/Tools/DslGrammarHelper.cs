@@ -85,7 +85,7 @@ namespace Rhetos.Dsl.Test
         {
             var relatedConcepts = GetAllRelatedConceptInfoTypes(conceptInfoTypes);
             var relatedConceptPrototypes = relatedConcepts.Select(c => (IConceptInfo)Activator.CreateInstance(c)).ToList();
-            var grammar = new DslGrammar(relatedConceptPrototypes);
+            var grammar = new DslGrammar(relatedConceptPrototypes, new BuildOptions(), new DatabaseSettings());
             return grammar;
         }
 

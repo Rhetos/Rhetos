@@ -64,6 +64,7 @@
   <Reference Relative="..\Rhetos.Security.dll">..\Rhetos.Security.dll</Reference>
   <Reference Relative="..\Rhetos.Security.Interfaces.dll">..\Rhetos.Security.Interfaces.dll</Reference>
   <Reference Relative="..\Rhetos.Utilities.dll">..\Rhetos.Utilities.dll</Reference>
+  <Reference Relative="..\Rhetos.Utilities.Interfaces.dll">..\Rhetos.Utilities.Interfaces.dll</Reference>
   <Reference Relative="..\Rhetos.XmlSerialization.dll">..\Rhetos.XmlSerialization.dll</Reference>
   <Namespace>Autofac</Namespace>
   <Namespace>Oracle.ManagedDataAccess.Client</Namespace>

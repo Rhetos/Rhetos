@@ -107,6 +107,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Host.AspNet.Test", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Dsl.Parser", "Source\Rhetos.Dsl.Parser\Rhetos.Dsl.Parser.csproj", "{81D96B00-031E-495C-947F-D9542AE77533}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Utilities.Interfaces", "Source\Rhetos.Utilities.Interfaces\Rhetos.Utilities.Interfaces.csproj", "{F9F094B6-A872-4B84-B2F3-0A1FA3C0672A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -293,6 +295,10 @@ Global
 		{81D96B00-031E-495C-947F-D9542AE77533}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{81D96B00-031E-495C-947F-D9542AE77533}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{81D96B00-031E-495C-947F-D9542AE77533}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F9F094B6-A872-4B84-B2F3-0A1FA3C0672A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9F094B6-A872-4B84-B2F3-0A1FA3C0672A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9F094B6-A872-4B84-B2F3-0A1FA3C0672A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9F094B6-A872-4B84-B2F3-0A1FA3C0672A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -343,6 +349,7 @@ Global
 		{10E35BC5-FD35-4FCF-8511-1EF0E5B847A6} = {56257C0A-67DA-452F-BB55-EC51FD6107A9}
 		{5F24785B-47E3-487B-AF38-889EF440A97C} = {56257C0A-67DA-452F-BB55-EC51FD6107A9}
 		{81D96B00-031E-495C-947F-D9542AE77533} = {0124322E-2731-48E8-910C-957E37181628}
+		{F9F094B6-A872-4B84-B2F3-0A1FA3C0672A} = {0124322E-2731-48E8-910C-957E37181628}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4B8D1BEA-EAAA-484D-B00D-1D23226A5A90}

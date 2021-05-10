@@ -17,20 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Rhetos.Dsl.Test
+namespace Rhetos.Utilities
 {
-    public class TestTokenizer : Tokenizer
-    {
-        public TestTokenizer(params string[] dslScripts)
-            : base(new MockDslScriptsProvider(dslScripts), new FilesUtility(new ConsoleLogProvider()), new DslGrammar(Array.Empty<IConceptInfo>(), new BuildOptions(), new DatabaseSettings()))
-        {
-        }
-    }
+    /// <summary>
+    /// Before Rhetos v4.0, dot character was expected before string key parameter of current statement.
+    /// Since Rhetos v4.0, dot should only be used for separating key parameters of referenced concept,
+    /// but legacy syntax is allowed by setting this option to <see cref="Ignore"/> or <see cref="Warning"/>.
+    /// </summary>
+    public enum ExcessDotInKey { Ignore, Warning, Error };
 }

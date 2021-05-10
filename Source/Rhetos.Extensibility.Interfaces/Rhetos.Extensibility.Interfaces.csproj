@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Rhetos.Utilities\Rhetos.Utilities.csproj" />
+    <ProjectReference Include="..\Rhetos.Utilities.Interfaces\Rhetos.Utilities.Interfaces.csproj" />
   </ItemGroup>
 
 </Project>

@@ -17,20 +17,18 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Rhetos.Dsl.Test
+namespace Rhetos.Utilities
 {
-    public class TestTokenizer : Tokenizer
+    public static class ErrorReporting
     {
-        public TestTokenizer(params string[] dslScripts)
-            : base(new MockDslScriptsProvider(dslScripts), new FilesUtility(new ConsoleLogProvider()), new DslGrammar(Array.Empty<IConceptInfo>(), new BuildOptions(), new DatabaseSettings()))
+        public static string GetInternalServerErrorMessage(ILocalizer localizer, Exception exception)
         {
+            return localizer[
+                "Internal server error occurred. See server log for more information. ({0}, {1})",
+                exception.GetType().Name,
+                DateTime.Now.ToString("s")];
         }
     }
 }

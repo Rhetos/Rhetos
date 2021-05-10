@@ -62,7 +62,7 @@ namespace Rhetos.Dsl.Test
         private static Token TestGetNextToken_ValueType(string dsl, ref int position)
         {
             var dslScript = new MockDslScript(dsl);
-            return TokenizerInternals.GetNextToken_ValueType(dslScript, ref position, System.IO.File.ReadAllText);
+            return new TokenizerInternals(null).GetNextToken_ValueType(dslScript, ref position, System.IO.File.ReadAllText);
         }
 
         static void CheckSingle(TokenType expectedType, string expectedValue, string dsl)

@@ -28,9 +28,17 @@ namespace Rhetos.Dsl
     {
         public ConceptType[] ConceptTypes { get; } // This is DslSyntax.
 
-        public DslGrammar(IEnumerable<IConceptInfo> conceptInfoPlugins)
+        public ExcessDotInKey ExcessDotInKey { get; }
+
+        public string DatabaseLanguage { get; }
+
+        public string Version => SystemUtility.GetRhetosVersion();
+
+        public DslGrammar(IEnumerable<IConceptInfo> conceptInfoPlugins, BuildOptions buildOptions, DatabaseSettings databaseSettings)
         {
             ConceptTypes = CreateDslSyntax(conceptInfoPlugins.Select(ci => ci.GetType()));
+            ExcessDotInKey = buildOptions.DslSyntaxExcessDotInKey;
+            DatabaseLanguage = databaseSettings.DatabaseLanguage;
         }
 
         private static ConceptType[] CreateDslSyntax(IEnumerable<Type> conceptInfoTypes)

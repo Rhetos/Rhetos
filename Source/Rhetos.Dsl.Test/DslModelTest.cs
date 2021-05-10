@@ -153,8 +153,7 @@ namespace Rhetos.Dsl.Test
             var nullDslParser = new DslParser(
                 new TestTokenizer(dsl),
                 DslGrammarHelper.CreateDslGrammar(conceptInfoPluginsForGenericParser),
-                new ConsoleLogProvider(),
-                new BuildOptions());
+                new ConsoleLogProvider());
             Console.WriteLine("Parsed concepts:");
             Console.WriteLine(string.Join(Environment.NewLine, nullDslParser.ParsedConcepts.Select(ci => " - " + ci.GetUserDescription())));
 
