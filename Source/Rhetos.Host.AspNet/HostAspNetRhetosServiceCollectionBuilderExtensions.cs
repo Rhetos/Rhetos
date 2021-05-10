@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.DependencyInjection
     /// </summary>
     public static class HostAspNetRhetosServiceCollectionBuilderExtensions
     {
-        public static RhetosServiceCollectionBuilder UseAspNetCoreIdentityUser(this RhetosServiceCollectionBuilder rhetosServiceCollectionBuilder)
+        public static RhetosServiceCollectionBuilder AddAspNetCoreIdentityUser(this RhetosServiceCollectionBuilder rhetosServiceCollectionBuilder)
         {
             rhetosServiceCollectionBuilder.Services.AddHttpContextAccessor();
 
