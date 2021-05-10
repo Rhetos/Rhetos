@@ -17,21 +17,23 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Rhetos.Utilities;
 
 namespace Rhetos.Host.AspNet
 {
-    internal sealed class RhetosComponent<T> : IRhetosComponent<T>
+    /// <summary>
+    /// Used for adding Rhetos-specific services to <see cref="IServiceCollection"/>.
+    /// </summary>
+    public static class RhetosServiceCollectionBuilderExtensions
     {
-        public T Value { get; }
-
-        public RhetosComponent(RhetosScopeServiceProvider rhetosScopeServiceProvider)
+        public static RhetosServiceCollectionBuilder UseAspNetCoreIdentityUser(this RhetosServiceCollectionBuilder rhetosServiceCollectionBuilder)
         {
-            Value = rhetosScopeServiceProvider.Resolve<T>();
+            rhetosServiceCollectionBuilder.Services.AddHttpContextAccessor();
+
+            // not using TryAdd, allows subsequent calls to override previous ones
+            rhetosServiceCollectionBuilder.Services.AddScoped<IUserInfo, RhetosAspNetCoreIdentityUser>();
+            return rhetosServiceCollectionBuilder;
         }
     }
 }

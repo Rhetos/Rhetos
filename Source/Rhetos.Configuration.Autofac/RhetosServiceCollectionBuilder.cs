@@ -18,32 +18,16 @@
 */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
-using Rhetos.Utilities;
 
-namespace Rhetos.Host.AspNet
+namespace Rhetos
 {
-    /// <summary>
-    /// Used for adding Rhetos-specific services to <see cref="IServiceCollection"/>.
-    /// </summary>
-    public class RhetosAspNetServiceCollectionBuilder
+    public class RhetosServiceCollectionBuilder
     {
         public IServiceCollection Services { get; }
-
-        public RhetosAspNetServiceCollectionBuilder(IServiceCollection serviceCollection)
+        public RhetosServiceCollectionBuilder(IServiceCollection serviceCollection)
         {
             Services = serviceCollection;
-        }
-
-        public RhetosAspNetServiceCollectionBuilder UseAspNetCoreIdentityUser()
-        {
-            Services.AddHttpContextAccessor();
-
-            // not using TryAdd, allows subsequent calls to override previous ones
-            Services.AddScoped<IUserInfo, RhetosAspNetCoreIdentityUser>();
-            return this;
         }
     }
 }

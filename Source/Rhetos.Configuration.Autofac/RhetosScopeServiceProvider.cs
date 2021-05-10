@@ -17,16 +17,30 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Autofac;
+using Rhetos.Utilities;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Rhetos.Host.AspNet
+namespace Rhetos
 {
-    public interface IRhetosComponent<out T>
+    internal sealed class RhetosScopeServiceProvider : IDisposable
     {
-        T Value { get; }
+        private readonly UnitOfWorkScope unitOfWorkScope;
+
+        public RhetosScopeServiceProvider(RhetosHost rhetosHost, IUserInfo rhetosUser)
+        {
+            unitOfWorkScope = rhetosHost.CreateScope(builder => builder.RegisterInstance(rhetosUser));
+        }
+
+        public T Resolve<T>()
+        {
+            return unitOfWorkScope.Resolve<T>();
+        }
+
+        public void Dispose()
+        {
+            unitOfWorkScope.Dispose();
+            GC.SuppressFinalize(this);
+        }
     }
 }

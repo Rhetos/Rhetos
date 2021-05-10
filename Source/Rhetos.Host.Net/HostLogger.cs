@@ -21,9 +21,9 @@ using Microsoft.Extensions.Logging;
 using Rhetos.Logging;
 using System;
 
-namespace Rhetos.Host.AspNet
+namespace Rhetos.Host.Net
 {
-    public class HostLogProvider : ILogProvider
+    public class HostLogProvider : Rhetos.Logging.ILogProvider
     {
         private readonly ILoggerProvider _loggerProvider;
 
@@ -32,13 +32,13 @@ namespace Rhetos.Host.AspNet
             _loggerProvider = loggerProvider;
         }
         
-        public Logging.ILogger GetLogger(string eventName)
+        public Rhetos.Logging.ILogger GetLogger(string eventName)
         {
             return new HostLogger(eventName, _loggerProvider.CreateLogger(eventName));
         }
     }
 
-    public class HostLogger : Logging.ILogger
+    public class HostLogger : Rhetos.Logging.ILogger
     {
         private readonly Microsoft.Extensions.Logging.ILogger _logger;
 

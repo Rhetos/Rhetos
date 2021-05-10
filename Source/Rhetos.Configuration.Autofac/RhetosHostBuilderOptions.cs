@@ -20,9 +20,9 @@
 using System;
 using System.Collections.Generic;
 
-namespace Rhetos.Host.AspNet
+namespace Rhetos
 {
-    internal class RhetosHostBuilderOptions
+    public class RhetosHostBuilderOptions
     {
         public List<Action<IServiceProvider, IRhetosHostBuilder>> ConfigureActions { get; set; } = new List<Action<IServiceProvider, IRhetosHostBuilder>>();
     }
