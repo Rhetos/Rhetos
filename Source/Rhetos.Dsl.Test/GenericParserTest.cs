@@ -64,7 +64,7 @@ namespace Rhetos.Dsl.Test
 
             tokenReader = GenericParserTest.TestTokenReader(dsl);
             ConceptSyntaxNode node = GenericParser.Parse(tokenReader, contextNodes, out var warnings).Value;
-            return (TConceptInfo)ConceptInfoHelper.CreateConceptInfo(typeof(TConceptInfo), node);
+            return (TConceptInfo)ConceptInfoHelper.ConvertNodeToConceptInfo(node);
         }
     }
 
@@ -98,7 +98,7 @@ namespace Rhetos.Dsl.Test
             var simpleParser = new GenericParserHelper<SimpleConceptInfo>("abc");
             var tokenReader = TestTokenReader("simple abc def", 1);
             var node = simpleParser.GenericParser.Parse(tokenReader, new Stack<ConceptSyntaxNode>(), out var warnings).Value;
-            SimpleConceptInfo ci = (SimpleConceptInfo)ConceptInfoHelper.CreateConceptInfo(typeof(SimpleConceptInfo), node);
+            SimpleConceptInfo ci = (SimpleConceptInfo)ConceptInfoHelper.ConvertNodeToConceptInfo(node);
 
             Assert.AreEqual("def", ci.Name);
             TestUtility.AssertContains(tokenReader.ReportPosition(), "column 15,");
@@ -198,7 +198,7 @@ namespace Rhetos.Dsl.Test
 
             var tokenReader = TestTokenReader("simple a { enclosed b; }", 3);
             var node = enclosedParser.GenericParser.Parse(tokenReader, stack, out var warnings).Value;
-            var ci = (EnclosedConceptInfo)ConceptInfoHelper.CreateConceptInfo(typeof(EnclosedConceptInfo), node);
+            var ci = (EnclosedConceptInfo)ConceptInfoHelper.ConvertNodeToConceptInfo(node);
             Assert.AreEqual("a", ci.Parent.Name);
             Assert.AreEqual("b", ci.Name);
             TestUtility.AssertContains(tokenReader.ReportPosition(), "before: \";");

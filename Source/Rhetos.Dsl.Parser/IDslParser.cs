@@ -26,6 +26,6 @@ namespace Rhetos.Dsl
     /// </summary>
     public interface IDslParser
     {
-        IEnumerable<IConceptInfo> ParsedConcepts { get; }
+        IEnumerable<ConceptSyntaxNode> ParsedConcepts { get; }
     }
 }

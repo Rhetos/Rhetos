@@ -51,6 +51,8 @@ namespace Rhetos.Dsl.Test
         {
             public string Extra { get; set; }
 
+            public DerivedConceptInfo() { }
+
             public DerivedConceptInfo(string name, string data, string extra)
                 : base(name, data)
             {

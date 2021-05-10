@@ -51,6 +51,8 @@ namespace Rhetos.Dsl.Test
         {
             public string Extra { get; set; }
 
+            public DerivedConceptInfo() { }
+
             public DerivedConceptInfo(string name, string data, string extra)
                 : base(name, data)
             {
@@ -78,9 +80,18 @@ namespace Rhetos.Dsl.Test
 
         internal class StubDslParser : IDslParser
         {
-            private readonly IEnumerable<IConceptInfo> _rawConcepts;
-            public StubDslParser(IEnumerable<IConceptInfo> rawConcepts) { _rawConcepts = rawConcepts; }
-            public IEnumerable<IConceptInfo> ParsedConcepts { get { return _rawConcepts; } }
+            public StubDslParser(IEnumerable<ConceptSyntaxNode> rawConcepts)
+            {
+                ParsedConcepts = rawConcepts.ToList(); // Making a copy.
+            }
+
+            public StubDslParser(IEnumerable<IConceptInfo> rawConcepts)
+            {
+                var grammar = DslGrammarHelper.CreateDslGrammar(rawConcepts.ToArray());
+                ParsedConcepts = rawConcepts.Select(ci => grammar.CreateConceptSyntaxNode(ci));
+            }
+
+            public IEnumerable<ConceptSyntaxNode> ParsedConcepts { get; }
         }
 
         internal class StubMacroIndex : IIndex<Type, IEnumerable<IConceptMacro>>
@@ -130,6 +141,13 @@ namespace Rhetos.Dsl.Test
             return dslModel.Concepts.ToList();
         }
 
+        static List<IConceptInfo> DslModelFromConcepts(IEnumerable<ConceptSyntaxNode> rawConcepts)
+        {
+            var conceptInfos = ConceptInfoHelper.ConvertNodesToConceptInfos(rawConcepts);
+            var dslModel = NewDslModel(new StubDslParser(rawConcepts), conceptInfos);
+            return dslModel.Concepts.ToList();
+        }
+
         static List<IConceptInfo> DslModelFromScript(string dsl, IConceptInfo[] conceptInfoPluginsForGenericParser)
         {
             var nullDslParser = new DslParser(
@@ -138,7 +156,7 @@ namespace Rhetos.Dsl.Test
                 new ConsoleLogProvider(),
                 new BuildOptions());
             Console.WriteLine("Parsed concepts:");
-            Console.WriteLine(string.Join(Environment.NewLine, nullDslParser.ParsedConcepts.Select(ci => " - " + ci.GetShortDescription())));
+            Console.WriteLine(string.Join(Environment.NewLine, nullDslParser.ParsedConcepts.Select(ci => " - " + ci.GetUserDescription())));
 
             var dslModel = NewDslModel(nullDslParser, conceptInfoPluginsForGenericParser);
             return dslModel.Concepts.ToList();
@@ -208,8 +226,9 @@ namespace Rhetos.Dsl.Test
             concepts.Add(ci);
 
             Assert.AreEqual(null, ci.Reference.Data);
-            DslModelFromConcepts(concepts);
-            Assert.AreEqual("bbb", ci.Reference.Data);
+            var concepts2 = DslModelFromConcepts(concepts);
+            var ci2 = concepts2.OfType<RefConceptInfo>().Single();
+            Assert.AreEqual("bbb", ci2.Reference.Data);
         }
 
         [TestMethod]
@@ -237,10 +256,11 @@ namespace Rhetos.Dsl.Test
             concepts.Add(ci);
 
             Assert.AreEqual(null, ci.Reference.Data);
-            DslModelFromConcepts(concepts);
-            Assert.AreEqual("bbb", ci.Reference.Data);
-            Assert.IsTrue(ci.Reference is DerivedConceptInfo, "ci.Reference is DerivedConceptInfo");
-            Assert.AreEqual("bbbbb", (ci.Reference as DerivedConceptInfo).Extra);
+            var concepts2 = DslModelFromConcepts(concepts);
+            var ci2 = concepts2.OfType<RefConceptInfo>().Single();
+            Assert.AreEqual("bbb", ci2.Reference.Data);
+            Assert.IsTrue(ci2.Reference is DerivedConceptInfo, "ci.Reference is DerivedConceptInfo");
+            Assert.AreEqual("bbbbb", (ci2.Reference as DerivedConceptInfo).Extra);
         }
 
         //===================================================================================
@@ -295,16 +315,17 @@ namespace Rhetos.Dsl.Test
         [TestMethod]
         public void SortReferencesBeforeUsingConceptTest()
         {
-            var c1 = new SimpleConceptInfo { Name = "n1", Data = "" };
-            var c2 = new RefConceptInfo { Name = "n2", Reference = c1 };
-            var concepts = new List<IConceptInfo>() { c2, c1 };
+            var c2 = new SimpleConceptInfo { Name = "n1", Data = "" };
+            var c1 = new RefConceptInfo { Name = "n2", Reference = c2 };
+            var concepts = new List<IConceptInfo>() { c1, c2 };
+            var concepts2 = DslModelFromConcepts(concepts);
 
-            concepts = DslModelFromConcepts(concepts);
-
-            Assert.AreEqual("InitializationConcept, REF n2.n1, SIMPLE n1", GetReport(concepts));
-
-            Assert.AreSame(c1, concepts[1]);
-            Assert.AreSame(c2, concepts[2]);
+            Assert.AreEqual(
+                "REF n2.n1, SIMPLE n1",
+                TestUtility.Dump(concepts, c => c is InitializationConcept ? "InitializationConcept" : c.GetUserDescription()));
+            Assert.AreEqual(
+                "InitializationConcept, SIMPLE n1, REF n2.n1",
+                TestUtility.Dump(concepts2, c => c is InitializationConcept ? "InitializationConcept" : c.GetUserDescription()));
         }
 
         //===================================================================================
@@ -314,6 +335,7 @@ namespace Rhetos.Dsl.Test
         {
             [ConceptKey]
             public string Value { get; set; }
+            public MacroConceptInfo() { }
             public MacroConceptInfo(string value) { Value = value; }
 
             public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
@@ -345,6 +367,7 @@ namespace Rhetos.Dsl.Test
         {
             [ConceptKey]
             public string Value { get; set; }
+            public SecondLevelMacroConceptInfo() { }
             public SecondLevelMacroConceptInfo(string value) { Value = value; }
 
             public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
@@ -374,6 +397,7 @@ namespace Rhetos.Dsl.Test
         {
             [ConceptKey]
             public string Value { get; set; }
+            public RecursiveMacroConceptInfo() { }
             public RecursiveMacroConceptInfo(string value) { Value = value; }
             public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
             {

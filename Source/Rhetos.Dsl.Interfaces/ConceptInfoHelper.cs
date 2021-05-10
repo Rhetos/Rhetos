@@ -277,16 +277,21 @@ namespace Rhetos.Dsl
             return t;
         }
 
-        public static IConceptInfo CreateConceptInfo(ConceptSyntaxNode node, Dictionary<ConceptSyntaxNode, IConceptInfo> keepReferences = null)
+        public static List<IConceptInfo> ConvertNodesToConceptInfos(IEnumerable<ConceptSyntaxNode> nodes)
+        {
+            var keepReferences = new Dictionary<ConceptSyntaxNode, IConceptInfo>();
+            var conceptInfos = new List<IConceptInfo>(nodes.Count());
+            foreach (var node in nodes)
+                conceptInfos.Add(ConvertNodeToConceptInfo(node, keepReferences));
+            return conceptInfos;
+        }
+
+        public static IConceptInfo ConvertNodeToConceptInfo(ConceptSyntaxNode node, Dictionary<ConceptSyntaxNode, IConceptInfo> keepReferences = null)
         {
             Type conceptInfoType = Type.GetType(node.Concept.AssemblyQualifiedName);
             if (conceptInfoType == null)
                 throw new ArgumentException($"Cannot find concept type '{node.Concept.AssemblyQualifiedName}'.");
-            return CreateConceptInfo(conceptInfoType, node, keepReferences);
-        }
 
-        public static IConceptInfo CreateConceptInfo(Type conceptInfoType, ConceptSyntaxNode node, Dictionary<ConceptSyntaxNode, IConceptInfo> keepReferences = null)
-        {
             var ci = (IConceptInfo)Activator.CreateInstance(conceptInfoType);
             var members = ConceptMembers.Get(conceptInfoType);
 
@@ -308,7 +313,7 @@ namespace Rhetos.Dsl
                 {
                     IConceptInfo referencedConceptInfo;
                     if (keepReferences == null || !keepReferences.TryGetValue(referencedNode, out referencedConceptInfo))
-                        referencedConceptInfo = CreateConceptInfo(referencedNode, keepReferences);
+                        referencedConceptInfo = ConvertNodeToConceptInfo(referencedNode, keepReferences);
 
                     member.SetMemberValue(ci, referencedConceptInfo);
                 }

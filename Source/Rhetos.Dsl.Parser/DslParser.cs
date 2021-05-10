@@ -33,21 +33,23 @@ namespace Rhetos.Dsl
     public class DslParser : IDslParser
     {
         private readonly Tokenizer _tokenizer;
-        private readonly DslGrammar _dslGrammar;
+        private readonly IDslGrammar _dslGrammar;
+        private readonly ILogger _keywordsLogger;
         private readonly ILogger _performanceLogger;
         private readonly ILogger _logger;
         private readonly ExcessDotInKey _legacySyntax;
 
-        public DslParser(Tokenizer tokenizer, DslGrammar dslGrammar, ILogProvider logProvider, BuildOptions buildOptions)
+        public DslParser(Tokenizer tokenizer, IDslGrammar dslGrammar, ILogProvider logProvider, BuildOptions buildOptions)
         {
             _tokenizer = tokenizer;
             _dslGrammar = dslGrammar;
+            _keywordsLogger = logProvider.GetLogger("DslParser.Keywords"); // Legacy logger name.
             _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _logger = logProvider.GetLogger(GetType().Name);
             _legacySyntax = buildOptions.DslSyntaxExcessDotInKey;
         }
 
-        public IEnumerable<IConceptInfo> ParsedConcepts => ConvertNodesToConceptInfos(GetConcepts());
+        public IEnumerable<ConceptSyntaxNode> ParsedConcepts => GetConcepts();
 
         public delegate void OnKeywordEvent(ITokenReader tokenReader, string keyword);
         public delegate void OnMemberReadEvent(ITokenReader tokenReader, ConceptSyntaxNode conceptInfo, ConceptMemberSyntax conceptMember, ValueOrError<object> valueOrError);
@@ -59,22 +61,36 @@ namespace Rhetos.Dsl
 
         //=================================================================
 
-        private List<IConceptInfo> ConvertNodesToConceptInfos(List<ConceptSyntaxNode> nodes)
-        {
-            var stopwatch = Stopwatch.StartNew();
-            var keepReferences = new Dictionary<ConceptSyntaxNode, IConceptInfo>();
-            var conceptInfos = new List<IConceptInfo>(nodes.Count);
-            foreach (var node in nodes)
-                conceptInfos.Add(ConceptInfoHelper.CreateConceptInfo(node, keepReferences));
-            _performanceLogger.Write(stopwatch, nameof(ConvertNodesToConceptInfos));
-            return conceptInfos;
-        }
-
         private List<ConceptSyntaxNode> GetConcepts()
         {
-            var parsers = _dslGrammar.CreateGenericParsers(OnMemberRead);
+            var parsers = CreateGenericParsers(_dslGrammar.ConceptTypes);
             var parsedConcepts = ExtractConcepts(parsers);
             return parsedConcepts;
+        }
+
+        public MultiDictionary<string, IConceptParser> CreateGenericParsers(ConceptType[] conceptTypes)
+        {
+            var stopwatch = Stopwatch.StartNew();
+
+            var parsableConcepts = conceptTypes
+                .Where(c => c.Keyword != null)
+                .ToList();
+
+            var parsers = parsableConcepts.ToMultiDictionary(
+                concept => concept.Keyword,
+                concept =>
+                {
+                    var parser = new GenericParser(concept);
+                    parser.OnMemberRead += OnMemberRead;
+                    return (IConceptParser)parser;
+                },
+                StringComparer.OrdinalIgnoreCase);
+
+            _performanceLogger.Write(stopwatch, "CreateGenericParsers.");
+
+            _keywordsLogger.Trace(() => string.Join(" ", parsers.Select(p => p.Key).OrderBy(keyword => keyword)));
+
+            return parsers;
         }
 
         private List<ConceptSyntaxNode> ExtractConcepts(MultiDictionary<string, IConceptParser> conceptParsers)

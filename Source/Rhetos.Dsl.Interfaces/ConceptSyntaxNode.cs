@@ -54,7 +54,7 @@ namespace Rhetos.Dsl
         public string GetUserDescription()
         {
             var desc = new StringBuilder(100);
-            desc.Append(Concept.TypeName);
+            desc.Append(Concept.KeywordOrTypeName);
             desc.Append(" ");
             AppendKeyMembers(desc);
             return desc.ToString();

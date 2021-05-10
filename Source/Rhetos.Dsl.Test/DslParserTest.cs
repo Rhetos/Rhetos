@@ -262,7 +262,7 @@ namespace Rhetos.Dsl.Test
                 "simple", "Expected \";\" or \"{\"", MockDslScript.TestScriptName, "TestDslScript(1,11)");
         }
         
-        private static IEnumerable<IConceptInfo> DslParserParse(params string[] dsl)
+        private static IEnumerable<ConceptSyntaxNode> DslParserParse(params string[] dsl)
         {
             var dslParser = new DslParser(
                 new TestTokenizer(dsl),
@@ -270,7 +270,7 @@ namespace Rhetos.Dsl.Test
                 new ConsoleLogProvider(),
                 new BuildOptions());
             var parsedConcepts = dslParser.ParsedConcepts;
-            Console.WriteLine("Parsed concepts: " + string.Join("\r\n", dslParser.ParsedConcepts));
+            Console.WriteLine("Parsed concepts: " + string.Join("\r\n", dslParser.ParsedConcepts.Select(c => c.Concept.TypeName)));
             return parsedConcepts;
         }
 
@@ -343,14 +343,15 @@ namespace Rhetos.Dsl.Test
         {
             string dsl = "SIMPLE s d; ALTER1 s; ALTER2 s.a1 d2;";
             var grammar = new IConceptInfo[] { new SimpleConceptInfo(), new AlternativeConcept1(), new AlternativeConcept2() };
-            var parsedConcepts = new TestDslParser(dsl, grammar).ParsedConcepts;
+            var parsedNodes = new TestDslParser(dsl, grammar).ParsedConcepts;
+            var parsedConcepts = ConceptInfoHelper.ConvertNodesToConceptInfos(parsedNodes);
 
             // IAlternativeInitializationConcept should be parsed, but not yet initialized.
             Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+SimpleConceptInfo Name=s Data=d", parsedConcepts.OfType<SimpleConceptInfo>().Single().GetErrorDescription());
             Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+AlternativeConcept1 Parent=s Name=<null> RefToParent=<null>", parsedConcepts.OfType<AlternativeConcept1>().Single().GetErrorDescription());
             Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+AlternativeConcept2 Alter1=s.a1 Name=<null> Data=d2", parsedConcepts.OfType<AlternativeConcept2>().Single().GetErrorDescription());
 
-            Assert.AreEqual("alter1, alter2, SIMPLE", TestUtility.DumpSorted(parsedConcepts, c => c.GetKeywordOrTypeName()));
+            Assert.AreEqual("alter1, alter2, SIMPLE", TestUtility.DumpSorted(parsedNodes, c => c.Concept.KeywordOrTypeName));
         }
 
         [TestMethod]
@@ -358,14 +359,15 @@ namespace Rhetos.Dsl.Test
         {
             string dsl = "SIMPLE s d { ALTER1 { ALTER2 d2; } }";
             var grammar = new IConceptInfo[] { new SimpleConceptInfo(), new AlternativeConcept1(), new AlternativeConcept2() };
-            var parsedConcepts = new TestDslParser(dsl, grammar).ParsedConcepts;
+            var parsedNodes = new TestDslParser(dsl, grammar).ParsedConcepts;
+            var parsedConcepts = ConceptInfoHelper.ConvertNodesToConceptInfos(parsedNodes);
 
             // IAlternativeInitializationConcept should be parsed, but not yet initialized.
             Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+SimpleConceptInfo Name=s Data=d", parsedConcepts.OfType<SimpleConceptInfo>().Single().GetErrorDescription());
             Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+AlternativeConcept1 Parent=s Name=<null> RefToParent=<null>", parsedConcepts.OfType<AlternativeConcept1>().Single().GetErrorDescription());
             Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+AlternativeConcept2 Alter1=s.<null> Name=<null> Data=d2", parsedConcepts.OfType<AlternativeConcept2>().Single().GetErrorDescription());
 
-            Assert.AreEqual("alter1, alter2, SIMPLE", TestUtility.DumpSorted(parsedConcepts, c => c.GetKeywordOrTypeName()));
+            Assert.AreEqual("alter1, alter2, SIMPLE", TestUtility.DumpSorted(parsedNodes, c => c.Concept.KeywordOrTypeName));
         }
 
         [ConceptKeyword("alterror1")]

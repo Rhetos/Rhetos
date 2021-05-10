@@ -17,26 +17,19 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 namespace Rhetos.Dsl
 {
-    public class DslGrammar
+    public class DslGrammar : IDslGrammar
     {
-        private readonly ILogger _keywordsLogger;
-        private readonly ILogger _performanceLogger;
-
         public ConceptType[] ConceptTypes { get; } // This is DslSyntax.
 
-        public DslGrammar(IEnumerable<IConceptInfo> conceptInfoPlugins, ILogProvider logProvider)
+        public DslGrammar(IEnumerable<IConceptInfo> conceptInfoPlugins)
         {
-            _keywordsLogger = logProvider.GetLogger("DslParser.Keywords"); // Legacy logger name.
-            _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             ConceptTypes = CreateDslSyntax(conceptInfoPlugins.Select(ci => ci.GetType()));
         }
 
@@ -105,31 +98,6 @@ namespace Rhetos.Dsl
                 baseTypes.Reverse();
                 return baseTypes.Select(t => t.AssemblyQualifiedName).ToArray();
             }
-        }
-
-        public MultiDictionary<string, IConceptParser> CreateGenericParsers(DslParser.OnMemberReadEvent onMemberRead)
-        {
-            var stopwatch = Stopwatch.StartNew();
-
-            var parsableConcepts = ConceptTypes
-                .Where(c => c.Keyword != null)
-                .ToList();
-
-            var parsers = parsableConcepts.ToMultiDictionary(
-                concept => concept.Keyword,
-                concept =>
-                {
-                    var parser = new GenericParser(concept);
-                    parser.OnMemberRead += onMemberRead;
-                    return (IConceptParser)parser;
-                },
-                StringComparer.OrdinalIgnoreCase);
-
-            _performanceLogger.Write(stopwatch, "CreateGenericParsers.");
-
-            _keywordsLogger.Trace(() => string.Join(" ", parsers.Select(p => p.Key).OrderBy(keyword => keyword)));
-
-            return parsers;
         }
     }
 }
