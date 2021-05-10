@@ -89,7 +89,7 @@ namespace Rhetos
         private int SafeExecuteCommand(Action action, string commandName, bool msBuildErrorFormat)
         {
             var logger = _logProvider.GetLogger("Rhetos " + commandName);
-            logger.Info(() => "Logging configured.");
+            logger.Info(() => $"Started in {AppDomain.CurrentDomain.BaseDirectory}");
             try
             {
                 action.Invoke();
