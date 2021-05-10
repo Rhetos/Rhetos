@@ -24,7 +24,7 @@ using Rhetos;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    public static class RhetosCoreServiceCollectionExtensions
+    public static class RhetosServiceCollectionExtensions
     {
         /// <summary>
         /// Adds services required to run <see cref="RhetosHost"/> to the specified <see cref="IServiceCollection"/>,
