@@ -17,10 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using Microsoft.Extensions.DependencyInjection;
-
-namespace Rhetos
+namespace Microsoft.Extensions.DependencyInjection
 {
     public class RhetosServiceCollectionBuilder
     {

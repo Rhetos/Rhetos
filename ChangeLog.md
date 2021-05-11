@@ -26,7 +26,7 @@ Changes in behavior:
 7. Removed IHomePageSnippet interface from the Rhetos framework. The default homepage is no longer available.
 8. Configuration files "rhetos-app.settings.json" and "rhetos-app.local.settings.json" are no longer automatically loaded. Removed RhetosAppEnvironment class and AddRhetosAppEnvironment method.
    * If you want to use the same files from Rhetos v4, load them in your application in Program.CreateRhetosHostBuilder method:
-     `return new RhetosHostBuilder().ConfigureRhetosHostDefaults().ConfigureConfiguration(builder => builder.AddJsonFile("rhetos-app.settings.json").AddJsonFile("rhetos-app.local.settings.json"));`
+     `return new RhetosHostBuilder().ConfigureRhetosAppDefaults().ConfigureConfiguration(builder => builder.AddJsonFile("rhetos-app.settings.json").AddJsonFile("rhetos-app.local.settings.json"));`
 9. Run-time configuration no longer depends on "rhetos-app.settings.json" file (from Rhetos v4).
     * Rhetos:App:AssetsFolder and Rhetos:App:RhetosRuntimePath settings may be removed from this file.
     * The file may be deleted if empty.

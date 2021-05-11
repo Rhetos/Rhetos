@@ -43,9 +43,9 @@ namespace CommonConcepts.Test
         /// </summary>
         private static void ConfigureRhetos(HostBuilderContext hostContext, IServiceCollection services)
         {
-            services.AddRhetos((services, builder) =>
+            services.AddRhetosHost((services, builder) =>
             {
-                builder.ConfigureRhetosHostDefaults()
+                builder.ConfigureRhetosAppDefaults()
                     .ConfigureConfiguration(configurationBuilder => configurationBuilder
                         .AddJsonFile("rhetos-app.local.settings.json")
                     )

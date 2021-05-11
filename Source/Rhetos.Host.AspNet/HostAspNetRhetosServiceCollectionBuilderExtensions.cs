@@ -17,14 +17,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Microsoft.Extensions.DependencyInjection;
+using Rhetos.Host.AspNet;
 using Rhetos.Utilities;
 
-namespace Rhetos.Host.AspNet
+namespace Microsoft.Extensions.DependencyInjection
 {
-    public static class RhetosServiceCollectionBuilderExtensions
+    /// <summary>
+    /// Used for adding Rhetos-specific services to <see cref="IServiceCollection"/>.
+    /// </summary>
+    public static class HostAspNetRhetosServiceCollectionBuilderExtensions
     {
-        public static RhetosServiceCollectionBuilder UseAspNetCoreIdentityUser(this RhetosServiceCollectionBuilder rhetosServiceCollectionBuilder)
+        public static RhetosServiceCollectionBuilder AddAspNetCoreIdentityUser(this RhetosServiceCollectionBuilder rhetosServiceCollectionBuilder)
         {
             rhetosServiceCollectionBuilder.Services.AddHttpContextAccessor();
 

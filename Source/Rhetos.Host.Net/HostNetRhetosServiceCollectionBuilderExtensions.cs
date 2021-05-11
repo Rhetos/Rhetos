@@ -18,14 +18,15 @@
 */
 
 using Autofac;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Rhetos;
+using Rhetos.Host.Net;
 using Rhetos.Logging;
 using System;
 
-namespace Rhetos.Host.Net
+namespace Microsoft.Extensions.DependencyInjection
 {
-    public static class RhetosAspNetServiceCollectionBuilderExtensions
+    public static class HostNetRhetosServiceCollectionBuilderExtensions
     {
         /// <summary>
         /// Configures Rhetos logging so that it uses the <see cref="Microsoft.Extensions.Logging.ILogger"/> implementation registered in the <see cref="IServiceCollection"/>
