@@ -23,8 +23,14 @@ using System.Runtime.InteropServices;
 
 namespace Rhetos.Host.Net.Logging
 {
-    // Leverage .NET Core logging infrastructure to create default cross-platform logger which logs to three different targets:
-    // Console, Debug and EventLog(Windows only)
+    /// <summary>
+    /// Leverage .NET Core logging infrastructure to create default cross-platform logger which logs to three different targets:
+    /// EventLog (Windows only), Console and Debug.
+    /// </summary>
+    /// <remarks>
+    /// It is intended to be used for logging while building and initializing Rhetos host, in <see cref="IRhetosHostBuilder.UseBuilderLogProvider"/>.
+    /// For application runtime, 
+    /// </remarks>
     public sealed class RhetosBuilderDefaultLogProvider : Rhetos.Logging.ILogProvider, IDisposable
     {
         private readonly Lazy<ILoggerFactory> loggerFactory = new Lazy<ILoggerFactory>(CreateLoggerFactory);
