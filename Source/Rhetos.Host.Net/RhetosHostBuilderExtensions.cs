@@ -26,6 +26,10 @@ namespace Rhetos
 {
     public static class RhetosHostBuilderExtensions
     {
+        /// <summary>
+        /// It configures the <see cref="IRhetosHostBuilder"/> to use the <see cref="ILoggerProvider"/> that is registered in the <see cref="IServiceProvider"/>.
+        /// If no <see cref="ILoggerProvider"/> was found it will not change the <see cref="IRhetosHostBuilder"/> configuration.
+        /// </summary>
         public static IRhetosHostBuilder UseBuilderLogProviderFromHost(this IRhetosHostBuilder rhetosHostBuilder, IServiceProvider serviceProvider)
         {
             var loggerProvider = serviceProvider.GetService<ILoggerProvider>();
