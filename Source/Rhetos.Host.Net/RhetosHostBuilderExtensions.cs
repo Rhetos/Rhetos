@@ -29,7 +29,7 @@ namespace Rhetos
     {
         /// <summary>
         /// It configures the <see cref="IRhetosHostBuilder"/> to use the <see cref="ILoggerProvider"/> from host application
-        /// (from <see cref="IServiceProvider"/>).
+        /// (from <see cref="IServiceProvider"/>) during Rhetos host initialization.
         /// </summary>
         /// <remarks>
         /// This method configures logging only for Rhetos host initialization.

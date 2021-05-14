@@ -13,6 +13,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		Directory.Build.props = Directory.Build.props
+		Source\Rhetos.Host.AspNet.nuspec = Source\Rhetos.Host.AspNet.nuspec
+		Source\Rhetos.Host.Net.nuspec = Source\Rhetos.Host.Net.nuspec
+		Source\Rhetos.Host.nuspec = Source\Rhetos.Host.nuspec
+		Source\Rhetos.MSBuild.nuspec = Source\Rhetos.MSBuild.nuspec
+		Source\Rhetos.nuspec = Source\Rhetos.nuspec
+		Source\Rhetos.TestCommon.nuspec = Source\Rhetos.TestCommon.nuspec
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.CommonConcepts.Test", "CommonConcepts\Plugins\Rhetos.CommonConcepts.Test\Rhetos.CommonConcepts.Test.csproj", "{ED46FC75-BF87-4F74-B1D6-91C1CF20BC46}"
@@ -103,7 +109,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Host.Net", "Source\R
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Host.AspNet", "Source\Rhetos.Host.AspNet\Rhetos.Host.AspNet.csproj", "{10E35BC5-FD35-4FCF-8511-1EF0E5B847A6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Host.AspNet.Test", "Source\Rhetos.Host.AspNet.Test\Rhetos.Host.AspNet.Test.csproj", "{5F24785B-47E3-487B-AF38-889EF440A97C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Host.AspNet.Test", "Source\Rhetos.Host.AspNet.Test\Rhetos.Host.AspNet.Test.csproj", "{5F24785B-47E3-487B-AF38-889EF440A97C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
