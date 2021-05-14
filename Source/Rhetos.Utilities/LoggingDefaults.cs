@@ -17,9 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Rhetos.Logging;
 
 namespace Rhetos.Utilities
@@ -27,7 +24,7 @@ namespace Rhetos.Utilities
     public static class LoggingDefaults
     {
         /// <summary>
-        /// Returns <see cref="ConsoleLogProvider"/> by default.
+        /// Returns <see cref="ConsoleLogProvider"/> as a default logging mechanism.
         /// </summary>
         public static readonly ILogProvider DefaultLogProvider = new ConsoleLogProvider();
     }
