@@ -50,7 +50,7 @@ namespace Rhetos.Dsl
         /// Short type name of the root concept type, used for unique concept key definition.
         /// It is same as <see cref="TypeName"/> if the <see cref="IConceptInfo"/> implementation is not a derivation of another concept.
         /// </summary>
-        public string BaseTypeName { get; set; }
+        public string RootTypeName { get; set; }
 
         /// <summary>
         /// Short type name of <see cref="IConceptInfo"/> implementation class for this concept.

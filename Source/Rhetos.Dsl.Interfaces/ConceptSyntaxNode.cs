@@ -88,7 +88,7 @@ namespace Rhetos.Dsl
             {
                 var value = (ConceptSyntaxNode)memberValue;
                 if (member.IsConceptInfoInterface)
-                    text.Append(value.Concept.BaseTypeName).Append(":");
+                    text.Append(value.Concept.RootTypeName).Append(":");
                 value.AppendKeyMembers(text);
             }
             else if (member.IsStringType)

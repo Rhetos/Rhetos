@@ -83,7 +83,7 @@ namespace Rhetos.Dsl
             {
                 AssemblyQualifiedName = conceptInfoType.AssemblyQualifiedName,
                 BaseTypesAssemblyQualifiedName = GetBaseConceptInfoTypes(conceptInfoType),
-                BaseTypeName = ConceptInfoHelper.BaseConceptInfoType(conceptInfoType).Name,
+                RootTypeName = ConceptInfoHelper.BaseConceptInfoType(conceptInfoType).Name,
                 TypeName = conceptInfoType.Name,
                 Keyword = ConceptInfoHelper.GetKeyword(conceptInfoType),
                 Members = null // Will be set later, to avoid recursive dependencies when creating this objects.
