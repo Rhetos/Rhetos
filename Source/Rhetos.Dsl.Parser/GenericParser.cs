@@ -143,6 +143,10 @@ namespace Rhetos.Dsl
                             $" the referenced parent concept. It must be a first member or marked with {nameof(ConceptParentAttribute)}.");
                 }
 
+                // If the 'member' is not IsStringType (see above) and not IsConceptInfoInterface (see above), then it is a concrete IConceptInfo implementation type, and member.ConceptType should not be null.
+                if (member.ConceptType == null)
+                    throw new InvalidOperationException($"If the member type is not string or interface, it should have a ConceptType value. Member '{member.Name}' while reading {_conceptType.TypeName}.");
+
                 if (useLastConcept != null && member.ConceptType.IsInstanceOfType(useLastConcept))
                     return (object)useLastConcept;
 
@@ -165,7 +169,7 @@ namespace Rhetos.Dsl
                             " Use a non-recursive concept for the root and a derivation of the root concept with additional parent property as a recursive concept.",
                             _conceptType.TypeName, member.Name));
 
-                    GenericParser subParser = new GenericParser(member.ConceptType);
+                    var subParser = new GenericParser(member.ConceptType);
                     return subParser.ParseMembers(tokenReader, useLastConcept, true, ref parsedFirstReferenceElement).ChangeType<object>();
                 }
 

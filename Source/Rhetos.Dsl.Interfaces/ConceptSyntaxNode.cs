@@ -95,7 +95,7 @@ namespace Rhetos.Dsl
                 ConceptMemberHelper.AppendWithQuotesIfNeeded(text, (string)memberValue);
             else
                 throw new FrameworkException(
-                    $"{nameof(ConceptSyntaxNode)} member {member.Name} of type {member.ConceptType.TypeName} in {Concept.TypeName} is not supported.");
+                    $"{nameof(ConceptSyntaxNode)} member {member.Name} of type {member.ConceptType?.TypeName} in {Concept.TypeName} is not supported.");
         }
     }
 }

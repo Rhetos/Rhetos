@@ -277,7 +277,7 @@ namespace Rhetos.Dsl
                 foreach (var m in node.Concept.Members)
                     sb.AppendFormat("Property '{0}' ({1}) = {2}",
                         m.Name,
-                        m.IsStringType ? "string" : m.IsConceptInfoInterface ? "IConceptInfo" : m.ConceptType.TypeName,
+                        m.IsStringType ? "string" : m.IsConceptInfoInterface ? "IConceptInfo" : m.ConceptType?.TypeName,
                         m.GetMemberValue(node)?.ToString() ?? "<null>")
                         .AppendLine();
             }
