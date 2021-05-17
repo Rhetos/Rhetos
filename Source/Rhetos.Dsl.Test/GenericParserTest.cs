@@ -18,7 +18,6 @@
 */
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos.Dsl;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
@@ -30,18 +29,18 @@ namespace Rhetos.Dsl.Test
     class GenericParserHelper<TConceptInfo> : IConceptParser where TConceptInfo : IConceptInfo, new()
     {
         public TokenReader tokenReader;
-        public DslSyntaxFromPlugins DslGrammar;
+        public DslSyntax DslSyntax;
         public GenericParser GenericParser;
 
         public GenericParserHelper(string overrideKeyword = null)
-            : this(DslGrammarHelper.CreateDslGrammar(typeof(TConceptInfo)), overrideKeyword)
+            : this(DslSyntaxHelper.CreateDslSyntax(typeof(TConceptInfo)), overrideKeyword)
         {
         }
 
-        public GenericParserHelper(DslSyntaxFromPlugins grammar, string overrideKeyword = null)
+        public GenericParserHelper(DslSyntax syntax, string overrideKeyword = null)
         {
-            DslGrammar = grammar;
-            ConceptType conceptType = DslGrammar.GetConceptType(typeof(TConceptInfo), overrideKeyword);
+            DslSyntax = syntax;
+            ConceptType conceptType = DslSyntax.GetConceptType(typeof(TConceptInfo), overrideKeyword);
             GenericParser = new GenericParser(conceptType);
         }
 
@@ -60,7 +59,7 @@ namespace Rhetos.Dsl.Test
         public TConceptInfo QuickParse(string dsl, Stack<IConceptInfo> context)
         {
             var contextNodes = new Stack<ConceptSyntaxNode>(context
-                .Select(ci => DslGrammar.CreateConceptSyntaxNode(ci)).Reverse());
+                .Select(ci => DslSyntax.CreateConceptSyntaxNode(ci)).Reverse());
 
             tokenReader = GenericParserTest.TestTokenReader(dsl);
             ConceptSyntaxNode node = GenericParser.Parse(tokenReader, contextNodes, out var warnings).Value;
@@ -194,7 +193,7 @@ namespace Rhetos.Dsl.Test
             var enclosedParser = new GenericParserHelper<EnclosedConceptInfo>("enclosed");
 
             var stack = new Stack<ConceptSyntaxNode>();
-            stack.Push(enclosedParser.DslGrammar.CreateConceptSyntaxNode(new SimpleConceptInfo { Name = "a" }));
+            stack.Push(enclosedParser.DslSyntax.CreateConceptSyntaxNode(new SimpleConceptInfo { Name = "a" }));
 
             var tokenReader = TestTokenReader("simple a { enclosed b; }", 3);
             var node = enclosedParser.GenericParser.Parse(tokenReader, stack, out var warnings).Value;
@@ -250,8 +249,8 @@ namespace Rhetos.Dsl.Test
         [TestMethod]
         public void ParseEnclosedInWrongConcept()
         {
-            var grammar = DslGrammarHelper.CreateDslGrammar(typeof(EnclosedConceptInfo), typeof(ComplexConceptInfo));
-            var parser = new GenericParserHelper<EnclosedConceptInfo>(grammar, "enclosed");
+            var syntax = DslSyntaxHelper.CreateDslSyntax(typeof(EnclosedConceptInfo), typeof(ComplexConceptInfo));
+            var parser = new GenericParserHelper<EnclosedConceptInfo>(syntax, "enclosed");
                 TestUtility.ShouldFail<InvalidOperationException>(
                     () => parser.QuickParse(
                         "enclosed myparent.myname",
@@ -462,8 +461,8 @@ namespace Rhetos.Dsl.Test
 
             string dsl = "menu M";
 
-            var grammar = DslGrammarHelper.CreateDslGrammar(typeof(MenuCI), typeof(ExtendedRootMenuCI), typeof(SubMenuCI));
-            SubMenuCI mi = new GenericParserHelper<SubMenuCI>(grammar, "menu").QuickParse(dsl, root);
+            var syntax = DslSyntaxHelper.CreateDslSyntax(typeof(MenuCI), typeof(ExtendedRootMenuCI), typeof(SubMenuCI));
+            SubMenuCI mi = new GenericParserHelper<SubMenuCI>(syntax, "menu").QuickParse(dsl, root);
             Assert.AreEqual("M", mi.Name);
             Assert.AreEqual("R", mi.Parent.Name);
             Assert.AreEqual("SomeData", ((ExtendedRootMenuCI)mi.Parent).RootData);
@@ -476,8 +475,8 @@ namespace Rhetos.Dsl.Test
             SubMenuCI parent = new SubMenuCI { Name = "M", Parent = root };
 
             string dsl = "menu M2";
-            var grammar = DslGrammarHelper.CreateDslGrammar(typeof(MenuCI), typeof(ExtendedRootMenuCI), typeof(SubMenuCI));
-            SubMenuCI mi = new GenericParserHelper<SubMenuCI>(grammar, "menu").QuickParse(dsl, parent);
+            var syntax = DslSyntaxHelper.CreateDslSyntax(typeof(MenuCI), typeof(ExtendedRootMenuCI), typeof(SubMenuCI));
+            SubMenuCI mi = new GenericParserHelper<SubMenuCI>(syntax, "menu").QuickParse(dsl, parent);
             Assert.AreEqual("M2", mi.Name);
             Assert.AreEqual("M", mi.Parent.Name);
             Assert.AreEqual("R", ((SubMenuCI)mi.Parent).Parent.Name);
@@ -523,8 +522,8 @@ namespace Rhetos.Dsl.Test
         {
             var parent = new SimpleConceptInfo { Name = "parent" };
             string dsl = "intref data";
-            var grammar = DslGrammarHelper.CreateDslGrammar(typeof(InterfaceReferenceConceptInfo), typeof(SimpleConceptInfo));
-            var parsedConcept = new GenericParserHelper<InterfaceReferenceConceptInfo>(grammar, "intref").QuickParse(dsl, parent);
+            var syntax = DslSyntaxHelper.CreateDslSyntax(typeof(InterfaceReferenceConceptInfo), typeof(SimpleConceptInfo));
+            var parsedConcept = new GenericParserHelper<InterfaceReferenceConceptInfo>(syntax, "intref").QuickParse(dsl, parent);
 
             Assert.AreEqual(typeof(SimpleConceptInfo), parsedConcept.Referece.GetType());
             Assert.AreEqual("parent", ((SimpleConceptInfo)parsedConcept.Referece).Name);

@@ -24,27 +24,31 @@ using System.Linq;
 
 namespace Rhetos.Dsl
 {
-    public class DslSyntaxFromPlugins : IDslSyntax
+    public class DslSyntaxFromPlugins
     {
-        private readonly Lazy<ConceptType[]> _conceptTypes;
-
-        public ConceptType[] ConceptTypes => _conceptTypes.Value;
-
-        public ExcessDotInKey ExcessDotInKey { get; }
-
-        public string DatabaseLanguage { get; }
-
-        public string Version { get; }
+        private readonly IEnumerable<IConceptInfo> _conceptInfoPlugins;
+        private readonly BuildOptions _buildOptions;
+        private readonly DatabaseSettings _databaseSettings;
 
         public DslSyntaxFromPlugins(IEnumerable<IConceptInfo> conceptInfoPlugins, BuildOptions buildOptions, DatabaseSettings databaseSettings)
         {
-            _conceptTypes = new Lazy<ConceptType[]>(() => CreateDslSyntax(conceptInfoPlugins.Select(ci => ci.GetType())));
-            ExcessDotInKey = buildOptions.DslSyntaxExcessDotInKey;
-            DatabaseLanguage = databaseSettings.DatabaseLanguage;
-            Version = SystemUtility.GetRhetosVersion();
+            _conceptInfoPlugins = conceptInfoPlugins;
+            _buildOptions = buildOptions;
+            _databaseSettings = databaseSettings;
         }
 
-        private static ConceptType[] CreateDslSyntax(IEnumerable<Type> conceptInfoTypes)
+        public DslSyntax CreateDslSyntax()
+        {
+            return new DslSyntax
+            {
+                ConceptTypes = CreateConceptTypesAndMembers(_conceptInfoPlugins.Select(ci => ci.GetType())),
+                Version = SystemUtility.GetRhetosVersion(),
+                ExcessDotInKey = _buildOptions.DslSyntaxExcessDotInKey,
+                DatabaseLanguage = _databaseSettings.DatabaseLanguage,
+            };
+        }
+
+        private static ConceptType[] CreateConceptTypesAndMembers(IEnumerable<Type> conceptInfoTypes)
         {
             var types = conceptInfoTypes
                 .Distinct()

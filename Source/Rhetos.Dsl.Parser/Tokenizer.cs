@@ -32,14 +32,14 @@ namespace Rhetos.Dsl
     {
         private readonly IDslScriptsProvider _dslScriptsProvider;
         private readonly FilesUtility _filesUtility;
-        private readonly IDslSyntax _grammar;
+        private readonly DslSyntax _syntax;
         private readonly Lazy<List<Token>> _tokens;
 
-        public Tokenizer(IDslScriptsProvider dslScriptsProvider, FilesUtility filesUtility, IDslSyntax grammar)
+        public Tokenizer(IDslScriptsProvider dslScriptsProvider, FilesUtility filesUtility, DslSyntax syntax)
         {
             _dslScriptsProvider = dslScriptsProvider;
             _filesUtility = filesUtility;
-            _grammar = grammar;
+            _syntax = syntax;
             _tokens = new Lazy<List<Token>>(ParseTokens);
         }
 
@@ -48,7 +48,7 @@ namespace Rhetos.Dsl
         private List<Token> ParseTokens()
         {
             var tokens = new List<Token>();
-            var tokenizerInternals = new TokenizerInternals(_grammar);
+            var tokenizerInternals = new TokenizerInternals(_syntax);
 
             foreach (var dslScript in _dslScriptsProvider.DslScripts)
             {
@@ -81,11 +81,11 @@ namespace Rhetos.Dsl
     {
         private readonly static char[] Whitespaces = { ' ', '\t', '\n', '\r' };
         private static readonly HashSet<char> invalidPathChars = new HashSet<char>(Path.GetInvalidPathChars());
-        private readonly IDslSyntax _grammar;
+        private readonly DslSyntax _syntax;
 
-        public TokenizerInternals(IDslSyntax grammar)
+        public TokenizerInternals(DslSyntax syntax)
         {
-            _grammar = grammar;
+            _syntax = syntax;
         }
 
         public static void SkipWhitespaces(string script, ref int position)
@@ -253,8 +253,8 @@ namespace Rhetos.Dsl
                 }
 
                 // Look for SQL dialect-specific files before the generic SQL file:
-                filePaths.Insert(0, Path.Combine(directory, fileName + "." + _grammar.DatabaseLanguage + basicFileExtension));
-                filePaths.Insert(1, Path.Combine(directory, fileName + " (" + _grammar.DatabaseLanguage + ")" + basicFileExtension));
+                filePaths.Insert(0, Path.Combine(directory, fileName + "." + _syntax.DatabaseLanguage + basicFileExtension));
+                filePaths.Insert(1, Path.Combine(directory, fileName + " (" + _syntax.DatabaseLanguage + ")" + basicFileExtension));
             }
 
             foreach (var filePath in filePaths)

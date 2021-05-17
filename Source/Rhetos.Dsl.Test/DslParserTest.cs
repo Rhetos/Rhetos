@@ -139,25 +139,25 @@ namespace Rhetos.Dsl.Test
         {
             string dsl = "concept simple simpledata; concept ext extdata extdata2;";
 
-            var grammar = DslGrammarHelper.CreateDslGrammar(typeof(SimpleConceptInfo), typeof(ExtendedConceptInfo));
+            var syntax = DslSyntaxHelper.CreateDslSyntax(typeof(SimpleConceptInfo), typeof(ExtendedConceptInfo));
             var conceptParsersList = new List<IConceptParser>()
             {
-                new GenericParserHelper<SimpleConceptInfo>(grammar, "concept"),
-                new GenericParserHelper<ExtendedConceptInfo>(grammar, "concept")
+                new GenericParserHelper<SimpleConceptInfo>(syntax, "concept"),
+                new GenericParserHelper<ExtendedConceptInfo>(syntax, "concept")
             };
             var conceptParsers = new MultiDictionary<string, IConceptParser>();
             conceptParsers.Add("concept", conceptParsersList);
 
             var noContext = new Stack<IConceptInfo>();
             TokenReader tokenReader = TestTokenReader(dsl);
-            IConceptInfo concept = new TestDslParser(dsl, grammar).ParseNextConcept(tokenReader, noContext, conceptParsers);
+            IConceptInfo concept = new TestDslParser(dsl, syntax).ParseNextConcept(tokenReader, noContext, conceptParsers);
             Assert.AreEqual(typeof(SimpleConceptInfo), concept.GetType());
             Assert.AreEqual("simple", (concept as SimpleConceptInfo).Name);
             Assert.AreEqual("simpledata", (concept as SimpleConceptInfo).Data);
 
             Assert.IsTrue(tokenReader.TryRead(";"), "Reading ';' between concepts.");
 
-            concept = new TestDslParser(dsl, grammar).ParseNextConcept(tokenReader, noContext, conceptParsers);
+            concept = new TestDslParser(dsl, syntax).ParseNextConcept(tokenReader, noContext, conceptParsers);
             Assert.AreEqual(typeof(ExtendedConceptInfo), concept.GetType());
             Assert.AreEqual("ext", (concept as ExtendedConceptInfo).Name);
             Assert.AreEqual("extdata", (concept as ExtendedConceptInfo).Data);
@@ -171,18 +171,18 @@ namespace Rhetos.Dsl.Test
         {
             string dsl = "concept name data { concept ref; }";
 
-            var grammar = DslGrammarHelper.CreateDslGrammar(typeof(SimpleConceptInfo), typeof(EnclosedRefConceptInfo));
+            var syntax = DslSyntaxHelper.CreateDslSyntax(typeof(SimpleConceptInfo), typeof(EnclosedRefConceptInfo));
             var conceptParsersList = new List<IConceptParser>()
             {
-                new GenericParserHelper<SimpleConceptInfo>(grammar, "concept"),
-                new GenericParserHelper<EnclosedRefConceptInfo>(grammar,"concept")
+                new GenericParserHelper<SimpleConceptInfo>(syntax, "concept"),
+                new GenericParserHelper<EnclosedRefConceptInfo>(syntax,"concept")
             };
             var conceptParsers = new MultiDictionary<string, IConceptParser>();
             conceptParsers.Add("concept", conceptParsersList);
 
             var context = new Stack<IConceptInfo>();
             TokenReader tokenReader = TestTokenReader(dsl);
-            IConceptInfo concept = new TestDslParser(dsl, grammar).ParseNextConcept(tokenReader, context, conceptParsers);
+            IConceptInfo concept = new TestDslParser(dsl, syntax).ParseNextConcept(tokenReader, context, conceptParsers);
             Assert.AreEqual(typeof(SimpleConceptInfo), concept.GetType());
             Assert.AreEqual("name", (concept as SimpleConceptInfo).Name);
             Assert.AreEqual("data", (concept as SimpleConceptInfo).Data);
@@ -190,7 +190,7 @@ namespace Rhetos.Dsl.Test
 			Assert.IsTrue(tokenReader.TryRead("{"), "Reading '{' between concepts.");
 
             context.Push(concept);
-            concept = new TestDslParser(dsl, grammar).ParseNextConcept(tokenReader, context, conceptParsers);
+            concept = new TestDslParser(dsl, syntax).ParseNextConcept(tokenReader, context, conceptParsers);
             Assert.AreEqual(typeof(EnclosedRefConceptInfo), concept.GetType());
             Assert.AreEqual("ref", (concept as EnclosedRefConceptInfo).Name);
             Assert.AreEqual("name", (concept as EnclosedRefConceptInfo).Reference.Name);
@@ -202,11 +202,11 @@ namespace Rhetos.Dsl.Test
         {
             string dsl = "concept simple data; concept ref simple;";
 
-            var grammar = DslGrammarHelper.CreateDslGrammar(typeof(SimpleConceptInfo), typeof(RefConceptInfo));
+            var syntax = DslSyntaxHelper.CreateDslSyntax(typeof(SimpleConceptInfo), typeof(RefConceptInfo));
             var conceptParsersList = new List<IConceptParser>()
             {
-                new GenericParserHelper<SimpleConceptInfo>(grammar, "concept"),
-                new GenericParserHelper<RefConceptInfo>(grammar, "concept")
+                new GenericParserHelper<SimpleConceptInfo>(syntax, "concept"),
+                new GenericParserHelper<RefConceptInfo>(syntax, "concept")
             };
             var conceptParsers = new MultiDictionary<string, IConceptParser> ();
             conceptParsers.Add("concept", conceptParsersList);
@@ -266,7 +266,7 @@ namespace Rhetos.Dsl.Test
         {
             var dslParser = new DslParser(
                 new TestTokenizer(dsl),
-                DslGrammarHelper.CreateDslGrammar(typeof(SimpleConceptInfo)),
+                DslSyntaxHelper.CreateDslSyntax(typeof(SimpleConceptInfo)),
                 new ConsoleLogProvider());
             var parsedConcepts = dslParser.ParsedConcepts;
             Console.WriteLine("Parsed concepts: " + string.Join("\r\n", dslParser.ParsedConcepts.Select(c => c.Concept.TypeName)));
@@ -341,8 +341,8 @@ namespace Rhetos.Dsl.Test
         public void AlternativeInitializationConceptTest()
         {
             string dsl = "SIMPLE s d; ALTER1 s; ALTER2 s.a1 d2;";
-            var grammar = new IConceptInfo[] { new SimpleConceptInfo(), new AlternativeConcept1(), new AlternativeConcept2() };
-            var parsedNodes = new TestDslParser(dsl, grammar).ParsedConcepts;
+            var syntax = new IConceptInfo[] { new SimpleConceptInfo(), new AlternativeConcept1(), new AlternativeConcept2() };
+            var parsedNodes = new TestDslParser(dsl, syntax).ParsedConcepts;
             var parsedConcepts = ConceptInfoHelper.ConvertNodesToConceptInfos(parsedNodes);
 
             // IAlternativeInitializationConcept should be parsed, but not yet initialized.
@@ -357,8 +357,8 @@ namespace Rhetos.Dsl.Test
         public void AlternativeInitializationConcept_Embedded()
         {
             string dsl = "SIMPLE s d { ALTER1 { ALTER2 d2; } }";
-            var grammar = new IConceptInfo[] { new SimpleConceptInfo(), new AlternativeConcept1(), new AlternativeConcept2() };
-            var parsedNodes = new TestDslParser(dsl, grammar).ParsedConcepts;
+            var syntax = new IConceptInfo[] { new SimpleConceptInfo(), new AlternativeConcept1(), new AlternativeConcept2() };
+            var parsedNodes = new TestDslParser(dsl, syntax).ParsedConcepts;
             var parsedConcepts = ConceptInfoHelper.ConvertNodesToConceptInfos(parsedNodes);
 
             // IAlternativeInitializationConcept should be parsed, but not yet initialized.
@@ -382,11 +382,11 @@ namespace Rhetos.Dsl.Test
         public void AlternativeInitializationConcept_ErrorHandling()
         {
             string dsl = "alterror1;";
-            var grammar = new IConceptInfo[] { new AlternativeError1() };
+            var syntax = new IConceptInfo[] { new AlternativeError1() };
             
             // Parsing a concept with invalid DeclareNonparsableProperties
             TestUtility.ShouldFail(
-                () => { var concepts = new TestDslParser(dsl, grammar).ParsedConcepts; },
+                () => { var concepts = new TestDslParser(dsl, syntax).ParsedConcepts; },
                 "AlternativeError1", "invalid implementation", "Names", "does not exist", "DeclareNonparsableProperties");
         }
     }

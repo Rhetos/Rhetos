@@ -87,8 +87,8 @@ namespace Rhetos.Dsl.Test
 
             public StubDslParser(IEnumerable<IConceptInfo> rawConcepts)
             {
-                var grammar = DslGrammarHelper.CreateDslGrammar(rawConcepts.ToArray());
-                ParsedConcepts = rawConcepts.Select(ci => grammar.CreateConceptSyntaxNode(ci));
+                var syntax = DslSyntaxHelper.CreateDslSyntax(rawConcepts.ToArray());
+                ParsedConcepts = rawConcepts.Select(ci => syntax.CreateConceptSyntaxNode(ci));
             }
 
             public IEnumerable<ConceptSyntaxNode> ParsedConcepts { get; }
@@ -152,7 +152,7 @@ namespace Rhetos.Dsl.Test
         {
             var nullDslParser = new DslParser(
                 new TestTokenizer(dsl),
-                DslGrammarHelper.CreateDslGrammar(conceptInfoPluginsForGenericParser),
+                DslSyntaxHelper.CreateDslSyntax(conceptInfoPluginsForGenericParser),
                 new ConsoleLogProvider());
             Console.WriteLine("Parsed concepts:");
             Console.WriteLine(string.Join(Environment.NewLine, nullDslParser.ParsedConcepts.Select(ci => " - " + ci.GetUserDescription())));
@@ -558,9 +558,9 @@ namespace Rhetos.Dsl.Test
         public void InitiallyParsedAlternativeInitializationConceptTest()
         {
             string dsl = "SIMPLE s d; ALTER1 s; ALTER2 s.a1 d2;";
-            var grammar = new IConceptInfo[] { new SimpleConceptInfo(), new AlternativeConcept1(), new AlternativeConcept2() };
+            var syntax = new IConceptInfo[] { new SimpleConceptInfo(), new AlternativeConcept1(), new AlternativeConcept2() };
 
-            var parsedConcepts = new TestDslParser(dsl, grammar).ParsedConcepts;
+            var parsedConcepts = new TestDslParser(dsl, syntax).ParsedConcepts;
             var dslModelConcepts = DslModelFromConcepts(parsedConcepts);
 
             var s = dslModelConcepts.OfType<SimpleConceptInfo>().Single();
@@ -586,8 +586,8 @@ namespace Rhetos.Dsl.Test
         public void InitiallyParsedAlternativeInitializationConcept_Embedded()
         {
             string dsl = "SIMPLE s d { ALTER1 { ALTER2 d2; } }";
-            var grammar = new IConceptInfo[] { new SimpleConceptInfo(), new AlternativeConcept1(), new AlternativeConcept2() };
-            var parsedConcepts = new TestDslParser(dsl, grammar).ParsedConcepts;
+            var syntax = new IConceptInfo[] { new SimpleConceptInfo(), new AlternativeConcept1(), new AlternativeConcept2() };
+            var parsedConcepts = new TestDslParser(dsl, syntax).ParsedConcepts;
             var dslModelConcepts = DslModelFromConcepts(parsedConcepts);
 
             var s = dslModelConcepts.OfType<SimpleConceptInfo>().Single();

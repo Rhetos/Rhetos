@@ -27,7 +27,7 @@ namespace Rhetos.Dsl.Test
 {
     class TestDslParser : DslParser, ITestAccessor
     {
-        private readonly DslSyntaxFromPlugins grammar;
+        private readonly DslSyntax _syntax;
 
         public TestDslParser(string dsl)
             : this(dsl, Array.Empty<IConceptInfo>())
@@ -35,17 +35,17 @@ namespace Rhetos.Dsl.Test
         }
 
         public TestDslParser(string dsl, IConceptInfo[] conceptInfoPlugins)
-            : this(dsl, DslGrammarHelper.CreateDslGrammar(conceptInfoPlugins))
+            : this(dsl, DslSyntaxHelper.CreateDslSyntax(conceptInfoPlugins))
         {
         }
 
-        public TestDslParser(string dsl, DslSyntaxFromPlugins grammar)
+        public TestDslParser(string dsl, DslSyntax syntax)
             : base (
                 new TestTokenizer(dsl),
-                grammar,
+                syntax,
                 new ConsoleLogProvider())
         {
-            this.grammar = grammar;
+            _syntax = syntax;
         }
 
         public IEnumerable<IConceptInfo> ExtractConcepts(MultiDictionary<string, IConceptParser> conceptParsers)
@@ -56,7 +56,7 @@ namespace Rhetos.Dsl.Test
         public IConceptInfo ParseNextConcept(TokenReader tokenReader, Stack<IConceptInfo> context, MultiDictionary<string, IConceptParser> conceptParsers)
         {
             var newContext = context == null ? null
-                : new Stack<ConceptSyntaxNode>(context.Select(ci => grammar.CreateConceptSyntaxNode(ci)).Reverse());
+                : new Stack<ConceptSyntaxNode>(context.Select(ci => _syntax.CreateConceptSyntaxNode(ci)).Reverse());
 
             var parsedNode = this.Invoke(nameof(ParseNextConcept), tokenReader, newContext, conceptParsers).Item1;
 

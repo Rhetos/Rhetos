@@ -17,44 +17,31 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Newtonsoft.Json;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
-using Rhetos.Utilities;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 
 namespace Rhetos.Dsl
 {
     public class DslSyntaxFileGenerator : IGenerator
     {
-        private readonly IDslSyntax _dslSyntax;
-        private readonly RhetosBuildEnvironment _rhetosBuildEnvironment;
+        private readonly DslSyntax _dslSyntax;
+        private readonly DslSyntaxFile _dslSyntaxFile;
         private readonly ILogger _performanceLogger;
         public static readonly string DslSyntaxFileName = "DslSyntax.json";
 
-        public DslSyntaxFileGenerator(IDslSyntax dslSyntax, RhetosBuildEnvironment rhetosBuildEnvironment, ILogProvider logProvider)
+        public DslSyntaxFileGenerator(DslSyntax dslSyntax, DslSyntaxFile dslSyntaxFile, ILogProvider logProvider)
         {
             _dslSyntax = dslSyntax;
-            _rhetosBuildEnvironment = rhetosBuildEnvironment;
+            _dslSyntaxFile = dslSyntaxFile;
             _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
         }
 
         public void Generate()
         {
             var sw = Stopwatch.StartNew();
-
-            var serializerSettings = new JsonSerializerSettings
-            {
-                PreserveReferencesHandling = PreserveReferencesHandling.All,
-                ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
-                TypeNameHandling = TypeNameHandling.Auto,
-                Formatting = Formatting.Indented,
-            };
-
-            JsonUtility.SerializeToFile(_dslSyntax, Path.Combine(_rhetosBuildEnvironment.CacheFolder, DslSyntaxFileName), serializerSettings);
+            _dslSyntaxFile.Serialize(_dslSyntax);
             _performanceLogger.Write(sw, nameof(Generate));
         }
 

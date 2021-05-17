@@ -29,7 +29,7 @@ namespace Rhetos.Dsl
     /// </summary>
     /// <remarks>
     /// It provides separation from <see cref="IConceptInfo"/> types, to allows serialization
-    /// of DSL grammar and use of the grammar in external processes, such as DSL IntelliSense plugin.
+    /// of DSL syntax and use of the syntax in external processes, such as DSL IntelliSense plugin.
     /// </remarks>
     [DebuggerDisplay("{TypeName}")]
     public class ConceptType

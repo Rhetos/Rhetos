@@ -21,25 +21,25 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Dsl
 {
-    public interface IDslSyntax
+    public class DslSyntax
     {
         /// <summary>
         /// Semantic Versioning 2.0.0.
         /// </summary>
-        string Version { get; }
+        public string Version { get; set; }
 
         /// <summary>
         /// Value is initially configured from BuildOptions class.
-        /// It is persisted as a part of <see cref="IDslSyntax"/> to be available to the external language server.
+        /// It is persisted as a part of <see cref="DslSyntax"/> to be available to the external language server.
         /// </summary>
-        ExcessDotInKey ExcessDotInKey { get; }
+        public ExcessDotInKey ExcessDotInKey { get; set; }
 
         /// <summary>
         /// Value is initially configured from DatabaseSettings class.
-        /// It is persisted as a part of <see cref="IDslSyntax"/> to be available to the external language server.
+        /// It is persisted as a part of <see cref="DslSyntax"/> to be available to the external language server.
         /// </summary>
-        string DatabaseLanguage { get; }
+        public string DatabaseLanguage { get; set; }
 
-        ConceptType[] ConceptTypes { get; }
+        public ConceptType[] ConceptTypes { get; set; }
     }
 }

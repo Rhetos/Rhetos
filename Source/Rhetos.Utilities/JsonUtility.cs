@@ -36,10 +36,10 @@ namespace Rhetos.Utilities
 
         public static void SerializeToFile<T>(T data, string filePath, JsonSerializerSettings jsonSerializerSettings)
         {
-            using (StreamWriter file = File.CreateText(filePath))
+            using (var fileWriter = File.CreateText(filePath))
             {
-                JsonSerializer serializer = JsonSerializer.Create(jsonSerializerSettings);
-                serializer.Serialize(file, data);
+                var jsonSerializer = JsonSerializer.Create(jsonSerializerSettings);
+                jsonSerializer.Serialize(fileWriter, data);
             }
         }
 
@@ -51,11 +51,11 @@ namespace Rhetos.Utilities
         public static T DeserializeFromFile<T>(string filePath, JsonSerializerSettings jsonSerializerSettings)
         {
             T data;
-            using (StreamReader sr = new StreamReader(File.OpenRead(filePath)))
-            using (JsonReader reader = new JsonTextReader(sr))
+            using (var fileReader = new StreamReader(File.OpenRead(filePath)))
+            using (var jsonReader = new JsonTextReader(fileReader))
             {
-                JsonSerializer serializer = JsonSerializer.Create(jsonSerializerSettings);
-                data = serializer.Deserialize<T>(reader);
+                var jsonSerializer = JsonSerializer.Create(jsonSerializerSettings);
+                data = jsonSerializer.Deserialize<T>(jsonReader);
             }
             return data;
         }

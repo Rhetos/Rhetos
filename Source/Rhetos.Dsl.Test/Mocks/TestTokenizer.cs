@@ -19,17 +19,16 @@
 
 using Rhetos.Utilities;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Rhetos.Dsl.Test
 {
     public class TestTokenizer : Tokenizer
     {
         public TestTokenizer(params string[] dslScripts)
-            : base(new MockDslScriptsProvider(dslScripts), new FilesUtility(new ConsoleLogProvider()), new DslSyntaxFromPlugins(Array.Empty<IConceptInfo>(), new BuildOptions(), new DatabaseSettings()))
+            : base(
+                  new MockDslScriptsProvider(dslScripts),
+                  new FilesUtility(new ConsoleLogProvider()),
+                  new DslSyntaxFromPlugins(Array.Empty<IConceptInfo>(), new BuildOptions(), new DatabaseSettings()).CreateDslSyntax())
         {
         }
     }

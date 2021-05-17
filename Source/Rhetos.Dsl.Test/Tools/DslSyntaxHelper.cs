@@ -26,12 +26,12 @@ using System.Threading.Tasks;
 
 namespace Rhetos.Dsl.Test
 {
-    public static class DslGrammarHelper
+    public static class DslSyntaxHelper
     {
-        public static ConceptSyntaxNode CreateConceptSyntaxNode(this DslSyntaxFromPlugins grammar, IConceptInfo ci)
+        public static ConceptSyntaxNode CreateConceptSyntaxNode(this DslSyntax dslSyntax, IConceptInfo ci)
         {
             var conceptInfoType = ci.GetType();
-            var node = new ConceptSyntaxNode(grammar.GetConceptType(conceptInfoType));
+            var node = new ConceptSyntaxNode(dslSyntax.GetConceptType(conceptInfoType));
             var members = ConceptMembers.Get(conceptInfoType);
 
             if (node.Parameters.Length != members.Length)
@@ -51,7 +51,7 @@ namespace Rhetos.Dsl.Test
                     node.Parameters[m] = value;
                 else if (value is IConceptInfo referencedConceptInfo)
                 {
-                    var referencedNode = CreateConceptSyntaxNode(grammar, referencedConceptInfo);
+                    var referencedNode = CreateConceptSyntaxNode(dslSyntax, referencedConceptInfo);
                     node.Parameters[m] = referencedNode;
                 }
                 else
@@ -64,29 +64,29 @@ namespace Rhetos.Dsl.Test
             return node;
         }
 
-        public static ConceptType GetConceptType(this DslSyntaxFromPlugins grammar, Type conceptInfoType, string overrideKeyword = null)
+        public static ConceptType GetConceptType(this DslSyntax dslSyntax, Type conceptInfoType, string overrideKeyword = null)
         {
-            var conceptType = grammar.ConceptTypes.Single(ct => ct.AssemblyQualifiedName == conceptInfoType.AssemblyQualifiedName);
+            var conceptType = dslSyntax.ConceptTypes.Single(ct => ct.AssemblyQualifiedName == conceptInfoType.AssemblyQualifiedName);
             if (overrideKeyword != null)
                 conceptType.Keyword = overrideKeyword;
             return conceptType;
         }
 
         /// <summary>
-        /// The grammar will also include all related concepts, referenced by the provided concept's members.
+        /// The syntax will also include all related concepts, referenced by the provided concept's members.
         /// </summary>
-        public static DslSyntaxFromPlugins CreateDslGrammar(params IConceptInfo[] conceptInfos)
-            => CreateDslGrammar(conceptInfos.Select(ci => ci.GetType()).ToArray());
+        public static DslSyntax CreateDslSyntax(params IConceptInfo[] conceptInfos)
+            => CreateDslSyntax(conceptInfos.Select(ci => ci.GetType()).ToArray());
 
         /// <summary>
-        /// The grammar will also include all related concepts, referenced by the provided concept's members.
+        /// The syntax will also include all related concepts, referenced by the provided concept's members.
         /// </summary>
-        public static DslSyntaxFromPlugins CreateDslGrammar(params Type[] conceptInfoTypes)
+        public static DslSyntax CreateDslSyntax(params Type[] conceptInfoTypes)
         {
             var relatedConcepts = GetAllRelatedConceptInfoTypes(conceptInfoTypes);
             var relatedConceptPrototypes = relatedConcepts.Select(c => (IConceptInfo)Activator.CreateInstance(c)).ToList();
-            var grammar = new DslSyntaxFromPlugins(relatedConceptPrototypes, new BuildOptions(), new DatabaseSettings());
-            return grammar;
+            var syntax = new DslSyntaxFromPlugins(relatedConceptPrototypes, new BuildOptions(), new DatabaseSettings());
+            return syntax.CreateDslSyntax();
         }
 
         public static IEnumerable<Type> GetAllRelatedConceptInfoTypes(params Type[] conceptInfoTypes)

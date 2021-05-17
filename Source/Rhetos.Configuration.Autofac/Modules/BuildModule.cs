@@ -88,7 +88,9 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.RegisterType<Tokenizer>().SingleInstance();
             builder.RegisterType<DslModelFile>().As<IDslModelFile>().SingleInstance();
             builder.RegisterType<DslParser>().As<IDslParser>();
-            builder.RegisterType<DslSyntaxFromPlugins>().As<IDslSyntax>().SingleInstance();
+            builder.RegisterType<DslSyntaxFromPlugins>();
+            builder.RegisterType<DslSyntaxFile>();
+            builder.Register(context => context.Resolve<DslSyntaxFromPlugins>().CreateDslSyntax()).As<DslSyntax>().SingleInstance();
             builder.RegisterType<DslSyntaxFileGenerator>().As<IGenerator>();
             builder.RegisterType<MacroOrderRepository>().As<IMacroOrderRepository>();
             builder.RegisterType<InitializationConcept>().As<IConceptInfo>(); // This plugin is registered manually because FindAndRegisterPlugins does not scan core Rhetos DLLs.
