@@ -34,7 +34,7 @@ namespace Rhetos.Dsl
             _rhetosBuildEnvironment = rhetosBuildEnvironment;
         }
 
-        private readonly JsonSerializerSettings _jsonSerializerSettings = new()
+        private readonly JsonSerializerSettings _jsonSettings = new()
         {
             PreserveReferencesHandling = PreserveReferencesHandling.Objects,
             ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
@@ -44,13 +44,20 @@ namespace Rhetos.Dsl
 
         private string DslSyntaxFilePath => Path.Combine(_rhetosBuildEnvironment.CacheFolder, DslSyntaxFileName);
 
+        /// <summary>
+        /// Save method will not update the existing file if the content is same.
+        /// This helps 
+        /// </summary>
         public void Save(DslSyntax dslSyntax)
         {
-            using (var fileWriter = File.CreateText(DslSyntaxFilePath))
-            {
-                JsonSerializer serializer = JsonSerializer.Create(_jsonSerializerSettings);
-                serializer.Serialize(fileWriter, dslSyntax);
-            }
+            string newContent = JsonConvert.SerializeObject(dslSyntax, _jsonSettings);
+
+            string oldContent = File.Exists(DslSyntaxFilePath)
+                ? File.ReadAllText(DslSyntaxFilePath)
+                : null;
+
+            if (newContent != oldContent)
+                File.WriteAllText(DslSyntaxFilePath, newContent);
         }
 
         public DslSyntax Load()
@@ -58,7 +65,7 @@ namespace Rhetos.Dsl
             using (var fileReader = new StreamReader(File.OpenRead(DslSyntaxFilePath)))
             using (var jsonReader = new JsonTextReader(fileReader))
             {
-                JsonSerializer serializer = JsonSerializer.Create(_jsonSerializerSettings);
+                JsonSerializer serializer = JsonSerializer.Create(_jsonSettings);
                 return serializer.Deserialize<DslSyntax>(jsonReader);
             }
         }
