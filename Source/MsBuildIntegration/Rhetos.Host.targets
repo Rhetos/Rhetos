@@ -51,6 +51,7 @@
   <Reference Relative="..\Rhetos.Dsl.DefaultConcepts.dll">..\Rhetos.Dsl.DefaultConcepts.dll</Reference>
   <Reference Relative="..\Rhetos.Dsl.dll">..\Rhetos.Dsl.dll</Reference>
   <Reference Relative="..\Rhetos.Dsl.Interfaces.dll">..\Rhetos.Dsl.Interfaces.dll</Reference>
+  <Reference Relative="..\Rhetos.Dsl.Parser.dll">..\Rhetos.Dsl.Parser.dll</Reference>
   <Reference Relative="..\Rhetos.Extensibility.dll">..\Rhetos.Extensibility.dll</Reference>
   <Reference Relative="..\Rhetos.Extensibility.Interfaces.dll">..\Rhetos.Extensibility.Interfaces.dll</Reference>
   <Reference Relative="..\Rhetos.Logging.dll">..\Rhetos.Logging.dll</Reference>
