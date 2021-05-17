@@ -41,7 +41,7 @@ namespace Rhetos.Dsl
         public void Generate()
         {
             var sw = Stopwatch.StartNew();
-            _dslSyntaxFile.Serialize(_dslSyntax);
+            _dslSyntaxFile.Save(_dslSyntax);
             _performanceLogger.Write(sw, nameof(Generate));
         }
 

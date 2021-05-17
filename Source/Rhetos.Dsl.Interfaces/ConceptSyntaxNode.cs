@@ -41,7 +41,7 @@ namespace Rhetos.Dsl
         public ConceptSyntaxNode(ConceptType concept)
         {
             Concept = concept;
-            Parameters = new object[concept.Members.Length];
+            Parameters = new object[concept.Members.Count];
         }
 
         /// <summary>
@@ -64,7 +64,7 @@ namespace Rhetos.Dsl
         {
             var members = Concept.Members;
             bool firstMember = true;
-            for (int m = 0; m < members.Length; m++)
+            for (int m = 0; m < members.Count; m++)
             {
                 var member = members[m];
                 if (member.IsKey)

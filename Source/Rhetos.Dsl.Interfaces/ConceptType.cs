@@ -18,6 +18,7 @@
 */
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
@@ -43,7 +44,7 @@ namespace Rhetos.Dsl
         /// Base types, excluding the current concept type itself (<see cref="AssemblyQualifiedName"/>).
         /// The array is sorted by inheritance depth, each element is a derivation of the previous one.
         /// </summary>
-        public string[] BaseTypesAssemblyQualifiedName { get; set; }
+        public List<string> BaseTypesAssemblyQualifiedName { get; set; }
 
         /// <summary>
         /// Short type name of the root concept type, used for unique concept key definition.
@@ -58,7 +59,7 @@ namespace Rhetos.Dsl
 
         public string Keyword { get; set; }
 
-        public ConceptMemberSyntax[] Members { get; set; }
+        public List<ConceptMemberSyntax> Members { get; set; }
 
         public string KeywordOrTypeName => Keyword ?? TypeName;
 

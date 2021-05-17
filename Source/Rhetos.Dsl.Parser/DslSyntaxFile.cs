@@ -44,7 +44,7 @@ namespace Rhetos.Dsl
 
         private string DslSyntaxFilePath => Path.Combine(_rhetosBuildEnvironment.CacheFolder, DslSyntaxFileName);
 
-        public void Serialize(DslSyntax dslSyntax)
+        public void Save(DslSyntax dslSyntax)
         {
             using (var fileWriter = File.CreateText(DslSyntaxFilePath))
             {
@@ -53,7 +53,7 @@ namespace Rhetos.Dsl
             }
         }
 
-        public DslSyntax Deserialize()
+        public DslSyntax Load()
         {
             using (var fileReader = new StreamReader(File.OpenRead(DslSyntaxFilePath)))
             using (var jsonReader = new JsonTextReader(fileReader))

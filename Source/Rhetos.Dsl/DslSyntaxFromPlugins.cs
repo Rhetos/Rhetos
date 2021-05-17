@@ -48,7 +48,7 @@ namespace Rhetos.Dsl
             };
         }
 
-        private static ConceptType[] CreateConceptTypesAndMembers(IEnumerable<Type> conceptInfoTypes)
+        private static List<ConceptType> CreateConceptTypesAndMembers(IEnumerable<Type> conceptInfoTypes)
         {
             var types = conceptInfoTypes
                 .Distinct()
@@ -67,9 +67,9 @@ namespace Rhetos.Dsl
                             : null;
                         return memberSyntax;
                     })
-                    .ToArray();
+                    .ToList();
 
-            return types.Values.ToArray();
+            return types.Values.ToList();
         }
 
         private static ConceptType CreateConceptTypeWithoutMembers(Type conceptInfoType)
@@ -90,7 +90,7 @@ namespace Rhetos.Dsl
             };
         }
 
-        private static string[] GetBaseConceptInfoTypes(Type t)
+        private static List<string> GetBaseConceptInfoTypes(Type t)
         {
             var baseTypes = new List<Type>();
 
@@ -107,11 +107,11 @@ namespace Rhetos.Dsl
             }
 
             if (!baseTypes.Any())
-                return Array.Empty<string>();
+                return new List<string> { };
             else
             {
                 baseTypes.Reverse();
-                return baseTypes.Select(t => t.AssemblyQualifiedName).ToArray();
+                return baseTypes.Select(t => t.AssemblyQualifiedName).ToList();
             }
         }
     }

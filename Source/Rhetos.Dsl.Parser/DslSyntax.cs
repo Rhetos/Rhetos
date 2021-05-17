@@ -18,6 +18,7 @@
 */
 
 using Rhetos.Utilities;
+using System.Collections.Generic;
 
 namespace Rhetos.Dsl
 {
@@ -40,6 +41,6 @@ namespace Rhetos.Dsl
         /// </summary>
         public string DatabaseLanguage { get; set; }
 
-        public ConceptType[] ConceptTypes { get; set; }
+        public List<ConceptType> ConceptTypes { get; set; }
     }
 }

@@ -66,7 +66,7 @@ namespace Rhetos.Dsl
             return parsedConcepts;
         }
 
-        public MultiDictionary<string, IConceptParser> CreateGenericParsers(ConceptType[] conceptTypes)
+        public MultiDictionary<string, IConceptParser> CreateGenericParsers(List<ConceptType> conceptTypes)
         {
             var stopwatch = Stopwatch.StartNew();
 
