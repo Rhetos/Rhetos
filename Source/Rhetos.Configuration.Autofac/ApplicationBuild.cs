@@ -82,7 +82,7 @@ namespace Rhetos
             }
         }
 
-        private RhetosContainerBuilder CreateBuildComponentsContainer()
+        private ContainerBuilder CreateBuildComponentsContainer()
         {
             var pluginScanner = new PluginScanner(
                 _pluginAssemblies,
@@ -90,7 +90,7 @@ namespace Rhetos
                 _logProvider,
                 _configuration.GetOptions<PluginScannerOptions>());
 
-            var builder = new RhetosContainerBuilder(_configuration, _logProvider, pluginScanner);
+            var builder = RhetosContainerBuilder.Create(_configuration, _logProvider, pluginScanner);
             builder.Register(context => new PluginInfoCollection(pluginScanner.FindAllPlugins()));
             builder.RegisterModule(new CoreModule());
             builder.RegisterModule(new CorePluginsModule());

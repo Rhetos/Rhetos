@@ -49,6 +49,7 @@ Changes in behavior:
     ```
 13. IDomainObjectModel.GetType no longer returns types for "Common.RowPermissionsReadItems" and "Common.RowPermissionsWriteItems". For example `GetType(RowPermissionsReadInfo.FilterName)` and `GetType(RowPermissionsWriteInfo.FilterName)` will return null.
     * Use `typeof(Common.RowPermissionsReadItems)` and `typeof(Common.RowPermissionsWriteItems)` instead.
+14. Upgraded Autofac from version 4.9.4 to 6.2.0
 
 Changes in Rhetos libraries API:
 

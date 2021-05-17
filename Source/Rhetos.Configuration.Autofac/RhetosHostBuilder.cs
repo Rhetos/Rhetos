@@ -118,7 +118,7 @@ namespace Rhetos
         private IContainer BuildContainer(IConfiguration configuration)
         {
             var pluginScanner = new RuntimePluginScanner(_pluginAssemblies, _pluginTypes, _builderLogProvider);
-            var builder = new RhetosContainerBuilder(configuration, _builderLogProvider, pluginScanner);
+            var builder = RhetosContainerBuilder.Create(configuration, _builderLogProvider, pluginScanner);
 
             var configurationAction = _customContainerConfigurationAction ?? DefaultContainerConfiguration;
             configurationAction(configuration, builder, _configureContainerActions);

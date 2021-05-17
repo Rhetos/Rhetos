@@ -11,7 +11,7 @@
     <copyright>Copyright Omega software 2013</copyright>
     <tags>Rhetos</tags>
     <dependencies>
-      <dependency id="Autofac" version="4.9.4" />
+      <dependency id="Autofac" version="6.2.0" />
       <dependency id="EntityFramework" version="6.4.4" />
       <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="5.0.0" />
       <dependency id="Microsoft.Extensions.Hosting.Abstractions" version="5.0.0" />

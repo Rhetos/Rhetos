@@ -29,7 +29,7 @@ namespace Autofac
     public static class ContainerBuilderExtensions
     {
         /// <summary>
-        /// Extension method which resolves <see cref="ILogProvider"/> instance from properly initialized <see cref="RhetosContainerBuilder"/>.
+        /// Extension method which resolves <see cref="ILogProvider"/> instance from the <see cref="ContainerBuilder"/> which is initialized with the <see cref="RhetosContainerBuilder.Create"/> method.
         /// </summary>
         public static ILogProvider GetRhetosLogProvider(this ContainerBuilder builder)
         {
@@ -38,17 +38,17 @@ namespace Autofac
                 return iLogProvider;
 
             throw new FrameworkException($"{nameof(ContainerBuilder)} does not contain an entry for {nameof(ILogProvider)}. " +
-                $"This container was probably not created as {nameof(RhetosContainerBuilder)}.");
+                $"This container was probably not created with the  {nameof(RhetosContainerBuilder)}.{nameof(RhetosContainerBuilder.Create)} method.");
         }
 
         /// <summary>
-        /// Extension method which resolves <see cref="ILogProvider"/> instance from properly initialized <see cref="RhetosContainerBuilder"/>.
+        /// Extension method which resolves <see cref="ILogProvider"/> instance from the <see cref="ContainerBuilder"/> which is initialized with the <see cref="RhetosContainerBuilder.Create"/> method.
         /// </summary>
         [Obsolete("Use " + nameof(GetRhetosLogProvider) + " instead.")] 
         public static ILogProvider GetLogProvider(this ContainerBuilder builder) => GetRhetosLogProvider(builder);
 
         /// <summary>
-        /// Extension method which resolves Rhetos <see cref="IConfiguration"/> instance from properly initialized <see cref="RhetosContainerBuilder"/>.
+        /// Extension method which resolves Rhetos <see cref="IConfiguration"/> instance from the <see cref="ContainerBuilder"/> which is initialized with the <see cref="RhetosContainerBuilder.Create"/> method.
         /// </summary>
         public static IConfiguration GetRhetosConfiguration(this ContainerBuilder builder)
         {
@@ -61,7 +61,7 @@ namespace Autofac
         }
 
         /// <summary>
-        /// Extension method which resolves <see cref="IPluginScanner"/> instance from properly initialized <see cref="RhetosContainerBuilder"/>.
+        /// Extension method which resolves <see cref="IPluginScanner"/> instance from the <see cref="ContainerBuilder"/> which is initialized with the <see cref="RhetosContainerBuilder.Create"/> method.
         /// </summary>
         public static IPluginScanner GetRhetosPluginScanner(this ContainerBuilder builder)
         {
@@ -74,13 +74,13 @@ namespace Autofac
         }
 
         /// <summary>
-        /// Extension method which resolves <see cref="IPluginScanner"/> instance from properly initialized <see cref="RhetosContainerBuilder"/>.
+        /// Extension method which resolves <see cref="IPluginScanner"/> instance from the <see cref="ContainerBuilder"/> which is initialized with the <see cref="RhetosContainerBuilder.Create"/> method.
         /// </summary>
         [Obsolete("Use " + nameof(GetRhetosPluginScanner) + " instead.")]
         public static IPluginScanner GetPluginScanner(this ContainerBuilder builder) => GetRhetosPluginScanner(builder);
 
         /// <summary>
-        /// Extension method which resolves new <see cref="ContainerBuilderPluginRegistration"/> instance from properly initialized <see cref="RhetosContainerBuilder"/>.
+        /// Extension method which resolves new <see cref="ContainerBuilderPluginRegistration"/> instance from the <see cref="ContainerBuilder"/> which is initialized with the <see cref="RhetosContainerBuilder.Create"/> method.
         /// </summary>
         public static ContainerBuilderPluginRegistration GetRhetosPluginRegistration(this ContainerBuilder builder)
         {
@@ -92,7 +92,7 @@ namespace Autofac
         }
 
         /// <summary>
-        /// Extension method which resolves new <see cref="ContainerBuilderPluginRegistration"/> instance from properly initialized <see cref="RhetosContainerBuilder"/>.
+        /// Extension method which resolves new <see cref="ContainerBuilderPluginRegistration"/> instance from the <see cref="ContainerBuilder"/> which is initialized with the <see cref="RhetosContainerBuilder.Create"/> method.
         /// </summary>
         [Obsolete("Use " + nameof(GetRhetosPluginRegistration) + " instead.")]
         public static ContainerBuilderPluginRegistration GetPluginRegistration(this ContainerBuilder builder) => GetRhetosPluginRegistration(builder);

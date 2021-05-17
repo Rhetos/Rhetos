@@ -30,7 +30,7 @@ namespace Rhetos
     /// (see <see cref="ContainerBuilderExtensions"/> method),
     /// and registers <see cref="IConfiguration"/> to the container.
     /// </summary>
-    public class RhetosContainerBuilder : ContainerBuilder
+    public class RhetosContainerBuilder
     {
         /// <summary>
         /// Initializes a dependency injection container with specified <see cref="IConfiguration"/>. 
@@ -40,17 +40,21 @@ namespace Rhetos
         /// <see cref="ILogProvider"/> is not registered to container and is meant to be used during the lifetime of registration and container building process.
         /// <see cref="LegacyUtilities"/> will also be initialized with the given configuration.
         /// </remarks>
-        public RhetosContainerBuilder(IConfiguration configuration, ILogProvider logProvider, IPluginScanner pluginScanner)
+        public static ContainerBuilder Create(IConfiguration configuration, ILogProvider logProvider, IPluginScanner pluginScanner)
         {
-            this.RegisterInstance(configuration).ExternallyOwned();
+            var containerBuilder = new ContainerBuilder();
+
+            containerBuilder.RegisterInstance(configuration).ExternallyOwned();
 
             // make properties accessible to modules which are provided with new/unique instance of ContainerBuilder
-            this.Properties.Add(nameof(IPluginScanner), pluginScanner);
-            this.Properties.Add(nameof(ILogProvider), logProvider);
-            this.Properties.Add(nameof(IConfiguration), configuration);
+            containerBuilder.Properties.Add(nameof(IPluginScanner), pluginScanner);
+            containerBuilder.Properties.Add(nameof(ILogProvider), logProvider);
+            containerBuilder.Properties.Add(nameof(IConfiguration), configuration);
 
             // this is a patch/mock to provide backward compatibility for all usages of old static classes
             LegacyUtilities.Initialize(configuration);
+
+            return containerBuilder;
         }
     }
 }

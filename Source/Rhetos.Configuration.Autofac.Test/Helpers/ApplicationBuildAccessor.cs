@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Autofac;
 using Rhetos.Deployment;
 using Rhetos.Logging;
 using Rhetos.TestCommon;
@@ -31,6 +32,6 @@ namespace Rhetos.Configuration.Autofac.Test
             base(configuration, logProvider, pluginAssemblies, installedPackages)
         { }
 
-        public RhetosContainerBuilder CreateBuildComponentsContainer() => this.Invoke("CreateBuildComponentsContainer");
+        public ContainerBuilder CreateBuildComponentsContainer() => this.Invoke("CreateBuildComponentsContainer");
     }
 }
