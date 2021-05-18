@@ -73,6 +73,8 @@ Changes in Rhetos libraries API:
    * Custom code that uses Paths.ResourcesFolder should use IAssetsOptions.AssetsFolder instead.
    * Custom code that uses Paths.RhetosServerRootPath may use RhetosAppOptions.CacheFolder or RhetosAppOptions.RhetosHostFolder instead.
 8. The property DatabaseLanguage is moved from classes BuildOptions and RhetosAppOptions to class DatabaseSettings.
+9. Removed support for ContainerBuilderPluginRegistration.CheckOverride method. This was usually used to check if the expected implementation of IUserInfo interface was used because of different load orders of Autofac modules.
+   In the new design it is up to the developer how it will setup the IServiceCollection IoC container from which the IUserInfo will be resolved.
 
 ## 4.3.0 (2021-03-05)
 
