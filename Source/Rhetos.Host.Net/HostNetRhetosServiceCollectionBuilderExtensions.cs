@@ -18,10 +18,12 @@
 */
 
 using Autofac;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Rhetos;
 using Rhetos.Host.Net;
 using Rhetos.Logging;
+using Rhetos.Utilities;
 using System;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -29,7 +31,7 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class HostNetRhetosServiceCollectionBuilderExtensions
     {
         /// <summary>
-        /// Configures Rhetos logging so that it uses the <see cref="Microsoft.Extensions.Logging.ILogger"/> implementation registered in the <see cref="IServiceCollection"/>
+        /// Configures Rhetos logging so that it uses the <see cref="Logging.ILogger"/> implementation registered in the <see cref="IServiceCollection"/>
         /// </summary>
         /// <returns></returns>
         public static RhetosServiceCollectionBuilder AddLoggingIntegration(this RhetosServiceCollectionBuilder rhetosServiceCollectionBuilder)
@@ -39,9 +41,31 @@ namespace Microsoft.Extensions.DependencyInjection
             return rhetosServiceCollectionBuilder;
         }
 
+        /// <summary>
+        /// Configures Rhetos localization so that it uses the <see cref="IStringLocalizerFactory"/> implementation registered in the <see cref="IServiceCollection"/>
+        /// </summary>
+        /// <returns></returns>
+        public static RhetosServiceCollectionBuilder AddLocalizationIntegration(this RhetosServiceCollectionBuilder rhetosServiceCollectionBuilder, Action<HostLocalizerOptions> configureOptions = null)
+        {
+            rhetosServiceCollectionBuilder.Services.AddOptions();
+            if (configureOptions != null)
+            {
+                rhetosServiceCollectionBuilder.Services.Configure(configureOptions);
+            }
+            rhetosServiceCollectionBuilder.Services.Configure<RhetosHostBuilderOptions>(o => o.ConfigureActions.Add(ConfigureLocalizer));
+            rhetosServiceCollectionBuilder.Services.AddSingleton<HostLocalizer>();
+
+            return rhetosServiceCollectionBuilder;
+        }
+
         private static void ConfigureLogProvider(IServiceProvider serviceProvider, IRhetosHostBuilder rhetosHostBuilder)
         {
             rhetosHostBuilder.ConfigureContainer(builder => builder.RegisterInstance<ILogProvider>(new HostLogProvider(serviceProvider.GetRequiredService<ILoggerProvider>())));
+        }
+
+        private static void ConfigureLocalizer(IServiceProvider serviceProvider, IRhetosHostBuilder rhetosHostBuilder)
+        {
+            rhetosHostBuilder.ConfigureContainer(builder => builder.RegisterInstance<ILocalizer>(serviceProvider.GetRequiredService<HostLocalizer>()));
         }
     }
 }

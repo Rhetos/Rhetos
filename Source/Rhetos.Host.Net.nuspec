@@ -16,6 +16,7 @@
       <dependency id="Microsoft.Extensions.Logging.Console" version="5.0.0" />
       <dependency id="Microsoft.Extensions.Logging.Debug" version="5.0.0" />
       <dependency id="Microsoft.Extensions.Logging.EventLog" version="5.0.0" />
+      <dependency id="Microsoft.Extensions.Localization.Abstractions" version="5.0.6" />
     </dependencies>
   </metadata>
   <files>
