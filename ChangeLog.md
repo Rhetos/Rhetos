@@ -77,6 +77,7 @@ Changes in Rhetos libraries API:
    In the new design it is up to the developer how it will setup the IServiceCollection IoC container from which the IUserInfo will be resolved.
 10. The interface IMacroConcept now requires the implementation of the method CreateNewConcepts without any parameters.
     If an implementation of IMacroConcept requires access to the IDslModel the IConceptMacro\<T\> interface should be used.
+11. Removed support for QueryDataSourceCommand. Use the ReadCommand instead.
 
 ## 4.3.0 (2021-03-05)
 

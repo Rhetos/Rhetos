@@ -295,6 +295,31 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
+        public void NullGenericFilterTest()
+        {
+            using (var scope = TestScope.Create())
+            {
+                var genericRepos = scope.Resolve<GenericRepositories>().GetGenericRepository("Common.Claim");
+
+                var readCommand = new ReadCommandInfo
+                {
+                    DataSource = "Common.Claim",
+                    Top = 3,
+                    OrderByProperties = new[] { new OrderByProperty { Property = "ClaimResource" } },
+                    ReadRecords = true,
+                    ReadTotalCount = true
+                };
+
+                var serverCommandsUtility = scope.Resolve<ServerCommandsUtility>();
+
+                var readResult = serverCommandsUtility.ExecuteReadCommand(readCommand, genericRepos);
+                Console.WriteLine("Records.Length: " + readResult.Records.Length);
+                Console.WriteLine("TotalCount: " + readResult.TotalCount);
+                Assert.IsTrue(readResult.Records.Length < readResult.TotalCount);
+            }
+        }
+
+        [TestMethod]
         public void SimpleComposableFilterCaseInsensitive()
         {
             using (var scope = TestScope.Create())
