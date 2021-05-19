@@ -287,7 +287,8 @@ $@"namespace Common
 
         public Rhetos.Logging.ILogProvider LogProvider {{ get; private set; }}
 
-        public EntityFrameworkContext EntityFrameworkContext {{ get; private set; }}
+        protected Lazy<EntityFrameworkContext> _entityFrameworkContext;
+        public EntityFrameworkContext EntityFrameworkContext {{ get {{ return _entityFrameworkContext.Value; }} }}
 
         {ModuleCodeGenerator.ExecutionContextMemberTag}
 
@@ -301,7 +302,7 @@ $@"namespace Common
             Lazy<Common.DomRepository> repository,
             Lazy<Rhetos.Dom.DefaultConcepts.IPersistenceStorage> persistenceStorage,
             Rhetos.Logging.ILogProvider logProvider{ModuleCodeGenerator.ExecutionContextConstructorArgumentTag},
-            EntityFrameworkContext entityFrameworkContext)
+            Lazy<EntityFrameworkContext> entityFrameworkContext)
         {{
             _persistenceTransaction = persistenceTransaction;
             _userInfo = userInfo;
@@ -311,7 +312,7 @@ $@"namespace Common
             _repository = repository;
             _persistenceStorage = persistenceStorage;
             LogProvider = logProvider;
-            EntityFrameworkContext = entityFrameworkContext;
+            _entityFrameworkContext = entityFrameworkContext;
             {ModuleCodeGenerator.ExecutionContextConstructorAssignmentTag}
         }}
 
