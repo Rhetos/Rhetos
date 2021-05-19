@@ -235,7 +235,7 @@ namespace Rhetos.Dsl
                 macroEvaluators.Add(new MacroEvaluator
                 {
                     Name = "IMacroConcept " + macroConceptType.FullName,
-                    Evaluate = (conceptInfo, dslContainer) => ((IMacroConcept)conceptInfo).CreateNewConcepts(dslContainer.Concepts),
+                    Evaluate = (conceptInfo, dslContainer) => ((IMacroConcept)conceptInfo).CreateNewConcepts(),
                     Implements = macroConceptType,
                     ImplementsDerivations = false
                 });

@@ -41,7 +41,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public string ErrorMessage { get; set; }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
             var filterParameter = new ParameterInfo
             {

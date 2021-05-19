@@ -37,7 +37,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public ImplementsInterfaceInfo ImplementsInterface { get; set; }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
             return new[] { new RegisteredInterfaceImplementationInfo
             {

@@ -38,7 +38,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public string Length { get; set; }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
             var itemFilter = new ItemFilterInfo
             {

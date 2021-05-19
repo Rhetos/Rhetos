@@ -39,7 +39,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public string FilterSaveExpression { get; set; }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
             return new[] { new KeepSynchronizedInfo
                 {

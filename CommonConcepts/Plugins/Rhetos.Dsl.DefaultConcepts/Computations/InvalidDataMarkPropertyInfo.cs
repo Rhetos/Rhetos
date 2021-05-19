@@ -35,7 +35,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         public PropertyInfo DependedProperty { get; set; }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
             return new[] { new InvalidDataMarkProperty2Info { InvalidData = this, MarkProperty = DependedProperty } };
         }

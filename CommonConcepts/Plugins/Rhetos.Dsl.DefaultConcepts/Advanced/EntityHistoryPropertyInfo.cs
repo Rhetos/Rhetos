@@ -54,7 +54,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             createdConcepts = new IConceptInfo[] { Dependency_EntityHistory };
         }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
             return new[] { new PropertyFromInfo { Destination = Dependency_EntityHistory.Dependency_ChangesEntity, Source = Property } };
         }

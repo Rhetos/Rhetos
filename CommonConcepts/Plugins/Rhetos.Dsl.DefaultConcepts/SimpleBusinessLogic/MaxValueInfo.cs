@@ -39,7 +39,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public string Value { get; set; }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
             string limitSnippet = MinValueInfo.LimitSnippetByType
                 .Where(snippet => snippet.Key.IsAssignableFrom(Property.GetType()))

@@ -65,7 +65,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                     string.Join(", ", availableFilters.Select(parameter => "'" + parameter + "'"))));
         }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
             return new IConceptInfo[]
                 {

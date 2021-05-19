@@ -84,17 +84,27 @@ namespace Rhetos.Dsl.Test
             public IEnumerable<IConceptInfo> ParsedConcepts { get { return _rawConcepts; } }
         }
 
-        internal class StubMacroIndex : IIndex<Type, IEnumerable<IConceptMacro>>
+        internal class MockMacroIndex : IIndex<Type, IEnumerable<IConceptMacro>>
         {
+            private readonly Dictionary<Type, IEnumerable<IConceptMacro>> dictionary;
+
+            public MockMacroIndex(Dictionary<Type, IEnumerable<IConceptMacro>> dictionary)
+            {
+                this.dictionary = dictionary;
+            }
+
             public bool TryGetValue(Type key, out IEnumerable<IConceptMacro> value)
             {
-                value = new IConceptMacro[] { };
-                return true;
+                return dictionary.TryGetValue(key, out value);
             }
 
             public IEnumerable<IConceptMacro> this[Type key]
             {
-                get { return new IConceptMacro[] { }; }
+                get {
+                    if (dictionary.TryGetValue(key, out var value))
+                        return value;
+                    return new IConceptMacro[] { };
+                }
             }
         }
 
@@ -109,15 +119,17 @@ namespace Rhetos.Dsl.Test
             public void SaveConcepts(IEnumerable<IConceptInfo> concepts) { }
         }
 
-        static IDslModel NewDslModel(IDslParser parser, IEnumerable<IConceptInfo> conceptPrototypes)
+        static IDslModel NewDslModel(IDslParser parser, IEnumerable<IConceptInfo> conceptPrototypes, Dictionary<Type, IEnumerable<IConceptMacro>> conceptMacros = null)
         {
+            conceptMacros = conceptMacros ?? new Dictionary<Type, IEnumerable<IConceptMacro>>();
+            var macroList = conceptMacros.SelectMany(x => x.Value);
             var dslContainter = new DslContainer(new ConsoleLogProvider(), new MockPluginsContainer<IDslModelIndex>(new DslModelIndexByType()));
             var dslModel = new DslModel(
                 parser,
                 new ConsoleLogProvider(),
                 dslContainter,
-                new StubMacroIndex(),
-                new IConceptMacro[] { },
+                new MockMacroIndex(conceptMacros),
+                macroList,
                 conceptPrototypes,
                 new StubMacroOrderRepository(),
                 new StubDslModelFile(),
@@ -125,9 +137,9 @@ namespace Rhetos.Dsl.Test
             return dslModel;
         }
 
-        static List<IConceptInfo> DslModelFromConcepts(IEnumerable<IConceptInfo> rawConcepts)
+        static List<IConceptInfo> DslModelFromConcepts(IEnumerable<IConceptInfo> rawConcepts, Dictionary<Type, IEnumerable<IConceptMacro>> conceptMacros = null)
         {
-            var dslModel = NewDslModel(new StubDslParser(rawConcepts), rawConcepts);
+            var dslModel = NewDslModel(new StubDslParser(rawConcepts), rawConcepts, conceptMacros);
             return dslModel.Concepts.ToList();
         }
 
@@ -313,7 +325,7 @@ namespace Rhetos.Dsl.Test
             public string Value { get; set; }
             public MacroConceptInfo(string value) { Value = value; }
 
-            public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+            public IEnumerable<IConceptInfo> CreateNewConcepts()
             {
                 return new List<IConceptInfo>
                            {
@@ -347,7 +359,7 @@ namespace Rhetos.Dsl.Test
             public string Value { get; set; }
             public SecondLevelMacroConceptInfo(string value) { Value = value; }
 
-            public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+            public IEnumerable<IConceptInfo> CreateNewConcepts()
             {
                 return new List<IConceptInfo>
                            {
@@ -376,15 +388,19 @@ namespace Rhetos.Dsl.Test
             Assert.AreEqual(string.Join(", ", expected), string.Join(", ", actual));
         }
 
-        class RecursiveMacroConceptInfo : IMacroConcept
+        class RecursiveMacroConceptInfo : IConceptInfo
         {
             [ConceptKey]
             public string Value { get; set; }
             public RecursiveMacroConceptInfo(string value) { Value = value; }
-            public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        }
+
+        class RecursiveMacroConceptMacro : IConceptMacro<RecursiveMacroConceptInfo>
+        {
+            public IEnumerable<IConceptInfo> CreateNewConcepts(RecursiveMacroConceptInfo conceptInfo, IDslModel existingConcepts)
             {
-                int v = int.Parse(Value);
-                if (v == existingConcepts.Count())
+                int v = int.Parse(conceptInfo.Value);
+                if (v == existingConcepts.Concepts.Count())
                     return new List<IConceptInfo> { new RecursiveMacroConceptInfo((v + 1).ToString()) };
                 return null;
             }
@@ -396,8 +412,12 @@ namespace Rhetos.Dsl.Test
         {
             try
             {
-                List<IConceptInfo> concepts = new List<IConceptInfo> { new RecursiveMacroConceptInfo("1") };
-                DslModelFromConcepts(concepts);
+                var concepts = new List<IConceptInfo> { new RecursiveMacroConceptInfo("1") };
+                var macros = new Dictionary<Type, IEnumerable<IConceptMacro>>
+                {
+                    { typeof(RecursiveMacroConceptInfo), new IConceptMacro[]{ new RecursiveMacroConceptMacro() } } 
+                }; 
+                DslModelFromConcepts(concepts, macros);
             }
             catch (Exception ex)
             {
@@ -449,25 +469,33 @@ namespace Rhetos.Dsl.Test
         }
 
         [ConceptKeyword("MULTIPASS1")]
-        class MultiplePassMacroConceptInfo1 : IMacroConcept
+        class MultiplePassMacroConceptInfo1 : IConceptInfo
         {
             [ConceptKey]
             public string Value { get; set; }
-            public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        }
+
+        class MultiplePassMacroConcept1Macro : IConceptMacro<MultiplePassMacroConceptInfo1>
+        {
+            public IEnumerable<IConceptInfo> CreateNewConcepts(MultiplePassMacroConceptInfo1 conceptInfo, IDslModel existingConcepts)
             {
-                return existingConcepts.OfType<SimpleConceptInfo>().Where(c => !c.Name.StartsWith("dup"))
-                    .Select(c => new SimpleConceptInfo {Name = "dup" + c.Name, Data = ""});
+                return existingConcepts.Concepts.OfType<SimpleConceptInfo>().Where(c => !c.Name.StartsWith("dup"))
+                    .Select(c => new SimpleConceptInfo { Name = "dup" + c.Name, Data = "" });
             }
         }
 
         [ConceptKeyword("MULTIPASS2")]
-        class MultiplePassMacroConceptInfo2 : IMacroConcept
+        class MultiplePassMacroConceptInfo2 : IConceptInfo
         {
             [ConceptKey]
             public string Value { get; set; }
-            public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        }
+
+        class MultiplePassMacroConcept2Macro : IConceptMacro<MultiplePassMacroConceptInfo2>
+        {
+            public IEnumerable<IConceptInfo> CreateNewConcepts(MultiplePassMacroConceptInfo2 conceptInfo, IDslModel existingConcepts)
             {
-                int count = existingConcepts.OfType<SimpleConceptInfo>().Where(c => !c.Name.StartsWith("dup")).Count();
+                int count = existingConcepts.Concepts.OfType<SimpleConceptInfo>().Where(c => !c.Name.StartsWith("dup")).Count();
                 if (count < 3)
                     return new List<IConceptInfo> { new SimpleConceptInfo { Name = count.ToString(), Data = "" } };
                 return null;
@@ -477,13 +505,18 @@ namespace Rhetos.Dsl.Test
         [TestMethod]
         public void ExpandMacroConcepts_MultiplePassesWithBackReferences()
         {
-            List<IConceptInfo> concepts = new List<IConceptInfo>
+            var concepts = new List<IConceptInfo>
                                               {
                                                   new MultiplePassMacroConceptInfo1 {Value = "x"},
                                                   new MultiplePassMacroConceptInfo2 {Value = "x"}
                                               };
+            var macros = new Dictionary<Type, IEnumerable<IConceptMacro>>
+            {
+                { typeof(MultiplePassMacroConceptInfo1), new IConceptMacro[] { new MultiplePassMacroConcept1Macro() } },
+                { typeof(MultiplePassMacroConceptInfo2), new IConceptMacro[] { new MultiplePassMacroConcept2Macro() } }
+            };
 
-            var result = DslModelFromConcepts(concepts);
+            var result = DslModelFromConcepts(concepts, macros);
             Console.WriteLine(string.Join(", ", result.Select(c => c.GetUserDescription())));
 
             Assert.AreEqual(3, result.OfType<SimpleConceptInfo>().Where(c => !c.Name.StartsWith("dup")).Count());
@@ -493,13 +526,18 @@ namespace Rhetos.Dsl.Test
         [TestMethod]
         public void ReferenceToMacroConcept()
         {
-            List<IConceptInfo> concepts = new List<IConceptInfo>
+            var concepts = new List<IConceptInfo>
                                               {
                                                   new RefConceptInfo {Name = "r", Reference = new SimpleConceptInfo { Name = "2", Data = ""}},
                                                   new MultiplePassMacroConceptInfo2 {Value = "x"}
                                               };
 
-            var result = DslModelFromConcepts(concepts);
+            var macros = new Dictionary<Type, IEnumerable<IConceptMacro>>
+            {
+                { typeof(MultiplePassMacroConceptInfo2), new IConceptMacro[] { new MultiplePassMacroConcept2Macro() } }
+            };
+
+            var result = DslModelFromConcepts(concepts, macros);
             Assert.AreEqual("MULTIPASS2 x, REF r.2, SIMPLE 0, SIMPLE 1, SIMPLE 2", TestUtility.DumpSorted(result, item => item.GetUserDescription()));
         }
     }

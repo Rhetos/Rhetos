@@ -31,7 +31,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public EntityInfo Entity { get; set; }
         
-        public System.Collections.Generic.IEnumerable<IConceptInfo> CreateNewConcepts(System.Collections.Generic.IEnumerable<IConceptInfo> existingConcepts)
+        public System.Collections.Generic.IEnumerable<IConceptInfo> CreateNewConcepts()
         {
             var activePropertyInfo = new BoolPropertyInfo
             {

@@ -41,7 +41,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public static readonly CsTag<RequiredAllowSaveInfo> OrCondition = "OrCondition";
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
             string filterName = "RequiredAllowSave_" + Property.Name;
 

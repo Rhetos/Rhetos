@@ -75,6 +75,8 @@ Changes in Rhetos libraries API:
 8. The property DatabaseLanguage is moved from classes BuildOptions and RhetosAppOptions to class DatabaseSettings.
 9. Removed support for ContainerBuilderPluginRegistration.CheckOverride method. This was usually used to check if the expected implementation of IUserInfo interface was used because of different load orders of Autofac modules.
    In the new design it is up to the developer how it will setup the IServiceCollection IoC container from which the IUserInfo will be resolved.
+10. The interface IMacroConcept now requires the implementation of the method CreateNewConcepts without any parameters.
+    If an implementation of IMacroConcept requires access to the IDslModel the IConceptMacro\<T\> interface should be used.
 
 ## 4.3.0 (2021-03-05)
 

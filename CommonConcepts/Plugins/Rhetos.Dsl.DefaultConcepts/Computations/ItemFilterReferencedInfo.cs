@@ -71,7 +71,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             return ItemFilterMacro.GetGeneratedFilter(itemFilterPrototype).GetKeyProperties();
         }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
             return new IConceptInfo[]
                 {
