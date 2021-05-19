@@ -74,9 +74,13 @@ namespace Rhetos.CommonConcepts.Test.Mocks
 
         private static DataStructureReadParameters CreateDataStructureReadParameters(IRepository repository, Type type)
         {
-            var repositoryNamedPluginsMock = new RepositoryNamedPluginsMock();
-            repositoryNamedPluginsMock.Plugins[type.FullName] = new IRepository[] { repository };
-            return new DataStructureReadParameters(repositoryNamedPluginsMock);
+            var readParameterTypesProperty = repository.GetType().GetField("ReadParameterTypes", BindingFlags.Public | BindingFlags.Static);
+            var specificFilterTypes = readParameterTypesProperty == null ?
+                new KeyValuePair<string, Type>[0] :
+                (KeyValuePair<string, Type>[])readParameterTypesProperty.GetValue(null);
+            return new DataStructureReadParameters(new Dictionary<string, KeyValuePair<string, Type>[]> {
+                { type.FullName, specificFilterTypes }
+            });
         }
     }
 }

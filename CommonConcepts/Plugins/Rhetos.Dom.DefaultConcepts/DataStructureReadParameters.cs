@@ -17,18 +17,16 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Extensibility;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
     public class DataStructureReadParameters : IDataStructureReadParameters
     {
-        private readonly INamedPlugins<IRepository> _repositories;
+        private readonly Dictionary<string, KeyValuePair<string, Type>[]> _repositoryReadParameters;
 
         /// <summary>
         /// This cache is not static, because <see cref="DataStructureReadParameters"/> is a singleton.
@@ -36,9 +34,9 @@ namespace Rhetos.Dom.DefaultConcepts
         private readonly ConcurrentDictionary<(string DataStuctureFullName, bool ExtendedSet), IEnumerable<DataStructureReadParameter>> _readParametersByDataStucture =
             new ConcurrentDictionary<(string DataStuctureFullName, bool ExtendedSet), IEnumerable<DataStructureReadParameter>>();
 
-        public DataStructureReadParameters(INamedPlugins<IRepository> repositories)
+        public DataStructureReadParameters(Dictionary<string, KeyValuePair<string, Type>[]> repositoryReadParameters)
         {
-            _repositories = repositories;
+            _repositoryReadParameters = repositoryReadParameters;
         }
 
         public IEnumerable<DataStructureReadParameter> GetReadParameters(string dataStuctureFullName, bool extendedSet)
@@ -61,11 +59,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private IEnumerable<DataStructureReadParameter> CreateReadParametersList((string DataStuctureFullName, bool ExtendedSet) key)
         {
-            var repository = _repositories.GetPlugin(key.DataStuctureFullName);
-            var readParameterTypesProperty = repository.GetType().GetField("ReadParameterTypes", BindingFlags.Public | BindingFlags.Static);
-            if (readParameterTypesProperty == null)
+            if (!_repositoryReadParameters.TryGetValue(key.DataStuctureFullName, out var specificFilterTypes))
                 return Array.Empty<DataStructureReadParameter>();
-            var specificFilterTypes = (KeyValuePair<string, Type>[])readParameterTypesProperty.GetValue(null);
 
             var allFilterTypes = new List<DataStructureReadParameter>(specificFilterTypes.Length + _standardFilterTypes.Length);
             allFilterTypes.AddRange(specificFilterTypes.Select(filterType => new DataStructureReadParameter(filterType.Key, filterType.Value)));

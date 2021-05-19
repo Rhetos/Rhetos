@@ -111,6 +111,7 @@ $@"namespace {info.Name}._Helper
         public const string ApplyFiltersOnClientReadTag = "/*ApplyFiltersOnClientRead*/";
         public const string CommonNamespaceMembersTag = "/*CommonNamespaceMembers*/";
         public const string CommonInfrastructureMembersTag = "/*CommonInfrastructureMembers*/";
+        public const string DataStructuresReadParameterTypesTag = "/*DataStructuresReadParameterTypes*/";
 
     }
 }

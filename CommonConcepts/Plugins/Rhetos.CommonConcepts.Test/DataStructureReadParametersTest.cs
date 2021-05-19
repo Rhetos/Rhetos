@@ -31,9 +31,9 @@ namespace Rhetos.CommonConcepts.Test
         [TestMethod]
         public void GetReadParameters_Basic()
         {
-            var repositoryNamedPluginsMock = new RepositoryNamedPluginsMock();
-            repositoryNamedPluginsMock.Plugins["RhetosCommonConceptsTestModule.TestDataStructure"] = new IRepository[] { new FakeRepository() };
-            IDataStructureReadParameters readParameters = new DataStructureReadParameters(repositoryNamedPluginsMock);
+            var readParameters = new DataStructureReadParameters(new Dictionary<string, KeyValuePair<string, Type>[]> {
+                { "RhetosCommonConceptsTestModule.TestDataStructure", FakeRepository.ReadParameterTypes }
+            });
 
             var expectedBasic = new[]
             {
@@ -50,9 +50,9 @@ namespace Rhetos.CommonConcepts.Test
         [TestMethod]
         public void GetReadParameters_Extended()
         {
-            var repositoryNamedPluginsMock = new RepositoryNamedPluginsMock();
-            repositoryNamedPluginsMock.Plugins["RhetosCommonConceptsTestModule.TestDataStructure"] = new IRepository[] { new FakeRepository() };
-            IDataStructureReadParameters readParameters = new DataStructureReadParameters(repositoryNamedPluginsMock);
+            var readParameters = new DataStructureReadParameters(new Dictionary<string, KeyValuePair<string, Type>[]> {
+                { "RhetosCommonConceptsTestModule.TestDataStructure", FakeRepository.ReadParameterTypes }
+            });
 
             var expectedExtended = new[]
             {

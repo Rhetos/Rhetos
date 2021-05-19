@@ -106,6 +106,11 @@ namespace Rhetos.Dom.DefaultConcepts
         
         ",
                 RepositoryMembers, info);
+
+            codeBuilder.InsertCode(
+            $@"{{""{module}.{entity}"", {module}._Helper.{entity}_Repository.ReadParameterTypes}},
+            ",
+                ModuleCodeGenerator.DataStructuresReadParameterTypesTag);
         }
 
         public static void GenerateQueryableRepository(DataStructureInfo info, ICodeBuilder codeBuilder, string queryFunctionBody = null, string loadFunctionBody = null)

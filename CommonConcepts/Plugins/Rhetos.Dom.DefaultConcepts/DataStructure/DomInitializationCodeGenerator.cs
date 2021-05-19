@@ -244,6 +244,11 @@ $@"namespace Common
             {ModuleCodeGenerator.ApplyFiltersOnClientReadTag}
         }};
 
+        public static readonly Dictionary<string, KeyValuePair<string, Type>[]> DataStructuresReadParameterTypes = new Dictionary<string, KeyValuePair<string, Type>[]>
+        {{
+            {ModuleCodeGenerator.DataStructuresReadParameterTypesTag}
+        }};
+
         {ModuleCodeGenerator.CommonInfrastructureMembersTag}
     }}
 
@@ -346,6 +351,7 @@ $@"namespace Common
 
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<CommonConceptsRuntimeOptions>()).SingleInstance();
             builder.Register<CommonConceptsOptions>(context => throw new NotImplementedException($""{{nameof(CommonConceptsOptions)}} is a build-time configuration, not available at run-time.""));
+            builder.Register<IDataStructureReadParameters>(context => new Rhetos.Dom.DefaultConcepts.DataStructureReadParameters(Infrastructure.DataStructuresReadParameterTypes));
             
             {ModuleCodeGenerator.CommonAutofacConfigurationMembersTag}
 
