@@ -75,7 +75,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             return new IConceptInfo[]
                 {
-                    new ComposableFilterByInfo
+                    new QueryFilterExpressionInfo
                     {
                         Source = Source,
                         Parameter = ComposableFilterParameter(),
@@ -86,9 +86,9 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         private string GetFilterExpression()
         {
-            return string.Format(@"(items, repository, parameter) =>
+            return string.Format(@"(items, parameter) =>
 	        {{
-                var filteredReferencedItems = repository.{0}.{1}.Filter(repository.{0}.{1}.Query(), parameter);
+                var filteredReferencedItems = _domRepository.{0}.{1}.Filter(_domRepository.{0}.{1}.Query(), parameter);
                 var filteredItems = items.Where(item => filteredReferencedItems.Contains(item.{2}));
                 {3}
                 return filteredItems;

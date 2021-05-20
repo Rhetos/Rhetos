@@ -87,12 +87,13 @@ namespace Rhetos.Dsl.DefaultConcepts
             newConcepts.AddRange(new IConceptInfo[] { activeSinceProperty, activeSinceHistory });
 
             // InvalidData for base entity: it is not allowed to save with ActiveSince older than last one used in History
-            var denyFilter = new ComposableFilterByInfo {
+            var denyFilter = new QueryFilterExpressionInfo
+            {
                 Parameter = "Common.OlderThanHistoryEntries",
                 Source = conceptInfo.Entity,
                 Expression = String.Format(
-                    @"(items, repository, parameter) => items.Where(item => 
-                                repository.{0}.{1}_Changes.Subquery.Where(his => his.ActiveSince >= item.ActiveSince && his.Entity == item).Count() > 0)",
+                    @"(items, parameter) => items.Where(item => 
+                                _domRepository.{0}.{1}_Changes.Subquery.Where(his => his.ActiveSince >= item.ActiveSince && his.Entity == item).Count() > 0)",
                                 conceptInfo.Entity.Module.Name,
                                 conceptInfo.Entity.Name) 
             };
@@ -122,11 +123,11 @@ namespace Rhetos.Dsl.DefaultConcepts
             });
 
             // InvalidData for history entity: it is not allowed to save with ActiveSince newer than current entity
-            var denyFilterHistory = new ComposableFilterByInfo
+            var denyFilterHistory = new QueryFilterExpressionInfo
             {
                 Parameter = "Common.NewerThanCurrentEntry",
                 Source = conceptInfo.Dependency_ChangesEntity,
-                Expression = @"(items, repository, parameter) => items.Where(item => item.ActiveSince > item.Entity.ActiveSince)"
+                Expression = @"(items, parameter) => items.Where(item => item.ActiveSince > item.Entity.ActiveSince)"
             };
             var invalidDataValidationHistory = new InvalidDataInfo
             {

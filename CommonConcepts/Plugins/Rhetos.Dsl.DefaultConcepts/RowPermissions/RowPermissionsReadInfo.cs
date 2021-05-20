@@ -17,11 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
@@ -31,7 +28,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("RowPermissionsRead")]
-    public class RowPermissionsReadInfo : ComposableFilterByInfo, IAlternativeInitializationConcept
+    public class RowPermissionsReadInfo : QueryFilterExpressionInfo, IAlternativeInitializationConcept
     {
         public static readonly string FilterName = "Common.RowPermissionsReadItems";
         public static readonly string PermissionsExpressionName = "GetRowPermissionsReadExpression";

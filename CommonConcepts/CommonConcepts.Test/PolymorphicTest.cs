@@ -673,7 +673,7 @@ namespace CommonConcepts.Test
                 Action<string, IEnumerable<Guid>, string, string> test =
                     (expected, ids, subtype, implementationName) => Assert.AreEqual(expected,
                         TestUtility.DumpSorted(
-                            repository.TestPolymorphic.ComplexBase.Filter(new FilterSubtype { Ids = ids, Subtype = subtype, ImplementationName = implementationName }),
+                            repository.TestPolymorphic.ComplexBase.Load(new FilterSubtype { Ids = ids, Subtype = subtype, ImplementationName = implementationName }),
                             item => item.Name1));
 
                 // Testing filter:
@@ -685,7 +685,7 @@ namespace CommonConcepts.Test
                 test("sx3", new[] { sx.ID }, "TestPolymorphic.ComplexImplementationSql", null);
                 test("sx4", new[] { sx.AlternativeId.Value }, "TestPolymorphic.ComplexImplementationSql", "sql2");
 
-                TestUtility.ShouldFail<Rhetos.ClientException>(() => repository.TestPolymorphic.ComplexBase.Filter(new FilterSubtype { Ids = new Guid[] {},
+                TestUtility.ShouldFail<Rhetos.ClientException>(() => repository.TestPolymorphic.ComplexBase.Load(new FilterSubtype { Ids = new Guid[] {},
                     Subtype = "nonexisting", ImplementationName = "" }), "nonexisting");
 
                 // Testing update of materialized data (it uses the Subtype filter):

@@ -51,9 +51,9 @@ namespace Rhetos.Dsl.DefaultConcepts
                 Module = Property.DataStructure.Module,
                 Name = Property.Name + "_MaxValueFilter"
             };
-            var filter = new ComposableFilterByInfo
+            var filter = new QueryFilterExpressionInfo
             {
-                Expression = String.Format(@"(items, repository, parameter) => {{ {1}; return items.Where(item => item.{0} != null && item.{0} > limit); }}", Property.Name, limitSnippet),
+                Expression = String.Format(@"(items, parameter) => {{ {1}; return items.Where(item => item.{0} != null && item.{0} > limit); }}", Property.Name, limitSnippet),
                 Parameter = filterParameter.Module.Name + "." + filterParameter.Name,
                 Source = Property.DataStructure
             };

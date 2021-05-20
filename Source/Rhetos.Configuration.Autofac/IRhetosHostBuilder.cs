@@ -67,7 +67,7 @@ namespace Rhetos
         /// <remarks>
         /// This method is intended for external applications that reference the generated Rhetos application
         /// (CLI utilities, for example) to specify the application's root folder.
-        /// In most cases, the root folder is automatically configured by <see cref="RhetosHost.FindBuilder(string)"/>,
+        /// In most cases, the root folder is automatically configured by <see cref="RhetosHost.Find"/>,
         /// and there is no need to call this method directly from the custom application code.
         /// <para>
         /// This method solves the issue of relative paths in application's configuration, by making sure

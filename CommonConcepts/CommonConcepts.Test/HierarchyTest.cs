@@ -139,7 +139,7 @@ namespace CommonConcepts.Test
                 foreach (var test in testAncestors)
                 {
                     Console.WriteLine("Testing Ancestors " + test.Key.Name2 + " => " + test.Value);
-                    var filtered = repository.TestHierarchy.Simple2.Filter(new TestHierarchy.Parent2HierarchyAncestors { ID = test.Key.ID });
+                    var filtered = repository.TestHierarchy.Simple2.Load(new TestHierarchy.Parent2HierarchyAncestors { ID = test.Key.ID });
                     Assert.AreEqual(test.Value, TestUtility.DumpSorted(filtered, item => item.Name2));
                 }
 
@@ -154,7 +154,7 @@ namespace CommonConcepts.Test
                 foreach (var test in testDescendants)
                 {
                     Console.WriteLine("Testing Descendants " + test.Key.Name2 + " => " + test.Value);
-                    var filtered = repository.TestHierarchy.Simple2.Filter(new TestHierarchy.Parent2HierarchyDescendants { ID = test.Key.ID });
+                    var filtered = repository.TestHierarchy.Simple2.Load(new TestHierarchy.Parent2HierarchyDescendants { ID = test.Key.ID });
                     Assert.AreEqual(test.Value, TestUtility.DumpSorted(filtered, item => item.Name2));
                 }
             }

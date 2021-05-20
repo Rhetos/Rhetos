@@ -518,7 +518,9 @@ namespace Rhetos.Utilities.Test
 
         private class PocoUnsupportedType
         {
+#pragma warning disable CS0618 // Type or member is obsolete. Used to test unsupported types.
             public TimeZone UnsupportedProperty { get; set; }
+#pragma warning restore CS0618
         }
 
         [TestMethod]

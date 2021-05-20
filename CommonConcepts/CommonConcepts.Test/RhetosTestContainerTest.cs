@@ -15,8 +15,10 @@ namespace CommonConcepts.Test
         public void CommitOnDisposeTest()
         {
             var id = Guid.NewGuid();
+#pragma warning disable CS0618 // Type or member is obsolete
             using (var rhetos = new RhetosTestContainer("CommonConcepts.Test.dll", true))
             {
+#pragma warning restore CS0618
                 var repository = rhetos.Resolve<Common.DomRepository>();
                 repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id, Name = TestNamePrefix + "e1" });
             }
@@ -32,8 +34,10 @@ namespace CommonConcepts.Test
         public void RollbackOnDisposeTest()
         {
             var id = Guid.NewGuid();
+#pragma warning disable CS0618 // Type or member is obsolete
             using (var rhetos = new RhetosTestContainer("CommonConcepts.Test.dll", false))
             {
+#pragma warning restore CS0618
                 var repository = rhetos.Resolve<Common.DomRepository>();
                 repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id, Name = TestNamePrefix + "e2" });
             }

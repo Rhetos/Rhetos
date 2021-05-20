@@ -112,14 +112,13 @@ namespace Rhetos.Utilities.Test
 
         private static string DoReplacingWithString(string initial, int replaceCount)
         {
-            string stringResult = string.Copy(initial);
             for (int i = 1; i <= replaceCount; i++)
             {
                 string token = "/*" + i + "*/";
                 string newText = "(/*" + (2 * i) + "*//*" + (2 * i + 1) + "*/)";
-                stringResult = stringResult.Replace(token, newText);
+                initial = initial.Replace(token, newText);
             }
-            return stringResult;
+            return initial;
         }
 
         //===========================================================
