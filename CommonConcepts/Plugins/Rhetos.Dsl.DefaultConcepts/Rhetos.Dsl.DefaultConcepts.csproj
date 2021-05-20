@@ -15,4 +15,8 @@
     <ProjectReference Include="..\Rhetos.Dom.DefaultConcepts.Interfaces\Rhetos.Dom.DefaultConcepts.Interfaces.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Obsolete\" />
+  </ItemGroup>
+
 </Project>

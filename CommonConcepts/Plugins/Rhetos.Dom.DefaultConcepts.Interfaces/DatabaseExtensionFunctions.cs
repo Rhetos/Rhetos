@@ -105,13 +105,6 @@ namespace Rhetos.Dom.DefaultConcepts
         }
 
         [DbFunction(EntityFrameworkMapping.ConceptualModelNamespace, "StringLike")]
-        [Obsolete("Use the Like() method instead")]
-        public static bool SqlLike(this string text, string pattern)
-        {
-            return Like(text, pattern);
-        }
-
-        [DbFunction(EntityFrameworkMapping.ConceptualModelNamespace, "StringLike")]
         public static bool Like(this string text, string pattern)
         {
             if (text == null || pattern == null)

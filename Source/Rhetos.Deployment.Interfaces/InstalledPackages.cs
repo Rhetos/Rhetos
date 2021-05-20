@@ -21,13 +21,11 @@ using System.Collections.Generic;
 
 namespace Rhetos.Deployment
 {
-    public class InstalledPackages : IInstalledPackages
+    public class InstalledPackages
     {
         /// <summary>
         /// The packages are sorted by dependencies.
         /// </summary>
         public List<InstalledPackage> Packages;
-
-        IEnumerable<InstalledPackage> IInstalledPackages.Packages => Packages;
     }
 }

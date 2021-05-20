@@ -78,6 +78,46 @@ Changes in Rhetos libraries API:
 10. The interface IMacroConcept now requires the implementation of the method CreateNewConcepts without any parameters.
     If an implementation of IMacroConcept requires access to the IDslModel the IConceptMacro\<T\> interface should be used.
 11. Removed support for QueryDataSourceCommand. Use the ReadCommand instead.
+12. Removed support for the folowing methods or classes:
+    * IDatabaseColumnType.GetColumnType : This method will not support concepts with configurable types. Use GetColumnType with PropertyInfo argument instead.
+    * PropertyHelper.GenerateCodeForType: Use the GenerateCodeForType function without the 'serializable' argument. All regular properties are serializable.
+    * DatabaseExtensionFunctions.SqlLike: Use the Like() method instead.
+    * ComposableFilterUseExecutionContextInfo: Use repository member \_executionContext in generated code instead.
+    * ComputationUseExecutionContextInfo: Use repository member \_executionContext in generated code instead.
+    * DenySaveForPropertyInfo: Use InvalidDataMarkPropertyInfo instead.
+    * DenySaveInfo: Use InvalidDataInfo instead.
+    * FilterUseExecutionContextInfo: Use repository member \_executionContext in generated code instead.
+    * SnowflakeDataStructureInfo: Use BrowseDataStructureInfo instead.
+    * ModuleExternalReferenceInfo: Add a NuGet dependency or a project reference to specify Rhetos application dependency to external library.
+    * CodeBuilder.GeneratedCode: Use GenerateCode() instead. The property is misleading because it does not cache the generated string.
+    * ContainerBuilderExtensions.GetLogProvider: Use GetRhetosLogProvider instead.
+    * ContainerBuilderExtensions.GetPluginScanner: Use GetRhetosPluginScanner instead.
+    * ContainerBuilderExtensions.GetPluginRegistration: Use GetRhetosPluginRegistration instead.
+    * ContainerBuilderExtensions.AddPluginModules: Use AddRhetosPluginModules instead.
+    * ProcessContainer.Configuration: Resolve IConfiguration from the transaction scope.
+    * ProcessContainer.CreateTransactionScopeContainer: Use CreateScope instead.
+    * TransactionScopeContainer: Use UnitOfWorkScope instead.
+    * ConceptImplementationVersionAttribute: This feature is no longer used by Rhetos, and will be deleted in future versions. Database upgrade relies solely on SQL scripts generated from DSL concepts.
+    * IInstalledPackages: Use InstalledPackages class instead.
+    * DslSyntaxException.DslScript: Use FilePosition instead.
+    * DslSyntaxException.Position: Use FilePosition instead.
+    * IValidationConcept: Use IValidatedConcept instead of IValidationConcept.
+    * IPersistenceTransaction.CommitAndReconnect: It is not longer needed for IServerInitializer plugins, because each plugin is executed in a separate connection.
+    * SqlTransactionBatch: Use SqlTransactionBatches instead.
+13. Removed support for the following concepts:
+    * UseExecutionContext: Use repository member \_executionContext instead.
+    * DenySave: Use InvalidData instead.
+    * Snowflake: Use Browse concept instead.
+    * ExternalReference: Add a NuGet dependency or a project reference to specify Rhetos application dependency to external library.
+13. Removed the support for SamePropertyValue concept which required two arguments. Instead use the simpler SamePropertyValue concept which requires only the path to the base property.
+    Instead of
+    ```c
+    Reference PropertyName Module.ReferencedDataStructure { SamePropertyValue 'Base' Module.ReferencedDataStructure.PropertyNameOnReferencedDataStructure; }
+    ```
+    you should write
+    ```c
+    Reference PropertyName Module.ReferencedDataStructure { SamePropertyValue 'Base.PropertyNameOnReferencedDataStructure' }
+    ```
 
 ## 4.3.0 (2021-03-05)
 

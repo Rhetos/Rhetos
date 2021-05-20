@@ -22,7 +22,6 @@ using Rhetos.Configuration.Autofac.Modules;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;
-using System;
 
 namespace Autofac
 {
@@ -40,12 +39,6 @@ namespace Autofac
             throw new FrameworkException($"{nameof(ContainerBuilder)} does not contain an entry for {nameof(ILogProvider)}. " +
                 $"This container was probably not created with the  {nameof(RhetosContainerBuilder)}.{nameof(RhetosContainerBuilder.Create)} method.");
         }
-
-        /// <summary>
-        /// Extension method which resolves <see cref="ILogProvider"/> instance from the <see cref="ContainerBuilder"/> which is initialized with the <see cref="RhetosContainerBuilder.Create"/> method.
-        /// </summary>
-        [Obsolete("Use " + nameof(GetRhetosLogProvider) + " instead.")] 
-        public static ILogProvider GetLogProvider(this ContainerBuilder builder) => GetRhetosLogProvider(builder);
 
         /// <summary>
         /// Extension method which resolves Rhetos <see cref="IConfiguration"/> instance from the <see cref="ContainerBuilder"/> which is initialized with the <see cref="RhetosContainerBuilder.Create"/> method.
@@ -74,12 +67,6 @@ namespace Autofac
         }
 
         /// <summary>
-        /// Extension method which resolves <see cref="IPluginScanner"/> instance from the <see cref="ContainerBuilder"/> which is initialized with the <see cref="RhetosContainerBuilder.Create"/> method.
-        /// </summary>
-        [Obsolete("Use " + nameof(GetRhetosPluginScanner) + " instead.")]
-        public static IPluginScanner GetPluginScanner(this ContainerBuilder builder) => GetRhetosPluginScanner(builder);
-
-        /// <summary>
         /// Extension method which resolves new <see cref="ContainerBuilderPluginRegistration"/> instance from the <see cref="ContainerBuilder"/> which is initialized with the <see cref="RhetosContainerBuilder.Create"/> method.
         /// </summary>
         public static ContainerBuilderPluginRegistration GetRhetosPluginRegistration(this ContainerBuilder builder)
@@ -90,12 +77,6 @@ namespace Autofac
             return new ContainerBuilderPluginRegistration(
                 builder, logProvider, pluginScanner);
         }
-
-        /// <summary>
-        /// Extension method which resolves new <see cref="ContainerBuilderPluginRegistration"/> instance from the <see cref="ContainerBuilder"/> which is initialized with the <see cref="RhetosContainerBuilder.Create"/> method.
-        /// </summary>
-        [Obsolete("Use " + nameof(GetRhetosPluginRegistration) + " instead.")]
-        public static ContainerBuilderPluginRegistration GetPluginRegistration(this ContainerBuilder builder) => GetRhetosPluginRegistration(builder);
 
         /// <summary>
         /// Registration of Rhetos framework components required for run-time.
@@ -119,11 +100,5 @@ namespace Autofac
             return builder;
         }
 
-        /// <summary>
-        /// Registration of Rhetos plugin modules (implementations of <see cref="Module"/> with <see cref="System.ComponentModel.Composition.ExportAttribute"/>).
-        /// Call this method before <i>after</i> specific components registration, to allow development of addition plugin that override and customize existing components.
-        /// </summary>
-        [Obsolete("Use " + nameof(AddRhetosPluginModules) + " instead.")]
-        public static ContainerBuilder AddPluginModules(this ContainerBuilder builder) => AddRhetosPluginModules(builder);
     }
 }

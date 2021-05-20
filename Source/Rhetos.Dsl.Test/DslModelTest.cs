@@ -272,13 +272,13 @@ namespace Rhetos.Dsl.Test
         //===================================================================================
 
 #pragma warning disable CS0618 // Type or member is obsolete. Unit test for the obsolete interface.
-        class ConceptWithSemanticsValidation : IValidationConcept
+        class ConceptWithSemanticsValidation : IValidatedConcept
 #pragma warning restore CS0618 // Type or member is obsolete
         {
             [ConceptKey]
             public string Name { get; set; }
 
-            public void CheckSemantics(IEnumerable<IConceptInfo> concepts)
+            public void CheckSemantics(IDslModel dslModel)
             {
                 if (Name.Length > 3)
                     throw new Exception("Name too long.");

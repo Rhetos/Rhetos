@@ -61,14 +61,6 @@ namespace Rhetos.Persistence
         event Action AfterClose;
 
         /// <summary>
-        /// Drops the database connection and creates a new one to release the database locks.
-        /// This method should not be used during regular server run-time because it splits the unit of work
-        /// making it impossible to rollback the whole session in case of a need.
-        /// </summary>
-        [Obsolete("It is not longer needed for IServerInitializer plugins, because each plugin is executed in a separate connection.")]
-        void CommitAndReconnect();
-
-        /// <summary>
         /// When reading this property the database connection will be automatically opened and a transaction started.
         /// Do not close or modify this connection directly.
         /// A single server request will be executed in one transaction. If the server request fails, the transaction will be rolled back.

@@ -42,9 +42,6 @@ namespace Rhetos
     {
         private readonly Lazy<RhetosHost> _rhetosIocContainer;
 
-        public IConfiguration Configuration => throw new NotSupportedException($"Resolve IConfiguration from the transaction scope," +
-            $" see {nameof(ProcessContainer)}.{nameof(CreateTransactionScopeContainer)} method.");
-
         /// <param name="rhetosAppAssemblyPath">
         /// Path to assembly where the CreateRhetosHostBuilder method is located.
         /// </param>
@@ -113,10 +110,6 @@ namespace Rhetos
 #pragma warning restore CS0618
         }
 
-        [Obsolete("Use " + nameof(CreateScope) + " instead.")]
-        public TransactionScopeContainer CreateTransactionScopeContainer(Action<ContainerBuilder> registerCustomComponents = null)
-            => (TransactionScopeContainer)CreateScope(registerCustomComponents);
-
         #region Static helper for singleton ProcessContainer. Useful optimization for LINQPad scripts that reuse the external static instance after recompiling the script.
 
         private static ProcessContainer _singleContainer = null;
@@ -160,10 +153,6 @@ namespace Rhetos
 
             return _singleContainer.CreateScope(registerCustomComponents);
         }
-
-        [Obsolete("Use " + nameof(CreateScope) + " instead.")]
-        public static TransactionScopeContainer CreateTransactionScopeContainer(string rhetosAppAssemblyPath, Action<ContainerBuilder> registerCustomComponents = null)
-            => (TransactionScopeContainer)CreateScope(rhetosAppAssemblyPath, registerCustomComponents);
 
         #endregion
 

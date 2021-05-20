@@ -486,21 +486,6 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void ComposableFilterWithExecutionContext()
-        {
-            using (var scope = TestScope.Create())
-            {
-                var repository = scope.Resolve<Common.DomRepository>();
-
-                var currentUserName = scope.Resolve<IUserInfo>().UserName;
-                Assert.IsTrue(!string.IsNullOrWhiteSpace(currentUserName));
-
-                Assert.AreEqual(currentUserName,
-                    repository.TestFilter.FixedData.Filter(new TestFilter.ComposableFilterWithContext()).Single().Name);
-            }
-        }
-
-        [TestMethod]
         public void ExternalFilterType()
         {
             using (var scope = TestScope.Create())
