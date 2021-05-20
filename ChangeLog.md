@@ -50,6 +50,10 @@ Changes in behavior:
 13. IDomainObjectModel.GetType no longer returns types for "Common.RowPermissionsReadItems" and "Common.RowPermissionsWriteItems". For example `GetType(RowPermissionsReadInfo.FilterName)` and `GetType(RowPermissionsWriteInfo.FilterName)` will return null.
     * Use `typeof(Common.RowPermissionsReadItems)` and `typeof(Common.RowPermissionsWriteItems)` instead.
 14. Upgraded Autofac from version 4.9.4 to 6.2.0
+15. **DateTime** property concept now generates *datetime2* database column type by default
+  instead of obsolete *datetime* column type (issue #101).
+  Legacy *datetime* type can be enabled by setting `CommonConcepts:UseLegacyMsSqlDateTime` option to `true` in `rhetos-build.settings.json` file.
+  See [Migrating an existing application from datetime to datetime2](https://github.com/Rhetos/Rhetos/wiki/Migrating-from-DateTime-to-DateTime2).
 
 Changes in Rhetos libraries API:
 
