@@ -29,8 +29,8 @@ namespace Rhetos.Dsl
     /// and describes the DSL syntax of the concept.
     /// </summary>
     /// <remarks>
-    /// It provides separation from <see cref="IConceptInfo"/> types, to allows serialization
-    /// of DSL syntax and use of the syntax in external processes, such as DSL IntelliSense plugin.
+    /// It provides separation from <see cref="IConceptInfo"/> types, to allow serialization
+    /// of DSL syntax and use of the syntax in external DSL analysis, such as DSL IntelliSense plugin.
     /// </remarks>
     [DebuggerDisplay("{TypeName}")]
     public class ConceptType
@@ -63,11 +63,34 @@ namespace Rhetos.Dsl
 
         public string KeywordOrTypeName => Keyword ?? TypeName;
 
+        /// <summary>
+        /// Determines whether the specified syntax node is an instance of the current (base property) concept type.
+        /// </summary>
+        /// <remarks>
+        /// Before calling this method, check if the base property has <see cref="ConceptMemberSyntax.ConceptType"/> set,
+        /// to avoid null reference exception.
+        /// In case of the null value, consider including the base properties with <see cref="ConceptMemberBase.IsConceptInfoInterface"/> set,
+        /// because any derived concept type can also be assigned to the base property of type <see cref="IConceptInfo"/>.
+        /// </remarks>
         public bool IsInstanceOfType(ConceptSyntaxNode derivedTypeNode)
         {
+            return IsAssignableFrom(derivedTypeNode.Concept);
+        }
+
+        /// <summary>
+        /// Determines whether an instance of a specified concept type can be referenced by a base property of the current concept type.
+        /// </summary>
+        /// <remarks>
+        /// Before calling this method, check if the base property has <see cref="ConceptMemberSyntax.ConceptType"/> set,
+        /// to avoid null reference exception.
+        /// In case of the null value, consider including the base properties with <see cref="ConceptMemberBase.IsConceptInfoInterface"/> set,
+        /// because any derived concept type can also be assigned to the base property of type <see cref="IConceptInfo"/>.
+        /// </remarks>
+        public bool IsAssignableFrom(ConceptType derivedConceptType)
+        {
             return
-                string.Equals(derivedTypeNode.Concept.AssemblyQualifiedName, AssemblyQualifiedName)
-                || derivedTypeNode.Concept.BaseTypesAssemblyQualifiedName.Contains(AssemblyQualifiedName, StringComparer.Ordinal);
+                string.Equals(derivedConceptType.AssemblyQualifiedName, AssemblyQualifiedName)
+                || derivedConceptType.BaseTypesAssemblyQualifiedName.Contains(AssemblyQualifiedName, StringComparer.Ordinal);
         }
     }
 }

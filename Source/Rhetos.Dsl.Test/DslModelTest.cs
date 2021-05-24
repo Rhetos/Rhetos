@@ -92,6 +92,8 @@ namespace Rhetos.Dsl.Test
             }
 
             public IEnumerable<ConceptSyntaxNode> ParsedConcepts { get; }
+
+            public IEnumerable<ConceptSyntaxNode> GetConcepts() => ParsedConcepts;
         }
 
         internal class StubMacroIndex : IIndex<Type, IEnumerable<IConceptMacro>>
@@ -155,7 +157,7 @@ namespace Rhetos.Dsl.Test
                 DslSyntaxHelper.CreateDslSyntax(conceptInfoPluginsForGenericParser),
                 new ConsoleLogProvider());
             Console.WriteLine("Parsed concepts:");
-            Console.WriteLine(string.Join(Environment.NewLine, nullDslParser.ParsedConcepts.Select(ci => " - " + ci.GetUserDescription())));
+            Console.WriteLine(string.Join(Environment.NewLine, nullDslParser.GetConcepts().Select(ci => " - " + ci.GetUserDescription())));
 
             var dslModel = NewDslModel(nullDslParser, conceptInfoPluginsForGenericParser);
             return dslModel.Concepts.ToList();
@@ -560,7 +562,7 @@ namespace Rhetos.Dsl.Test
             string dsl = "SIMPLE s d; ALTER1 s; ALTER2 s.a1 d2;";
             var syntax = new IConceptInfo[] { new SimpleConceptInfo(), new AlternativeConcept1(), new AlternativeConcept2() };
 
-            var parsedConcepts = new TestDslParser(dsl, syntax).ParsedConcepts;
+            var parsedConcepts = new TestDslParser(dsl, syntax).GetConcepts();
             var dslModelConcepts = DslModelFromConcepts(parsedConcepts);
 
             var s = dslModelConcepts.OfType<SimpleConceptInfo>().Single();
@@ -587,7 +589,7 @@ namespace Rhetos.Dsl.Test
         {
             string dsl = "SIMPLE s d { ALTER1 { ALTER2 d2; } }";
             var syntax = new IConceptInfo[] { new SimpleConceptInfo(), new AlternativeConcept1(), new AlternativeConcept2() };
-            var parsedConcepts = new TestDslParser(dsl, syntax).ParsedConcepts;
+            var parsedConcepts = new TestDslParser(dsl, syntax).GetConcepts();
             var dslModelConcepts = DslModelFromConcepts(parsedConcepts);
 
             var s = dslModelConcepts.OfType<SimpleConceptInfo>().Single();

@@ -32,13 +32,13 @@ namespace Rhetos.Dsl
     /// </summary>
     public class DslParser : IDslParser
     {
-        private readonly Tokenizer _tokenizer;
+        private readonly ITokenizer _tokenizer;
         private readonly DslSyntax _syntax;
         private readonly ILogger _keywordsLogger;
         private readonly ILogger _performanceLogger;
         private readonly ILogger _logger;
 
-        public DslParser(Tokenizer tokenizer, DslSyntax dslSyntax, ILogProvider logProvider)
+        public DslParser(ITokenizer tokenizer, DslSyntax dslSyntax, ILogProvider logProvider)
         {
             _tokenizer = tokenizer;
             _syntax = dslSyntax;
@@ -46,8 +46,6 @@ namespace Rhetos.Dsl
             _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _logger = logProvider.GetLogger(GetType().Name);
         }
-
-        public IEnumerable<ConceptSyntaxNode> ParsedConcepts => GetConcepts();
 
         public delegate void OnKeywordEvent(ITokenReader tokenReader, string keyword);
         public delegate void OnMemberReadEvent(ITokenReader tokenReader, ConceptSyntaxNode conceptInfo, ConceptMemberSyntax conceptMember, ValueOrError<object> valueOrError);
@@ -59,7 +57,7 @@ namespace Rhetos.Dsl
 
         //=================================================================
 
-        private List<ConceptSyntaxNode> GetConcepts()
+        public IEnumerable<ConceptSyntaxNode> GetConcepts()
         {
             var parsers = CreateGenericParsers(_syntax.ConceptTypes);
             var parsedConcepts = ExtractConcepts(parsers);
@@ -95,7 +93,10 @@ namespace Rhetos.Dsl
         {
             var stopwatch = Stopwatch.StartNew();
 
-            TokenReader tokenReader = new TokenReader(_tokenizer.GetTokens(), 0);
+            var tokenizerResult = _tokenizer.GetTokens();
+            if (tokenizerResult.SyntaxError != null)
+                ExceptionsUtility.Rethrow(tokenizerResult.SyntaxError);
+            var tokenReader = new TokenReader(tokenizerResult.Tokens, 0);
 
             var newConcepts = new List<ConceptSyntaxNode>();
             var context = new Stack<ConceptSyntaxNode>();

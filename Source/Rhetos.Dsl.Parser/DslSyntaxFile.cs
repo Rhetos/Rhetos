@@ -46,7 +46,7 @@ namespace Rhetos.Dsl
 
         /// <summary>
         /// Save method will not update the existing file if the content is same.
-        /// This helps 
+        /// This is useful for optimization of external DSL analysis, such as DSL IntelliSense plugin.
         /// </summary>
         public void Save(DslSyntax dslSyntax)
         {

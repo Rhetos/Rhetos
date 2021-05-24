@@ -85,9 +85,9 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.RegisterType<ConceptMetadata>().SingleInstance();
             pluginRegistration.FindAndRegisterPlugins<IConceptMetadataExtension>();
             builder.RegisterType<DiskDslScriptLoader>().As<IDslScriptsProvider>().SingleInstance();
-            builder.RegisterType<Tokenizer>().SingleInstance();
-            builder.RegisterType<DslModelFile>().As<IDslModelFile>().SingleInstance();
+            builder.RegisterType<Tokenizer>().As<ITokenizer>();
             builder.RegisterType<DslParser>().As<IDslParser>();
+            builder.RegisterType<DslModelFile>().As<IDslModelFile>().SingleInstance();
             builder.RegisterType<DslSyntaxFromPlugins>();
             builder.RegisterType<DslSyntaxFile>();
             builder.Register(context => context.Resolve<DslSyntaxFromPlugins>().CreateDslSyntax()).As<DslSyntax>().SingleInstance();

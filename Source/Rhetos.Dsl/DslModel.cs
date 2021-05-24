@@ -82,7 +82,7 @@ namespace Rhetos.Dsl
         private DslContainer Initialize(DslContainer dslContainer)
         {
             var swTotal = Stopwatch.StartNew();
-            var nodes = _dslParser.ParsedConcepts;
+            var nodes = _dslParser.GetConcepts();
 
             var swConvert = Stopwatch.StartNew();
             var parsedConcepts = ConceptInfoHelper.ConvertNodesToConceptInfos(nodes);

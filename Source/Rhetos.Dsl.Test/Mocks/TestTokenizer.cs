@@ -19,6 +19,7 @@
 
 using Rhetos.Utilities;
 using System;
+using System.Collections.Generic;
 
 namespace Rhetos.Dsl.Test
 {
@@ -30,6 +31,14 @@ namespace Rhetos.Dsl.Test
                   new FilesUtility(new ConsoleLogProvider()),
                   new DslSyntaxFromPlugins(Array.Empty<IConceptInfo>(), new BuildOptions(), new DatabaseSettings()).CreateDslSyntax())
         {
+        }
+
+        public List<Token> GetTokensOrException()
+        {
+            var tokenizerResult = GetTokens();
+            if (tokenizerResult.SyntaxError != null)
+                ExceptionsUtility.Rethrow(tokenizerResult.SyntaxError);
+            return tokenizerResult.Tokens;
         }
     }
 }

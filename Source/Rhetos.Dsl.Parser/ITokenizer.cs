@@ -17,15 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.Collections.Generic;
-
 namespace Rhetos.Dsl
 {
-    /// <summary>
-    /// Performs the syntax analysis of DSL scripts.
-    /// </summary>
-    public interface IDslParser
+    public interface ITokenizer
     {
-        IEnumerable<ConceptSyntaxNode> GetConcepts();
+        /// <summary>
+        /// If the tokenizer fails with syntax exception, this method returns the partial list of parsed tokens up to the point of error.
+        /// This behavior is useful for external DSL analysis, such as DSL IntelliSense plugin.
+        /// </summary>
+        TokenizerResult GetTokens();
     }
 }

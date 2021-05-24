@@ -28,52 +28,61 @@ namespace Rhetos.Dsl
     /// <summary>
     /// Performs the lexical analysis for DSL scripts: Transforms source text into a list of tokens.
     /// </summary>
-    public class Tokenizer
+    public class Tokenizer : ITokenizer
     {
         private readonly IDslScriptsProvider _dslScriptsProvider;
         private readonly FilesUtility _filesUtility;
         private readonly DslSyntax _syntax;
-        private readonly Lazy<List<Token>> _tokens;
 
         public Tokenizer(IDslScriptsProvider dslScriptsProvider, FilesUtility filesUtility, DslSyntax syntax)
         {
             _dslScriptsProvider = dslScriptsProvider;
             _filesUtility = filesUtility;
             _syntax = syntax;
-            _tokens = new Lazy<List<Token>>(ParseTokens);
         }
 
-        public List<Token> GetTokens() => _tokens.Value;
-
-        private List<Token> ParseTokens()
+        public TokenizerResult GetTokens()
         {
             var tokens = new List<Token>();
-            var tokenizerInternals = new TokenizerInternals(_syntax);
+            DslSyntaxException syntaxError = null;
 
-            foreach (var dslScript in _dslScriptsProvider.DslScripts)
+            try
             {
-                int scriptPosition = 0;
+                var tokenizerInternals = new TokenizerInternals(_syntax);
 
-                while (true)
+                foreach (var dslScript in _dslScriptsProvider.DslScripts)
                 {
-                    TokenizerInternals.SkipWhitespaces(dslScript.Script, ref scriptPosition);
-                    if (scriptPosition >= dslScript.Script.Length)
-                        break;
+                    int scriptPosition = 0;
 
-                    int startPosition = scriptPosition;
-                    Token t = tokenizerInternals.GetNextToken_ValueType(dslScript, ref scriptPosition, _filesUtility.ReadAllText);
-                    t.DslScript = dslScript;
-                    t.PositionInDslScript = startPosition;
-                    t.PositionEndInDslScript = scriptPosition;
+                    while (true)
+                    {
+                        TokenizerInternals.SkipWhitespaces(dslScript.Script, ref scriptPosition);
+                        if (scriptPosition >= dslScript.Script.Length)
+                            break;
 
-                    if (t.Type != TokenType.Comment)
-                        tokens.Add(t);
+                        int startPosition = scriptPosition;
+                        Token t = tokenizerInternals.GetNextToken_ValueType(dslScript, ref scriptPosition, _filesUtility.ReadAllText);
+                        t.DslScript = dslScript;
+                        t.PositionInDslScript = startPosition;
+                        t.PositionEndInDslScript = scriptPosition;
+
+                        if (t.Type != TokenType.Comment)
+                            tokens.Add(t);
+                    }
+
+                    tokens.Add(new Token { DslScript = dslScript, PositionInDslScript = dslScript.Script.Length, PositionEndInDslScript = dslScript.Script.Length, Type = TokenType.EndOfFile, Value = "" });
                 }
-
-                tokens.Add(new Token { DslScript = dslScript, PositionInDslScript = dslScript.Script.Length, PositionEndInDslScript = dslScript.Script.Length, Type = TokenType.EndOfFile, Value = "" });
+            }
+            catch (DslSyntaxException e)
+            {
+                syntaxError = e;
             }
 
-            return tokens;
+            return new TokenizerResult
+            {
+                Tokens = tokens,
+                SyntaxError = syntaxError
+            };
         }
     }
 

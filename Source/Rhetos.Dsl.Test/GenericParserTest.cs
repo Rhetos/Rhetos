@@ -73,7 +73,10 @@ namespace Rhetos.Dsl.Test
     {
         internal static TokenReader TestTokenReader(string dsl, int position = 0)
         {
-            return new TokenReader(new TestTokenizer(dsl).GetTokens(), position);
+            var tokenizerResult = new TestTokenizer(dsl).GetTokens();
+            if (tokenizerResult.SyntaxError != null)
+                ExceptionsUtility.Rethrow(tokenizerResult.SyntaxError);
+            return new TokenReader(tokenizerResult.Tokens, position);
         }
 
         [ConceptKeyword("simple")]

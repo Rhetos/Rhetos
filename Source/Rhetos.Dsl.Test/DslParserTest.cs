@@ -54,7 +54,7 @@ namespace Rhetos.Dsl.Test
 
         internal static TokenReader TestTokenReader(string dsl, int position = 0)
         {
-            return new TokenReader(new TestTokenizer(dsl).GetTokens(), position);
+            return new TokenReader(new TestTokenizer(dsl).GetTokensOrException(), position);
         }
 
 
@@ -93,7 +93,7 @@ namespace Rhetos.Dsl.Test
             var conceptParsers = new MultiDictionary<string, IConceptParser> ();
             conceptParsers.Add("b", new List<IConceptParser>() { new TestErrorParser("b") });
 
-            TokenReader tokenReader = new TokenReader(new TestTokenizer(dsl).GetTokens(), 0);
+            var tokenReader = new TokenReader(new TestTokenizer(dsl).GetTokensOrException(), 0);
 
             var e = TestUtility.ShouldFail<DslSyntaxException>(
                 () => new TestDslParser(dsl).ParseNextConcept(tokenReader, null, conceptParsers));
@@ -268,8 +268,8 @@ namespace Rhetos.Dsl.Test
                 new TestTokenizer(dsl),
                 DslSyntaxHelper.CreateDslSyntax(typeof(SimpleConceptInfo)),
                 new ConsoleLogProvider());
-            var parsedConcepts = dslParser.ParsedConcepts;
-            Console.WriteLine("Parsed concepts: " + string.Join("\r\n", dslParser.ParsedConcepts.Select(c => c.Concept.TypeName)));
+            var parsedConcepts = dslParser.GetConcepts();
+            Console.WriteLine("Parsed concepts: " + string.Join("\r\n", parsedConcepts.Select(c => c.Concept.TypeName)));
             return parsedConcepts;
         }
 
@@ -342,7 +342,7 @@ namespace Rhetos.Dsl.Test
         {
             string dsl = "SIMPLE s d; ALTER1 s; ALTER2 s.a1 d2;";
             var syntax = new IConceptInfo[] { new SimpleConceptInfo(), new AlternativeConcept1(), new AlternativeConcept2() };
-            var parsedNodes = new TestDslParser(dsl, syntax).ParsedConcepts;
+            var parsedNodes = new TestDslParser(dsl, syntax).GetConcepts();
             var parsedConcepts = ConceptInfoHelper.ConvertNodesToConceptInfos(parsedNodes);
 
             // IAlternativeInitializationConcept should be parsed, but not yet initialized.
@@ -358,7 +358,7 @@ namespace Rhetos.Dsl.Test
         {
             string dsl = "SIMPLE s d { ALTER1 { ALTER2 d2; } }";
             var syntax = new IConceptInfo[] { new SimpleConceptInfo(), new AlternativeConcept1(), new AlternativeConcept2() };
-            var parsedNodes = new TestDslParser(dsl, syntax).ParsedConcepts;
+            var parsedNodes = new TestDslParser(dsl, syntax).GetConcepts();
             var parsedConcepts = ConceptInfoHelper.ConvertNodesToConceptInfos(parsedNodes);
 
             // IAlternativeInitializationConcept should be parsed, but not yet initialized.
@@ -386,7 +386,7 @@ namespace Rhetos.Dsl.Test
             
             // Parsing a concept with invalid DeclareNonparsableProperties
             TestUtility.ShouldFail(
-                () => { var concepts = new TestDslParser(dsl, syntax).ParsedConcepts; },
+                () => { new TestDslParser(dsl, syntax).GetConcepts(); },
                 "AlternativeError1", "invalid implementation", "Names", "does not exist", "DeclareNonparsableProperties");
         }
     }
