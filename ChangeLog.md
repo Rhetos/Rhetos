@@ -122,6 +122,9 @@ Changes in Rhetos libraries API:
     ```c
     Reference PropertyName Module.ReferencedDataStructure { SamePropertyValue 'Base.PropertyNameOnReferencedDataStructure' }
     ```
+14. Removed `ProcessContainer` class:
+    * Instead of using `new ProcessContainer(rhetosAppAssemblyPath)` replace it with `RhetosHost.Find(rhetosAppAssemblyPath)`
+    * Instead of using `ProcessContainer.CreateScope(rhetosAppAssemblyPath)` replace it with `LinqPadRhetosHost.CreateScope(rhetosAppAssemblyPath)`
 
 ## 4.3.0 (2021-03-05)
 
