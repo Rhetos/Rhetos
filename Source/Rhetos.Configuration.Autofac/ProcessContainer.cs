@@ -105,9 +105,7 @@ namespace Rhetos
         /// </param>
         public UnitOfWorkScope CreateScope(Action<ContainerBuilder> registerCustomComponents = null)
         {
-#pragma warning disable CS0618 // Type or member is obsolete. It provides a derivation of UnitOfWorkScope for legacy methods.
             return _rhetosIocContainer.Value.CreateScope(registerCustomComponents);
-#pragma warning restore CS0618
         }
 
         #region Static helper for singleton ProcessContainer. Useful optimization for LINQPad scripts that reuse the external static instance after recompiling the script.
