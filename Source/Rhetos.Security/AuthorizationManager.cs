@@ -105,14 +105,7 @@ namespace Rhetos.Security
                     $" Disable '{OptionsAttribute.GetConfigurationPath<AppSecurityOptions>()}:{nameof(AppSecurityOptions.AllClaimsForAnonymous)}' option.");
 
             return _userInfo.IsUserRecognized
-                &&
-                (
-                    _allClaimsForUsers.Contains(_userInfo.UserName)
-                    ||
-                    _appSecurityOptions.BuiltinAdminOverride
-                        && _userInfo is IUserInfoAdmin
-                        && ((IUserInfoAdmin)_userInfo).IsBuiltInAdministrator
-                )
+                && _allClaimsForUsers.Contains(_userInfo.UserName)
                 || _appSecurityOptions.AllClaimsForAnonymous;
         }
 

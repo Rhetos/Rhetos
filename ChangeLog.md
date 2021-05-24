@@ -125,6 +125,7 @@ Changes in Rhetos libraries API:
 14. Removed `ProcessContainer` class:
     * Instead of using `new ProcessContainer(rhetosAppAssemblyPath)` replace it with `RhetosHost.Find(rhetosAppAssemblyPath)`
     * Instead of using `ProcessContainer.CreateScope(rhetosAppAssemblyPath)` replace it with `LinqPadRhetosHost.CreateScope(rhetosAppAssemblyPath)`
+15. Removed `IUserInfoAdmin` interface. It was used together with the `Rhetos:AppSecurity:BuiltinAdminOverride` option to give the administrator rights as it had all claims.
 
 ## 4.3.0 (2021-03-05)
 
