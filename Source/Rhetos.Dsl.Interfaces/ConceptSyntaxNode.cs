@@ -27,16 +27,12 @@ namespace Rhetos.Dsl
     [DebuggerDisplay("{Concept.TypeName}")]
     public class ConceptSyntaxNode
     {
-        public ConceptType Concept { get; private set; }
+        public ConceptType Concept { get; }
 
         /// <summary>
         /// Elements are either <see cref="ConceptSyntaxNode"/> or <see cref="string"/>.
         /// </summary>
-        public object[] Parameters { get; private set;  }
-
-        public ConceptSyntaxNode()
-        {
-        }
+        public object[] Parameters { get; }
 
         public ConceptSyntaxNode(ConceptType concept)
         {
