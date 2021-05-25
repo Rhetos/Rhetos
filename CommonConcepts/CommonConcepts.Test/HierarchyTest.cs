@@ -269,7 +269,7 @@ namespace CommonConcepts.Test
                 PrepareSimpleData(repository, "a");
                 Assert.AreEqual("a1/2", ReportSimple(repository));
                 var single = repository.TestHierarchy.Simple.Query().Where(item => item.Name == "a").Single();
-                single.Parent = single;
+                single.ParentID = single.ID;
 
                 TestUtility.ShouldFail(() => repository.TestHierarchy.Simple.Update(new[] { single }), "not allowed", "circular dependency");
             }
@@ -287,7 +287,7 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("a1/4, b2/3", ReportSimple(repository));
                 var root = repository.TestHierarchy.Simple.Query().Where(item => item.Name == "a").Single();
                 var leaf = repository.TestHierarchy.Simple.Query().Where(item => item.Name == "b").Single();
-                root.Parent = leaf;
+                root.ParentID = leaf.ID;
 
                 TestUtility.ShouldFail(() => repository.TestHierarchy.Simple.Update(new[] { root }), "not allowed", "circular dependency");
             }
@@ -304,7 +304,7 @@ namespace CommonConcepts.Test
                 PrepareSimpleData(repository, "a, a-b, b-c, c-d");
                 var root = repository.TestHierarchy.Simple.Query().Where(item => item.Name == "a").Single();
                 var leaf = repository.TestHierarchy.Simple.Query().Where(item => item.Name == "d").Single();
-                root.Parent = leaf;
+                root.ParentID = leaf.ID;
 
                 TestUtility.ShouldFail(() => repository.TestHierarchy.Simple.Update(new[] { root }), "not allowed", "circular dependency");
             }

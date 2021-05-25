@@ -56,6 +56,10 @@ Changes in behavior:
     See [Migrating an existing application from datetime to datetime2](https://github.com/Rhetos/Rhetos/wiki/Migrating-from-DateTime-to-DateTime2).
 16. Removed BuiltinAdminOverride configuration option, that allowed testing without configured authentication in development environment.
     Use [AllClaimsForUsers](https://github.com/Rhetos/Rhetos/wiki/Basic-permissions#suppressing-permissions-in-a-development-environment) or AllClaimsForAnonymous instead.
+17. Changed how navigation properties are generated in Queryable classes:
+    * Navigation properties can be set only during the initialization phase. That means that after the Queryable object is constructed the navigation properties are read only.
+    * Navigation properties behaviour can no longer be extended with custom tags *DataStructureQueryable Getter* and *DataStructureQueryable Setter*
+
 
 Changes in Rhetos libraries API:
 
@@ -124,6 +128,9 @@ Changes in Rhetos libraries API:
     * Instead of using `new ProcessContainer(rhetosAppAssemblyPath)` replace it with `RhetosHost.Find(rhetosAppAssemblyPath)`
     * Instead of using `ProcessContainer.CreateScope(rhetosAppAssemblyPath)` replace it with `LinqPadRhetosHost.CreateScope(rhetosAppAssemblyPath)`
 16. Removed `IUserInfoAdmin` interface. It was used together with the `Rhetos:AppSecurity:BuiltinAdminOverride` option to give the administrator rights as it had all claims.
+17. The following methods are no longer available: EntityFrameworkContext.ClearCache(), IPersistenceCache.ClearCache() and ToNavigation(). They where Rhetos-specific helpers for saving entity with Entity Framework.
+    * If custom application code overrides repository's standard Save method, use DomHelper.WriteToDatabase to save an entity, instead of Entity Framework methods. For reference, see the new generated source code for repository Save methods.
+18. Method `DataStructureQueryableCodeGenerator.AddNavigationPropertyWithBackingField` is renamed to `DataStructureQueryableCodeGenerator.AddNavigationProperty` and the use of parameter `additionalSetterCode` is removed,
 
 ### Internal improvements
 

@@ -148,7 +148,7 @@ $@"namespace Common
     using Autofac;
     {ModuleCodeGenerator.CommonUsingTag}
 
-    public class EntityFrameworkContext : System.Data.Entity.DbContext, Rhetos.Persistence.IPersistenceCache
+    public class EntityFrameworkContext : System.Data.Entity.DbContext
     {{
         private readonly Rhetos.Utilities.RhetosAppOptions _rhetosAppOptions;
 
@@ -171,29 +171,6 @@ $@"namespace Common
             {EntityFrameworkContextInitializeTag}
 
             this.Database.CommandTimeout = Rhetos.Utilities.SqlUtility.SqlCommandTimeout;
-        }}
-
-        public void ClearCache()
-        {{
-            SetDetaching(true);
-            try
-            {{
-                Configuration.AutoDetectChangesEnabled = false;
-                var trackedItems = ChangeTracker.Entries().ToList();
-                foreach (var item in trackedItems)
-                    Entry(item.Entity).State = System.Data.Entity.EntityState.Detached;
-                Configuration.AutoDetectChangesEnabled = true;
-            }}
-            finally
-            {{
-                SetDetaching(false);
-            }}
-        }}
-
-        private void SetDetaching(bool detaching)
-        {{
-            foreach (var item in ChangeTracker.Entries().Select(entry => entry.Entity).OfType<IDetachOverride>())
-                item.Detaching = detaching;
         }}
 
         {EntityFrameworkContextMembersTag}
@@ -334,7 +311,6 @@ $@"namespace Common
             builder.RegisterType<EntityFrameworkContext>()
                 .As<EntityFrameworkContext>()
                 .As<System.Data.Entity.DbContext>()
-                .As<Rhetos.Persistence.IPersistenceCache>()
                 .InstancePerLifetimeScope();
             builder.RegisterType<ExecutionContext>().InstancePerLifetimeScope();
             builder.RegisterInstance(Infrastructure.RegisteredInterfaceImplementations).ExternallyOwned();

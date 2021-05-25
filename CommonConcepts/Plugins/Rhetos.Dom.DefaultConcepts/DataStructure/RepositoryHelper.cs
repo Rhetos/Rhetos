@@ -160,19 +160,6 @@ namespace Rhetos.Dom.DefaultConcepts
 
         ";
             codeBuilder.InsertCode(snippetToSimpleObjectConversion, DataStructureQueryableCodeGenerator.MembersTag, info);
-
-            string snippetToNavigationConversion = $@"/// <summary>Converts the simple object to a navigation object, and copies its simple properties. Navigation properties are set to null.</summary>
-        public Common.Queryable.{module}_{entity} ToNavigation()
-        {{
-            var item = this;
-            return new Common.Queryable.{module}_{entity}
-            {{
-                ID = item.ID{AssignSimplePropertyTag.Evaluate(info)}
-            }};
-        }}
-
-        ";
-            codeBuilder.InsertCode(snippetToNavigationConversion, DataStructureCodeGenerator.BodyTag, info);
         }
     }
 }

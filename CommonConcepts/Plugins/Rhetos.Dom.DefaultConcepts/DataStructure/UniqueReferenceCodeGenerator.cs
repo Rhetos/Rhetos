@@ -37,14 +37,12 @@ namespace Rhetos.Dom.DefaultConcepts
 
             if (DslUtility.IsQueryable(info.Extension) && DslUtility.IsQueryable(info.Base))
             {
-                DataStructureQueryableCodeGenerator.AddNavigationPropertyWithBackingField(codeBuilder, info.Extension,
+                DataStructureQueryableCodeGenerator.AddNavigationProperty(codeBuilder, info.Extension,
                     csPropertyName: "Base",
-                    propertyType: "Common.Queryable." + info.Base.Module.Name + "_" + info.Base.Name,
-                    additionalSetterCode: "ID = value != null ? value.ID : Guid.Empty;");
-                DataStructureQueryableCodeGenerator.AddNavigationPropertyWithBackingField(codeBuilder, info.Base,
+                    propertyType: "Common.Queryable." + info.Base.Module.Name + "_" + info.Base.Name);
+                DataStructureQueryableCodeGenerator.AddNavigationProperty(codeBuilder, info.Base,
                     csPropertyName: info.ExtensionPropertyName(),
-                    propertyType: "Common.Queryable." + info.Extension.Module.Name + "_" + info.Extension.Name,
-                    additionalSetterCode: null);
+                    propertyType: "Common.Queryable." + info.Extension.Module.Name + "_" + info.Extension.Name);
             }
 
             if (UniqueReferenceDatabaseDefinition.IsSupported(info)
