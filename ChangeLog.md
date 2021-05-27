@@ -113,7 +113,7 @@ Changes in Rhetos libraries API:
     * DenySave: Use InvalidData instead.
     * Snowflake: Use Browse concept instead.
     * ExternalReference: Add a NuGet dependency or a project reference to specify Rhetos application dependency to external library.
-13. Removed the support for SamePropertyValue concept which required two arguments. Instead use the simpler SamePropertyValue concept which requires only the path to the base property.
+14. Removed the support for SamePropertyValue concept which required two arguments. Instead use the simpler SamePropertyValue concept which requires only the path to the base property.
     Instead of
     ```c
     Reference PropertyName Module.ReferencedDataStructure { SamePropertyValue 'Base' Module.ReferencedDataStructure.PropertyNameOnReferencedDataStructure; }
@@ -122,10 +122,10 @@ Changes in Rhetos libraries API:
     ```c
     Reference PropertyName Module.ReferencedDataStructure { SamePropertyValue 'Base.PropertyNameOnReferencedDataStructure' }
     ```
-14. Removed `ProcessContainer` class:
+15. Removed `ProcessContainer` class:
     * Instead of using `new ProcessContainer(rhetosAppAssemblyPath)` replace it with `RhetosHost.Find(rhetosAppAssemblyPath)`
     * Instead of using `ProcessContainer.CreateScope(rhetosAppAssemblyPath)` replace it with `LinqPadRhetosHost.CreateScope(rhetosAppAssemblyPath)`
-15. Removed `IUserInfoAdmin` interface. It was used together with the `Rhetos:AppSecurity:BuiltinAdminOverride` option to give the administrator rights as it had all claims.
+16. Removed `IUserInfoAdmin` interface. It was used together with the `Rhetos:AppSecurity:BuiltinAdminOverride` option to give the administrator rights as it had all claims.
 
 ## 4.3.0 (2021-03-05)
 
