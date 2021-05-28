@@ -183,7 +183,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual(orig.A,copy.A);
             Assert.AreEqual(orig.B,copy.B);
             Assert.AreEqual(orig.Items.GetType(), copy.Items.GetType());
-            Assert.AreEqual(orig.Items.Count(), copy.Items.Count());
+            Assert.AreEqual(orig.Items.Length, copy.Items.Length);
             Assert.AreEqual(orig.Items[0].a, copy.Items[0].a);
         }
 

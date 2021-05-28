@@ -326,7 +326,7 @@ namespace Rhetos.Dom.DefaultConcepts
                             Type collectionBasicType = typeof(IQueryable).IsAssignableFrom(constant.Type)
                                 ? typeof(Queryable) : typeof(Enumerable);
                             var containsMethod = collectionBasicType.GetMethods()
-                                .Single(m => m.Name == "Contains" && m.GetParameters().Count() == 2)
+                                .Single(m => m.Name == "Contains" && m.GetParameters().Length == 2)
                                 .MakeGenericMethod(collectionElement);
 
                             expression = EFExpression.OptimizeContains(Expression.Call(containsMethod, constant, convertedMemberAccess));

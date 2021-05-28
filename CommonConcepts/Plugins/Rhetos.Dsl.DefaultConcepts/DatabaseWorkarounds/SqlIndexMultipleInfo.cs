@@ -72,13 +72,13 @@ namespace Rhetos.Dsl.DefaultConcepts
             conceptInfo.CheckSemantics(existingConcepts);
 
             var names = conceptInfo.PropertyNames.Split(' ');
-            if (names.Distinct().Count() != names.Count())
+            if (names.Distinct().Count() != names.Length)
                 throw new DslSyntaxException(conceptInfo, "Duplicate property name in index list '" + conceptInfo.PropertyNames + "'.");
             if (!names.Any())
                 throw new DslSyntaxException(conceptInfo, "Empty property list.");
 
             SqlIndexMultiplePropertyInfo lastIndexProperty = null;
-            for (int i = 0; i < names.Count(); i++)
+            for (int i = 0; i < names.Length; i++)
             {
                 var property = new PropertyInfo { DataStructure = conceptInfo.DataStructure, Name = names[i] };
                 SqlIndexMultiplePropertyInfo indexProperty;

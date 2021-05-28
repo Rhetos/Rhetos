@@ -155,7 +155,7 @@ namespace Rhetos.Dsl
                     // This validation is not necessary for consistent parsing. It is enforced simply to avoid ambiguity for future concept overloads
                     // when parsing similar concepts such as "Logging { AllProperties; }", "History { AllProperties; }" and "Persisted { AllProperties; }".
                     var parentMembers = ConceptMembers.Get(member.ValueType).Where(m => m.IsParsable).ToArray();
-                    if (parentMembers.Count() == 1 && parentMembers.Single().IsConceptInfo)
+                    if (parentMembers.Length == 1 && parentMembers.Single().IsConceptInfo)
                         return ValueOrError.CreateError($"{ConceptInfoHelper.GetKeywordOrTypeName(ConceptInfoType)} must be nested" +
                             $" within the referenced parent concept {ConceptInfoHelper.GetKeywordOrTypeName(member.ValueType)}." +
                             $" A single-reference concept that references another single-reference concept must always be used with nested syntax to avoid ambiguity.");

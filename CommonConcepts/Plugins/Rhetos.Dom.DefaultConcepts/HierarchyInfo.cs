@@ -51,7 +51,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 return new HierarchyInfo[] { };
 
             var roots = items.Where(item => !item.ParentID.HasValue).ToArray();
-            if (roots.Count() == 0)
+            if (roots.Length == 0)
                 throw new HierarchyCircularReferenceException();
 
             var children = items.Where(item => item.ParentID.HasValue)

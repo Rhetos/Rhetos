@@ -72,7 +72,7 @@ namespace Rhetos.Persistence
             if (segments.Length != EntityFrameworkMapping.ModelFiles.Length)
                 throw new FrameworkException($"Unexpected number of metadata segments: {segments.Length}, expected {EntityFrameworkMapping.ModelFiles.Length}.");
             
-            for (int s = 0; s < segments.Count(); s++)
+            for (int s = 0; s < segments.Length; s++)
             {
                 string clearedXml = XmlUtility.RemoveComments(segments[s]);
                 string filePath = Path.Combine(_rhetosBuildEnvironment.GeneratedAssetsFolder, EntityFrameworkMapping.ModelFiles[s]);

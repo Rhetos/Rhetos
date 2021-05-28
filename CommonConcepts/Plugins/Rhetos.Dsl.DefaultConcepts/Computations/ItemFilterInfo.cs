@@ -70,7 +70,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         public static ParameterInfo GetGeneratedFilter(ItemFilterInfo conceptInfo)
         {
             var filterNameElements = conceptInfo.FilterName.Split('.');
-            if (filterNameElements.Count() == 2)
+            if (filterNameElements.Length == 2)
                 return new ParameterInfo { Module = new ModuleInfo { Name = filterNameElements[0] }, Name = filterNameElements[1] };
             else
                 return new ParameterInfo { Module = conceptInfo.Source.Module, Name = conceptInfo.FilterName };

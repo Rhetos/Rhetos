@@ -198,7 +198,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             if (_queryableWhereMethod == null)
                 _queryableWhereMethod = typeof(Queryable).GetMethods()
-                    .Where(m => m.Name == "Where" && m.GetParameters()[1].ParameterType.GetGenericArguments()[0].GetGenericArguments().Count() == 2)
+                    .Where(m => m.Name == "Where" && m.GetParameters()[1].ParameterType.GetGenericArguments()[0].GetGenericArguments().Length == 2)
                     .Single();
 
             return _queryableWhereMethod.MakeGenericMethod(parameterType);
@@ -225,7 +225,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             if (_enumerableWhereMethod == null)
                 _enumerableWhereMethod = typeof(Enumerable).GetMethods()
-                    .Where(m => m.Name == "Where" && m.GetParameters()[1].ParameterType.GetGenericArguments().Count() == 2)
+                    .Where(m => m.Name == "Where" && m.GetParameters()[1].ParameterType.GetGenericArguments().Length == 2)
                     .Single();
 
             return _enumerableWhereMethod.MakeGenericMethod(parameterType);

@@ -90,7 +90,7 @@ namespace Rhetos.Security
             if (AssumeAllClaims())
             {
                 _logger.Trace(() => $"User {ReportUserNameOrAnonymous(_userInfo)} has built-in administrator privileges.");
-                return Enumerable.Repeat(true, requiredClaims.Count()).ToArray();
+                return Enumerable.Repeat(true, requiredClaims.Count).ToArray();
             }
 
             var authorizations = _authorizationProvider.GetAuthorizations(_userInfo, requiredClaims);
