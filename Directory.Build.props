@@ -6,7 +6,8 @@
     <AssemblyVersion>5.0.0</AssemblyVersion>
     <FileVersion>5.0.0</FileVersion>
     <InformationalVersion>5.0.0-dev</InformationalVersion>
-    <NoWarn>1701,1702,1591,1573</NoWarn>
+    <NoWarn>1701,1702,1591,1573,CA1014</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
   </PropertyGroup>
 </Project>

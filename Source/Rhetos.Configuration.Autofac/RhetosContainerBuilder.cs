@@ -30,7 +30,7 @@ namespace Rhetos
     /// (see <see cref="ContainerBuilderExtensions"/> method),
     /// and registers <see cref="IConfiguration"/> to the container.
     /// </summary>
-    public class RhetosContainerBuilder
+    public static class RhetosContainerBuilder
     {
         /// <summary>
         /// Initializes a dependency injection container with specified <see cref="IConfiguration"/>. 

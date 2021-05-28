@@ -22,7 +22,7 @@ using System.IO;
 
 namespace Rhetos.Utilities
 {
-    public class JsonUtility
+    public static class JsonUtility
     {
         public static void SerializeToFile<T>(T data, string filePath)
         {

@@ -517,7 +517,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public Type GetFilterType(string dataStructureFullName, string filterName)
         {
             if (string.IsNullOrEmpty(filterName))
-                throw new ArgumentNullException("filterName");
+                throw new ArgumentNullException(nameof(filterName));
 
             Type filterType = null;
 

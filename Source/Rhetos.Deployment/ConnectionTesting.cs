@@ -21,7 +21,7 @@ using Rhetos.Utilities;
 
 namespace Rhetos.Deployment
 {
-    public class ConnectionStringReport
+    public static class ConnectionStringReport
     {
         private const string _checkDboMembershipMsSql = "SELECT IS_MEMBER('db_owner')";
 

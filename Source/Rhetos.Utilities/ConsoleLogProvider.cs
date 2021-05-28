@@ -107,7 +107,7 @@ namespace Rhetos.Utilities
         /// </remarks>
         public static EventType? MinLevel { get; set; }
 
-        internal static readonly EventType DefaultMinLogLevel = EventType.Info;
+        internal const EventType DefaultMinLogLevel = EventType.Info;
 
         public string Name { get; }
     }

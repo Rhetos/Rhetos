@@ -30,10 +30,14 @@ namespace Rhetos.Extensibility
         public List<string> TypesWithExports { get; set; } = new List<string>();
 
         public bool Equals(CachedFileData other)
-        {
-            return ModifiedTime == other.ModifiedTime
+            => ModifiedTime == other.ModifiedTime
                 && TypesWithExports.SequenceEqual(other.TypesWithExports);
-        }
+
+        public override bool Equals(object obj)
+            => obj is CachedFileData objCf && Equals(objCf);
+
+        public override int GetHashCode()
+            => HashCode.Combine(ModifiedTime, TypesWithExports);
     }
 
     internal class PluginsCacheData

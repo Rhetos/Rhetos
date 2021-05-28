@@ -7,7 +7,7 @@ using System.Runtime.Loader;
 
 namespace Rhetos
 {
-    public class HostResolver
+    public static class HostResolver
     {
         public static readonly string HostBuilderFactoryMethodName = "CreateHostBuilder";
 
