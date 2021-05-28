@@ -68,7 +68,7 @@ namespace Rhetos.Security
                 var setting = _appSecurityOptions.AllClaimsForUsers;
                 var users = setting.Split(',').Select(u => u.Trim()).Where(u => !string.IsNullOrEmpty(u))
                     .Select(u => u.Split('@'))
-                    .Select(u => new { UserName = u[0], HostName = u[1] })
+                    .Select(u => new { UserName = u[0], HostName = u.Length == 1 ? Environment.MachineName : u[1] })
                     .ToList();
                 var thisMachineUserNames = users
                     .Where(u => string.Equals(u.HostName, Environment.MachineName, StringComparison.OrdinalIgnoreCase))

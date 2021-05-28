@@ -2,6 +2,10 @@
 
 ## 5.0.0 (TO BE RELEASED)
 
+### Internal improvements
+
+1. `Rhetos:AppSecurity:AllClaimsForUsers` option does not require the machine name to be specified. Insetad of *username@machinename* it is possible just to use *username* but because of security reason it is recommanded to use the first format *username@machinename*.
+
 ### Breaking changes
 
 Changes in behavior:
