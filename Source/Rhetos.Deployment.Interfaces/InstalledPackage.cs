@@ -83,7 +83,7 @@ namespace Rhetos.Deployment
             report.Append(", requested by ").Append(Request.RequestedBy);
             report.Append(" requesting ").Append(Request.VersionsRange ?? "unspecified version");
             if (!string.IsNullOrEmpty(Request.Source))
-                report.Append(", source \"").Append(Request.Source).Append("\"");
+                report.Append(", source \"").Append(Request.Source).Append('"');
 
             return report.ToString();
         }

@@ -154,7 +154,7 @@ namespace Rhetos.Utilities
                 report.Append($", {countCopied} copied");
             if (countDeleted > 0)
                 report.Append($", {countDeleted} deleted");
-            report.Append(".");
+            report.Append('.');
 
             _performanceLogger.Write(sw, () => report.ToString());
         }

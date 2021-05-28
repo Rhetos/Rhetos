@@ -58,10 +58,10 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
             var viewCacheState = new StringBuilder();
             foreach (var dsGroup in ormProperties.GroupBy(p => p.DataStructure).OrderBy(group => group.Key)) // Sorting data structure because their order in DslModel should not affect the EF views.
             {
-                viewCacheState.Append(dsGroup.Key).Append(" ");
+                viewCacheState.Append(dsGroup.Key).Append(' ');
                 foreach (var column in dsGroup) // Keeping the original ordering or properties within the data structure. Using only column names that are showing in EF views cache file.
-                    viewCacheState.Append(column.ColumnName).Append(" ");
-                viewCacheState.Append("\n");
+                    viewCacheState.Append(column.ColumnName).Append(' ');
+                viewCacheState.Append('\n');
             }
 
             byte[] hash = _sha256.ComputeHash(Encoding.UTF8.GetBytes(viewCacheState.ToString()));

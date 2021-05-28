@@ -122,9 +122,6 @@ dotnet_diagnostic.CA1308.severity = suggestion
 #TODO: To Remove
 
 
-# CA1834: Use StringBuilder.Append(char) for single character strings
-dotnet_diagnostic.CA1834.severity = suggestion
-
 # CA2249: Consider using String.Contains instead of String.IndexOf
 dotnet_diagnostic.CA2249.severity = suggestion
 

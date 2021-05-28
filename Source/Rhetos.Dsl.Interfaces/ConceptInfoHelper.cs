@@ -51,7 +51,7 @@ namespace Rhetos.Dsl
         {
             StringBuilder desc = new StringBuilder(100);
             desc.Append(BaseConceptInfoType(ci).Name);
-            desc.Append(" ");
+            desc.Append(' ');
             AppendMembers(desc, ci, SerializationOptions.KeyMembers, exceptionOnNullMember: true);
             return desc.ToString();
         }
@@ -60,7 +60,7 @@ namespace Rhetos.Dsl
         {
             StringBuilder desc = new StringBuilder(100);
             desc.Append(ci.GetType().Name);
-            desc.Append(" ");
+            desc.Append(' ');
             AppendMembers(desc, ci, SerializationOptions.KeyMembers);
             return desc.ToString();
         }
@@ -76,7 +76,7 @@ namespace Rhetos.Dsl
         {
             StringBuilder desc = new StringBuilder(100);
             desc.Append(GetKeywordOrTypeName(ci));
-            desc.Append(" ");
+            desc.Append(' ');
             AppendMembers(desc, ci, SerializationOptions.KeyMembers);
             return desc.ToString();
         }
@@ -99,7 +99,7 @@ namespace Rhetos.Dsl
         {
             StringBuilder desc = new StringBuilder(200);
             desc.Append(ci.GetType().FullName);
-            desc.Append(" ");
+            desc.Append(' ');
             AppendMembers(desc, ci, SerializationOptions.AllMembers);
             return desc.ToString();
         }
@@ -114,7 +114,7 @@ namespace Rhetos.Dsl
                 throw new FrameworkException($"{baseConceptType} is not assignable from {ci.GetUserDescription()}.");
             StringBuilder desc = new StringBuilder(200);
             desc.Append(baseConceptType.FullName);
-            desc.Append(" ");
+            desc.Append(' ');
             AppendMembers(desc, ci, SerializationOptions.AllMembers, false, baseConceptType);
             return desc.ToString();
         }
@@ -252,7 +252,7 @@ namespace Rhetos.Dsl
             {
                 IConceptInfo value = (IConceptInfo)member.GetValue(ci);
                 if (member.ValueType == typeof(IConceptInfo))
-                    text.Append(BaseConceptInfoType(value).Name).Append(":");
+                    text.Append(BaseConceptInfoType(value).Name).Append(':');
                 AppendMembers(text, value, SerializationOptions.KeyMembers, exceptionOnNullMember);
             }
             else if (member.ValueType == typeof(string))
