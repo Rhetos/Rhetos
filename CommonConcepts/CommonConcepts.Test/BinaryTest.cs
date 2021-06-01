@@ -17,16 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.IO;
 using System;
-using System.Text;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos.Configuration.Autofac;
 using Rhetos.Utilities;
 using Rhetos.Dom.DefaultConcepts;
-using CommonConcepts.Test.Helpers;
 
 namespace CommonConcepts.Test
 {
@@ -41,9 +36,10 @@ namespace CommonConcepts.Test
                 scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestBinary.E;" });
                 var repository = scope.Resolve<Common.DomRepository>();
 
-                var rnd = new Random();
+                var rnd = System.Security.Cryptography.RandomNumberGenerator.Create();
                 var blob = new Byte[10];
-                rnd.NextBytes(blob);
+                rnd.GetBytes(blob);
+                
 
                 var entity = new TestBinary.E() { ID = Guid.NewGuid(), Blob = blob };
                 repository.TestBinary.E.Insert(new[] { entity });
@@ -61,9 +57,9 @@ namespace CommonConcepts.Test
                 scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestBinary.E;" });
                 var repository = scope.Resolve<Common.DomRepository>();
 
-                var rnd = new Random();
+                var rnd = System.Security.Cryptography.RandomNumberGenerator.Create();
                 var blob = new Byte[1000000];
-                rnd.NextBytes(blob);
+                rnd.GetBytes(blob);
 
                 var entity = new TestBinary.E() { ID = Guid.NewGuid(), Blob = blob };
                 repository.TestBinary.E.Insert(new[] { entity });

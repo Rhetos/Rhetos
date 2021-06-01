@@ -274,14 +274,14 @@ namespace CommonConcepts.Test
                 var repository = scope.Resolve<Common.DomRepository>();
                 FilterIdentifier(repository, "equals", ids[0], ids[0]);
                 FilterIdentifier(repository, "notequals", ids[0], ids[1], ids[2], ids[3]);
-                FilterIdentifier(repository, "equals", null, new Guid[0]);
+                FilterIdentifier(repository, "equals", null, Array.Empty<Guid>());
                 FilterIdentifier(repository, "notequals", null, ids[0], ids[1], ids[2], ids[3]);
                 FilterIdentifierArray(repository, "in", new[] { ids[0] }, new[] { ids[0] });
                 FilterIdentifierArray(repository, "in", new[] { ids[0], ids[1] }, new[] { ids[0], ids[1] });
-                FilterIdentifierArray(repository, "in", new Guid[] { }, new Guid[] { });
+                FilterIdentifierArray(repository, "in", Array.Empty<Guid>(), Array.Empty<Guid>());
                 FilterIdentifierArray(repository, "notin", new[] { ids[0] }, new[] { ids[1], ids[2], ids[3] });
                 FilterIdentifierArray(repository, "notin", new[] { ids[0], ids[1] }, new[] { ids[2], ids[3] });
-                FilterIdentifierArray(repository, "notin", new Guid[] { }, new Guid[] { ids[0], ids[1], ids[2], ids[3] });
+                FilterIdentifierArray(repository, "notin", Array.Empty<Guid>(), new Guid[] { ids[0], ids[1], ids[2], ids[3] });
             }
         }
 

@@ -115,7 +115,7 @@ namespace CommonConcepts.Test
                 try
                 {
                     var loadedByIds = repository.Test10.Simple.Load(guids);
-                    Assert.AreEqual(n, loadedByIds.Count());
+                    Assert.AreEqual(n, loadedByIds.Length);
 
                     var queriedByIds = scope.Resolve<GenericRepository<Test10.Simple>>().Query(guids);
                     Assert.AreEqual(n, queriedByIds.Count());

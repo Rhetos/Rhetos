@@ -352,14 +352,14 @@ namespace CommonConcepts.Test
                     // rankTop < count:
 
                     rankTop = 2;
-                    Assert.AreEqual(rankTop, filteredQuery.ToList().Count(), $"Searching top {rankTop} '{test.Key}'.");
+                    Assert.AreEqual(rankTop, filteredQuery.ToList().Count, $"Searching top {rankTop} '{test.Key}'.");
 
                     // rankTop as a literal:
 
                     filteredQuery = repository.TestFullTextSearch.SimpleBrowse.Query()
                         .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, test.Key,
                             "TestFullTextSearch.SimpleFTS", "*", 2));
-                    Assert.AreEqual(rankTop, filteredQuery.ToList().Count(), $"Searching '{test.Key}' with rankTop int literal.");
+                    Assert.AreEqual(rankTop, filteredQuery.ToList().Count, $"Searching '{test.Key}' with rankTop int literal.");
                 }
             }
         }

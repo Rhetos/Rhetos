@@ -70,7 +70,7 @@ namespace CommonConcepts.Test
                         ReadRecords = true
                     };
                     var result = ExecuteReadCommand(all, scope);
-                    Assert.AreEqual(50, result.Records.Count());
+                    Assert.AreEqual(50, result.Records.Length);
                 }
 
                 {
@@ -81,7 +81,7 @@ namespace CommonConcepts.Test
                         Filters = new FilterCriteria[] { new FilterCriteria() { Filter = "TestRowPermissions.Value30" } }
                     };
                     var result = ExecuteReadCommand(filtered, scope);
-                    Assert.AreEqual(19, result.Records.Count());
+                    Assert.AreEqual(19, result.Records.Length);
                 }
 
                 {
@@ -95,7 +95,7 @@ namespace CommonConcepts.Test
                         Filters = new FilterCriteria[] { new FilterCriteria() { Property = "ID", Operation = "equal", Value = guid } }
                     };
                     var result = ExecuteReadCommand(single, scope);
-                    Assert.AreEqual(1, result.Records.Count());
+                    Assert.AreEqual(1, result.Records.Length);
                     Assert.AreEqual(51, (result.Records[0] as NoRP).value);
                 }
             }
@@ -129,7 +129,7 @@ namespace CommonConcepts.Test
                     {
                         DataSource = "TestRowPermissions.SimpleRP",
                         ReadRecords = true,
-                        Filters = new FilterCriteria[] { }
+                        Filters = Array.Empty<FilterCriteria>()
                     };
                     TestUtility.ShouldFail(() => ExecuteReadCommand(cReadAll, scope), _readException);
                 }
@@ -157,7 +157,7 @@ namespace CommonConcepts.Test
                         OrderByProperties = orderByValue,
                     };
                     var result = ExecuteReadCommand(cRead1500_2500, scope);
-                    Assert.AreEqual(1001, result.Records.Count());
+                    Assert.AreEqual(1001, result.Records.Length);
                 }
 
                 {
@@ -224,7 +224,7 @@ namespace CommonConcepts.Test
                         Filters = new FilterCriteria[] { new FilterCriteria() { Property = "ID", Operation = "equal", Value = items[2500].ID } }
                     };
                     var result = ExecuteReadCommand(cReadSingleOk, scope);
-                    Assert.AreEqual(1, result.Records.Count());
+                    Assert.AreEqual(1, result.Records.Length);
                 }
 
                 {
@@ -239,7 +239,7 @@ namespace CommonConcepts.Test
                             }
                     };
                     var result = ExecuteReadCommand(cReadFilterOk, scope);
-                    Assert.AreEqual(1, result.Records.Count());
+                    Assert.AreEqual(1, result.Records.Length);
                     Assert.AreEqual(items[2500].ID, (result.Records[0] as SimpleRP).ID);
                 }
 
@@ -252,7 +252,7 @@ namespace CommonConcepts.Test
                             { Filter = _rowPermissionsReadFilter } }
                     };
                     var result = ExecuteReadCommand(cPermissionFilter, scope);
-                    Assert.AreEqual(1001, result.Records.Count());
+                    Assert.AreEqual(1001, result.Records.Length);
                     var values = ((SimpleRP[])result.Records).Select(a => a.value);
                     Assert.IsTrue(Enumerable.Range(1500, 1001).All(a => values.Contains(a)));
                 }
@@ -349,7 +349,7 @@ namespace CommonConcepts.Test
                             new FilterCriteria() { Property = "value", Operation = "greater", Value = 50 },                        }
                     };
                     var result = ExecuteReadCommand(cValidRange, scope);
-                    Assert.AreEqual(9, result.Records.Count());
+                    Assert.AreEqual(9, result.Records.Length);
                 }
 
                 {
@@ -363,7 +363,7 @@ namespace CommonConcepts.Test
                         }
                     };
                     var result = ExecuteReadCommand(cNoRecords, scope);
-                    Assert.AreEqual(0, result.Records.Count());
+                    Assert.AreEqual(0, result.Records.Length);
                 }
 
                 {
@@ -387,7 +387,7 @@ namespace CommonConcepts.Test
                         }
                     };
                     var result = ExecuteReadCommand(cSingleOk, scope);
-                    Assert.AreEqual(1, result.Records.Count());
+                    Assert.AreEqual(1, result.Records.Length);
                 }
 
                 {
@@ -652,7 +652,7 @@ namespace CommonConcepts.Test
             // delete all
             {
                 var result = TestWrite(initial, null, null, items.ToArray(), null);
-                Assert.AreEqual(0, result.Count());
+                Assert.AreEqual(0, result.Length);
             }
         }
 
@@ -667,32 +667,32 @@ namespace CommonConcepts.Test
             // failed insert
             {
                 var result = TestWrite(null, notLegal, null, null, _writeException);
-                Assert.AreEqual(0, result.Count());
+                Assert.AreEqual(0, result.Length);
             }
 
             // failed update
             {
                 var result = TestWrite(notLegal, null, notLegal, null, _writeException);
-                Assert.AreEqual(notLegal.Count(), result.Count());
+                Assert.AreEqual(notLegal.Length, result.Length);
             }
 
             // failed delete
             {
                 var result = TestWrite(notLegal, null, null, notLegal, _writeException);
-                Assert.AreEqual(notLegal.Count(), result.Count());
+                Assert.AreEqual(notLegal.Length, result.Length);
             }
 
             // legal insert
             {
                 var result = TestWrite(null, legal1, null, null, null);
-                Assert.AreEqual(legal1.Count(), result.Count());
+                Assert.AreEqual(legal1.Length, result.Length);
             }
 
             // legal update
             {
                 var update = legal1.Select(a => new SimpleRP() { ID = a.ID, value = 1999 }).ToArray();
                 var result = TestWrite(legal1, null, update, null, null);
-                Assert.AreEqual(legal1.Count(), result.Count());
+                Assert.AreEqual(legal1.Length, result.Length);
                 Assert.IsTrue(result.All(a => a.value == 1999));
             }
 
@@ -700,7 +700,7 @@ namespace CommonConcepts.Test
             {
                 var delete = legal1.Take(50).ToArray();
                 var result = TestWrite(legal1, null, null, delete, null);
-                Assert.AreEqual(legal1.Count() - 50, result.Count());
+                Assert.AreEqual(legal1.Length - 50, result.Length);
                 var resIDs = result.Select(a => a.ID).ToList();
                 Assert.IsTrue(delete.All(a => !resIDs.Contains(a.ID)));
             }
@@ -771,21 +771,21 @@ namespace CommonConcepts.Test
             // illegal insert
             {
                 var result = TestWrite(null, items, null, null, _writeException);
-                Assert.AreEqual(0, result.Count());
+                Assert.AreEqual(0, result.Length);
             }
 
             // illegal update subset
             {
                 var toUpdate = items.Where(a => a.value > 80).ToArray();
                 var result = TestWrite(items, null, toUpdate, null, _writeException);
-                Assert.AreEqual(items.Count(), result.Count());
+                Assert.AreEqual(items.Length, result.Length);
             }
 
             // illegal delete subset
             {
                 var toDelete = items.Where(a => a.value < 10).ToArray();
                 var result = TestWrite(items, null, null, toDelete, _writeException);
-                Assert.AreEqual(items.Count(), result.Count());
+                Assert.AreEqual(items.Length, result.Length);
             }
 
             var legal = items.Where(a => a.value >= 10 && a.value < 80).ToArray();
@@ -793,14 +793,14 @@ namespace CommonConcepts.Test
             // legal insert
             {
                 var result = TestWrite(null, legal, null, null, null);
-                Assert.AreEqual(legal.Count(), result.Count());
+                Assert.AreEqual(legal.Length, result.Length);
             }
 
             // legal update
             {
                 var update = legal.Select(a => new ComplexRP() { ID = a.ID, value = 50 }).ToArray();
                 var result = TestWrite(legal, null, update, null, null);
-                Assert.AreEqual(legal.Count(), result.Count());
+                Assert.AreEqual(legal.Length, result.Length);
                 Assert.IsTrue(result.All(a => a.value == 50));
             }
 
@@ -808,7 +808,7 @@ namespace CommonConcepts.Test
             {
                 var toDelete = legal.Take(10).ToArray();
                 var result = TestWrite(legal, null, null, toDelete, null);
-                Assert.AreEqual(legal.Count() - 10, result.Count());
+                Assert.AreEqual(legal.Length - 10, result.Length);
                 var resIDs = result.Select(a => a.ID).ToList();
                 Assert.IsTrue(toDelete.All(a => !resIDs.Contains(a.ID)));
             }
@@ -829,7 +829,7 @@ namespace CommonConcepts.Test
             };
 
             var result = TestWrite(illegal, null, updateToLegal, null, _writeException);
-            Assert.AreEqual(1, result.Count());
+            Assert.AreEqual(1, result.Length);
             Assert.AreEqual(100, result.First().value);
         }
 
