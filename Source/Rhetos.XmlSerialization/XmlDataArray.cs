@@ -80,7 +80,7 @@ namespace Rhetos.XmlSerialization
         {
             return new XmlDataArray(domainObjectModel, typeof(T))
             {
-                Data = (data == null || data.Count() == 0) ? null : data.ToArray()
+                Data = (data == null || !data.Any()) ? null : data.ToArray()
             };
         }
 

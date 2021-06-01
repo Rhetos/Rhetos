@@ -81,7 +81,7 @@ namespace Rhetos.CommonConcepts.Test.Mocks
 
         private void AppendLog(string message, IEnumerable<TEntity> items)
         {
-            if (items.Count() > 0)
+            if (items.Any())
             {
                 if (Log.Length > 0)
                     Log.Append(", ");

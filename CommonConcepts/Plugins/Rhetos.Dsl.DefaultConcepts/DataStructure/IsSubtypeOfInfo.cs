@@ -83,7 +83,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             {
                 // Verifying if the ChangesOnChangedItemsInfo can be created (see IsSubtypeOfMacro)
                 var dependsOn = DslUtility.GetBaseChangesOnDependency(Subtype, existingConcepts);
-                if (dependsOn.Count() == 0)
+                if (!dependsOn.Any())
                     throw new DslSyntaxException(this, Subtype.GetUserDescription() + " should be an *extension* of an entity. Otherwise it cannot be used in a materialized polymorphic entity because the system cannot detect when to update the persisted data.");
             }
         }

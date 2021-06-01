@@ -130,7 +130,7 @@ namespace Rhetos.Processing
 
                     var implementations = _commandRepository.GetImplementations(commandInfo.GetType());
 
-                    if (implementations.Count() == 0)
+                    if (!implementations.Any())
                         throw new FrameworkException(string.Format(CultureInfo.InvariantCulture,
                             "Cannot execute command \"{0}\". There are no command implementations loaded that implement the command.", commandInfo));
 
