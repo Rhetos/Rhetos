@@ -45,7 +45,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return null;
         }
 
-        private static readonly object[] _emptyArray = new object[] { };
+        private static readonly object[] _emptyArray = Array.Empty<object>();
 
         public static void ValidateOnSave(IEnumerable<IEntity> inserted, IEnumerable<IEntity> updated, IValidateRepository repository, string dataStructure)
         {

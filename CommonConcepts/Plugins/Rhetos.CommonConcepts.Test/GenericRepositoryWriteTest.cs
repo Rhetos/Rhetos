@@ -484,7 +484,7 @@ namespace Rhetos.CommonConcepts.Test
                 new SimpleEntity { ID = Id(102), Name = "a", Size = 102 },
             };
 
-            var repos = NewSimpleRepos(new SimpleEntity[] {});
+            var repos = NewSimpleRepos(Array.Empty<SimpleEntity>());
             repos.InsertOrUpdateOrDelete(newItems, new SimpleEntityCompareName(), SimpleEntityEqualSize, new FilterAll(),
                 (dest, src) => { dest.Name = src.Name; dest.Size = src.Size; });
 

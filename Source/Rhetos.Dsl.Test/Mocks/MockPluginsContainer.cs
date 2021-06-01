@@ -49,7 +49,7 @@ namespace Rhetos.Dsl.Test
 
         public IEnumerable<T> GetImplementations(Type implements)
         {
-            return new T[] { };
+            return Array.Empty<T>();
         }
     }
 }

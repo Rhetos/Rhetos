@@ -118,6 +118,10 @@ dotnet_diagnostic.CA1036.severity = suggestion
 # CA1308: Override methods on comparable types
 dotnet_diagnostic.CA1308.severity = suggestion
 
+# The warning is supressed because we want to make it more clear what the intention was
+# CA1805: Do not initialize unnecessarily
+dotnet_diagnostic.CA1805.severity = suggestion
+
 
 #TODO: To Remove
 
@@ -128,14 +132,8 @@ dotnet_diagnostic.CA2249.severity = suggestion
 # CA1820: Test for empty strings using string length
 dotnet_diagnostic.CA1820.severity = suggestion
 
-# CA1805: Do not initialize unnecessarily
-dotnet_diagnostic.CA1805.severity = suggestion
-
 # CA1827: Do not use Count/LongCount when Any can be used
 dotnet_diagnostic.CA1827.severity = suggestion
-
-# CA1825: Avoid zero-length array allocations
-dotnet_diagnostic.CA1825.severity = suggestion
 
 # CA2000: Dispose objects before losing scope
 dotnet_diagnostic.CA2000.severity = suggestion

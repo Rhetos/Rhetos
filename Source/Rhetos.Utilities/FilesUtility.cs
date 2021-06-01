@@ -171,7 +171,7 @@ namespace Rhetos.Utilities
             if (Directory.Exists(directory))
                 return Directory.GetFiles(directory, pattern, searchOption);
             else
-                return new string[] { };
+                return Array.Empty<string>();
         }
 
         public string ReadAllText(string path)

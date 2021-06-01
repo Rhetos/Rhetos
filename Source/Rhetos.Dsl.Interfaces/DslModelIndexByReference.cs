@@ -64,7 +64,7 @@ namespace Rhetos.Dsl
                 index4.Add(concept);
             }
 
-            private static IConceptInfo[] EmptyConceptsArray = new IConceptInfo[] { };
+            private static IConceptInfo[] EmptyConceptsArray = Array.Empty<IConceptInfo>();
 
             public IEnumerable<IConceptInfo> Get(string referencedConceptKey, IEnumerable<Type> conceptTypes, string referenceName)
             {

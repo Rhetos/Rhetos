@@ -106,7 +106,7 @@ namespace Rhetos
         {
             try
             {
-                return string.Format(Message, MessageParameters ?? new object[] { });
+                return string.Format(Message, MessageParameters ?? Array.Empty<object>());
             }
             catch (Exception e)
             {

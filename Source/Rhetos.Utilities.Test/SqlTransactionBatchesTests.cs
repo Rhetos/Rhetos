@@ -33,8 +33,8 @@ namespace Rhetos.Utilities.Test
             // "//" is a shortcut for "\r\n"
             var tests = new ListOfTuples<string[], int, int, string[]>
             {
-                {  new string[] { }, 10, 1000, new string[] { } },
-                {  new string[] { }, 0, 0, new string[] { } },
+                {  System.Array.Empty<string>(), 10, 1000, System.Array.Empty<string>() },
+                {  System.Array.Empty<string>(), 0, 0, System.Array.Empty<string>() },
 
                 {  new[] { "a", "b", "c" }, 10, 1000, new[] { "a//b//c" } },
 

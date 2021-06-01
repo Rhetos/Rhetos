@@ -59,9 +59,9 @@ namespace Rhetos.CommonConcepts.Test.Mocks
             if (updatedNew != null) UpdatedGroups.Add(updatedNew);
             if (deletedIds != null) DeletedGroups.Add(deletedIds);
 
-            if (insertedNew == null) insertedNew = new TEntity[] { };
-            if (updatedNew == null) updatedNew = new TEntity[] { };
-            if (deletedIds == null) deletedIds = new TEntity[] { };
+            if (insertedNew == null) insertedNew = Array.Empty<TEntity>();
+            if (updatedNew == null) updatedNew = Array.Empty<TEntity>();
+            if (deletedIds == null) deletedIds = Array.Empty<TEntity>();
 
             AppendLog("DELETE", deletedIds);
             AppendLog("UPDATE", updatedNew);

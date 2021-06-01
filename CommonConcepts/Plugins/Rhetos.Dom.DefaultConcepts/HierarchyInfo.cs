@@ -48,7 +48,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public static HierarchyInfo[] Compute(HierarchyItem[] items, string pathSeparator)
         {
             if (items.Length == 0)
-                return new HierarchyInfo[] { };
+                return Array.Empty<HierarchyInfo>();
 
             var roots = items.Where(item => !item.ParentID.HasValue).ToArray();
             if (roots.Length == 0)

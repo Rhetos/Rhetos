@@ -246,14 +246,14 @@ namespace Rhetos.CommonConcepts.Test
                 new { ID = id3, RefID = (Guid?)id3, Name = "3" },
             };
 
-            Assert.AreEqual("", TestUtility.DumpSorted(TestFilter("ID", "In", new int[] { }, items), item => item.Name));
-            Assert.AreEqual("1, 2, 3", TestUtility.DumpSorted(TestFilter("ID", "NotIn", new int[] { }, items), item => item.Name));
-            Assert.AreEqual("", TestUtility.DumpSorted(TestFilter("RefID", "In", new int[] { }, items), item => item.Name));
-            Assert.AreEqual("1, 2, 3", TestUtility.DumpSorted(TestFilter("RefID", "NotIn", new int[] { }, items), item => item.Name));
-            Assert.AreEqual("", TestUtility.DumpSorted(TestFilter("Name", "In", new int[] { }, items), item => item.Name));
-            Assert.AreEqual("1, 2, 3", TestUtility.DumpSorted(TestFilter("Name", "NotIn", new int[] { }, items), item => item.Name));
-            Assert.AreEqual("", TestUtility.DumpSorted(TestFilter("Name", "In", new C[] { }, items), item => item.Name));
-            Assert.AreEqual("1, 2, 3", TestUtility.DumpSorted(TestFilter("Name", "NotIn", new C[] { }, items), item => item.Name));
+            Assert.AreEqual("", TestUtility.DumpSorted(TestFilter("ID", "In", Array.Empty<int>(), items), item => item.Name));
+            Assert.AreEqual("1, 2, 3", TestUtility.DumpSorted(TestFilter("ID", "NotIn", Array.Empty<int>(), items), item => item.Name));
+            Assert.AreEqual("", TestUtility.DumpSorted(TestFilter("RefID", "In", Array.Empty<int>(), items), item => item.Name));
+            Assert.AreEqual("1, 2, 3", TestUtility.DumpSorted(TestFilter("RefID", "NotIn", Array.Empty<int>(), items), item => item.Name));
+            Assert.AreEqual("", TestUtility.DumpSorted(TestFilter("Name", "In", Array.Empty<int>(), items), item => item.Name));
+            Assert.AreEqual("1, 2, 3", TestUtility.DumpSorted(TestFilter("Name", "NotIn", Array.Empty<int>(), items), item => item.Name));
+            Assert.AreEqual("", TestUtility.DumpSorted(TestFilter("Name", "In", Array.Empty<C>(), items), item => item.Name));
+            Assert.AreEqual("1, 2, 3", TestUtility.DumpSorted(TestFilter("Name", "NotIn", Array.Empty<C>(), items), item => item.Name));
         }
 
         [TestMethod]

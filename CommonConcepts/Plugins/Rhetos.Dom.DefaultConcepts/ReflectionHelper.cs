@@ -405,7 +405,7 @@ namespace Rhetos.Dom.DefaultConcepts
             get
             {
                 if (_repositoryLoadMethod == null)
-                    _repositoryLoadMethod = RepositoryType.GetMethod("Load", new Type[] { });
+                    _repositoryLoadMethod = RepositoryType.GetMethod("Load", Array.Empty<Type>());
                 return _repositoryLoadMethod;
             }
         }
@@ -417,7 +417,7 @@ namespace Rhetos.Dom.DefaultConcepts
             get
             {
                 if (_repositoryQueryMethod == null)
-                    _repositoryQueryMethod = RepositoryType.GetMethod("Query", new Type[] { });
+                    _repositoryQueryMethod = RepositoryType.GetMethod("Query", Array.Empty<Type>());
                 return _repositoryQueryMethod;
             }
         }

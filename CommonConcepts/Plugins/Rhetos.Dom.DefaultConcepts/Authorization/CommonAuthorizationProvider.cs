@@ -157,7 +157,7 @@ namespace Rhetos.Dom.DefaultConcepts
             {
                 var claimPermissions = claimResult.Claim.ID != null
                     ? permissionsByClaim.Get(claimResult.Claim.ID.Value)
-                    : new Permission[] { };
+                    : Array.Empty<Permission>();
 
                 var permissionsDescription = claimPermissions
                     .Select(permission => new

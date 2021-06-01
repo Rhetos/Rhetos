@@ -61,7 +61,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             RecognizeConstantExpression(ref expression);
             if (expression == _selectAll) return source;
-            else if (expression == _selectNone) return (new T[] { }).AsQueryable();
+            else if (expression == _selectNone) return (Array.Empty<T>()).AsQueryable();
             else return source.Where(expression);
         }
 

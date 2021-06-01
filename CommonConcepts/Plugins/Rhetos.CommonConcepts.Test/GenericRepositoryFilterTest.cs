@@ -55,7 +55,7 @@ namespace Rhetos.CommonConcepts.Test
             public void Add(string name) { Add(new SimpleEntity { Name = name, ID = new Guid(idCounter++, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) }); }
         }
 
-        static readonly SimpleEntity[] EmptyArray = new SimpleEntity[] { };
+        static readonly SimpleEntity[] EmptyArray = Array.Empty<SimpleEntity>();
         static readonly SimpleEntity[] AbcArray = new SimpleEntity[] { new SimpleEntity { Name = "abc" } };
 
         GenericRepository<ISimpleEntity> NewRepos(IRepository repository)
@@ -138,8 +138,8 @@ namespace Rhetos.CommonConcepts.Test
         {
             var repos = NewRepos(new FilterEnumQueryRepository());
 
-            var enumSource = new SimpleEntity[] { };
-            var querySource = new SimpleEntity[] { }.AsQueryable();
+            var enumSource = Array.Empty<SimpleEntity>();
+            var querySource = Array.Empty<SimpleEntity>().AsQueryable();
 
             // Both queryable and enumerable filters exist:
             Assert.AreEqual("filter enumerable on materialized source", repos.FilterOrQuery(enumSource, "a").Single().Name);
@@ -485,7 +485,7 @@ namespace Rhetos.CommonConcepts.Test
         [TestMethod]
         public void FilterGenericFilter_Empty()
         {
-            var gf = new FilterCriteria[] { };
+            var gf = Array.Empty<FilterCriteria>();
             var entityRepos = new GenericFilterRepository();
             var genericRepos = NewRepos(entityRepos);
 
@@ -714,8 +714,7 @@ namespace Rhetos.CommonConcepts.Test
                 return new[] { new SimpleEntity { Name = parameter.ToString() } }.AsQueryable();
             }
 
-            public static readonly KeyValuePair<string, Type>[] ReadParameterTypes = new KeyValuePair<string, Type>[]
-            {};
+            public static readonly KeyValuePair<string, Type>[] ReadParameterTypes = Array.Empty<KeyValuePair<string, Type>>();
         }
 
         [TestMethod]

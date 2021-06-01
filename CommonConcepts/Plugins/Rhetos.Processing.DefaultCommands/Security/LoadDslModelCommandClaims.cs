@@ -32,12 +32,12 @@ namespace Rhetos.Processing.DefaultCommands
     {
         public IList<Claim> GetRequiredClaims(ICommandInfo info)
         {
-            return new Claim[] { };
+            return Array.Empty<Claim>();
         }
 
         public IList<Claim> GetAllClaims(IDslModel dslModel)
         {
-            return new Claim[] { };
+            return Array.Empty<Claim>();
         }
     }
 }

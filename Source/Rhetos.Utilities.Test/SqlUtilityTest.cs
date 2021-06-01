@@ -109,7 +109,7 @@ namespace Rhetos.Utilities.Test
                 { "User Id=jjj;Password=\"jjj;jjj=jjj\";Data Source=localhost:1521/xe;",
                     new[] { "localhost:1521/xe" } },
                 { "';[]=-",
-                    new string[] { } },
+                    Array.Empty<string>() },
             };
 
             foreach (var test in tests)
@@ -243,9 +243,9 @@ namespace Rhetos.Utilities.Test
                 { "111\r\n222\r\nGO\r\n333\r\n444", new[] { "111\r\n222", "333\r\n444" } }, // Multi-line batches
                 { "111\n222\nGO\n333\n444", new[] { "111\n222", "333\n444" } }, // Multi-line batches, UNIX EOL
                 { "111\r\nGO GO\r\n		GO   \r\n		go           \r\n222\r\ngoo\r\ngo", new[] { "111\r\nGO GO", "222\r\ngoo" } }, // Complex
-                { "", new string[] { } }, // Empty batches
-                { "GO", new string[] { } }, // Empty batches
-                { "\r\n  \r\n  GO  \r\n  \r\n", new string[] { } } // Empty batches
+                { "", Array.Empty<string>() }, // Empty batches
+                { "GO", Array.Empty<string>() }, // Empty batches
+                { "\r\n  \r\n  GO  \r\n  \r\n", Array.Empty<string>() } // Empty batches
             };
             foreach (var test in tests)
                 Assert.AreEqual(TestUtility.Dump(test.Value), TestUtility.Dump(SqlUtility.SplitBatches(test.Key)), "Input: " + test.Key);
