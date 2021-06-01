@@ -101,7 +101,7 @@ namespace Rhetos.Dom.DefaultConcepts
         [DbFunction(EntityFrameworkMapping.ConceptualModelNamespace, "StringContainsCaseInsensitive")]
         public static bool ContainsCaseInsensitive(this string a, string b)
         {
-            return a != null && b != null && a.IndexOf(b, StringComparison.InvariantCultureIgnoreCase) >= 0;
+            return a != null && b != null && a.Contains(b, StringComparison.InvariantCultureIgnoreCase);
         }
 
         [DbFunction(EntityFrameworkMapping.ConceptualModelNamespace, "StringLike")]

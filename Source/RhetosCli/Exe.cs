@@ -76,7 +76,7 @@ namespace Rhetos
                     builder.Append(' ');
                 }
 
-                if (args[i].IndexOf(' ') == -1)
+                if (!args[i].Contains(' '))
                 {
                     builder.Append(args[i]);
 
