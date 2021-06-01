@@ -1,8 +1,5 @@
 ﻿[*.cs]
 
-# CS0618: Type or member is obsolete
-#dotnet_diagnostic.CS0618.severity = suggestion
-
 # CA1062: Validate arguments of public methods
 dotnet_diagnostic.CA1062.severity = suggestion
 
@@ -14,9 +11,6 @@ dotnet_diagnostic.CA1305.severity = suggestion
 
 # CA1707: Identifiers should not contain underscore
 dotnet_diagnostic.CA1707.severity = suggestion
-
-# CA1801: Review unused parameters
-dotnet_diagnostic.CA1801.severity = suggestion
 
 # CA1801: Review unused parameters
 dotnet_diagnostic.CA1801.severity = suggestion
@@ -51,7 +45,6 @@ dotnet_diagnostic.CA1051.severity = suggestion
 # CA1034: Nested types should not be visible
 dotnet_diagnostic.CA1034.severity = suggestion
 
-#TODO: Add this only for test projects
 # CA1065: Do not raise exceptions in unexpected locations
 dotnet_diagnostic.CA1065.severity = suggestion
 
@@ -67,6 +60,8 @@ dotnet_diagnostic.CA1724.severity = suggestion
 # CA1721: Property names should not match get methods
 dotnet_diagnostic.CA1721.severity = suggestion
 
+# Unit tests that test reflection based functionality relies
+# on private classes that are never initialized
 # CA1812: Avoid uninstantiated internal classes
 dotnet_diagnostic.CA1812.severity = suggestion
 
@@ -106,6 +101,8 @@ dotnet_diagnostic.CA1003.severity = suggestion
 # CA1806: Do not ignore method results
 dotnet_diagnostic.CA1806.severity = suggestion
 
+# PersistenceTransaction has a some logic when disposing an instance of DbConnection
+# so the analyzer probably does not detect it so we are supressing this warning
 # CA2213: Disposable fields should be disposed
 dotnet_diagnostic.CA2213.severity = suggestion
 
@@ -115,31 +112,31 @@ dotnet_diagnostic.CA1815.severity = suggestion
 # CA1036: Override methods on comparable types
 dotnet_diagnostic.CA1036.severity = suggestion
 
-# CA1308: Override methods on comparable types
+# CA1308: Normalize strings to uppercase
 dotnet_diagnostic.CA1308.severity = suggestion
 
 # The warning is supressed because we want to make it more clear what the intention was
 # CA1805: Do not initialize unnecessarily
 dotnet_diagnostic.CA1805.severity = suggestion
 
+# CA1303: Do not pass literals as localized parameters
+dotnet_diagnostic.CA1303.severity = suggestion
 
-#TODO: To Remove
-
+# This rule is usefull when applied to shared libraries that 
+# are used in languages that do not support operator overloading
+# CA2225: Operator overloads have named alternates
+dotnet_diagnostic.CA2225.severity = suggestion
 
 # CA1820: Test for empty strings using string length
 dotnet_diagnostic.CA1820.severity = suggestion
 
-# CA2000: Dispose objects before losing scope
-dotnet_diagnostic.CA2000.severity = suggestion
+# CA2241: Provide correct arguments to formatting methods
+dotnet_diagnostic.CA2241.severity = suggestion
 
 # CA1725: Parameter names should match base declaration
 dotnet_diagnostic.CA1725.severity = suggestion
 
-# CA2225: Operator overloads have named alternates
-dotnet_diagnostic.CA2225.severity = suggestion
-
-# CA1303: Do not pass literals as localized parameters
-dotnet_diagnostic.CA1303.severity = suggestion
-
-# CA2241: Provide correct arguments to formatting methods
-dotnet_diagnostic.CA2241.severity = suggestion
+# This warning should beenabled but MsSqlExecuter.SafeExecuteCommand has a very specific
+# behaviour for the disposal of SqlConnection
+# CA2000: Dispose objects before losing scope
+dotnet_diagnostic.CA2000.severity = suggestion

@@ -145,7 +145,7 @@ namespace CommonConcepts.Test
             using (var scope = TestScope.Create())
             {
                 var testRepos = scope.Resolve<GenericRepository<Test10.Simple>>();
-                if (testRepos.Query(new[] { commitCheckId }).Count() == 0)
+                if (!testRepos.Query(new[] { commitCheckId }).Any())
                     Assert.Fail("Transaction did not commit. Cannot test for remaining temporary data.");
 
                 var filterIdRepos = scope.Resolve<GenericRepository<Common.FilterId>>();
