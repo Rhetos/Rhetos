@@ -20,26 +20,25 @@
 using Autofac;
 using Rhetos.Utilities;
 using System;
-using System.IO;
 
 namespace Rhetos.Configuration.Autofac
 {
     /// <summary>
-    /// RhetosTestContainer is a legacy wrapper around <see cref="ProcessContainer"/> and <see cref="UnitOfWorkScope"/>.
+    /// RhetosTestContainer is a legacy wrapper around <see cref="RhetosHost"/> and <see cref="UnitOfWorkScope"/>.
     /// For new projects use those classes directly.
     /// Inherit this class and override virtual functions to customize it.
     /// </summary>
-    [Obsolete("Use Rhetos.ProcessContainer instead.")]
+    [Obsolete("Use Rhetos.RhetosHost instead.")]
     public class RhetosTestContainer : IDisposable
     {
         // Global:
-        private static object _containerInitializationLock = new object();
-        private static ProcessContainer _processContainer;
+        private static object _rhetosHostInitializationLock = new object();
+        private static RhetosHost _rhetosHost;
 
         // Instance per test or session:
         protected bool _commitChanges;
         protected string _rhetosAppAssemblyPath;
-        protected TransactionScopeContainer _transactionScope;
+        protected UnitOfWorkScope _transactionScope;
         public event Action<ContainerBuilder> InitializeSession;
 
         /// <param name="commitChanges">
@@ -84,7 +83,10 @@ namespace Rhetos.Configuration.Autofac
 
             if (disposing)
             {
-                _transactionScope?.Dispose();
+                if(_commitChanges)
+                    _transactionScope?.CommitAndClose();
+                else
+                    _transactionScope?.RollbackAndClose();
             }
 
             disposed = true;
@@ -94,19 +96,19 @@ namespace Rhetos.Configuration.Autofac
         {
             if (_transactionScope == null)
             {
-                if (_processContainer == null)
+                if (_rhetosHost == null)
                 {
-                    lock (_containerInitializationLock)
-                        if (_processContainer == null)
+                    lock (_rhetosHostInitializationLock)
+                        if (_rhetosHost == null)
                         {
-                            _processContainer = new ProcessContainer(_rhetosAppAssemblyPath, new ConsoleLogProvider(),
-                                configurationBuilder => configurationBuilder.AddConfigurationManagerConfiguration());
+                            _rhetosHost = RhetosHost.Find(_rhetosAppAssemblyPath, rhetosHostBuilder => {
+                                rhetosHostBuilder.UseBuilderLogProvider(new ConsoleLogProvider())
+                                    .ConfigureConfiguration(configurationBuilder => configurationBuilder.AddConfigurationManagerConfiguration());
+                            });
                         }
                 }
 
-                _transactionScope = _processContainer.CreateTransactionScopeContainer(InitializeSession);
-                if (_commitChanges)
-                    _transactionScope.CommitChanges();
+                _transactionScope = _rhetosHost.CreateScope(InitializeSession);
             }
         }
     }

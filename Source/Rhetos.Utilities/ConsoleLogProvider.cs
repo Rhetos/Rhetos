@@ -26,28 +26,30 @@ namespace Rhetos.Utilities
 
     public class ConsoleLogProvider : ILogProvider
     {
+        private readonly LogMonitor _logMonitor;
         private readonly EventType _minLogLevel;
 
-        public ConsoleLogProvider()
-        {
-        }
-
+        /// <summary>
+        /// This constructor is intended for automatic usage in build and runtime, by dependency injection.
+        /// </summary>
         public ConsoleLogProvider(IConfiguration configuration)
         {
             _minLogLevel = configuration.GetValue("Rhetos:ConsoleLogger:MinLogLevel", ConsoleLogger.DefaultMinLogLevel);
         }
 
-        public ConsoleLogProvider(LogMonitor logMonitor)
+        /// <summary>
+        /// This constructor is intended for usage before dependency injection is initialized, and for manual usage in unit testing.
+        /// </summary>
+        public ConsoleLogProvider(LogMonitor logMonitor = null, EventType? minLogLevel = null)
         {
             _logMonitor = logMonitor;
+            _minLogLevel = minLogLevel ?? ConsoleLogger.DefaultMinLogLevel;
         }
 
         public ILogger GetLogger(string eventName)
         {
             return new ConsoleLogger(_minLogLevel, eventName, _logMonitor);
         }
-
-        private readonly LogMonitor _logMonitor;
     }
 
     public class ConsoleLogger : ILogger

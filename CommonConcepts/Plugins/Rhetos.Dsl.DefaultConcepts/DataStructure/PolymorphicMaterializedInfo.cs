@@ -37,7 +37,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public PolymorphicInfo Polymorphic { get; set; }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
             var newConcepts = new List<IConceptInfo>();
 

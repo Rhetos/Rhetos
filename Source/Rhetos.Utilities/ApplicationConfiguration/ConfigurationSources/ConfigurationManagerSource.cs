@@ -28,6 +28,11 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
     /// Note that the "current application" in this context can be main Rhetos application,
     /// or a custom command-line utility that references the main application and uses it's runtime components.
     /// </summary>
+    /// <remarks>
+    /// In most applications, there is no need to use this method:
+    /// The application should load its standard runtime configuration (for example appsettings.json) with `Host.CreateDefaultBuilder`,
+    /// and provide that configuration to Rhetos components by calling RhetosConfigurationBuilderExtensions.MapNetCoreConfiguration.
+    /// </remarks>
     public class ConfigurationManagerSource : IConfigurationSource
     {
         public IDictionary<string, ConfigurationValue> Load()

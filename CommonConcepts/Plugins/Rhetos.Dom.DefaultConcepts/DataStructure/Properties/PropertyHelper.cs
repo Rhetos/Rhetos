@@ -38,13 +38,6 @@ namespace Rhetos.Dom.DefaultConcepts
             AttributeTag.Evaluate(info));
         }
 
-        [Obsolete("Use the GenerateCodeForType function without the 'serializable' argument. All regular properties are serializable.")]
-        public static void GenerateCodeForType(PropertyInfo info, ICodeBuilder codeBuilder, string propertyType, bool serializable)
-        {
-            if (!serializable)
-                throw new FrameworkException("All regular properties should be serializable.");
-        }
-
         public static void GenerateCodeForType(PropertyInfo info, ICodeBuilder codeBuilder, string propertyType)
         {
             codeBuilder.InsertCode(PropertySnippet(info, propertyType), DataStructureCodeGenerator.BodyTag, info.DataStructure);

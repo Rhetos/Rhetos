@@ -36,7 +36,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public PersistedDataStructureInfo Persisted { get; set; }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
             return new[] { new EntityComputedFromAllPropertiesInfo { EntityComputedFrom = new EntityComputedFromInfo { Target = Persisted, Source = Persisted.Source } } };
         }

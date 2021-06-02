@@ -235,7 +235,7 @@ namespace Rhetos.Dsl
                 macroEvaluators.Add(new MacroEvaluator
                 {
                     Name = "IMacroConcept " + macroConceptType.FullName,
-                    Evaluate = (conceptInfo, dslContainer) => ((IMacroConcept)conceptInfo).CreateNewConcepts(dslContainer.Concepts),
+                    Evaluate = (conceptInfo, dslContainer) => ((IMacroConcept)conceptInfo).CreateNewConcepts(),
                     Implements = macroConceptType,
                     ImplementsDerivations = false
                 });
@@ -326,9 +326,6 @@ namespace Rhetos.Dsl
 
             // Validations are grouped by concept type, for group performance diagnostics.
             var validationsByConcept = new MultiDictionary<Type, Action>();
-
-            foreach (var conceptValidation in dslContainer.FindByType<IValidationConcept>())
-                validationsByConcept.Add(conceptValidation.GetType(), () => conceptValidation.CheckSemantics(dslContainer.Concepts));
 
             foreach (var conceptValidation in dslContainer.FindByType<IValidatedConcept>())
                 validationsByConcept.Add(conceptValidation.GetType(), () => conceptValidation.CheckSemantics(dslContainer));

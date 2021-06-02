@@ -24,10 +24,16 @@ namespace Rhetos.DatabaseGenerator
 {
     public interface IConceptDataMigration
     {
+        void GenerateCode(IConceptInfo concept, IDataMigrationScriptBuilder codeBuilder);
     }
 
-    public interface IConceptDataMigration<in T> : IConceptDataMigration where T : IConceptInfo
+    public interface IConceptDataMigration<in TConceptInfo> : IConceptDataMigration where TConceptInfo : IConceptInfo
     {
-        void GenerateCode(T concept, IDataMigrationScriptBuilder codeBuilder);
+        void GenerateCode(TConceptInfo concept, IDataMigrationScriptBuilder codeBuilder);
+
+        void IConceptDataMigration.GenerateCode(IConceptInfo conceptInfo, IDataMigrationScriptBuilder codeBuilder)
+        {
+            GenerateCode((TConceptInfo)conceptInfo, codeBuilder);
+        }
     }
 }

@@ -187,7 +187,7 @@ namespace CommonConcepts.Test
                         "INSERT INTO Test13.Old3 (Num, Text) SELECT 130, 'a4'"
                     });
 
-                var filtered = repository.Test13.Legacy3.Filter(new Test13.PatternFilter { Pattern = "2" });
+                var filtered = repository.Test13.Legacy3.Load(new Test13.PatternFilter { Pattern = "2" });
                 Assert.AreEqual("110, 20", TestUtility.DumpSorted(filtered, item => item.NumNew.ToString()));
             }
         }

@@ -114,9 +114,9 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public virtual string FilterAncestorsExpression()
         {
-            return string.Format(@"(items, repository, parameter) =>
+            return string.Format(@"(items, parameter) =>
             {{
-                var child = repository.{0}.{1}.Query().Where(item => item.ID == parameter.ID).SingleOrDefault();
+                var child = _domRepository.{0}.{1}.Query().Where(item => item.ID == parameter.ID).SingleOrDefault();
                 if (child == null)
                     throw new Rhetos.UserException(""Given record does not exist: {{0}}, ID {{1}}."", new object[] {{ ""{0}.{1}"", parameter.ID }}, null, null);
                 int leftIndex = child.Extension_{1}{2}Hierarchy.LeftIndex.Value;
@@ -132,9 +132,9 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public virtual string FilterDescendantsExpression()
         {
-            return string.Format(@"(items, repository, parameter) =>
+            return string.Format(@"(items, parameter) =>
             {{
-                var parent = repository.{0}.{1}.Query().Where(item => item.ID == parameter.ID).SingleOrDefault();
+                var parent = _domRepository.{0}.{1}.Query().Where(item => item.ID == parameter.ID).SingleOrDefault();
                 if (parent == null)
                     throw new Rhetos.UserException(""Given record does not exist: {{0}}, ID {{1}}."", new object[] {{ ""{0}.{1}"", parameter.ID }}, null, null);
                 int leftIndex = parent.Extension_{1}{2}Hierarchy.LeftIndex.Value;
@@ -193,8 +193,8 @@ namespace Rhetos.Dsl.DefaultConcepts
                 filterDescendantsParameter,
                 new GuidPropertyInfo { DataStructure = filterAncestorsParameter, Name = "ID" },
                 new GuidPropertyInfo { DataStructure = filterDescendantsParameter, Name = "ID" },
-                new ComposableFilterByInfo { Source = conceptInfo.DataStructure, Parameter = conceptInfo.Name + "HierarchyAncestors", Expression = conceptInfo.FilterAncestorsExpression() },
-                new ComposableFilterByInfo { Source = conceptInfo.DataStructure, Parameter = conceptInfo.Name + "HierarchyDescendants", Expression = conceptInfo.FilterDescendantsExpression() },
+                new QueryFilterExpressionInfo { Source = conceptInfo.DataStructure, Parameter = conceptInfo.Name + "HierarchyAncestors", Expression = conceptInfo.FilterAncestorsExpression() },
+                new QueryFilterExpressionInfo { Source = conceptInfo.DataStructure, Parameter = conceptInfo.Name + "HierarchyDescendants", Expression = conceptInfo.FilterDescendantsExpression() },
 
             }.Concat(computedDataStructureDependencies);
         }

@@ -17,10 +17,9 @@ Module TestAction
     }
 
     Action UEC
-        '(parameters, repository, userInfo, executionContext) =>
-            { throw new ApplicationException("User " + executionContext.UserInfo.UserName); }'
+        '(parameters, repository, userInfo) =>
+            { throw new ApplicationException("User " + _executionContext.UserInfo.UserName); }'
     {
-        UseExecutionContext;
     }
     
     SqlQueryable ComputeNameContainsA
@@ -54,7 +53,7 @@ Module TestAction
     }
     
     Action RemoveAFromAllSimpleEntities
-        '(parameters, repository, userInfo, executionContext) =>
+        '(parameters, repository, userInfo) =>
             { 
                 var simpleEntities = repository.TestAction.Simple.Query().Where(item => item.Name.Length > 0).ToList();
                 foreach(var entity in simpleEntities)
@@ -66,7 +65,6 @@ Module TestAction
                 repository.TestAction.Simple.Update(simpleEntities);
             }'
     {
-        UseExecutionContext;
     }
     
     Action TestBefore '(parameter, repository, userInfo) => {  throw new Rhetos.UserException("[Test] " + parameter.S); }'

@@ -60,7 +60,7 @@ namespace CommonConcepts.Test
                 var repository = scope.Resolve<Common.DomRepository>();
 
                 var paremeter = new TestComputed.SpecialLoad { SpecialName = "spec" };
-                var loaded = repository.TestComputed.Simple.Filter(paremeter);
+                var loaded = repository.TestComputed.Simple.Load(paremeter);
                 Assert.AreEqual("spec", TestUtility.DumpSorted(loaded, item => item.Name));
             }
         }

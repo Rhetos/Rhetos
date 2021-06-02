@@ -127,7 +127,7 @@ namespace Rhetos.DatabaseGenerator.Test
             sqlCodeBuilder.InsertCode(DatabaseModelBuilderAccessor.GetCodeGeneratorSeparator(ca2.Id));
             sqlCodeBuilder.InsertCode(createQuery2);
 
-            var createQueries = DatabaseModelBuilderAccessor.ExtractCreateQueries(sqlCodeBuilder.GeneratedCode);
+            var createQueries = DatabaseModelBuilderAccessor.ExtractCreateQueries(sqlCodeBuilder.GenerateCode());
             Assert.AreEqual(
                 $"{ca1.Id}:create query 1, {ca2.Id}:create query 2",
                 TestUtility.DumpSorted(createQueries, cq => $"{cq.Key}:{cq.Value}"));
@@ -149,7 +149,7 @@ namespace Rhetos.DatabaseGenerator.Test
             sqlCodeBuilder.InsertCode(createQuery2);
 
             TestUtility.ShouldFail<FrameworkException>(
-                () => DatabaseModelBuilderAccessor.ExtractCreateQueries(sqlCodeBuilder.GeneratedCode),
+                () => DatabaseModelBuilderAccessor.ExtractCreateQueries(sqlCodeBuilder.GenerateCode()),
                 "The first segment should be empty");
         }
 
@@ -158,7 +158,7 @@ namespace Rhetos.DatabaseGenerator.Test
         {
             var sqlCodeBuilder = new CodeBuilder("/*", "*/");
 
-            var createQueries = DatabaseModelBuilderAccessor.ExtractCreateQueries(sqlCodeBuilder.GeneratedCode);
+            var createQueries = DatabaseModelBuilderAccessor.ExtractCreateQueries(sqlCodeBuilder.GenerateCode());
             Assert.AreEqual(
                 "",
                 TestUtility.DumpSorted(createQueries, cq => $"{cq.Key}:{cq.Value}"));
@@ -172,7 +172,7 @@ namespace Rhetos.DatabaseGenerator.Test
 
             var newConceptApplications = new List<CodeGenerator>();
             TestUtility.ShouldFail<FrameworkException>(
-                () => DatabaseModelBuilderAccessor.ExtractCreateQueries(sqlCodeBuilder.GeneratedCode),
+                () => DatabaseModelBuilderAccessor.ExtractCreateQueries(sqlCodeBuilder.GenerateCode()),
                 "The first segment should be empty");
         }
 

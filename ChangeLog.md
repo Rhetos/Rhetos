@@ -50,6 +50,12 @@ Changes in behavior:
 13. IDomainObjectModel.GetType no longer returns types for "Common.RowPermissionsReadItems" and "Common.RowPermissionsWriteItems". For example `GetType(RowPermissionsReadInfo.FilterName)` and `GetType(RowPermissionsWriteInfo.FilterName)` will return null.
     * Use `typeof(Common.RowPermissionsReadItems)` and `typeof(Common.RowPermissionsWriteItems)` instead.
 14. Upgraded Autofac from version 4.9.4 to 6.2.0
+15. **DateTime** property concept now generates *datetime2* database column type by default
+    instead of obsolete *datetime* column type (issue #101).
+    Legacy *datetime* type can be enabled by setting `CommonConcepts:UseLegacyMsSqlDateTime` option to `true` in `rhetos-build.settings.json` file.
+    See [Migrating an existing application from datetime to datetime2](https://github.com/Rhetos/Rhetos/wiki/Migrating-from-DateTime-to-DateTime2).
+16. Removed BuiltinAdminOverride configuration option, that allowed testing without configured authentication in development environment.
+    Use [AllClaimsForUsers](https://github.com/Rhetos/Rhetos/wiki/Basic-permissions#suppressing-permissions-in-a-development-environment) or AllClaimsForAnonymous instead.
 
 Changes in Rhetos libraries API:
 
@@ -75,6 +81,55 @@ Changes in Rhetos libraries API:
 8. The property DatabaseLanguage is moved from classes BuildOptions and RhetosAppOptions to class DatabaseSettings.
 9. Removed support for ContainerBuilderPluginRegistration.CheckOverride method. This was usually used to check if the expected implementation of IUserInfo interface was used because of different load orders of Autofac modules.
    In the new design it is up to the developer how it will setup the IServiceCollection IoC container from which the IUserInfo will be resolved.
+10. The interface IMacroConcept now requires the implementation of the method CreateNewConcepts without any parameters.
+    If an implementation of IMacroConcept requires access to the IDslModel, use the IConceptMacro\<T\> interface instead.
+11. Removed support for QueryDataSourceCommand. Use the ReadCommand instead.
+12. Removed support for the following methods or classes:
+    * IDatabaseColumnType.GetColumnType : This method will not support concepts with configurable types. Use GetColumnType with PropertyInfo argument instead.
+    * PropertyHelper.GenerateCodeForType: Use the GenerateCodeForType function without the 'serializable' argument. All regular properties are serializable.
+    * DatabaseExtensionFunctions.SqlLike: Use the Like() method instead.
+    * ComposableFilterUseExecutionContextInfo: Use repository member \_executionContext in generated code instead.
+    * ComputationUseExecutionContextInfo: Use repository member \_executionContext in generated code instead.
+    * DenySaveForPropertyInfo: Use InvalidDataMarkPropertyInfo instead.
+    * DenySaveInfo: Use InvalidDataInfo instead.
+    * FilterUseExecutionContextInfo: Use repository member \_executionContext in generated code instead.
+    * SnowflakeDataStructureInfo: Use BrowseDataStructureInfo instead.
+    * ModuleExternalReferenceInfo: Add a NuGet dependency or a project reference to specify Rhetos application dependency to external library.
+    * CodeBuilder.GeneratedCode: Use GenerateCode() instead. The property is misleading because it does not cache the generated string.
+    * ContainerBuilderExtensions.GetLogProvider: Use GetRhetosLogProvider instead.
+    * ContainerBuilderExtensions.GetPluginScanner: Use GetRhetosPluginScanner instead.
+    * ContainerBuilderExtensions.GetPluginRegistration: Use GetRhetosPluginRegistration instead.
+    * ContainerBuilderExtensions.AddPluginModules: Use AddRhetosPluginModules instead.
+    * ProcessContainer.Configuration: Resolve IConfiguration from the transaction scope.
+    * ProcessContainer.CreateTransactionScopeContainer: Use CreateScope instead.
+    * TransactionScopeContainer: Use UnitOfWorkScope instead.
+    * ConceptImplementationVersionAttribute: This feature is no longer used by Rhetos. Database upgrade relies solely on SQL scripts generated from DSL concepts.
+    * IInstalledPackages: Use InstalledPackages class instead.
+    * DslSyntaxException.DslScript: Use FilePosition instead.
+    * DslSyntaxException.Position: Use FilePosition instead.
+    * IValidationConcept: Use IValidatedConcept instead of IValidationConcept.
+    * IPersistenceTransaction.CommitAndReconnect: It is not longer needed for IServerInitializer plugins, because each plugin is executed in a separate connection.
+    * SqlTransactionBatch: Use SqlTransactionBatches instead.
+13. Removed support for the following concepts:
+    * UseExecutionContext: Use repository member \_executionContext instead.
+    * DenySave: Use InvalidData instead.
+    * Snowflake: Use Browse concept instead.
+    * ExternalReference: Add a NuGet dependency or a project reference to specify Rhetos application dependency to external library.
+14. Removed the support for SamePropertyValue concept which required two arguments. Instead use the simpler SamePropertyValue concept which requires only the path to the base property.
+    Instead of
+    `SamePropertyValue 'Base' Module.ReferencedDataStructure.PropertyNameOnReferencedDataStructure;`
+    you should write
+    `SamePropertyValue 'Base.PropertyNameOnReferencedDataStructure';`
+15. Removed `ProcessContainer` class:
+    * Instead of using `new ProcessContainer(rhetosAppAssemblyPath)` replace it with `RhetosHost.Find(rhetosAppAssemblyPath)`
+    * Instead of using `ProcessContainer.CreateScope(rhetosAppAssemblyPath)` replace it with `LinqPadRhetosHost.CreateScope(rhetosAppAssemblyPath)`
+16. Removed `IUserInfoAdmin` interface. It was used together with the `Rhetos:AppSecurity:BuiltinAdminOverride` option to give the administrator rights as it had all claims.
+
+### Internal improvements
+
+1. `Rhetos:AppSecurity:AllClaimsForUsers` option does not require the server machine name to be specified.
+   Instead of *username@servername* it is possible just to use *username*,
+   but the old format *username@servername* is still recommended for increased security.
 
 ## 4.3.0 (2021-03-05)
 

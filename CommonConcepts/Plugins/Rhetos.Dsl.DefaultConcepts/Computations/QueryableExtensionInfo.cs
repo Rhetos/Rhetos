@@ -37,7 +37,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public string Expression { get; set; }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
             // TODO (?) Copy all filters from base concept (it makes more sense for ComputedExtension because of efficient implementation, not really necessary for QueryableExtension)
             return new[] { new DataStructureExtendsInfo { Base = Base, Extension = this } };

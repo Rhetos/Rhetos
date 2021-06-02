@@ -23,12 +23,7 @@ namespace Rhetos.Dsl
 {
     public interface IConceptMacro
     {
-        // TODO: There is a complication and a significant performance issue with generic usage of the CreateNewConcepts method in ConceptMacroUtility.
-        // A better pattern would be to add a generic method to this interface, and a specific method to IConceptMacro<>,
-        // then convert IConceptMacro<> from interface to an abstract class and implement the generic method by calling the specific method
-        // (see a similar implementation at IConceptMapping).
-        // Unfortunately, this change is backward incompatible, it should be done on a major upgrade.
-        // After this, ConceptMacroUtility can be deleted and its usage simplified.
+        IEnumerable<IConceptInfo> CreateNewConcepts(IConceptInfo conceptInfo, IDslModel existingConcepts);
     }
 
     public interface IConceptMacro<in TConceptInfo> : IConceptMacro
@@ -38,5 +33,10 @@ namespace Rhetos.Dsl
         /// If the function creates a concept that already exists, that concept will be safely ignored.
         /// </summary>
         IEnumerable<IConceptInfo> CreateNewConcepts(TConceptInfo conceptInfo, IDslModel existingConcepts);
+
+        IEnumerable<IConceptInfo> IConceptMacro.CreateNewConcepts(IConceptInfo conceptInfo, IDslModel existingConcepts)
+        {
+            return CreateNewConcepts((TConceptInfo)conceptInfo, existingConcepts);
+        }
     }
 }

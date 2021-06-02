@@ -17,18 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rhetos.Utilities;
-using Rhetos.Dsl.DefaultConcepts;
-using System.Globalization;
-using System.ComponentModel.Composition;
-using Rhetos.Extensibility;
-using Rhetos.Dsl;
 using Rhetos.Compiler;
-using Rhetos.Processing;
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Extensibility;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -36,31 +29,22 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(QueryableExtensionInfo))]
     public class QueryableExtensionCodeGenerator : IConceptCodeGenerator
     {
-        protected static string RepositoryFunctionsSnippet(QueryableExtensionInfo info)
-        {
-            return string.Format(
-        @"public readonly Func<IQueryable<Common.Queryable.{2}_{3}>, Common.DomRepository{4}, IQueryable<Common.Queryable.{0}_{1}>> Compute =
-            {5};
-
-        ",
-                info.Module.Name, info.Name, info.Base.Module.Name, info.Base.Name, DataStructureUtility.ComputationAdditionalParametersTypeTag.Evaluate(info), info.Expression);
-        }
-
-        protected static string QuerySnippet(QueryableExtensionInfo info)
-        {
-            return string.Format(
-                @"return Compute(_domRepository.{0}.{1}.Query(), _domRepository{2});",
-                info.Base.Module.Name, info.Base.Name, DataStructureUtility.ComputationAdditionalParametersArgumentTag.Evaluate(info));
-        }
-
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (QueryableExtensionInfo)conceptInfo;
 
-            DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, $"EntityBase<{info.Module.Name}.{info.Name}>", typeof(EntityBase<>), info);
+            string parameterTypesTag = DataStructureUtility.ComputationAdditionalParametersTypeTag.Evaluate(info);
+            string parameterArgsTag = DataStructureUtility.ComputationAdditionalParametersArgumentTag.Evaluate(info);
+            string baseIQueryable = $"IQueryable<Common.Queryable.{info.Base.Module.Name}_{info.Base.Name}>";
+            string extensionIQueryable = $"IQueryable<Common.Queryable.{info.Module.Name}_{info.Name}>";
 
-            RepositoryHelper.GenerateQueryableRepository(info, codeBuilder, QuerySnippet(info));
-            codeBuilder.InsertCode(RepositoryFunctionsSnippet(info), RepositoryHelper.RepositoryMembers, info);
+            string querySnippet =
+            $@"Func<{baseIQueryable}, Common.DomRepository{parameterTypesTag}, {extensionIQueryable}> Compute =
+                {info.Expression};
+            return Compute(_domRepository.{info.Base.FullName}.Query(), _domRepository{parameterArgsTag});";
+
+            DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, $"EntityBase<{info.FullName}>", typeof(EntityBase<>), info);
+            RepositoryHelper.GenerateQueryableRepository(info, codeBuilder, querySnippet);
         }
     }
 }

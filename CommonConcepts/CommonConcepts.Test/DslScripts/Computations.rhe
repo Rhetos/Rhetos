@@ -234,15 +234,14 @@ Module Test11
 	}
 	
 	QueryableExtension QEContext Test11.Source
-		'(IQueryable<Common.Queryable.Test11_Source> source, Common.DomRepository repository, Common.ExecutionContext executionContext) =>
+		'(IQueryable<Common.Queryable.Test11_Source> source, Common.DomRepository repository) =>
 			source.Select(item => new Common.Queryable.Test11_QEContext
 				{
                     ID = item.ID,
 					Base = item,
-					UserInfo = item.Name + " " + executionContext.UserInfo.UserName
+					UserInfo = item.Name + " " + _executionContext.UserInfo.UserName
 				})'
 	{
-		UseExecutionContext;
 		ShortString UserInfo;
 	}
 	
@@ -321,10 +320,9 @@ Module TestFilter
 		ShortString Name;
 		Integer Num;
         
-        ComposableFilterBy ComposableFilterWithContext '(items, repository, parameter, context) =>
-            new Common.Queryable.TestFilter_FixedData[] { new Common.Queryable.TestFilter_FixedData { Name = context.UserInfo.UserName } }.AsQueryable()'
+        ComposableFilterBy ComposableFilterWithContext '(items, repository, parameter) =>
+            new Common.Queryable.TestFilter_FixedData[] { new Common.Queryable.TestFilter_FixedData { Name = _executionContext.UserInfo.UserName } }.AsQueryable()'
         {
-            UseExecutionContext;
         }
 	}
     

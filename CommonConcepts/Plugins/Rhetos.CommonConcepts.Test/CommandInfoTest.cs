@@ -123,9 +123,6 @@ namespace Rhetos.CommonConcepts.Test
                 DataToUpdate = new[] { simpleEntity2 },
                 DataToDelete = new[] { simpleEntity3 }
             }.ToString());
-
-            Assert.AreEqual("QueryDataSourceCommandInfo ", new QueryDataSourceCommandInfo { }.ToString());
-            Assert.AreEqual("QueryDataSourceCommandInfo Mod.Ent", new QueryDataSourceCommandInfo { DataSource = "Mod.Ent" }.ToString());
         }
     }
 }

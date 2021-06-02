@@ -36,10 +36,8 @@ using CommonConcepts.Test.Helpers;
 
 namespace CommonConcepts.Test
 {
-#pragma warning disable CS0618 // Type or member is obsolete (QueryDataSourceCommandInfo)
-
     [TestClass]
-    public class QueryDataSourceCommandTest
+    public class ReadCommandTest
     {
         private static void InitializeData(UnitOfWorkScope scope)
         {
@@ -54,16 +52,16 @@ namespace CommonConcepts.Test
                 });
         }
 
-        private static string ReportCommandResult(UnitOfWorkScope scope, QueryDataSourceCommandInfo info, bool sort = false)
+        private static string ReportCommandResult(UnitOfWorkScope scope, ReadCommandInfo info, bool sort = false)
         {
             var commands = scope.Resolve<IIndex<Type, IEnumerable<ICommandImplementation>>>();
-            var queryDataSourceCommand = (QueryDataSourceCommand)commands[typeof(QueryDataSourceCommandInfo)].Single();
+            var readCommand = (ReadCommand)commands[typeof(ReadCommandInfo)].Single();
 
-            var result = (QueryDataSourceCommandResult)queryDataSourceCommand.Execute(info).Data.Value;
+            var result = (ReadCommandResult)readCommand.Execute(info).Data.Value;
             var items = ((IEnumerable<TestQueryDataStructureCommand.E>)result.Records).Select(item => item.Name);
             if (sort)
                 items = items.OrderBy(x => x);
-            var report = string.Join(", ", items) + " /" + result.TotalRecords;
+            var report = string.Join(", ", items) + " /" + result.TotalCount.Value;
             Console.WriteLine(report);
             return report;
         }
@@ -75,7 +73,7 @@ namespace CommonConcepts.Test
             {
                 InitializeData(scope);
 
-                var info = new QueryDataSourceCommandInfo { DataSource = "TestQueryDataStructureCommand.E" };
+                var info = new ReadCommandInfo { DataSource = "TestQueryDataStructureCommand.E", ReadRecords = true, ReadTotalCount = true };
                 Assert.AreEqual("a, b, c, d, e /5", ReportCommandResult(scope, info, true));
             }
         }
@@ -87,12 +85,13 @@ namespace CommonConcepts.Test
             {
                 InitializeData(scope);
 
-                var info = new QueryDataSourceCommandInfo
-                               {
-                                   DataSource = "TestQueryDataStructureCommand.E",
-                                   OrderByProperty = "Name",
-                                   OrderDescending = true
-                               };
+                var info = new ReadCommandInfo
+                {
+                    DataSource = "TestQueryDataStructureCommand.E",
+                    OrderByProperties = new[] { new OrderByProperty { Property = "Name", Descending = true } },
+                    ReadRecords = true,
+                    ReadTotalCount = true
+                };
                 Assert.AreEqual("e, d, c, b, a /5", ReportCommandResult(scope, info));
             }
         }
@@ -104,13 +103,14 @@ namespace CommonConcepts.Test
             {
                 InitializeData(scope);
 
-                var info = new QueryDataSourceCommandInfo
+                var info = new ReadCommandInfo
                 {
                     DataSource = "TestQueryDataStructureCommand.E",
-                    RecordsPerPage = 3,
-                    PageNumber = 2,
-                    OrderByProperty = "Name",
-                    OrderDescending = true
+                    Top = 3,
+                    Skip = 3,
+                    OrderByProperties = new[] { new OrderByProperty { Property = "Name", Descending = true } },
+                    ReadRecords = true,
+                    ReadTotalCount = true
                 };
                 Assert.AreEqual("b, a /5", ReportCommandResult(scope, info));
             }
@@ -123,11 +123,13 @@ namespace CommonConcepts.Test
             {
                 InitializeData(scope);
 
-                var info = new QueryDataSourceCommandInfo
+                var info = new ReadCommandInfo
                 {
                     DataSource = "TestQueryDataStructureCommand.E",
-                    RecordsPerPage = 3,
-                    PageNumber = 2
+                    Top = 3,
+                    Skip = 3,
+                    ReadRecords = true,
+                    ReadTotalCount = true
                 };
 
                 TestUtility.ShouldFail(() => ReportCommandResult(scope, info), "Sort order must be set if paging is used");
@@ -135,16 +137,18 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void GenericFilter()
+        public void Filters()
         {
             using (var scope = TestScope.Create())
             {
                 InitializeData(scope);
 
-                var info = new QueryDataSourceCommandInfo
+                var info = new ReadCommandInfo
                 {
                     DataSource = "TestQueryDataStructureCommand.E",
-                    GenericFilter = new [] { new FilterCriteria { Property = "Name", Operation = "NotEqual", Value = "c" } }
+                    Filters = new[] { new FilterCriteria { Property = "Name", Operation = "NotEqual", Value = "c" } },
+                    ReadRecords = true,
+                    ReadTotalCount = true
                 };
                 Assert.AreEqual("a, b, d, e /4", ReportCommandResult(scope, info, true));
             }
@@ -157,13 +161,15 @@ namespace CommonConcepts.Test
             {
                 InitializeData(scope);
 
-                var info = new QueryDataSourceCommandInfo
+                var info = new ReadCommandInfo
                 {
                     DataSource = "TestQueryDataStructureCommand.E",
-                    GenericFilter = new [] { new FilterCriteria { Property = "Name", Operation = "NotEqual", Value = "c" } },
-                    RecordsPerPage = 2,
-                    PageNumber = 2,
-                    OrderByProperty = "Name"
+                    Filters = new[] { new FilterCriteria { Property = "Name", Operation = "NotEqual", Value = "c" } },
+                    Top = 2,
+                    Skip = 2,
+                    OrderByProperties = new[] { new OrderByProperty { Property = "Name" } },
+                    ReadRecords = true,
+                    ReadTotalCount = true
                 };
                 Assert.AreEqual("d, e /4", ReportCommandResult(scope, info));
             }
@@ -171,16 +177,16 @@ namespace CommonConcepts.Test
 
         //====================================================================
 
-        private static string ReportCommandResult2(UnitOfWorkScope scope, QueryDataSourceCommandInfo info, bool sort = false)
+        private static string ReportCommandResult2(UnitOfWorkScope scope, ReadCommandInfo info, bool sort = false)
         {
             var commands = scope.Resolve<IIndex<Type, IEnumerable<ICommandImplementation>>>();
-            var queryDataSourceCommand = (QueryDataSourceCommand)commands[typeof(QueryDataSourceCommandInfo)].Single();
+            var readCommand = (ReadCommand)commands[typeof(ReadCommandInfo)].Single();
 
-            var result = (QueryDataSourceCommandResult)queryDataSourceCommand.Execute(info).Data.Value;
+            var result = (ReadCommandResult)readCommand.Execute(info).Data.Value;
             var items = ((IEnumerable<TestQueryDataStructureCommand.Source>)result.Records).Select(item => item.Name);
             if (sort)
                 items = items.OrderBy(x => x);
-            var report = string.Join(", ", items) + " /" + result.TotalRecords;
+            var report = string.Join(", ", items) + " /" + result.TotalCount.Value;
             Console.WriteLine(report);
             return report;
         }
@@ -195,21 +201,19 @@ namespace CommonConcepts.Test
                 scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "a1", "b1", "b2", "c1" }
                     .Select(name => "INSERT INTO TestQueryDataStructureCommand.Source (Name) SELECT N'" + name + "';"));
 
-                var info = new QueryDataSourceCommandInfo { DataSource = "TestQueryDataStructureCommand.Source" };
+                var info = new ReadCommandInfo { DataSource = "TestQueryDataStructureCommand.Source", ReadRecords = true, ReadTotalCount = true };
                 Assert.AreEqual("a1, b1, b2, c1 /4", ReportCommandResult2(scope, info, true));
 
-                info.Filter = new TestQueryDataStructureCommand.FilterByPrefix {  Prefix = "b"};
+                info.Filters = new[] { new FilterCriteria(new TestQueryDataStructureCommand.FilterByPrefix { Prefix = "b" }) };
                 Assert.AreEqual("b1, b2 /2", ReportCommandResult2(scope, info, true));
 
-                info.OrderByProperty = "Name";
-                info.OrderDescending = true;
+                info.OrderByProperties = new[] { new OrderByProperty { Property = "Name", Descending = true } };
                 Assert.AreEqual("b2, b1 /2", ReportCommandResult2(scope, info));
 
-                info.PageNumber = 1;
-                info.RecordsPerPage = 1;
+                info.Top = 1;
                 Assert.AreEqual("b2 /2", ReportCommandResult2(scope, info));
 
-                info.GenericFilter = new[] { new FilterCriteria { Property = "Name", Operation = "Contains", Value = "1" } };
+                info.Filters = info.Filters.Concat(new[] { new FilterCriteria { Property = "Name", Operation = "Contains", Value = "1" } }).ToArray();
                 Assert.AreEqual("b1 /1", ReportCommandResult2(scope, info));
             }
         }
@@ -227,7 +231,7 @@ namespace CommonConcepts.Test
                     Top = 3,
                     OrderByProperties = new[] { new OrderByProperty { Property = "ClaimResource" } },
                     ReadRecords = true,
-                    ReadTotalCount = true
+                    ReadTotalCount = true,
                 };
 
                 var serverCommandsUtility = scope.Resolve<ServerCommandsUtility>();
@@ -238,7 +242,7 @@ namespace CommonConcepts.Test
                 Assert.IsTrue(readResult.Records.Length < readResult.TotalCount);
             }
         }
-   }
+    }
 
     //====================================================================
 
@@ -259,5 +263,4 @@ namespace CommonConcepts.Test
             throw new NotImplementedException();
         }
     }
-#pragma warning restore CS0618 // Type or member is obsolete
 }

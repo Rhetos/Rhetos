@@ -63,7 +63,7 @@ using System.Reflection;
 
 namespace Rhetos
 {{
-    public static class RhetosHostBuilderExtensions
+    public static class RhetosHostBuilderAppConfiguration
     {{
         /// <summary>
         /// Configures <see cref=""IRhetosHostBuilder""/> with defaults for <i>{_rhetosBuildEnvironment.OutputAssemblyName}</i> Rhetos app.
@@ -83,7 +83,7 @@ namespace Rhetos
                 .ConfigureConfiguration(containerBuilder => containerBuilder
                     .AddKeyValue(
                         ConfigurationProvider.GetKey((RhetosAppOptions o) => o.RhetosAppAssemblyName),
-                        typeof(RhetosHostBuilderExtensions).Assembly.GetName().Name)
+                        typeof(RhetosHostBuilderAppConfiguration).Assembly.GetName().Name)
                     .AddKeyValue(
                         ConfigurationProvider.GetKey((RhetosAppOptions o) => o.RhetosHostFolder),
                         AppContext.BaseDirectory)
@@ -102,7 +102,7 @@ namespace Rhetos
         {{
             return new Assembly[]
             {{
-                typeof(RhetosHostBuilderExtensions).Assembly,
+                typeof(RhetosHostBuilderAppConfiguration).Assembly,
                 {RhetosHostBuilderPluginAssembliesTag}
             }};
         }}
@@ -119,7 +119,7 @@ namespace Rhetos
     }}
 }}
 ";
-            codeBuilder.InsertCodeToFile(rhetosHostBuilderCode, "RhetosHostBuilderExtensions");
+            codeBuilder.InsertCodeToFile(rhetosHostBuilderCode, "RhetosHostBuilderAppConfiguration");
         }
     }
 }

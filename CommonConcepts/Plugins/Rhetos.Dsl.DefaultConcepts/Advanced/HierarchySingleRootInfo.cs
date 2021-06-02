@@ -36,7 +36,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public HierarchyInfo Hierarchy { get; set; }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
             return new[] {new HierarchySingleRootInternalInfo 
             { 

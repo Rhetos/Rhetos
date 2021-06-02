@@ -17,19 +17,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Rhetos.Dsl
 {
-    [Obsolete("Use IConceptMacro<TConceptInfo> in a separate class.")]
     public interface IMacroConcept : IConceptInfo
     {
         /// <summary>
         /// If the function creates a concept that already exists, that concept will be ignored.
         /// </summary>
-        IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts);
+        IEnumerable<IConceptInfo> CreateNewConcepts();
     }
 }

@@ -190,7 +190,7 @@ namespace CommonConcepts.Test
                 var test = new TestDataStructure.TestMethod { Name = "test" };
                 repository.TestDataStructure.TestMethod.Insert(test);
                 
-                Assert.IsTrue(repository.TestDataStructure.TestMethod.Filter(new TestDataStructure.Limit5()).Any(x => x.Name == "test"));
+                Assert.IsTrue(repository.TestDataStructure.TestMethod.Load(new TestDataStructure.Limit5()).Any(x => x.Name == "test"));
             }
         }
     }

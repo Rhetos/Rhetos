@@ -48,7 +48,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                     + "' must use a reference property that points to it's own data structure. Try using FilterByReferenced instead.");
         }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
             return new IConceptInfo[]
                        {

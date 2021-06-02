@@ -626,9 +626,9 @@ namespace CommonConcepts.Test
                 Console.WriteLine("t1: " + t1.ToString("o"));
                 Console.WriteLine("t2: " + t2.ToString("o"));
                 Console.WriteLine("t3: " + t3.ToString("o"));
-                Assert.AreEqual(v1, Dump(standardRepos.Filter(t1.Add(DatabaseDateTimeImprecision))), "At time 1");
-                Assert.AreEqual(v2, Dump(standardRepos.Filter(t2.Add(DatabaseDateTimeImprecision))), "At time 2");
-                Assert.AreEqual(v3, Dump(standardRepos.Filter(t3.Add(DatabaseDateTimeImprecision))), "At time 3");
+                Assert.AreEqual(v1, Dump(standardRepos.Load(t1.Add(DatabaseDateTimeImprecision))), "At time 1");
+                Assert.AreEqual(v2, Dump(standardRepos.Load(t2.Add(DatabaseDateTimeImprecision))), "At time 2");
+                Assert.AreEqual(v3, Dump(standardRepos.Load(t3.Add(DatabaseDateTimeImprecision))), "At time 3");
             }
         }
 
@@ -669,9 +669,9 @@ namespace CommonConcepts.Test
                 Console.WriteLine("t2: " + t2.ToString("o"));
                 Console.WriteLine("t3: " + t3.ToString("o"));
 
-                Assert.AreEqual("1", Dump(hr.Filter(t1.Add(DatabaseDateTimeImprecision))), "At time 1");
-                Assert.AreEqual("2", Dump(hr.Filter(t2.Add(DatabaseDateTimeImprecision))), "At time 2");
-                Assert.AreEqual("3", Dump(hr.Filter(t3.Add(DatabaseDateTimeImprecision))), "At time 3");
+                Assert.AreEqual("1", Dump(hr.Load(t1.Add(DatabaseDateTimeImprecision))), "At time 1");
+                Assert.AreEqual("2", Dump(hr.Load(t2.Add(DatabaseDateTimeImprecision))), "At time 2");
+                Assert.AreEqual("3", Dump(hr.Load(t3.Add(DatabaseDateTimeImprecision))), "At time 3");
             }
         }
 
@@ -694,9 +694,9 @@ namespace CommonConcepts.Test
 
                 const string v1 = "1 a 2001-02-03T04:05:06";
                 Assert.AreEqual(v1, Dump(er.Query()));
-                Assert.AreEqual(v1, Dump(er.Filter(t1.Add(DatabaseDateTimeImprecision))));
+                Assert.AreEqual(v1, Dump(er.Load(t1.Add(DatabaseDateTimeImprecision))));
 
-                TestHistory.Standard[] loaded = er.Filter(t0.Subtract(DatabaseDateTimeImprecision));
+                TestHistory.Standard[] loaded = er.Load(t0.Subtract(DatabaseDateTimeImprecision));
                 Assert.AreEqual(0, loaded.Length);
             }
         }

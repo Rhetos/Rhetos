@@ -17,17 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-
-namespace Rhetos.Deployment
+namespace Rhetos.Host.Net
 {
-    [Obsolete("Use InstalledPackages class instead.")]
-    public interface IInstalledPackages
+    public class HostLocalizerOptions
     {
-        /// <summary>
-        /// The packages are sorted by dependencies.
-        /// </summary>
-        IEnumerable<InstalledPackage> Packages { get; }
+        public string BaseName { get; set; } = "Rhetos";
+        public string Location { get; set; } = "";
     }
 }

@@ -50,7 +50,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                 throw new DslSyntaxException("ComputeForNewBaseItems can only be used if the persisted data structure extends a base entity. Use 'Extends' keyword to define the extension is applicable.");
         }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
             return new[] { new ComputeForNewBaseItemsInfo
                 {

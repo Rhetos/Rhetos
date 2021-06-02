@@ -94,32 +94,6 @@ namespace Rhetos.Persistence
             GC.SuppressFinalize(this);
         }
 
-        public void CommitAndReconnect()
-        {
-            string callerInfo = GetCaller();
-            _logger.Warning(() => "CommitAndReconnect is obsolete, this call is ignored. Please upgrade to a latest version of the Rhetos plugin '" + callerInfo + "'.");
-
-            if (_disposed)
-                throw new FrameworkException("Trying to commit and reconnect a disposed persistence transaction.");
-            if (_discardOnDispose)
-                throw new FrameworkException("Trying to commit and reconnect a discarded persistence transaction.");
-
-            _logger.Trace(() => "CommitAndReconnect (" + _persistenceTransactionId + ").");
-            Commit();
-        }
-
-        private static string GetCaller()
-        {
-            try
-            {
-                return new StackTrace().GetFrame(2).GetMethod().DeclaringType.AssemblyQualifiedName;
-            }
-            catch
-            {
-                return "";
-            }
-        }
-
         private void Commit()
         {
             _logger.Trace(() => "Committing (" + _persistenceTransactionId + ").");

@@ -65,11 +65,11 @@ namespace Rhetos.Dsl.DefaultConcepts
                     string.Join(", ", availableFilters.Select(parameter => "'" + parameter + "'"))));
         }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
             return new IConceptInfo[]
                 {
-                    new ComposableFilterByInfo
+                    new QueryFilterExpressionInfo
                     {
                         Source = Source,
                         Parameter = Parameter,
@@ -80,9 +80,9 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         private string GetFilterExpression()
         {
-            return string.Format(@"(items, repository, parameter) =>
+            return string.Format(@"(items, parameter) =>
 	        {{
-                var filteredReferencedItems = repository.{0}.{1}.Filter(repository.{0}.{1}.Query(), parameter);
+                var filteredReferencedItems = _domRepository.{0}.{1}.Filter(_domRepository.{0}.{1}.Query(), parameter);
                 var filteredItems = items.Where(item => filteredReferencedItems.Contains(item.{2}));
                 {3}
                 return filteredItems;

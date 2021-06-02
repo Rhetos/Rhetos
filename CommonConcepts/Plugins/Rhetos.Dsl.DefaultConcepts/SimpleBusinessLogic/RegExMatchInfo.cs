@@ -41,7 +41,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public string ErrorMessage { get; set; }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
             var filterParameter = new ParameterInfo
             {
@@ -49,7 +49,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                 Name = Property.Name + "_RegExMatchFilter",
             };
 
-            string filterExpression = string.Format(@"(source, repository, parameter) =>
+            string filterExpression = string.Format(@"(source, parameter) =>
                 {{
                     var items = source.Where(item => !string.IsNullOrEmpty(item.{0})).Select(item => new {{ item.ID, item.{0} }}).ToList();
                     var regex = new System.Text.RegularExpressions.Regex({1});
@@ -59,7 +59,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                 Property.Name,
                 CsUtility.QuotedString("^" + RegularExpression + "$"));
 
-            var itemFilter = new ComposableFilterByInfo
+            var itemFilter = new QueryFilterExpressionInfo
             {
                 Expression = filterExpression,
                 Parameter = filterParameter.Module.Name + "." + filterParameter.Name,

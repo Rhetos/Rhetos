@@ -55,11 +55,11 @@ namespace Rhetos.Dsl.DefaultConcepts
             if (existingConcepts.FindByKey($"DataStructureInfo {filterParameter.Module.Name}.{filterParameter.Name}") == null)
                 newConcepts.Add(filterParameter);
 
-            var composableFilter = new ComposableFilterByInfo
+            var composableFilter = new QueryFilterExpressionInfo
             { 
                 Source = conceptInfo.Source, 
                 Parameter = filterParameter.GetKeyProperties(),
-                Expression = "(source, repository, parameter) => source.Where(" + conceptInfo.Expression + ")"
+                Expression = "(source, parameter) => source.Where(" + conceptInfo.Expression + ")"
             };
 
             newConcepts.Add(composableFilter);

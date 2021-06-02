@@ -27,6 +27,13 @@ namespace Microsoft.Extensions.DependencyInjection
     /// </summary>
     public static class HostAspNetRhetosServiceCollectionBuilderExtensions
     {
+        /// <summary>
+        /// Provides user info from the ASP.NET application to the Rhetos components.
+        /// </summary>
+        /// <remarks>
+        /// It reads IHttpContextAccessor.HttpContext.User.Identity.Name and Identity.IsAuthenticated,
+        /// and maps it to Rhetos <see cref="Rhetos.Utilities.IUserInfo"/>.
+        /// </remarks>
         public static RhetosServiceCollectionBuilder AddAspNetCoreIdentityUser(this RhetosServiceCollectionBuilder rhetosServiceCollectionBuilder)
         {
             rhetosServiceCollectionBuilder.Services.AddHttpContextAccessor();

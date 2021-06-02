@@ -21,9 +21,7 @@ using Rhetos.Logging;
 using Rhetos.Utilities;
 using Rhetos.Utilities.ApplicationConfiguration;
 using Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources;
-using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace Rhetos
 {
@@ -32,9 +30,9 @@ namespace Rhetos
         private readonly List<IConfigurationSource> configurationSources = new List<IConfigurationSource>();
         private ILogProvider _builderLogProvider;
 
-        public ConfigurationBuilder(ILogProvider builderLogProvider = null)
+        public ConfigurationBuilder(ILogProvider builderLogProvider)
         {
-            _builderLogProvider = builderLogProvider ?? LoggingDefaults.DefaultLogProvider;
+            _builderLogProvider = builderLogProvider;
         }
 
         public IConfigurationBuilder UseBuilderLogProvider(ILogProvider builderLogProvider)

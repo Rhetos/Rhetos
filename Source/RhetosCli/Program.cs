@@ -135,7 +135,6 @@ namespace Rhetos
                 .AddOptions(rhetosProjectContent.RhetosTargetEnvironment)
                 .AddKeyValue(ConfigurationProvider.GetKey((ConfigurationProviderOptions o) => o.LegacyKeysWarning), true)
                 .AddKeyValue(ConfigurationProvider.GetKey((LoggingOptions o) => o.DelayedLogTimout), 60.0)
-                .AddConfigurationManagerConfiguration()
                 .AddJsonFile(Path.Combine(projectRootPath, RhetosBuildEnvironment.ConfigurationFileName), optional: true)
                 .Build();
 
@@ -160,7 +159,6 @@ namespace Rhetos
                         configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((ConfigurationProviderOptions o) => o.LegacyKeysWarning), true);
                         configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((LoggingOptions o) => o.DelayedLogTimout), 60.0);
                         // Standard configuration files can override the default settings:
-                        configurationBuilder.AddConfigurationManagerConfiguration();
                         configurationBuilder.AddJsonFile(DbUpdateOptions.ConfigurationFileName, optional: true);
                         // CLI switches can override the settings from configuration files:
                         if (shortTransactions)
