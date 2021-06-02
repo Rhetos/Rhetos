@@ -108,7 +108,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 RepositoryMembers, info);
 
             codeBuilder.InsertCode(
-            $@"{{""{module}.{entity}"", {module}._Helper.{entity}_Repository.ReadParameterTypes}},
+            $@"{{ ""{module}.{entity}"", {module}._Helper.{entity}_Repository.ReadParameterTypes }},
             ",
                 ModuleCodeGenerator.DataStructuresReadParameterTypesTag);
         }

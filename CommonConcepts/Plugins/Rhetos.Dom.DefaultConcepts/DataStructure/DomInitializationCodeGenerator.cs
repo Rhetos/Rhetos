@@ -351,7 +351,7 @@ $@"namespace Common
 
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<CommonConceptsRuntimeOptions>()).SingleInstance();
             builder.Register<CommonConceptsOptions>(context => throw new NotImplementedException($""{{nameof(CommonConceptsOptions)}} is a build-time configuration, not available at run-time.""));
-            builder.Register<IDataStructureReadParameters>(context => new Rhetos.Dom.DefaultConcepts.DataStructureReadParameters(Infrastructure.DataStructuresReadParameterTypes));
+            builder.Register<IDataStructureReadParameters>(context => new Rhetos.Dom.DefaultConcepts.DataStructureReadParameters(Infrastructure.DataStructuresReadParameterTypes)).SingleInstance();
             
             {ModuleCodeGenerator.CommonAutofacConfigurationMembersTag}
 
