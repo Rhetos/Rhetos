@@ -98,9 +98,6 @@ namespace Rhetos.Compiler
             return _code.Contains(tag);
         }
 
-        [Obsolete("Use GenerateCode() instead. The property is misleading because it does not cache the generated string.")]
-        public string GeneratedCode => GenerateCode();
-
         public string GenerateCode() => _code.ToString();
 
         public IDictionary<string, string> GeneratedCodeByFile => _code.GetPaths().ToDictionary(path => path, path => _code.ToString(path));

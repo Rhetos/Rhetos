@@ -35,7 +35,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public PersistedDataStructureInfo Persisted { get; set; }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
             return new[] { new KeepSynchronizedInfo
                 {

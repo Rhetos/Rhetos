@@ -33,7 +33,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// Note that the legacy datetime column type has a rounding error with comparison operators on Entity Framework,
         /// see unit test DateTimeConsistencyTest() in CommonConcepts.Test.
         /// </summary>
-        public bool UseLegacyMsSqlDateTime { get; set; } = true;
+        public bool UseLegacyMsSqlDateTime { get; set; } = false;
 
         /// <summary>
         /// It is recommended to use precision 3 to avoid round-trip issues with front end

@@ -34,7 +34,6 @@ namespace Rhetos.Deployment.Test
         public DatabaseCleanerTest()
         {
             var configuration = new ConfigurationBuilder(new ConsoleLogProvider())
-                .AddConfigurationManagerConfiguration()
                 .Build();
 
             LegacyUtilities.Initialize(configuration);

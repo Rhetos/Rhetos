@@ -45,10 +45,10 @@ namespace Rhetos.Dsl.DefaultConcepts
             createdConcepts = null;
         }
 
-        public new IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public new IEnumerable<IConceptInfo> CreateNewConcepts()
         {
             var newConcepts = new List<IConceptInfo>();
-            newConcepts.AddRange(base.CreateNewConcepts(existingConcepts));
+            newConcepts.AddRange(base.CreateNewConcepts());
 
             var invalidData = newConcepts.OfType<InvalidDataInfo>().Single();
             var messageParameters = new InvalidDataMessageParametersConstantInfo

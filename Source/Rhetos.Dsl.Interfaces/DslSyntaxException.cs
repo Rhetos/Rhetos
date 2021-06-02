@@ -27,12 +27,6 @@ namespace Rhetos.Dsl
     [Serializable]
     public class DslSyntaxException : RhetosException
     {
-        [Obsolete("Use FilePosition instead.")]
-        public readonly DslScript DslScript;
-
-        [Obsolete("Use FilePosition instead.")]
-        public readonly int Position;
-
         public readonly string ErrorCode;
         public readonly FilePosition FilePosition;
         public readonly string Details;
@@ -53,9 +47,7 @@ namespace Rhetos.Dsl
             : base(message)
         {
             ErrorCode = errorCode;
-            DslScript = dslScript;
-            Position = positionBegin;
-
+            
             if (!string.IsNullOrEmpty(dslScript?.Path))
                 FilePosition = new FilePosition(dslScript.Path, dslScript.Script, positionBegin, positionEnd);
 

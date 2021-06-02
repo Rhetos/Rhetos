@@ -25,7 +25,7 @@ using Rhetos.Utilities;
 
 namespace Rhetos
 {
-    public static class RhetosHostBuilderExtensions
+    public static class HostNetRhetosHostBuilderExtensions
     {
         /// <summary>
         /// It configures the <see cref="IRhetosHostBuilder"/> to use the <see cref="ILoggerProvider"/> from host application

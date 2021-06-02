@@ -62,7 +62,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                 throw new DslSyntaxException($"The property '{nameof(Identifier)}' for '{this.GetUserDescription()}' should be in the format '00000000-0000-0000-0000-000000000000', instead it is '{Identifier}'.");
         }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
             var sqlFunction = new SqlFunctionInfo
             {

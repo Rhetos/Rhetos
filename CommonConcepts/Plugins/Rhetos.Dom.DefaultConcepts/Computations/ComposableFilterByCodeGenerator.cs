@@ -92,17 +92,6 @@ namespace Rhetos.Dom.DefaultConcepts
             {
                 var repositoryRegex = new Regex($@"\b{parameterRepository}([\.,\)])");
                 simplifiedMethodBody = repositoryRegex.Replace(simplifiedMethodBody, "_domRepository$1");
-
-                if (parsedExpression.ExpressionParameters.Length >= 4
-                    && _dslModel.FindByKey($"{nameof(ComposableFilterUseExecutionContextInfo)} {info.GetKeyProperties()}") != null)
-                {
-                    string parameterContext = parsedExpression.ExpressionParameters[3].Name;
-                    if (parameterContext.Contains("context") || parameterContext.Contains("Context"))
-                    {
-                        var contextRegex = new Regex($@"\b{parameterContext}([\.,\)])");
-                        simplifiedMethodBody = contextRegex.Replace(simplifiedMethodBody, "_executionContext$1");
-                    }
-                }
             }
 
             // Parameters 0 and 2 are standard Filter method parameters: input query and filter type. If no other parameters are used in the expression,

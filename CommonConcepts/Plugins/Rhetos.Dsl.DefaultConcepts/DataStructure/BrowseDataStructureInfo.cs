@@ -51,7 +51,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                         ConceptInfoHelper.GetKeywordOrTypeName(typeof(BrowseFromPropertyInfo))));
         }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
             return new[] { new DataStructureExtendsInfo { Extension = this, Base = Source } };
         }

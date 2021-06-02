@@ -31,7 +31,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public EntityInfo Entity { get; set; }
         
-        public System.Collections.Generic.IEnumerable<IConceptInfo> CreateNewConcepts(System.Collections.Generic.IEnumerable<IConceptInfo> existingConcepts)
+        public System.Collections.Generic.IEnumerable<IConceptInfo> CreateNewConcepts()
         {
             var activePropertyInfo = new BoolPropertyInfo
             {
@@ -39,9 +39,9 @@ namespace Rhetos.Dsl.DefaultConcepts
                 Name = "Active"
             };
             
-            var composableFilterActiveAndThis = new ComposableFilterByInfo
+            var composableFilterActiveAndThis = new QueryFilterExpressionInfo
             {
-                Expression = @"(items, repository, parameter) =>
+                Expression = @"(items, parameter) =>
                     {
                         if (parameter != null && parameter.ItemID.HasValue)
                             return items.Where(item => item.Active == null || item.Active.Value || item.ID == parameter.ItemID.Value);

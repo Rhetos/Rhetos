@@ -33,7 +33,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     [ConceptKeyword("Hardcoded")]
     public class HardcodedEntityInfo : EntityInfo, IMacroConcept
     {
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
             return new List<IConceptInfo>
             {

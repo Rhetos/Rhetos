@@ -75,7 +75,6 @@ namespace Rhetos.Configuration.Autofac.Test
                 .AddKeyValue(ConfigurationProvider.GetKey((DatabaseOptions o) => o.SqlCommandTimeout), 0)
                 .AddKeyValue(ConfigurationProvider.GetKey((ConfigurationProviderOptions o) => o.LegacyKeysWarning), true)
                 .AddKeyValue(ConfigurationProvider.GetKey((LoggingOptions o) => o.DelayedLogTimout), 60.0)
-                .AddConfigurationManagerConfiguration()
                 .AddJsonFile(Path.Combine(rhetosAppRootPath, "rhetos-app.settings.json"))
                 .AddJsonFile(Path.Combine(rhetosAppRootPath, DbUpdateOptions.ConfigurationFileName), optional: true)
                 // shortTransactions

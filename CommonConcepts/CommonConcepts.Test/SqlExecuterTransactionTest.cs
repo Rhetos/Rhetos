@@ -114,50 +114,5 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("e0", TestUtility.DumpSorted(repository.TestEntity.BaseEntity.Load(ids), item => item.Name));
             }
         }
-
-        [TestMethod]
-        public void CommitAndReconnect()
-        {
-            var items = Enumerable.Range(0, 4)
-                .Select(x => new TestEntity.BaseEntity { ID = Guid.NewGuid(), Name = "e" + x })
-                .ToArray();
-
-            var itemsIds = items.Select(item => item.ID);
-
-            var log = new List<string>();
-            using (var scope = TestScope.Create(builder => builder.ConfigureLogMonitor(log)))
-            {
-                var repository = scope.Resolve<Common.DomRepository>();
-                var sqlExecuter = scope.Resolve<ISqlExecuter>();
-                var persistence = scope.Resolve<IPersistenceTransaction>();
-
-                repository.TestEntity.BaseEntity.Delete(repository.TestEntity.BaseEntity.Query());
-
-                // Testing both EF and direct SQL commands to work well with the same transaction context:
-                repository.TestEntity.BaseEntity.Insert(items[0]);
-                sqlExecuter.ExecuteSql($"INSERT INTO TestEntity.BaseEntity (ID, Name) SELECT '{items[1].ID}', '{items[1].Name}'");
-                Assert.AreEqual("e0, e1", TestUtility.DumpSorted(repository.TestEntity.BaseEntity.Query(itemsIds), item => item.Name));
-
-                log.Clear();
-#pragma warning disable CS0618 // Type or member is obsolete. The old feature should still work.
-                persistence.CommitAndReconnect();
-#pragma warning restore CS0618 // Type or member is obsolete.
-
-                TestUtility.AssertContains(string.Join("\r\n", log), GetType().Name);
-
-                // The following code shows the expected behavior, but it results with a database lock (EF still uses old committed transaction, while the SqlExecuter uses the new reconnected).
-                // Will not fix, since the feature is not needed anymore and should be removed in the next major release.
-                //repository.TestEntity.BaseEntity.Insert(items[2]);
-                //sqlExecuter.ExecuteSql($"INSERT INTO TestEntity.BaseEntity (ID, Name) SELECT '{items[3].ID}', '{items[3].Name}'");
-                //Assert.AreEqual("e0, e1, e2, e3", TestUtility.DumpSorted(repository.TestEntity.BaseEntity.Query(itemsIds), item => item.Name));
-            }
-
-            using (var scope = TestScope.Create())
-            {
-                var repository = scope.Resolve<Common.DomRepository>();
-
-                Assert.AreEqual("e0, e1", TestUtility.DumpSorted(repository.TestEntity.BaseEntity.Query(itemsIds), item => item.Name));
-            }
-        }
     }
 }

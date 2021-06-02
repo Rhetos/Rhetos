@@ -45,7 +45,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public string ImplementationName { get; set; }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
             var sqlObject = GetSqlObjectPrototype();
             sqlObject.CreateSql = CreateComputedColumnSnippet();

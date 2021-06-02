@@ -39,7 +39,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                 throw new DslSyntaxException("AutoCode is only available for ShortString and Integer properties.");
         }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
             var newConcets = new List<IConceptInfo>();
 

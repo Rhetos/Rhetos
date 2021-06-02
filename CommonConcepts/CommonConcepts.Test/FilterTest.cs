@@ -166,7 +166,9 @@ namespace CommonConcepts.Test
 
                 var repository = scope.Resolve<Common.DomRepository>();
 
+#pragma warning disable CS0618 // Type or member is obsolete
                 var loaded = repository.TestFilter.Source.Filter(new TestFilter.FilterByPrefix { Prefix = "b" });
+#pragma warning restore CS0618
                 Assert.AreEqual("b1, b2", TestUtility.DumpSorted(loaded, item => item.Name));
             }
         }
@@ -204,7 +206,7 @@ namespace CommonConcepts.Test
 
                 var repository = scope.Resolve<Common.DomRepository>();
 
-                var loaded = repository.TestFilter.Source.Filter(new TestFilter.ComposableFilterByPrefix { Prefix = "b" });
+                var loaded = repository.TestFilter.Source.Load(new TestFilter.ComposableFilterByPrefix { Prefix = "b" });
                 Assert.AreEqual("b1, b2", TestUtility.DumpSorted(loaded, item => item.Name));
             }
         }
@@ -267,7 +269,7 @@ namespace CommonConcepts.Test
                 repository.TestFilter.Source.Insert(new[] { s1, s2 });
                 repository.TestFilter.SourceExtension.Insert(new[] { e1, e2 });
 
-                var filteredExtensionByBase = repository.TestFilter.SourceExtension.Filter(new TestFilter.FilterByPrefix { Prefix = "A" });
+                var filteredExtensionByBase = repository.TestFilter.SourceExtension.Load(new TestFilter.FilterByPrefix { Prefix = "A" });
                 Assert.AreEqual("C e1", TestUtility.DumpSorted(filteredExtensionByBase, item => item.Name2));
             }
         }
@@ -286,11 +288,36 @@ namespace CommonConcepts.Test
                 var d2 = new TestFilter.SourceDetail { ParentID = s2.ID, Name2 = "D d2" };
                 repository.TestFilter.SourceDetail.Insert(new[] { d1, d2 });
 
-                var filteredDetailByMaster = repository.TestFilter.SourceDetail.Filter(new TestFilter.FilterByPrefix { Prefix = "A" });
+                var filteredDetailByMaster = repository.TestFilter.SourceDetail.Load(new TestFilter.FilterByPrefix { Prefix = "A" });
                 Assert.AreEqual("C d1", TestUtility.DumpSorted(filteredDetailByMaster, item => item.Name2));
 
-                var filteredMasterByDetail = repository.TestFilter.Source.Filter(new TestFilter.FilterDetail { Prefix = "C" });
+                var filteredMasterByDetail = repository.TestFilter.Source.Load(new TestFilter.FilterDetail { Prefix = "C" });
                 Assert.AreEqual("A s1", TestUtility.DumpSorted(filteredMasterByDetail, item => item.Name));
+            }
+        }
+
+        [TestMethod]
+        public void NullGenericFilterTest()
+        {
+            using (var scope = TestScope.Create())
+            {
+                var genericRepos = scope.Resolve<GenericRepositories>().GetGenericRepository("Common.Claim");
+
+                var readCommand = new ReadCommandInfo
+                {
+                    DataSource = "Common.Claim",
+                    Top = 3,
+                    OrderByProperties = new[] { new OrderByProperty { Property = "ClaimResource" } },
+                    ReadRecords = true,
+                    ReadTotalCount = true
+                };
+
+                var serverCommandsUtility = scope.Resolve<ServerCommandsUtility>();
+
+                var readResult = serverCommandsUtility.ExecuteReadCommand(readCommand, genericRepos);
+                Console.WriteLine("Records.Length: " + readResult.Records.Length);
+                Console.WriteLine("TotalCount: " + readResult.TotalCount);
+                Assert.IsTrue(readResult.Records.Length < readResult.TotalCount);
             }
         }
 
@@ -457,21 +484,6 @@ namespace CommonConcepts.Test
                     ReportFilteredBrowse(scope, ReadCommandWithFilters(
                         new TestFilter.ComposableFilterBrowseLoader { Pattern = "c" },
                         new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "p" })));
-            }
-        }
-
-        [TestMethod]
-        public void ComposableFilterWithExecutionContext()
-        {
-            using (var scope = TestScope.Create())
-            {
-                var repository = scope.Resolve<Common.DomRepository>();
-
-                var currentUserName = scope.Resolve<IUserInfo>().UserName;
-                Assert.IsTrue(!string.IsNullOrWhiteSpace(currentUserName));
-
-                Assert.AreEqual(currentUserName,
-                    repository.TestFilter.FixedData.Filter(new TestFilter.ComposableFilterWithContext()).Single().Name);
             }
         }
 
@@ -794,7 +806,7 @@ namespace CommonConcepts.Test
                 var genericWithImplicitFilterType = repository.TestFilter.SimpleItem.Load(filter).Where(item => ids.Contains(item.ID));
                 Assert.AreEqual("si0, si1", TestUtility.DumpSorted(genericWithImplicitFilterType, item => item.Name));
 
-                var legacyFilterMethod = repository.TestFilter.SimpleItem.Filter(filter).Where(item => ids.Contains(item.ID));
+                var legacyFilterMethod = repository.TestFilter.SimpleItem.Load(filter).Where(item => ids.Contains(item.ID));
                 Assert.AreEqual("si0, si1", TestUtility.DumpSorted(legacyFilterMethod, item => item.Name));
             }
         }
@@ -829,7 +841,7 @@ namespace CommonConcepts.Test
                 var genericWithImplicitFilterType = repository.TestFilter.SimpleItem.Load(filter).Where(item => ids.Contains(item.ID));
                 Assert.AreEqual("si0, si1", TestUtility.DumpSorted(genericWithImplicitFilterType, item => item.Name));
 
-                var legacyFilterMethod = repository.TestFilter.SimpleItem.Filter(filter).Where(item => ids.Contains(item.ID));
+                var legacyFilterMethod = repository.TestFilter.SimpleItem.Load(filter).Where(item => ids.Contains(item.ID));
                 Assert.AreEqual("si0, si1", TestUtility.DumpSorted(legacyFilterMethod, item => item.Name));
             }
         }

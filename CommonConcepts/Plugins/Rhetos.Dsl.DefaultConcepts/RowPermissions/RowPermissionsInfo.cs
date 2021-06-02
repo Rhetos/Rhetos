@@ -34,7 +34,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public string SimplifiedExpression { get; set; }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
             var newConcepts = new List<IConceptInfo>();
 
@@ -46,9 +46,9 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public static string CreateComposableFilterSnippet(string permissionExpressionName, DataStructureInfo dataStructure)
         {
-            return $@"(source, repository, parameter) => 
+            return $@"(source, parameter) => 
         {{
-            var filterExpression = {permissionExpressionName}(source, repository, _executionContext);
+            var filterExpression = {permissionExpressionName}(source, _domRepository, _executionContext);
             return FilterExpression<Common.Queryable.{dataStructure.Module.Name}_{dataStructure.Name}>.OptimizedWhere(source, filterExpression);
         }}";
         }

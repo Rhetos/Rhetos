@@ -36,7 +36,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public ComposableFilterByInfo Filter { get; set; }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
             return new IConceptInfo[]
             {

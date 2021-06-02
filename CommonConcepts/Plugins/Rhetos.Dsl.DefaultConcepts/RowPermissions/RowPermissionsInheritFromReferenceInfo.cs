@@ -38,7 +38,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public ReferencePropertyInfo ReferenceProperty { get; set; }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
             return new IConceptInfo[]
             {

@@ -19,7 +19,6 @@
 
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
-using System;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
@@ -33,12 +32,6 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         public static string GetColumnType(this ConceptMetadata conceptMetadata, PropertyInfo property)
         {
             return conceptMetadata.Get<IDatabaseColumnType<PropertyInfo>>(property.GetType())?.ColumnType;
-        }
-
-        [Obsolete("This method will not support concepts with configurable types. Use GetColumnType with PropertyInfo argument instead.")]
-        public static string GetColumnType(this ConceptMetadata conceptMetadata, Type propertyType)
-        {
-            return conceptMetadata.Get<IDatabaseColumnType<PropertyInfo>>(propertyType)?.ColumnType;
         }
     }
 }

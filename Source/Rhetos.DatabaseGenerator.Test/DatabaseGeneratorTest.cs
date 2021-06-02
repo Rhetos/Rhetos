@@ -35,7 +35,6 @@ namespace Rhetos.DatabaseGenerator.Test
         public DatabaseGeneratorTest()
         {
             var configuration = new ConfigurationBuilder(new ConsoleLogProvider())
-                .AddConfigurationManagerConfiguration()
                 .Build();
             LegacyUtilities.Initialize(configuration);
         }

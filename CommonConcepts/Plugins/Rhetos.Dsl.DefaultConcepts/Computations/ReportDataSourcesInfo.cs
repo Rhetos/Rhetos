@@ -40,7 +40,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public string DataSources { get; set; }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts(IEnumerable<IConceptInfo> existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
             var dataSourceNames = DataSources.Split(',').Select(ds => ds.Trim());
 
