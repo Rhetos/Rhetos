@@ -63,9 +63,6 @@
             <!-- The generated source is kept with binaries because in some cases we cannot guarantee that the newly generated code would be identical to the one in production. Some internal caching build optimizations may result with different ordering of the generated features. -->
             <RhetosDebugSources Include="obj\Rhetos\Source\**\*.cs" />
             <None Include="@(RhetosDebugSources)" CopyToOutputDirectory="PreserveNewest" Link="RhetosDebugSource\%(RecursiveDir)%(Filename)%(Extension)"/>
-
-            <PluginScannerJson Include="$(BaseIntermediateOutputPath)Rhetos\PluginScanner.json" />
-            <None Include="@(PluginScannerJson)" CopyToOutputDirectory="PreserveNewest" Link="%(Filename)%(Extension)"/>
         </ItemGroup>
 
     </Target>
