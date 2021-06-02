@@ -122,5 +122,28 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("a ax, b bx", TestUtility.DumpSorted(browse, item => item.Name + " " + item.Info));
             }
         }
+
+        [TestMethod]
+        public void UseExecutionContext()
+        {
+            using (var scope = TestScope.Create())
+            {
+                var repository = scope.Resolve<Common.DomRepository>();
+
+                scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
+                    {
+                        "DELETE FROM Test11.Source;",
+                        "INSERT INTO Test11.Source (Name) SELECT 'a';",
+                        "INSERT INTO Test11.Source (Name) SELECT 'b';"
+                    });
+
+                var userInfo = scope.Resolve<IUserInfo>();
+                Assert.IsFalse(string.IsNullOrEmpty(userInfo.UserName));
+                string expected = string.Format("a {0}, b {0}", userInfo.UserName);
+                Console.WriteLine(expected);
+
+                Assert.AreEqual(expected, TestUtility.DumpSorted(repository.Test11.QEContext.Query(), item => item.UserInfo));
+            }
+        }
     }
 }

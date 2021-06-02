@@ -59,6 +59,20 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
+        public void UseExecutionContext()
+        {
+            using (var scope = TestScope.Create())
+            {
+                var executionContext = scope.Resolve<Common.ExecutionContext>();
+                Assert.IsTrue(scope.Resolve<IUserInfo>().UserName.Length > 0);
+                var repository = scope.Resolve<Common.DomRepository>();
+                TestUtility.ShouldFail(
+                    () => repository.TestAction.UEC.Execute(new TestAction.UEC { }),
+                    "User " + scope.Resolve<IUserInfo>().UserName);
+            }
+        }
+
+        [TestMethod]
         public void UseObjectsWithCalculatedExtension()
         {
             using (var scope = TestScope.Create())

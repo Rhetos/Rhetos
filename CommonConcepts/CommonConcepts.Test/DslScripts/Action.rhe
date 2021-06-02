@@ -16,6 +16,12 @@ Module TestAction
         Guid ItmemID;
     }
 
+    Action UEC
+        '(parameters, repository, userInfo) =>
+            { throw new ApplicationException("User " + _executionContext.UserInfo.UserName); }'
+    {
+    }
+    
     SqlQueryable ComputeNameContainsA
     "
         SELECT
@@ -57,7 +63,9 @@ Module TestAction
                 }
                 
                 repository.TestAction.Simple.Update(simpleEntities);
-            }';
+            }'
+    {
+    }
     
     Action TestBefore '(parameter, repository, userInfo) => {  throw new Rhetos.UserException("[Test] " + parameter.S); }'
     {
