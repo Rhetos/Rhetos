@@ -2,10 +2,6 @@
 
 ## 5.0.0 (TO BE RELEASED)
 
-### Internal improvements
-
-1. `Rhetos:AppSecurity:AllClaimsForUsers` option does not require the machine name to be specified. Insetad of *username@machinename* it is possible just to use *username* but because of security reason it is recommanded to use the first format *username@machinename*.
-
 ### Breaking changes
 
 Changes in behavior:
@@ -55,9 +51,9 @@ Changes in behavior:
     * Use `typeof(Common.RowPermissionsReadItems)` and `typeof(Common.RowPermissionsWriteItems)` instead.
 14. Upgraded Autofac from version 4.9.4 to 6.2.0
 15. **DateTime** property concept now generates *datetime2* database column type by default
-  instead of obsolete *datetime* column type (issue #101).
-  Legacy *datetime* type can be enabled by setting `CommonConcepts:UseLegacyMsSqlDateTime` option to `true` in `rhetos-build.settings.json` file.
-  See [Migrating an existing application from datetime to datetime2](https://github.com/Rhetos/Rhetos/wiki/Migrating-from-DateTime-to-DateTime2).
+    instead of obsolete *datetime* column type (issue #101).
+    Legacy *datetime* type can be enabled by setting `CommonConcepts:UseLegacyMsSqlDateTime` option to `true` in `rhetos-build.settings.json` file.
+    See [Migrating an existing application from datetime to datetime2](https://github.com/Rhetos/Rhetos/wiki/Migrating-from-DateTime-to-DateTime2).
 
 Changes in Rhetos libraries API:
 
@@ -84,9 +80,9 @@ Changes in Rhetos libraries API:
 9. Removed support for ContainerBuilderPluginRegistration.CheckOverride method. This was usually used to check if the expected implementation of IUserInfo interface was used because of different load orders of Autofac modules.
    In the new design it is up to the developer how it will setup the IServiceCollection IoC container from which the IUserInfo will be resolved.
 10. The interface IMacroConcept now requires the implementation of the method CreateNewConcepts without any parameters.
-    If an implementation of IMacroConcept requires access to the IDslModel the IConceptMacro\<T\> interface should be used.
+    If an implementation of IMacroConcept requires access to the IDslModel, use the IConceptMacro\<T\> interface instead.
 11. Removed support for QueryDataSourceCommand. Use the ReadCommand instead.
-12. Removed support for the folowing methods or classes:
+12. Removed support for the following methods or classes:
     * IDatabaseColumnType.GetColumnType : This method will not support concepts with configurable types. Use GetColumnType with PropertyInfo argument instead.
     * PropertyHelper.GenerateCodeForType: Use the GenerateCodeForType function without the 'serializable' argument. All regular properties are serializable.
     * DatabaseExtensionFunctions.SqlLike: Use the Like() method instead.
@@ -105,7 +101,7 @@ Changes in Rhetos libraries API:
     * ProcessContainer.Configuration: Resolve IConfiguration from the transaction scope.
     * ProcessContainer.CreateTransactionScopeContainer: Use CreateScope instead.
     * TransactionScopeContainer: Use UnitOfWorkScope instead.
-    * ConceptImplementationVersionAttribute: This feature is no longer used by Rhetos, and will be deleted in future versions. Database upgrade relies solely on SQL scripts generated from DSL concepts.
+    * ConceptImplementationVersionAttribute: This feature is no longer used by Rhetos. Database upgrade relies solely on SQL scripts generated from DSL concepts.
     * IInstalledPackages: Use InstalledPackages class instead.
     * DslSyntaxException.DslScript: Use FilePosition instead.
     * DslSyntaxException.Position: Use FilePosition instead.
@@ -119,17 +115,19 @@ Changes in Rhetos libraries API:
     * ExternalReference: Add a NuGet dependency or a project reference to specify Rhetos application dependency to external library.
 14. Removed the support for SamePropertyValue concept which required two arguments. Instead use the simpler SamePropertyValue concept which requires only the path to the base property.
     Instead of
-    ```c
-    Reference PropertyName Module.ReferencedDataStructure { SamePropertyValue 'Base' Module.ReferencedDataStructure.PropertyNameOnReferencedDataStructure; }
-    ```
+    `SamePropertyValue 'Base' Module.ReferencedDataStructure.PropertyNameOnReferencedDataStructure;`
     you should write
-    ```c
-    Reference PropertyName Module.ReferencedDataStructure { SamePropertyValue 'Base.PropertyNameOnReferencedDataStructure' }
-    ```
+    `SamePropertyValue 'Base.PropertyNameOnReferencedDataStructure';`
 15. Removed `ProcessContainer` class:
     * Instead of using `new ProcessContainer(rhetosAppAssemblyPath)` replace it with `RhetosHost.Find(rhetosAppAssemblyPath)`
     * Instead of using `ProcessContainer.CreateScope(rhetosAppAssemblyPath)` replace it with `LinqPadRhetosHost.CreateScope(rhetosAppAssemblyPath)`
 16. Removed `IUserInfoAdmin` interface. It was used together with the `Rhetos:AppSecurity:BuiltinAdminOverride` option to give the administrator rights as it had all claims.
+
+### Internal improvements
+
+1. `Rhetos:AppSecurity:AllClaimsForUsers` option does not require the server machine name to be specified.
+   Instead of *username@servername* it is possible just to use *username*,
+   but the old format *username@servername* is still recommended for increased security.
 
 ## 4.3.0 (2021-03-05)
 

@@ -11,7 +11,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{0124322E-2
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D3CC17A8-D557-44D9-8D3D-3D425ED09838}"
 	ProjectSection(SolutionItems) = preProject
+		ChangeLog.md = ChangeLog.md
 		Directory.Build.props = Directory.Build.props
+		Readme.md = Readme.md
 		Source\Rhetos.Host.AspNet.nuspec = Source\Rhetos.Host.AspNet.nuspec
 		Source\Rhetos.Host.Net.nuspec = Source\Rhetos.Host.Net.nuspec
 		Source\Rhetos.Host.nuspec = Source\Rhetos.Host.nuspec
