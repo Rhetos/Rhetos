@@ -33,7 +33,7 @@ namespace Rhetos
         /// </summary>
         /// <remarks>
         /// This method configures logging only for Rhetos host initialization.
-        /// To set the host application log provider for application run-time, use <see cref="HostNetRhetosServiceCollectionBuilderExtensions.AddLoggingIntegration"/>
+        /// To set the host application log provider for application run-time, use <see cref="HostNetRhetosServiceCollectionBuilderExtensions.AddHostLogging"/>
         /// If no <see cref="ILoggerProvider"/> is registered in the host application, this method call will be ignored and
         /// <see cref="IRhetosHostBuilder"/> will use <see cref="LoggingDefaults.DefaultLogProvider"/> by default.
         /// </remarks>
