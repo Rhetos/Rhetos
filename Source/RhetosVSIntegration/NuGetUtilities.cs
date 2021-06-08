@@ -83,7 +83,7 @@ namespace Rhetos
                 var packageFolder = GetFolderForLibrary(targetLibrary);
                 var dependencies = targetLibrary.Dependencies.Select(x => new PackageRequest { Id = x.Id, VersionsRange = x.VersionRange.OriginalString });
                 var library = _lockFile.GetLibrary(targetLibrary.Name, targetLibrary.Version);
-                var contentFiles = library.Files.Select(x => new ContentFile { PhysicalPath = Path.Combine(packageFolder, PathUtility.GetPathWithBackSlashes(x)), InPackagePath = PathUtility.GetPathWithBackSlashes(x) }).ToList();
+                var contentFiles = library.Files.Select(x => new ContentFile { PhysicalPath = Path.Combine(packageFolder, PathUtility.GetPathWithDirectorySeparator(x)), InPackagePath = PathUtility.GetPathWithDirectorySeparator(x) }).ToList();
                 installedPackages.Add(new InstalledPackage(library.Name, library.Version.Version.ToString(), dependencies, packageFolder, null, null, contentFiles));
             }
             
@@ -103,7 +103,7 @@ namespace Rhetos
         {
             return GetSupportedTargetFrameworkLibraries().Where(x => x.Type == LibraryType.Package)
                 .Select(targetLibrary => new { PackageFolder = GetFolderForPackageLibraray(targetLibrary), targetLibrary.RuntimeAssemblies })
-                .SelectMany(targetLibrary => targetLibrary.RuntimeAssemblies.Select(libFile => Path.Combine(targetLibrary.PackageFolder, PathUtility.GetPathWithBackSlashes(libFile.Path))))
+                .SelectMany(targetLibrary => targetLibrary.RuntimeAssemblies.Select(libFile => Path.Combine(targetLibrary.PackageFolder, PathUtility.GetPathWithDirectorySeparator(libFile.Path))))
                 .Where(libFile => Path.GetExtension(libFile) == ".dll")
                 .ToList();
         }
@@ -138,7 +138,7 @@ namespace Rhetos
         {
             var library = _lockFile.GetLibrary(targetLibrary.Name, targetLibrary.Version);
             var packageFolder = _lockFile.PackageFolders
-                .Select(x => Path.Combine(x.Path, PathUtility.GetPathWithBackSlashes(library.Path)))
+                .Select(x => Path.Combine(x.Path, PathUtility.GetPathWithDirectorySeparator(library.Path)))
                 .Union(new List<string> { Path.GetFullPath(Path.Combine(_projectRootFolder, library.Path)) })
                 .FirstOrDefault(x => Directory.Exists(x));
             if (packageFolder == null)
