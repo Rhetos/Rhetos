@@ -18,9 +18,7 @@
 */
 
 using Rhetos.Extensibility;
-using Rhetos.Logging;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace Rhetos.Dsl
 {
@@ -28,21 +26,17 @@ namespace Rhetos.Dsl
     {
         private readonly DslSyntax _dslSyntax;
         private readonly DslSyntaxFile _dslSyntaxFile;
-        private readonly ILogger _performanceLogger;
         public static readonly string DslSyntaxFileName = "DslSyntax.json";
 
-        public DslSyntaxFileGenerator(DslSyntax dslSyntax, DslSyntaxFile dslSyntaxFile, ILogProvider logProvider)
+        public DslSyntaxFileGenerator(DslSyntax dslSyntax, DslSyntaxFile dslSyntaxFile)
         {
             _dslSyntax = dslSyntax;
             _dslSyntaxFile = dslSyntaxFile;
-            _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
         }
 
         public void Generate()
         {
-            var sw = Stopwatch.StartNew();
             _dslSyntaxFile.Save(_dslSyntax);
-            _performanceLogger.Write(sw, nameof(Generate));
         }
 
         public IEnumerable<string> Dependencies => null;

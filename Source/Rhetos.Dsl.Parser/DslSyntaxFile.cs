@@ -27,7 +27,7 @@ namespace Rhetos.Dsl
     {
         public static readonly string DslSyntaxFileName = "DslSyntax.json";
 
-        private readonly RhetosBuildEnvironment _rhetosBuildEnvironment;        
+        private readonly RhetosBuildEnvironment _rhetosBuildEnvironment;
 
         public DslSyntaxFile(RhetosBuildEnvironment rhetosBuildEnvironment)
         {

@@ -69,7 +69,7 @@ namespace Rhetos.Dsl
                     })
                     .ToList();
 
-            return types.Values.ToList();
+            return types.Values.OrderBy(conceptType => conceptType.AssemblyQualifiedName).ToList();
         }
 
         private static ConceptType CreateConceptTypeWithoutMembers(Type conceptInfoType)
