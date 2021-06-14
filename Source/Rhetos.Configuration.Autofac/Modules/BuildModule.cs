@@ -92,6 +92,8 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.RegisterType<DslSyntaxFile>();
             builder.Register(context => context.Resolve<DslSyntaxFromPlugins>().CreateDslSyntax()).As<DslSyntax>().SingleInstance();
             builder.RegisterType<DslSyntaxFileGenerator>().As<IGenerator>();
+            builder.RegisterType<DslDocumentationFile>();
+            builder.RegisterType<DslDocumentationFileGenerator>().As<IGenerator>();
             builder.RegisterType<MacroOrderRepository>().As<IMacroOrderRepository>();
             builder.RegisterType<InitializationConcept>().As<IConceptInfo>(); // This plugin is registered manually because FindAndRegisterPlugins does not scan core Rhetos DLLs.
             pluginRegistration.FindAndRegisterPlugins<IConceptInfo>();
@@ -102,7 +104,6 @@ namespace Rhetos.Configuration.Autofac.Modules
         {
             builder.RegisterType<EntityFrameworkMappingGenerator>().As<IGenerator>();
             pluginRegistration.FindAndRegisterPlugins<IConceptMapping>(typeof(ConceptMapping<>));
-
         }
 
         private void AddCompiler(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
