@@ -32,6 +32,8 @@ namespace Rhetos
     /// </summary>
     public class UnitOfWorkScope : IDisposable
     {
+        public const string ScopeName = "UnitOfWork";
+
         private readonly ILifetimeScope _lifetimeScope;
         private bool disposed;
 
@@ -49,8 +51,8 @@ namespace Rhetos
         public UnitOfWorkScope(ILifetimeScope iocContainer, Action<ContainerBuilder> registerCustomComponents = null)
         {
             _lifetimeScope = registerCustomComponents != null
-                ? iocContainer.BeginLifetimeScope(registerCustomComponents)
-                : iocContainer.BeginLifetimeScope();
+                ? iocContainer.BeginLifetimeScope(ScopeName, registerCustomComponents)
+                : iocContainer.BeginLifetimeScope(ScopeName);
         }
 
         public T Resolve<T>()

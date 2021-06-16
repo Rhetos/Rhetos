@@ -342,7 +342,7 @@ $@"namespace Common
                 .As<System.Data.Entity.DbContext>()
                 .As<Rhetos.Persistence.IPersistenceCache>()
                 .InstancePerLifetimeScope();
-            builder.RegisterType<ExecutionContext>().InstancePerLifetimeScope();
+            builder.RegisterType<ExecutionContext>().InstancePerMatchingLifetimeScope(Rhetos.UnitOfWorkScope.ScopeName);
             builder.RegisterInstance(Infrastructure.RegisteredInterfaceImplementations).ExternallyOwned();
             builder.RegisterInstance(Infrastructure.ApplyFiltersOnClientRead).ExternallyOwned();
             builder.RegisterType<PersistenceStorage>().As<IPersistenceStorage>();
