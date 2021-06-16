@@ -45,7 +45,9 @@ namespace Microsoft.Extensions.DependencyInjection
 
             serviceCollection.TryAddSingleton(serviceProvider => CreateRhetosHost(serviceProvider));
             serviceCollection.TryAddScoped<RhetosScopeServiceProvider>();
-            serviceCollection.TryAddScoped(typeof(IRhetosComponent<>), typeof(RhetosComponent<>));
+            //IRhetosComponent is regsitered as a tranisent componenet but the value of
+            //IRhetoComponent will retain its scope that is specified in the Autofac IoC container
+            serviceCollection.TryAddTransient(typeof(IRhetosComponent<>), typeof(RhetosComponent<>));
 
             return new RhetosServiceCollectionBuilder(serviceCollection);
         }
