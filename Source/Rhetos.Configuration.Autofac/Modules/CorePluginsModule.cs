@@ -45,6 +45,7 @@ namespace Rhetos.Configuration.Autofac.Modules
 
         private void AddExtensibility(ContainerBuilder builder)
         {
+            builder.RegisterSource<PluginMetadataRegistrationSource>();
             builder.RegisterGeneric(typeof(PluginsMetadataCache<>)).SingleInstance();
             builder.RegisterGeneric(typeof(PluginsContainer<>)).As(typeof(IPluginsContainer<>)).InstancePerLifetimeScope();
             builder.RegisterGeneric(typeof(NamedPlugins<>)).As(typeof(INamedPlugins<>)).InstancePerLifetimeScope();

@@ -18,7 +18,6 @@
 */
 
 using Autofac.Features.Indexed;
-using Autofac.Features.Metadata;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Concurrent;
@@ -40,11 +39,11 @@ namespace Rhetos.Extensibility
         private readonly HashSet<Type> _suppressedPlugins;
 
         public PluginsMetadataCache(
-            Lazy<IEnumerable<Meta<TPlugin>>> pluginsWithMetadata,
+            Lazy<IEnumerable<PluginMetadata<TPlugin>>> pluginsWithMetadata,
             IIndex<Type, IEnumerable<SuppressPlugin>> suppressPlugins)
         {
             _metadataByPluginType = new Lazy<Dictionary<Type, IDictionary<string, object>>>(
-                () => pluginsWithMetadata.Value.ToDictionary(pm => pm.Value.GetType(), pm => pm.Metadata),
+                () => pluginsWithMetadata.Value.ToDictionary(pm => pm.PluginType, pm => pm.Metadata),
                 System.Threading.LazyThreadSafetyMode.ExecutionAndPublication);
 
             _suppressedPlugins = new HashSet<Type>(suppressPlugins[typeof(TPlugin)].Select(sp => sp.PluginType));

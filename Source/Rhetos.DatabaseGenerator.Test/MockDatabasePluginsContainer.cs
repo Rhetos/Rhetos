@@ -38,8 +38,8 @@ namespace Rhetos.DatabaseGenerator.Test
 
             Lazy<IEnumerable<IConceptDatabaseDefinition>> plugins = new Lazy<IEnumerable<IConceptDatabaseDefinition>>(() =>
                 conceptImplementations.Select(pm => pm.Plugin));
-            Lazy<IEnumerable<Meta<IConceptDatabaseDefinition>>> pluginsWithMetadata = new Lazy<IEnumerable<Meta<IConceptDatabaseDefinition>>>(() =>
-                conceptImplementations.Select(pm => new Meta<IConceptDatabaseDefinition>(pm.Plugin, pm.Metadata)));
+            Lazy<IEnumerable<PluginMetadata<IConceptDatabaseDefinition>>> pluginsWithMetadata = new Lazy<IEnumerable<PluginMetadata<IConceptDatabaseDefinition>>>(() =>
+                conceptImplementations.Select(pm => new PluginMetadata<IConceptDatabaseDefinition>(pm.Plugin.GetType(), pm.Metadata)));
             Lazy<IIndex<Type, IEnumerable<IConceptDatabaseDefinition>>> pluginsByImplementation = new Lazy<IIndex<Type, IEnumerable<IConceptDatabaseDefinition>>>(() =>
                 new StubIndex<IConceptDatabaseDefinition>(conceptImplementations));
 

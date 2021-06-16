@@ -38,8 +38,8 @@ namespace Rhetos.Extensibility.Test
                 { new TestPlugin2(), new Dictionary<string, object> { { MefProvider.DependsOn, typeof(TestPlugin1) } } },
                 { new TestPlugin3(), new Dictionary<string, object> { } },
             };
-            Lazy<IEnumerable<Meta<ITestPluginType>>> pluginsWithMetadata = new Lazy<IEnumerable<Meta<ITestPluginType>>>(() =>
-                conceptImplementations.Select(pm => new Meta<ITestPluginType>(pm.Plugin, pm.Metadata)));
+            Lazy<IEnumerable<PluginMetadata<ITestPluginType>>> pluginsWithMetadata = new Lazy<IEnumerable<PluginMetadata<ITestPluginType>>>(() =>
+                conceptImplementations.Select(pm => new PluginMetadata<ITestPluginType>(pm.Plugin.GetType(), pm.Metadata)));
 
             var plugins = new ITestPluginType[] { new TestPlugin1(), new TestPlugin2(), new TestPlugin3() };
             var pmc = new PluginsMetadataCache<ITestPluginType>(pluginsWithMetadata, new StubIndex<SuppressPlugin>());
@@ -56,8 +56,8 @@ namespace Rhetos.Extensibility.Test
                 { new TestPlugin2(), new Dictionary<string, object> { { MefProvider.DependsOn, typeof(TestPlugin1) } } },
                 { new TestPlugin3(), new Dictionary<string, object> { } },
             };
-            Lazy<IEnumerable<Meta<ITestPluginType>>> pluginsWithMetadata = new Lazy<IEnumerable<Meta<ITestPluginType>>>(() =>
-                conceptImplementations.Select(pm => new Meta<ITestPluginType>(pm.Plugin, pm.Metadata)));
+            Lazy<IEnumerable<PluginMetadata<ITestPluginType>>> pluginsWithMetadata = new Lazy<IEnumerable<PluginMetadata<ITestPluginType>>>(() =>
+                conceptImplementations.Select(pm => new PluginMetadata<ITestPluginType>(pm.Plugin.GetType(), pm.Metadata)));
 
             var plugins = new ITestPluginType[] { new TestPlugin1(), new TestPlugin2(), new TestPlugin3() };
             var suppressPlugins = new StubIndex<SuppressPlugin>(new PluginsMetadataList<SuppressPlugin> {

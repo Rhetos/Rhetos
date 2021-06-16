@@ -47,13 +47,6 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.RegisterType<PersistenceTransaction>().As<IPersistenceTransaction>().InstancePerLifetimeScope(); // IPersistenceTransaction is only available on runtime, not on DbUpdate (in DatabaseRuntimeModule), because dbupdate needs more control over transaction management.
             builder.RegisterModule(new DatabaseRuntimeModule());
 
-            //An implementation for the IUserInfo component will be registered only when the scope of the Autofac IoC container will be created.
-            //The PluginsMetadataCache is a singleton, and to resolve the rhetos plugin metadata, such as dependencies,
-            //it needs to create an instance of that plugin in the root scope.
-            //If the IUserInfo is used in a rehots plugin, without this registration, an exception would be thrown because
-            //the Autofac IoC container would not have all the necessary component registered.
-            builder.RegisterType<NullUserInfo>().As<IUserInfo>();
-            
             var pluginRegistration = builder.GetRhetosPluginRegistration();
             AddDsl(builder, pluginRegistration);
             AddSecurity(builder, pluginRegistration);
