@@ -19,6 +19,9 @@
 
 namespace Rhetos
 {
+    /// <summary>
+    /// It is used to resolve Rhetos components inside a scope.
+    /// </summary>
     public interface IRhetosComponent<out T>
     {
         T Value { get; }
