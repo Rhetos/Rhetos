@@ -140,7 +140,13 @@ namespace Rhetos.Dsl
             return newConcepts;
         }
 
-        class Interpretation { public ConceptSyntaxNode Node; public TokenReader NextPosition; public List<string> Warnings; }
+        [DebuggerDisplay("{Node.Concept.TypeName}")]
+        class Interpretation
+        {
+            public ConceptSyntaxNode Node;
+            public TokenReader NextPosition;
+            public List<string> Warnings;
+        }
 
         private (ConceptSyntaxNode ConceptInfo, List<string> Warnings) ParseNextConcept(TokenReader tokenReader, Stack<ConceptSyntaxNode> context, MultiDictionary<string, IConceptParser> conceptParsers)
         {
@@ -218,6 +224,9 @@ namespace Rhetos.Dsl
 
         private void Disambiguate(List<Interpretation> possibleInterpretations)
         {
+            if (possibleInterpretations.Count == 1)
+                return;
+
             // Interpretation that covers most of the DSL script has priority,
             // because other interpretations are obviously missing some parameters,
             // otherwise the parser would stop earlier on '{' or ';'.
@@ -230,42 +239,56 @@ namespace Rhetos.Dsl
             // that could be placed in a nested concept.
             // The nested interpretation can be manually enforced in DSL script (if needed)
             // by nesting this concept.
-            var interpretationParameters = possibleInterpretations
-                .Select(i =>
-                {
-                    var firstMember = i.Node.Concept.Members.First();
-                    return new { Interpretation = i, FirstParameter = firstMember.ConceptType, NestingOptions = GetNestingOptions(firstMember) };
-                })
+            var possibleInterpretationsByNestingDepth = possibleInterpretations
+                .GroupBy(i => GetNestingDepth(i.Node.Concept));
+            var flattestInterpretations = possibleInterpretationsByNestingDepth
+                .OrderBy(group => group.Key.ConcreteParent ? 1 : 2) // Concrete parent type has priority over IConceptInfo interface.
+                .ThenBy(group => group.Key.Level)
+                .First()
                 .ToList();
-            var couldBeNested = new HashSet<Interpretation>();
-            foreach (var i1 in interpretationParameters)
-                foreach (var i2 in interpretationParameters)
-                    if (i1 != i2 && i2.NestingOptions.Skip(1).Contains(i1.FirstParameter))
-                    {
-                        couldBeNested.Add(i2.Interpretation);
-                        _logger.Trace(() => $"Interpretation {i1.Interpretation.Node.Concept.TypeName}" +
-                            $" has priority over {i2.Interpretation.Node.Concept.TypeName}," +
-                            $" because the second one could be nested in {i2.FirstParameter.TypeName} to force that interpretation." +
-                            $" Statement: {i1.Interpretation.Node.GetUserDescription()}.");
-                    }
-            var flatestInterpretations = possibleInterpretations.Except(couldBeNested).ToList();
-            if (flatestInterpretations.Count == 1)
+
+            if (flattestInterpretations.Count == 1) // Keep (and report) all possible interpretations if there is no one flattest option to resolve.
             {
+                var flattest = flattestInterpretations.Single();
+
+                foreach (var other in possibleInterpretations.Where(i => i != flattest))
+                    _logger.Trace(() => $"Interpretation {flattest.Node.Concept.TypeName}" +
+                        $" has priority over {other.Node.Concept.TypeName}," +
+                        $" because the second one could be nested in its parent concept to enforce that interpretation" +
+                        $" or does not have a concrete parent type." +
+                        $" Statement: {flattest.Node.GetUserDescription()}.");
+
                 possibleInterpretations.Clear();
-                possibleInterpretations.Add(flatestInterpretations.Single());
+                possibleInterpretations.Add(flattest);
             }
         }
 
-        private static List<ConceptType> GetNestingOptions(ConceptMemberSyntax conceptMember)
+        private static (int Level, bool ConcreteParent) GetNestingDepth(ConceptType conceptType)
         {
-            var options = new List<ConceptType>();
-            while (!options.Contains(conceptMember.ConceptType)) // Recursive concept are possible.
+            int level = 0;
+            bool parentIsConcreteConceptType = true;
+
+            var processed = new HashSet<ConceptType>();
+            while (true)
             {
-                options.Add(conceptMember.ConceptType);
-                if (conceptMember.IsConceptInfo)
-                    conceptMember = conceptMember.ConceptType.Members.First();
+                var parentProperty = GenericParser.GetParentProperty(conceptType.Members);
+                if (parentProperty == null)
+                    break;
+                level += 1;
+                if (parentProperty.ConceptType == null) // For example, IConceptInfo.
+                {
+                    parentIsConcreteConceptType = false;
+                    break;
+                }
+
+                processed.Add(conceptType);
+                if (processed.Contains(parentProperty.ConceptType))
+                    break; // Avoid infinite loop when analyzing recursive concepts.
+
+                conceptType = parentProperty.ConceptType;
             }
-            return options;
+
+            return (level, parentIsConcreteConceptType);
         }
 
         private string ReportPreviousConcept(ConceptSyntaxNode node)

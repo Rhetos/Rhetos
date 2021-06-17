@@ -80,8 +80,7 @@ namespace Rhetos.Dsl
 
             var listOfMembers = readingAReference ? _conceptType.Members.Where(m => m.IsKey) : _conceptType.Members.Where(m => m.IsParsable);
 
-            var parentProperty = listOfMembers.LastOrDefault(member => member.IsParentNested)
-                ?? (listOfMembers.First().IsConceptInfo ? listOfMembers.First() : null);
+            var parentProperty = GetParentProperty(listOfMembers);
 
             if (useLastConcept != null && parentProperty == null)
                 return ValueOrError<ConceptSyntaxNode>.CreateError($"This concept cannot be nested within {useLastConcept.Concept.TypeName}. Trying to read {_conceptType.TypeName}.");
@@ -104,6 +103,16 @@ namespace Rhetos.Dsl
             }
 
             return ValueOrError<ConceptSyntaxNode>.CreateValue(node);
+        }
+
+        /// <summary>
+        /// Property that references a parent concept in which the current concept can be nested in.
+        /// Returns null if there is no parent property and the current concept supports only flat root-level syntax.
+        /// </summary>
+        public static ConceptMemberSyntax GetParentProperty(IEnumerable<ConceptMemberSyntax> listOfMembers)
+        {
+            return listOfMembers.LastOrDefault(member => member.IsParentNested)
+                ?? (listOfMembers.First().IsConceptInfo ? listOfMembers.First() : null);
         }
 
         private ValueOrError<object> ReadMemberValue(ConceptMemberSyntax member, ITokenReader tokenReader, ConceptSyntaxNode useLastConcept,
