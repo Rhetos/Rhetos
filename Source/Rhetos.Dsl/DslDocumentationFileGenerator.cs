@@ -54,7 +54,7 @@ namespace Rhetos.Dsl
                     group.Concepts.Select(concept =>
                     (
                         AssemblyQualifiedName: concept.GetType().AssemblyQualifiedName,
-                        Documentation: LoadDocumentation(concept.GetType(), group.AssemblyDocumentation)
+                        Documentation: GetConceptDocumentation(concept.GetType(), group.AssemblyDocumentation)
                     ))
                 ))
                 .OrderBy(concept => concept.AssemblyQualifiedName)
@@ -69,7 +69,7 @@ namespace Rhetos.Dsl
 
         public IEnumerable<string> Dependencies => null;
 
-        private ConceptDocumentation LoadDocumentation(Type type, XDocument documentation)
+        private ConceptDocumentation GetConceptDocumentation(Type type, XDocument documentation)
         {
             try
             {
