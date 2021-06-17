@@ -19,9 +19,21 @@
 
 using Autofac;
 using Autofac.Core;
+using Autofac.Features.Metadata;
 
 namespace Rhetos.Extensibility
 {
+    /// <summary>
+    /// Support the <see cref="PluginMetadata{T}"/>
+    /// types automatically whenever type T is registered with the container.
+    /// The <see cref="PluginMetadata{T}"/> is the same as <see cref="Meta{T}"/>
+    /// except that it does not resolve the underlying component.
+    /// The downside of such metadata resolution is that it relies on the implementation type 
+    /// that is specified during the registration.
+    /// In some cases the implementation can't be inferred unless the component is resolved.
+    /// That can happen when using delegate registrations and then casting to some type, which is not advised
+    /// https://autofac.readthedocs.io/en/latest/best-practices/index.html#use-as-t-in-delegate-registrations
+    /// </summary>
     public class PluginMetadataRegistrationSource : ImplicitRegistrationSource
     {
         public PluginMetadataRegistrationSource()
