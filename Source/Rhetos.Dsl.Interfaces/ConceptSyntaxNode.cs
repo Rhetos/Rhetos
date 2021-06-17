@@ -50,7 +50,7 @@ namespace Rhetos.Dsl
         public string GetUserDescription()
         {
             var desc = new StringBuilder(100);
-            desc.Append(Concept.KeywordOrTypeName);
+            desc.Append(Concept.GetKeywordOrTypeName());
             desc.Append(" ");
             AppendKeyMembers(desc);
             return desc.ToString();
@@ -84,7 +84,7 @@ namespace Rhetos.Dsl
             {
                 var value = (ConceptSyntaxNode)memberValue;
                 if (member.IsConceptInfoInterface)
-                    text.Append(value.Concept.RootTypeName).Append(":");
+                    text.Append(value.Concept.GetRootTypeName()).Append(":");
                 value.AppendKeyMembers(text);
             }
             else if (member.IsStringType)

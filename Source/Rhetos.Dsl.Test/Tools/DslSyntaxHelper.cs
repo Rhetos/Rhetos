@@ -110,6 +110,10 @@ namespace Rhetos.Dsl.Test
                 addReferencedTypes = newTypes;
             }
 
+            foreach (var type in types.ToList()) // Creating a copy to allow modification within the loop.
+                foreach (var baseType in DslSyntaxFromPlugins.GetBaseConceptInfoTypes(type))
+                    types.Add(baseType);
+
             return types.ToArray();
         }
     }

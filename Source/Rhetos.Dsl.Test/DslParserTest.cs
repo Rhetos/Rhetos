@@ -355,7 +355,7 @@ namespace Rhetos.Dsl.Test
             Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+AlternativeConcept1 Parent=s Name=<null> RefToParent=<null>", parsedConcepts.OfType<AlternativeConcept1>().Single().GetErrorDescription());
             Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+AlternativeConcept2 Alter1=s.a1 Name=<null> Data=d2", parsedConcepts.OfType<AlternativeConcept2>().Single().GetErrorDescription());
 
-            Assert.AreEqual("alter1, alter2, SIMPLE", TestUtility.DumpSorted(parsedNodes, c => c.Concept.KeywordOrTypeName));
+            Assert.AreEqual("alter1, alter2, SIMPLE", TestUtility.DumpSorted(parsedNodes, c => c.Concept.GetKeywordOrTypeName()));
         }
 
         [TestMethod]
@@ -371,7 +371,7 @@ namespace Rhetos.Dsl.Test
             Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+AlternativeConcept1 Parent=s Name=<null> RefToParent=<null>", parsedConcepts.OfType<AlternativeConcept1>().Single().GetErrorDescription());
             Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+AlternativeConcept2 Alter1=s.<null> Name=<null> Data=d2", parsedConcepts.OfType<AlternativeConcept2>().Single().GetErrorDescription());
 
-            Assert.AreEqual("alter1, alter2, SIMPLE", TestUtility.DumpSorted(parsedNodes, c => c.Concept.KeywordOrTypeName));
+            Assert.AreEqual("alter1, alter2, SIMPLE", TestUtility.DumpSorted(parsedNodes, c => c.Concept.GetKeywordOrTypeName()));
         }
 
         [ConceptKeyword("alterror1")]

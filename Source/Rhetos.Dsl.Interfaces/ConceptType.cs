@@ -41,16 +41,18 @@ namespace Rhetos.Dsl
         public string AssemblyQualifiedName { get; set; }
 
         /// <summary>
-        /// Base types, excluding the current concept type itself (<see cref="AssemblyQualifiedName"/>).
+        /// Base concept types, excluding the current concept type itself.
         /// The array is sorted by inheritance depth, each element is a derivation of the previous one.
         /// </summary>
-        public List<string> BaseTypesAssemblyQualifiedName { get; set; }
+        public List<ConceptType> BaseTypes { get; set; }
 
         /// <summary>
         /// Short type name of the root concept type, used for unique concept key definition.
-        /// It is same as <see cref="TypeName"/> if the <see cref="IConceptInfo"/> implementation is not a derivation of another concept.
         /// </summary>
-        public string RootTypeName { get; set; }
+        /// <remarks>
+        /// It is same as <see cref="TypeName"/> if the <see cref="IConceptInfo"/> implementation is not a derivation of another concept.
+        /// </remarks>
+        public string GetRootTypeName() => (BaseTypes.FirstOrDefault() ?? this).TypeName;
 
         /// <summary>
         /// Short type name of <see cref="IConceptInfo"/> implementation class for this concept.
@@ -61,7 +63,7 @@ namespace Rhetos.Dsl
 
         public List<ConceptMemberSyntax> Members { get; set; }
 
-        public string KeywordOrTypeName => Keyword ?? TypeName;
+        public string GetKeywordOrTypeName() => Keyword ?? TypeName;
 
         /// <summary>
         /// Determines whether the specified syntax node is an instance of the current (base property) concept type.
@@ -88,9 +90,7 @@ namespace Rhetos.Dsl
         /// </remarks>
         public bool IsAssignableFrom(ConceptType derivedConceptType)
         {
-            return
-                string.Equals(derivedConceptType.AssemblyQualifiedName, AssemblyQualifiedName)
-                || derivedConceptType.BaseTypesAssemblyQualifiedName.Contains(AssemblyQualifiedName, StringComparer.Ordinal);
+            return derivedConceptType == this || derivedConceptType.BaseTypes.Contains(this);
         }
     }
 }

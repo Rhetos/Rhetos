@@ -54,9 +54,10 @@ namespace Rhetos.Dsl
                 .Distinct()
                 .ToDictionary(
                     conceptInfoType => conceptInfoType,
-                    conceptInfoType => CreateConceptTypeWithoutMembers(conceptInfoType));
+                    conceptInfoType => CreateConceptTypePartial(conceptInfoType));
 
             foreach (var type in types)
+            {
                 type.Value.Members = ConceptMembers.Get(type.Key)
                     .Select(conceptMember =>
                     {
@@ -69,10 +70,15 @@ namespace Rhetos.Dsl
                     })
                     .ToList();
 
+                type.Value.BaseTypes = GetBaseConceptInfoTypes(type.Key)
+                    .Select(baseType => types[baseType])
+                    .ToList();
+            }
+
             return types.Values.OrderBy(conceptType => conceptType.AssemblyQualifiedName).ToList();
         }
 
-        private static ConceptType CreateConceptTypeWithoutMembers(Type conceptInfoType)
+        private static ConceptType CreateConceptTypePartial(Type conceptInfoType)
         {
             if (!typeof(IConceptInfo).IsAssignableFrom(conceptInfoType))
                 throw new ArgumentException($"Type '{conceptInfoType}' is not an implementation of '{typeof(IConceptInfo)}'.");
@@ -82,15 +88,14 @@ namespace Rhetos.Dsl
             return new ConceptType
             {
                 AssemblyQualifiedName = conceptInfoType.AssemblyQualifiedName,
-                BaseTypesAssemblyQualifiedName = GetBaseConceptInfoTypes(conceptInfoType),
-                RootTypeName = ConceptInfoHelper.BaseConceptInfoType(conceptInfoType).Name,
+                BaseTypes = null, // Will be set later, because it needs to reference other ConceptTypes, after all are created.
                 TypeName = conceptInfoType.Name,
                 Keyword = ConceptInfoHelper.GetKeyword(conceptInfoType),
-                Members = null // Will be set later, to avoid recursive dependencies when creating this objects.
+                Members = null, // Will be set later, to avoid recursive dependencies when creating these objects.
             };
         }
 
-        private static List<string> GetBaseConceptInfoTypes(Type t)
+        public static List<Type> GetBaseConceptInfoTypes(Type t)
         {
             var baseTypes = new List<Type>();
 
@@ -106,13 +111,8 @@ namespace Rhetos.Dsl
                     break;
             }
 
-            if (!baseTypes.Any())
-                return new List<string> { };
-            else
-            {
-                baseTypes.Reverse();
-                return baseTypes.Select(t => t.AssemblyQualifiedName).ToList();
-            }
+            baseTypes.Reverse();
+            return baseTypes;
         }
     }
 }
