@@ -130,5 +130,49 @@ RefConceptInfo.IsInstanceOfType(RefConceptInfo node) = True
 
             Assert.AreEqual(expected.Trim(), string.Join("\r\n", report));
         }
+
+        class C1 : IConceptInfo { }
+
+        class C2 : C1 { }
+
+        class C3 : C2 { }
+
+        class D1 { }
+
+        class D2 : D1 { }
+
+        [TestMethod]
+        public void GetBaseConceptInfoTypes()
+        {
+            var tests = new[]
+            {
+                typeof(C1),
+                typeof(C2),
+                typeof(C3),
+                typeof(D1),
+                typeof(D2),
+                typeof(IConceptInfo),
+                typeof(object),
+            };
+
+            var results = tests.Select(type =>
+            (
+                In: type,
+                Out: DslSyntaxFromPlugins.GetBaseConceptInfoTypes(type)
+            )).ToList();
+
+            var report = string.Join("\r\n",
+                results.Select(r => $"{r.In.Name}: {TestUtility.DumpSorted(r.Out, t => t.Name)}"));
+
+            Assert.AreEqual(
+@"C1: 
+C2: C1
+C3: C1, C2
+D1: 
+D2: 
+IConceptInfo: 
+Object: ",
+                report);
+        }
     }
 }
