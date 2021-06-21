@@ -28,6 +28,8 @@ using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Rhetos.DatabaseGenerator.Test
 {
@@ -189,6 +191,26 @@ namespace Rhetos.DatabaseGenerator.Test
             }
 
             public void ExecuteSql(IEnumerable<string> commands, bool useTransaction, Action<int> beforeExecute, Action<int> afterExecute)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void ExecuteReaderRaw(string query, object[] parameters, Action<DbDataReader> read)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task ExecuteReaderRawAsync(string query, object[] parameters, Action<DbDataReader> read, CancellationToken cancellationToken = default)
+            {
+                throw new NotImplementedException();
+            }
+
+            public int ExecuteSqlRaw(string query, object[] parameters)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<int> ExecuteSqlRawAsync(string query, object[] parameters, CancellationToken cancellationToken = default)
             {
                 throw new NotImplementedException();
             }

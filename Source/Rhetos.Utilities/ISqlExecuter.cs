@@ -17,13 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Logging;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
-using System.Diagnostics;
-using System.Diagnostics.Contracts;
-using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Rhetos.Utilities
 {
@@ -32,6 +30,30 @@ namespace Rhetos.Utilities
         void ExecuteReader(string command, Action<DbDataReader> action);
         void ExecuteSql(IEnumerable<string> commands, bool useTransaction);
         void ExecuteSql(IEnumerable<string> commands, bool useTransaction, Action<int> beforeExecute, Action<int> afterExecute);
+
+        /// <summary>
+        /// Executes a parametrized query on the database.
+        /// If you need more control on how a parameter is mapped to a database type, <see cref="DbParameter"/> can be used as a parameter.
+        /// </summary>
+        void ExecuteReaderRaw(string query, object[] parameters, Action<DbDataReader> read);
+
+        /// <summary>
+        /// Executes a parametrized query on the database.
+        /// If you need more control on how a parameter is mapped to a database type, <see cref="DbParameter"/> can be used as a parameter.
+        /// </summary>
+        Task ExecuteReaderRawAsync(string query, object[] parameters, Action<DbDataReader> read, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Executes a parametrized command on the database.
+        /// If you need more control on how a parameter is mapped to a database type, <see cref="DbParameter"/> can be used as a parameter.
+        /// </summary>
+        int ExecuteSqlRaw(string query, object[] parameters);
+
+        /// <summary>
+        /// Executes a parametrized command on the database.
+        /// If you need more control on how a parameter is mapped to a database type, <see cref="DbParameter"/> can be used as a parameter.
+        /// </summary>
+        Task<int> ExecuteSqlRawAsync(string query, object[] parameters, CancellationToken cancellationToken = default);
     }
 
     public static class SqlExecuterExtensions
@@ -40,16 +62,36 @@ namespace Rhetos.Utilities
         /// Executes the SQL queries in a transaction.
         /// </summary>
         public static void ExecuteSql(this ISqlExecuter sqlExecuter, params string[] commands)
-        {
-            sqlExecuter.ExecuteSql(commands, useTransaction: true);
-        }
+            => sqlExecuter.ExecuteSql(commands, useTransaction: true);
 
         /// <summary>
         /// Executes the SQL queries in a transaction.
         /// </summary>
         public static void ExecuteSql(this ISqlExecuter sqlExecuter, IEnumerable<string> commands)
-        {
-            sqlExecuter.ExecuteSql(commands, useTransaction: true);
-        }
+            => sqlExecuter.ExecuteSql(commands, useTransaction: true);
+
+        /// <summary>
+        /// Uses interpolated string to execute a parametrized command on the database
+        /// </summary>
+        public static int ExecuteSqlInterpolated(this ISqlExecuter sqlExecuter, FormattableString query)
+            => sqlExecuter.ExecuteSqlRaw(query.Format, query.GetArguments());
+
+        /// <summary>
+        /// Uses interpolated string to execute a parametrized command on the database
+        /// </summary>
+        public static Task<int> ExecuteSqlInterpolatedAsync(this ISqlExecuter sqlExecuter, FormattableString query)
+            => sqlExecuter.ExecuteSqlRawAsync(query.Format, query.GetArguments());
+
+        /// <summary>
+        /// Uses interpolated string to execute a parametrized query on the database
+        /// </summary>
+        public static void ExecuteReaderInterpolated(this ISqlExecuter sqlExecuter, FormattableString query, Action<DbDataReader> read)
+            => sqlExecuter.ExecuteReaderRaw(query.Format, query.GetArguments(), read);
+
+        /// <summary>
+        /// Uses interpolated string to execute a parametrized query on the database
+        /// </summary>
+        public static Task ExecuteReaderInterpolatedAsync(this ISqlExecuter sqlExecuter, FormattableString query, Action<DbDataReader> read)
+            => sqlExecuter.ExecuteReaderRawAsync(query.Format, query.GetArguments(), read);
     }
 }

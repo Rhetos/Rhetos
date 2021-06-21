@@ -29,13 +29,12 @@ using System.Text;
 
 namespace Rhetos.Persistence
 {
-    public class MsSqlExecuter : ISqlExecuter
+    public class MsSqlExecuter : BaseSqlExecuter, ISqlExecuter
     {
         private readonly string _connectionString;
         private readonly IUserInfo _userInfo;
         private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
-        private readonly IPersistenceTransaction _persistenceTransaction;
 
         /// <summary>
         /// This constructor is typically used in deployment time, when shared persistence transaction does not exist.
@@ -53,13 +52,12 @@ namespace Rhetos.Persistence
         /// at the end of the lifetime scope (for example, at the end of the web request).
         /// The exception here is ExecuteSql command called with useTransaction=false, which is not recommended at standard application runtime.
         /// </summary>
-        public MsSqlExecuter(ConnectionString connectionString, ILogProvider logProvider, IUserInfo userInfo, IPersistenceTransaction persistenceTransaction)
+        public MsSqlExecuter(ConnectionString connectionString, ILogProvider logProvider, IUserInfo userInfo, IPersistenceTransaction persistenceTransaction) : base(persistenceTransaction)
         {
             _connectionString = connectionString;
             _userInfo = userInfo;
             _logger = logProvider.GetLogger("MsSqlExecuter");
             _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
-            _persistenceTransaction = persistenceTransaction;
         }
 
         public void ExecuteSql(IEnumerable<string> commands, bool useTransaction)

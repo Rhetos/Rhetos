@@ -26,16 +26,17 @@ using System.Linq;
 using System.Text;
 using Rhetos.Logging;
 using Oracle.ManagedDataAccess.Client;
+using Rhetos.Utilities;
 
-namespace Rhetos.Utilities
+namespace Rhetos.Persistence
 {
-    public class OracleSqlExecuter : ISqlExecuter
+    public class OracleSqlExecuter : BaseSqlExecuter, ISqlExecuter
     {
         private readonly string _connectionString;
         private readonly IUserInfo _userInfo;
         private readonly ILogger _logger;
 
-        public OracleSqlExecuter(ConnectionString connectionString, ILogProvider logProvider, IUserInfo userInfo)
+        public OracleSqlExecuter(ConnectionString connectionString, ILogProvider logProvider, IUserInfo userInfo, IPersistenceTransaction persistenceTransaction) : base(persistenceTransaction)
         {
             _connectionString = connectionString;
             _userInfo = userInfo;
