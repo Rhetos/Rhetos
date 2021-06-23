@@ -36,21 +36,15 @@ namespace Rhetos.Dsl.Test
         {
             [ConceptKey]
             public string Name { get; set; }
+
             public string Data { get; set; }
-
-            public SimpleConceptInfo() { }
-            public SimpleConceptInfo(string name, string data)
-            {
-                Name = name;
-                Data = data;
-            }
         }
-
 
         class RefConceptInfo : IConceptInfo
         {
             [ConceptKey]
             public string Name { get; set; }
+
             [ConceptKey]
             public SimpleConceptInfo Reference { get; set; }
         }
@@ -59,7 +53,7 @@ namespace Rhetos.Dsl.Test
 
         internal static TokenReader TestTokenReader(string dsl, int position = 0)
         {
-            return new TokenReader(new TestTokenizer(dsl).GetTokens(), position);
+            return new TokenReader(new TestTokenizer(dsl).GetTokensOrException(), position);
         }
 
 
@@ -73,17 +67,21 @@ namespace Rhetos.Dsl.Test
             {
                 this.Keyword = keyword;
             }
-            public ValueOrError<IConceptInfo> Parse(ITokenReader tokenReader, Stack<IConceptInfo> context, out List<string> warnings)
+            public ValueOrError<ConceptSyntaxNode> Parse(ITokenReader tokenReader, Stack<ConceptSyntaxNode> context, out List<string> warnings)
             {
                 warnings = null;
                 if (tokenReader.ReadText().Value == Keyword)
                 {
                     if (tokenReader.TryRead("-"))
-                        return new SimpleConceptInfo("", "");
+                    {
+                        var node = new ConceptSyntaxNode(new ConceptType());
+                        node.Parameters[0] = "";
+                        node.Parameters[1] = "";
+                    }
                     else
                         return ValueOrError.CreateError(ErrorMessage);
                 }
-                return ValueOrError<IConceptInfo>.CreateError("");
+                return ValueOrError<ConceptSyntaxNode>.CreateError("");
             }
         }
 
@@ -91,10 +89,10 @@ namespace Rhetos.Dsl.Test
         public void ParseNextConcept_DontDescribeExceptionIfConceptNotRecognized()
         {
             string dsl = "a";
-            var conceptParsers = new MultiDictionary<string, IConceptParser> ();
+            var conceptParsers = new MultiDictionary<string, IConceptParser>();
             conceptParsers.Add("b", new List<IConceptParser>() { new TestErrorParser("b") });
 
-            TokenReader tokenReader = new TokenReader(new TestTokenizer(dsl).GetTokens(), 0);
+            var tokenReader = new TokenReader(new TestTokenizer(dsl).GetTokensOrException(), 0);
 
             var e = TestUtility.ShouldFail<DslSyntaxException>(
                 () => new TestDslParser(dsl).ParseNextConcept(tokenReader, null, conceptParsers));
@@ -107,7 +105,7 @@ namespace Rhetos.Dsl.Test
         {
             string dsl = "a";
             var conceptParsers = new MultiDictionary<string, IConceptParser>();
-            conceptParsers.Add("a", new List<IConceptParser>() { new TestErrorParser("a") }); ;
+            conceptParsers.Add("a", new List<IConceptParser>() { new TestErrorParser("a") });
 
             TokenReader tokenReader = TestTokenReader(dsl);
 
@@ -139,24 +137,26 @@ namespace Rhetos.Dsl.Test
         public void ParseNextConcept_SameKeyWordDifferentContext()
         {
             string dsl = "concept simple simpledata; concept ext extdata extdata2;";
+
+            var syntax = DslSyntaxHelper.CreateDslSyntax(typeof(SimpleConceptInfo), typeof(ExtendedConceptInfo));
             var conceptParsersList = new List<IConceptParser>()
             {
-                new GenericParserHelper<SimpleConceptInfo>("concept"),
-                new GenericParserHelper<ExtendedConceptInfo>("concept")
+                new GenericParserHelper<SimpleConceptInfo>(syntax, "concept"),
+                new GenericParserHelper<ExtendedConceptInfo>(syntax, "concept")
             };
             var conceptParsers = new MultiDictionary<string, IConceptParser>();
             conceptParsers.Add("concept", conceptParsersList);
 
             var noContext = new Stack<IConceptInfo>();
             TokenReader tokenReader = TestTokenReader(dsl);
-            IConceptInfo concept = new TestDslParser(dsl).ParseNextConcept(tokenReader, noContext, conceptParsers);
+            IConceptInfo concept = new TestDslParser(dsl, syntax).ParseNextConcept(tokenReader, noContext, conceptParsers);
             Assert.AreEqual(typeof(SimpleConceptInfo), concept.GetType());
             Assert.AreEqual("simple", (concept as SimpleConceptInfo).Name);
             Assert.AreEqual("simpledata", (concept as SimpleConceptInfo).Data);
 
             Assert.IsTrue(tokenReader.TryRead(";"), "Reading ';' between concepts.");
 
-            concept = new TestDslParser(dsl).ParseNextConcept(tokenReader, noContext, conceptParsers);
+            concept = new TestDslParser(dsl, syntax).ParseNextConcept(tokenReader, noContext, conceptParsers);
             Assert.AreEqual(typeof(ExtendedConceptInfo), concept.GetType());
             Assert.AreEqual("ext", (concept as ExtendedConceptInfo).Name);
             Assert.AreEqual("extdata", (concept as ExtendedConceptInfo).Data);
@@ -169,25 +169,27 @@ namespace Rhetos.Dsl.Test
         public void ParseNextConcept_SameKeyWordDifferentContext_Enclosed()
         {
             string dsl = "concept name data { concept ref; }";
+
+            var syntax = DslSyntaxHelper.CreateDslSyntax(typeof(SimpleConceptInfo), typeof(EnclosedRefConceptInfo));
             var conceptParsersList = new List<IConceptParser>()
             {
-                new GenericParserHelper<SimpleConceptInfo>("concept"),
-                new GenericParserHelper<EnclosedRefConceptInfo>("concept")
+                new GenericParserHelper<SimpleConceptInfo>(syntax, "concept"),
+                new GenericParserHelper<EnclosedRefConceptInfo>(syntax,"concept")
             };
             var conceptParsers = new MultiDictionary<string, IConceptParser>();
             conceptParsers.Add("concept", conceptParsersList);
 
             var context = new Stack<IConceptInfo>();
             TokenReader tokenReader = TestTokenReader(dsl);
-            IConceptInfo concept = new TestDslParser(dsl).ParseNextConcept(tokenReader, context, conceptParsers);
+            IConceptInfo concept = new TestDslParser(dsl, syntax).ParseNextConcept(tokenReader, context, conceptParsers);
             Assert.AreEqual(typeof(SimpleConceptInfo), concept.GetType());
             Assert.AreEqual("name", (concept as SimpleConceptInfo).Name);
             Assert.AreEqual("data", (concept as SimpleConceptInfo).Data);
 
-			Assert.IsTrue(tokenReader.TryRead("{"), "Reading '{' between concepts.");
+            Assert.IsTrue(tokenReader.TryRead("{"), "Reading '{' between concepts.");
 
             context.Push(concept);
-            concept = new TestDslParser(dsl).ParseNextConcept(tokenReader, context, conceptParsers);
+            concept = new TestDslParser(dsl, syntax).ParseNextConcept(tokenReader, context, conceptParsers);
             Assert.AreEqual(typeof(EnclosedRefConceptInfo), concept.GetType());
             Assert.AreEqual("ref", (concept as EnclosedRefConceptInfo).Name);
             Assert.AreEqual("name", (concept as EnclosedRefConceptInfo).Reference.Name);
@@ -195,31 +197,26 @@ namespace Rhetos.Dsl.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(DslSyntaxException))]
         public void ParseNextConcept_SameKeyWordDifferentContext_Ambiguous()
         {
             string dsl = "concept simple data; concept ref simple;";
 
+            var syntax = DslSyntaxHelper.CreateDslSyntax(typeof(SimpleConceptInfo), typeof(RefConceptInfo));
             var conceptParsersList = new List<IConceptParser>()
             {
-                new GenericParserHelper<SimpleConceptInfo>("concept"),
-                new GenericParserHelper<RefConceptInfo>("concept")
+                new GenericParserHelper<SimpleConceptInfo>(syntax, "concept"),
+                new GenericParserHelper<RefConceptInfo>(syntax, "concept")
             };
-            var conceptParsers = new MultiDictionary<string, IConceptParser> ();
+            var conceptParsers = new MultiDictionary<string, IConceptParser>();
             conceptParsers.Add("concept", conceptParsersList);
 
             var noContext = new Stack<IConceptInfo>();
             TokenReader tokenReader = TestTokenReader(dsl);
-            try
-            {
-                IConceptInfo concept = new TestDslParser(dsl).ParseNextConcept(tokenReader, noContext, conceptParsers);
-            }
-            catch (Exception e)
-            {
-                Assert.IsTrue(e.Message.Contains("SimpleConceptInfo"), "Possible interpretation is SimpleConceptInfo.");
-                Assert.IsTrue(e.Message.Contains("RefConceptInfo"), "Possible interpretation is RefConceptInfo.");
-                throw;
-            }
+
+            TestUtility.ShouldFail<DslSyntaxException>(
+                () => new TestDslParser(dsl).ParseNextConcept(tokenReader, noContext, conceptParsers),
+                // Possible interpretations:
+                "SimpleConceptInfo", "RefConceptInfo");
         }
 
         [TestMethod]
@@ -263,16 +260,21 @@ namespace Rhetos.Dsl.Test
             TestUtility.ShouldFail(() => DslParserParse("simple a b"), // missing semicolon
                 "simple", "Expected \";\" or \"{\"", MockDslScript.TestScriptName, "TestDslScript(1,11)");
         }
-        
-        private static IEnumerable<IConceptInfo> DslParserParse(params string[] dsl)
+
+        private static IEnumerable<ConceptSyntaxNode> DslParserParse(params string[] dslScripts)
+            => DslParserParse(dslScripts, new[] { typeof(SimpleConceptInfo) });
+
+        private static IEnumerable<ConceptSyntaxNode> DslParserParse(string dslScript, Type[] conceptTypes)
+            => DslParserParse(new[] { dslScript }, conceptTypes);
+
+        private static IEnumerable<ConceptSyntaxNode> DslParserParse(string[] dslScripts, Type[] conceptTypes)
         {
             var dslParser = new DslParser(
-                new TestTokenizer(dsl),
-                new IConceptInfo[] { new SimpleConceptInfo() },
-                new ConsoleLogProvider(),
-                new BuildOptions());
-            var parsedConcepts = dslParser.ParsedConcepts;
-            Console.WriteLine("Parsed concepts: " + string.Join("\r\n", dslParser.ParsedConcepts));
+                new TestTokenizer(dslScripts),
+                DslSyntaxHelper.CreateDslSyntax(conceptTypes),
+                new ConsoleLogProvider());
+            var parsedConcepts = dslParser.GetConcepts();
+            Console.WriteLine("Parsed concepts: " + string.Join("\r\n", parsedConcepts.Select(c => c.Concept.TypeName)));
             return parsedConcepts;
         }
 
@@ -280,8 +282,7 @@ namespace Rhetos.Dsl.Test
         public void DslParser_MultipleFiles()
         {
             var concepts = DslParserParse("simple a b;", "simple c d;");
-            Assert.AreEqual("InitializationConcept, SIMPLE a, SIMPLE c", TestUtility.DumpSorted(concepts,
-                c => c is InitializationConcept ? "InitializationConcept" : c.GetUserDescription()));
+            Assert.AreEqual("SIMPLE a, SIMPLE c", TestUtility.DumpSorted(concepts, c => c.GetUserDescription()));
         }
 
         [TestMethod]
@@ -298,7 +299,7 @@ namespace Rhetos.Dsl.Test
         // IAlternativeInitializationConcept:
 
         [ConceptKeyword("alter1")]
-        class AlternativeConcept1: IAlternativeInitializationConcept
+        class AlternativeConcept1 : IAlternativeInitializationConcept
         {
             [ConceptKey]
             public SimpleConceptInfo Parent { get; set; }
@@ -345,33 +346,32 @@ namespace Rhetos.Dsl.Test
         public void AlternativeInitializationConceptTest()
         {
             string dsl = "SIMPLE s d; ALTER1 s; ALTER2 s.a1 d2;";
-            var grammar = new IConceptInfo[] { new SimpleConceptInfo(), new AlternativeConcept1(), new AlternativeConcept2() };
-            var parsedConcepts = new TestDslParser(dsl, grammar).ParsedConcepts;
+            var syntax = new IConceptInfo[] { new SimpleConceptInfo(), new AlternativeConcept1(), new AlternativeConcept2() };
+            var parsedNodes = new TestDslParser(dsl, syntax).GetConcepts();
+            var parsedConcepts = ConceptInfoHelper.ConvertNodesToConceptInfos(parsedNodes);
 
+            // IAlternativeInitializationConcept should be parsed, but not yet initialized.
             Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+SimpleConceptInfo Name=s Data=d", parsedConcepts.OfType<SimpleConceptInfo>().Single().GetErrorDescription());
-            Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+AlternativeConcept1 Parent=s Name=a1 RefToParent=ref.s", parsedConcepts.OfType<AlternativeConcept1>().Single().GetErrorDescription());
-            Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+AlternativeConcept2 Alter1=s.a1 Name=a2 Data=d2", parsedConcepts.OfType<AlternativeConcept2>().Single().GetErrorDescription());
-            Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+RefConceptInfo Name=ref Reference=s", parsedConcepts.OfType<RefConceptInfo>().Single().GetErrorDescription());
+            Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+AlternativeConcept1 Parent=s Name=<null> RefToParent=<null>", parsedConcepts.OfType<AlternativeConcept1>().Single().GetErrorDescription());
+            Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+AlternativeConcept2 Alter1=s.a1 Name=<null> Data=d2", parsedConcepts.OfType<AlternativeConcept2>().Single().GetErrorDescription());
 
-            // References are not yet resolved when evaluating IAlternativeInitializationConcept, so the SimpleConceptInfo reference does not have a value of the Data property:
-            Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+SimpleConceptInfo Name=s Data=<null>", parsedConcepts.OfType<RefConceptInfo>().Single().Reference.GetErrorDescription(),
-                "This test does not describe the wanted behavior, it just describes the current state of the parser.");
+            Assert.AreEqual("alter1, alter2, SIMPLE", TestUtility.DumpSorted(parsedNodes, c => c.Concept.GetKeywordOrTypeName()));
         }
 
         [TestMethod]
         public void AlternativeInitializationConcept_Embedded()
         {
             string dsl = "SIMPLE s d { ALTER1 { ALTER2 d2; } }";
-            var grammar = new IConceptInfo[] { new SimpleConceptInfo(), new AlternativeConcept1(), new AlternativeConcept2() };
-            var parsedConcepts = new TestDslParser(dsl, grammar).ParsedConcepts;
+            var syntax = new IConceptInfo[] { new SimpleConceptInfo(), new AlternativeConcept1(), new AlternativeConcept2() };
+            var parsedNodes = new TestDslParser(dsl, syntax).GetConcepts();
+            var parsedConcepts = ConceptInfoHelper.ConvertNodesToConceptInfos(parsedNodes);
 
+            // IAlternativeInitializationConcept should be parsed, but not yet initialized.
             Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+SimpleConceptInfo Name=s Data=d", parsedConcepts.OfType<SimpleConceptInfo>().Single().GetErrorDescription());
-            Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+AlternativeConcept1 Parent=s Name=a1 RefToParent=ref.s", parsedConcepts.OfType<AlternativeConcept1>().Single().GetErrorDescription());
-            Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+AlternativeConcept2 Alter1=s.a1 Name=a2 Data=d2", parsedConcepts.OfType<AlternativeConcept2>().Single().GetErrorDescription());
-            Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+RefConceptInfo Name=ref Reference=s", parsedConcepts.OfType<RefConceptInfo>().Single().GetErrorDescription());
+            Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+AlternativeConcept1 Parent=s Name=<null> RefToParent=<null>", parsedConcepts.OfType<AlternativeConcept1>().Single().GetErrorDescription());
+            Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+AlternativeConcept2 Alter1=s.<null> Name=<null> Data=d2", parsedConcepts.OfType<AlternativeConcept2>().Single().GetErrorDescription());
 
-            // Embedded concepts have the parent reference resolved during parsing, so the SimpleConceptInfo reference has a value of the Data property:
-            Assert.AreEqual("Rhetos.Dsl.Test.DslParserTest+SimpleConceptInfo Name=s Data=d", parsedConcepts.OfType<RefConceptInfo>().Single().Reference.GetErrorDescription());
+            Assert.AreEqual("alter1, alter2, SIMPLE", TestUtility.DumpSorted(parsedNodes, c => c.Concept.GetKeywordOrTypeName()));
         }
 
         [ConceptKeyword("alterror1")]
@@ -387,12 +387,235 @@ namespace Rhetos.Dsl.Test
         public void AlternativeInitializationConcept_ErrorHandling()
         {
             string dsl = "alterror1;";
-            var grammar = new IConceptInfo[] { new AlternativeError1() };
-            
+            var syntax = new IConceptInfo[] { new AlternativeError1() };
+
             // Parsing a concept with invalid DeclareNonparsableProperties
             TestUtility.ShouldFail(
-                () => { var concepts = new TestDslParser(dsl, grammar).ParsedConcepts; },
+                () => { new TestDslParser(dsl, syntax).GetConcepts(); },
                 "AlternativeError1", "invalid implementation", "Names", "does not exist", "DeclareNonparsableProperties");
+        }
+
+        //===================================================================================
+        // Flat vs Nested ambiguity:
+
+        [ConceptKeyword("SUB")]
+        class SubConceptInfo : IConceptInfo
+        {
+            [ConceptKey]
+            public SimpleConceptInfo Simple { get; set; }
+
+            [ConceptKey]
+            public string Name { get; set; }
+        }
+
+        [ConceptKeyword("SUBSUB")]
+        class SubSubConceptInfo : IConceptInfo
+        {
+            [ConceptKey]
+            public SubConceptInfo Sub { get; set; }
+
+            [ConceptKey]
+            public string Name { get; set; }
+        }
+
+        [ConceptKeyword("FNA")]
+        class Level3ConceptInfo : IConceptInfo
+        {
+            [ConceptKey]
+            public SubSubConceptInfo SubSub { get; set; }
+        }
+
+        [ConceptKeyword("FNA")]
+        class Level2ConceptInfo : IConceptInfo
+        {
+            [ConceptKey]
+            public SubConceptInfo Sub { get; set; }
+
+            [ConceptKey]
+            public string SubSubName { get; set; }
+        }
+
+        [ConceptKeyword("FNA")]
+        class Level1ConceptInfo : IConceptInfo
+        {
+            [ConceptKey]
+            public SimpleConceptInfo Simple { get; set; }
+
+            [ConceptKey]
+            public string SubName { get; set; }
+
+            [ConceptKey]
+            public string SubSubName { get; set; }
+        }
+
+        [ConceptKeyword("FNA")]
+        class Level0NamesConceptInfo : IConceptInfo
+        {
+            [ConceptKey]
+            public string SimpleName { get; set; }
+
+            [ConceptKey]
+            public string SubName { get; set; }
+
+            [ConceptKey]
+            public string SubSubName { get; set; }
+        }
+
+        [ConceptKeyword("FNA")]
+        class Level0SingleConceptInfo : IConceptInfo
+        {
+            [ConceptKey]
+            public string Name { get; set; }
+        }
+
+        [ConceptKeyword("FNA")]
+        class FnaInterfaceConceptInfo : IConceptInfo
+        {
+            [ConceptKey]
+            public IConceptInfo Any { get; set; }
+        }
+
+        public static readonly Type[] AllFnaConcepts = new Type[]
+        {
+            typeof(SubConceptInfo),
+            typeof(SubSubConceptInfo),
+            typeof(Level3ConceptInfo),
+            typeof(Level2ConceptInfo),
+            typeof(Level1ConceptInfo),
+            typeof(Level0NamesConceptInfo),
+            typeof(Level0SingleConceptInfo),
+            typeof(FnaInterfaceConceptInfo),
+        };
+
+        [TestMethod]
+        public void FlatNestedAmbiguity_Level3()
+        {
+            var concepts = DslParserParse("SIMPLE a b { SUB c { SUBSUB d { FNA; } } }", AllFnaConcepts);
+            var fna = concepts.Single(c => c.Concept.Keyword == "FNA");
+            Assert.AreEqual("Level3ConceptInfo", fna.Concept.TypeName);
+        }
+
+        [TestMethod]
+        public void FlatNestedAmbiguity_Level2()
+        {
+            var concepts = DslParserParse("SIMPLE a b { SUB c { SUBSUB d; FNA d; } }", AllFnaConcepts);
+            var fna = concepts.Single(c => c.Concept.Keyword == "FNA");
+            Assert.AreEqual("Level2ConceptInfo", fna.Concept.TypeName);
+        }
+
+        [TestMethod]
+        public void FlatNestedAmbiguity_Level1Reference()
+        {
+            var concepts = DslParserParse("SIMPLE a b { SUB c { SUBSUB d; } FNA c.d; }", AllFnaConcepts);
+            var fna = concepts.Single(c => c.Concept.Keyword == "FNA");
+            Assert.AreEqual("Level1ConceptInfo", fna.Concept.TypeName);
+            // Result depends on parser option ExcessDotInKey. If dots were not allowed, it would result with Level3ConceptInfo.
+        }
+
+        [TestMethod]
+        public void FlatNestedAmbiguity_Level1Name()
+        {
+            var concepts = DslParserParse("SIMPLE a b { SUB c { SUBSUB d; } FNA c d; }", AllFnaConcepts);
+            var fna = concepts.Single(c => c.Concept.Keyword == "FNA");
+            Assert.AreEqual("Level1ConceptInfo", fna.Concept.TypeName);
+        }
+
+        [TestMethod]
+        public void FlatNestedAmbiguity_Level0Reference()
+        {
+            var concepts = DslParserParse("SIMPLE a b { SUB c { SUBSUB d; } } FNA a.c.d;", AllFnaConcepts);
+            var fna = concepts.Single(c => c.Concept.Keyword == "FNA");
+            Assert.AreEqual("Level0NamesConceptInfo", fna.Concept.TypeName);
+            // Result depends on parser option ExcessDotInKey. If dots were not allowed, it would result with Level3ConceptInfo.
+        }
+
+        [TestMethod]
+        public void FlatNestedAmbiguity_Level0Name()
+        {
+            var concepts = DslParserParse("SIMPLE a b { SUB c { SUBSUB d; } } FNA a c d;", AllFnaConcepts);
+            var fna = concepts.Single(c => c.Concept.Keyword == "FNA");
+            Assert.AreEqual("Level0NamesConceptInfo", fna.Concept.TypeName);
+        }
+
+        [TestMethod]
+        public void FlatNestedAmbiguity_Level0Single()
+        {
+            var concepts = DslParserParse("SIMPLE a b; FNA a;", AllFnaConcepts);
+            var fna = concepts.Single(c => c.Concept.Keyword == "FNA");
+            Assert.AreEqual("Level0SingleConceptInfo", fna.Concept.TypeName);
+        }
+
+        [TestMethod]
+        public void FlatNestedAmbiguity_FnaInterface()
+        {
+            var concepts = DslParserParse("SIMPLE a b { FNA; }", AllFnaConcepts);
+            var fna = concepts.Single(c => c.Concept.Keyword == "FNA");
+            Assert.AreEqual("FnaInterfaceConceptInfo", fna.Concept.TypeName);
+        }
+
+        //===================================================================================
+        // Parent is concrete type vs interface ambiguity:
+
+        [ConceptKeyword("OTHER")]
+        class OtherConceptInfo : IConceptInfo
+        {
+            [ConceptKey]
+            public string Name { get; set; }
+
+            public string Data { get; set; }
+        }
+
+        [ConceptKeyword("CIA")]
+        class CiaConcreteConceptInfo : IConceptInfo
+        {
+            [ConceptKey]
+            public SimpleConceptInfo Simple { get; set; }
+        }
+
+        [ConceptKeyword("CIA")]
+        class CiaInterfaceConceptInfo : IConceptInfo
+        {
+            [ConceptKey]
+            public IConceptInfo Any { get; set; }
+        }
+
+        [ConceptKeyword("CIA")]
+        class CiaStringConceptInfo : IConceptInfo
+        {
+            [ConceptKey]
+            public string Name { get; set; }
+        }
+
+        public static readonly Type[] AllCiaConcepts = new Type[]
+        {
+            typeof(OtherConceptInfo),
+            typeof(CiaConcreteConceptInfo),
+            typeof(CiaInterfaceConceptInfo),
+            typeof(CiaStringConceptInfo),
+        };
+
+        [TestMethod]
+        public void ConcreteInterfaceAmbiguity_Concrete()
+        {
+            var concepts = DslParserParse("SIMPLE a b { CIA; }", AllCiaConcepts); // Ambiguity between Concrete and Interface.
+            var fna = concepts.Single(c => c.Concept.Keyword == "CIA");
+            Assert.AreEqual("CiaConcreteConceptInfo", fna.Concept.TypeName);
+        }
+
+        [TestMethod]
+        public void ConcreteInterfaceAmbiguity_Interface()
+        {
+            var concepts = DslParserParse("OTHER a b { CIA; }", AllCiaConcepts); // No ambiguity.
+            var fna = concepts.Single(c => c.Concept.Keyword == "CIA");
+            Assert.AreEqual("CiaInterfaceConceptInfo", fna.Concept.TypeName);
+        }
+
+        [TestMethod]
+        public void ConcreteInterfaceAmbiguity_String()
+        {
+            var concepts = DslParserParse("SIMPLE a b; CIA a;", AllCiaConcepts); // Ambiguity between Concrete and String.
+            var fna = concepts.Single(c => c.Concept.Keyword == "CIA");
+            Assert.AreEqual("CiaStringConceptInfo", fna.Concept.TypeName);
         }
     }
 }

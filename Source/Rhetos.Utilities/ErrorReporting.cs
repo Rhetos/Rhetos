@@ -17,17 +17,18 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities;
-using System.Collections.Generic;
+using System;
 
-namespace Rhetos.Dsl
+namespace Rhetos.Utilities
 {
-    public interface IConceptParser
+    public static class ErrorReporting
     {
-        /// <summary>
-        /// If the keyword is not recognized return empty error string.
-        /// If the keyword is recognized, but the syntax is wrong, return error description.
-        /// </summary>
-        ValueOrError<ConceptSyntaxNode> Parse(ITokenReader tokenReader, Stack<ConceptSyntaxNode> context, out List<string> warnings);
+        public static string GetInternalServerErrorMessage(ILocalizer localizer, Exception exception)
+        {
+            return localizer[
+                "Internal server error occurred. See server log for more information. ({0}, {1})",
+                exception.GetType().Name,
+                DateTime.Now.ToString("s")];
+        }
     }
 }

@@ -25,60 +25,77 @@ using System.Linq;
 
 namespace Rhetos.Dsl
 {
-    public class Tokenizer
+    /// <summary>
+    /// Performs the lexical analysis for DSL scripts: Transforms source text into a list of tokens.
+    /// </summary>
+    public class Tokenizer : ITokenizer
     {
         private readonly IDslScriptsProvider _dslScriptsProvider;
         private readonly FilesUtility _filesUtility;
-        List<Token> _tokens = null;
-        readonly object _tokensLock = new object();
+        private readonly DslSyntax _syntax;
 
-        public Tokenizer(IDslScriptsProvider dslScriptsProvider, FilesUtility filesUtility)
+        public Tokenizer(IDslScriptsProvider dslScriptsProvider, FilesUtility filesUtility, DslSyntax syntax)
         {
             _dslScriptsProvider = dslScriptsProvider;
             _filesUtility = filesUtility;
+            _syntax = syntax;
         }
 
-        public List<Token> GetTokens()
+        public TokenizerResult GetTokens()
         {
-            if (_tokens == null)
-                lock (_tokensLock)
-                    if (_tokens == null)
-                        ParseTokens();
-            return _tokens;
-        }
+            var tokens = new List<Token>();
+            DslSyntaxException syntaxError = null;
 
-        private void ParseTokens()
-        {
-            _tokens = new List<Token>();
-
-            foreach (var dslScript in _dslScriptsProvider.DslScripts)
+            try
             {
-                int scriptPosition = 0;
+                var tokenizerInternals = new TokenizerInternals(_syntax);
 
-                while (true)
+                foreach (var dslScript in _dslScriptsProvider.DslScripts)
                 {
-                    TokenizerInternals.SkipWhitespaces(dslScript.Script, ref scriptPosition);
-                    if (scriptPosition >= dslScript.Script.Length)
-                        break;
+                    int scriptPosition = 0;
 
-                    int startPosition = scriptPosition;
-                    Token t = TokenizerInternals.GetNextToken_ValueType(dslScript, ref scriptPosition, _filesUtility.ReadAllText);
-                    t.DslScript = dslScript;
-                    t.PositionInDslScript = startPosition;
-                    t.PositionEndInDslScript = scriptPosition;
+                    while (true)
+                    {
+                        TokenizerInternals.SkipWhitespaces(dslScript.Script, ref scriptPosition);
+                        if (scriptPosition >= dslScript.Script.Length)
+                            break;
 
-                    if (t.Type != TokenType.Comment)
-                        _tokens.Add(t);
+                        int startPosition = scriptPosition;
+                        Token t = tokenizerInternals.GetNextToken_ValueType(dslScript, ref scriptPosition, _filesUtility.ReadAllText);
+                        t.DslScript = dslScript;
+                        t.PositionInDslScript = startPosition;
+                        t.PositionEndInDslScript = scriptPosition;
+
+                        if (t.Type != TokenType.Comment)
+                            tokens.Add(t);
+                    }
+
+                    tokens.Add(new Token { DslScript = dslScript, PositionInDslScript = dslScript.Script.Length, PositionEndInDslScript = dslScript.Script.Length, Type = TokenType.EndOfFile, Value = "" });
                 }
-
-                _tokens.Add(new Token { DslScript = dslScript, PositionInDslScript = dslScript.Script.Length, PositionEndInDslScript = dslScript.Script.Length, Type = TokenType.EndOfFile, Value = "" });
             }
+            catch (DslSyntaxException e)
+            {
+                syntaxError = e;
+            }
+
+            return new TokenizerResult
+            {
+                Tokens = tokens,
+                SyntaxError = syntaxError
+            };
         }
     }
 
-    public static class TokenizerInternals
+    public class TokenizerInternals
     {
-        readonly static char[] Whitespaces = { ' ', '\t', '\n', '\r' };
+        private readonly static char[] Whitespaces = { ' ', '\t', '\n', '\r' };
+        private static readonly HashSet<char> invalidPathChars = new HashSet<char>(Path.GetInvalidPathChars());
+        private readonly DslSyntax _syntax;
+
+        public TokenizerInternals(DslSyntax syntax)
+        {
+            _syntax = syntax;
+        }
 
         public static void SkipWhitespaces(string script, ref int position)
         {
@@ -86,7 +103,7 @@ namespace Rhetos.Dsl
                 position++;
         }
 
-        public static Token GetNextToken_ValueType(DslScript dslScript, ref int position, Func<string, string> readAllTextfromFile)
+        public Token GetNextToken_ValueType(DslScript dslScript, ref int position, Func<string, string> readAllTextfromFile)
         {
             string script = dslScript.Script;
             if (position < script.Length && Whitespaces.Contains(script[position]))
@@ -201,9 +218,7 @@ namespace Rhetos.Dsl
             return c == '<';
         }
 
-        private static readonly HashSet<char> invalidPathChars = new HashSet<char>(Path.GetInvalidPathChars());
-
-        private static string ReadExternalText(DslScript dslScript, ref int end, Func<string, string> readAllTextfromFile)
+        private string ReadExternalText(DslScript dslScript, ref int end, Func<string, string> readAllTextfromFile)
         {
             string script = dslScript.Script;
             int begin = end;
@@ -231,7 +246,7 @@ namespace Rhetos.Dsl
             return LoadFile(Path.Combine(dslScriptFolder, basicFilePath), dslScript, begin, readAllTextfromFile);
         }
 
-        private static string LoadFile(string basicFilePath, DslScript dslScript, int begin, Func<string, string> readAllTextfromFile)
+        private string LoadFile(string basicFilePath, DslScript dslScript, int begin, Func<string, string> readAllTextfromFile)
         {
             var filePaths = new List<string> { basicFilePath };
 
@@ -247,8 +262,8 @@ namespace Rhetos.Dsl
                 }
 
                 // Look for SQL dialect-specific files before the generic SQL file:
-                filePaths.Insert(0, Path.Combine(directory, fileName + "." + SqlUtility.DatabaseLanguage + basicFileExtension));
-                filePaths.Insert(1, Path.Combine(directory, fileName + " (" + SqlUtility.DatabaseLanguage + ")" + basicFileExtension));
+                filePaths.Insert(0, Path.Combine(directory, fileName + "." + _syntax.DatabaseLanguage + basicFileExtension));
+                filePaths.Insert(1, Path.Combine(directory, fileName + " (" + _syntax.DatabaseLanguage + ")" + basicFileExtension));
             }
 
             foreach (var filePath in filePaths)

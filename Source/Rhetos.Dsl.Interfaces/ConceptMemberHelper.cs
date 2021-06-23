@@ -17,17 +17,31 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities;
-using System.Collections.Generic;
+using System.Text;
 
 namespace Rhetos.Dsl
 {
-    public interface IConceptParser
+    public static class ConceptMemberHelper
     {
-        /// <summary>
-        /// If the keyword is not recognized return empty error string.
-        /// If the keyword is recognized, but the syntax is wrong, return error description.
-        /// </summary>
-        ValueOrError<ConceptSyntaxNode> Parse(ITokenReader tokenReader, Stack<ConceptSyntaxNode> context, out List<string> warnings);
+        public static void AppendWithQuotesIfNeeded(StringBuilder text, string s)
+        {
+            bool clean = true;
+            for (int i = 0; i < s.Length; i++)
+            {
+                char c = s[i];
+                if (!(c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == '_'))
+                {
+                    clean = false;
+                    break;
+                }
+            }
+            if (clean && s.Length > 0)
+                text.Append(s);
+            else
+            {
+                string quote = (s.Contains("\'") && !s.Contains("\"")) ? "\"" : "\'";
+                text.Append(quote).Append(s.Replace(quote, quote + quote)).Append(quote);
+            }
+        }
     }
 }

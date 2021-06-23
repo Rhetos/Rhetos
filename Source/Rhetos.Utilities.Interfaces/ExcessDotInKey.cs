@@ -17,22 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Rhetos.Dsl
+namespace Rhetos.Utilities
 {
-    public enum TokenType { Text, Special, Comment, EndOfFile };
-
-    public class Token
-    {
-        public string Value;
-        public DslScript DslScript;
-        public int PositionInDslScript;
-        public int PositionEndInDslScript;
-        public TokenType Type;
-    }
+    /// <summary>
+    /// Before Rhetos v4.0, dot character was expected before string key parameter of current statement.
+    /// Since Rhetos v4.0, dot should only be used for separating key parameters of referenced concept,
+    /// but legacy syntax is allowed by setting this option to <see cref="Ignore"/> or <see cref="Warning"/>.
+    /// </summary>
+    public enum ExcessDotInKey { Ignore = 0, Warning = 1, Error = 2 }; // Numeric values are important for backward compatibility of serialized options in DslSyntax class.
 }

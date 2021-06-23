@@ -17,17 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities;
-using System.Collections.Generic;
-
 namespace Rhetos.Dsl
 {
-    public interface IConceptParser
+    public class ConceptDocumentation
     {
-        /// <summary>
-        /// If the keyword is not recognized return empty error string.
-        /// If the keyword is recognized, but the syntax is wrong, return error description.
-        /// </summary>
-        ValueOrError<ConceptSyntaxNode> Parse(ITokenReader tokenReader, Stack<ConceptSyntaxNode> context, out List<string> warnings);
+        public string Summary { get; set; }
+        public string Remarks { get; set; }
     }
 }

@@ -18,6 +18,7 @@
 */
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -27,7 +28,7 @@ namespace Rhetos.Dsl
 {
     public static class ConceptInfoHelper
     {
-        private static ConditionalWeakTable<IConceptInfo, string> KeyCache = new ConditionalWeakTable<IConceptInfo, string>();
+        private static readonly ConditionalWeakTable<IConceptInfo, string> KeyCache = new ConditionalWeakTable<IConceptInfo, string>();
 
         /// <summary>
         /// Returns a string that <b>uniquely describes the concept instance</b>.
@@ -241,6 +242,7 @@ namespace Rhetos.Dsl
         private static void AppendMember(StringBuilder text, IConceptInfo ci, ConceptMember member, bool exceptionOnNullMember)
         {
             object memberValue = member.GetValue(ci);
+
             if (memberValue == null)
                 if (exceptionOnNullMember)
                     throw new DslSyntaxException(ci, string.Format(
@@ -250,46 +252,81 @@ namespace Rhetos.Dsl
                     text.Append("<null>");
             else if (member.IsConceptInfo)
             {
-                IConceptInfo value = (IConceptInfo)member.GetValue(ci);
-                if (member.ValueType == typeof(IConceptInfo))
+                IConceptInfo value = (IConceptInfo)memberValue;
+                if (member.IsConceptInfoInterface)
                     text.Append(BaseConceptInfoType(value).Name).Append(":");
                 AppendMembers(text, value, SerializationOptions.KeyMembers, exceptionOnNullMember);
             }
-            else if (member.ValueType == typeof(string))
-                text.AppendWithQuotesIfNeeded((string)member.GetValue(ci));
+            else if (member.IsStringType)
+                ConceptMemberHelper.AppendWithQuotesIfNeeded(text, (string)memberValue);
             else
                 throw new FrameworkException(string.Format(
                     "IConceptInfo member {0} of type {1} in {2} is not supported.",
                     member.Name, member.ValueType.Name, ci.GetType().Name));
         }
 
-        private static void AppendWithQuotesIfNeeded(this StringBuilder text, string s)
-        {
-            bool clean = true;
-            for (int i = 0; i < s.Length; i++)
-            {
-                char c = s[i];
-                if (!(c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == '_'))
-                {
-                    clean = false;
-                    break;
-                }
-            }
-            if (clean && s.Length > 0)
-                text.Append(s);
-            else
-            {
-                string quote = (s.Contains("\'") && !s.Contains("\"")) ? "\"" : "\'";
-                text.Append(quote).Append(s.Replace(quote, quote + quote)).Append(quote);
-            }
-        }
-
         public static Type BaseConceptInfoType(this IConceptInfo ci)
         {
-            Type t = ci.GetType();
+            return BaseConceptInfoType(ci.GetType());
+        }
+
+        public static Type BaseConceptInfoType(Type t)
+        {
             while (typeof(IConceptInfo).IsAssignableFrom(t.BaseType))
                 t = t.BaseType;
             return t;
+        }
+
+        public static List<IConceptInfo> ConvertNodesToConceptInfos(IEnumerable<ConceptSyntaxNode> nodes)
+        {
+            var keepReferences = new Dictionary<ConceptSyntaxNode, IConceptInfo>();
+            var conceptInfos = new List<IConceptInfo>(nodes.Count());
+            foreach (var node in nodes)
+                conceptInfos.Add(ConvertNodeToConceptInfo(node, keepReferences));
+            return conceptInfos;
+        }
+
+        public static IConceptInfo ConvertNodeToConceptInfo(ConceptSyntaxNode node, Dictionary<ConceptSyntaxNode, IConceptInfo> keepReferences = null)
+        {
+            Type conceptInfoType = Type.GetType(node.Concept.AssemblyQualifiedName);
+            if (conceptInfoType == null)
+                throw new ArgumentException($"Cannot find concept type '{node.Concept.AssemblyQualifiedName}'.");
+
+            var ci = (IConceptInfo)Activator.CreateInstance(conceptInfoType);
+            var members = ConceptMembers.Get(conceptInfoType);
+
+            if (node.Parameters.Length != members.Length)
+                throw new InvalidOperationException(
+                    $"{nameof(ConceptSyntaxNode)} parameters count ({node.Parameters.Length})" +
+                    $" does not match {nameof(ConceptMembers)} count ({members.Length}).");
+
+            for (int m = 0; m < members.Length; m++)
+            {
+                var member = members[m];
+                object value = node.Parameters[m];
+
+                if (value == null)
+                    member.SetMemberValue(ci, null);
+                else if (value is string)
+                    member.SetMemberValue(ci, value);
+                else if (value is ConceptSyntaxNode referencedNode)
+                {
+                    IConceptInfo referencedConceptInfo;
+                    if (keepReferences == null || !keepReferences.TryGetValue(referencedNode, out referencedConceptInfo))
+                        referencedConceptInfo = ConvertNodeToConceptInfo(referencedNode, keepReferences);
+
+                    member.SetMemberValue(ci, referencedConceptInfo);
+                }
+                else
+                {
+                    var valueType = value?.GetType().Name ?? "null";
+                    throw new ArgumentException($"Value type {valueType} is not expected in {nameof(ConceptSyntaxNode)} parameter {node.Concept.TypeName}.{member.Name}.");
+                }
+            }
+
+            if (keepReferences != null)
+                keepReferences[node] = ci;
+            return ci;
         }
     }
 }

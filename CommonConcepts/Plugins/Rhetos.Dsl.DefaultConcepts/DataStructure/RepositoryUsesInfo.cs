@@ -31,10 +31,11 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// It is a C# property type as written in C# source.
     /// It may require using the full name with namespace, if the namespace is not available from repository class or default 'using' statements.
     /// The type will be resolved from IoC container.
-    /// Remarks:
+    /// </summary>
+    /// <remarks>
     /// For application that uses DeployPackages build process, instead of Rhetos CLI, the property value should be the assembly qualified name,
     /// but it does not need to contain Version, Culture or PublicKeyToken if you are referencing a local assembly in the application's folder.
-    /// </summary>
+    /// </remarks>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("RepositoryUses")]
     public class RepositoryUsesInfo : IConceptInfo

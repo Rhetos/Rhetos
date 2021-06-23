@@ -22,12 +22,25 @@ using System.Collections.Generic;
 
 namespace Rhetos.Dsl
 {
-    public interface IConceptParser
+    public class DslSyntax
     {
         /// <summary>
-        /// If the keyword is not recognized return empty error string.
-        /// If the keyword is recognized, but the syntax is wrong, return error description.
+        /// Semantic Versioning 2.0.0.
         /// </summary>
-        ValueOrError<ConceptSyntaxNode> Parse(ITokenReader tokenReader, Stack<ConceptSyntaxNode> context, out List<string> warnings);
+        public string Version { get; set; }
+
+        /// <summary>
+        /// Value is initially configured from BuildOptions class.
+        /// It is persisted as a part of <see cref="DslSyntax"/> to be available to the external language server.
+        /// </summary>
+        public ExcessDotInKey ExcessDotInKey { get; set; }
+
+        /// <summary>
+        /// Value is initially configured from DatabaseSettings class.
+        /// It is persisted as a part of <see cref="DslSyntax"/> to be available to the external language server.
+        /// </summary>
+        public string DatabaseLanguage { get; set; }
+
+        public List<ConceptType> ConceptTypes { get; set; }
     }
 }

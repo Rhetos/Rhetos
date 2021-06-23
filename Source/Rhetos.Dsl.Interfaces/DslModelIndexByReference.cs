@@ -179,7 +179,7 @@ namespace Rhetos.Dsl
                 throw new FrameworkException("Invalid FindByReference method argument: referenceProperty. The selected property should be of type that implements IConceptInfo."
                     + " Property '" + property.Name + "' is of type '" + property.PropertyType.Name + "'.");
 
-            if (!property.PropertyType.IsAssignableFrom(checkValueType.GetType()))
+            if (!property.PropertyType.IsInstanceOfType(checkValueType))
                 throw new FrameworkException("Invalid FindByReference method arguments: The selected property " + property.Name
                     + " type '" + property.PropertyType.Name
                     + "' does not match the given referenced concept '" + checkValueType.GetUserDescription() +"'.");

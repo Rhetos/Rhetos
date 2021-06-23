@@ -22,12 +22,17 @@ using System.Collections.Generic;
 
 namespace Rhetos.Dsl
 {
-    public interface IConceptParser
+    /// <summary>
+    /// In case of a syntax error, <see cref="DslSyntaxException"/> will contain the error, and <see cref="Tokens"/> will contain the parsed tokens up to the point of error.
+    /// This behavior is useful for external DSL analysis, such as DSL IntelliSense plugin.
+    /// </summary>
+    public class TokenizerResult
     {
         /// <summary>
-        /// If the keyword is not recognized return empty error string.
-        /// If the keyword is recognized, but the syntax is wrong, return error description.
+        /// Verify <see cref="SyntaxError"/> before using <see cref="Tokens"/>.
         /// </summary>
-        ValueOrError<ConceptSyntaxNode> Parse(ITokenReader tokenReader, Stack<ConceptSyntaxNode> context, out List<string> warnings);
+        public List<Token> Tokens { get; set; }
+
+        public DslSyntaxException SyntaxError { get; set; }
     }
 }
