@@ -418,7 +418,7 @@ namespace Rhetos.Dsl.Test
         {
             public IEnumerable<IConceptInfo> CreateNewConcepts(RecursiveMacroConceptInfo conceptInfo, IDslModel existingConcepts)
             {
-                int v = int.Parse(Value);
+                int v = int.Parse(conceptInfo.Value);
                 return new List<IConceptInfo> { new RecursiveMacroConceptInfo((v + 1).ToString()) };
             }
         }
