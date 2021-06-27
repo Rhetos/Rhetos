@@ -29,37 +29,36 @@ namespace Rhetos.Dsl
 {
     public class DslDocumentationFileGenerator : IGenerator
     {
-        private readonly IEnumerable<IConceptInfo> _dslConcepts;
+        private readonly DslSyntax _dslSyntax;
         private readonly DslDocumentationFile _dslDocumentationFile;
         private readonly ILogger _logger;
 
-        public DslDocumentationFileGenerator(IEnumerable<IConceptInfo> dslConcepts, ILogProvider logProvider, DslDocumentationFile dslDocumentationFile)
+        public DslDocumentationFileGenerator(DslSyntax dslSyntax, ILogProvider logProvider, DslDocumentationFile dslDocumentationFile)
         {
-            _dslConcepts = dslConcepts;
+            _dslSyntax = dslSyntax;
             _dslDocumentationFile = dslDocumentationFile;
             _logger = logProvider.GetLogger(GetType().Name);
         }
 
         public void Generate()
         {
-            var conceptsDocumentation = _dslConcepts
-                .GroupBy(c => c.GetType().Assembly)
+            var conceptsDocumentation = _dslSyntax.ConceptTypes
+                .Select(concept => (concept.AssemblyQualifiedName, Type: Type.GetType(concept.AssemblyQualifiedName)))
+                .GroupBy(concept => concept.Type.Assembly)
                 .Select(group =>
                 (
                     AssemblyDocumentation: LoadXmlDocumentForAssembly(group.Key.Location),
                     Concepts: group
                 ))
                 .SelectMany(group =>
-                (
                     group.Concepts.Select(concept =>
                     (
-                        AssemblyQualifiedName: concept.GetType().AssemblyQualifiedName,
-                        Documentation: GetConceptDocumentation(concept.GetType(), group.AssemblyDocumentation)
+                        AssemblyQualifiedName: concept.AssemblyQualifiedName,
+                        Documentation: GetConceptDocumentation(concept.Type, group.AssemblyDocumentation)
                     ))
-                ))
+                )
                 .OrderBy(concept => concept.AssemblyQualifiedName)
                 .ToDictionary(concept => concept.AssemblyQualifiedName, concept => concept.Documentation);
-
 
             _dslDocumentationFile.Save(new DslDocumentation
             {

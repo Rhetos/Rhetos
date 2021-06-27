@@ -50,6 +50,8 @@ namespace Rhetos.Dsl
 
         private static List<ConceptType> CreateConceptTypesAndMembers(IEnumerable<Type> conceptInfoTypes)
         {
+            IncludeBaseConceptTypes(ref conceptInfoTypes);
+
             var types = conceptInfoTypes
                 .Distinct()
                 .ToDictionary(
@@ -64,7 +66,9 @@ namespace Rhetos.Dsl
                         var memberSyntax = new ConceptMemberSyntax();
                         ConceptMemberBase.Copy(conceptMember, memberSyntax);
                         memberSyntax.ConceptType = memberSyntax.IsConceptInfo && !memberSyntax.IsConceptInfoInterface
-                            ? types.GetValue(conceptMember.ValueType, $"{nameof(DslSyntaxFromPlugins)} does not contain concept type '{conceptMember.ValueType}', referenced by {type.Key}.{conceptMember.Name}.")
+                            ? types.GetValue(conceptMember.ValueType,
+                                $"{nameof(DslSyntaxFromPlugins)} does not contain concept type '{conceptMember.ValueType}'," +
+                                $" referenced by {type.Key}.{conceptMember.Name}.")
                             : null;
                         return memberSyntax;
                     })
@@ -76,6 +80,19 @@ namespace Rhetos.Dsl
             }
 
             return types.Values.OrderBy(conceptType => conceptType.AssemblyQualifiedName).ToList();
+        }
+
+        /// <summary>
+        /// Abstract base concept classes cannot be resolved from DI as IEnumerable of IConceptInfo instances,
+        /// so all base classes are automatically added here even if they are not registered directly as an IConceptInfo plugin.
+        /// </summary>
+        private static void IncludeBaseConceptTypes(ref IEnumerable<Type> conceptInfoTypes)
+        {
+            var conceptInfoTypesIndex = new HashSet<Type>(conceptInfoTypes);
+            foreach (Type conceptInfoType in conceptInfoTypes)
+                foreach (Type baseType in GetBaseConceptInfoTypes(conceptInfoType))
+                    conceptInfoTypesIndex.Add(baseType);
+            conceptInfoTypes = conceptInfoTypesIndex;
         }
 
         private static ConceptType CreateConceptTypePartial(Type conceptInfoType)

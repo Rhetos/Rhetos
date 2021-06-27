@@ -17,14 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.Data;
-using System.Data.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using Rhetos.Utilities;
-using Rhetos.DatabaseGenerator;
 using Rhetos.TestCommon;
+using Rhetos.Utilities;
+using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 
 namespace Rhetos.Dsl.Test
@@ -172,6 +169,41 @@ D1:
 D2: 
 IConceptInfo: 
 Object: ",
+                report);
+        }
+
+        abstract class AbstractConcept : IConceptInfo
+        {
+            [ConceptKey]
+            public string Name { get; set; }
+        }
+
+        class ConcreteConcept : AbstractConcept
+        {
+        }
+
+        [TestMethod]
+        public void IncludeAbstractBaseClassWithoutPluginRegistration()
+        {
+            IEnumerable<IConceptInfo> registeredConceptsFromDependencyInjection = new[]
+            {
+                new ConcreteConcept()
+            };
+
+            var dslSyntaxFromPlugins = new DslSyntaxFromPlugins(
+                registeredConceptsFromDependencyInjection,
+                new BuildOptions(),
+                new DatabaseSettings());
+
+            var dslSyntax = dslSyntaxFromPlugins.CreateDslSyntax();
+
+            var report = TestUtility.DumpSorted(
+                dslSyntax.ConceptTypes,
+                ct => $"{ct.TypeName} members:{TestUtility.DumpSorted(ct.Members, m => m.Name)}" +
+                    $" base:{TestUtility.DumpSorted(ct.BaseTypes, b => b.TypeName)}");
+
+            Assert.AreEqual(
+                "AbstractConcept members:Name base:, ConcreteConcept members:Name base:AbstractConcept",
                 report);
         }
     }
