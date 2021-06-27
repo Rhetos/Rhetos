@@ -57,6 +57,7 @@ namespace Rhetos.Dsl
                         Documentation: GetConceptDocumentation(concept.Type, group.AssemblyDocumentation)
                     ))
                 )
+                .Where(concept => !concept.Documentation.IsEmpty())
                 .OrderBy(concept => concept.AssemblyQualifiedName)
                 .ToDictionary(concept => concept.AssemblyQualifiedName, concept => concept.Documentation);
 

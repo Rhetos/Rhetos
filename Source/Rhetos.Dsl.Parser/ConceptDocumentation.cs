@@ -23,5 +23,7 @@ namespace Rhetos.Dsl
     {
         public string Summary { get; set; }
         public string Remarks { get; set; }
+
+        public bool IsEmpty() => Summary == null && Remarks == null;
     }
 }
