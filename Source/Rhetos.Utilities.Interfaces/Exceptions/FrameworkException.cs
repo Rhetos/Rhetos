@@ -39,23 +39,5 @@ namespace Rhetos
           System.Runtime.Serialization.SerializationInfo info,
           System.Runtime.Serialization.StreamingContext context)
             : base(info, context) { }
-
-        public static string GetInternalServerErrorMessage(ILocalizer localizer, Exception exception)
-        {
-            // This message does not use SeeLogMessage for remove redundant substring,
-            // to simplify string template extraction from source for localized error messages.
-            return localizer[
-                "Internal server error occurred. Check the log for more information. ({0}, {1})",
-                exception.GetType().Name,
-                DateTime.Now.ToString("s")];
-        }
-
-        public static string SeeLogMessage(Exception exception)
-        {
-            return string.Format(
-                "Check the log for more information. ({0}, {1})",
-                exception.GetType().Name,
-                DateTime.Now.ToString("s"));
-        }
     }
 }

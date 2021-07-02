@@ -82,10 +82,18 @@ namespace Rhetos.Dsl
         private DslContainer Initialize(DslContainer dslContainer)
         {
             var swTotal = Stopwatch.StartNew();
-            var parsedConcepts = _dslParser.ParsedConcepts;
+            var nodes = _dslParser.GetConcepts();
+
+            var swConvert = Stopwatch.StartNew();
+            var parsedConcepts = ConceptInfoHelper.ConvertNodesToConceptInfos(nodes);
+            _performanceLogger.Write(swConvert, nameof(ConceptInfoHelper.ConvertNodesToConceptInfos));
+
+            var alternativeInitializationGeneratedReferences = InitializeAlternativeInitializationConcepts(parsedConcepts);
 
             var swFirstAdd = Stopwatch.StartNew();
+            dslContainer.AddNewConceptsAndReplaceReferences(new[] { CreateInitializationConcept() });
             dslContainer.AddNewConceptsAndReplaceReferences(parsedConcepts);
+            dslContainer.AddNewConceptsAndReplaceReferences(alternativeInitializationGeneratedReferences);
             _performanceLogger.Write(swFirstAdd, $"Initialize: First AddNewConceptsAndReplaceReferences ({dslContainer.Concepts.Count()} concepts).");
 
             ExpandMacroConcepts(dslContainer);
@@ -96,6 +104,22 @@ namespace Rhetos.Dsl
 
             _performanceLogger.Write(swTotal, $"Initialize ({dslContainer.Concepts.Count()} concepts).");
             return dslContainer;
+        }
+
+        private static IConceptInfo CreateInitializationConcept()
+        {
+            return new InitializationConcept
+            {
+                RhetosVersion = SystemUtility.GetRhetosVersion()
+            };
+        }
+
+        private IEnumerable<IConceptInfo> InitializeAlternativeInitializationConcepts(IEnumerable<IConceptInfo> parsedConcepts)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var newConcepts = AlternativeInitialization.InitializeNonparsableProperties(parsedConcepts, _logger);
+            _performanceLogger.Write(stopwatch, "InitializeAlternativeInitializationConcepts (" + newConcepts.Count() + " new concepts created).");
+            return newConcepts;
         }
 
         private const int MacroIterationLimit = 200;

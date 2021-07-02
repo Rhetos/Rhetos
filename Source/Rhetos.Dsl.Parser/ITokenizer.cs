@@ -17,17 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities;
-using System.Collections.Generic;
-
 namespace Rhetos.Dsl
 {
-    public interface IConceptParser
+    public interface ITokenizer
     {
         /// <summary>
-        /// If the keyword is not recognized return empty error string.
-        /// If the keyword is recognized, but the syntax is wrong, return error description.
+        /// If the tokenizer fails with syntax exception, this method returns the partial list of parsed tokens up to the point of error.
+        /// This behavior is useful for external DSL analysis, such as DSL IntelliSense plugin.
         /// </summary>
-        ValueOrError<ConceptSyntaxNode> Parse(ITokenReader tokenReader, Stack<ConceptSyntaxNode> context, out List<string> warnings);
+        TokenizerResult GetTokens();
     }
 }

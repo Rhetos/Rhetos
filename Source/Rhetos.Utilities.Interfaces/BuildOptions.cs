@@ -52,11 +52,4 @@ namespace Rhetos.Utilities
     /// Changing the sort method can be used to test if correct dependencies are specified for code generators or for database objects.
     /// </summary>
     public enum InitialConceptsSort { None, Key, KeyDescending };
-
-    /// <summary>
-    /// Before Rhetos v4.0, dot character was expected before string key parameter of current statement.
-    /// Since Rhetos v4.0, dot should only be used for separating key parameters of referenced concept,
-    /// but legacy syntax is allowed by setting this option to <see cref="Ignore"/> or <see cref="Warning"/>.
-    /// </summary>
-    public enum ExcessDotInKey { Ignore, Warning, Error };
 }

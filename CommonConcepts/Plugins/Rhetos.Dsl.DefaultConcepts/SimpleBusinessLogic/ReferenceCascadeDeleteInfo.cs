@@ -25,11 +25,12 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
     /// Automatically deletes detail records when a master record is deleted.
-    /// Remarks:
+    /// </summary>
+    /// <remarks>
     /// If referencing polymorphic concept, cascade delete will occur when the _Materialized record is automatically deleted.
     /// Cascade delete is implemented in the application layer, because a database implementation would not execute any business logic that is implemented on detail entity.
     /// For cascade delete in database see CascadeDeleteInDatabase concept or legacy option CommonConcepts.Legacy.CascadeDeleteInDatabase.
-    /// </summary>
+    /// </remarks>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("CascadeDelete")]
     public class ReferenceCascadeDeleteInfo : IConceptInfo

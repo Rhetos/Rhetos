@@ -17,12 +17,18 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.Collections.Generic;
+using System;
 
-namespace Rhetos.Dsl
+namespace Rhetos
 {
-    public interface IDslParser
+    /// <summary>
+    /// When reading this setting from a configuration file, any relative path will be converted to absolute.
+    /// The base folder is specified by configuration source (<see cref="Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources.IConfigurationSource"/>)
+    /// implementation of <see cref="Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources.IConfigurationSourceFolder"/>.
+    /// If the configuration source reads configuration file, the base folder should match the file location.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
+    public sealed class AbsolutePathOptionAttribute : Attribute
     {
-        IEnumerable<IConceptInfo> ParsedConcepts { get; }
     }
 }

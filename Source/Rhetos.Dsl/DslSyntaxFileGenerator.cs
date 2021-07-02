@@ -17,17 +17,28 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities;
+using Rhetos.Extensibility;
 using System.Collections.Generic;
 
 namespace Rhetos.Dsl
 {
-    public interface IConceptParser
+    public class DslSyntaxFileGenerator : IGenerator
     {
-        /// <summary>
-        /// If the keyword is not recognized return empty error string.
-        /// If the keyword is recognized, but the syntax is wrong, return error description.
-        /// </summary>
-        ValueOrError<ConceptSyntaxNode> Parse(ITokenReader tokenReader, Stack<ConceptSyntaxNode> context, out List<string> warnings);
+        private readonly DslSyntax _dslSyntax;
+        private readonly DslSyntaxFile _dslSyntaxFile;
+        public static readonly string DslSyntaxFileName = "DslSyntax.json";
+
+        public DslSyntaxFileGenerator(DslSyntax dslSyntax, DslSyntaxFile dslSyntaxFile)
+        {
+            _dslSyntax = dslSyntax;
+            _dslSyntaxFile = dslSyntaxFile;
+        }
+
+        public void Generate()
+        {
+            _dslSyntaxFile.Save(_dslSyntax);
+        }
+
+        public IEnumerable<string> Dependencies => null;
     }
 }

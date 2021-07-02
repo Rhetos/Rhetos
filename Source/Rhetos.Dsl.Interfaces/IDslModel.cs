@@ -25,6 +25,13 @@ using System.Diagnostics.Contracts;
 
 namespace Rhetos.Dsl
 {
+    /// <summary>
+    /// DSL model represents a list of features of the generated application.
+    /// It includes concepts directly written in DSL scripts, and additionally generated concepts (by macro concepts, for example).
+    /// </summary>
+    /// <remarks>
+    /// DSL model is similar to an abstract syntax tree, but it is represented as a directed acyclic graph with multiple root nodes.
+    /// </remarks>
     public interface IDslModel
     {
         /// <summary>

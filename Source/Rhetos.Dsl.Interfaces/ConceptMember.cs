@@ -26,18 +26,9 @@ using System.Reflection;
 
 namespace Rhetos.Dsl
 {
-    public class ConceptMember
+    public class ConceptMember : ConceptMemberBase
     {
-        public string Name { get; private set; }
         public Type ValueType { get; private set; }
-        public bool IsConceptInfo { get; private set; }
-        public bool IsKey { get; private set; }
-        public bool IsParentNested { get; private set; }
-        public int SortOrder1 { get; private set; }
-        public int SortOrder2 { get; private set; }
-        public bool IsDerived { get; private set; }
-        public bool IsStringType { get; private set; }
-        public bool IsParsable { get; private set; }
 
         private readonly MemberInfo MemberInfo;
 
@@ -55,6 +46,7 @@ namespace Rhetos.Dsl
 
             this.IsDerived = memberInfo.DeclaringType != memberInfo.ReflectedType;
             this.IsStringType = ValueType == typeof(string);
+            this.IsConceptInfoInterface = ValueType == typeof(IConceptInfo);
 
             this.IsParsable = nonParsableMembers == null || !nonParsableMembers.Contains(memberInfo.Name);
 

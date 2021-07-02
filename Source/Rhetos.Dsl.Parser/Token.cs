@@ -18,16 +18,23 @@
 */
 
 using Rhetos.Utilities;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
 
 namespace Rhetos.Dsl
 {
-    public interface IConceptParser
+    public enum TokenType { Text, Special, Comment, EndOfFile };
+
+    [DebuggerDisplay("{Type}: {Value}")]
+    public class Token
     {
-        /// <summary>
-        /// If the keyword is not recognized return empty error string.
-        /// If the keyword is recognized, but the syntax is wrong, return error description.
-        /// </summary>
-        ValueOrError<ConceptSyntaxNode> Parse(ITokenReader tokenReader, Stack<ConceptSyntaxNode> context, out List<string> warnings);
+        public string Value;
+        public DslScript DslScript;
+        public int PositionInDslScript;
+        public int PositionEndInDslScript;
+        public TokenType Type;
     }
 }

@@ -18,22 +18,34 @@
 */
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos.Dsl;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Rhetos.Dsl.Test
 {
-    class GenericParserHelper<TConceptInfo> : GenericParser where TConceptInfo : IConceptInfo, new()
+    class GenericParserHelper<TConceptInfo> : IConceptParser where TConceptInfo : IConceptInfo, new()
     {
         public TokenReader tokenReader;
+        public DslSyntax DslSyntax;
+        public GenericParser GenericParser;
 
-        public GenericParserHelper(string keyword)
-            : base(typeof(TConceptInfo), keyword)
+        public GenericParserHelper(string overrideKeyword = null)
+            : this(DslSyntaxHelper.CreateDslSyntax(typeof(TConceptInfo)), overrideKeyword)
         {
         }
+
+        public GenericParserHelper(DslSyntax syntax, string overrideKeyword = null)
+        {
+            DslSyntax = syntax;
+            ConceptType conceptType = DslSyntax.GetConceptType(typeof(TConceptInfo), overrideKeyword);
+            GenericParser = new GenericParser(conceptType);
+        }
+
+        public ValueOrError<ConceptSyntaxNode> Parse(ITokenReader tokenReader, Stack<ConceptSyntaxNode> context, out List<string> warnings)
+            => GenericParser.Parse(tokenReader, context, out warnings);
 
         public TConceptInfo QuickParse(string dsl, IConceptInfo contextParent = null)
         {
@@ -46,8 +58,12 @@ namespace Rhetos.Dsl.Test
 
         public TConceptInfo QuickParse(string dsl, Stack<IConceptInfo> context)
         {
+            var contextNodes = new Stack<ConceptSyntaxNode>(context
+                .Select(ci => DslSyntax.CreateConceptSyntaxNode(ci)).Reverse());
+
             tokenReader = GenericParserTest.TestTokenReader(dsl);
-            return (TConceptInfo)Parse(tokenReader, context, out var warnings).Value;
+            ConceptSyntaxNode node = GenericParser.Parse(tokenReader, contextNodes, out var warnings).Value;
+            return (TConceptInfo)ConceptInfoHelper.ConvertNodeToConceptInfo(node);
         }
     }
 
@@ -57,9 +73,13 @@ namespace Rhetos.Dsl.Test
     {
         internal static TokenReader TestTokenReader(string dsl, int position = 0)
         {
-            return new TokenReader(new TestTokenizer(dsl).GetTokens(), position);
+            var tokenizerResult = new TestTokenizer(dsl).GetTokens();
+            if (tokenizerResult.SyntaxError != null)
+                ExceptionsUtility.Rethrow(tokenizerResult.SyntaxError);
+            return new TokenReader(tokenizerResult.Tokens, position);
         }
 
+        [ConceptKeyword("simple")]
         class SimpleConceptInfo : IConceptInfo
         {
             [ConceptKey]
@@ -79,7 +99,8 @@ namespace Rhetos.Dsl.Test
         {
             var simpleParser = new GenericParserHelper<SimpleConceptInfo>("abc");
             var tokenReader = TestTokenReader("simple abc def", 1);
-            SimpleConceptInfo ci = (SimpleConceptInfo)simpleParser.Parse(tokenReader, new Stack<IConceptInfo>(), out var warnings).Value;
+            var node = simpleParser.GenericParser.Parse(tokenReader, new Stack<ConceptSyntaxNode>(), out var warnings).Value;
+            SimpleConceptInfo ci = (SimpleConceptInfo)ConceptInfoHelper.ConvertNodeToConceptInfo(node);
 
             Assert.AreEqual("def", ci.Name);
             TestUtility.AssertContains(tokenReader.ReportPosition(), "column 15,");
@@ -104,9 +125,9 @@ namespace Rhetos.Dsl.Test
         [TestMethod]
         public void ParseWrongConcept_EmptyErrorForUnrecognizedKeyword()
         {
-            var simpleParser = new GenericParser(typeof(SimpleConceptInfo), "simple");
+            var simpleParser = new GenericParserHelper<SimpleConceptInfo>();
             var tokenReader = TestTokenReader("simp simple abc");
-            var ciOrError = simpleParser.Parse(tokenReader, new Stack<IConceptInfo>(), out var warnings);
+            var ciOrError = simpleParser.GenericParser.Parse(tokenReader, new Stack<ConceptSyntaxNode>(), out var warnings);
             Assert.IsTrue(ciOrError.IsError);
             Assert.AreEqual("", ciOrError.Error);
         }
@@ -174,11 +195,12 @@ namespace Rhetos.Dsl.Test
         {
             var enclosedParser = new GenericParserHelper<EnclosedConceptInfo>("enclosed");
 
-            Stack<IConceptInfo> stack = new Stack<IConceptInfo>();
-            stack.Push(new SimpleConceptInfo { Name = "a" });
+            var stack = new Stack<ConceptSyntaxNode>();
+            stack.Push(enclosedParser.DslSyntax.CreateConceptSyntaxNode(new SimpleConceptInfo { Name = "a" }));
 
             var tokenReader = TestTokenReader("simple a { enclosed b; }", 3);
-            EnclosedConceptInfo ci = (EnclosedConceptInfo)enclosedParser.Parse(tokenReader, stack, out var warnings).Value;
+            var node = enclosedParser.GenericParser.Parse(tokenReader, stack, out var warnings).Value;
+            var ci = (EnclosedConceptInfo)ConceptInfoHelper.ConvertNodeToConceptInfo(node);
             Assert.AreEqual("a", ci.Parent.Name);
             Assert.AreEqual("b", ci.Name);
             TestUtility.AssertContains(tokenReader.ReportPosition(), "before: \";");
@@ -230,7 +252,8 @@ namespace Rhetos.Dsl.Test
         [TestMethod]
         public void ParseEnclosedInWrongConcept()
         {
-            var parser = new GenericParserHelper<EnclosedConceptInfo>("enclosed");
+            var syntax = DslSyntaxHelper.CreateDslSyntax(typeof(EnclosedConceptInfo), typeof(ComplexConceptInfo));
+            var parser = new GenericParserHelper<EnclosedConceptInfo>(syntax, "enclosed");
                 TestUtility.ShouldFail<InvalidOperationException>(
                     () => parser.QuickParse(
                         "enclosed myparent.myname",
@@ -262,12 +285,14 @@ namespace Rhetos.Dsl.Test
             Assert.AreEqual("other_enclosed", ci.Reference.Name);
         }
 
+        [ConceptKeyword("enclosed1")]
         class EnclosedSingleProperty1 : IConceptInfo
         {
             [ConceptKey]
             public SimpleConceptInfo Parent { get; set; }
         }
 
+        [ConceptKeyword("enclosed2")]
         class EnclosedSingleProperty2 : IConceptInfo
         {
             [ConceptKey]
@@ -318,7 +343,7 @@ namespace Rhetos.Dsl.Test
                 var context = new Stack<IConceptInfo>(new[] { parent });
                 var parser = new GenericParserHelper<EnclosedSingleProperty2>("enclosed2");
                 TestUtility.ShouldFail(() => parser.QuickParse("enclosed2", context),
-                    "EnclosedSingleProperty2 must be nested within the referenced parent concept EnclosedSingleProperty1");
+                    "enclosed2 must be nested within the referenced parent concept enclosed1");
             }
 
             {
@@ -326,7 +351,7 @@ namespace Rhetos.Dsl.Test
                 var context = new Stack<IConceptInfo>();
                 var parser = new GenericParserHelper<EnclosedSingleProperty2>("enclosed2");
                 TestUtility.ShouldFail(() => parser.QuickParse("enclosed2 parent", context),
-                    "EnclosedSingleProperty2 must be nested within the referenced parent concept EnclosedSingleProperty1");
+                    "enclosed2 must be nested within the referenced parent concept enclosed1");
             }
         }
 
@@ -438,7 +463,9 @@ namespace Rhetos.Dsl.Test
             ExtendedRootMenuCI root = new ExtendedRootMenuCI { Name = "R", RootData = "SomeData" };
 
             string dsl = "menu M";
-            SubMenuCI mi = new GenericParserHelper<SubMenuCI>("menu").QuickParse(dsl, root);
+
+            var syntax = DslSyntaxHelper.CreateDslSyntax(typeof(MenuCI), typeof(ExtendedRootMenuCI), typeof(SubMenuCI));
+            SubMenuCI mi = new GenericParserHelper<SubMenuCI>(syntax, "menu").QuickParse(dsl, root);
             Assert.AreEqual("M", mi.Name);
             Assert.AreEqual("R", mi.Parent.Name);
             Assert.AreEqual("SomeData", ((ExtendedRootMenuCI)mi.Parent).RootData);
@@ -451,7 +478,8 @@ namespace Rhetos.Dsl.Test
             SubMenuCI parent = new SubMenuCI { Name = "M", Parent = root };
 
             string dsl = "menu M2";
-            SubMenuCI mi = new GenericParserHelper<SubMenuCI>("menu").QuickParse(dsl, parent);
+            var syntax = DslSyntaxHelper.CreateDslSyntax(typeof(MenuCI), typeof(ExtendedRootMenuCI), typeof(SubMenuCI));
+            SubMenuCI mi = new GenericParserHelper<SubMenuCI>(syntax, "menu").QuickParse(dsl, parent);
             Assert.AreEqual("M2", mi.Name);
             Assert.AreEqual("M", mi.Parent.Name);
             Assert.AreEqual("R", ((SubMenuCI)mi.Parent).Parent.Name);
@@ -481,7 +509,7 @@ namespace Rhetos.Dsl.Test
             string dsl = "menu a b";
             TestUtility.ShouldFail<InvalidOperationException>(
                 () => new GenericParserHelper<LeftRecursiveCI>("menu").QuickParse(dsl),
-                "Recursive concept LeftRecursiveCI cannot be used as a root");
+                "Recursive concept 'LeftRecursiveCI' cannot be used as a root");
         }
 
         class InterfaceReferenceConceptInfo : IConceptInfo
@@ -497,7 +525,8 @@ namespace Rhetos.Dsl.Test
         {
             var parent = new SimpleConceptInfo { Name = "parent" };
             string dsl = "intref data";
-            var parsedConcept = new GenericParserHelper<InterfaceReferenceConceptInfo>("intref").QuickParse(dsl, parent);
+            var syntax = DslSyntaxHelper.CreateDslSyntax(typeof(InterfaceReferenceConceptInfo), typeof(SimpleConceptInfo));
+            var parsedConcept = new GenericParserHelper<InterfaceReferenceConceptInfo>(syntax, "intref").QuickParse(dsl, parent);
 
             Assert.AreEqual(typeof(SimpleConceptInfo), parsedConcept.Referece.GetType());
             Assert.AreEqual("parent", ((SimpleConceptInfo)parsedConcept.Referece).Name);
