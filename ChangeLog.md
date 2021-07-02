@@ -170,7 +170,7 @@ Changes in Rhetos libraries API:
 ### Internal improvements
 
 * Build performance improvements: Various optimizations in different segments of build process, simplified generated code, reduced usage of macro concepts for database object dependencies, reduced unneeded changes in ordering of the generated code.
-* Bugfix: Build sometime fails with EntityCommandCompilationException "The argument type 'X' is not compatible with the property 'Y' of formal type 'Z'.".
+* Bugfix: Build sometimes fails with EntityCommandCompilationException "The argument type 'X' is not compatible with the property 'Y' of formal type 'Z'.".
 * Reduced logging level for certain build and performance events from *warning* to *info*.
 * A redundant FilterBy is no longer generated for each ComposableFilterBy.
 
@@ -534,7 +534,7 @@ The changes from this release are not included in versions 4.0.0 - 4.0.1. They a
 
 ### Internal improvements
 
-* Bugfix: The **ModificationTimeOf** concept sometime sets the current time value before the **CreationTime** concept on the same data entry.
+* Bugfix: The **ModificationTimeOf** concept sometimes sets the current time value before the **CreationTime** concept on the same data entry.
 * Bugfix: The **PessimisticLocking** concept uses Rhetos server time instead of the database time.
 * Bugfix: "Conflicting source files with different file size" error when downloading localized NuGet packages.
 * Improved database deployment over networks with high latency: performance improvements, progress reporting.
@@ -558,7 +558,7 @@ The changes from this release are not included in versions 4.0.0 - 4.0.1. They a
 
 ### Internal improvements
 
-* Bugfix: Server startup sometime fails with a NullReferenceException (since v2.0.0).
+* Bugfix: Server startup sometimes fails with a NullReferenceException (since v2.0.0).
 
 ## 2.4.0 (2017-12-20)
 
