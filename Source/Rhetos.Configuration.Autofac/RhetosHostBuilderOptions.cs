@@ -22,7 +22,7 @@ using System.Collections.Generic;
 
 namespace Rhetos
 {
-    public class RhetosHostBuilderOptions
+    internal class RhetosHostBuilderOptions
     {
         public List<Action<IServiceProvider, IRhetosHostBuilder>> ConfigureActions { get; set; } = new List<Action<IServiceProvider, IRhetosHostBuilder>>();
     }

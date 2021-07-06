@@ -17,14 +17,28 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos;
+using System;
+
 namespace Microsoft.Extensions.DependencyInjection
 {
+    /// <summary>
+    /// Allows configuring host application's services (with <see cref="Services"/>)
+    /// and Rhetos dependency injection components and configuration (with <see cref="ConfigureRhetosHost"/>).
+    /// </summary>
     public class RhetosServiceCollectionBuilder
     {
         public IServiceCollection Services { get; }
+
         public RhetosServiceCollectionBuilder(IServiceCollection serviceCollection)
         {
             Services = serviceCollection;
+        }
+
+        public RhetosServiceCollectionBuilder ConfigureRhetosHost(Action<IServiceProvider, IRhetosHostBuilder> configureRhetosHost)
+        {
+            Services.Configure<RhetosHostBuilderOptions>(o => o.ConfigureActions.Add(configureRhetosHost));
+            return this;
         }
     }
 }

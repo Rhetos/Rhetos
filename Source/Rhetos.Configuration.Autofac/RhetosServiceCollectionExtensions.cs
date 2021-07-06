@@ -37,19 +37,20 @@ namespace Microsoft.Extensions.DependencyInjection
             this IServiceCollection serviceCollection,
             Action<IServiceProvider, IRhetosHostBuilder> configureRhetosHost = null)
         {
-            serviceCollection.AddOptions();
+            var builder = new RhetosServiceCollectionBuilder(serviceCollection);
+
+            builder.Services.AddOptions();
+
             if (configureRhetosHost != null)
-            {
-                serviceCollection.Configure<RhetosHostBuilderOptions>(o => o.ConfigureActions.Add(configureRhetosHost));
-            }
+                builder.ConfigureRhetosHost(configureRhetosHost);
 
-            serviceCollection.TryAddSingleton(serviceProvider => CreateRhetosHost(serviceProvider));
-            serviceCollection.TryAddScoped<RhetosScopeServiceProvider>();
-            //IRhetosComponent is regsitered as a tranisent componenet but the value of
-            //IRhetoComponent will retain its scope that is specified in the Autofac IoC container
-            serviceCollection.TryAddTransient(typeof(IRhetosComponent<>), typeof(RhetosComponent<>));
+            builder.Services.TryAddSingleton(serviceProvider => CreateRhetosHost(serviceProvider));
+            builder.Services.TryAddScoped<RhetosScopeServiceProvider>();
+            // IRhetosComponent is registered as a transient component but the value of
+            // IRhetosComponent will retain its scope that is specified in the Autofac IoC container
+            builder.Services.TryAddTransient(typeof(IRhetosComponent<>), typeof(RhetosComponent<>));
 
-            return new RhetosServiceCollectionBuilder(serviceCollection);
+            return builder;
         }
 
         private static RhetosHost CreateRhetosHost(IServiceProvider serviceProvider)
