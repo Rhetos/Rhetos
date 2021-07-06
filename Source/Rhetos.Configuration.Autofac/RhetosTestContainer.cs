@@ -45,7 +45,7 @@ namespace Rhetos.Configuration.Autofac
         /// Whether database updates (by ORM repositories) will be committed or rolled back.
         /// </param>
         /// <param name="rhetosAppAssemblyPath">
-        /// Path to assembly where the CreateRhetosHostBuilder method is located.
+        /// Path to assembly where the Program.CreateHostBuilder method is located.
         /// </param>
         public RhetosTestContainer(string rhetosAppAssemblyPath, bool commitChanges = false)
         {

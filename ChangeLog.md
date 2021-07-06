@@ -24,9 +24,10 @@ Changes in behavior:
 6. Removed IService interface from the Rhetos framework.
    * Instead of using IService, register and initialize custom services explicitly in Startup.cs (ASP.NET Core convention).
 7. Removed IHomePageSnippet interface from the Rhetos framework. The default homepage is no longer available.
-8. Configuration files "rhetos-app.settings.json" and "rhetos-app.local.settings.json" are no longer automatically loaded. Removed RhetosAppEnvironment class and AddRhetosAppEnvironment method.
-   * If you want to use the same files from Rhetos v4, load them in your application in Program.CreateRhetosHostBuilder method:
-     `return new RhetosHostBuilder().ConfigureRhetosAppDefaults().ConfigureConfiguration(builder => builder.AddJsonFile("rhetos-app.settings.json").AddJsonFile("rhetos-app.local.settings.json"));`
+8. Configuration files "rhetos-app.settings.json" and "rhetos-app.local.settings.json" are no longer automatically loaded.
+   Removed RhetosAppEnvironment class and AddRhetosAppEnvironment method.
+   * If you want to use the same configuration files from Rhetos v4, load them in your application in Startup.ConfigureRhetosHostBuilder method:
+     `rhetosHostBuilder.ConfigureConfiguration(builder => builder.AddJsonFile("rhetos-app.settings.json").AddJsonFile("rhetos-app.local.settings.json"))`
 9. Run-time configuration no longer depends on "rhetos-app.settings.json" file (from Rhetos v4).
     * Rhetos:App:AssetsFolder and Rhetos:App:RhetosRuntimePath settings may be removed from this file.
     * The file may be deleted if empty.
@@ -56,6 +57,9 @@ Changes in behavior:
     See [Migrating an existing application from datetime to datetime2](https://github.com/Rhetos/Rhetos/wiki/Migrating-from-DateTime-to-DateTime2).
 16. Removed BuiltinAdminOverride configuration option, that allowed testing without configured authentication in development environment.
     Use [AllClaimsForUsers](https://github.com/Rhetos/Rhetos/wiki/Basic-permissions#suppressing-permissions-in-a-development-environment) or AllClaimsForAnonymous instead.
+17. NLog is no longer enabled by default in application runtime.
+    * To enable NLog for Rhetos components, in Program.CreateHostBuilder,
+      add `hostBuilder.UseNLog();`, and in Startup.ConfigureServices: `.AddHostLogging()` after AddRhetosHost.
 
 Changes in Rhetos libraries API:
 
