@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos;
 using Rhetos.Utilities;
 using System;
 
@@ -26,7 +27,7 @@ namespace Autofac
     {
         public static void UseUserInfoProvider(this ContainerBuilder containerBuilder, Func<IUserInfo> userInfoProvider)
         {
-            containerBuilder.Register(_ => userInfoProvider()).As<IUserInfo>().InstancePerLifetimeScope();
+            containerBuilder.Register(_ => userInfoProvider()).As<IUserInfo>().InstancePerMatchingLifetimeScope(UnitOfWorkScope.ScopeName);
         }
     }
 }
