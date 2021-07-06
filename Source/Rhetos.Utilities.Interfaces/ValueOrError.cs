@@ -30,7 +30,7 @@ namespace Rhetos.Utilities
     /// in debug mode (about 100 exceptions per second can be processed).
     /// </summary>
     /// <typeparam name="T">Type of the value.</typeparam>
-    public class ValueOrError<T>
+    public class ValueOrError<T> : IValueOrError
     {
         /// <summary>
         /// Implicit cast can be used instead of this function.
@@ -42,7 +42,7 @@ namespace Rhetos.Utilities
 
         public static ValueOrError<T> CreateError(string error)
         {
-            return new ValueOrError<T>(true, default(T), error);
+            return new ValueOrError<T>(true, default, error);
         }
 
         private readonly T _value;
@@ -71,15 +71,17 @@ namespace Rhetos.Utilities
 
         public override string ToString()
         {
-            if (_error != null)
-                return "Error: " + _error;
-            if (_value != null)
-                return "Value: " + _value;
-            return "<null>";
+            if (IsError)
+                return "Error: " + (_error ?? "<null>");
+            else
+                return "Value: " + (_value != null ? _value.ToString() : "<null>");
         }
 
         protected ValueOrError(bool isError, T value, string error)
         {
+            if (IsError && error is null)
+                throw new ArgumentNullException(nameof(error), "The error message cannot be null when returning an error object.");
+
             IsError = isError;
             _value = value;
             _error = error;
@@ -88,13 +90,13 @@ namespace Rhetos.Utilities
         public static implicit operator ValueOrError<T>(T value)
         {
             if (value is IValueOrError)
-                throw new ArgumentException($"Should not wrap a ValueOrError into another ValueOrError. Probably unexpected implicit casting. Use {nameof(ChangeType)} method to change type of value in ValueOrError.");
+                throw new ArgumentException($"Should not wrap a ValueOrError into another ValueOrError. Probably unexpected implicit casting. Use the {nameof(ChangeType)} method to change type of value in ValueOrError.");
             return new ValueOrError<T>(false, value, null);
         }
 
         public static implicit operator ValueOrError<T>(ValueOrError error)
         {
-            return new ValueOrError<T>(true, default(T), error.Error);
+            return new ValueOrError<T>(true, default, error.Error);
         }
 
         public ValueOrError<TNew> ChangeType<TNew>() where TNew : class
