@@ -39,6 +39,10 @@ namespace Rhetos
         {
             try
             {
+                //NLog should read the configuration from rhetos.exe.nlog configuration file and if the file does not exist it should try to read it from nlog.config
+                //but there is a bug in NLog which is causing first to try to read the nlog.config and then rhetos.exe.nlog configuration file.
+                //As this is a breaking changes the fix wil be released in version 5 of NLog so remove this code after upgrading to NLog 5.
+                NLog.LogManager.LogFactory.SetCandidateConfigFilePaths(new[] { "rhetos.exe.nlog" });
                 return new Program().Run(args);
             }
             finally

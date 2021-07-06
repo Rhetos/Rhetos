@@ -20,12 +20,13 @@
 using CommonConcepts.Test;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Rhetos.Utilities.Test
+namespace Rhetos.Persistence.Test
 {
     [TestClass]
     public class OracleSqlExecuterIntegrationTest
@@ -60,7 +61,7 @@ end;" });
 
         static OracleSqlExecuter GetSqlExecuter()
         {
-            return new OracleSqlExecuter(SqlUtility.ConnectionString, new ConsoleLogProvider(), new NullUserInfo());
+            return new OracleSqlExecuter(SqlUtility.ConnectionString, new ConsoleLogProvider(), new NullUserInfo(), null);
         }
 
         private string GetRandomTableName()
@@ -159,7 +160,7 @@ END;" }),
             string dataSource = "localhost:1521/xe";
             string connectionString = @"User Id=" + userId + ";Password=" + password + ";Data Source=" + dataSource + ";";
 
-            OracleSqlExecuter sqlExecuter = new OracleSqlExecuter(connectionString, new ConsoleLogProvider(), new NullUserInfo());
+            OracleSqlExecuter sqlExecuter = new OracleSqlExecuter(connectionString, new ConsoleLogProvider(), new NullUserInfo(), null);
             var ex = TestUtility.ShouldFail(() => sqlExecuter.ExecuteSql(new[] { "SELECT 123 FROM DUAL" }), userId, dataSource);
             Assert.IsFalse(ex.ToString().Contains(password));
         }
@@ -244,7 +245,7 @@ END;" }),
         [TestMethod]
         public void SendUserInfoInSqlContext_NoUser()
         {
-            var sqlExecuter = new OracleSqlExecuter(SqlUtility.ConnectionString, new ConsoleLogProvider(), new NullUserInfo());
+            var sqlExecuter = new OracleSqlExecuter(SqlUtility.ConnectionString, new ConsoleLogProvider(), new NullUserInfo(), null);
             var result = new List<object>();
             sqlExecuter.ExecuteReader("SELECT SYS_CONTEXT('USERENV','CLIENT_INFO') FROM DUAL", reader => result.Add(reader[0]));
             Console.WriteLine(result.Single());
@@ -268,7 +269,7 @@ END;" }),
                                    UserName = "Bob",
                                    Workstation = "HAL9000"
                                };
-            var sqlExecuter = new OracleSqlExecuter(SqlUtility.ConnectionString, new ConsoleLogProvider(), testUser);
+            var sqlExecuter = new OracleSqlExecuter(SqlUtility.ConnectionString, new ConsoleLogProvider(), testUser, null);
             var result = new List<string>();
 
             sqlExecuter.ExecuteReader(@"SELECT SYS_CONTEXT('USERENV','CLIENT_INFO') FROM DUAL", reader => result.Add(reader[0].ToString()));
@@ -288,7 +289,7 @@ END;" }),
                 UserName = "Bob",
                 Workstation = "HAL9000"
             };
-            var sqlExecuter = new OracleSqlExecuter(SqlUtility.ConnectionString, new ConsoleLogProvider(), testUser);
+            var sqlExecuter = new OracleSqlExecuter(SqlUtility.ConnectionString, new ConsoleLogProvider(), testUser, null);
             string table = GetRandomTableName();
             var result = new List<string>();
 
@@ -329,7 +330,7 @@ END;" }),
                 " (for example Rhetos.Oracle.GENERIC_M_CI or Rhetos.Oracle.XGERMAN_CI).");
 
             result.Clear();
-            sqlExecuter = new OracleSqlExecuter(SqlUtility.ConnectionString, new ConsoleLogProvider(), new NullUserInfo());
+            sqlExecuter = new OracleSqlExecuter(SqlUtility.ConnectionString, new ConsoleLogProvider(), new NullUserInfo(), null);
             sqlExecuter.ExecuteReader("SELECT * FROM " + table + " WHERE S LIKE 'a%'",
                 reader => result.Add(SqlUtility.EmptyNullString(reader, 0)));
 

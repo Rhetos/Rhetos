@@ -17,13 +17,21 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-namespace Rhetos
+using System;
+using System.Collections.Generic;
+
+namespace Rhetos.Extensibility
 {
-    /// <summary>
-    /// It is used to resolve Rhetos components inside a scope.
-    /// </summary>
-    public interface IRhetosComponent<out T>
+    public class PluginMetadata<T>
     {
-        T Value { get; }
+        public PluginMetadata(Type type, IDictionary<string, object> metadata)
+        {
+            PluginType = type;
+            Metadata = metadata;
+        }
+
+        public Type PluginType { get; }
+
+        public IDictionary<string, object> Metadata { get; }
     }
 }

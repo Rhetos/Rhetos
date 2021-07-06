@@ -21,6 +21,8 @@ using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace CommonConcepts.Test
 {
@@ -41,6 +43,18 @@ namespace CommonConcepts.Test
             _decorated.ExecuteReader(command, action);
         }
 
+        public void ExecuteReaderRaw(string query, object[] parameters, Action<DbDataReader> read)
+        {
+            _log.Add(query);
+            _decorated.ExecuteReaderRaw(query, parameters, read);
+        }
+
+        public async Task ExecuteReaderRawAsync(string query, object[] parameters, Action<DbDataReader> read, CancellationToken cancellationToken = default)
+        {
+            _log.Add(query);
+            await _decorated.ExecuteReaderRawAsync(query, parameters, read, cancellationToken);
+        }
+
         public void ExecuteSql(IEnumerable<string> commands, bool useTransaction)
         {
             _log.AddRange(commands);
@@ -51,6 +65,18 @@ namespace CommonConcepts.Test
         {
             _log.AddRange(commands);
             _decorated.ExecuteSql(commands, useTransaction, beforeExecute, afterExecute);
+        }
+
+        public int ExecuteSqlRaw(string query, object[] parameters)
+        {
+            _log.Add(query);
+            return _decorated.ExecuteSqlRaw(query, parameters);
+        }
+
+        public Task<int> ExecuteSqlRawAsync(string query, object[] parameters, CancellationToken cancellationToken = default)
+        {
+            _log.Add(query);
+            return _decorated.ExecuteSqlRawAsync(query, parameters, cancellationToken);
         }
     }
 

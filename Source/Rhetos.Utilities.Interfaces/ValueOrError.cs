@@ -30,19 +30,19 @@ namespace Rhetos.Utilities
     /// in debug mode (about 100 exceptions per second can be processed).
     /// </summary>
     /// <typeparam name="T">Type of the value.</typeparam>
-    public class ValueOrError<T> : IValueOrError where T : class
+    public class ValueOrError<T>
     {
         /// <summary>
         /// Implicit cast can be used instead of this function.
         /// </summary>
         public static ValueOrError<T> CreateValue(T value)
         {
-            return new ValueOrError<T>(value, null);
+            return new ValueOrError<T>(false, value, null);
         }
 
         public static ValueOrError<T> CreateError(string error)
         {
-            return new ValueOrError<T>(null, error);
+            return new ValueOrError<T>(true, default(T), error);
         }
 
         private readonly T _value;
@@ -59,13 +59,15 @@ namespace Rhetos.Utilities
         private readonly string _error;
         public string Error
         {
-            get { return _error; }
+            get
+            {
+                if (!IsError)
+                    throw new InvalidOperationException(Error + " Reading the Error property while the Value property is set.");
+                return _error;
+            }
         }
 
-        public bool IsError
-        {
-            get { return Error != null; }
-        }
+        public bool IsError { get; }
 
         public override string ToString()
         {
@@ -76,10 +78,9 @@ namespace Rhetos.Utilities
             return "<null>";
         }
 
-        protected ValueOrError(T value, string error)
+        protected ValueOrError(bool isError, T value, string error)
         {
-            if (value != null && error != null)
-                throw new ArgumentException(string.Format("Both value and error are returned. Value {0}, error {1}.", value, error));
+            IsError = isError;
             _value = value;
             _error = error;
         }
@@ -88,12 +89,12 @@ namespace Rhetos.Utilities
         {
             if (value is IValueOrError)
                 throw new ArgumentException($"Should not wrap a ValueOrError into another ValueOrError. Probably unexpected implicit casting. Use {nameof(ChangeType)} method to change type of value in ValueOrError.");
-            return new ValueOrError<T>(value, null);
+            return new ValueOrError<T>(false, value, null);
         }
 
         public static implicit operator ValueOrError<T>(ValueOrError error)
         {
-            return new ValueOrError<T>(null, error.Error);
+            return new ValueOrError<T>(true, default(T), error.Error);
         }
 
         public ValueOrError<TNew> ChangeType<TNew>() where TNew : class
@@ -105,7 +106,7 @@ namespace Rhetos.Utilities
                 if (newValue == null)
                     throw new InvalidOperationException(string.Format("Cannot cast {0} to {1}.", typeof(T).Name, typeof(TNew).Name));
             }
-            return new ValueOrError<TNew>(newValue, _error);
+            return new ValueOrError<TNew>(IsError, newValue, _error);
         }
     }
 
