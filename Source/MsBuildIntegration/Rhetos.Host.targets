@@ -28,6 +28,7 @@
   <Reference Relative="..\$(AssemblyName).deps.json">$(AssemblyName).deps.json</Reference>
   <Reference Relative="..\$(AssemblyName).runtimeconfig.json">$(AssemblyName).runtimeconfig.json</Reference>
   $(_RhetosHostAppLinqPadReferences)
+  <Reference Relative="..\Autofac.dll">..\Autofac.dll</Reference>
   <Reference Relative="..\EntityFramework.dll">..\EntityFramework.dll</Reference>
   <Reference Relative="..\EntityFramework.SqlServer.dll">..\EntityFramework.SqlServer.dll</Reference>
   <Reference Relative="..\Microsoft.CodeAnalysis.CSharp.dll">..\Microsoft.CodeAnalysis.CSharp.dll</Reference>
@@ -54,6 +55,7 @@
   <Reference Relative="..\Rhetos.Dsl.Parser.dll">..\Rhetos.Dsl.Parser.dll</Reference>
   <Reference Relative="..\Rhetos.Extensibility.dll">..\Rhetos.Extensibility.dll</Reference>
   <Reference Relative="..\Rhetos.Extensibility.Interfaces.dll">..\Rhetos.Extensibility.Interfaces.dll</Reference>
+  <Reference Relative="..\Rhetos.Host.Net.dll">..\Rhetos.Host.Net.dll</Reference>
   <Reference Relative="..\Rhetos.Logging.dll">..\Rhetos.Logging.dll</Reference>
   <Reference Relative="..\Rhetos.Logging.Interfaces.dll">..\Rhetos.Logging.Interfaces.dll</Reference>
   <Reference Relative="..\Rhetos.Persistence.dll">..\Rhetos.Persistence.dll</Reference>
@@ -89,8 +91,7 @@ void Main()
 {
     ConsoleLogger.MinLevel = EventType.Info%3B // Use EventType.Trace for more detailed log.
     string rhetosHostAssemblyPath = Path.Combine(Path.GetDirectoryName(Util.CurrentQueryPath), @"..\$(AssemblyName).dll")%3B
-    var container = new Rhetos.ProcessContainer(rhetosHostAssemblyPath)%3B
-    using (var scope = container.CreateScope())
+    using (var scope = LinqPadRhetosHost.CreateScope(rhetosHostAssemblyPath))
     {
         var context = scope.Resolve<Common.ExecutionContext>()%3B
         var repository = context.Repository%3B

@@ -43,17 +43,19 @@ namespace CommonConcepts.Test
         /// </summary>
         private static void ConfigureRhetos(HostBuilderContext hostContext, IServiceCollection services)
         {
-            services.AddRhetosHost((services, builder) =>
-            {
-                builder.ConfigureRhetosAppDefaults()
-                    .ConfigureConfiguration(configurationBuilder => configurationBuilder
-                        .AddJsonFile("rhetos-app.local.settings.json")
-                    )
-                    .ConfigureContainer(builder =>
-                    {
-                        builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();
-                    });
-            });
+            services.AddRhetosHost(ConfigureRhetosHostBuilder);
+        }
+
+        private static void ConfigureRhetosHostBuilder(IServiceProvider serviceProvider, IRhetosHostBuilder rhetosHostBuilder)
+        {
+            rhetosHostBuilder
+                .ConfigureRhetosAppDefaults()
+                .ConfigureConfiguration(configurationBuilder => configurationBuilder
+                    .AddJsonFile("rhetos-app.local.settings.json"))
+                .ConfigureContainer(builder =>
+                {
+                    builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();
+                });
         }
     }
 }

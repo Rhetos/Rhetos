@@ -96,7 +96,16 @@ namespace Rhetos
         /// Path to assembly where the CreateHostBuilder method is located.
         /// </param>
         /// <returns>It returns a <see cref="IHostBuilder"/> that is created and configuration by the referenced main application (<paramref name="rhetosHostAssemblyPath"/>).</returns>
-        public static RhetosHost Find(string rhetosHostAssemblyPath, Action<IRhetosHostBuilder> configureRhetosHost = null)
+        /// <param name="configureRhetosHost">
+        /// Configures Rhetos dependency injection components and configuration.
+        /// </param>
+        /// <param name="configureServices">
+        /// Configures host application's dependency injection components and configuration.
+        /// </param>
+        public static RhetosHost Find(
+            string rhetosHostAssemblyPath,
+            Action<IRhetosHostBuilder> configureRhetosHost = null,
+            Action<HostBuilderContext, IServiceCollection> configureServices = null)
         {
             var hostBuilder = HostResolver.FindBuilder(rhetosHostAssemblyPath);
             hostBuilder.ConfigureServices((hostContext, services) => {
@@ -111,6 +120,9 @@ namespace Rhetos
                     configureRhetosHost?.Invoke(rhetosHostBuilder);
                 });
             });
+
+            if (configureServices != null)
+                hostBuilder.ConfigureServices(configureServices);
 
             return hostBuilder.Build().Services.GetService<RhetosHost>();
         }

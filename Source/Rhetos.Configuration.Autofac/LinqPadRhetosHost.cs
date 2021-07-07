@@ -18,6 +18,9 @@
 */
 
 using Autofac;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Rhetos.Logging;
 using Rhetos.Security;
 using Rhetos.Utilities;
@@ -29,12 +32,12 @@ namespace Rhetos
     /// <see cref="LinqPadRhetosHost"/> is a helper class for accessing the generated application object model in LINQPad.
     /// This class is thread-safe: a single instance can be reused between threads to reduce the initialization time
     /// (Entity Framework startup and plugin discovery).
-    /// For each unit of work, call <see cref="CreateScope(string, Action{ContainerBuilder})"/> to create
+    /// For each unit of work, call <see cref="CreateScope"/> to create
     /// a lifetime-scope for the dependency injection container.
     /// Each child container uses its own database transaction that is either committed or rolled back
     /// when the instance is disposed, making data changes atomic.
-    /// <see cref="LinqPadRhetosHost"/> overrides the main application's DI components to use <see cref="ProcessUserInfo"/>
-    /// and <see cref="ConsoleLogProvider"/>.
+    /// <see cref="LinqPadRhetosHost"/> overrides the main application's Rhetos DI components to use <see cref="ProcessUserInfo"/>
+    /// and <see cref="ConsoleLogProvider"/>. It also overrides host builder to use <see cref="Microsoft.Extensions.Logging.Console.ConsoleLogger"/>.
     /// </summary>
     public static class LinqPadRhetosHost
     {
@@ -56,21 +59,27 @@ namespace Rhetos
         /// Path to assembly where the CreateHostBuilder method is located.
         /// </param>
         /// <param name="registerCustomComponents">
-        /// Register custom components that may override system and plugins services.
-        /// This is commonly used by utilities and tests that need to override host application's components or register additional plugins.
+        /// Register custom components that may override application's services and plugins.
+        /// This is commonly used by utilities and tests that need to override host application's Rhetos components or register additional plugins.
         /// <para>
         /// Note that the transaction-scope component registration will not affect singleton components.
         /// To customize the behavior of singleton components use <see cref="RhetosHost"/> directly.
         /// </para>
         /// </param>
-        public static UnitOfWorkScope CreateScope(string rhetosAppAssemblyPath, Action<ContainerBuilder> registerCustomComponents = null)
+        /// /// <param name="configureServices">
+        /// Configures host application's dependency injection components and configuration.
+        /// </param>
+        public static UnitOfWorkScope CreateScope(
+            string rhetosAppAssemblyPath,
+            Action<ContainerBuilder> registerCustomComponents = null,
+            Action<HostBuilderContext, IServiceCollection> configureServices = null)
         {
             if (_singleRhetosHost == null)
                 lock (_singleContainerLock)
                     if (_singleRhetosHost == null)
                     {
                         _singleRhetosHostAssemblyPath = rhetosAppAssemblyPath;
-                        _singleRhetosHost = RhetosHost.Find(rhetosAppAssemblyPath, ConfigureRhetosHostBuilder);
+                        _singleRhetosHost = RhetosHost.Find(rhetosAppAssemblyPath, ConfigureRhetosHostBuilder, OverrideHostLogging + configureServices);
                     }
 
             if (_singleRhetosHostAssemblyPath != rhetosAppAssemblyPath)
@@ -89,6 +98,19 @@ namespace Rhetos
                 // in a process that is executed directly by user, usually by developer or administrator.
                 builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();
                 builder.RegisterType<ConsoleLogProvider>().As<ILogProvider>();
+            });
+        }
+
+        private static void OverrideHostLogging(HostBuilderContext context, IServiceCollection services)
+        {
+            // Without overriding default host logging, using Rhetos application from external utility can sometimes
+            // result with PlatformNotSupportedException "EventLog access is not supported on this platform.",
+            // when the default logger is internally resolved in Microsoft.Extensions.Hosting.HostBuilder.Build().
+            // For example, when running the default Rhetos LINQPad script on CommonConcept.Test project.
+            services.AddLogging(logging =>
+            {
+                logging.ClearProviders();
+                logging.AddConsole();
             });
         }
     }
