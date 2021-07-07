@@ -37,19 +37,19 @@ namespace Rhetos.Persistence
 
         public int ExecuteSqlRaw(string query, object[] parameters)
         {
-            using var command = GetCommand(query, parameters);
+            using var command = CreateCommand(query, parameters);
             return command.ExecuteNonQuery();
         }
 
         public async Task<int> ExecuteSqlRawAsync(string query, object[] parameters, CancellationToken cancellationToken)
         {
-            using var command = GetCommand(query, parameters);
+            using var command = CreateCommand(query, parameters);
             return await command.ExecuteNonQueryAsync(cancellationToken);
         }
 
         public void ExecuteReaderRaw(string query, object[] parameters, Action<DbDataReader> read)
         {
-            using var command = GetCommand(query, parameters);
+            using var command = CreateCommand(query, parameters);
             using var reader = command.ExecuteReader();
             while (reader.Read())
                 read(reader);
@@ -57,13 +57,13 @@ namespace Rhetos.Persistence
 
         public async Task ExecuteReaderRawAsync(string query, object[] parameters, Action<DbDataReader> read, CancellationToken cancellationToken)
         {
-            using var command = GetCommand(query, parameters);
+            using var command = CreateCommand(query, parameters);
             using var reader = await command.ExecuteReaderAsync(cancellationToken);
             while (await reader.ReadAsync(cancellationToken))
                 read(reader);
         }
 
-        private DbCommand GetCommand(string sql, object[] parameters)
+        private DbCommand CreateCommand(string sql, object[] parameters)
         {
             var command = _persistenceTransaction.Connection.CreateCommand();
             command.Transaction = _persistenceTransaction.Transaction;

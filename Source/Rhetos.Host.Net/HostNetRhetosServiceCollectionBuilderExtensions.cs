@@ -36,7 +36,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns></returns>
         public static RhetosServiceCollectionBuilder AddHostLogging(this RhetosServiceCollectionBuilder rhetosServiceCollectionBuilder)
         {
-            rhetosServiceCollectionBuilder.Services.Configure<RhetosHostBuilderOptions>(o => o.ConfigureActions.Add(ConfigureLogProvider));
+            rhetosServiceCollectionBuilder.ConfigureRhetosHost(ConfigureLogProvider);
 
             return rhetosServiceCollectionBuilder;
         }
@@ -52,7 +52,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 rhetosServiceCollectionBuilder.Services.Configure(configureOptions);
             }
-            rhetosServiceCollectionBuilder.Services.Configure<RhetosHostBuilderOptions>(o => o.ConfigureActions.Add(ConfigureLocalizer));
+            rhetosServiceCollectionBuilder.ConfigureRhetosHost(ConfigureLocalizer);
             rhetosServiceCollectionBuilder.Services.AddSingleton<HostLocalizer>();
 
             return rhetosServiceCollectionBuilder;
