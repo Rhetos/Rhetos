@@ -44,7 +44,7 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.RegisterType<DomLoader>().As<IDomainObjectModel>().SingleInstance();
             builder.RegisterType<EfMappingViewsFileStore>().SingleInstance().PreserveExistingDefaults();
             builder.RegisterType<EfMappingViewCacheFactory>().SingleInstance().PreserveExistingDefaults();
-            builder.RegisterType<PersistenceTransaction>().As<IPersistenceTransaction>().InstancePerLifetimeScope(); // IPersistenceTransaction is only available on runtime, not on DbUpdate (in DatabaseRuntimeModule), because dbupdate needs more control over transaction management.
+            builder.RegisterType<PersistenceTransaction>().As<IPersistenceTransaction>().InstancePerMatchingLifetimeScope(UnitOfWorkScope.ScopeName); // IPersistenceTransaction is only available on runtime, not on DbUpdate (in DatabaseRuntimeModule), because dbupdate needs more control over transaction management.
             builder.RegisterModule(new DatabaseRuntimeModule());
 
             var pluginRegistration = builder.GetRhetosPluginRegistration();
