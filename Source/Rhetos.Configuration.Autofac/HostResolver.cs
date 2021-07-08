@@ -7,10 +7,14 @@ using System.Runtime.Loader;
 
 namespace Rhetos
 {
-    public class HostResolver
+    public static class HostResolver
     {
         public static readonly string HostBuilderFactoryMethodName = "CreateHostBuilder";
 
+        /// <summary>
+        /// Finds a standard IHostBuilder in the given Rhetos application's host assembly (the CreateHostBuilder method in the Program class).
+        /// See <see href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/generic-host?view=aspnetcore-5.0">.NET Generic Host</see> for more info.
+        /// </summary>
         public static IHostBuilder FindBuilder(string rhetosHostAssemblyPath)
         {
             // Using the full path for better error reporting. If the absolute path is not provided, assuming the caller utility's location as the base path.

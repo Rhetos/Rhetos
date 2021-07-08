@@ -79,7 +79,7 @@ namespace Rhetos
         public IContainer GetRootContainer() => _container;
 
         /// <summary>
-        /// Finds and loads the Rhetos runtime context of the main application.
+        /// Creates the Rhetos runtime context for the given application, using the application's setup and configuration.
         /// </summary>
         /// <remarks>
         /// This method is intended to be called by a utility application that needs to use Rhetos runtime features
@@ -92,10 +92,12 @@ namespace Rhetos
         /// was created with Rhetos framework.
         /// </para>
         /// </remarks>
+        /// <returns>
+        /// It returns a <see cref="RhetosHost"/> that is created and configuration by the referenced application.
+        /// </returns>
         /// <param name="rhetosHostAssemblyPath">
         /// Path to assembly where the CreateHostBuilder method is located.
         /// </param>
-        /// <returns>It returns a <see cref="IHostBuilder"/> that is created and configuration by the referenced main application (<paramref name="rhetosHostAssemblyPath"/>).</returns>
         /// <param name="configureRhetosHost">
         /// Configures Rhetos dependency injection components and configuration.
         /// </param>
@@ -103,6 +105,19 @@ namespace Rhetos
         /// Configures host application's dependency injection components and configuration.
         /// </param>
         public static RhetosHost Find(
+            string rhetosHostAssemblyPath,
+            Action<IRhetosHostBuilder> configureRhetosHost = null,
+            Action<HostBuilderContext, IServiceCollection> configureServices = null)
+        {
+            var services = GetHostServices(rhetosHostAssemblyPath, configureRhetosHost, configureServices);
+            return services.GetService<RhetosHost>();
+        }
+
+        /// <summary>
+        /// Provides services from the references host application.
+        /// Use the <see cref="Find"/> method instead, it you only need Rhetos context and components.
+        /// </summary>
+        public static IServiceProvider GetHostServices(
             string rhetosHostAssemblyPath,
             Action<IRhetosHostBuilder> configureRhetosHost = null,
             Action<HostBuilderContext, IServiceCollection> configureServices = null)
@@ -116,7 +131,7 @@ namespace Rhetos
                     rhetosHostBuilder.ConfigureConfiguration(configurationBuilder => configurationBuilder.AddKeyValue(
                         ConfigurationProvider.GetKey((RhetosAppOptions o) => o.RhetosHostFolder),
                         Path.GetDirectoryName(rhetosHostAssemblyPath))); // Override the RhetosHostFolder to make sure it is set to the original host folder location, not a shadow copy (for applications such as LINQPad).                
-                    
+
                     configureRhetosHost?.Invoke(rhetosHostBuilder);
                 });
             });
@@ -124,7 +139,7 @@ namespace Rhetos
             if (configureServices != null)
                 hostBuilder.ConfigureServices(configureServices);
 
-            return hostBuilder.Build().Services.GetService<RhetosHost>();
+            return hostBuilder.Build().Services;
         }
 
         public void Dispose()
