@@ -60,9 +60,12 @@ Changes in behavior:
 17. NLog is no longer enabled by default in application runtime.
     * To enable NLog for Rhetos components, in Program.CreateHostBuilder,
       add `hostBuilder.UseNLog();`, and in Startup.ConfigureServices: `.AddHostLogging()` after AddRhetosHost.
-18. Changed how navigation properties are generated in Queryable classes:
-    * Navigation properties can be set only during the initialization phase. That means that after the Queryable object is constructed the navigation properties are read only.
-    * Navigation properties behaviour can no longer be extended with custom tags *DataStructureQueryable Getter* and *DataStructureQueryable Setter*
+18. Navigation properties in generated queryable classes can be set only during the initialization phase.
+    That means that after the queryable object is constructed the navigation properties are read only.
+    * For example, to fix the "Init-only property" error in the following C# code,
+      instead of `item.Author = somePerson` write `item.AuthorID = somePerson.ID`.
+    * This change may also affect unit tests when preparing a fake data of a queryable type:
+      Setting a GUID property value of a reference will no longer update the related navigation property.
 
 Changes in Rhetos libraries API:
 
@@ -135,6 +138,7 @@ Changes in Rhetos libraries API:
 18. The following methods are no longer available: EntityFrameworkContext.ClearCache(), IPersistenceCache.ClearCache() and ToNavigation(). They where Rhetos-specific helpers for saving entity with Entity Framework.
     * If custom application code overrides repository's standard Save method, use DomHelper.WriteToDatabase to save an entity, instead of Entity Framework methods. For reference, see the new generated source code for repository Save methods.
 19. Method `DataStructureQueryableCodeGenerator.AddNavigationPropertyWithBackingField` is renamed to `DataStructureQueryableCodeGenerator.AddNavigationProperty` and the use of parameter `additionalSetterCode` is removed,
+    * Navigation properties behavior can no longer be extended with custom tags *DataStructureQueryable Getter* and *DataStructureQueryable Setter*
 
 ### Internal improvements
 

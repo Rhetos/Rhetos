@@ -20,10 +20,7 @@
 using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Extensibility;
-using Rhetos.Processing;
-using Rhetos.Utilities;
 using System.ComponentModel.Composition;
-using System.IO;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
