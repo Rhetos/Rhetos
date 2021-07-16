@@ -23,7 +23,6 @@ using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
 using System;
 using System.ComponentModel.Composition;
-using System.Linq;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -43,8 +42,6 @@ namespace Rhetos.Dom.DefaultConcepts
             if (DslUtility.IsQueryable(info))
             {
                 codeBuilder.InsertCode(SnippetQueryableClass(info), ModuleCodeGenerator.CommonQueryableMemebersTag, info.Module);
-                codeBuilder.InsertCode("IDetachOverride", InterfaceTag, info);
-                codeBuilder.InsertCode("bool IDetachOverride.Detaching { get; set; }\r\n\r\n        ", MembersTag, info);
             }
         }
 
@@ -73,49 +70,15 @@ namespace Rhetos.Dom.DefaultConcepts
             return string.Format("/*DataStructureQueryable PropertyAttribute {0}.{1}.{2}*/", dataStructure.Module.Name, dataStructure.Name, csPropertyName);
         }
 
-        /// <param name="csPropertyName">The csPropertyName argument refers to a C# class property, not the PropertyInfo concept.</param>
-        public static string GetterBodyTag(DataStructureInfo dataStructure, string csPropertyName)
-        {
-            return string.Format("/*DataStructureQueryable Getter {0}.{1}.{2}*/", dataStructure.Module.Name, dataStructure.Name, csPropertyName);
-        }
-
-        /// <param name="csPropertyName">The csPropertyName argument refers to a C# class property, not the PropertyInfo concept.</param>
-        public static string SetterBodyTag(DataStructureInfo dataStructure, string csPropertyName)
-        {
-            return string.Format("/*DataStructureQueryable Setter {0}.{1}.{2}*/", dataStructure.Module.Name, dataStructure.Name, csPropertyName);
-        }
-
         /// <param name="csPropertyName">Name of the navigation property in a C# class. A PropertyInfo with that name might not exist in the DSL model.</param>
-        /// <param name="additionalSetterCode">Optional.</param>
-        public static void AddNavigationPropertyWithBackingField(ICodeBuilder codeBuilder, DataStructureInfo dataStructure, string csPropertyName, string propertyType, string additionalSetterCode)
+        public static void AddNavigationProperty(ICodeBuilder codeBuilder, DataStructureInfo dataStructure, string csPropertyName, string propertyType)
         {
-            string propertySnippet =
-                "private " + propertyType + " " + BackingFieldName(csPropertyName) + @";
-
-        " + PropertyAttributeTag(dataStructure, csPropertyName) + @"
-        public virtual " + propertyType + @" " + csPropertyName + @"
-        {
-            get
-            {
-                " + GetterBodyTag(dataStructure, csPropertyName) + @"
-                return " + BackingFieldName(csPropertyName) + @";
-            }
-            set
-            {
-                if (((IDetachOverride)this).Detaching) return;
-                " + SetterBodyTag(dataStructure, csPropertyName) + @"
-                " + BackingFieldName(csPropertyName) + @" = value;" + (!string.IsNullOrEmpty(additionalSetterCode) ? "\r\n                " + additionalSetterCode : "") + @"
-            }
-        }
+            string propertySnippet = $@"{PropertyAttributeTag(dataStructure, csPropertyName)}
+        public virtual {propertyType} {csPropertyName} {{ get; init; }}
 
         ";
 
-            codeBuilder.InsertCode(propertySnippet, DataStructureQueryableCodeGenerator.MembersTag, dataStructure);
-        }
-
-        private static string BackingFieldName(string csPropertyName)
-        {
-            return "_" + char.ToLower(csPropertyName.First()) + csPropertyName.Substring(1);
+            codeBuilder.InsertCode(propertySnippet, MembersTag, dataStructure);
         }
 
         public static void AddInterfaceAndReference(ICodeBuilder codeBuilder, Type type, DataStructureInfo dataStructureInfo)
@@ -125,7 +88,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public static void AddInterfaceAndReference(ICodeBuilder codeBuilder, string typeName, Type type, DataStructureInfo dataStructureInfo)
         {
-            codeBuilder.InsertCode(typeName, DataStructureQueryableCodeGenerator.InterfaceTag, dataStructureInfo);
+            codeBuilder.InsertCode(typeName, InterfaceTag, dataStructureInfo);
         }
     }
 }

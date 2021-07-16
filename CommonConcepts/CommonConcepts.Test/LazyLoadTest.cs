@@ -115,48 +115,6 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void UsableObjectsAfterClearCache()
-        {
-            using (var scope = TestScope.Create())
-            {
-                var repository = scope.Resolve<Common.DomRepository>();
-                repository.TestLazyLoad.Simple.Delete(repository.TestLazyLoad.Simple.Load());
-                repository.TestLazyLoad.SimpleBase.Delete(repository.TestLazyLoad.SimpleBase.Load());
-                repository.TestLazyLoad.Parent.Delete(repository.TestLazyLoad.Parent.Load());
-
-                var p0 = new TestLazyLoad.Parent { ID = Guid.NewGuid(), Name = "p0" };
-                repository.TestLazyLoad.Parent.Insert(p0);
-
-                var sb0 = new TestLazyLoad.SimpleBase { ID = Guid.NewGuid(), Name = "sb0" };
-                var sb1 = new TestLazyLoad.SimpleBase { ID = Guid.NewGuid(), Name = "sb1" };
-                repository.TestLazyLoad.SimpleBase.Insert(sb0, sb1);
-
-                var s0 = new TestLazyLoad.Simple { ID = sb0.ID, ParentID = p0.ID };
-                var s1 = new TestLazyLoad.Simple { ID = sb1.ID, ParentID = p0.ID };
-                repository.TestLazyLoad.Simple.Insert(s0, s1);
-
-                //scope.Resolve<IPersistenceCache>().ClearCache(); // TODO: Update or delete this unit test.
-
-                var parents = repository.TestLazyLoad.Parent.Query().OrderBy(sb => sb.Name).ToList();
-                var simpleBases = repository.TestLazyLoad.SimpleBase.Query().OrderBy(sb => sb.Name).ToList();
-                var simples = repository.TestLazyLoad.Simple.Query().OrderBy(s => s.Base.Name).ToList();
-
-                Assert.AreEqual("sb0", simples[0].Base.Name);
-                Assert.AreEqual("p0", simples[0].Parent.Name);
-                Assert.AreEqual("sb0, sb1", TestUtility.DumpSorted(parents[0].Children.Select(c => c.Base.Name)));
-
-                // When removing objects from Entity Framework's cache, the EF will automatically set references
-                // between objects to null. Rhetos includes a hack to keep the references, so some data will
-                // be available even though the proxies will probably not work.
-                //scope.Resolve<IPersistenceCache>().ClearCache();; // TODO: Update or delete this unit test.
-
-                Assert.AreEqual("sb0", simples[0].Base.Name);
-                Assert.AreEqual("p0", simples[0].Parent.Name);
-                Assert.AreEqual("sb0, sb1", TestUtility.DumpSorted(parents[0].Children.Select(c => c.Base.Name)));
-            }
-        }
-
-        [TestMethod]
         public void LoadAndFilterShouldNotReturnNavigationProperties()
         {
             using (var scope = TestScope.Create())

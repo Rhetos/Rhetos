@@ -17,12 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Rhetos.Dsl.DefaultConcepts;
-using System.Globalization;
 using System.ComponentModel.Composition;
 using Rhetos.Extensibility;
 using Rhetos.Dsl;
@@ -40,10 +35,9 @@ namespace Rhetos.Dom.DefaultConcepts
             string propertyType = string.Format("IList<Common.Queryable.{0}_{1}>", info.ReferenceProperty.DataStructure.Module.Name, info.ReferenceProperty.DataStructure.Name);
 
             if (DslUtility.IsQueryable(info.ReferenceProperty.DataStructure) && DslUtility.IsQueryable(info.DataStructure))
-                DataStructureQueryableCodeGenerator.AddNavigationPropertyWithBackingField(codeBuilder, info.DataStructure,
+                DataStructureQueryableCodeGenerator.AddNavigationProperty(codeBuilder, info.DataStructure,
                     csPropertyName: info.Name,
-                    propertyType: propertyType,
-                    additionalSetterCode: null);
+                    propertyType: propertyType);
         }
     }
 }

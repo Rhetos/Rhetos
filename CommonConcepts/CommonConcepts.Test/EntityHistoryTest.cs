@@ -295,7 +295,7 @@ namespace CommonConcepts.Test
                 var refCleanRepos = repository.TestHistory.ReferenceClean;
                 var rc = repository.TestHistory.ReferenceClean.Query().Where(item => item.ID == rcID).SingleOrDefault();
 
-                rc.Clean = c2;
+                rc.CleanID = c2.ID;
                 refCleanRepos.Update(new[] { rc });
 
                 TestUtility.ShouldFail(() => cleanRepos.Delete(new[] { c1 }));

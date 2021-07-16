@@ -40,10 +40,9 @@ namespace Rhetos.Dom.DefaultConcepts
             PropertyHelper.GenerateStorageMapping(referenceGuid, codeBuilder, "System.Data.SqlDbType.UniqueIdentifier");
 
             if (DslUtility.IsQueryable(info.DataStructure) && DslUtility.IsQueryable(info.Referenced))
-                DataStructureQueryableCodeGenerator.AddNavigationPropertyWithBackingField(codeBuilder, info.DataStructure,
+                DataStructureQueryableCodeGenerator.AddNavigationProperty(codeBuilder, info.DataStructure,
                     csPropertyName: info.Name,
-                    propertyType: "Common.Queryable." + info.Referenced.Module.Name + "_" + info.Referenced.Name,
-                    additionalSetterCode: info.Name + "ID = value != null ? (Guid?)value.ID : null;");
+                    propertyType: "Common.Queryable." + info.Referenced.Module.Name + "_" + info.Referenced.Name);
 
             if (ReferencePropertyDbConstraintInfo.IsSupported(info)
                 && info.DataStructure is IOrmDataStructure
