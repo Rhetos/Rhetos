@@ -79,7 +79,7 @@ namespace Rhetos
                     if (_singleRhetosHost == null)
                     {
                         _singleRhetosHostAssemblyPath = rhetosAppAssemblyPath;
-                        _singleRhetosHost = RhetosHost.Find(rhetosAppAssemblyPath, ConfigureRhetosHostBuilder, OverrideHostLogging + configureServices);
+                        _singleRhetosHost = RhetosHost.Find(rhetosAppAssemblyPath, ConfigureRhetosHost, OverrideHostLogging + configureServices);
                     }
 
             if (_singleRhetosHostAssemblyPath != rhetosAppAssemblyPath)
@@ -90,15 +90,17 @@ namespace Rhetos
             return _singleRhetosHost.CreateScope(registerCustomComponents);
         }
 
-        private static void ConfigureRhetosHostBuilder(IRhetosHostBuilder rhetosHostBuilder)
+        private static void ConfigureRhetosHost(IRhetosHostBuilder rhetosHostBuilder)
         {
-            rhetosHostBuilder.ConfigureContainer(builder =>
-            {
-                // Override runtime IUserInfo plugins. This container is intended to be used
-                // in a process that is executed directly by user, usually by developer or administrator.
-                builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();
-                builder.RegisterType<ConsoleLogProvider>().As<ILogProvider>();
-            });
+            rhetosHostBuilder
+                .UseBuilderLogProvider(new ConsoleLogProvider())
+                .ConfigureContainer(builder =>
+                {
+                    // Override runtime IUserInfo plugins. This container is intended to be used
+                    // in a process that is executed directly by user, usually by developer or administrator.
+                    builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();
+                    builder.RegisterType<ConsoleLogProvider>().As<ILogProvider>();
+                });
         }
 
         private static void OverrideHostLogging(HostBuilderContext context, IServiceCollection services)
