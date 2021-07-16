@@ -32,7 +32,7 @@ namespace Rhetos.Dom.DefaultConcepts
     public class DataStructureQueryableCodeGenerator : IConceptCodeGenerator
     {
         public static readonly CsTag<DataStructureInfo> AttributesTag = "QueryableClassAttributes";
-        public static readonly CsTag<DataStructureInfo> InterfaceTag = new CsTag<DataStructureInfo>("QueryableClassInterace", TagType.Appendable, ", {0}");
+        public static readonly CsTag<DataStructureInfo> InterfaceTag = new ("QueryableClassInterace", TagType.Appendable, ", {0}");
         public static readonly CsTag<DataStructureInfo> MembersTag = "QueryableClassMembers";
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
@@ -41,27 +41,45 @@ namespace Rhetos.Dom.DefaultConcepts
 
             if (DslUtility.IsQueryable(info))
             {
-                codeBuilder.InsertCode(SnippetQueryableClass(info), ModuleCodeGenerator.CommonQueryableMemebersTag, info.Module);
-            }
-        }
+                string module = info.Module.Name;
+                string entity = info.Name;
 
-        protected static string SnippetQueryableClass(DataStructureInfo info)
-        {
-            return string.Format(
-    AttributesTag.Evaluate(info) + @"
-    public class {0}_{1} : global::{0}.{1}, IQueryableEntity<{0}.{1}>, System.IEquatable<{0}_{1}>" + InterfaceTag.Evaluate(info) + @"
+                string queryableClass =
+    $@"{AttributesTag.Evaluate(info)}
+    public class {module}_{entity} : global::{module}.{entity}, IQueryableEntity<{module}.{entity}>, System.IEquatable<{module}_{entity}>{InterfaceTag.Evaluate(info)}
     {{
-        " + MembersTag.Evaluate(info) + @"
+        {MembersTag.Evaluate(info)}
 
-        public bool Equals({0}_{1} other)
+        public bool Equals({module}_{entity} other)
         {{
             return other != null && other.ID == ID;
         }}
+
+        /// <summary>Converts the object with navigation properties to a simple object with primitive properties.</summary>
+        public {module}.{entity} ToSimple()
+        {{
+            var item = this;
+            return new {module}.{entity}
+            {{
+                ID = item.ID{RepositoryHelper.AssignSimplePropertyTag.Evaluate(info)}
+            }};
+        }}
     }}
 
-    ",
-            info.Module.Name,
-            info.Name);
+    ";
+                codeBuilder.InsertCode(queryableClass, ModuleCodeGenerator.CommonQueryableMemebersTag, info.Module);
+
+                string snippetToSimpleObjectsConversion = $@"/// <summary>Converts the objects with navigation properties to simple objects with primitive properties.</summary>
+        public static IQueryable<{module}.{entity}> ToSimple(this IQueryable<Common.Queryable.{module}_{entity}> query)
+        {{
+            return query.Select(item => new {module}.{entity}
+            {{
+                ID = item.ID{RepositoryHelper.AssignSimplePropertyTag.Evaluate(info)}
+            }});
+        }}
+        ";
+                codeBuilder.InsertCode(snippetToSimpleObjectsConversion, DomInitializationCodeGenerator.QueryExtensionsMembersTag);
+            }
         }
 
         /// <param name="csPropertyName">The csPropertyName argument refers to a C# class property, not the PropertyInfo concept.</param>

@@ -134,37 +134,6 @@ namespace Rhetos.Dom.DefaultConcepts
             }
 
             codeBuilder.InsertCode($"Common.QueryableRepositoryBase<Common.Queryable.{module}_{entity}, {module}.{entity}>", OverrideBaseTypeTag, info);
-            GenerateQueryableConversionMethods(info, codeBuilder);
-        }
-
-        public static void GenerateQueryableConversionMethods(DataStructureInfo info, ICodeBuilder codeBuilder)
-        {
-            string module = info.Module.Name;
-            string entity = info.Name;
-
-            string snippetToSimpleObjectsConversion = $@"/// <summary>Converts the objects with navigation properties to simple objects with primitive properties.</summary>
-        public static IQueryable<{module}.{entity}> ToSimple(this IQueryable<Common.Queryable.{module}_{entity}> query)
-        {{
-            return query.Select(item => new {module}.{entity}
-            {{
-                ID = item.ID{AssignSimplePropertyTag.Evaluate(info)}
-            }});
-        }}
-        ";
-            codeBuilder.InsertCode(snippetToSimpleObjectsConversion, DomInitializationCodeGenerator.QueryExtensionsMembersTag);
-
-            string snippetToSimpleObjectConversion = $@"/// <summary>Converts the object with navigation properties to a simple object with primitive properties.</summary>
-        public {module}.{entity} ToSimple()
-        {{
-            var item = this;
-            return new {module}.{entity}
-            {{
-                ID = item.ID{AssignSimplePropertyTag.Evaluate(info)}
-            }};
-        }}
-
-        ";
-            codeBuilder.InsertCode(snippetToSimpleObjectConversion, DataStructureQueryableCodeGenerator.MembersTag, info);
         }
     }
 }
