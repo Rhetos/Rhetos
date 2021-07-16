@@ -122,7 +122,13 @@ namespace Rhetos
             Action<IRhetosHostBuilder> configureRhetosHost = null,
             Action<HostBuilderContext, IServiceCollection> configureServices = null)
         {
+            // Using the full path for better error reporting.
+            rhetosHostAssemblyPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, rhetosHostAssemblyPath));
+            if (!File.Exists(rhetosHostAssemblyPath))
+                throw new ArgumentException($"Please specify the host application assembly file. File '{rhetosHostAssemblyPath}' does not exist.");
+
             var hostBuilder = HostResolver.FindBuilder(rhetosHostAssemblyPath);
+            hostBuilder.UseContentRoot(Path.GetDirectoryName(rhetosHostAssemblyPath));
             hostBuilder.ConfigureServices((hostContext, services) => {
                 services.AddRhetosHost((serviceProvider, rhetosHostBuilder) => {
                     // Overriding Rhetos host application's location settings, because the default values might be incorrect when the host assembly is executed

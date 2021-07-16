@@ -17,11 +17,6 @@ namespace Rhetos
         /// </summary>
         public static IHostBuilder FindBuilder(string rhetosHostAssemblyPath)
         {
-            // Using the full path for better error reporting. If the absolute path is not provided, assuming the caller utility's location as the base path.
-            rhetosHostAssemblyPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, rhetosHostAssemblyPath));
-            if (!File.Exists(rhetosHostAssemblyPath))
-                throw new ArgumentException($"Please specify the host application assembly file. File '{rhetosHostAssemblyPath}' does not exist.");
-
             // The Assembly.LoadFrom method would load the Assembly in the DefaultLoadContext.
             // In most cases this will work but when using LINQPad this can lead to unexpected behavior when comparing types because
             // LINQPad will load the reference assemblies in another context.

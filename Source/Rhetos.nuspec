@@ -14,6 +14,7 @@
       <dependency id="Autofac" version="6.2.0" />
       <dependency id="EntityFramework" version="6.4.4" />
       <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="5.0.0" />
+      <dependency id="Microsoft.Extensions.Hosting" version="5.0.0" />
       <dependency id="Microsoft.Extensions.Hosting.Abstractions" version="5.0.0" />
       <dependency id="Microsoft.Extensions.Logging" version="5.0.0" />
       <dependency id="Microsoft.Extensions.Logging.Console" version="5.0.0" />
