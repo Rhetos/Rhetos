@@ -129,6 +129,45 @@ namespace Rhetos.Utilities.Test
         }
 
         [TestMethod]
+        public void NullableTypes()
+        {
+            var provider = new ConfigurationBuilder(new ConsoleLogProvider())
+                .AddKeyValue("i1", 123)
+                .AddKeyValue("i2", "123")
+                .AddKeyValue("i3", null)
+                .AddKeyValue("b1", true)
+                .AddKeyValue("b2", "true")
+                .AddKeyValue("b3", null)
+                .AddKeyValue("d1", 1.23)
+                .AddKeyValue("d2", "1.23")
+                .AddKeyValue("d3", null)
+                .AddKeyValue("e1", TestEnum.ValueA)
+                .AddKeyValue("e2", "ValueA")
+                .AddKeyValue("e3", null)
+                .Build();
+
+            Assert.AreEqual(123, provider.GetValue<int?>("i1"));
+            Assert.AreEqual(123, provider.GetValue<int?>("i2"));
+            Assert.AreEqual(null, provider.GetValue<int?>("i3"));
+            Assert.AreEqual(null, provider.GetValue<int?>("i4"));
+
+            Assert.AreEqual(true, provider.GetValue<bool?>("b1"));
+            Assert.AreEqual(true, provider.GetValue<bool?>("b2"));
+            Assert.AreEqual(null, provider.GetValue<bool?>("b3"));
+            Assert.AreEqual(null, provider.GetValue<bool?>("b4"));
+
+            Assert.AreEqual(1.23, provider.GetValue<double?>("d1"));
+            Assert.AreEqual(1.23, provider.GetValue<double?>("d2"));
+            Assert.AreEqual(null, provider.GetValue<double?>("d3"));
+            Assert.AreEqual(null, provider.GetValue<double?>("d4"));
+
+            Assert.AreEqual(TestEnum.ValueA, provider.GetValue<TestEnum?>("e1"));
+            Assert.AreEqual(TestEnum.ValueA, provider.GetValue<TestEnum?>("e2"));
+            Assert.AreEqual(null, provider.GetValue<TestEnum?>("e3"));
+            Assert.AreEqual(null, provider.GetValue<TestEnum?>("e4"));
+        }
+
+        [TestMethod]
         public void EnumBindingIsVerbose()
         {
             var provider = new ConfigurationBuilder(new ConsoleLogProvider())

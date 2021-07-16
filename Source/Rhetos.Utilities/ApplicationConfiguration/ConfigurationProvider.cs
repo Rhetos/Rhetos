@@ -224,16 +224,24 @@ namespace Rhetos
 
             try
             {
-                var valueString = value as string;
+                string valueString = (string)value;
 
                 if (targetType == typeof(int))
                     return int.Parse(valueString);
+                else if (targetType == typeof(int?))
+                    return (int?)int.Parse(valueString);
                 else if (targetType == typeof(double))
                     return double.Parse(NormalizeDecimalSeparator(valueString));
+                else if (targetType == typeof(double?))
+                    return (double?)double.Parse(NormalizeDecimalSeparator(valueString));
                 else if (targetType == typeof(bool))
                     return bool.Parse(valueString);
+                else if (targetType == typeof(bool?))
+                    return (bool?)bool.Parse(valueString);
                 else if (targetType.IsEnum)
                     return ParseEnumVerbose(targetType, valueString, forKeyDebugInfo);
+                else if (Nullable.GetUnderlyingType(targetType)?.IsEnum == true)
+                    return ParseEnumVerbose(Nullable.GetUnderlyingType(targetType), valueString, forKeyDebugInfo);
             }
             catch (Exception e) when (!(e is FrameworkException))
             {
