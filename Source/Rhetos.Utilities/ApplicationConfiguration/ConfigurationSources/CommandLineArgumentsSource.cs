@@ -40,7 +40,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
         {
             var argsTrimmed = args.Select(arg => arg.TrimStart(argumentPrefix.ToCharArray())).Where(arg => !string.IsNullOrWhiteSpace(arg));
             if (!string.IsNullOrEmpty(configurationPath))
-                argsTrimmed = argsTrimmed.Select(arg => $"{configurationPath}{ConfigurationProvider.ConfigurationPathSeparator}{arg}").ToArray();
+                argsTrimmed = argsTrimmed.Select(arg => $"{configurationPath}{ConfigurationProviderOptions.ConfigurationPathSeparator}{arg}").ToArray();
             
             return argsTrimmed
                 .ToDictionary(arg => arg, _ => new ConfigurationValue(true, this));

@@ -23,15 +23,17 @@ using System.Reflection;
 namespace Rhetos
 {
     /// <summary>
-    /// Configure options class that will be used with <see cref="IConfigurationBuilder"/>.
-    /// Note that this attribute is not required for Rhetos options classes.
+    /// Class marked with this attribute represent a Rhetos options class, with property binding to the specified section in the application's configuration.
     /// </summary>
+    /// <remarks>
+    /// Note that this attribute is not required for Rhetos options classes; the default <see cref="ConfigurationPath"/> is an empty string.
+    /// </remarks>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
     public sealed class OptionsAttribute : Attribute
     {
         /// <param name="configurationPath">
         /// Default configuration path that will be applied in GetOptions and AddOptions methods.
-        /// Use <see cref="ConfigurationProvider.ConfigurationPathSeparator"/> as a separator in the path.
+        /// Use <see cref="ConfigurationProviderOptions.ConfigurationPathSeparator"/> as a separator in the path.
         /// </param>
         public OptionsAttribute(string configurationPath)
         {
@@ -40,7 +42,7 @@ namespace Rhetos
 
         /// <summary>
         /// Default configuration path that will be applied in GetOptions and AddOptions methods.
-        /// Use <see cref="ConfigurationProvider.ConfigurationPathSeparator"/> as a separator in the path.
+        /// Use <see cref="ConfigurationProviderOptions.ConfigurationPathSeparator"/> as a separator in the path.
         /// </summary>
         public string ConfigurationPath { get; }
 

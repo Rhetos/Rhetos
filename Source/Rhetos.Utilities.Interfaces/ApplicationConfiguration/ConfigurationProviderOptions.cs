@@ -26,6 +26,18 @@ namespace Rhetos
     public class ConfigurationProviderOptions
     {
         /// <summary>
+        /// Path separator for a specifying subsection in the configuration.
+        /// The value is ":".
+        /// </summary>
+        public static readonly string ConfigurationPathSeparator = ":";
+
+        /// <summary>
+        /// Alternative <see cref="ConfigurationPathSeparator"/> for compatibility with legacy configuration and configuration sources that do not support ":".
+        /// The value is ".".
+        /// </summary>
+        public static readonly string ConfigurationPathSeparatorAlternative = ".";
+
+        /// <summary>
         /// Allow old configuration files to work with new Rhetos applications (v4.0+),
         /// without updating configuration keys in the .config files.
         /// </summary>

@@ -46,7 +46,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
             if (connectionStrings != null)
                 foreach (ConnectionStringSettings connectionString in connectionStrings)
                 {
-                    var connectionSectionName = $"ConnectionStrings{ConfigurationProvider.ConfigurationPathSeparator}{connectionString.Name}";
+                    var connectionSectionName = $"ConnectionStrings{ConfigurationProviderOptions.ConfigurationPathSeparator}{connectionString.Name}";
                     settings[connectionSectionName] = new ConfigurationValue(connectionString.ConnectionString, this);
                 }
 

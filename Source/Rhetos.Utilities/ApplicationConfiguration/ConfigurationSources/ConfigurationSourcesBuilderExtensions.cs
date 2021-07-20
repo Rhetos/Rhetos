@@ -55,7 +55,7 @@ namespace Rhetos
             var members = options.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public).Select(member => (member.Name, Value: member.GetValue(options)))
                 .Concat(options.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public).Select(member => (member.Name, Value: member.GetValue(options))));
 
-            string keyPrefix = !string.IsNullOrEmpty(configurationPath) ? configurationPath + ConfigurationProvider.ConfigurationPathSeparator : "";
+            string keyPrefix = !string.IsNullOrEmpty(configurationPath) ? configurationPath + ConfigurationProviderOptions.ConfigurationPathSeparator : "";
             var settings = members
                 .Select(member => new KeyValuePair<string, object>(keyPrefix + member.Name, member.Value))
                 .ToList();

@@ -17,14 +17,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources;
 using System;
 
 namespace Rhetos
 {
     /// <summary>
     /// When reading this setting from a configuration file, any relative path will be converted to absolute.
-    /// The base folder is specified by configuration source (<see cref="Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources.IConfigurationSource"/>)
-    /// implementation of <see cref="Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources.IConfigurationSourceFolder"/>.
+    /// The base folder is specified by configuration source (<see cref="IConfigurationSource"/>)
+    /// implementation of <see cref="IConfigurationSourceFolder"/>.
     /// If the configuration source reads configuration file, the base folder should match the file location.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]

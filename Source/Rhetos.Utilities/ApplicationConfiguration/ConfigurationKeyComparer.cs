@@ -38,6 +38,6 @@ namespace Rhetos.Utilities.ApplicationConfiguration
         }
 
         private static string Normalize(string key)
-            => key.Replace(ConfigurationProvider.ConfigurationPathSeparatorAlternative, ConfigurationProvider.ConfigurationPathSeparator);
+            => key.Replace(ConfigurationProviderOptions.ConfigurationPathSeparatorAlternative, ConfigurationProviderOptions.ConfigurationPathSeparator);
     }
 }

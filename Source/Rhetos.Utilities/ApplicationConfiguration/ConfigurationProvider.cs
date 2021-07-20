@@ -33,8 +33,6 @@ namespace Rhetos
 {
     public class ConfigurationProvider : IConfiguration
     {
-        public static readonly string ConfigurationPathSeparator = ":";
-        public static readonly string ConfigurationPathSeparatorAlternative = ".";
         private readonly Dictionary<string, ConfigurationValue> _configurationValues;
         private readonly ConfigurationProviderOptions _configurationProviderOptions;
         private readonly ILogger _logger;
@@ -126,7 +124,7 @@ namespace Rhetos
 
             if (memberName.Contains(_memberMappingSeparator))
             {
-                if (TryGetConfigurationValue(memberName.Replace(_memberMappingSeparator, ConfigurationPathSeparator), out var memberNameColon, configurationPath, convertRelativePath))
+                if (TryGetConfigurationValue(memberName.Replace(_memberMappingSeparator, ConfigurationProviderOptions.ConfigurationPathSeparator), out var memberNameColon, configurationPath, convertRelativePath))
                 {
                     value = memberNameColon;
                     matchCount++;
@@ -164,7 +162,7 @@ namespace Rhetos
         private bool TryGetConfigurationValue(string configurationKey, out object result, string configurationPath, bool convertRelativePath)
         {
             if (!string.IsNullOrEmpty(configurationPath))
-                configurationKey = $"{configurationPath}{ConfigurationPathSeparator}{configurationKey}";
+                configurationKey = $"{configurationPath}{ConfigurationProviderOptions.ConfigurationPathSeparator}{configurationKey}";
 
             if (_configurationValues.TryGetValue(configurationKey, out var entry))
             {
@@ -283,7 +281,7 @@ namespace Rhetos
             if (string.IsNullOrEmpty(path))
                 return propertyKey;
             else
-                return path + ConfigurationPathSeparator + propertyKey;
+                return path + ConfigurationProviderOptions.ConfigurationPathSeparator + propertyKey;
         }
 
         [Obsolete("Use GetValue or GetOptions instead")]

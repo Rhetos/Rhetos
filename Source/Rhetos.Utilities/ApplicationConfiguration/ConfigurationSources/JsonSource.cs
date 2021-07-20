@@ -75,7 +75,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
 
         public string Combine(string path, string key)
         {
-            return string.IsNullOrEmpty(path) ? key : $"{path}{ConfigurationProvider.ConfigurationPathSeparator}{key}";
+            return string.IsNullOrEmpty(path) ? key : $"{path}{ConfigurationProviderOptions.ConfigurationPathSeparator}{key}";
         }
 
         public override string ToString()
