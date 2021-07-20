@@ -38,7 +38,6 @@ namespace Rhetos.Dsl
         {
             PreserveReferencesHandling = PreserveReferencesHandling.Objects,
             ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
-            TypeNameHandling = TypeNameHandling.Auto,
             Formatting = Formatting.Indented,
         };
 

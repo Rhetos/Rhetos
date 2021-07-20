@@ -76,7 +76,7 @@ namespace Rhetos.CommonConcepts.Test.Mocks
         {
             var readParameterTypesProperty = repository.GetType().GetField("ReadParameterTypes", BindingFlags.Public | BindingFlags.Static);
             var specificFilterTypes = readParameterTypesProperty == null ?
-                new KeyValuePair<string, Type>[0] :
+                Array.Empty<KeyValuePair<string, Type>>() :
                 (KeyValuePair<string, Type>[])readParameterTypesProperty.GetValue(null);
             return new DataStructureReadParameters(new Dictionary<string, KeyValuePair<string, Type>[]> {
                 { type.FullName, specificFilterTypes }

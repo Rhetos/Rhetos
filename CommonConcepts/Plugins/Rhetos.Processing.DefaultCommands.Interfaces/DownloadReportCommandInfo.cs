@@ -50,7 +50,7 @@ namespace Rhetos.Processing.DefaultCommands
         public byte[] ReportFile { get; set; }
         public string SuggestedFileName { get; set; }
 
-        [Obsolete]
+        [Obsolete("Other properties in " + nameof(DownloadReportCommandResult) + " class contain the complete response data.")]
         public object Value
         {
             get { return this; }

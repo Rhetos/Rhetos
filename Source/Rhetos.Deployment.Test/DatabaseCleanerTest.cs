@@ -42,11 +42,13 @@ namespace Rhetos.Deployment.Test
             LegacyUtilities.Initialize(configuration);
         }
 
+#pragma warning disable CA1001 // Types that own disposable fields should be disposable. Suppressed to simplify tests, as DataTable fields used here do no need disposing, see https://stackoverflow.com/questions/913228/should-i-dispose-dataset-and-datatable.
         private class MockSqlExecuter : ISqlExecuter
+#pragma warning restore CA1001 // Types that own disposable fields should be disposable
         {
-            DataTable Columns;
-            DataTable Tables;
-            DataTable Schemas;
+            readonly DataTable Columns;
+            readonly DataTable Tables;
+            readonly DataTable Schemas;
 
             public MockSqlExecuter(string columns, string tables, string schemas)
             {
@@ -91,9 +93,9 @@ namespace Rhetos.Deployment.Test
                 }
             }
 
-            Regex DropColumn = new Regex(@"^ALTER TABLE \[(\w+)\].\[(\w+)\] DROP COLUMN \[(\w+)\]$");
-            Regex DropTable = new Regex(@"^DROP TABLE \[(\w+)\].\[(\w+)\]$");
-            Regex DropSchema = new Regex(@"^DROP SCHEMA \[(\w+)\]$");
+            readonly Regex DropColumn = new Regex(@"^ALTER TABLE \[(\w+)\].\[(\w+)\] DROP COLUMN \[(\w+)\]$");
+            readonly Regex DropTable = new Regex(@"^DROP TABLE \[(\w+)\].\[(\w+)\]$");
+            readonly Regex DropSchema = new Regex(@"^DROP SCHEMA \[(\w+)\]$");
 
             public List<string> DroppedColumns = new List<string>();
             public List<string> DroppedTables = new List<string>();

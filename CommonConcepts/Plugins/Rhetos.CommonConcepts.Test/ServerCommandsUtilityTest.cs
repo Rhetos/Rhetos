@@ -94,8 +94,7 @@ namespace Rhetos.CommonConcepts.Test
                 return source.Where(item => item.Name.Contains(pattern));
             }
 
-            public static readonly KeyValuePair<string, Type>[] ReadParameterTypes = new KeyValuePair<string, Type>[]
-            {};
+            public static readonly KeyValuePair<string, Type>[] ReadParameterTypes = Array.Empty<KeyValuePair<string, Type>>();
         }
 
         class ExplicitReadCommandRepository : IRepository

@@ -18,7 +18,6 @@
 */
 
 using Autofac.Features.Indexed;
-using Rhetos.Extensibility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,15 +41,11 @@ namespace Rhetos.Extensibility.Test
             value = this[key];
             return true;
         }
-        public IEnumerable<TPlugin> this[Type key]
-        {
-            get
-            {
-                return _pluginsWithMedata
-                    .Where(pm => pm.Metadata.Any(metadata => metadata.Key == MefProvider.Implements && (Type)metadata.Value == key))
-                    .Select(pm => pm.Plugin)
-                    .ToArray();
-            }
-        }
+#pragma warning disable CA1043 // Use Integral Or String Argument For Indexers. This indexer implements 'Autofac.Features.Indexed.IIndex', for macro concepts that are directly indexed by concept type.
+        public IEnumerable<TPlugin> this[Type key] => _pluginsWithMedata
+            .Where(pm => pm.Metadata.Any(metadata => metadata.Key == MefProvider.Implements && (Type)metadata.Value == key))
+            .Select(pm => pm.Plugin)
+            .ToArray();
+#pragma warning restore CA1043 // Use Integral Or String Argument For Indexers
     }
 }

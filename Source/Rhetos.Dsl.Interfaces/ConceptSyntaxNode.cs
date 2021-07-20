@@ -51,7 +51,7 @@ namespace Rhetos.Dsl
         {
             var desc = new StringBuilder(100);
             desc.Append(Concept.GetKeywordOrTypeName());
-            desc.Append(" ");
+            desc.Append(' ');
             AppendKeyMembers(desc);
             return desc.ToString();
         }
@@ -66,7 +66,7 @@ namespace Rhetos.Dsl
                 if (member.IsKey)
                 {
                     if (!firstMember)
-                        text.Append(".");
+                        text.Append('.');
                     firstMember = false;
 
                     AppendMember(text, member);
@@ -84,7 +84,7 @@ namespace Rhetos.Dsl
             {
                 var value = (ConceptSyntaxNode)memberValue;
                 if (member.IsConceptInfoInterface)
-                    text.Append(value.Concept.GetRootTypeName()).Append(":");
+                    text.Append(value.Concept.GetRootTypeName()).Append(':');
                 value.AppendKeyMembers(text);
             }
             else if (member.IsStringType)
