@@ -104,7 +104,7 @@ namespace Rhetos.Dsl.Test
         [TestMethod]
         public void NoConceptMetadataTest()
         {
-            var metadataProvider = new ConceptMetadata(new MockPluginsContainer<IConceptMetadataExtension>(new IConceptMetadataExtension[] {}));
+            var metadataProvider = new ConceptMetadata(new MockPluginsContainer<IConceptMetadataExtension>(Array.Empty<IConceptMetadataExtension>()));
 
             TestUtility.ShouldFail(() => {
                 metadataProvider.Get<ISimpleConceptMetadata<IConceptInfo>>(typeof(SimpleConcept1));

@@ -77,13 +77,13 @@ namespace Rhetos.Utilities.Test
 
                     {
                         MethodInfo generatedMethod = generatedClass.GetMethod("F1");
-                        string generatedCodeResult = (string)generatedMethod.Invoke(null, new object[] { });
+                        string generatedCodeResult = (string)generatedMethod.Invoke(null, Array.Empty<object>());
                         Assert.AreEqual(stringConstant, generatedCodeResult);
                     }
 
                     {
                         MethodInfo generatedMethod = generatedClass.GetMethod("F2");
-                        string generatedCodeResult = (string)generatedMethod.Invoke(null, new object[] { });
+                        string generatedCodeResult = (string)generatedMethod.Invoke(null, Array.Empty<object>());
                         Assert.IsNull(generatedCodeResult);
                     }
                 }

@@ -86,7 +86,7 @@ namespace Rhetos.CommonConcepts.Test
                 if (name == "Common.Role") return new IRepository[] { rolesRepos };
                 if (name == "Common.Claim") return new IRepository[] { commonClaimsRepos };
 
-                return new IRepository[] { };
+                return Array.Empty<IRepository>();
             }
         }
 
@@ -432,7 +432,7 @@ PrincipalPermissions.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.", ReportCacheMiss
                 new MockRolePermission(roles[1], commonClaims[7], true),
             };
 
-            var principalPermissions = new IPrincipalPermission[] { };
+            var principalPermissions = Array.Empty<IPrincipalPermission>();
 
             var authorizationContext = NewAuthorizationContext(principals, roles, principalRoles, roleRoles, commonClaims, rolePermissions, principalPermissions,
                 useCache, authorizationCacheExpirationSeconds);

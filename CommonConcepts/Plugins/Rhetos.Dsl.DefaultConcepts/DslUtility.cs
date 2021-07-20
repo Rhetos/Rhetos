@@ -135,8 +135,8 @@ namespace Rhetos.Dsl.DefaultConcepts
                 return ValueOrError.CreateError("The path contains a space character.");
 
             var propertyNames = path.Split('.');
-            var referenceNames = propertyNames.Take(propertyNames.Count() - 1).ToArray();
-            var lastPropertyName = propertyNames[propertyNames.Count() - 1];
+            var referenceNames = propertyNames.Take(propertyNames.Length - 1).ToArray();
+            var lastPropertyName = propertyNames[propertyNames.Length - 1];
 
             ValueOrError<DataStructureInfo> selectedDataStructure = source;
             foreach (var referenceName in referenceNames)

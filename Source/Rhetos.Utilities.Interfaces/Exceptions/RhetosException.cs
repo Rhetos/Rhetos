@@ -36,9 +36,9 @@ namespace Rhetos
         /// </summary>
         public IDictionary<string, object> Info { get; set; } = new Dictionary<string, object>();
 
-        public RhetosException() { }
-        public RhetosException(string message) : base(message) { }
-        public RhetosException(string message, Exception inner) : base(message, inner) { }
+        protected RhetosException() { }
+        protected RhetosException(string message) : base(message) { }
+        protected RhetosException(string message, Exception inner) : base(message, inner) { }
         protected RhetosException(
           System.Runtime.Serialization.SerializationInfo info,
           System.Runtime.Serialization.StreamingContext context)

@@ -37,7 +37,7 @@ namespace CommonConcepts.Test
         private static readonly string UserPrefix = Environment.UserDomainName + "\\TestCaching";
         private static readonly string User1Name = UserPrefix + Guid.NewGuid();
         private static readonly string User2Name = UserPrefix + Guid.NewGuid();
-        private static readonly string RolePrefix = "TestCaching";
+        private const string RolePrefix = "TestCaching";
         private static readonly string Role1Name = RolePrefix + Guid.NewGuid();
         private static readonly string Role2Name = RolePrefix + Guid.NewGuid();
         private static readonly Claim Claim1 = new Claim("Common.Log", "Read");

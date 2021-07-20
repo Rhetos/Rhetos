@@ -36,7 +36,7 @@ namespace Rhetos.CommonConcepts.Test.Mocks
 
         public T GetIndex<T>() where T : IDslModelIndex
         {
-            IDslModelIndex index = (IDslModelIndex)typeof(T).GetConstructor(new Type[] { }).Invoke(new object[] { });
+            IDslModelIndex index = (IDslModelIndex)typeof(T).GetConstructor(Array.Empty<Type>()).Invoke(Array.Empty<object>());
             foreach (var concept in Concepts)
                 index.Add(concept);
             return (T)index;

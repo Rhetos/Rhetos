@@ -50,7 +50,7 @@ namespace Rhetos.Dsl
             alternativeInitializationConcept.InitializeNonparsableProperties(out createdConcepts);
             CsUtility.Materialize(ref createdConcepts);
 
-            if (createdConcepts != null && createdConcepts.Count() > 0)
+            if (createdConcepts != null && createdConcepts.Any())
             {
                 traceLogger.Trace(() => alternativeInitializationConcept.GetShortDescription() + " generated on alternative initialization: "
                     + string.Join(", ", createdConcepts.Select(c => c.GetShortDescription())) + ".");

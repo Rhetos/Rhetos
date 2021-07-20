@@ -39,7 +39,7 @@ namespace Rhetos.Utilities
                 {
                     if (!cancellationToken.IsCancellationRequested)
                         action();
-                });
+                }, TaskScheduler.Current);
         }
 
         protected virtual void Dispose(bool disposing)

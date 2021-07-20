@@ -374,7 +374,7 @@ namespace CommonConcepts.Test
 
                     repository.TestPolymorphic.Disjunctive1.Delete(repository.TestPolymorphic.Disjunctive1.Load());
                     repository.TestPolymorphic.Disjunctive2.Delete(repository.TestPolymorphic.Disjunctive2.Load());
-                    Assert.AreEqual(0, repository.TestPolymorphic.Disjunctive.Load().Count());
+                    Assert.AreEqual(0, repository.TestPolymorphic.Disjunctive.Load().Length);
 
                     var d1 = new TestPolymorphic.Disjunctive1 { ID = Guid.NewGuid(), Name = "abc" };
                     repository.TestPolymorphic.Disjunctive1.Insert(new[] { d1 });
@@ -685,7 +685,7 @@ namespace CommonConcepts.Test
                 test("sx3", new[] { sx.ID }, "TestPolymorphic.ComplexImplementationSql", null);
                 test("sx4", new[] { sx.AlternativeId.Value }, "TestPolymorphic.ComplexImplementationSql", "sql2");
 
-                TestUtility.ShouldFail<Rhetos.ClientException>(() => repository.TestPolymorphic.ComplexBase.Load(new FilterSubtype { Ids = new Guid[] {},
+                TestUtility.ShouldFail<Rhetos.ClientException>(() => repository.TestPolymorphic.ComplexBase.Load(new FilterSubtype { Ids = Array.Empty<Guid>(),
                     Subtype = "nonexisting", ImplementationName = "" }), "nonexisting");
 
                 // Testing update of materialized data (it uses the Subtype filter):

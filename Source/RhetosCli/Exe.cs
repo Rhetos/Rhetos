@@ -73,17 +73,17 @@ namespace Rhetos
             {
                 if (i != 0)
                 {
-                    builder.Append(" ");
+                    builder.Append(' ');
                 }
 
-                if (args[i].IndexOf(' ') == -1)
+                if (!args[i].Contains(' '))
                 {
                     builder.Append(args[i]);
 
                     continue;
                 }
 
-                builder.Append("\"");
+                builder.Append('"');
 
                 var pendingBackslashes = 0;
                 for (var j = 0; j < args[i].Length; j++)
@@ -109,7 +109,7 @@ namespace Rhetos
                             {
                                 if (pendingBackslashes == 1)
                                 {
-                                    builder.Append("\\");
+                                    builder.Append('\\');
                                 }
                                 else
                                 {
@@ -129,7 +129,7 @@ namespace Rhetos
                     builder.Append('\\', pendingBackslashes * 2);
                 }
 
-                builder.Append("\"");
+                builder.Append('"');
             }
 
             return builder.ToString();

@@ -6,7 +6,9 @@
     <AssemblyVersion>5.0.0</AssemblyVersion>
     <FileVersion>5.0.0</FileVersion>
     <InformationalVersion>5.0.0-dev</InformationalVersion>
-    <NoWarn>1701,1702,1591,1573</NoWarn>
+    <!-- The warning CA1014 is a project level warning that is not tied to a specific file so it can not be suppressed in .editorconfig -->
+    <NoWarn>CA1014</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
   </PropertyGroup>
 </Project>

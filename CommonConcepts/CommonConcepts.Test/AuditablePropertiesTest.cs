@@ -220,17 +220,17 @@ namespace CommonConcepts.Test
                     foreach (var item in items)
                         repository.TestAuditable.Simple2.Insert(item); // Inserting one by one to make sure that each is processed separately.
 
-                    for (int i = 0; i < items.Count(); i++)
+                    for (int i = 0; i < items.Length; i++)
                         items[i] = repository.TestAuditable.Simple2.Load(new[] { items[i].ID }).Single();
 
                     Console.WriteLine(string.Join("\r\n", items.Select((item, x) => $"{x}" +
                         $" {item.Created.Value.ToString("o")}" +
                         $" created\r\n{x} {item.Modified.Value.ToString("o")} modified")));
 
-                    for (int i = 1; i < items.Count(); i++)
+                    for (int i = 1; i < items.Length; i++)
                         AssertLessOrEqual(items[i].Created, items[i].Modified, $"Item should be created before modified ({testRun}/{i}).");
 
-                    for (int i = 1; i < items.Count(); i++)
+                    for (int i = 1; i < items.Length; i++)
                         AssertLessOrEqual(items[i-1].Modified, items[i].Created, $"The previous item should be modified before the next is created ({testRun}/{i}).");
                 }
             }

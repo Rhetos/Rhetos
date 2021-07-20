@@ -153,7 +153,7 @@ namespace Rhetos.Utilities.Test
                 { new ListOfTuples<int, double> { { 40,  11 }, { 30, 22 }, { 20, 33 } }, 33 },
             };
 
-            for (int t = 0; t < tests.Count(); t++)
+            for (int t = 0; t < tests.Count; t++)
             {
                 var test = tests[t];
                 var dbUsage = new List<bool>();

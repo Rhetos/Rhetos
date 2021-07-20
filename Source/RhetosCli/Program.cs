@@ -33,7 +33,7 @@ namespace Rhetos
 {
     public class Program
     {
-        static readonly string ExecuteCommandInCurrentProcessOptionName = "--execute-command-in-current-process";
+        const string ExecuteCommandInCurrentProcessOptionName = "--execute-command-in-current-process";
 
         public static int Main(string[] args)
         {

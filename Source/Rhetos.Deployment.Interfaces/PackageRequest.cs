@@ -63,7 +63,7 @@ namespace Rhetos.Deployment
             report.Append(", version ").Append(VersionsRange ?? "not specified");
             report.Append(", requested by ").Append(RequestedBy);
             if (!string.IsNullOrEmpty(Source))
-                report.Append(", source \"").Append(Source).Append("\"");
+                report.Append(", source \"").Append(Source).Append('"');
 
             return report.ToString();
         }

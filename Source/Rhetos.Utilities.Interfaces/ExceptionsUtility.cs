@@ -52,7 +52,7 @@ namespace Rhetos.Utilities
         public static void Rethrow(Exception exception)
         {
             if (exception == null)
-                throw new ArgumentNullException("exception");
+                throw new ArgumentNullException(nameof(exception));
 
             ExceptionDispatchInfo.Capture(exception).Throw();
         }

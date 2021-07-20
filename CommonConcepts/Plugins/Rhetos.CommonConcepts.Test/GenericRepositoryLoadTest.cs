@@ -466,7 +466,7 @@ namespace Rhetos.CommonConcepts.Test
         [TestMethod]
         public void ReadGenericFilter_Empty()
         {
-            var gf = new FilterCriteria[] { };
+            var gf = Array.Empty<FilterCriteria>();
             var entityRepos = new GenericFilterRepository();
             var genericRepos = NewRepos(entityRepos);
 
@@ -708,8 +708,7 @@ namespace Rhetos.CommonConcepts.Test
                 return new[] { new SimpleEntity { Name = parameter.ToString() } }.AsQueryable();
             }
 
-            public static readonly KeyValuePair<string, Type>[] ReadParameterTypes = new KeyValuePair<string, Type>[]
-            {};
+            public static readonly KeyValuePair<string, Type>[] ReadParameterTypes = Array.Empty<KeyValuePair<string, Type>>();
         }
 
         [TestMethod]

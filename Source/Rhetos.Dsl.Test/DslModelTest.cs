@@ -115,7 +115,7 @@ namespace Rhetos.Dsl.Test
                 get {
                     if (dictionary.TryGetValue(key, out var value))
                         return value;
-                    return new IConceptMacro[] { };
+                    return Array.Empty<IConceptMacro>();
                 }
             }
         }

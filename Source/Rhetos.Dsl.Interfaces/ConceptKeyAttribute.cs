@@ -25,7 +25,7 @@ using System.Text;
 namespace Rhetos.Dsl
 {
     [AttributeUsage(AttributeTargets.Property, Inherited = true, AllowMultiple = false)]
-    public class ConceptKeyAttribute : Attribute
+    public sealed class ConceptKeyAttribute : Attribute
     {
     }
 }

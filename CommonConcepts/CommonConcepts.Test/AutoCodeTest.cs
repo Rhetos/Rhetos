@@ -772,7 +772,7 @@ namespace CommonConcepts.Test
 
         private Exception[] ExecuteParallel(Action<Common.ExecutionContext>[] actions, Action<Common.ExecutionContext> coldStartInsert, Action<Common.ExecutionContext> coldStartQuery)
         {
-            int threadCount = actions.Count();
+            int threadCount = actions.Length;
 
             using (var scope = TestScope.Create())
             {

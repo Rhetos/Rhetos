@@ -27,13 +27,12 @@ namespace Rhetos.DatabaseGenerator
         public CodeGenerator Dependent;
 
         public bool Equals(CodeGeneratorDependency other)
-        {
-            return other.DependsOn.Id == DependsOn.Id && other.Dependent.Id == Dependent.Id;
-        }
+            => other.DependsOn.Id == DependsOn.Id && other.Dependent.Id == Dependent.Id;
+
+        public override bool Equals(object obj)
+            => obj is CodeGeneratorDependency objCgd && Equals(objCgd);
 
         public override int GetHashCode()
-        {
-            return DependsOn.Id.GetHashCode() ^ Dependent.Id.GetHashCode();
-        }
+            => HashCode.Combine(DependsOn.Id, Dependent.Id);
     }
 }

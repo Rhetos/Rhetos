@@ -226,7 +226,7 @@ namespace Rhetos.TestCommon
                 else
                 {
                     if (duplicates >= showMaxDuplicates)
-                        sb.Append("(").Append(duplicates + 1).Append(")");
+                        sb.Append('(').Append(duplicates + 1).Append(')');
                     duplicates = 0;
                 }
 
@@ -238,7 +238,7 @@ namespace Rhetos.TestCommon
                 lastc = c;
             }
             if (duplicates >= showMaxDuplicates)
-                sb.Append("(").Append(duplicates + 1).Append(")");
+                sb.Append('(').Append(duplicates + 1).Append(')');
             return sb.ToString();
         }
     }

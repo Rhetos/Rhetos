@@ -245,8 +245,8 @@ namespace Rhetos.Dsl
             var report = new StringBuilder(createdTypesInIteration.Count * 50);
             report.Append("Created types:");
             foreach (var ct in createdTypesInIteration)
-                report.Append("\r\n").Append(ct.Iteration).Append("\t")
-                    .Append(ct.Macro).Append("\t")
+                report.Append("\r\n").Append(ct.Iteration).Append('\t')
+                    .Append(ct.Macro).Append('\t')
                     .Append(ct.Created.Replace('\t', ' ').Replace('\r', ' ').Replace('\n', ' '));
             return report.ToString();
         }

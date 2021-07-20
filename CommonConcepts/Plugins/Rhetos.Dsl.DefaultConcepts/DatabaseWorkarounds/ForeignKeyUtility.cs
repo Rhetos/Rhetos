@@ -58,7 +58,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             if (dataStructure is PolymorphicInfo)
                 return new IConceptInfo[] { new PersistedDataStructureInfo { Module = dataStructure.Module, Name = dataStructure.Name + "_Materialized" } };
 
-            return new IConceptInfo[] { };
+            return System.Array.Empty<IConceptInfo>();
         }
     }
 }

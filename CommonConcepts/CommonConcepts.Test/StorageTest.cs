@@ -73,7 +73,7 @@ namespace CommonConcepts.Test
                 context.PersistenceStorage.Insert(entity);
                 AssertAreEqual(entity, context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity.ID).Single());
 
-                entity.BinaryProperty = new byte[] { };
+                entity.BinaryProperty = Array.Empty<byte>();
                 entity.BoolProperty = false;
                 entity.DateProperty = new DateTime(2020, 2, 2);
                 entity.DateTimeProperty = new DateTime(2020, 7, 2, 2, 3, 10, 150);

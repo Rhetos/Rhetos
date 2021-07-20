@@ -115,7 +115,7 @@ namespace CommonConcepts.Test
                 try
                 {
                     var loadedByIds = repository.Test10.Simple.Load(guids);
-                    Assert.AreEqual(n, loadedByIds.Count());
+                    Assert.AreEqual(n, loadedByIds.Length);
 
                     var queriedByIds = scope.Resolve<GenericRepository<Test10.Simple>>().Query(guids);
                     Assert.AreEqual(n, queriedByIds.Count());
@@ -145,7 +145,7 @@ namespace CommonConcepts.Test
             using (var scope = TestScope.Create())
             {
                 var testRepos = scope.Resolve<GenericRepository<Test10.Simple>>();
-                if (testRepos.Query(new[] { commitCheckId }).Count() == 0)
+                if (!testRepos.Query(new[] { commitCheckId }).Any())
                     Assert.Fail("Transaction did not commit. Cannot test for remaining temporary data.");
 
                 var filterIdRepos = scope.Resolve<GenericRepository<Common.FilterId>>();

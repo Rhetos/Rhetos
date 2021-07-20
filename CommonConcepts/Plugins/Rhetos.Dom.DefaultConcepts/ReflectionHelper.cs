@@ -198,7 +198,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             if (_queryableWhereMethod == null)
                 _queryableWhereMethod = typeof(Queryable).GetMethods()
-                    .Where(m => m.Name == "Where" && m.GetParameters()[1].ParameterType.GetGenericArguments()[0].GetGenericArguments().Count() == 2)
+                    .Where(m => m.Name == "Where" && m.GetParameters()[1].ParameterType.GetGenericArguments()[0].GetGenericArguments().Length == 2)
                     .Single();
 
             return _queryableWhereMethod.MakeGenericMethod(parameterType);
@@ -225,7 +225,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             if (_enumerableWhereMethod == null)
                 _enumerableWhereMethod = typeof(Enumerable).GetMethods()
-                    .Where(m => m.Name == "Where" && m.GetParameters()[1].ParameterType.GetGenericArguments().Count() == 2)
+                    .Where(m => m.Name == "Where" && m.GetParameters()[1].ParameterType.GetGenericArguments().Length == 2)
                     .Single();
 
             return _enumerableWhereMethod.MakeGenericMethod(parameterType);
@@ -405,7 +405,7 @@ namespace Rhetos.Dom.DefaultConcepts
             get
             {
                 if (_repositoryLoadMethod == null)
-                    _repositoryLoadMethod = RepositoryType.GetMethod("Load", new Type[] { });
+                    _repositoryLoadMethod = RepositoryType.GetMethod("Load", Array.Empty<Type>());
                 return _repositoryLoadMethod;
             }
         }
@@ -417,7 +417,7 @@ namespace Rhetos.Dom.DefaultConcepts
             get
             {
                 if (_repositoryQueryMethod == null)
-                    _repositoryQueryMethod = RepositoryType.GetMethod("Query", new Type[] { });
+                    _repositoryQueryMethod = RepositoryType.GetMethod("Query", Array.Empty<Type>());
                 return _repositoryQueryMethod;
             }
         }

@@ -18,16 +18,13 @@
 */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Rhetos.Dsl
 {
     [AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = false)]
-    public class ConceptKeywordAttribute : Attribute
+    public sealed class ConceptKeywordAttribute : Attribute
     {
-        public string Keyword;
+        public string Keyword { get; private set; }
 
         public ConceptKeywordAttribute(string keyword)
         {

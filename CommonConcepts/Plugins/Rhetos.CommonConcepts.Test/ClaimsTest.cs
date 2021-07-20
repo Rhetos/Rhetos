@@ -44,7 +44,7 @@ namespace Rhetos.CommonConcepts.Test
         private static Claim c(string claimInfo)
         {
             var parts = claimInfo.Split('/');
-            Assert.AreEqual(2, parts.Count());
+            Assert.AreEqual(2, parts.Length);
             return new Claim(parts[0], parts[1]);
         }
 

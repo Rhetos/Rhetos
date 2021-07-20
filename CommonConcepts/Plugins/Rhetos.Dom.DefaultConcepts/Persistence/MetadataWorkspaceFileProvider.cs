@@ -65,7 +65,7 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
             var modelFilesPath = EntityFrameworkMapping.ModelFiles.Select(fileName => Path.Combine(_rhetosAppOptions.AssetsFolder, fileName)).ToList();
             SetProviderManifestTokenIfNeeded(sw, modelFilesPath);
 
-            var metadataWorkspace = new MetadataWorkspace(modelFilesPath, new Assembly[] { });
+            var metadataWorkspace = new MetadataWorkspace(modelFilesPath, Array.Empty<Assembly>());
             _performanceLogger.Write(sw, "Load EDM files.");
 
             return metadataWorkspace;

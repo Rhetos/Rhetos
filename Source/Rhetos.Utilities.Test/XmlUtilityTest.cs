@@ -40,9 +40,9 @@ namespace Rhetos.Utilities.Test
         {
             public int a;
             public int b { get; set; }
-#pragma warning disable 169
+#pragma warning disable 169, CA1823
             private int c;
-#pragma warning restore 169
+#pragma warning restore 169, CA1823
         }
 
         private static TCopy SerializeDeserialize<TCopy>(object orig)
@@ -183,7 +183,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual(orig.A,copy.A);
             Assert.AreEqual(orig.B,copy.B);
             Assert.AreEqual(orig.Items.GetType(), copy.Items.GetType());
-            Assert.AreEqual(orig.Items.Count(), copy.Items.Count());
+            Assert.AreEqual(orig.Items.Length, copy.Items.Length);
             Assert.AreEqual(orig.Items[0].a, copy.Items[0].a);
         }
 
@@ -266,15 +266,15 @@ namespace Rhetos.Utilities.Test
         public class ClassWithEnum
         {
             public enum TestEnum { ValueA, ValueB };
-            public TestEnum testEnum;
+            public TestEnum testEnumValue;
         }
 
         [TestMethod]
         public void SerializeToXml_EnumTest()
         {
-            var orig = new ClassWithEnum { testEnum = ClassWithEnum.TestEnum.ValueB };
+            var orig = new ClassWithEnum { testEnumValue = ClassWithEnum.TestEnum.ValueB };
             var copy = SerializeDeserialize<ClassWithEnum>(orig);
-            Assert.AreEqual(orig.testEnum, copy.testEnum);
+            Assert.AreEqual(orig.testEnumValue, copy.testEnumValue);
         }
 
         [TestMethod]

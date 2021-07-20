@@ -126,8 +126,8 @@ namespace Rhetos.Deployment
                 var script2 = badGroup.ElementAt(1);
                 string message = $"Data migration scripts '{script1.Path}' and '{script2.Path}' have same tag '{badGroup.Key}' in their headers.";
 
-                if (script1.Path.IndexOf(".down.", StringComparison.OrdinalIgnoreCase) >= 0
-                    != script2.Path.IndexOf(".down.", StringComparison.OrdinalIgnoreCase) >= 0)
+                if (script1.Path.Contains(".down.", StringComparison.OrdinalIgnoreCase)
+                    != script2.Path.Contains(".down.", StringComparison.OrdinalIgnoreCase))
                     message += $" Note that the 'down' script should have \"DATAMIGRATION-DOWN\" label in the header.";
                 
                 throw new FrameworkException(message);

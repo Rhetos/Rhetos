@@ -46,7 +46,7 @@ namespace Rhetos.Deployment
 
             var dataMigrationTables = ReadDataMigrationTablesFromDatabase();
             var deleteMigrationSchemas = ReadDataMigrationSchemasFromDatabase();
-            DeleteDatabaseObjects(new ColumnInfo[] { }, dataMigrationTables, deleteMigrationSchemas);
+            DeleteDatabaseObjects(System.Array.Empty<ColumnInfo>(), dataMigrationTables, deleteMigrationSchemas);
 
             var report = $"Deleted {dataMigrationTables.Count} tables in data migration schemas.";
             _logger.Info(report);

@@ -37,7 +37,7 @@ namespace Rhetos.Utilities
             get
             {
                 if (args != null)
-                    return string.Format(CultureInfo.InvariantCulture, message.ToString(), args ?? new object[] { });
+                    return string.Format(CultureInfo.InvariantCulture, message.ToString(), args ?? Array.Empty<object>());
                 else
                     return message.ToString();
             }

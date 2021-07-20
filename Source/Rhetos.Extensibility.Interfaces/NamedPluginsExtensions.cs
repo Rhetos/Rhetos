@@ -31,7 +31,7 @@ namespace Rhetos.Extensibility
         {
             var plugins = namedPlugins.GetPlugins(name);
 
-            if (plugins.Count() == 0)
+            if (!plugins.Any())
                 throw new Rhetos.FrameworkException("There is no " + typeof(TPlugin).Name + " plugin named '" + name + "'.");
 
             if (plugins.Count() > 1)

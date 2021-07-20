@@ -17,19 +17,16 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Dom.DefaultConcepts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
     public class InvalidDataMessage
     {
         public string Message;
-        public object[] MessageParameters = _emptyArray;
+        public object[] MessageParameters = Array.Empty<object>();
         public Guid ID;
         public IDictionary<string, object> Metadata;
 
@@ -44,8 +41,6 @@ namespace Rhetos.Dom.DefaultConcepts
                     return value;
             return null;
         }
-
-        private static readonly object[] _emptyArray = new object[] { };
 
         public static void ValidateOnSave(IEnumerable<IEntity> inserted, IEnumerable<IEntity> updated, IValidateRepository repository, string dataStructure)
         {

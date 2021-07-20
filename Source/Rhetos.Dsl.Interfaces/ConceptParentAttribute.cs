@@ -28,7 +28,7 @@ namespace Rhetos.Dsl
     /// this allows construction of recursive concepts such as menu items.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property, Inherited = true, AllowMultiple = false)]
-    public class ConceptParentAttribute : Attribute
+    public sealed class ConceptParentAttribute : Attribute
     {
     }
 }

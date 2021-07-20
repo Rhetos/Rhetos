@@ -87,7 +87,7 @@ namespace Rhetos.CommonConcepts.Test
             TestError(() => repos.Load("str"), "fun Load string", "Load");
             TestError(() => repos.Query(), "fun Query", "Query");
             TestError(() => repos.Load(new[] { new FilterCriteria { Property = "Name", Operation = "equal", Value = "abc" } }), "fun Query", "Query");
-            TestError(() => repos.Filter(new SimpleEntity[] {}.AsQueryable(), "str"), "fun Filter source string", "Filter");
+            TestError(() => repos.Filter(Array.Empty<SimpleEntity>().AsQueryable(), "str"), "fun Filter source string", "Filter");
             TestError(() => repos.Save(null, null, null), "fun Save", "Save");
         }
     }

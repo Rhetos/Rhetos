@@ -209,9 +209,8 @@ namespace Rhetos.CommonConcepts.Test
             for (int seed = 0; seed < 20; seed++)
             {
                 var sb = new StringBuilder();
-                Random random = new Random(seed);
                 for (int c = 0; c < 10000; c++)
-                    sb.Append(elements[random.Next(elements.Length)]);
+                    sb.Append(elements[System.Security.Cryptography.RandomNumberGenerator.GetInt32(elements.Length)]);
                 string sql = sb.ToString();
 
                 string result = SqlAnalysis.RemoveCommentsAndText(sql);

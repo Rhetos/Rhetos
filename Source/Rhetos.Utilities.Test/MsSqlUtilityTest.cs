@@ -183,7 +183,7 @@ namespace Rhetos.Utilities.Test
                     null,
                     CallingConventions.ExplicitThis,
                     new[] { typeof(SqlErrorCollection), typeof(string) },
-                    new ParameterModifier[] { })
+                    Array.Empty<ParameterModifier>())
                 .Invoke(null, new object[] { collection, "7.0.0" }) as SqlException;
         }
 
