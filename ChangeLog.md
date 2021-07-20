@@ -64,8 +64,13 @@ Changes in behavior:
     That means that after the queryable object is constructed the navigation properties are read only.
     * For example, to fix the "Init-only property" error in the following C# code,
       instead of `item.Author = somePerson` write `item.AuthorID = somePerson.ID`.
-    * This change may also affect unit tests when preparing a fake data of a queryable type:
-      Setting a GUID property value of a reference will no longer update the related navigation property.
+    * This change may also affect unit tests when preparing fake data of a queryable type:
+      Setting a GUID property value of a reference does not update the corresponding navigation property
+      (same as in previous Rhetos versions).
+    * It is recommended to use simple POCO classes without navigation properties when modifying data,
+      see [Understanding the generated object model](https://github.com/Rhetos/Rhetos/wiki/Using-the-Domain-Object-Model#understanding-the-generated-object-model).
+      For example, before modifying the data, read the records with Load() instead of Query(),
+      or call ToSimple() on a query before ToList().
 
 Changes in Rhetos libraries API:
 
@@ -135,10 +140,9 @@ Changes in Rhetos libraries API:
     * Instead of using `ProcessContainer.CreateScope(rhetosAppAssemblyPath)` replace it with `LinqPadRhetosHost.CreateScope(rhetosAppAssemblyPath)`
 16. Removed `IUserInfoAdmin` interface. It was used together with the `Rhetos:AppSecurity:BuiltinAdminOverride` option to give the administrator rights as it had all claims.
 17. GetInternalServerErrorMessage method moved from FrameworkException class to Rhetos.Utilities.ErrorReporting.
-18. The following methods are no longer available: EntityFrameworkContext.ClearCache(), IPersistenceCache.ClearCache() and ToNavigation(). They where Rhetos-specific helpers for saving entity with Entity Framework.
+18. Removed IPersistenceCache interface and ToNavigation() methods. They where Rhetos-specific helpers for saving entities with Entity Framework.
     * If custom application code overrides repository's standard Save method, use DomHelper.WriteToDatabase to save an entity, instead of Entity Framework methods. For reference, see the new generated source code for repository Save methods.
-19. Method `DataStructureQueryableCodeGenerator.AddNavigationPropertyWithBackingField` is renamed to `DataStructureQueryableCodeGenerator.AddNavigationProperty` and the use of parameter `additionalSetterCode` is removed,
-    * Navigation properties behavior can no longer be extended with custom tags *DataStructureQueryable Getter* and *DataStructureQueryable Setter*
+    * Navigation properties behavior can no longer be extended with custom tags *DataStructureQueryable Getter* and *DataStructureQueryable Setter*.
 
 ### Internal improvements
 
