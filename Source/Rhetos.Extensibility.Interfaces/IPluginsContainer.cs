@@ -36,6 +36,8 @@ namespace Rhetos.Extensibility
         /// <summary>
         /// The implementations are sorted by their dependencies.
         /// </summary>
-        IEnumerable<TPlugin> GetImplementations(Type implemented);
+        /// <param name="activator">
+        /// </param>
+        IEnumerable<TPlugin> GetImplementations(Type activator);
     }
 }

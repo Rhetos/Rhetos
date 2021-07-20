@@ -47,7 +47,7 @@ namespace Rhetos.Dsl.Test
             return null;
         }
 
-        public IEnumerable<T> GetImplementations(Type implements)
+        public IEnumerable<T> GetImplementations(Type activator)
         {
             return Array.Empty<T>();
         }

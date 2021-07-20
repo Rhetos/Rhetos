@@ -70,12 +70,12 @@ namespace Rhetos.Extensibility
             return _cache.GetMetadata(pluginType, metadataKey);
         }
 
-        public IEnumerable<TPlugin> GetImplementations(Type implements)
+        public IEnumerable<TPlugin> GetImplementations(Type activator)
         {
-            var typeHierarchy = CsUtility.GetClassHierarchy(implements);
+            var typeHierarchy = CsUtility.GetClassHierarchy(activator);
             var allImplementations = typeHierarchy.SelectMany(type => PreSort(_pluginsByImplementation.Value[type]));
 
-            return _cache.SortedByMetadataDependsOnAndRemoveSuppressed(implements, allImplementations);
+            return _cache.SortedByMetadataDependsOnAndRemoveSuppressed(activator, allImplementations);
         }
 
         #endregion

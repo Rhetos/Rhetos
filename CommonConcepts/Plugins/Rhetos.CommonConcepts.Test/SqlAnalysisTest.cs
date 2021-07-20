@@ -209,8 +209,11 @@ namespace Rhetos.CommonConcepts.Test
             for (int seed = 0; seed < 20; seed++)
             {
                 var sb = new StringBuilder();
+                var random = new Random(seed);
                 for (int c = 0; c < 10000; c++)
-                    sb.Append(elements[System.Security.Cryptography.RandomNumberGenerator.GetInt32(elements.Length)]);
+#pragma warning disable CA5394 // Do not use insecure randomness. The Random class is used here with a 'seed' to make the unit test reproducible.
+                    sb.Append(elements[random.Next(elements.Length)]);
+#pragma warning restore CA5394 // Do not use insecure randomness
                 string sql = sb.ToString();
 
                 string result = SqlAnalysis.RemoveCommentsAndText(sql);

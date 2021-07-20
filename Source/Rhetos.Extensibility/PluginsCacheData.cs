@@ -37,7 +37,7 @@ namespace Rhetos.Extensibility
             => obj is CachedFileData objCf && Equals(objCf);
 
         public override int GetHashCode()
-            => HashCode.Combine(ModifiedTime, TypesWithExports);
+            => HashCode.Combine(ModifiedTime);
     }
 
     internal class PluginsCacheData

@@ -125,6 +125,7 @@ Changes in Rhetos libraries API:
     * IValidationConcept: Use IValidatedConcept instead of IValidationConcept.
     * IPersistenceTransaction.CommitAndReconnect: It is not longer needed for IServerInitializer plugins, because each plugin is executed in a separate connection.
     * SqlTransactionBatch: Use SqlTransactionBatches instead.
+    * Function\<T\>.Create: Use an explicit Func type for the result variable, instead of 'var'.
 13. Removed support for the following concepts:
     * UseExecutionContext: Use repository member \_executionContext instead.
     * DenySave: Use InvalidData instead.
