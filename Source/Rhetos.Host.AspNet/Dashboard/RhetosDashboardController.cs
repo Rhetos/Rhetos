@@ -17,15 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections;
+using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.AspNetCore.Html;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.Net.Http.Headers;
 
 namespace Rhetos.Host.AspNet.Dashboard
 {
@@ -42,7 +37,7 @@ namespace Rhetos.Host.AspNet.Dashboard
         public IActionResult Dashboard()
         {
             var stringBuilder = new StringBuilder();
-            foreach (var snippet in _snippets.OrderBy(a => a.Order))
+            foreach (var snippet in _snippets.OrderBy(a => a.Order).ThenBy(a => a.DisplayName).ThenBy(a => a.GetType().FullName))
             {
                 stringBuilder.Append($"<h2>{snippet.DisplayName}</h2>");
                 stringBuilder.Append(snippet.RenderHtml());
@@ -52,23 +47,20 @@ namespace Rhetos.Host.AspNet.Dashboard
             return Content(rendered, "text/html");
         }
 
-        private static readonly string _html =
-@"
-<!DOCTYPE html>
-
+        private const string _html =
+@"<!DOCTYPE html>
 <html>
-<head>
+  <head>
     <meta name=""viewport"" content=""width=device-width"" />
-        <title>Index</title>
-        </head>
-        <body>
-        <h1>Rhetos Dashboard</h1>
+    <title>Index</title>
+  </head>
+  <body>
+    <h1>Rhetos Dashboard</h1>
     
-        {0}
+    {0}
     
-        </body>
-    </html>
-
+  </body>
+</html>
 ";
     }
 }

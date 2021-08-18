@@ -17,12 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Rhetos.Utilities;
+using System;
 
 namespace Rhetos.Host.AspNet.Dashboard.RhetosDashboardSnippets
 {
