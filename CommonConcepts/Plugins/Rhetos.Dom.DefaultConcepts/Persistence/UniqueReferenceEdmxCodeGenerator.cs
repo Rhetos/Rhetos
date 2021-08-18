@@ -29,7 +29,9 @@ namespace Rhetos.Dom.DefaultConcepts
     {
         public override void GenerateCode(UniqueReferenceInfo uniqueReferenceInfo, ICodeBuilder codeBuilder)
         {
-            if (uniqueReferenceInfo.Base is IOrmDataStructure && uniqueReferenceInfo.Extension is IOrmDataStructure)
+            if (uniqueReferenceInfo.Base is IOrmDataStructure 
+                && uniqueReferenceInfo.Extension is IOrmDataStructure
+                && uniqueReferenceInfo.Base != uniqueReferenceInfo.Extension)
             {
                 codeBuilder.InsertCode(GetNavigationPropertyNodeForConceptualModelForExtension(uniqueReferenceInfo), DataStructureEdmxCodeGenerator.ConceptualModelEntityTypeNavigationPropertyTag.Evaluate(uniqueReferenceInfo.Base));
                 codeBuilder.InsertCode(GetNavigationPropertyNodeForConceptualModel(uniqueReferenceInfo), DataStructureEdmxCodeGenerator.ConceptualModelEntityTypeNavigationPropertyTag.Evaluate(uniqueReferenceInfo.Extension));
