@@ -68,7 +68,7 @@ namespace Rhetos.Deployment
 
         public string Report()
         {
-            return Id + " " + Version + " (requested from " + Request.RequestedBy + ") in " + Folder + ".";
+            return $"{Id} {Version} (requested from {Request.RequestedBy}) in {Folder}.";
         }
 
         /// <summary>
@@ -88,6 +88,10 @@ namespace Rhetos.Deployment
             return report.ToString();
         }
 
+        /// <summary>
+        /// Removing the package's folder path at run-time. This folder is a build-time feature and any other plugin that is trying to use it should get an exception.
+        /// Package content files are not available at runtime, they are typically used from the local NuGet cache on the build machine.
+        /// </summary>
         public void RemoveFolderPath()
         {
             Folder = null;
