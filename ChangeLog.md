@@ -145,11 +145,19 @@ Changes in Rhetos libraries API:
     * If custom application code overrides repository's standard Save method, use DomHelper.WriteToDatabase to save an entity, instead of Entity Framework methods. For reference, see the new generated source code for repository Save methods.
     * Navigation properties behavior can no longer be extended with custom tags *DataStructureQueryable Getter* and *DataStructureQueryable Setter*.
 
+### New features
+
+* Rhetos CLI supports configurable output verbosity:
+  * `--verbosity diagnostic` option: Console output includes all trace loggers.
+    Example: `rhetos --verbosity diagnostic build .`
+  * `--trace <loggerName>` option: Console output includes the trace loggers specified by name.
+    Example: `rhetos --trace PluginScanner -trace PluginScannerCache build .`
+
 ### Internal improvements
 
-1. `Rhetos:AppSecurity:AllClaimsForUsers` option does not require the server machine name to be specified.
-   Instead of *username@servername* it is possible just to use *username*,
-   but the old format *username@servername* is still recommended for increased security.
+* `Rhetos:AppSecurity:AllClaimsForUsers` option does not require the server machine name to be specified.
+  Instead of *username@servername* it is possible just to use *username*,
+  but the old format *username@servername* is still recommended for increased security.
 
 ## 4.3.0 (2021-03-05)
 

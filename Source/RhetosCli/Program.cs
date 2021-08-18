@@ -39,11 +39,7 @@ namespace Rhetos
         {
             try
             {
-                //NLog should read the configuration from rhetos.exe.nlog configuration file and if the file does not exist it should try to read it from nlog.config
-                //but there is a bug in NLog which is causing first to try to read the nlog.config and then rhetos.exe.nlog configuration file.
-                //As this is a breaking changes the fix wil be released in version 5 of NLog so remove this code after upgrading to NLog 5.
-                NLog.LogManager.LogFactory.SetCandidateConfigFilePaths(new[] { "rhetos.exe.nlog" });
-                return new Program().Run(args);
+                return Run(args);
             }
             finally
             {
@@ -53,20 +49,57 @@ namespace Rhetos
 
         private readonly ILogProvider _logProvider;
 
-        public Program()
+        private Program(VerbosityLevel verbosity, string[] traceLoggers)
         {
+            // NLog should automatically read the configuration from application-specific configuration file (e.g. 'rhetos.exe.nlog')
+            // and if the file does not exist it should try to read it from nlog.config,
+            // but there is a bug in NLog which is causing first to try to read the nlog.config and then rhetos.exe.nlog configuration file.
+            // As this is a breaking changes the fix will be released in version 5 of NLog so remove this code after upgrading to NLog 5.
+            NLog.LogManager.LogFactory.SetCandidateConfigFilePaths(new[] { Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "rhetos.exe.nlog") });
+
+            // "ConsoleLog" target by default logs min-level 'Info'. See the initial rules in 'rhetos.exe.nlog' file.
+            // Diagnostic and trace options include additional loggers.
+            if (verbosity == VerbosityLevel.Diagnostic)
+            {
+                NLog.LogManager.LogFactory.Configuration.AddRuleForOneLevel(NLog.LogLevel.Trace, "ConsoleLog");
+            }
+            else
+            {
+                if (traceLoggers != null)
+                    foreach (var traceLogger in traceLoggers)
+                        NLog.LogManager.LogFactory.Configuration.AddRuleForOneLevel(NLog.LogLevel.Trace, "ConsoleLog", traceLogger);
+            }
+
             _logProvider = new NLogProvider();
         }
 
-        public int Run(string[] args)
+        enum VerbosityLevel
+        {
+            /// <summary>
+            /// Console output includes all loggers with "Info" level and higher. See 'rhetos.exe.nlog' file.
+            /// </summary>
+            Normal,
+            /// <summary>
+            /// Console output includes all trace loggers.
+            /// </summary>
+            Diagnostic
+        };
+
+        public static int Run(string[] args)
         {
             var rootCommand = new RootCommand();
+            rootCommand.Add(new Option<VerbosityLevel>("--verbosity", VerbosityLevel.Normal, "Output verbosity level. Allowed values are normal and diagnostic."));
+            rootCommand.Add(new Option<string[]>("--trace", Array.Empty<string>(), "Output additional trace loggers specified by name."));
+
             var buildCommand = new Command("build", "Generates C# code, database model file and other project assets.");
             // CurrentDirectory by default, because rhetos.exe on *build* is expected to be located in NuGet package cache.
             buildCommand.Add(new Argument<DirectoryInfo>("project-root-folder", () => new DirectoryInfo(Environment.CurrentDirectory)) { Description = "Project folder where csproj file is located. If not specified, current working directory is used by default." });
             buildCommand.Add(new Option<bool>("--msbuild-format", false, "Adjust error output format for MSBuild integration."));
-            buildCommand.Handler = CommandHandler.Create((DirectoryInfo projectRootFolder, bool msbuildFormat)
-                => SafeExecuteCommand(() => Build(projectRootFolder.FullName), "Build", msbuildFormat));
+            buildCommand.Handler = CommandHandler.Create((DirectoryInfo projectRootFolder, bool msbuildFormat, VerbosityLevel verbosity, string[] trace) =>
+            {
+                var program = new Program(verbosity, trace);
+                program.SafeExecuteCommand(() => program.Build(projectRootFolder.FullName), "Build", msbuildFormat);
+            });
             rootCommand.AddCommand(buildCommand);
 
             var dbUpdateCommand = new Command("dbupdate", "Updates the database structure and initializes the application data in the database.");
@@ -79,11 +112,13 @@ namespace Rhetos
             executeCommandInCurrentProcessOption.IsHidden = true;
             dbUpdateCommand.Add(executeCommandInCurrentProcessOption);
             dbUpdateCommand.Handler =
-                CommandHandler.Create((FileInfo startupAssembly, bool shortTransactions, bool skipRecompute, bool executeCommandInCurrentProcess) => {
-                    if(executeCommandInCurrentProcess)
-                        return SafeExecuteCommand(() => DbUpdate(startupAssembly.FullName, shortTransactions, skipRecompute), "DbUpdate", msBuildErrorFormat: false);
+                CommandHandler.Create((FileInfo startupAssembly, bool shortTransactions, bool skipRecompute, bool executeCommandInCurrentProcess, VerbosityLevel verbosity, string[] trace) =>
+                {
+                    var program = new Program(verbosity, trace);
+                    if (executeCommandInCurrentProcess)
+                        return program.SafeExecuteCommand(() => program.DbUpdate(startupAssembly.FullName, shortTransactions, skipRecompute), "DbUpdate", msBuildErrorFormat: false);
                     else
-                        return InvokeDbUpdateAsExternalProcess(startupAssembly.FullName, args);
+                        return program.InvokeDbUpdateAsExternalProcess(startupAssembly.FullName, args);
                 });
             rootCommand.AddCommand(dbUpdateCommand);
 
