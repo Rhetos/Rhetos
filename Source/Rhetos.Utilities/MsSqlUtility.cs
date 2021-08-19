@@ -171,6 +171,31 @@ namespace Rhetos.Utilities
                 return interpretedException;
             }
 
+            //=========================
+            // Detect MONEY decimals constraint:
+
+            Regex moneyExceptionMessageTester = new Regex(@"CK_\w+_\w+_money");
+            if (sqlException.Number == 547 && moneyExceptionMessageTester.IsMatch(sqlException.Message))
+            {
+                const string quote = @"[""']";
+                Regex messageParser = new Regex(@$"conflicted with the CHECK constraint {quote}(?<constraint>CK_(?<table>\w+)_(?<column>\w+)_money){quote}\. The conflict occurred in database {quote}(.+){quote}, table {quote}(?<dataStructure>\w+\.\w+){quote}, column {quote}(\w+){quote}\.");
+                var parts = messageParser.Match(sqlException.Message).Groups;
+
+                var interpretedException = new UserException("It is not allowed to enter a money value with more than 2 decimals.", exception);
+
+                interpretedException.Info["Constraint"] = "Money";
+                if (parts["constraint"].Success)
+                    interpretedException.Info["ConstraintName"] = parts["constraint"].Value;
+                if (parts["table"].Success)
+                    interpretedException.Info["Table"] = parts["table"].Value;
+                if (parts["column"].Success)
+                    interpretedException.Info["Column"] = parts["column"].Value;
+                if (parts["dataStructure"].Success)
+                    interpretedException.Info["DataStructure"] = parts["dataStructure"].Value;
+
+                return interpretedException;
+            }
+
             return null;
         }
 

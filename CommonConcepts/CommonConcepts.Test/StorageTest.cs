@@ -21,6 +21,7 @@ using Autofac;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.TestCommon;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -244,9 +245,14 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void MoneyPropertySizeAndDecimals()
+        public void MoneyPropertySizeAndDecimals_AutoRound()
         {
-            using (var scope = TestScope.Create())
+            using (var scope = TestScope.Create(builder =>
+            {
+                var rhetosAppOptions = new RhetosAppOptions() { AutoRoundMoney = true };
+                builder.RegisterInstance(rhetosAppOptions);
+                builder.RegisterType<Common.PersistenceStorageObjectMappings>().AsImplementedInterfaces();
+            }))
             {
                 var context = scope.Resolve<Common.ExecutionContext>();
 
@@ -280,6 +286,32 @@ namespace CommonConcepts.Test
                     Assert.AreEqual(test.Load, context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity.ID).Single().MoneyProperty,
                         $"The money property should be cut off on the second decimal position ({test.Save}).");
                 }
+            }
+        }
+
+        [TestMethod]
+        public void MoneyPropertySizeAndDecimals_ThowsOnOverflow()
+        {
+            using (var scope = TestScope.Create(builder =>
+            {
+                var rhetosAppOptions = new RhetosAppOptions() { AutoRoundMoney = false };
+                builder.RegisterInstance(rhetosAppOptions);
+                builder.RegisterType<Common.PersistenceStorageObjectMappings>().AsImplementedInterfaces();
+            }))
+            {
+                var context = scope.Resolve<Common.ExecutionContext>();
+
+                var overflowValue = 0.001m; // 3 decimals
+
+                var entity = new TestStorage.AllProperties
+                {
+                    ID = Guid.NewGuid(),
+                    MoneyProperty = overflowValue
+                };
+
+                Action insert = () => context.PersistenceStorage.Insert(entity);
+
+                TestUtility.ShouldFail<SqlException>(insert, "CK_AllProperties_MoneyProperty_money");
             }
         }
 

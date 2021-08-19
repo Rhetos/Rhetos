@@ -152,6 +152,13 @@ namespace Rhetos.Dom.DefaultConcepts
             return
     $@"public class {info.Module.Name}_{info.Name}_Mapper : IPersistenceStorageObjectMapper
     {{
+        private readonly RhetosAppOptions _rhetosAppOptions;
+
+        public {info.Module.Name}_{info.Name}_Mapper(RhetosAppOptions rhetosAppOptions)
+        {{
+            _rhetosAppOptions = rhetosAppOptions;
+        }}
+
         public PersistenceStorageObjectParameter[] GetParameters(IEntity genericEntity)
         {{
             var entity = ({info.Module}.{info.Name})genericEntity;
@@ -190,7 +197,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 codeBuilder.InsertCode(MemberFunctionsSnippet(info), RepositoryHelper.RepositoryMembers, info);
 
                 codeBuilder.InsertCode(PersistenceStorageMappingSnippet(info), DomInitializationCodeGenerator.PersistenceStorageMappingsTag);
-                string registerRepository = $@"_mappings.Add(typeof({info.Module.Name}.{info.Name}), new {info.Module.Name}_{info.Name}_Mapper());
+                string registerRepository = $@"_mappings.Add(typeof({info.Module.Name}.{info.Name}), new {info.Module.Name}_{info.Name}_Mapper(rhetosAppOptions));
             ";
                 codeBuilder.InsertCode(registerRepository, DomInitializationCodeGenerator.PersistenceStorageMappingRegistrationTag);
             }

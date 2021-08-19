@@ -73,6 +73,12 @@ namespace Rhetos.Utilities
 
         public bool AuthorizationAddUnregisteredPrincipals { get; set; } = false;
 
+        /// <summary>
+        /// If set to false, the application will throw exception if the decimal scale of the value being written is more than 2.
+        /// For backward compatibility, setting this to true will automatically round the value before writing to the database.
+        /// </summary>
+        public bool AutoRoundMoney { get; set; }
+
         private static string GetDirectory(string baseFolderPath, string directoryRelativePath)
         {
             return !string.IsNullOrEmpty(baseFolderPath)

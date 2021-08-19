@@ -29,11 +29,24 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(MoneyPropertyInfo))]
     public class MoneyPropertyCodeGenerator : IConceptCodeGenerator
     {
+        private readonly CommonConceptsDatabaseSettings _setting;
+
+        public MoneyPropertyCodeGenerator(CommonConceptsDatabaseSettings setting)
+        {
+            _setting = setting;
+        }
+
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = conceptInfo as PropertyInfo;
             PropertyHelper.GenerateCodeForType(info, codeBuilder, "decimal?");
-            PropertyHelper.GenerateStorageCustomMapping(info, codeBuilder, $"PersistenceStorageHelper.GetMoneySqlParameter(entity.{info.Name})");
+
+            PropertyHelper.GenerateStorageCustomMapping(
+                info,
+                codeBuilder,
+                $@"_rhetosAppOptions.AutoRoundMoney
+                    ? PersistenceStorageHelper.GetRoundedMoneySqlParameter(entity.{info.Name})
+                    : new SqlParameter("""", System.Data.SqlDbType.Money) {{ Value = ((object)entity.{info.Name}) ?? DBNull.Value }}");
         }
     }
 }
