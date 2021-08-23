@@ -1,4 +1,5 @@
-﻿/*
+﻿using System.IO;
+/*
     Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
@@ -60,7 +61,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            codeBuilder.InsertCodeToFile(GetModelSnippet(), $"{GeneratedSourceDirectories.Model}\\QueryExtensions");
+            codeBuilder.InsertCodeToFile(GetModelSnippet(), Path.Combine(GeneratedSourceDirectories.Model.ToString(), "QueryExtensions"));
             codeBuilder.InsertCodeToFile(GetOrmSnippet(), "EntityFrameworkContext");
             codeBuilder.InsertCodeToFile(GetRepositoriesSnippet(), GeneratedSourceDirectories.Repositories.ToString());
             codeBuilder.InsertCodeToFile(GetPersistenceStorageMapperSnippet(), "PersistenceStorageMapper");

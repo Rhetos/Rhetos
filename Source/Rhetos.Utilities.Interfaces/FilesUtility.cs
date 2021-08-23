@@ -1,4 +1,5 @@
-﻿/*
+﻿using System.Runtime.InteropServices;
+/*
     Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
@@ -204,8 +205,8 @@ namespace Rhetos.Utilities
         {
             if (target == null)
                 return null;
-            var baseParts = Path.GetFullPath(baseFolder).Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
-            var targetParts = Path.GetFullPath(target).Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
+            var baseParts = Path.GetFullPath(baseFolder).Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+            var targetParts = Path.GetFullPath(target).Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
 
             int common = 0;
             while (common < baseParts.Length && common < targetParts.Length
@@ -216,9 +217,10 @@ namespace Rhetos.Utilities
                 return target;
 
             var resultParts = Enumerable.Repeat(@"..", baseParts.Length - common)
-                .Concat(targetParts.Skip(common));
+                .Concat(targetParts.Skip(common))
+                .ToArray();
 
-            var resultPath = string.Join(@"\", resultParts);
+            var resultPath = Path.Combine(resultParts);
             if (resultPath != "")
                 return resultPath;
             else
@@ -242,17 +244,24 @@ namespace Rhetos.Utilities
 
         public static bool IsSameDirectory(string path1, string path2)
         {
+            StringComparison comparisonType = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) 
+                ? StringComparison.OrdinalIgnoreCase
+                : StringComparison.Ordinal;
+
             return string.Equals(
                 Path.GetFullPath(Path.Combine(path1, ".")),
                 Path.GetFullPath(Path.Combine(path2, ".")),
-                StringComparison.OrdinalIgnoreCase);
+                comparisonType);
         }
 
         public static bool IsInsideDirectory(string child, string parent)
         {
+            StringComparison comparisonType = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) 
+                ? StringComparison.OrdinalIgnoreCase
+                : StringComparison.Ordinal;
+
             return Path.GetFullPath(Path.Combine(child, "."))
-                .StartsWith(Path.GetFullPath(Path.Combine(parent, ".")),
-                    StringComparison.OrdinalIgnoreCase);
+                .StartsWith(Path.GetFullPath(Path.Combine(parent, ".")), comparisonType);
         }
     }
 }

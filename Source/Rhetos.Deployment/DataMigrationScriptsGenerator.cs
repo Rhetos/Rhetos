@@ -34,7 +34,7 @@ namespace Rhetos.Deployment
     public class DataMigrationScriptsGenerator : IGenerator
     {
         private const string DataMigrationSubfolder = "DataMigration";
-        private const string DataMigrationSubfolderPrefix = DataMigrationSubfolder + @"\";
+        private static string DataMigrationSubfolderPrefix => DataMigrationSubfolder + Path.DirectorySeparatorChar;
 
         private readonly InstalledPackages _installedPackages;
         private readonly FilesUtility _filesUtility;
@@ -72,7 +72,7 @@ namespace Rhetos.Deployment
                      {
                          Header = ParseScriptHeader(scriptContent, file.PhysicalPath),
                          // Using package.Id instead of full package subfolder name, in order to keep the same script path between different versions of the package (the folder name will contain the version number).
-                         Path = package.Id + "\\" + file.InPackagePath.Substring(DataMigrationSubfolderPrefix.Length),
+                         Path = Path.Combine(package.Id, file.InPackagePath.Substring(DataMigrationSubfolderPrefix.Length)),
                          Content = scriptContent
                      }).ToList();
 

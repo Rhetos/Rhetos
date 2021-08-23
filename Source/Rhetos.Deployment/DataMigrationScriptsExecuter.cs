@@ -1,4 +1,5 @@
-﻿/*
+﻿using System.IO;
+/*
     Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
@@ -197,8 +198,8 @@ namespace Rhetos.Deployment
 
         private static string GetFirstSubfolder(string path)
         {
-            if (path.Contains("\\"))
-                return path.Substring(0, path.IndexOf('\\'));
+            if (path.Contains(Path.DirectorySeparatorChar))
+                return path.Substring(0, path.IndexOf(Path.DirectorySeparatorChar));
             return "";
         }
 
