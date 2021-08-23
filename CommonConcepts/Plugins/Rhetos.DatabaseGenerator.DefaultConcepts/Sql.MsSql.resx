@@ -452,7 +452,7 @@ AS
     <value>CK_{0}_{1}_money</value>
   </data>
   <data name="MoneyPropertyDatabaseDefinition_CreateCheckConstraint" xml:space="preserve">
-    <value>CONSTRAINT {0} CHECK({1} IS NULL OR {1} = ROUND({1}, 2))</value>
+    <value>CONSTRAINT {0} CHECK({1} IS NULL OR {1} = ROUND({1}, 4))</value>
   </data>
   <data name="MoneyPropertyDatabaseDefinition_RemoveCheckConstraint" xml:space="preserve">
     <value>ALTER TABLE {0}.{1} DROP CONSTRAINT {2};</value>

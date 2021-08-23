@@ -75,7 +75,7 @@ namespace Rhetos.Dom.DefaultConcepts
             if (typeof(DecimalPropertyInfo).IsAssignableFrom(propertyInfoType))
                 return $@"    <Property Name=""{propertyInfo.Name}"" Type=""Decimal"" Precision=""28"" Scale=""10"" />";
             if (typeof(MoneyPropertyInfo).IsAssignableFrom(propertyInfoType))
-                return $@"    <Property Name=""{propertyInfo.Name}"" Type=""Decimal"" Precision=""18"" Scale=""2"" />";
+                return $@"    <Property Name=""{propertyInfo.Name}"" Type=""Decimal"" Precision=""19"" Scale=""4"" />";
             if (typeof(ShortStringPropertyInfo).IsAssignableFrom(propertyInfoType) || propertyInfoType.IsAssignableFrom(typeof(LongStringPropertyInfo)))
                 return $@"    <Property Name=""{propertyInfo.Name}"" Type=""String"" MaxLength=""Max"" FixedLength=""false"" Unicode=""true"" />";
             if (typeof(BinaryPropertyInfo).IsAssignableFrom(propertyInfoType))
@@ -99,7 +99,7 @@ namespace Rhetos.Dom.DefaultConcepts
             if (typeof(DecimalPropertyInfo).IsAssignableFrom(propertyInfoType))
                 return $@"    <Property Name=""{propertyInfo.Name}"" Type=""decimal"" Precision=""28"" Scale=""10"" Nullable=""true"" />";
             if (typeof(MoneyPropertyInfo).IsAssignableFrom(propertyInfoType))
-                return $@"    <Property Name=""{propertyInfo.Name}"" Type=""decimal"" Precision=""18"" Scale=""2"" Nullable=""true"" />";
+                return $@"    <Property Name=""{propertyInfo.Name}"" Type=""money"" Nullable=""true"" />";
             if (typeof(ShortStringPropertyInfo).IsAssignableFrom(propertyInfoType) || propertyInfoType.IsAssignableFrom(typeof(LongStringPropertyInfo)))
                 return $@"    <Property Name=""{propertyInfo.Name}"" Type=""nvarchar(max)"" Nullable=""true"" />";
             if (typeof(BinaryPropertyInfo).IsAssignableFrom(propertyInfoType))
