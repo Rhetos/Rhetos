@@ -1,6 +1,6 @@
 <Project>
     <PropertyGroup>
-        <RhetosCliExecutablePath>$(MSBuildThisFileDirectory)..\tools\rhetos.exe</RhetosCliExecutablePath>
+        <RhetosCliExecutablePath>$(MSBuildThisFileDirectory)..\tools\rhetos.dll</RhetosCliExecutablePath>
         <RhetosBuild Condition=" '$(RhetosBuild)'=='' ">True</RhetosBuild>
         <RhetosBuildItemsFile>$(BaseIntermediateOutputPath)Rhetos\Rhetos.BuildItems</RhetosBuildItemsFile>
         <RhetosBuildCompleteFile>$(BaseIntermediateOutputPath)Rhetos\Rhetos.BuildComplete</RhetosBuildCompleteFile>

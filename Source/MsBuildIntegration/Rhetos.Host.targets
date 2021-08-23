@@ -9,7 +9,7 @@
   <Target Name="DeployRhetosApp" DependsOnTargets="CopyFilesToOutputDirectory" AfterTargets="Build" Condition="'$(RhetosDeploy)'=='True'"
     Inputs="@(_DeployRhetosAppInput)" Outputs="$(RhetosDatabaseUpdated)">
     <Message Text="DeployRhetosApp" />
-    <Exec Command="&quot;$(TargetDir)rhetos.exe&quot; dbupdate &quot;$(TargetDir)\$(AssemblyName).dll&quot;" CustomErrorRegularExpression="\[Error\]" CustomWarningRegularExpression="\[(Warn|Warning)\]" />
+    <Exec Command="dotnet &quot;$(TargetDir)rhetos.dll&quot; dbupdate &quot;$(TargetDir)\$(AssemblyName).dll&quot;" CustomErrorRegularExpression="\[Error\]" CustomWarningRegularExpression="\[(Warn|Warning)\]" />
     <WriteLinesToFile File="$(RhetosDatabaseUpdated)" Lines="" Overwrite="true" />
   </Target>
 
