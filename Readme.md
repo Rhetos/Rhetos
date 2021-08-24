@@ -20,6 +20,7 @@ is available for Visual Studio Code, SublimeText3 and Notepad++.
 
 See [Rhetos wiki](https://github.com/Rhetos/Rhetos/wiki) for more information on:
 
+* Creating applications with Rhetos framework
 * Rhetos DSL examples
 * Available plugins
 * Principles behind the [Rhetos platform](https://github.com/Rhetos/Rhetos/wiki/What-is-Rhetos)
@@ -41,3 +42,18 @@ make a pull request from your fork. The first time you make a pull request, you
 may be asked to sign a Contributor Agreement.
 
 For more info see [How to Contribute](https://github.com/Rhetos/Rhetos/wiki/How-to-Contribute) on Rhetos wiki.
+
+## Building and testing the source code
+
+*Rhetos.sln* contains the source for Rhetos framework and CommonConcepts plugins (a standard library).
+It also contains basic unit tests for the projects.
+
+*CommonConceptsTest.sln* contains the *integration* tests for DSL concepts in CommonConcepts (DefaultConcepts libraries).
+It has a test application with DSL scripts and unit tests in one project.
+For example, see "Entity SimpleMaxLength" in Validation.rhe and the related tests in MaxLengthTest.cs.
+
+After changing framework code in Rhetos.sln, you will need to run Build.bat
+(to build NuGet packages) and Test.bat (to use these packages in CommonConceptsTest).
+After that, you can develop tests in CommonConceptsTest.sln.
+Note that Test.bat will report an error if you need to complete the initial setup:
+create an empty database and enter the connection string in 'rhetos-app.local.settings.json' file.
