@@ -245,34 +245,22 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void MoneyPropertySizeAndDecimals_AutoRound()
+        public void MoneyPropertySizeAndDecimals()
         {
             using (var scope = TestScope.Create(builder =>
             {
-                var rhetosAppOptions = new RhetosAppOptions() { AutoRoundMoney = true };
-                builder.RegisterInstance(rhetosAppOptions);
-                builder.RegisterType<Common.PersistenceStorageObjectMappings>().AsImplementedInterfaces();
+                var options = new CommonConceptsRuntimeOptions() { AutoRoundMoney = true };
+                builder.RegisterInstance(options);
+                builder.RegisterType<GenericRepositories>().AsImplementedInterfaces();
             }))
             {
                 var context = scope.Resolve<Common.ExecutionContext>();
 
                 var tests = new List<(decimal Save, decimal Load)>
                 {
-                    (12.34100m, 12.34m),
-                    (12.34900m, 12.34m),
-                    (-12.3410m, -12.34m),
-                    (-12.3490m, -12.34m),
                     (-922337203685477.58m, -922337203685477.58m), // T-SQL money limits.
                     (922337203685477.58m, 922337203685477.58m), // T-SQL money limits.
                     (0m, 0m),
-                    // Current behavior is rounding money values, but it should be changed in future,
-                    // see https://github.com/Rhetos/Rhetos/issues/389: Money type should throw an exception, instead of implicit rounding, if saving more decimals then allowed.
-                    (0.001m, 0m),
-                    (0.009m, 0m),
-                    (0.019m, 0.01m),
-                    (-0.001m, 0m),
-                    (-0.009m, 0m),
-                    (-0.019m, -0.01m),
                 };
 
                 foreach (var test in tests)
@@ -286,32 +274,6 @@ namespace CommonConcepts.Test
                     Assert.AreEqual(test.Load, context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity.ID).Single().MoneyProperty,
                         $"The money property should be cut off on the second decimal position ({test.Save}).");
                 }
-            }
-        }
-
-        [TestMethod]
-        public void MoneyPropertySizeAndDecimals_ThowsOnOverflow()
-        {
-            using (var scope = TestScope.Create(builder =>
-            {
-                var rhetosAppOptions = new RhetosAppOptions() { AutoRoundMoney = false };
-                builder.RegisterInstance(rhetosAppOptions);
-                builder.RegisterType<Common.PersistenceStorageObjectMappings>().AsImplementedInterfaces();
-            }))
-            {
-                var context = scope.Resolve<Common.ExecutionContext>();
-
-                var overflowValue = 0.001m; // 3 decimals
-
-                var entity = new TestStorage.AllProperties
-                {
-                    ID = Guid.NewGuid(),
-                    MoneyProperty = overflowValue
-                };
-
-                Action insert = () => context.PersistenceStorage.Insert(entity);
-
-                TestUtility.ShouldFail<SqlException>(insert, "CK_AllProperties_MoneyProperty_money");
             }
         }
 

@@ -87,6 +87,8 @@ namespace Rhetos.Dom.DefaultConcepts
                 {{
                     UseLegacyMsSqlDateTime = {_databaseSettings.UseLegacyMsSqlDateTime.ToString().ToLowerInvariant()},
                     DateTimePrecision = {_databaseSettings.DateTimePrecision},
+                    MoneyPrecision = {_databaseSettings.MoneyPrecision},
+                    MoneyScale = {_databaseSettings.MoneyScale},
                 }});
             }});
             ";
@@ -488,7 +490,7 @@ $@"namespace Common
     {{
         private readonly Dictionary<Type, IPersistenceStorageObjectMapper> _mappings = new Dictionary<Type, IPersistenceStorageObjectMapper>();
 
-        public PersistenceStorageObjectMappings(RhetosAppOptions rhetosAppOptions)
+        public PersistenceStorageObjectMappings()
         {{
             {PersistenceStorageMappingRegistrationTag}
         }}
@@ -500,16 +502,6 @@ $@"namespace Common
                 return mapper;
             else
                 throw new Rhetos.FrameworkException($""There is no mapping associated with the type '{{type}}'. The mapping definition is required for database save operations."");
-        }}
-    }}
-
-    public static class PersistenceStorageHelper
-    {{
-        public static SqlParameter GetRoundedMoneySqlParameter(decimal? money)
-        {{
-            // Simulates automatic rounding by Entity Framework, for backward compatibility. See related issue https://github.com/Rhetos/Rhetos/issues/389.
-	        object dbValue = money != null ? (object)(((long)(money.Value * 100m)) / 100m) : DBNull.Value;
-            return new SqlParameter("""", System.Data.SqlDbType.Money) {{ Value = dbValue }};
         }}
     }}
 

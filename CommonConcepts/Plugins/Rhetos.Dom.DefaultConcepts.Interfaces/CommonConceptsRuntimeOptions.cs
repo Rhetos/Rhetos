@@ -30,5 +30,11 @@ namespace Rhetos.Dom.DefaultConcepts
         /// When saving a list of records with count larger then this limit, the list will be automatically split to batches.
         /// </summary>
         public int SaveSqlCommandBatchSize { get; set; } = 20;
+
+        /// <summary>
+        /// If set to false, the application will throw exception if the decimal scale of the value being written is more than 2.
+        /// For backward compatibility, setting this to true will automatically round the value before writing to the database.
+        /// </summary>
+        public bool AutoRoundMoney { get; set; }
     }
 }

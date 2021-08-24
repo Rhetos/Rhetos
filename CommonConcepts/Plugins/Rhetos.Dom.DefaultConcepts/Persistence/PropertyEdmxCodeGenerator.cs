@@ -69,13 +69,13 @@ namespace Rhetos.Dom.DefaultConcepts
             return false;
         }
 
-        private static string GetPropertyElementForConceptualModel(PropertyInfo propertyInfo)
+        private string GetPropertyElementForConceptualModel(PropertyInfo propertyInfo)
         {
             var propertyInfoType = propertyInfo.GetType();
             if (typeof(DecimalPropertyInfo).IsAssignableFrom(propertyInfoType))
                 return $@"    <Property Name=""{propertyInfo.Name}"" Type=""Decimal"" Precision=""28"" Scale=""10"" />";
             if (typeof(MoneyPropertyInfo).IsAssignableFrom(propertyInfoType))
-                return $@"    <Property Name=""{propertyInfo.Name}"" Type=""Decimal"" Precision=""19"" Scale=""4"" />";
+                return $@"    <Property Name=""{propertyInfo.Name}"" Type=""Decimal"" Precision=""{_databaseSettings.MoneyPrecision}"" Scale=""{_databaseSettings.MoneyScale}"" />";
             if (typeof(ShortStringPropertyInfo).IsAssignableFrom(propertyInfoType) || propertyInfoType.IsAssignableFrom(typeof(LongStringPropertyInfo)))
                 return $@"    <Property Name=""{propertyInfo.Name}"" Type=""String"" MaxLength=""Max"" FixedLength=""false"" Unicode=""true"" />";
             if (typeof(BinaryPropertyInfo).IsAssignableFrom(propertyInfoType))
