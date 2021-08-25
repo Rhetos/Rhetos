@@ -17,11 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rhetos.Dsl;
 using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
@@ -31,7 +27,30 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Money")]
-    public class MoneyPropertyInfo : PropertyInfo, IConceptInfo
+    public class MoneyPropertyInfo : PropertyInfo, IConceptInfo, IAlternativeInitializationConcept
     {
+        public MoneyRoundingInfo MoneyRoundingInfo_Dependency { get; set; }
+
+        public IEnumerable<string> DeclareNonparsableProperties()
+        {
+            yield return nameof(MoneyRoundingInfo_Dependency);
+        }
+
+        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        {
+            MoneyRoundingInfo_Dependency = new MoneyRoundingInfo { DataStructure = DataStructure };
+            createdConcepts = new[] { MoneyRoundingInfo_Dependency };
+        }
+    }
+
+    /// <summary>
+    /// Internal concept to make sure the money rounding logic
+    /// is yielded ONLY once in the corresponding data structure.
+    /// </summary>
+    [Export(typeof(IConceptInfo))]
+    public class MoneyRoundingInfo : IConceptInfo
+    {
+        [ConceptKey]
+        public DataStructureInfo DataStructure { get; set; }
     }
 }

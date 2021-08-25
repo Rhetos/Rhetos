@@ -24,11 +24,13 @@ using Rhetos.Extensibility;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Linq;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
     [ExportMetadata(MefProvider.Implements, typeof(MoneyPropertyInfo))]
+    [ExportMetadata(MefProvider.DependsOn, typeof(MoneyRoundingInfoCodeGenerator))]
     public class MoneyPropertyCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
@@ -42,14 +44,10 @@ namespace Rhetos.Dom.DefaultConcepts
                 var property = $"item.{info.Name}";
                 var roundingFactor = Math.Pow(10, 2);
 
-                codeBuilder.InsertCode(@$"
-                if (_option.AutoRoundMoney)
-                {{
-                    foreach (var item in insertedNew.Concat(updatedNew))
-                        {property} = {property} != null ? (long)({property}.Value * {roundingFactor}m) / {roundingFactor}m : null;
-                }}
-                ",
-                    WritableOrmDataStructureCodeGenerator.InitializationTag,
+                codeBuilder.InsertCode(
+                    @$"{property} = {property} != null ? (long)({property}.Value * {roundingFactor}m) / {roundingFactor}m : null;
+                    ",
+                    MoneyRoundingInfoCodeGenerator.MoneyRoundingPropertiesTag,
                     info.DataStructure);
             }
         }
@@ -65,15 +63,42 @@ namespace Rhetos.Dom.DefaultConcepts
     {
         public IEnumerable<IConceptInfo> CreateNewConcepts(MoneyPropertyInfo conceptInfo, IDslModel existingConcepts)
         {
-            return new IConceptInfo[]
+            return new IConceptInfo[] 
             {
                 new RepositoryUsesInfo
                 {
                     DataStructure = conceptInfo.DataStructure,
                     PropertyName = "_option",
                     PropertyType = "Rhetos.Dom.DefaultConcepts.CommonConceptsRuntimeOptions, Rhetos.Dom.DefaultConcepts.Interfaces"
-                },
+                }
             };
+        }
+    }
+
+    [Export(typeof(IConceptCodeGenerator))]
+    [ExportMetadata(MefProvider.Implements, typeof(MoneyRoundingInfo))]
+    public class MoneyRoundingInfoCodeGenerator : IConceptCodeGenerator
+    {
+        public static readonly CsTag<DataStructureInfo> MoneyRoundingPropertiesTag = "MoneyRounding Properties";
+
+        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
+        {
+            var dataStructure = (conceptInfo as MoneyRoundingInfo).DataStructure;
+
+            if (dataStructure is IWritableOrmDataStructure)
+            {
+                codeBuilder.InsertCode(
+            $@"if (_option.AutoRoundMoney)
+            {{
+                foreach (var item in insertedNew.Concat(updatedNew))
+                {{
+                    {MoneyRoundingPropertiesTag.Evaluate(dataStructure)}
+                }}
+            }}
+            ",
+                WritableOrmDataStructureCodeGenerator.InitializationTag,
+                dataStructure);
+            }
         }
     }
 }
