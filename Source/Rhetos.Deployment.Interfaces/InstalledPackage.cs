@@ -17,16 +17,16 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Text;
 
 namespace Rhetos.Deployment
 {
-
+    /// <summary>
+    /// Build-time dependency package.
+    /// It includes referenced NuGet packages and referenced projects.
+    /// </summary>
     [DebuggerDisplay("{Id}")]
     public class InstalledPackage
     {
@@ -35,17 +35,13 @@ namespace Rhetos.Deployment
             string version,
             IEnumerable<PackageRequest> dependencies,
             string folder,
-            PackageRequest request,
-            string source,
-            List<ContentFile> contentFiles = null)
+            List<ContentFile> contentFiles)
         {
             Id = id;
             Version = version;
             Dependencies = dependencies;
             Folder = folder;
-            Request = request;
-            Source = source;
-            ContentFiles = contentFiles ?? FilesFromFolder(folder, id);
+            ContentFiles = contentFiles;
         }
 
         public string Id { get; private set; }
@@ -54,63 +50,29 @@ namespace Rhetos.Deployment
 
         public IEnumerable<PackageRequest> Dependencies { get; private set; }
 
-        /// <summary>The local folder where the package files are extracted and used by Rhetos.</summary>
-        ///<remarks>Instead of scanning this folder, use the <see cref="ContentFiles"/> property instead, because the <see cref="Folder"/>
-        ///is missing the in-package file paths when using package directly from source, see <see cref="ContentFile.InPackagePath"/>.</remarks>
+        /// <summary>
+        /// The local cache folder at build-time, where the package files are extracted and used by Rhetos.
+        /// This is a debug information for build, its value is <see langword="null"/> at run-time.
+        /// </summary>
+        /// <remarks>
+        /// Instead of scanning this folder, use the <see cref="ContentFiles"/> property instead, because the <see cref="Folder"/>
+        /// is missing the in-package file paths when using package directly from source, see <see cref="ContentFile.InPackagePath"/>.
+        /// </remarks>
         public string Folder { get; private set; }
 
         public List<ContentFile> ContentFiles { get; private set; }
 
-        public PackageRequest Request { get; private set; }
-
-        /// <summary>URI or a folder where the package was downloaded from.</summary>
-        public string Source { get; set; }
-
-        public string Report()
-        {
-            return $"{Id} {Version} (requested from {Request.RequestedBy}) in {Folder}.";
-        }
+        public string Report() => $"{Id}, version {Version}, build folder '{Folder}'.";
 
         /// <summary>
-        /// Compatible with <see cref="PackageRequest.ReportIdVersionRequestSource"/>.
+        /// Removing folder and file paths that were available at build-time, to avoid accidentally using them at run-time.
+        /// This includes <see cref="Folder"/> and <see cref="ContentFile.PhysicalPath"/>.
         /// </summary>
-        public string ReportIdVersionRequestSource()
-        {
-            var report = new StringBuilder(300);
-
-            report.Append(Id);
-            report.Append(", version ").Append(Version);
-            report.Append(", requested by ").Append(Request.RequestedBy);
-            report.Append(" requesting ").Append(Request.VersionsRange ?? "unspecified version");
-            if (!string.IsNullOrEmpty(Request.Source))
-                report.Append(", source \"").Append(Request.Source).Append('"');
-
-            return report.ToString();
-        }
-
-        /// <summary>
-        /// Removing the package's folder path at run-time. This folder is a build-time feature and any other plugin that is trying to use it should get an exception.
-        /// Package content files are not available at runtime, they are typically used from the local NuGet cache on the build machine.
-        /// </summary>
-        public void RemoveFolderPath()
+        public void RemoveBuildTimePaths()
         {
             Folder = null;
             foreach (var file in ContentFiles)
                 file.PhysicalPath = null;
-        }
-
-        private static List<ContentFile> FilesFromFolder(string folder, string packageId)
-        {
-            if (!Directory.Exists(folder))
-                throw new FrameworkException($"Source folder for package '{packageId}' does not exist: '{folder}'.");
-
-            return Directory.GetFiles(folder, "*", SearchOption.AllDirectories)
-                .Select(file => new ContentFile
-                {
-                    PhysicalPath = file,
-                    InPackagePath = FilesUtility.AbsoluteToRelativePath(folder, file)
-                })
-                .ToList();
         }
     }
 }

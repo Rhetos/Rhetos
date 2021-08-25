@@ -26,13 +26,14 @@ namespace Rhetos.Deployment
     public class ContentFile
     {
         /// <summary>
-        /// File location on disk.
+        /// File location on disk at build-time.
+        /// Its value is <see langword="null"/> at run-time.
         /// </summary>
         public string PhysicalPath { get; set; }
 
         /// <summary>
         /// Relative path where the file should be located in the package.
-        /// This is used for detecting the file's role from subfolder name, and for file sorting.
+        /// This is used for detecting the file's role by convention from subfolder name, and for file sorting.
         /// </summary>
         public string InPackagePath { get; set; }
     }

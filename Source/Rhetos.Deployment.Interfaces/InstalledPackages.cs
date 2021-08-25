@@ -26,6 +26,6 @@ namespace Rhetos.Deployment
         /// <summary>
         /// The packages are sorted by dependencies.
         /// </summary>
-        public List<InstalledPackage> Packages;
+        public List<InstalledPackage> Packages { get; set; }
     }
 }
