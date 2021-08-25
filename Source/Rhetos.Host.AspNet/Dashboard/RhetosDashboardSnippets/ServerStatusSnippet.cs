@@ -62,7 +62,7 @@ namespace Rhetos.Host.AspNet.Dashboard.RhetosDashboardSnippets
             }
         }
 
-        private static readonly string _html =
+        private const string _html =
             @"
 <table>
 	<thead></thead>

@@ -18,6 +18,7 @@
 */
 
 using Rhetos.Deployment;
+using System.Linq;
 using System.Text;
 
 namespace Rhetos.Host.AspNet.Dashboard.RhetosDashboardSnippets
@@ -38,7 +39,7 @@ namespace Rhetos.Host.AspNet.Dashboard.RhetosDashboardSnippets
         public string RenderHtml()
         {
             var stringBuilder = new StringBuilder();
-            foreach (var package in _installedPackages.Value.Packages)
+            foreach (var package in _installedPackages.Value.Packages.OrderBy(p => p.Id))
             {
                 stringBuilder.Append($"<tr>\n<td>{package.Id}</td>\n<td style=\"text-align: right\">{package.Version}</td>\n</tr>");
             }
@@ -47,7 +48,7 @@ namespace Rhetos.Host.AspNet.Dashboard.RhetosDashboardSnippets
             return rendered;
         }
 
-        private static readonly string _html =
+        private const string _html =
     @"<table>
     	<thead>
 	    </thead>
