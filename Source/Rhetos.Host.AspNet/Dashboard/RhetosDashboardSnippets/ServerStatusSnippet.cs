@@ -26,6 +26,7 @@ namespace Rhetos.Host.AspNet.Dashboard.RhetosDashboardSnippets
     public class ServerStatusSnippet : IDashboardSnippet
     {
         public string DisplayName => "Server Status";
+
         public int Order => 100;
 
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -63,36 +64,35 @@ namespace Rhetos.Host.AspNet.Dashboard.RhetosDashboardSnippets
         }
 
         private const string _html =
-            @"
-<table>
-	<thead></thead>
-	<tbody>
-	<tr>
-		<td>Local server time:</td>
-		<td>{0}</td>
-	</tr>
-	<tr>
-		<td>Process start time:</td>
-		<td>{1}</td>
-	</tr>
-	<tr>
-		<td>Is 64-bit process:</td>
-		<td>{2}</td>
-	</tr>
-	<tr>
-		<td>User authentication type:</td>
-		<td>{3}</td>
-	</tr>
-	<tr>
-		<td>User identity:</td>
-		<td>{4}</td>
-	</tr>
-	<tr>
-		<td>User info:</td>
-		<td>{5}</td>
-	</tr>
-	</tbody>
-</table>
+@"    <table>
+      <thead></thead>
+      <tbody>
+      <tr>
+        <td>Local server time:</td>
+        <td>{0}</td>
+      </tr>
+      <tr>
+        <td>Process start time:</td>
+        <td>{1}</td>
+      </tr>
+      <tr>
+        <td>Is 64-bit process:</td>
+        <td>{2}</td>
+      </tr>
+      <tr>
+        <td>User authentication type:</td>
+        <td>{3}</td>
+      </tr>
+      <tr>
+        <td>User identity:</td>
+        <td>{4}</td>
+      </tr>
+      <tr>
+        <td>User info:</td>
+        <td>{5}</td>
+      </tr>
+      </tbody>
+    </table>
 ";
     }
 }

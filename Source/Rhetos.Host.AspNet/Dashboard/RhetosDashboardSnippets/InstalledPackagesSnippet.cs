@@ -27,7 +27,7 @@ namespace Rhetos.Host.AspNet.Dashboard.RhetosDashboardSnippets
     {
         public string DisplayName => "Installed Packages";
 
-        public int Order => 200;
+        public int Order => 1000;
 
         private readonly IRhetosComponent<InstalledPackages> _installedPackages;
 
@@ -41,7 +41,7 @@ namespace Rhetos.Host.AspNet.Dashboard.RhetosDashboardSnippets
             var stringBuilder = new StringBuilder();
             foreach (var package in _installedPackages.Value.Packages.OrderBy(p => p.Id))
             {
-                stringBuilder.Append($"<tr>\n<td>{package.Id}</td>\n<td style=\"text-align: right\">{package.Version}</td>\n</tr>");
+                stringBuilder.AppendLine($"        <tr><td>{package.Id}</td><td style=\"text-align: right\">{package.Version}</td></tr>");
             }
 
             var rendered = string.Format(_html, stringBuilder);
@@ -49,14 +49,12 @@ namespace Rhetos.Host.AspNet.Dashboard.RhetosDashboardSnippets
         }
 
         private const string _html =
-    @"<table>
-    	<thead>
-	    </thead>
-	    <tbody>
-        {0}
-        </tbody>
+@"    <table>
+      <thead>
+      </thead>
+      <tbody>
+{0}      </tbody>
     </table>
-
-    ";
+";
     }
 }

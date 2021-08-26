@@ -45,6 +45,9 @@ namespace Microsoft.Extensions.DependencyInjection
             return rhetosServiceCollectionBuilder;
         }
 
+        /// <summary>
+        /// Adds the required services for Rhetos dashboard controller.
+        /// </summary>
         public static RhetosServiceCollectionBuilder AddDashboard(this RhetosServiceCollectionBuilder rhetosBuilder)
         {
             rhetosBuilder.Services

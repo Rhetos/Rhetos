@@ -39,12 +39,13 @@ namespace Rhetos.Host.AspNet.Dashboard
             var stringBuilder = new StringBuilder();
             foreach (var snippet in _snippets.OrderBy(a => a.Order).ThenBy(a => a.DisplayName).ThenBy(a => a.GetType().FullName))
             {
-                stringBuilder.Append($"<h2>{snippet.DisplayName}</h2>");
-                stringBuilder.Append(snippet.RenderHtml());
+                stringBuilder.AppendLine($"    <h2>{snippet.DisplayName}</h2>");
+                stringBuilder.AppendLine(snippet.RenderHtml().TrimEnd());
+                stringBuilder.AppendLine();
             }
             
             var rendered = string.Format(_html, stringBuilder);
-            return Content(rendered, "text/html");
+            return Content(rendered, "text/html; charset=utf-8");
         }
 
         private const string _html =
@@ -57,9 +58,7 @@ namespace Rhetos.Host.AspNet.Dashboard
   <body>
     <h1>Rhetos Dashboard</h1>
     
-    {0}
-    
-  </body>
+{0}  </body>
 </html>
 ";
     }
