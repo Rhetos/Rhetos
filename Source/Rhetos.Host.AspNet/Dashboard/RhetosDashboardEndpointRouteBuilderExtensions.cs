@@ -25,11 +25,14 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Builder
 {
-    public static class EndpointRouteBuilderExtensions
+    public static class RhetosDashboardEndpointRouteBuilderExtensions
     {
-        public static IEndpointRouteBuilder MapRhetosDashboard(this IEndpointRouteBuilder routeBuilder, string route = "/rhetos/dashboard")
+        /// <summary>
+        /// Adds an endpoint for the Rhetos dashboard controller.
+        /// </summary>
+        public static IEndpointRouteBuilder MapRhetosDashboard(this IEndpointRouteBuilder routeBuilder, string route = "/rhetos")
         {
-            routeBuilder.MapControllerRoute("RhetosDashboard", route, new {controller = "RhetosDashboard", action = "Dashboard"});
+            routeBuilder.MapControllerRoute("RhetosDashboard", route, new { controller = "RhetosDashboard", action = "Dashboard" });
             return routeBuilder;
         }
     }
