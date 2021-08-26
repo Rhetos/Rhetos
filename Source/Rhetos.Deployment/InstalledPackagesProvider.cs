@@ -21,7 +21,6 @@ using Newtonsoft.Json;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System.IO;
-using System.Text;
 
 namespace Rhetos.Deployment
 {
@@ -41,13 +40,14 @@ namespace Rhetos.Deployment
         public InstalledPackages Load()
         {
             var installedPackages = JsonUtility.DeserializeFromFile<InstalledPackages>(_packagesFilePath, _serializerSettings);
-            // We are removing the folder path because this is a build feature and any plugin that is trying to use it should get an exception.
-            // Package content files are not available at runtime, they are considered as a part of local cache on build machine.
-            foreach (var package in installedPackages.Packages)
-                package.RemoveFolderPath();
 
             foreach (var package in installedPackages.Packages)
                 _logger.Trace(() => package.Report());
+
+            // Removing the folder path because it is a build feature and any plugin that is trying to use it should get an exception.
+            // Package content files are not available at runtime, they are considered as a part of local cache on build machine.
+            foreach (var package in installedPackages.Packages)
+                package.RemoveBuildTimePaths();
 
             return installedPackages;
         }

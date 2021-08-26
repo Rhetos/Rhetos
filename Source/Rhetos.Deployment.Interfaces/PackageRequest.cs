@@ -17,13 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Text;
-using System.Xml.Linq;
-using System.Xml.Serialization;
 
 namespace Rhetos.Deployment
 {
@@ -35,37 +29,5 @@ namespace Rhetos.Deployment
 
         /// <summary>(Optional) Supported versions, specified in NuGet format. If not provided, the last available version will be used.</summary>
         public string VersionsRange { get; set; }
-
-        /// <summary>(Optional) Source where the package can be found.
-        /// If provided, it will be used instead of DeploymentSources.
-        /// See DeploymentSources for supported source formats.</summary>
-        public string Source { get; set; }
-
-        /// <summary>
-        /// The value should not be provided in configuration file or package metadata file.
-        /// It is automatically set by the system to track where the request originated.
-        /// </summary>
-        public string RequestedBy { get; set; }
-
-        public string ReportIdVersionsRange()
-        {
-            return Id + (VersionsRange != null ? " " + VersionsRange : " (version not specified)");
-        }
-
-        /// <summary>
-        /// Compatible with <see cref="InstalledPackage.ReportIdVersionRequestSource"/>.
-        /// </summary>
-        public string ReportIdVersionRequestSource()
-        {
-            var report = new StringBuilder(300);
-
-            report.Append(Id);
-            report.Append(", version ").Append(VersionsRange ?? "not specified");
-            report.Append(", requested by ").Append(RequestedBy);
-            if (!string.IsNullOrEmpty(Source))
-                report.Append(", source \"").Append(Source).Append('"');
-
-            return report.ToString();
-        }
     }
 }

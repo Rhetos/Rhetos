@@ -119,3 +119,8 @@
         Logging { AllProperties; }
     }
 }
+
+//=====================================================
+// DASHBOARD:
+
+CustomClaim 'Dashboard.InstalledPackages' 'Show';

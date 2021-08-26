@@ -133,7 +133,7 @@ namespace Rhetos.Deployment.Test
             {
                 Packages = new List<InstalledPackage>
                 {
-                    new InstalledPackage("TestPackage", null, null, null, null, null, contentFiles)
+                    new InstalledPackage("TestPackage", null, null, null, contentFiles)
                 }
             };
             var filesUtility = new FilesUtility(new ConsoleLogProvider());

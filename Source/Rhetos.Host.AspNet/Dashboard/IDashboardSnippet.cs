@@ -17,20 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Rhetos.Security
+namespace Rhetos.Host.AspNet.Dashboard
 {
-    /// <summary>
-    /// Provides low-level data from the users permissions storage.
-    /// To read the current user's permissions, use <see cref="IAuthorizationManager"/> instead.
-    /// </summary>
-    public interface IAuthorizationProvider
+    public interface IDashboardSnippet
     {
-        IList<bool> GetAuthorizations(IUserInfo userInfo, IList<Claim> requiredClaims);
+        string DisplayName { get; }
+        int Order { get; }
+        string RenderHtml();
     }
 }

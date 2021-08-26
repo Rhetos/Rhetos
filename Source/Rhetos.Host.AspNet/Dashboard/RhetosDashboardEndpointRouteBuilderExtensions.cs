@@ -17,20 +17,23 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Routing;
 
-namespace Rhetos.Security
+namespace Microsoft.AspNetCore.Builder
 {
-    /// <summary>
-    /// Provides low-level data from the users permissions storage.
-    /// To read the current user's permissions, use <see cref="IAuthorizationManager"/> instead.
-    /// </summary>
-    public interface IAuthorizationProvider
+    public static class RhetosDashboardEndpointRouteBuilderExtensions
     {
-        IList<bool> GetAuthorizations(IUserInfo userInfo, IList<Claim> requiredClaims);
+        /// <summary>
+        /// Adds an endpoint for the Rhetos dashboard controller.
+        /// </summary>
+        public static IEndpointRouteBuilder MapRhetosDashboard(this IEndpointRouteBuilder routeBuilder, string route = "/rhetos")
+        {
+            routeBuilder.MapControllerRoute("RhetosDashboard", route, new { controller = "RhetosDashboard", action = "Dashboard" });
+            return routeBuilder;
+        }
     }
 }

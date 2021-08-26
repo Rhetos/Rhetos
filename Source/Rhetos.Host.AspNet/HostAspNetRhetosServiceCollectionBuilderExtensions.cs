@@ -18,6 +18,8 @@
 */
 
 using Rhetos.Host.AspNet;
+using Rhetos.Host.AspNet.Dashboard;
+using Rhetos.Host.AspNet.Dashboard.RhetosDashboardSnippets;
 using Rhetos.Utilities;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -32,7 +34,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <remarks>
         /// It reads IHttpContextAccessor.HttpContext.User.Identity.Name and Identity.IsAuthenticated,
-        /// and maps it to Rhetos <see cref="Rhetos.Utilities.IUserInfo"/>.
+        /// and maps it to Rhetos <see cref="IUserInfo"/>.
         /// </remarks>
         public static RhetosServiceCollectionBuilder AddAspNetCoreIdentityUser(this RhetosServiceCollectionBuilder rhetosServiceCollectionBuilder)
         {
@@ -41,6 +43,27 @@ namespace Microsoft.Extensions.DependencyInjection
             // not using TryAdd, allows subsequent calls to override previous ones
             rhetosServiceCollectionBuilder.Services.AddScoped<IUserInfo, RhetosAspNetCoreIdentityUser>();
             return rhetosServiceCollectionBuilder;
+        }
+
+        /// <summary>
+        /// Adds the required services for Rhetos dashboard controller.
+        /// </summary>
+        public static RhetosServiceCollectionBuilder AddDashboard(this RhetosServiceCollectionBuilder rhetosBuilder)
+        {
+            rhetosBuilder.Services
+                .AddControllersWithViews()
+                .AddApplicationPart(typeof(RhetosDashboardController).Assembly);
+
+            rhetosBuilder.AddDashboardSnippet<ServerStatusSnippet>();
+            rhetosBuilder.AddDashboardSnippet<InstalledPackagesSnippet>();
+
+            return rhetosBuilder;
+        }
+
+        public static RhetosServiceCollectionBuilder AddDashboardSnippet<T>(this RhetosServiceCollectionBuilder rhetosBuilder) where T : class, IDashboardSnippet
+        {
+            rhetosBuilder.Services.AddScoped<IDashboardSnippet, T>();
+            return rhetosBuilder;
         }
     }
 }

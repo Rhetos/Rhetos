@@ -101,8 +101,8 @@ namespace Rhetos.Deployment
                 .FirstOrDefault(group => group.Count() > 1);
             if (similarPackages != null)
                 throw new UserException($"Incompatible package names, resource files would result in the same target folder '{similarPackages.Key}'."
-                    + $"\r\nPackage 1: {similarPackages.First().ReportIdVersionRequestSource()}"
-                    + $"\r\nPackage 2: {similarPackages.Last().ReportIdVersionRequestSource()}");
+                    + $"\r\nPackage 1: {similarPackages.First().Report()}"
+                    + $"\r\nPackage 2: {similarPackages.Last().Report()}");
 
             foreach (var file in resourceFiles)
                 _fileSyncer.AddFile(file.Source, _rhetosBuildEnvironment.GeneratedAssetsFolder, file.Target);
