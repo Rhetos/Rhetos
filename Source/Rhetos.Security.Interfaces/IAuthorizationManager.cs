@@ -23,9 +23,13 @@ using System;
 
 namespace Rhetos.Security
 {
+    /// <summary>
+    /// Provides current user's permissions for specific claims or server commands.
+    /// </summary>
     public interface IAuthorizationManager
     {
         string Authorize(IList<ICommandInfo> commandInfos);
+
         IList<bool> GetAuthorizations(IList<Claim> requiredClaims);
     }
 }

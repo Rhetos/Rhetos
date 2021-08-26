@@ -25,6 +25,10 @@ using System.Text;
 
 namespace Rhetos.Security
 {
+    /// <summary>
+    /// Provides low-level data from the users permissions storage.
+    /// To read the current user's permissions, use <see cref="IAuthorizationManager"/> instead.
+    /// </summary>
     public interface IAuthorizationProvider
     {
         IList<bool> GetAuthorizations(IUserInfo userInfo, IList<Claim> requiredClaims);

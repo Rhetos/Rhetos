@@ -18,6 +18,7 @@
 */
 
 using Rhetos.Deployment;
+using Rhetos.Security;
 using System.Linq;
 using System.Text;
 
@@ -29,23 +30,34 @@ namespace Rhetos.Host.AspNet.Dashboard.RhetosDashboardSnippets
 
         public int Order => 1000;
 
-        private readonly IRhetosComponent<InstalledPackages> _installedPackages;
+        public static readonly Claim ShowInstalledPackagesClaim = new Claim("Dashboard.InstalledPackages", "Show");
 
-        public InstalledPackagesSnippet(IRhetosComponent<InstalledPackages> installedPackages)
+        private readonly IRhetosComponent<InstalledPackages> _installedPackages;
+        private readonly IRhetosComponent<IAuthorizationManager> _authorizationManager;
+
+        public InstalledPackagesSnippet(IRhetosComponent<InstalledPackages> installedPackages, IRhetosComponent<IAuthorizationManager> authorizationManager)
         {
             _installedPackages = installedPackages;
+            _authorizationManager = authorizationManager;
         }
 
         public string RenderHtml()
         {
-            var stringBuilder = new StringBuilder();
-            foreach (var package in _installedPackages.Value.Packages.OrderBy(p => p.Id))
-            {
-                stringBuilder.AppendLine($"        <tr><td>{package.Id}</td><td style=\"text-align: right\">{package.Version}</td></tr>");
-            }
+            bool isUserAllowed = _authorizationManager.Value.GetAuthorizations(new[] { ShowInstalledPackagesClaim }).Single();
 
-            var rendered = string.Format(_html, stringBuilder);
-            return rendered;
+            if (isUserAllowed)
+            {
+                var stringBuilder = new StringBuilder();
+                foreach (var package in _installedPackages.Value.Packages.OrderBy(p => p.Id))
+                {
+                    stringBuilder.AppendLine($"        <tr><td>{package.Id}</td><td style=\"text-align: right\">{package.Version}</td></tr>");
+                }
+
+                var rendered = string.Format(_html, stringBuilder);
+                return rendered;
+            }
+            else
+                return $"<p>You are not authorized for action '{ShowInstalledPackagesClaim.Right}' on resource '{ShowInstalledPackagesClaim.Resource}'.</p>";
         }
 
         private const string _html =
