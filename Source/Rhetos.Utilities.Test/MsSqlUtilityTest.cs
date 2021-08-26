@@ -142,6 +142,20 @@ namespace Rhetos.Utilities.Test
             });
         }
 
+        [TestMethod]
+        public void InterpretMoneyConstraint()
+        {
+            TestInterpretedException(new ListOfTuples<Exception, string>
+            {
+                {
+                    NewSqlException(
+                        "The INSERT statement conflicted with the CHECK constraint \"CK_Book_Price_money\". The conflict occurred in database \"rhetos_webapi\", table \"Bookstore.Book\", column 'Price'.",
+                        547, 16, 0),
+                    "UserException: It is not allowed to enter a money value with more than 2 decimals., Column=Price, Constraint=Money, ConstraintName=CK_Book_Price_money, DataStructure=Bookstore.Book, Table=Book"
+                },
+            });
+        }
+
         private void TestInterpretedException(ListOfTuples<Exception, string> tests)
         {
             var msSqlUtility = new MsSqlUtility();

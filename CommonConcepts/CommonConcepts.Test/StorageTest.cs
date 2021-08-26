@@ -21,6 +21,7 @@ using Autofac;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.TestCommon;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -246,27 +247,20 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void MoneyPropertySizeAndDecimals()
         {
-            using (var scope = TestScope.Create())
+            using (var scope = TestScope.Create(builder =>
+            {
+                var options = new CommonConceptsRuntimeOptions() { AutoRoundMoney = true };
+                builder.RegisterInstance(options);
+                builder.RegisterType<GenericRepositories>().AsImplementedInterfaces();
+            }))
             {
                 var context = scope.Resolve<Common.ExecutionContext>();
 
                 var tests = new List<(decimal Save, decimal Load)>
                 {
-                    (12.34100m, 12.34m),
-                    (12.34900m, 12.34m),
-                    (-12.3410m, -12.34m),
-                    (-12.3490m, -12.34m),
                     (-922337203685477.58m, -922337203685477.58m), // T-SQL money limits.
                     (922337203685477.58m, 922337203685477.58m), // T-SQL money limits.
                     (0m, 0m),
-                    // Current behavior is rounding money values, but it should be changed in future,
-                    // see https://github.com/Rhetos/Rhetos/issues/389: Money type should throw an exception, instead of implicit rounding, if saving more decimals then allowed.
-                    (0.001m, 0m),
-                    (0.009m, 0m),
-                    (0.019m, 0.01m),
-                    (-0.001m, 0m),
-                    (-0.009m, 0m),
-                    (-0.019m, -0.01m),
                 };
 
                 foreach (var test in tests)

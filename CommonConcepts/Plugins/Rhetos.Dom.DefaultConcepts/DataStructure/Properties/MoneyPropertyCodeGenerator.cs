@@ -21,19 +21,84 @@ using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Linq;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
     [ExportMetadata(MefProvider.Implements, typeof(MoneyPropertyInfo))]
+    [ExportMetadata(MefProvider.DependsOn, typeof(MoneyRoundingInfoCodeGenerator))]
     public class MoneyPropertyCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = conceptInfo as PropertyInfo;
             PropertyHelper.GenerateCodeForType(info, codeBuilder, "decimal?");
-            PropertyHelper.GenerateStorageCustomMapping(info, codeBuilder, $"PersistenceStorageHelper.GetMoneySqlParameter(entity.{info.Name})");
+            PropertyHelper.GenerateStorageMapping(info, codeBuilder, "System.Data.SqlDbType.Money");
+
+            if (info.DataStructure is IWritableOrmDataStructure)
+            {
+                var property = $"item.{info.Name}";
+                var roundingFactor = Math.Pow(10, 2);
+
+                codeBuilder.InsertCode(
+                    @$"{property} = {property} != null ? (long)({property}.Value * {roundingFactor}m) / {roundingFactor}m : null;
+                    ",
+                    MoneyRoundingInfoCodeGenerator.MoneyRoundingPropertiesTag,
+                    info.DataStructure);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Inject the <see cref="CommonConceptsRuntimeOptions"/>,
+    /// so the money rounding can be conditionally executed depending on runtime setting.
+    /// See more: <seealso cref="MoneyPropertyCodeGenerator"/>
+    /// </summary>
+    [Export(typeof(IConceptMacro))]
+    public class MoneyMacro : IConceptMacro<MoneyPropertyInfo>
+    {
+        public IEnumerable<IConceptInfo> CreateNewConcepts(MoneyPropertyInfo conceptInfo, IDslModel existingConcepts)
+        {
+            return new IConceptInfo[] 
+            {
+                new RepositoryUsesInfo
+                {
+                    DataStructure = conceptInfo.DataStructure,
+                    PropertyName = "_option",
+                    PropertyType = "Rhetos.Dom.DefaultConcepts.CommonConceptsRuntimeOptions, Rhetos.Dom.DefaultConcepts.Interfaces"
+                }
+            };
+        }
+    }
+
+    [Export(typeof(IConceptCodeGenerator))]
+    [ExportMetadata(MefProvider.Implements, typeof(MoneyRoundingInfo))]
+    public class MoneyRoundingInfoCodeGenerator : IConceptCodeGenerator
+    {
+        public static readonly CsTag<DataStructureInfo> MoneyRoundingPropertiesTag = "MoneyRounding Properties";
+
+        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
+        {
+            var dataStructure = (conceptInfo as MoneyRoundingInfo).DataStructure;
+
+            if (dataStructure is IWritableOrmDataStructure)
+            {
+                codeBuilder.InsertCode(
+            $@"if (_option.AutoRoundMoney)
+            {{
+                foreach (var item in insertedNew.Concat(updatedNew))
+                {{
+                    {MoneyRoundingPropertiesTag.Evaluate(dataStructure)}
+                }}
+            }}
+            ",
+                WritableOrmDataStructureCodeGenerator.InitializationTag,
+                dataStructure);
+            }
         }
     }
 }
