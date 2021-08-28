@@ -755,6 +755,8 @@ Module TestComputedFromSelfExtension
 	{
 		Extends TestComputedFromSelfExtension.Artist;
 		Money TotalRevenue;
+
+        ChangesOnBaseItem;
 	}
 
     Entity Record
