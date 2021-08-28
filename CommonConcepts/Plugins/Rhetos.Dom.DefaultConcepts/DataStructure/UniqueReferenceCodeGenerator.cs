@@ -34,11 +34,8 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (UniqueReferenceInfo)conceptInfo;
-            bool isSelfReference = info.Base == info.Extension;
 
-            if (DslUtility.IsQueryable(info.Extension) 
-                && DslUtility.IsQueryable(info.Base)
-                && !isSelfReference)
+            if (DslUtility.IsQueryable(info.Extension) && DslUtility.IsQueryable(info.Base))
             {
                 DataStructureQueryableCodeGenerator.AddNavigationProperty(codeBuilder, info.Extension,
                     csPropertyName: "Base",
@@ -50,8 +47,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             if (UniqueReferenceDatabaseDefinition.IsSupported(info)
                 && info.Extension is IOrmDataStructure
-                && info.Base is IWritableOrmDataStructure
-                && !isSelfReference)
+                && info.Base is IWritableOrmDataStructure)
             {
                 var ormDataStructure = (IOrmDataStructure)info.Extension;
                 string systemMessage = $"DataStructure:{info.Extension.FullName},Property:ID,Referenced:{info.Base.FullName}";

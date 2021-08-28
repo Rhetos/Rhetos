@@ -38,9 +38,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public static void InsertCodeSnippet(ICodeBuilder codeBuilder, DataStructureInfo extension, DataStructureInfo baseEntity)
         {
-            if (baseEntity is IWritableOrmDataStructure 
-                && extension is IWritableOrmDataStructure
-                && extension != baseEntity)
+            if (baseEntity is IWritableOrmDataStructure && extension is IWritableOrmDataStructure)
             {
                 string extensionName = extension.Module.Name + "." + extension.Name;
 
