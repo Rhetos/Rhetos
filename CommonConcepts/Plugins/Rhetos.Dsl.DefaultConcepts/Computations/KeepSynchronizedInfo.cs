@@ -58,6 +58,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             // it should still be computed every time the base data structure data is inserted.
 
             var dataSourceExtension = existingConcepts.FindByReference<UniqueReferenceInfo>(ex => ex.Extension, conceptInfo.EntityComputedFrom.Source)
+                .Where(item => item.Base != conceptInfo.EntityComputedFrom.Target)
                 .SingleOrDefault();
             
             if (dataSourceExtension != null

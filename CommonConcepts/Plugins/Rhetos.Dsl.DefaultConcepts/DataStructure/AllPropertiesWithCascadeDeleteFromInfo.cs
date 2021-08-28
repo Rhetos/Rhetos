@@ -53,7 +53,8 @@ namespace Rhetos.Dsl.DefaultConcepts
                     }
                 }));
 
-            newConcepts.AddRange(existingConcepts.FindByType<UniqueReferenceCascadeDeleteInfo>().Where(ci => ci.UniqueReference.Extension == conceptInfo.Source)
+            newConcepts.AddRange(existingConcepts.FindByType<UniqueReferenceCascadeDeleteInfo>()
+                .Where(ci => ci.UniqueReference.Extension == conceptInfo.Source && ci.UniqueReference.Base != conceptInfo.Destination)
                 .Select(ci => new UniqueReferenceCascadeDeleteInfo
                 {
                     UniqueReference = new UniqueReferenceInfo

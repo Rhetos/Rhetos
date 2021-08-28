@@ -53,6 +53,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             newConcepts.AddRange(
                 existingConcepts.FindByReference<UniqueReferenceInfo>(ci => ci.Extension, conceptInfo.Source)
+                .Where(ci => ci.Base != conceptInfo.Destination)
                 .Select(ci => ci is DataStructureExtendsInfo
                     ? new DataStructureExtendsInfo { Extension = conceptInfo.Destination, Base = ci.Base }
                     : new UniqueReferenceInfo { Extension = conceptInfo.Destination, Base = ci.Base }));
