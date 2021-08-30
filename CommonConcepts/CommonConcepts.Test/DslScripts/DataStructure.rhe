@@ -448,6 +448,12 @@ Module TestDataStructure
 	}
 
 	Parameter Limit5;
+
+	DataStructure NonWritable
+	{
+		Money Price;
+		Binary File;
+	}
 }
 
 Module TestQueryable

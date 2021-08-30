@@ -59,19 +59,22 @@ namespace Rhetos.Dom.DefaultConcepts
     /// See more: <seealso cref="MoneyPropertyCodeGenerator"/>
     /// </summary>
     [Export(typeof(IConceptMacro))]
-    public class MoneyMacro : IConceptMacro<MoneyPropertyInfo>
+    public class MoneyRoundingMacro : IConceptMacro<MoneyRoundingInfo>
     {
-        public IEnumerable<IConceptInfo> CreateNewConcepts(MoneyPropertyInfo conceptInfo, IDslModel existingConcepts)
+        public IEnumerable<IConceptInfo> CreateNewConcepts(MoneyRoundingInfo conceptInfo, IDslModel existingConcepts)
         {
-            return new IConceptInfo[] 
-            {
-                new RepositoryUsesInfo
-                {
-                    DataStructure = conceptInfo.DataStructure,
-                    PropertyName = "_option",
-                    PropertyType = "Rhetos.Dom.DefaultConcepts.CommonConceptsRuntimeOptions, Rhetos.Dom.DefaultConcepts.Interfaces"
-                }
-            };
+            var newConcepts = new List<IConceptInfo>();
+
+            if (conceptInfo.DataStructure is IWritableOrmDataStructure)
+                newConcepts.Add(
+                    new RepositoryUsesInfo
+                    {
+                        DataStructure = conceptInfo.DataStructure,
+                        PropertyName = "_option",
+                        PropertyType = "Rhetos.Dom.DefaultConcepts.CommonConceptsRuntimeOptions, Rhetos.Dom.DefaultConcepts.Interfaces"
+                    });
+
+            return newConcepts;
         }
     }
 
