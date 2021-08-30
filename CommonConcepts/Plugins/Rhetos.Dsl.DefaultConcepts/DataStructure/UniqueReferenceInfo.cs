@@ -37,13 +37,19 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("UniqueReference")]
-    public class UniqueReferenceInfo : IConceptInfo
+    public class UniqueReferenceInfo : IConceptInfo, IValidatedConcept
     {
         [ConceptKey]
         public DataStructureInfo Extension { get; set; }
 
         public DataStructureInfo Base { get; set; }
-  
+
+        public void CheckSemantics(IDslModel existingConcepts)
+        {
+            if (Extension == Base)
+                throw new DslSyntaxException(this, "A data structure cannot be an extension of itself. The base data structure is the same as the extension.");
+        }
+
         public string ExtensionPropertyName()
         {
             if (Base.Module == Extension.Module)

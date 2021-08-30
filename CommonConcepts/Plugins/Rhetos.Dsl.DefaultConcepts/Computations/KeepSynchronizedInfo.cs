@@ -59,10 +59,13 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             var dataSourceExtension = existingConcepts.FindByReference<UniqueReferenceInfo>(ex => ex.Extension, conceptInfo.EntityComputedFrom.Source)
                 .SingleOrDefault();
+            var targetExtension = existingConcepts.FindByReference<UniqueReferenceInfo>(ex => ex.Extension, conceptInfo.EntityComputedFrom.Target)
+                .SingleOrDefault();
             
             if (dataSourceExtension != null
                 && dataSourceExtension.Base is IWritableOrmDataStructure
-                && dataSourceExtension.Base != conceptInfo.EntityComputedFrom.Target
+                && targetExtension != null
+                && targetExtension.Base == dataSourceExtension.Base
                 && !changesOnChangesItems.Any(c => c.DependsOn == dataSourceExtension.Base)
                 && !existingConcepts.FindByReference<ChangesOnBaseItemInfo>(c => c.Computation, conceptInfo.EntityComputedFrom.Source).Any())
                 newConcepts.Add(new ComputeForNewBaseItemsInfo { EntityComputedFrom = conceptInfo.EntityComputedFrom, FilterSaveExpression = conceptInfo.FilterSaveExpression });
