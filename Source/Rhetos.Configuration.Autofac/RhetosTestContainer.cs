@@ -101,7 +101,7 @@ namespace Rhetos.Configuration.Autofac
                     lock (_rhetosHostInitializationLock)
                         if (_rhetosHost == null)
                         {
-                            _rhetosHost = RhetosHost.Find(_rhetosAppAssemblyPath, rhetosHostBuilder => {
+                            _rhetosHost = RhetosHost.CreateFrom(_rhetosAppAssemblyPath, rhetosHostBuilder => {
                                 rhetosHostBuilder.UseBuilderLogProvider(new ConsoleLogProvider())
                                     .ConfigureConfiguration(configurationBuilder => configurationBuilder.AddConfigurationManagerConfiguration());
                             });

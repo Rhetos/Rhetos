@@ -79,7 +79,7 @@ namespace Rhetos
                     if (_singleRhetosHost == null)
                     {
                         _singleRhetosHostAssemblyPath = rhetosAppAssemblyPath;
-                        _singleRhetosHost = RhetosHost.Find(rhetosAppAssemblyPath, ConfigureRhetosHost, OverrideHostLogging + configureServices);
+                        _singleRhetosHost = RhetosHost.CreateFrom(rhetosAppAssemblyPath, ConfigureRhetosHost, OverrideHostLogging + configureServices);
                     }
 
             if (_singleRhetosHostAssemblyPath != rhetosAppAssemblyPath)

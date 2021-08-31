@@ -85,9 +85,11 @@ namespace Rhetos
         /// This method is intended to be called by a utility application that needs to use Rhetos runtime features
         /// of a referenced application or assembly built with Rhetos framework.
         /// <para>
+        /// This method resolves <see cref="RhetosHost"/> from the referenced assembly's <see cref="IHostBuilder"/>.
         /// The referenced assembly is expected to have an entry point (typically the Program class) with a
-        /// static method that creates and configures a <see cref="IHostBuilder"/> instance,
-        /// see <see cref="HostResolver.HostBuilderFactoryMethodName"/>.
+        /// static method that creates and configures the <see cref="IHostBuilder"/> instance,
+        /// see <see cref="HostResolver.HostBuilderFactoryMethodName"/>
+        /// and <see href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/generic-host?view=aspnetcore-5.0">.NET Generic Host</see>.
         /// The specified application should be created with Rhetos framework, or reference an assembly that
         /// was created with Rhetos framework.
         /// </para>
@@ -104,7 +106,7 @@ namespace Rhetos
         /// <param name="configureServices">
         /// Configures host application's dependency injection components and configuration.
         /// </param>
-        public static RhetosHost Find(
+        public static RhetosHost CreateFrom(
             string rhetosHostAssemblyPath,
             Action<IRhetosHostBuilder> configureRhetosHost = null,
             Action<HostBuilderContext, IServiceCollection> configureServices = null)
@@ -114,8 +116,8 @@ namespace Rhetos
         }
 
         /// <summary>
-        /// Provides services from the references host application.
-        /// Use the <see cref="Find"/> method instead, it you only need Rhetos context and components.
+        /// Provides services from the referenced host application.
+        /// Use the <see cref="CreateFrom"/> method instead, it you only need Rhetos context and components.
         /// </summary>
         public static IServiceProvider GetHostServices(
             string rhetosHostAssemblyPath,

@@ -189,7 +189,7 @@ namespace Rhetos
         {
             RhetosHost CreateRhetosHost(Action<IRhetosHostBuilder> configureRhetosHost)
             {
-                return RhetosHost.Find(startupAssembly, builder =>
+                return RhetosHost.CreateFrom(startupAssembly, builder =>
                 {
                     builder.ConfigureConfiguration(configurationBuilder =>
                     {

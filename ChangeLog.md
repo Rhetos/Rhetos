@@ -137,7 +137,7 @@ Changes in Rhetos libraries API:
     you should write
     `SamePropertyValue 'Base.PropertyNameOnReferencedDataStructure';`
 15. Removed `ProcessContainer` class:
-    * Instead of using `new ProcessContainer(rhetosAppAssemblyPath)` replace it with `RhetosHost.Find(rhetosAppAssemblyPath)`
+    * Instead of using `new ProcessContainer(rhetosAppAssemblyPath)` replace it with `RhetosHost.CreateFrom(rhetosAppAssemblyPath)`
     * Instead of using `ProcessContainer.CreateScope(rhetosAppAssemblyPath)` replace it with `LinqPadRhetosHost.CreateScope(rhetosAppAssemblyPath)`
 16. Removed `IUserInfoAdmin` interface. It was used together with the `Rhetos:AppSecurity:BuiltinAdminOverride` option to give the administrator rights as it had all claims.
 17. GetInternalServerErrorMessage method moved from FrameworkException class to Rhetos.Utilities.ErrorReporting.
