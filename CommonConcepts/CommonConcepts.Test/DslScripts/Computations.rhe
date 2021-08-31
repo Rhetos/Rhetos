@@ -722,3 +722,52 @@ Module Test12
         Reference Entity2;
     }
 }
+
+Module TestComputedFromSelfExtension
+{
+    AutodetectSqlDependencies;
+
+    Entity Artist 
+    {
+        ShortString Name;
+        Money ToursRevenue { MinValue 0; }
+        Money TotalRevenue { DenyUserEdit; }
+
+        ComputedFrom TestComputedFromSelfExtension.ComputeArtist
+		{
+			AllProperties;
+			KeepSynchronized;
+		}
+    }
+
+    SqlQueryable ComputeArtist
+	"
+		SELECT
+			a.ID,
+			TotalRevenue = ISNULL(SUM(rs.Revenue), 0) + a.ToursRevenue
+		FROM
+			TestComputedFromSelfExtension.Artist a
+			LEFT JOIN TestComputedFromSelfExtension.Record r ON a.ID = r.ArtistID
+			LEFT JOIN TestComputedFromSelfExtension.RecordSales rs ON r.ID = rs.RecordID
+		GROUP BY
+			a.ID, a.ToursRevenue
+	"
+	{
+		Extends TestComputedFromSelfExtension.Artist;
+		Money TotalRevenue;
+
+        ChangesOnBaseItem;
+	}
+
+    Entity Record
+	{
+		Reference Artist { Detail; }
+	}
+
+	Entity RecordSales
+	{
+		Reference Record { Detail; }
+		ShortString Country;
+		Money Revenue;
+	}
+}

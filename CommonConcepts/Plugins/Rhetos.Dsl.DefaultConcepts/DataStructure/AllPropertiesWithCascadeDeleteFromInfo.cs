@@ -21,14 +21,15 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
     /// Copies all properties from another data structure, along with the associated Required, SqlIndex, Extends and CascadeDelete concepts.
     /// </summary>
+    /// <remarks>
+    /// It will not copy the Extends concept (UniqueReference) if the source is an extension of the destination.
+    /// </remarks>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("AllPropertiesWithCascadeDeleteFrom")]
     public class AllPropertiesWithCascadeDeleteFromInfo : AllPropertiesFromInfo
@@ -43,7 +44,8 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             var newConcepts = new List<IConceptInfo>();
             
-            newConcepts.AddRange(existingConcepts.FindByType<ReferenceCascadeDeleteInfo>().Where(ci => ci.Reference.DataStructure == conceptInfo.Source)
+            newConcepts.AddRange(existingConcepts.FindByType<ReferenceCascadeDeleteInfo>()
+                .Where(ci => ci.Reference.DataStructure == conceptInfo.Source)
                 .Select(ci => new ReferenceCascadeDeleteInfo
                 {
                     Reference = new ReferencePropertyInfo
@@ -53,14 +55,23 @@ namespace Rhetos.Dsl.DefaultConcepts
                     }
                 }));
 
-            newConcepts.AddRange(existingConcepts.FindByType<UniqueReferenceCascadeDeleteInfo>().Where(ci => ci.UniqueReference.Extension == conceptInfo.Source)
-                .Select(ci => new UniqueReferenceCascadeDeleteInfo
+            var sourceUniqueReference = existingConcepts.FindByReference<UniqueReferenceInfo>(ex => ex.Extension, conceptInfo.Source).SingleOrDefault();
+            if (sourceUniqueReference != null)
+            {
+                var destinationUniqueReference = existingConcepts.FindByReference<UniqueReferenceInfo>(ex => ex.Extension, conceptInfo.Destination).SingleOrDefault();
+                if (destinationUniqueReference != null && sourceUniqueReference.Base == destinationUniqueReference.Base)
                 {
-                    UniqueReference = new UniqueReferenceInfo
+                    // AllPropertiesFromInfo does not always copy the UniqueReference. CascadeDelete is copied here only if the UniqueReference have been copied (same Base reference).
+                    var sourceCascadeDelete = existingConcepts.FindByReference<UniqueReferenceCascadeDeleteInfo>(cd => cd.UniqueReference, sourceUniqueReference).SingleOrDefault();
+                    if (sourceCascadeDelete != null)
                     {
-                        Extension = conceptInfo.Destination
+                        newConcepts.Add(new UniqueReferenceCascadeDeleteInfo
+                        {
+                            UniqueReference = destinationUniqueReference
+                        });
                     }
-                }));
+                }
+            }
 
             return newConcepts;
         }

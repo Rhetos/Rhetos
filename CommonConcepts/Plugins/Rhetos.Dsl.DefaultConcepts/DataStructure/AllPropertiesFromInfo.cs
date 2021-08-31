@@ -27,8 +27,11 @@ using System.Text;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// Copies all properties from another data structure, along with the associated Required, SqlIndex and Extends concepts
+    /// Copies all properties from another data structure, along with the associated Required, SqlIndex and Extends concepts.
     /// </summary>
+    /// <remarks>
+    /// It will not copy the Extends concept (UniqueReference) if the source is an extension of the destination.
+    /// </remarks>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("AllPropertiesFrom")]
     public class AllPropertiesFromInfo : IConceptInfo
@@ -53,6 +56,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             newConcepts.AddRange(
                 existingConcepts.FindByReference<UniqueReferenceInfo>(ci => ci.Extension, conceptInfo.Source)
+                .Where(ci => ci.Base != conceptInfo.Destination) // There is no need for error in this case. This concept can be skipped because the 1:1 relation already exists but in a different direction.
                 .Select(ci => ci is DataStructureExtendsInfo
                     ? new DataStructureExtendsInfo { Extension = conceptInfo.Destination, Base = ci.Base }
                     : new UniqueReferenceInfo { Extension = conceptInfo.Destination, Base = ci.Base }));
