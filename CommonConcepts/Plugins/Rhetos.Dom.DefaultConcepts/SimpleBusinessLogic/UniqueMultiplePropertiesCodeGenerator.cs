@@ -27,7 +27,6 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dom.DefaultConcepts.SimpleBusinessLogic
 {
-    // TODO: This feature does not have unit tests and should not be used.
     [Export(typeof(IConceptCodeGenerator))]
     [ExportMetadata(MefProvider.Implements, typeof(UniqueMultiplePropertiesInfo))]
     public class UniqueMultiplePropertiesCodeGenerator : IConceptCodeGenerator
