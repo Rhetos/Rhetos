@@ -39,19 +39,19 @@ namespace Rhetos.Persistence
     {
         /// <summary>
         /// Marks the transaction as valid, to be committed at the end of the lifetime scope (on Dispose).
-        /// If <see cref="CommitChanges"/> is not called, the transaction will be rolled back by default.
-        /// If <see cref="DiscardChanges"/> is also called, it will override any earlier or later call to <see cref="CommitChanges"/>.
+        /// If <see cref="CommitOnDispose"/> is not called, the transaction will be rolled back by default.
+        /// If <see cref="DiscardOnDispose"/> is also called, it will override any earlier or later call to <see cref="CommitOnDispose"/>.
         /// </summary>
-        void CommitChanges();
+        void CommitOnDispose();
 
         /// <summary>
         /// Marks the transaction as invalid. The transaction remains operational, but it will be <b>rolled back on Dispose</b>.
         /// </summary>
-        void DiscardChanges();
+        void DiscardOnDispose();
 
         /// <summary>
         /// Use for cleanup code, such as deleting temporary data that may be used until the transaction is closed.
-        /// This event will not be invoked if the transaction rollback was executed (see <see cref="CommitChanges"/> and <see cref="DiscardChanges"/>).
+        /// This event will not be invoked if the transaction rollback was executed (see <see cref="CommitOnDispose"/> and <see cref="DiscardOnDispose"/>).
         /// </summary>
         event Action BeforeClose;
 
@@ -59,7 +59,7 @@ namespace Rhetos.Persistence
         /// Use for optional notification that do not affect validity of the operation executed in this transaction.
         /// If the <see cref="AfterClose"/> event <b>fails</b>, any data modifications from the current transaction will
         /// remain in the database.
-        /// This event will not be invoked if the transaction rollback was executed (see <see cref="DiscardChanges()"/>).
+        /// This event will not be invoked if the transaction rollback was executed (see <see cref="DiscardOnDispose()"/>).
         /// </summary>
         event Action AfterClose;
 

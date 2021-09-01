@@ -69,7 +69,7 @@ namespace Rhetos.Dom.DefaultConcepts
             finally
             {{
                 if (!allEffectsCompleted)
-                    _executionContext.PersistenceTransaction.DiscardChanges();
+                    _executionContext.PersistenceTransaction.DiscardOnDispose();
             }}
         }}
 

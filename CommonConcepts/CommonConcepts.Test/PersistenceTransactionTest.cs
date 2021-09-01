@@ -44,7 +44,7 @@ namespace CommonConcepts.Test
             using (var scope = TestScope.Create())
             {
                 var transaction = scope.Resolve<IPersistenceTransaction>();
-                transaction.CommitChanges();
+                transaction.CommitOnDispose();
                 transaction.BeforeClose += () => log.Add("before");
                 transaction.AfterClose += () => log.Add("after");
 

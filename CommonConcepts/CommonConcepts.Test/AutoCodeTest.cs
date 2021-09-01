@@ -804,7 +804,7 @@ namespace CommonConcepts.Test
                     catch (Exception ex)
                     {
                         exceptions[thread] = ex;
-                        contexts[thread].PersistenceTransaction.DiscardChanges();
+                        contexts[thread].PersistenceTransaction.DiscardOnDispose();
                     }
                     finally
                     {

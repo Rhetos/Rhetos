@@ -50,25 +50,25 @@ namespace Rhetos.Persistence
             _persistenceTransactionId = Interlocked.Increment(ref _counter);
         }
 
-        public void CommitChanges()
+        public void CommitOnDispose()
         {
             _commitOnDispose = true;
         }
 
-        public void DiscardChanges()
+        public void DiscardOnDispose()
         {
             _discardOnDispose = true;
         }
 
         public void CommitAndClose()
         {
-            CommitChanges();
+            CommitOnDispose();
             Dispose();
         }
 
         public void RollbackAndClose()
         {
-            DiscardChanges();
+            DiscardOnDispose();
             Dispose();
         }
 

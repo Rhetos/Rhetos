@@ -172,7 +172,7 @@ namespace Rhetos.Processing
 
                     if (!commandResult.Success)
                     {
-                        _persistenceTransaction.DiscardChanges();
+                        _persistenceTransaction.DiscardOnDispose();
 
                         var systemMessage = "Command failed: " + commandImplementation + ", " + commandInfo + ".";
                         return LogAndReturnError(commandResults, systemMessage + " " + commandResult.Message, systemMessage, commandResult.Message, null, commands, executionId);
@@ -180,7 +180,7 @@ namespace Rhetos.Processing
                 }
                 catch (Exception ex)
                 {
-                    _persistenceTransaction.DiscardChanges();
+                    _persistenceTransaction.DiscardOnDispose();
 
                     if (ex is TargetInvocationException && ex.InnerException is RhetosException)
                     {

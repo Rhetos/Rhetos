@@ -66,7 +66,7 @@ namespace Rhetos.Processing.DefaultCommands
             if (updateDeleteItems != null)
                 if (!_serverCommandsUtility.CheckAllItemsWithinFilter(updateDeleteItems, typeof(Common.RowPermissionsWriteItems), genericRepository))
                 {
-                    _persistenceTransaction.DiscardChanges();
+                    _persistenceTransaction.DiscardOnDispose();
                     Guid? missingId;
                     if (_serverCommandsUtility.MissingItemId(saveInfo.DataToDelete, genericRepository, out missingId))
                         throw new ClientException($"Deleting a record that does not exist in database. DataStructure={saveInfo.Entity}, ID={missingId}");
@@ -83,7 +83,7 @@ namespace Rhetos.Processing.DefaultCommands
             if (insertUpdateItems != null)
                 if (!_serverCommandsUtility.CheckAllItemsWithinFilter(insertUpdateItems, typeof(Common.RowPermissionsWriteItems), genericRepository))
                 {
-                    _persistenceTransaction.DiscardChanges();
+                    _persistenceTransaction.DiscardOnDispose();
                     throw new UserException("You are not authorized to write some or all of the provided data. Insufficient permissions to apply the new data.", $"DataStructure:{saveInfo.Entity}.");
                 }
 

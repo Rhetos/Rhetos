@@ -71,7 +71,7 @@ namespace Rhetos
                 performanceLogger.Write(stopwatch, "Modules and plugins registered.");
                 scope.LogRegistrationStatistics("UpdateDatabase component registrations", _logProvider);
                 scope.Resolve<DatabaseDeployment>().UpdateDatabase();
-                // DbUpdate scope does not contain IPersistenceTransaction, so there is no need to call scope.CommitChanges() here. It would throw an exception.
+                // DbUpdate scope does not contain IPersistenceTransaction, so there is no need to call scope.CommitOnDispose() here. It would throw an exception.
             }
         }
 

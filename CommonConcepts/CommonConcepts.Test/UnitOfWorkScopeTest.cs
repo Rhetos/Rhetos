@@ -42,7 +42,7 @@ namespace CommonConcepts.Test
             {
                 var context = scope.Resolve<Common.ExecutionContext>();
                 context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id1, Name = TestNamePrefix + Guid.NewGuid() });
-                scope.Resolve<IPersistenceTransaction>().CommitChanges();
+                scope.Resolve<IPersistenceTransaction>().CommitOnDispose();
             }
 
             using (var scope = TestScope.Create())
@@ -101,7 +101,7 @@ namespace CommonConcepts.Test
                         context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id1, Name = TestNamePrefix + Guid.NewGuid() });
                         throw new FrameworkException(nameof(RollbackByDefault)); // The exception that is not handled within transaction scope.
 #pragma warning disable CS0162 // Unreachable code detected
-                        scope.Resolve<IPersistenceTransaction>().CommitChanges();
+                        scope.Resolve<IPersistenceTransaction>().CommitOnDispose();
 #pragma warning restore CS0162 // Unreachable code detected
                     }
                 },
@@ -130,7 +130,7 @@ namespace CommonConcepts.Test
                     {
                         var context = scope.Resolve<Common.ExecutionContext>();
                         context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id1, Name = TestNamePrefix + Guid.NewGuid() });
-                        scope.Resolve<IPersistenceTransaction>().CommitChanges(); // Commit-on-dispose is incorrectly placed at this position.
+                        scope.Resolve<IPersistenceTransaction>().CommitOnDispose(); // Commit-on-dispose is incorrectly placed at this position.
                         context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id2, Name = TestNamePrefix + Guid.NewGuid() });
                         throw new FrameworkException(nameof(EarlyCommitOnDispose)); // The exception is not handled within transaction scope to discard the transaction.
                     }
@@ -193,7 +193,7 @@ namespace CommonConcepts.Test
                 {
                     var context = scope.Resolve<Common.ExecutionContext>();
                     context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id1, Name = TestNamePrefix + Guid.NewGuid() });
-                    scope.Resolve<IPersistenceTransaction>().DiscardChanges();
+                    scope.Resolve<IPersistenceTransaction>().DiscardOnDispose();
                     scope.CommitAndClose();
                     context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id2, Name = TestNamePrefix + Guid.NewGuid() });
                 }
@@ -220,23 +220,23 @@ namespace CommonConcepts.Test
             {
                 var context = scope.Resolve<Common.ExecutionContext>();
                 context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = ids[0], Name = TestNamePrefix + Guid.NewGuid() });
-                scope.Resolve<IPersistenceTransaction>().DiscardChanges();
-                scope.Resolve<IPersistenceTransaction>().CommitChanges();
+                scope.Resolve<IPersistenceTransaction>().DiscardOnDispose();
+                scope.Resolve<IPersistenceTransaction>().CommitOnDispose();
             }
 
             using (var scope = TestScope.Create())
             {
                 var context = scope.Resolve<Common.ExecutionContext>();
                 context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = ids[1], Name = TestNamePrefix + Guid.NewGuid() });
-                scope.Resolve<IPersistenceTransaction>().CommitChanges();
-                scope.Resolve<IPersistenceTransaction>().DiscardChanges();
+                scope.Resolve<IPersistenceTransaction>().CommitOnDispose();
+                scope.Resolve<IPersistenceTransaction>().DiscardOnDispose();
             }
 
             using (var scope = TestScope.Create())
             {
                 var context = scope.Resolve<Common.ExecutionContext>();
                 context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = ids[2], Name = TestNamePrefix + Guid.NewGuid() });
-                scope.Resolve<IPersistenceTransaction>().DiscardChanges();
+                scope.Resolve<IPersistenceTransaction>().DiscardOnDispose();
                 scope.CommitAndClose();
             }
 
@@ -245,7 +245,7 @@ namespace CommonConcepts.Test
                 var context = scope.Resolve<Common.ExecutionContext>();
                 context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = ids[3], Name = TestNamePrefix + Guid.NewGuid() });
                 scope.CommitAndClose(); // This commit is immediate, so discard will have no effect.
-                scope.Resolve<IPersistenceTransaction>().DiscardChanges();
+                scope.Resolve<IPersistenceTransaction>().DiscardOnDispose();
             }
 
             using (var scope = TestScope.Create())

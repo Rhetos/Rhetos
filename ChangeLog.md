@@ -102,7 +102,13 @@ Changes in Rhetos libraries API:
 10. The interface IMacroConcept now requires the implementation of the method CreateNewConcepts without any parameters.
     If an implementation of IMacroConcept requires access to the IDslModel, use the IConceptMacro\<T\> interface instead.
 11. Removed support for QueryDataSourceCommand. Use the ReadCommand instead.
-12. Removed support for the following methods or classes:
+12. Renamed IPersistenceTransaction methods: `CommitChanges` to `CommitOnDispose`, `DiscardChanges` to `DiscardOnDispose`.
+13. Removed `ProcessContainer` class:
+    * Instead of `new ProcessContainer(rhetosAppAssemblyPath)`, use `RhetosHost.CreateFrom(rhetosAppAssemblyPath)`.
+    * Instead of static `ProcessContainer.CreateScope(rhetosAppAssemblyPath)`, use `LinqPadRhetosHost.CreateScope(rhetosAppAssemblyPath)`.
+    * Instead of static `ProcessContainer.CreateTransactionScopeContainer`, use `LinqPadRhetosHost.CreateScope(rhetosAppAssemblyPath)`.
+    * Instead of `ProcessContainer.Configuration`, use `IConfiguration` from dependency injection.
+14. Removed support for the following methods or classes:
     * IDatabaseColumnType.GetColumnType : This method will not support concepts with configurable types. Use GetColumnType with PropertyInfo argument instead.
     * PropertyHelper.GenerateCodeForType: Use the GenerateCodeForType function without the 'serializable' argument. All regular properties are serializable.
     * DatabaseExtensionFunctions.SqlLike: Use the Like() method instead.
@@ -128,24 +134,19 @@ Changes in Rhetos libraries API:
     * IPersistenceTransaction.CommitAndReconnect: It is not longer needed for IServerInitializer plugins, because each plugin is executed in a separate connection.
     * SqlTransactionBatch: Use SqlTransactionBatches instead.
     * Function\<T\>.Create: Use an explicit Func type for the result variable, instead of 'var'.
-13. Removed support for the following concepts:
+15. Removed support for the following concepts:
     * UseExecutionContext: Use repository member \_executionContext instead.
     * DenySave: Use InvalidData instead.
     * Snowflake: Use Browse concept instead.
     * ExternalReference: Add a NuGet dependency or a project reference to specify Rhetos application dependency to external library.
-14. Removed the support for SamePropertyValue concept which required two arguments. Instead use the simpler SamePropertyValue concept which requires only the path to the base property.
+16. Removed the support for SamePropertyValue concept which required two arguments. Instead use the simpler SamePropertyValue concept which requires only the path to the base property.
     Instead of
     `SamePropertyValue 'Base' Module.ReferencedDataStructure.PropertyNameOnReferencedDataStructure;`
     you should write
     `SamePropertyValue 'Base.PropertyNameOnReferencedDataStructure';`
-15. Removed `ProcessContainer` class:
-    * Instead of `new ProcessContainer(rhetosAppAssemblyPath)`, use `RhetosHost.CreateFrom(rhetosAppAssemblyPath)`.
-    * Instead of static `ProcessContainer.CreateScope(rhetosAppAssemblyPath)`, use `LinqPadRhetosHost.CreateScope(rhetosAppAssemblyPath)`.
-    * Instead of static `ProcessContainer.CreateTransactionScopeContainer`, use `LinqPadRhetosHost.CreateScope(rhetosAppAssemblyPath)`.
-    * Instead of `ProcessContainer.Configuration`, use `IConfiguration` from dependency injection.
-16. Removed `IUserInfoAdmin` interface. It was used together with the `Rhetos:AppSecurity:BuiltinAdminOverride` option to give the administrator rights as it had all claims.
-17. GetInternalServerErrorMessage method moved from FrameworkException class to Rhetos.Utilities.ErrorReporting.
-18. Removed IPersistenceCache interface and ToNavigation() methods. They where Rhetos-specific helpers for saving entities with Entity Framework.
+17. Removed `IUserInfoAdmin` interface. It was used together with the `Rhetos:AppSecurity:BuiltinAdminOverride` option to give the administrator rights as it had all claims.
+18. GetInternalServerErrorMessage method moved from FrameworkException class to Rhetos.Utilities.ErrorReporting.
+19. Removed IPersistenceCache interface and ToNavigation() methods. They where Rhetos-specific helpers for saving entities with Entity Framework.
     * If custom application code overrides repository's standard Save method, use DomHelper.WriteToDatabase to save an entity, instead of Entity Framework methods. For reference, see the new generated source code for repository Save methods.
     * Navigation properties behavior can no longer be extended with custom tags *DataStructureQueryable Getter* and *DataStructureQueryable Setter*.
 

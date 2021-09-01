@@ -147,7 +147,7 @@ namespace CommonConcepts.Test
                 };
                 context.PersistenceStorage.Insert(new List<TestStorage.Simple> { entity });
                 Assert.AreEqual(1, context.Repository.TestStorage.Simple.Load(x => x.ID == entityID).Count());
-                context.PersistenceTransaction.DiscardChanges();
+                context.PersistenceTransaction.DiscardOnDispose();
                 scope.CommitAndClose();
             }
 

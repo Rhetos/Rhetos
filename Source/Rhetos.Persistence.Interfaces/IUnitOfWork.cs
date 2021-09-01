@@ -34,7 +34,7 @@ namespace Rhetos.Persistence
         /// </summary>
         /// <remarks>
         /// After calling this method, any later database operation in the current scope might result with an error.
-        /// The transaction will be rolled back, instead of committed, if <see cref="IPersistenceTransaction.DiscardChanges"/> method was called earlier.
+        /// The transaction will be rolled back, instead of committed, if <see cref="IPersistenceTransaction.DiscardOnDispose"/> method was called earlier.
         /// </remarks>
         void CommitAndClose();
 
