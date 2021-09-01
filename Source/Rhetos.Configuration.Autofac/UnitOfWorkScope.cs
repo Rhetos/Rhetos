@@ -21,6 +21,7 @@ using Autofac;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Persistence;
+using Rhetos.Utilities;
 using System;
 
 namespace Rhetos
@@ -30,9 +31,18 @@ namespace Rhetos
     /// Note that the changes in database will be rolled back by default.
     /// To commit changes to database, call <see cref="CommitAndClose"/> at the end of the 'using' block.
     /// </summary>
-    public class UnitOfWorkScope : IDisposable
+    public class UnitOfWorkScope : IDisposable, IUnitOfWork
     {
-        public const string ScopeName = "UnitOfWork";
+        /// <summary>
+        /// A "lifetime scope tag" that prevents developers from accidentally resolving "scope-critical" components from a scope other then
+        /// this unit of work (for example, from the global root scope as a singleton).
+        /// This prevents some bugs in custom application code such as database transaction staying open after a command has finished,
+        /// or user authentication leaking into different scopes.
+        /// The basic scope-critical components (such as <see cref="IUserInfo"/> or <see cref="IPersistenceTransaction"/>
+        /// are registered to Autofac IoC container with "InstancePerMatchingLifetimeScope",
+        /// using <see cref="UnitOfWorkScope.ScopeName"/> as a lifetime scope tag.
+        /// </summary>
+        public static readonly string ScopeName = "UnitOfWork";
 
         private readonly ILifetimeScope _lifetimeScope;
         private bool disposed;
@@ -55,38 +65,13 @@ namespace Rhetos
                 : iocContainer.BeginLifetimeScope(ScopeName);
         }
 
-        public T Resolve<T>()
-        {
-            return _lifetimeScope.Resolve<T>();
-        }
+        public T Resolve<T>() => _lifetimeScope.Resolve<T>();
 
-        /// <summary>
-        /// Commits and closes the database transaction for the current unit of work (lifetime scope).
-        /// It is a good practice to put the call as the last statement in the using block.
-        /// </summary>
-        /// <remarks>
-        /// After calling this method, any later database operation in the current scope might result with an error.
-        /// The transaction will be rolled back, instead of committed, if <see cref="IPersistenceTransaction.DiscardChanges"/> method was called earlier.
-        /// </remarks>
-        public void CommitAndClose()
-        {
-            var transaction = _lifetimeScope.Resolve<IPersistenceTransaction>();
-            transaction.CommitChanges();
-            transaction.Dispose();
-        }
+        // IUnitOfWork methods are included directly on UnitOfWorkScope for backward compatibility and also to simplify unit tests and utility applications.
+        public void CommitAndClose() => _lifetimeScope.Resolve<IUnitOfWork>().CommitAndClose();
 
-        /// <summary>
-        /// Discards and closes the database transaction for the current unit of work (lifetime scope).
-        /// </summary>
-        /// <remarks>
-        /// After calling this method, any later database operation in the current scope might result with an error.
-        /// </remarks>
-        public void RollbackAndClose()
-        {
-            var transaction = _lifetimeScope.Resolve<IPersistenceTransaction>();
-            transaction.DiscardChanges();
-            transaction.Dispose();
-        }
+        // IUnitOfWork methods are included directly on UnitOfWorkScope for backward compatibility and also to simplify unit tests and utility applications.
+        public void RollbackAndClose() => _lifetimeScope.Resolve<IUnitOfWork>().RollbackAndClose();
 
         internal void LogRegistrationStatistics(string title, ILogProvider logProvider)
         {

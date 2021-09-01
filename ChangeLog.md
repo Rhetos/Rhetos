@@ -118,7 +118,6 @@ Changes in Rhetos libraries API:
     * ContainerBuilderExtensions.GetPluginScanner: Use GetRhetosPluginScanner instead.
     * ContainerBuilderExtensions.GetPluginRegistration: Use GetRhetosPluginRegistration instead.
     * ContainerBuilderExtensions.AddPluginModules: Use AddRhetosPluginModules instead.
-    * ProcessContainer.Configuration: Resolve IConfiguration from the transaction scope.
     * ProcessContainer.CreateTransactionScopeContainer: Use CreateScope instead.
     * TransactionScopeContainer: Use UnitOfWorkScope instead.
     * ConceptImplementationVersionAttribute: This feature is no longer used by Rhetos. Database upgrade relies solely on SQL scripts generated from DSL concepts.
@@ -140,8 +139,10 @@ Changes in Rhetos libraries API:
     you should write
     `SamePropertyValue 'Base.PropertyNameOnReferencedDataStructure';`
 15. Removed `ProcessContainer` class:
-    * Instead of using `new ProcessContainer(rhetosAppAssemblyPath)` replace it with `RhetosHost.CreateFrom(rhetosAppAssemblyPath)`
-    * Instead of using `ProcessContainer.CreateScope(rhetosAppAssemblyPath)` replace it with `LinqPadRhetosHost.CreateScope(rhetosAppAssemblyPath)`
+    * Instead of `new ProcessContainer(rhetosAppAssemblyPath)`, use `RhetosHost.CreateFrom(rhetosAppAssemblyPath)`.
+    * Instead of static `ProcessContainer.CreateScope(rhetosAppAssemblyPath)`, use `LinqPadRhetosHost.CreateScope(rhetosAppAssemblyPath)`.
+    * Instead of static `ProcessContainer.CreateTransactionScopeContainer`, use `LinqPadRhetosHost.CreateScope(rhetosAppAssemblyPath)`.
+    * Instead of `ProcessContainer.Configuration`, use `IConfiguration` from dependency injection.
 16. Removed `IUserInfoAdmin` interface. It was used together with the `Rhetos:AppSecurity:BuiltinAdminOverride` option to give the administrator rights as it had all claims.
 17. GetInternalServerErrorMessage method moved from FrameworkException class to Rhetos.Utilities.ErrorReporting.
 18. Removed IPersistenceCache interface and ToNavigation() methods. They where Rhetos-specific helpers for saving entities with Entity Framework.

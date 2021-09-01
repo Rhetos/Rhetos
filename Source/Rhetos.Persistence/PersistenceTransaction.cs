@@ -23,13 +23,12 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SqlClient;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 
 namespace Rhetos.Persistence
 {
-    public class PersistenceTransaction : IPersistenceTransaction
+    public class PersistenceTransaction : IPersistenceTransaction, IUnitOfWork
     {
         private readonly ILogger _logger;
         private readonly string _connectionString;
@@ -59,6 +58,18 @@ namespace Rhetos.Persistence
         public void DiscardChanges()
         {
             _discardOnDispose = true;
+        }
+
+        public void CommitAndClose()
+        {
+            CommitChanges();
+            Dispose();
+        }
+
+        public void RollbackAndClose()
+        {
+            DiscardChanges();
+            Dispose();
         }
 
         public event Action BeforeClose;

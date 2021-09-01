@@ -72,6 +72,23 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
+        public void InterfaceCommitAndClose()
+        {
+            using (var scope = TestScope.Create())
+            {
+                var context = scope.Resolve<Common.ExecutionContext>();
+                context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { Name = TestNamePrefix + Guid.NewGuid() });
+
+                var unitOfWork = scope.Resolve<IUnitOfWork>();
+                unitOfWork.CommitAndClose();
+
+                TestUtility.ShouldFail<FrameworkException>(
+                    () => context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { Name = TestNamePrefix + Guid.NewGuid() }),
+                    "Trying to use the Connection property of a disposed persistence transaction.");
+            }
+        }
+
+        [TestMethod]
         public void RollbackByDefault()
         {
             var id1 = Guid.NewGuid();

@@ -25,6 +25,12 @@ namespace Autofac
 {
     public static class RhetosContainerBuilderExtensions
     {
+        /// <summary>
+        /// Registers an <see cref="IUserInfo"/> implementation into Rhetos dependency injection container.
+        /// </summary>
+        /// <remarks>
+        /// The registration uses scope tag <see cref="UnitOfWorkScope.ScopeName"/> for better error handling and scope control.
+        /// </remarks>
         public static void UseUserInfoProvider(this ContainerBuilder containerBuilder, Func<IUserInfo> userInfoProvider)
         {
             containerBuilder.Register(_ => userInfoProvider()).As<IUserInfo>().InstancePerMatchingLifetimeScope(UnitOfWorkScope.ScopeName);

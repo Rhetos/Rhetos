@@ -24,13 +24,16 @@ using System.Data.Common;
 namespace Rhetos.Persistence
 {
     /// <summary>
-    /// Represents a common transaction that will be used during a single lifetime scope (for example, in a single web request),
+    /// Represents a common transaction that will be used for all operations during a single lifetime scope (for example, in a single web request),
     /// similar to the "unit of work" pattern.
     /// </summary>
     /// <remarks>
     /// Some components (for example components that are executed during database upgrade) do not use <see cref="IPersistenceTransaction"/>,
     /// because they need more specific control over database transactions.
     /// For those use cases see usage of <see cref="DbUpdateOptions.ShortTransactions"/> or <see cref="SqlUtility.NoTransactionTag"/>.
+    /// <para>
+    /// See also <see cref="IUnitOfWork"/> interface for high-level control of the transaction.
+    /// </para>
     /// </remarks>
     public interface IPersistenceTransaction : IDisposable
     {
