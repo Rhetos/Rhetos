@@ -30,9 +30,13 @@ namespace Rhetos.Utilities
         public ExcessDotInKey DslSyntaxExcessDotInKey { get; set; } = ExcessDotInKey.Ignore;
 
         /// <summary>
-        /// Copies files from Resources folders, from all included packages, into the Resourced folder of the generated application.
-        /// Some common Rhetos packages require this feature enabled.
+        /// Copies legacy assets files from 'Resources' folders, from all referenced packages, into the 'RhetosAssets' folder of the generated application.
+        /// It also included files from the current project's folder 'Resources\Rhetos', to avoid conflicts with other usages of the project's Resources folder.
+        /// Each file is copied into the subfolder with its source package name.
         /// </summary>
+        /// <remarks>
+        /// This is a legacy feature to support old Rhetos plugins.
+        /// </remarks>
         public bool BuildResourcesFolder { get; set; } = false;
 
         /// <summary>

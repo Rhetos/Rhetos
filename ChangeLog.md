@@ -9,10 +9,13 @@ Changes in behavior:
 1. Migrated from .NET Framework to **.NET 5**. Rhetos framework no longer supports .NET Framework plugins.
    * When upgrading existing Rhetos applications to Rhetos 5.0, migrate the applications and plugin libraries to .NET 5.
    * Hint: Review custom application code for [Behavior changes when comparing strings on .NET 5](https://docs.microsoft.com/en-us/dotnet/standard/base-types/string-comparison-net-5-plus),
-     for example, `text.IndexOf("\n")` or `items.OrderBy(item => item.Name)` may return different result on .NET 5 (this does not affect Entity Framework queries).
+     for example, `text.IndexOf("\n")` or `items.OrderBy(item => item.Name)` may return different result on .NET 5
+     (this does not affect Entity Framework queries because they are executed in SQL).
 2. Removed obsolete CLI utilities:
-   * DeployPackages.exe - rhetos.exe is replacing DeployPackages.exe, see [Migrating from DeployPackages to Rhetos CLI](https://github.com/Rhetos/Rhetos/wiki/Migrating-from-DeployPackages-to-Rhetos-CLI).
-   * CreateAndSetDatabase.exe - Use [sqlcmd](https://docs.microsoft.com/en-us/sql/tools/sqlcmd-utility) instead to create a new database.
+   * DeployPackages.exe: New version uses rhetos.exe instead of DeployPackages.exe.
+     If upgrading a Rhetos app that used DeployPackages, make sure to follow the migration instructions:
+     [Migrating from DeployPackages to Rhetos CLI](https://github.com/Rhetos/Rhetos/wiki/Migrating-from-DeployPackages-to-Rhetos-CLI).
+   * CreateAndSetDatabase.exe: Use [sqlcmd](https://docs.microsoft.com/en-us/sql/tools/sqlcmd-utility) instead to create a new database.
    * CleanupOldData.exe
    * CreateIISSite.exe
 3. SOAP API implementation has been removed from Rhetos framework. Removed IServerApplication interface.

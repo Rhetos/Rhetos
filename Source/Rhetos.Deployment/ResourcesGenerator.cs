@@ -30,7 +30,8 @@ namespace Rhetos.Deployment
 {
     /// <summary>
     /// "Resources" is a legacy assets folder.
-    /// This IGenerator copies all legacy assets files from installed packages to the generated application.
+    /// This IGenerator copies all legacy assets files from installed packages to the generated application's assets folder.
+    /// It also included files from the current project's folder 'Resources\Rhetos', to avoid conflicts with other usages of the Resources folder.
     /// </summary>
     public class ResourcesGenerator : IGenerator
     {
