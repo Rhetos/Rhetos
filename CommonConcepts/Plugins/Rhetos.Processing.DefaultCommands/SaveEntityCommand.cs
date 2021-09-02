@@ -73,7 +73,7 @@ namespace Rhetos.Processing.DefaultCommands
                     else if (_serverCommandsUtility.MissingItemId(saveInfo.DataToUpdate, genericRepository, out missingId))
                         throw new ClientException($"Updating a record that does not exist in database. DataStructure={saveInfo.Entity}, ID={missingId}");
                     else
-                        throw new UserException("You are not authorized to write some or all of the provided data. Insufficient permissions to modify the existing data.", $"DataStructure:{saveInfo.Entity}.");
+                        throw new UserException("You are not authorized to write some or all of the provided data. Insufficient permissions to modify the existing data.", $"DataStructure:{saveInfo.Entity},Validation:RowPermissionsWrite");
                 }
 
             genericRepository.Save(saveInfo.DataToInsert, saveInfo.DataToUpdate, saveInfo.DataToDelete, true);

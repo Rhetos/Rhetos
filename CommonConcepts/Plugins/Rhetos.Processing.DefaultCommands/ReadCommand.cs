@@ -60,7 +60,7 @@ namespace Rhetos.Processing.DefaultCommands
             {
                 var valid = _serverCommandsUtility.CheckAllItemsWithinFilter(result.Records, typeof(Common.RowPermissionsReadItems), genericRepository);
                 if (!valid)
-                    throw new UserException("You are not authorized to access some or all of the data requested.", $"DataStructure:{readInfo.DataSource}.");
+                    throw new UserException("You are not authorized to access some or all of the data requested.", $"DataStructure:{readInfo.DataSource},Validation:RowPermissionsRead");
             }
 
             return new CommandResult
