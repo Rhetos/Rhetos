@@ -31,9 +31,8 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class HostNetRhetosServiceCollectionBuilderExtensions
     {
         /// <summary>
-        /// Configures Rhetos logging so that it uses the <see cref="Logging.ILogger"/> implementation registered in the <see cref="IServiceCollection"/>
+        /// Configures Rhetos logging so that it uses the host application's logging (<see cref="Logging.ILogger"/> implementation registered in the <see cref="IServiceCollection"/>).
         /// </summary>
-        /// <returns></returns>
         public static RhetosServiceCollectionBuilder AddHostLogging(this RhetosServiceCollectionBuilder rhetosServiceCollectionBuilder)
         {
             rhetosServiceCollectionBuilder.ConfigureRhetosHost(ConfigureLogProvider);
@@ -44,7 +43,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Configures Rhetos localization so that it uses the <see cref="IStringLocalizerFactory"/> implementation registered in the <see cref="IServiceCollection"/>
         /// </summary>
-        /// <returns></returns>
         public static RhetosServiceCollectionBuilder AddHostLocalization(this RhetosServiceCollectionBuilder rhetosServiceCollectionBuilder, Action<HostLocalizerOptions> configureOptions = null)
         {
             rhetosServiceCollectionBuilder.Services.AddOptions();

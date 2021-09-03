@@ -11,8 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{0124322E-2
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D3CC17A8-D557-44D9-8D3D-3D425ED09838}"
 	ProjectSection(SolutionItems) = preProject
-		ChangeLog.md = ChangeLog.md
 		.editorconfig = .editorconfig
+		ChangeLog.md = ChangeLog.md
 		Directory.Build.props = Directory.Build.props
 		Readme.md = Readme.md
 		Source\Rhetos.Host.AspNet.nuspec = Source\Rhetos.Host.AspNet.nuspec
@@ -21,6 +21,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Source\Rhetos.MSBuild.nuspec = Source\Rhetos.MSBuild.nuspec
 		Source\Rhetos.nuspec = Source\Rhetos.nuspec
 		Source\Rhetos.TestCommon.nuspec = Source\Rhetos.TestCommon.nuspec
+		Tools\Configuration\Template.rhetos-app.local.settings.json = Tools\Configuration\Template.rhetos-app.local.settings.json
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.CommonConcepts.Test", "CommonConcepts\Plugins\Rhetos.CommonConcepts.Test\Rhetos.CommonConcepts.Test.csproj", "{ED46FC75-BF87-4F74-B1D6-91C1CF20BC46}"
@@ -113,9 +114,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Host.AspNet", "Sourc
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Host.AspNet.Test", "Source\Rhetos.Host.AspNet.Test\Rhetos.Host.AspNet.Test.csproj", "{5F24785B-47E3-487B-AF38-889EF440A97C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Dsl.Parser", "Source\Rhetos.Dsl.Parser\Rhetos.Dsl.Parser.csproj", "{81D96B00-031E-495C-947F-D9542AE77533}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Dsl.Parser", "Source\Rhetos.Dsl.Parser\Rhetos.Dsl.Parser.csproj", "{81D96B00-031E-495C-947F-D9542AE77533}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Utilities.Interfaces", "Source\Rhetos.Utilities.Interfaces\Rhetos.Utilities.Interfaces.csproj", "{F9F094B6-A872-4B84-B2F3-0A1FA3C0672A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Utilities.Interfaces", "Source\Rhetos.Utilities.Interfaces\Rhetos.Utilities.Interfaces.csproj", "{F9F094B6-A872-4B84-B2F3-0A1FA3C0672A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

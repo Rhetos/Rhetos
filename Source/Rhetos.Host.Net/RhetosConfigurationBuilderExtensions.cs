@@ -24,6 +24,12 @@ namespace Rhetos
 {
     public static class RhetosConfigurationBuilderExtensions
     {
+        /// <summary>
+        /// Applies host application's configuration settings (from 'appsettings.json', for example) to the Rhetos components.
+        /// </summary>
+        /// <remarks>
+        /// The intended usage is in Startup.cs, by providing Configuration property from the Startup class for the <paramref name="configurationToMap"/> parameter.
+        /// </remarks>
         public static IConfigurationBuilder MapNetCoreConfiguration(this IConfigurationBuilder builder, IConfiguration configurationToMap)
         {
             if (configurationToMap != null)
