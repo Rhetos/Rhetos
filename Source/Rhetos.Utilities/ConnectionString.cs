@@ -24,8 +24,26 @@ using System.Text;
 
 namespace Rhetos.Utilities
 {
+    /// <summary>
+    /// Database connection string for Rhetos components.
+    /// </summary>
     public class ConnectionString
     {
+        /// <summary>
+        /// Default connection string name in application's configuration.
+        /// </summary>
+        public static readonly string RhetosConnectionStringName = "RhetosConnectionString";
+
+        /// <summary>
+        /// Default configuration settings key for the connection string.
+        /// </summary>
+        /// <remarks>
+        /// Note that the connection string could be registered to the application's context in different ways, circumventing the configuration settings.
+        /// In application code, do not resolve the connection string directly from the application's configuration using this key,
+        /// instead use the <see cref="ConnectionString"/> class from dependency injection.
+        /// </remarks>
+        public static readonly string ConnectionStringConfigurationKey = "ConnectionStrings:" + RhetosConnectionStringName;
+
         private readonly string _value;
 
         public ConnectionString(string connectionString)

@@ -18,15 +18,26 @@
 */
 
 using Rhetos.Utilities;
+using System;
+using System.Data.Common;
 
 namespace Rhetos.Deployment
 {
-    public static class ConnectionStringReport
+    public static class ConnectionTesting
     {
         private const string _checkDboMembershipMsSql = "SELECT IS_MEMBER('db_owner')";
 
-        public static void ValidateDbConnection(ISqlExecuter sqlExecuter)
+        public static void ValidateDbConnection(string connectionString, ISqlExecuter sqlExecuter)
         {
+            try
+            {
+                new DbConnectionStringBuilder().ConnectionString = connectionString;
+            }
+            catch (Exception e)
+            {
+                throw new ArgumentException($"Database connection string has invalid format. Please review the application's configuration ({ConnectionString.ConnectionStringConfigurationKey}).", e);
+            }
+
             // This validation currently runs only on MS SQL databases.
             if (SqlUtility.DatabaseLanguage == "MsSql")
             {

@@ -56,7 +56,7 @@ namespace Rhetos.Deployment
         public void UpdateDatabase()
         {
             _logger.Info("SQL connection: " + SqlUtility.SqlConnectionInfo(SqlUtility.ConnectionString));
-            ConnectionStringReport.ValidateDbConnection(_sqlExecuter);
+            ConnectionTesting.ValidateDbConnection(SqlUtility.ConnectionString, _sqlExecuter);
 
             _logger.Info("Preparing Rhetos database.");
             PrepareRhetosDatabase();

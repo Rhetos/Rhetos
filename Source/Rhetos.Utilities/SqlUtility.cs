@@ -32,7 +32,7 @@ namespace Rhetos.Utilities
         public static int SqlCommandTimeout { get; private set; } = 30;
         public static string DatabaseLanguage => CheckIfInitialized(_databaseLanguage, "database language");
         public static string NationalLanguage => CheckIfInitialized(_nationalLanguage, "national language");
-        public static string ConnectionString => CheckIfInitialized(_connectionString, $"connection string '{RhetosConnectionStringName}' (settings key \"{ConnectionStringConfigurationKey}\")");
+        public static string ConnectionString => CheckIfInitialized(_connectionString, $"connection string '{Utilities.ConnectionString.RhetosConnectionStringName}' (settings key \"{Utilities.ConnectionString.ConnectionStringConfigurationKey}\")");
         public static string ProviderName => CheckIfInitialized(_providerName, "provider name");
 
         private static bool _initialized = false;
@@ -42,9 +42,6 @@ namespace Rhetos.Utilities
         private static string _nationalLanguage;
         private static string _connectionString;
         private static string _providerName;
-
-        private const string RhetosConnectionStringName = "RhetosConnectionString";
-        private const string ConnectionStringConfigurationKey = "ConnectionStrings:" + RhetosConnectionStringName;
 
         private static T CheckIfInitialized<T>(T value, string property)
         {
@@ -63,7 +60,7 @@ namespace Rhetos.Utilities
             SqlCommandTimeout = dbOptions.SqlCommandTimeout;
 
             
-            _connectionString = configuration.GetValue<string>(ConnectionStringConfigurationKey);
+            _connectionString = configuration.GetValue<string>(Utilities.ConnectionString.ConnectionStringConfigurationKey);
 
             var databaseSettings = configuration.GetOptions<DatabaseSettings>();
             _databaseLanguage = databaseSettings.DatabaseLanguage;

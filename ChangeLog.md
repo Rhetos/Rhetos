@@ -62,7 +62,8 @@ Changes in behavior:
     Use [AllClaimsForUsers](https://github.com/Rhetos/Rhetos/wiki/Basic-permissions#suppressing-permissions-in-a-development-environment) or AllClaimsForAnonymous instead.
 17. NLog is no longer enabled by default in application runtime.
     * To enable NLog for Rhetos components, in Program.CreateHostBuilder,
-      add `hostBuilder.UseNLog();`, and in Startup.ConfigureServices: `.AddHostLogging()` after AddRhetosHost.
+      add `hostBuilder.UseNLog();`, and in Startup.ConfigureServices add `.AddHostLogging()` after AddRhetosHost.
+      Move the NLog configuration from web.config to nlog.config (see [example](https://github.com/Rhetos/Bookstore/blob/master/src/Bookstore.Service/nlog.config)).
 18. Navigation properties in generated queryable classes can be set only during the initialization phase.
     That means that after the queryable object is constructed the navigation properties are read only.
     * For example, to fix the "Init-only property" error in the following C# code,
