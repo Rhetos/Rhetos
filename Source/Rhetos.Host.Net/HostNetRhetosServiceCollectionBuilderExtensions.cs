@@ -18,15 +18,15 @@
 */
 
 using Autofac;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
-using Rhetos;
 using Rhetos.Host.Net;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace Rhetos
 {
     public static class HostNetRhetosServiceCollectionBuilderExtensions
     {

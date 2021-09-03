@@ -17,12 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Microsoft.Extensions.DependencyInjection;
 using Rhetos.Host.AspNet;
 using Rhetos.Host.AspNet.Dashboard;
 using Rhetos.Host.AspNet.Dashboard.RhetosDashboardSnippets;
 using Rhetos.Utilities;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace Rhetos
 {
     /// <summary>
     /// Used for adding Rhetos-specific services to <see cref="IServiceCollection"/>.

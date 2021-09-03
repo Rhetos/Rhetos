@@ -17,12 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
-using Rhetos;
+using System;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace Rhetos
 {
     public static class RhetosServiceCollectionExtensions
     {
