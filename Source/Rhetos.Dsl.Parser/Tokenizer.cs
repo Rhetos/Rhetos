@@ -241,7 +241,13 @@ namespace Rhetos.Dsl
 
             end++; // Skip closing character.
 
-            string basicFilePath = script.Substring(begin + 1, end - begin - 2);
+            // User can use either Windows or Linux/MacOs path separator,
+            // so that we must convert to cross-platform path separator.
+            string basicFilePath = script
+                .Substring(begin + 1, end - begin - 2)
+                .Replace('\\', Path.DirectorySeparatorChar)
+                .Replace('/', Path.DirectorySeparatorChar);
+
             string dslScriptFolder = Path.GetDirectoryName(dslScript.Path);
             return LoadFile(Path.Combine(dslScriptFolder, basicFilePath), dslScript, begin, readAllTextfromFile);
         }

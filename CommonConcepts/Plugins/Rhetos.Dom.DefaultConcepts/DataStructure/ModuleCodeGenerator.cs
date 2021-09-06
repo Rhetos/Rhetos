@@ -22,6 +22,7 @@ using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
 using System.ComponentModel.Composition;
+using System.IO;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -71,7 +72,7 @@ namespace Common.Queryable
 
     {CommonQueryableMemebersTag.Evaluate(info)}{DomInitializationCodeGenerator.RestoreWarnings(_commonConceptsOptions)}
 }}
-", $"{GeneratedSourceDirectories.Model}\\{info.Name}{GeneratedSourceDirectories.Model}");
+", $"{Path.Combine(GeneratedSourceDirectories.Model.ToString(), info.Name + GeneratedSourceDirectories.Model)}");
 
             codeBuilder.InsertCodeToFile(
 $@"namespace {info.Name}._Helper
@@ -95,7 +96,7 @@ $@"namespace {info.Name}._Helper
     {HelperNamespaceMembersTag.Evaluate(info)}{DomInitializationCodeGenerator.RestoreWarnings(_commonConceptsOptions)}
 }}
 
-", $"{GeneratedSourceDirectories.Repositories}\\{info.Name}{GeneratedSourceDirectories.Repositories}");
+", $"{Path.Combine(GeneratedSourceDirectories.Repositories.ToString(), info.Name + GeneratedSourceDirectories.Repositories)}");
 
             codeBuilder.InsertCode(ModuleRepositoryInCommonRepositorySnippet(info), CommonDomRepositoryMembersTag);
         }
