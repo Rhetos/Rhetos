@@ -15,18 +15,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Rhetos.Deployment.Interfaces\Rhetos.Deployment.Interfaces.csproj">
-      <Project>{945537dc-4af7-4def-b73c-07f19229efe6}</Project>
-      <Name>Rhetos.Deployment.Interfaces</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rhetos.Logging.Interfaces\Rhetos.Logging.Interfaces.csproj">
-      <Project>{BB7E5668-1B43-4FCE-A832-444CC57FEE80}</Project>
-      <Name>Rhetos.Logging.Interfaces</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rhetos.Utilities\Rhetos.Utilities.csproj">
-      <Project>{71e63722-57bc-41df-9ff5-57ecc67e4bc1}</Project>
-      <Name>Rhetos.Utilities</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Deployment.Interfaces\Rhetos.Deployment.Interfaces.csproj" />
+    <ProjectReference Include="..\Rhetos.Logging.Interfaces\Rhetos.Logging.Interfaces.csproj" />
+    <ProjectReference Include="..\Rhetos.Utilities.Interfaces\Rhetos.Utilities.Interfaces.csproj" />
   </ItemGroup>
 
 </Project>

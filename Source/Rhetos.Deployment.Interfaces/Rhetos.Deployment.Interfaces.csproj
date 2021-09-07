@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Rhetos.Utilities\Rhetos.Utilities.csproj" />
+    <ProjectReference Include="..\Rhetos.Utilities.Interfaces\Rhetos.Utilities.Interfaces.csproj" />
     <ProjectReference Include="..\Rhetos.Logging.Interfaces\Rhetos.Logging.Interfaces.csproj" />
   </ItemGroup>
 

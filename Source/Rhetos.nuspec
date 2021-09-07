@@ -87,9 +87,9 @@
     <file src="Rhetos.Security.Interfaces\bin\Debug\net5.0\Rhetos.Security.Interfaces.dll" target="lib\net5.0" />
     <file src="Rhetos.Security.Interfaces\bin\Debug\net5.0\Rhetos.Security.Interfaces.pdb" target="lib\net5.0" />
     <file src="Rhetos.Security.Interfaces\bin\Debug\net5.0\Rhetos.Security.Interfaces.xml" target="lib\net5.0" />
-    <file src="Rhetos.Utilities\bin\Debug\netstandard2.0\Rhetos.Utilities.dll" target="lib\net5.0" />
-    <file src="Rhetos.Utilities\bin\Debug\netstandard2.0\Rhetos.Utilities.pdb" target="lib\net5.0" />
-    <file src="Rhetos.Utilities\bin\Debug\netstandard2.0\Rhetos.Utilities.xml" target="lib\net5.0" />
+    <file src="Rhetos.Utilities\bin\Debug\net5.0\Rhetos.Utilities.dll" target="lib\net5.0" />
+    <file src="Rhetos.Utilities\bin\Debug\net5.0\Rhetos.Utilities.pdb" target="lib\net5.0" />
+    <file src="Rhetos.Utilities\bin\Debug\net5.0\Rhetos.Utilities.xml" target="lib\net5.0" />
     <file src="Rhetos.Utilities.Interfaces\bin\Debug\netstandard2.0\Rhetos.Utilities.Interfaces.dll" target="lib\net5.0" />
     <file src="Rhetos.Utilities.Interfaces\bin\Debug\netstandard2.0\Rhetos.Utilities.Interfaces.pdb" target="lib\net5.0" />
     <file src="Rhetos.Utilities.Interfaces\bin\Debug\netstandard2.0\Rhetos.Utilities.Interfaces.xml" target="lib\net5.0" />
