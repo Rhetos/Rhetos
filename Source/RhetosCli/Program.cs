@@ -55,7 +55,7 @@ namespace Rhetos
             // and if the file does not exist it should try to read it from nlog.config,
             // but there is a bug in NLog which is causing first to try to read the nlog.config and then rhetos.exe.nlog configuration file.
             // As this is a breaking changes the fix will be released in version 5 of NLog so remove this code after upgrading to NLog 5.
-            NLog.LogManager.LogFactory.SetCandidateConfigFilePaths(new[] { Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "rhetos.exe.nlog") });
+            NLog.LogManager.LogFactory.SetCandidateConfigFilePaths(new[] { LoggingConfigurationPath });
 
             // "ConsoleLog" target by default logs min-level 'Info'. See the initial rules in 'rhetos.exe.nlog' file.
             // Diagnostic and trace options include additional loggers.
@@ -72,6 +72,8 @@ namespace Rhetos
 
             _logProvider = new NLogProvider();
         }
+
+        private static string LoggingConfigurationPath => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "rhetos.exe.nlog");
 
         enum VerbosityLevel
         {
@@ -225,8 +227,7 @@ namespace Rhetos
             Console.WriteLine($"{ex.GetType().Name}: {ExceptionsUtility.MessageForLog(ex)}");
             Console.WriteLine("=============================================");
             Console.WriteLine();
-            Console.WriteLine("See RhetosCli.log for more information on error. Enable TraceLog in rhetos.exe.nlog for even more details.");
-            Console.WriteLine($"Rhetos CLI location: {System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName}");
+            Console.WriteLine($"See RhetosCli.log for more information on error. Enable TraceLog in '{LoggingConfigurationPath}' for even more details.");
         }
 
         /// <summary>
