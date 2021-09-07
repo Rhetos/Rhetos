@@ -34,7 +34,7 @@ namespace Rhetos.Deployment
     public class DataMigrationScriptsGenerator : IGenerator
     {
         private const string DataMigrationSubfolder = "DataMigration";
-        private static string DataMigrationSubfolderPrefix => DataMigrationSubfolder + Path.DirectorySeparatorChar;
+        private static readonly string DataMigrationSubfolderPrefix = DataMigrationSubfolder + Path.DirectorySeparatorChar;
 
         private readonly InstalledPackages _installedPackages;
         private readonly FilesUtility _filesUtility;

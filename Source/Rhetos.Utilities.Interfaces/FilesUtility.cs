@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-/*
+﻿/*
     Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
@@ -22,6 +21,7 @@ using Rhetos.Logging;
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Rhetos.Utilities
@@ -29,6 +29,9 @@ namespace Rhetos.Utilities
     public class FilesUtility
     {
         private readonly ILogger _logger;
+        private static readonly StringComparison _pathComparisonType = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
 
         public FilesUtility(ILogProvider logProvider)
         {
@@ -210,7 +213,7 @@ namespace Rhetos.Utilities
 
             int common = 0;
             while (common < baseParts.Length && common < targetParts.Length
-                && string.Equals(baseParts[common], targetParts[common], StringComparison.OrdinalIgnoreCase))
+                && string.Equals(baseParts[common], targetParts[common], _pathComparisonType))
                 common++;
 
             if (common == 0)
@@ -244,24 +247,16 @@ namespace Rhetos.Utilities
 
         public static bool IsSameDirectory(string path1, string path2)
         {
-            StringComparison comparisonType = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) 
-                ? StringComparison.OrdinalIgnoreCase
-                : StringComparison.Ordinal;
-
             return string.Equals(
                 Path.GetFullPath(Path.Combine(path1, ".")),
                 Path.GetFullPath(Path.Combine(path2, ".")),
-                comparisonType);
+                _pathComparisonType);
         }
 
         public static bool IsInsideDirectory(string child, string parent)
         {
-            StringComparison comparisonType = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) 
-                ? StringComparison.OrdinalIgnoreCase
-                : StringComparison.Ordinal;
-
             return Path.GetFullPath(Path.Combine(child, "."))
-                .StartsWith(Path.GetFullPath(Path.Combine(parent, ".")), comparisonType);
+                .StartsWith(Path.GetFullPath(Path.Combine(parent, ".")), _pathComparisonType);
         }
     }
 }

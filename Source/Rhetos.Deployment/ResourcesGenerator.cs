@@ -68,8 +68,8 @@ namespace Rhetos.Deployment
             var _fileSyncer = new FileSyncer(_logProvider);
             _fileSyncer.AddDestinations(_rhetosBuildEnvironment.GeneratedAssetsFolder); // Even if there are no packages, the old folder content must be emptied.
 
-            const string ResourcesPathPrefix = @"Resources\";
-            const string HostApplicationResourcesPathPrefix = @"Resources\Rhetos\";
+            string ResourcesPathPrefix = "Resources" + Path.DirectorySeparatorChar;
+            string HostApplicationResourcesPathPrefix = ResourcesPathPrefix + "Rhetos" + Path.DirectorySeparatorChar;
 
             var resourceFiles = _installedPackages.Packages
                 .SelectMany(package => package.ContentFiles

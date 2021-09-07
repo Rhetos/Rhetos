@@ -47,7 +47,7 @@ namespace Rhetos.Utilities
 
         private class CopyFile { public string File; public string Target; }
 
-        private MultiDictionary<string, CopyFile> _filesByDestination = new MultiDictionary<string, CopyFile>();
+        private readonly MultiDictionary<string, CopyFile> _filesByDestination = new MultiDictionary<string, CopyFile>();
 
         public void AddFolderContent(string sourceFolder, string destinationFolder, bool recursive)
         {
@@ -60,8 +60,8 @@ namespace Rhetos.Utilities
         /// </summary>
         public void AddFolderContent(string sourceFolder, string destinationFolder, string destinationSubfolder, bool recursive)
         {
-            sourceFolder = Path.GetFullPath(sourceFolder).TrimEnd(new[] { '\\' });
-            destinationFolder = Path.GetFullPath(destinationFolder).TrimEnd(new[] { '\\' });
+            sourceFolder = Path.TrimEndingDirectorySeparator(Path.GetFullPath(sourceFolder));
+            destinationFolder = Path.TrimEndingDirectorySeparator(Path.GetFullPath(destinationFolder));
 
             string invalidFolder = _filesByDestination.Keys.FirstOrDefault(existingDestination => existingDestination != destinationFolder
                 && (existingDestination.StartsWith(destinationFolder) || destinationFolder.StartsWith(existingDestination)));
@@ -87,7 +87,7 @@ namespace Rhetos.Utilities
         /// <param name="destinationFile">If null, the original file name is used.</param>
         public void AddFile(string file, string destinationFolder, string destinationFile = null)
         {
-            destinationFolder = Path.GetFullPath(destinationFolder).TrimEnd(new[] { '\\' });
+            destinationFolder = Path.TrimEndingDirectorySeparator(Path.GetFullPath(destinationFolder));
             destinationFile = destinationFile ?? Path.GetFileName(file);
             destinationFile = Path.Combine(destinationFolder, destinationFile);
             destinationFile = Path.GetFullPath(destinationFile);
@@ -95,7 +95,6 @@ namespace Rhetos.Utilities
 
             _filesByDestination.Add(destinationFolder, new CopyFile { File = file, Target = destinationFile });
         }
-
 
         public void AddDestinations(params string[] destinationFolders)
         {

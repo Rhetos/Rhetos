@@ -41,7 +41,7 @@ namespace Rhetos.Dsl
         public IEnumerable<DslScript> DslScripts => _scripts.Value;
 
         const string DslScriptsSubfolder = "DslScripts";
-        static string DslScriptsSubfolderPrefix => DslScriptsSubfolder + Path.DirectorySeparatorChar;
+        private static readonly string DslScriptsSubfolderPrefix = DslScriptsSubfolder + Path.DirectorySeparatorChar;
 
         private List<DslScript> LoadScripts(InstalledPackages installedPackages)
         {

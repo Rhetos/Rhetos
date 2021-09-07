@@ -26,6 +26,7 @@ using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 
 namespace Rhetos
@@ -55,7 +56,7 @@ namespace Rhetos
         {
             var legacyLibraries = _installedPackages.Packages.SelectMany(
                     package => package.ContentFiles
-                        .Where(file => file.InPackagePath.StartsWith(@"Plugins\") && file.InPackagePath.EndsWith(".dll"))
+                        .Where(file => file.InPackagePath.StartsWith("Plugins" + Path.DirectorySeparatorChar) && file.InPackagePath.EndsWith(".dll"))
                         .Select(file => (Package: package, File: file)));
 
             if (legacyLibraries.Any())

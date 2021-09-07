@@ -1,5 +1,4 @@
-﻿using System.IO;
-/*
+﻿/*
     Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
@@ -22,6 +21,7 @@ using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Extensibility;
 using System.ComponentModel.Composition;
+using System.IO;
 
 namespace Rhetos.Dom.DefaultConcepts
 {

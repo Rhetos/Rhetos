@@ -53,12 +53,12 @@ namespace Rhetos.Deployment
         /// </summary>
         private string OrderWithinPackage
         {
-            get { return _orderWithinPackage ?? (_orderWithinPackage = ComputeOrderWithinPackage(Path)); }
+            get { return _orderWithinPackage ??= ComputeOrderWithinPackage(Path); }
         }
 
         private static string ComputeOrderWithinPackage(string path)
         {
-            return CsUtility.GetNaturalSortString(path).Replace(@"\", @" \").ToLower();
+            return CsUtility.GetNaturalSortString(path).Replace(@"\", @" \").Replace(@"/", @" /").ToLower();
         }
 
         /// <summary>
