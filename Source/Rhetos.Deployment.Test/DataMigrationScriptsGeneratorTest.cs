@@ -128,7 +128,11 @@ namespace Rhetos.Deployment.Test
 
         private string GenerateDataMigrationScriptsAssetsFile(string[] files)
         {
-            var contentFiles = files.Select(file => new ContentFile { PhysicalPath = $@"TestScripts\{file}", InPackagePath = $@"DataMigration\{file}" }).ToList();
+            var contentFiles = files.Select(file => new ContentFile
+            {
+                PhysicalPath = Path.Combine("TestScripts", file),
+                InPackagePath = Path.Combine("DataMigration", file)
+            }).ToList();
             var installedPackages = new InstalledPackages
             {
                 Packages = new List<InstalledPackage>
