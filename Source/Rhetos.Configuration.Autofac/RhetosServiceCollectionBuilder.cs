@@ -26,6 +26,10 @@ namespace Rhetos
     /// Allows configuring host application's services (with <see cref="Services"/>)
     /// and Rhetos dependency injection components and configuration (with <see cref="ConfigureRhetosHost"/>).
     /// </summary>
+    /// <remarks>
+    /// This is just a helper for accessing <see cref="IServiceCollection"/>, that promotes more readable code
+    /// for configuring Rhetos-related services by bundling Rhetos plugins configuration in a single block of code.
+    /// </remarks>
     public class RhetosServiceCollectionBuilder
     {
         public IServiceCollection Services { get; }
@@ -35,6 +39,9 @@ namespace Rhetos
             Services = serviceCollection;
         }
 
+        /// <summary>
+        /// Configures Rhetos dependency injection container and Rhetos configuration settings.
+        /// </summary>
         public RhetosServiceCollectionBuilder ConfigureRhetosHost(Action<IServiceProvider, IRhetosHostBuilder> configureRhetosHost)
         {
             Services.Configure<RhetosHostBuilderOptions>(o => o.ConfigureActions.Add(configureRhetosHost));

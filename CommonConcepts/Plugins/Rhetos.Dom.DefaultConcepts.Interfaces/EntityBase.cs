@@ -26,6 +26,10 @@ using System.Threading.Tasks;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
+    /// <summary>
+    /// Base class for any data structure that has identifiable items.
+    /// It provides <see cref="Guid"/> ID property, and overrides Equals methods for ID comparison.
+    /// </summary>
     public abstract class EntityBase<T> : IEntity, IEquatable<T> where T : class, IEntity
     {
         public Guid ID { get; set; }

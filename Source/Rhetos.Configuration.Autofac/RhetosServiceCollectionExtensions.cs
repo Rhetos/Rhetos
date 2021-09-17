@@ -27,9 +27,15 @@ namespace Rhetos
     public static class RhetosServiceCollectionExtensions
     {
         /// <summary>
-        /// Adds services required to run <see cref="RhetosHost"/> to the specified <see cref="IServiceCollection"/>,
-        /// and allows scoped Rhetos components to be resolved within scope of HTTP request as <see cref="IRhetosComponent{T}"/>.
+        /// Adds Rhetos components to the host application.
         /// </summary>
+        /// <remarks>
+        /// The following public Rhetos components are registered to <see cref="IServiceCollection"/>:
+        ///   <list type="bullet">
+        ///     <item><description><see cref="IRhetosComponent{T}"/>, allows direct access to Rhetos components from host application's services.</description></item>
+        ///     <item><description><see cref="RhetosHost"/>, for internal access to IoC container.</description></item>
+        ///   </list>
+        /// </remarks>
         /// <returns>
         /// A <see cref="RhetosServiceCollectionBuilder"/> that can be used to add additional Rhetos-specific services to <see cref="IServiceCollection"/>.
         /// </returns>

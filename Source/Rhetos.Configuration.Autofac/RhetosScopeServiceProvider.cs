@@ -23,6 +23,9 @@ using System;
 
 namespace Rhetos
 {
+    /// <summary>
+    /// Internal class that creates Rhetos unit-of-work scope for each host application's DI scope.
+    /// </summary>
     internal sealed class RhetosScopeServiceProvider : IDisposable
     {
         private readonly UnitOfWorkScope unitOfWorkScope;

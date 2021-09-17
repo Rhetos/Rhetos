@@ -27,7 +27,7 @@ using System.IO;
 namespace Rhetos
 {
     /// <summary>
-    /// <see cref="RhetosHost"/> is a helper class for accessing the Rhetos application's components (DI container).
+    /// <see cref="RhetosHost"/> encapsulates the Rhetos application's components (DI container).
     /// This class is thread-safe: a single instance can be reused between threads to reduce the initialization time
     /// (Entity Framework startup and plugin discovery, e.g.).
     /// For each thread or unit of work, call <see cref="CreateScope(Action{ContainerBuilder})"/> to create
@@ -36,6 +36,10 @@ namespace Rhetos
     /// Each scope uses its own database transaction that is either committed or rolled back
     /// when the instance is disposed, making data changes atomic.
     /// </summary>
+    /// <remarks>
+    /// When accessing Rhetos components from host application's services, use <see cref="IRhetosComponent{T}"/>
+    /// to get a Rhetos component in a constructor parameter, instead of using <see cref="RhetosHost"/> directly.
+    /// </remarks>
     public class RhetosHost : IDisposable
     {
         private readonly IContainer _container;

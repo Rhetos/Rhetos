@@ -20,8 +20,11 @@
 namespace Rhetos
 {
     /// <summary>
-    /// It is used to resolve Rhetos components inside a scope.
+    /// It is used to resolve Rhetos components inside a scope (a web request, e.g.).
     /// </summary>
+    /// <remarks>
+    /// To resolve a singleton Rhetos component from outside of a scope in host application, use RhetosHost class.
+    /// </remarks>
     public interface IRhetosComponent<out T>
     {
         T Value { get; }
