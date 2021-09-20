@@ -18,6 +18,7 @@
 */
 
 using System.Collections.Generic;
+using System.IO;
 
 namespace Rhetos.Deployment
 {
@@ -27,5 +28,17 @@ namespace Rhetos.Deployment
         /// The scripts are sorted by the intended execution order.
         /// </summary>
         public List<DataMigrationScript> Scripts { get; set; }
+
+        /// <summary>
+        /// Replace "/" or "\" in script paths to Path.DirectorySeparatorChar, to locate correctly script 
+        /// location in cross-platform environment. 
+        /// </summary>
+        public void ConvertToCrossPlatformPaths() 
+        {
+            foreach (var file in Scripts)
+                file.Path = file.Path
+                    .Replace('/', Path.DirectorySeparatorChar)
+                    .Replace('\\', Path.DirectorySeparatorChar);
+        }
     }
 }

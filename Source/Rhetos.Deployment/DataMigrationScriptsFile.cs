@@ -45,10 +45,16 @@ namespace Rhetos.Deployment
         public DataMigrationScripts Load()
         {
             var stopwatch = Stopwatch.StartNew();
+
             if (!File.Exists(_dataMigrationScriptsFilePath))
                 throw new FrameworkException($@"The file '{_dataMigrationScriptsFilePath}' with data-migration scripts is missing. Please check that the build has completed successfully before updating the database.");
+
             var dataMigrationScripts = JsonUtility.DeserializeFromFile<DataMigrationScripts>(_dataMigrationScriptsFilePath);
+
+            dataMigrationScripts.ConvertToCrossPlatformPaths();
+
             _performanceLogger.Write(stopwatch, $"Loaded {dataMigrationScripts.Scripts.Count} scripts from generated file.");
+
             return dataMigrationScripts;
         }
 

@@ -44,10 +44,13 @@ namespace Rhetos.Deployment
             foreach (var package in installedPackages.Packages)
                 _logger.Trace(() => package.Report());
 
-            // Removing the folder path because it is a build feature and any plugin that is trying to use it should get an exception.
-            // Package content files are not available at runtime, they are considered as a part of local cache on build machine.
-            foreach (var package in installedPackages.Packages)
+            foreach (var package in installedPackages.Packages) {
+                // Removing the folder path because it is a build feature and any plugin that is trying to use it should get an exception.
+                // Package content files are not available at runtime, they are considered as a part of local cache on build machine.
                 package.RemoveBuildTimePaths();
+
+                package.ConvertToCrossPlatformPaths();
+            }
 
             return installedPackages;
         }

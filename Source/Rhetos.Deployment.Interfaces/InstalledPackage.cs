@@ -1,4 +1,5 @@
-﻿/*
+﻿using System.IO;
+/*
     Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
@@ -73,6 +74,18 @@ namespace Rhetos.Deployment
             Folder = null;
             foreach (var file in ContentFiles)
                 file.PhysicalPath = null;
+        }
+
+        /// <summary>
+        /// Replace "/" or "\" in package paths to Path.DirectorySeparatorChar, to locate correctly package
+        /// location in cross-platform environment. 
+        /// </summary>
+        public void ConvertToCrossPlatformPaths() 
+        {
+            foreach (var file in ContentFiles)
+                file.InPackagePath = file.InPackagePath
+                    .Replace('/', Path.DirectorySeparatorChar)
+                    .Replace('\\', Path.DirectorySeparatorChar);
         }
     }
 }
