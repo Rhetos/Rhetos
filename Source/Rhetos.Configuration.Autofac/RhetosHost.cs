@@ -49,6 +49,7 @@ namespace Rhetos
         public RhetosHost(IContainer container)
         {
             _container = container;
+            _container.ResolveOptional<UnitOfWorkFactory>()?.Initialize(this);
         }
 
         /// <summary>
@@ -135,8 +136,10 @@ namespace Rhetos
 
             var hostBuilder = HostResolver.FindBuilder(rhetosHostAssemblyPath);
             hostBuilder.UseContentRoot(Path.GetDirectoryName(rhetosHostAssemblyPath));
-            hostBuilder.ConfigureServices((hostContext, services) => {
-                services.AddRhetosHost((serviceProvider, rhetosHostBuilder) => {
+            hostBuilder.ConfigureServices((hostContext, services) =>
+            {
+                services.AddRhetosHost((serviceProvider, rhetosHostBuilder) =>
+                {
                     // Overriding Rhetos host application's location settings, because the default values might be incorrect when the host assembly is executed
                     // from another process with FindBuilder. For example, it could have different AppDomain.BaseDirectory, or the assembly copied in shadow directory.
                     rhetosHostBuilder.UseRootFolder(Path.GetDirectoryName(rhetosHostAssemblyPath)); // Use host assembly directory as root for all RhetosHostBuilder operations.
