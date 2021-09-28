@@ -32,9 +32,9 @@ namespace Rhetos.Dsl
     {
         private readonly IDslScriptsProvider _dslScriptsProvider;
         private readonly FilesUtility _filesUtility;
-        private readonly DslSyntax _syntax;
+        private readonly Lazy<DslSyntax> _syntax;
 
-        public Tokenizer(IDslScriptsProvider dslScriptsProvider, FilesUtility filesUtility, DslSyntax syntax)
+        public Tokenizer(IDslScriptsProvider dslScriptsProvider, FilesUtility filesUtility, Lazy<DslSyntax> syntax)
         {
             _dslScriptsProvider = dslScriptsProvider;
             _filesUtility = filesUtility;
@@ -48,7 +48,7 @@ namespace Rhetos.Dsl
 
             try
             {
-                var tokenizerInternals = new TokenizerInternals(_syntax);
+                var tokenizerInternals = new TokenizerInternals(_syntax.Value);
 
                 foreach (var dslScript in _dslScriptsProvider.DslScripts)
                 {

@@ -42,7 +42,7 @@ namespace Rhetos.Dsl.Test
         public TestDslParser(string dsl, DslSyntax syntax)
             : base (
                 new TestTokenizer(dsl),
-                syntax,
+                new Lazy<DslSyntax>(() => syntax),
                 new ConsoleLogProvider())
         {
             _syntax = syntax;

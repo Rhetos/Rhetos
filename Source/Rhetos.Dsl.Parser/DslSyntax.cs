@@ -22,6 +22,10 @@ using System.Collections.Generic;
 
 namespace Rhetos.Dsl
 {
+    /// <summary>
+    /// Complete specification of Rhetos DSL syntax for the current Rhetos app,
+    /// including <strong>custom DSL extension</strong> for the current application's plugins.
+    /// </summary>
     public class DslSyntax
     {
         /// <summary>

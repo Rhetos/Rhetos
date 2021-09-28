@@ -51,7 +51,7 @@ namespace Rhetos.Dsl
             {
                 var alternativeInitializationConcept = instance != null
                     ? (IAlternativeInitializationConcept)instance
-                    : (IAlternativeInitializationConcept)Activator.CreateInstance(conceptInfoType);
+                    : (IAlternativeInitializationConcept)CreateInstanceEx(conceptInfoType);
                 nonParsableMembers = new HashSet<string>(alternativeInitializationConcept.DeclareNonparsableProperties());
             }
 
@@ -104,6 +104,18 @@ namespace Rhetos.Dsl
 
             _cache.Add(conceptInfoType, conceptMembers);
             return conceptMembers;
+        }
+
+        private static object CreateInstanceEx(Type conceptInfoType)
+        {
+            try
+            {
+                return Activator.CreateInstance(conceptInfoType);
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException($"Cannot create instance of {conceptInfoType}.", e);
+            }
         }
     }
 }

@@ -29,7 +29,7 @@ namespace Rhetos.Dsl.Test
             : base(
                   new MockDslScriptsProvider(dslScripts),
                   new FilesUtility(new ConsoleLogProvider()),
-                  new DslSyntaxFromPlugins(Array.Empty<IConceptInfo>(), new BuildOptions(), new DatabaseSettings()).CreateDslSyntax())
+                  new Lazy<DslSyntax>(() => new DslSyntaxFromPlugins(Array.Empty<IConceptInfo>(), new BuildOptions(), new DatabaseSettings()).CreateDslSyntax()))
         {
         }
 

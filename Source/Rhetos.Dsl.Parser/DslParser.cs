@@ -33,12 +33,12 @@ namespace Rhetos.Dsl
     public class DslParser : IDslParser
     {
         private readonly ITokenizer _tokenizer;
-        private readonly DslSyntax _syntax;
+        private readonly Lazy<DslSyntax> _syntax;
         private readonly ILogger _keywordsLogger;
         private readonly ILogger _performanceLogger;
         private readonly ILogger _logger;
 
-        public DslParser(ITokenizer tokenizer, DslSyntax dslSyntax, ILogProvider logProvider)
+        public DslParser(ITokenizer tokenizer, Lazy<DslSyntax> dslSyntax, ILogProvider logProvider)
         {
             _tokenizer = tokenizer;
             _syntax = dslSyntax;
@@ -59,7 +59,7 @@ namespace Rhetos.Dsl
 
         public IEnumerable<ConceptSyntaxNode> GetConcepts()
         {
-            var parsers = CreateGenericParsers(_syntax.ConceptTypes);
+            var parsers = CreateGenericParsers(_syntax.Value.ConceptTypes);
             var parsedConcepts = ExtractConcepts(parsers);
             return parsedConcepts;
         }
@@ -129,12 +129,12 @@ namespace Rhetos.Dsl
 
             foreach (string warning in warnings)
             {
-                if (_syntax.ExcessDotInKey == ExcessDotInKey.Ignore)
+                if (_syntax.Value.ExcessDotInKey == ExcessDotInKey.Ignore)
                     _logger.Trace(warning);
                 else
                     _logger.Warning(warning);
             }
-            if (_syntax.ExcessDotInKey == ExcessDotInKey.Error && warnings.Any())
+            if (_syntax.Value.ExcessDotInKey == ExcessDotInKey.Error && warnings.Any())
                 throw new DslSyntaxException(warnings.First());
 
             return newConcepts;
