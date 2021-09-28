@@ -481,6 +481,7 @@ $@"namespace Common
         private string GetPersistenceStorageMapperSnippet() =>
 $@"namespace Common
 {{
+    {DisableWarnings(_commonConceptsOptions)}
     using System;
     using Rhetos.Dom.DefaultConcepts;
     using Rhetos.Utilities;
