@@ -17,30 +17,29 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Oracle.ManagedDataAccess.Client;
+using Rhetos.Logging;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.Common;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using Rhetos.Logging;
-using Oracle.ManagedDataAccess.Client;
-using Rhetos.Utilities;
 
 namespace Rhetos.Persistence
 {
     public class OracleSqlExecuter : BaseSqlExecuter, ISqlExecuter
     {
         private readonly string _connectionString;
-        private readonly IUserInfo _userInfo;
-        private readonly ILogger _logger;
 
-        public OracleSqlExecuter(ConnectionString connectionString, ILogProvider logProvider, IUserInfo userInfo, IPersistenceTransaction persistenceTransaction) : base(persistenceTransaction)
+        public OracleSqlExecuter(ConnectionString connectionString, 
+            ILogProvider logProvider, 
+            IUserInfo userInfo, 
+            IPersistenceTransaction persistenceTransaction) 
+            : base(logProvider, userInfo, persistenceTransaction)
         {
             _connectionString = connectionString;
-            _userInfo = userInfo;
-            _logger = logProvider.GetLogger("OracleSqlExecuter");
         }
 
         public void ExecuteSql(IEnumerable<string> commands, bool useTransaction)
@@ -76,10 +75,7 @@ namespace Rhetos.Persistence
                 com =>
                 {
                     com.CommandText = command;
-                    var dr = com.ExecuteReader();
-                    while (dr.Read())
-                        action(dr);
-                    dr.Close();
+                    ExecuteReader(com, action);
                 });
         }
 
