@@ -247,6 +247,15 @@ namespace Rhetos
 
         private int InvokeDbUpdateAsExternalProcess(string rhetosHostDllPath, string[] baseArgs)
         {
+            // Since we will set the current directory to be the directory of Rhetos Host bellow,
+            // we need to change the "startup-assembly" argument to the absolute path.
+            var clonedBaseArgs = baseArgs.Select(arg => arg).ToArray();
+            clonedBaseArgs[1] = Path.GetFullPath(baseArgs[1]);
+
+            // Set the current directory to be the directory of Rhetos Host.
+            // It will ensure all the configuration files are loaded from the correct directory.
+            Directory.SetCurrentDirectory(Path.GetDirectoryName(rhetosHostDllPath));
+
             var logger = _logProvider.GetLogger("Rhetos DbUpdate base");
 
             var newArgs = new List<string>();
@@ -274,7 +283,7 @@ namespace Rhetos
             }
 
             newArgs.Add(GetType().Assembly.Location);
-            newArgs.AddRange(baseArgs);
+            newArgs.AddRange(clonedBaseArgs);
             newArgs.Add(ExecuteCommandInCurrentProcessOptionName);
 
             logger.Trace(() => "dotnet args: " + string.Join(", ", newArgs.Select(arg => "\"" + (arg ?? "null") + "\"")));
