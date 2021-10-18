@@ -22,7 +22,7 @@
       <dependency id="Newtonsoft.Json" version="13.0.1" />
       <dependency id="NLog" version="4.7.11" />
       <dependency id="System.ComponentModel.Composition" version="5.0.0" /> <!-- Rhetos plugins use MEF. -->
-      <dependency id="System.CommandLine" version="2.0.0-beta1.20071.2" /> <!-- For RhetosCli. -->
+      <dependency id="System.CommandLine" version="2.0.0-beta1.21308.1" /> <!-- For RhetosCli. -->
       <dependency id="System.Configuration.ConfigurationManager" version="5.0.0" />
       <dependency id="System.Data.SqlClient" version="4.8.3" />
       <dependency id="System.Text.Encoding.CodePages" version="5.0.0" />
