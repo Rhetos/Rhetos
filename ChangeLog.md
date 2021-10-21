@@ -75,6 +75,7 @@ Changes in behavior:
       see [Understanding the generated object model](https://github.com/Rhetos/Rhetos/wiki/Using-the-Domain-Object-Model#understanding-the-generated-object-model).
       For example, before modifying the data, read the records with Load() instead of Query(),
       or call ToSimple() on a query before ToList().
+19. Updated dependencies to a newer version: Autofac v6.3.0, Newtonsoft.Json v13.0.1, NLog v4.7.11.
 
 Changes in Rhetos libraries API:
 
