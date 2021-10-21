@@ -56,8 +56,8 @@ Changes in behavior:
 14. Upgraded Autofac from version 4.9.4 to 6.2.0
 15. **DateTime** property concept now generates *datetime2* database column type by default
     instead of obsolete *datetime* column type (issue #101).
-    Legacy *datetime* type can be enabled by setting `CommonConcepts:UseLegacyMsSqlDateTime` option to `true` in `rhetos-build.settings.json` file.
-    See [Migrating an existing application from datetime to datetime2](https://github.com/Rhetos/Rhetos/wiki/Migrating-from-DateTime-to-DateTime2).
+    * Legacy *datetime* type can be enabled by setting `CommonConcepts:UseLegacyMsSqlDateTime` option to `true` in `rhetos-build.settings.json` file.
+      See [Migrating an existing application from datetime to datetime2](https://github.com/Rhetos/Rhetos/wiki/Migrating-from-DateTime-to-DateTime2).
 16. Removed BuiltinAdminOverride configuration option, that allowed testing without configured authentication in development environment.
     Use [AllClaimsForUsers](https://github.com/Rhetos/Rhetos/wiki/Basic-permissions#suppressing-permissions-in-a-development-environment) or AllClaimsForAnonymous instead.
 17. NLog is no longer enabled by default in application runtime.
