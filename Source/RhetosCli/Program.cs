@@ -90,13 +90,13 @@ namespace Rhetos
         public static int Run(string[] args)
         {
             var rootCommand = new RootCommand();
-            rootCommand.Add(new Option<VerbosityLevel>("--verbosity", VerbosityLevel.Normal, "Output verbosity level. Allowed values are normal and diagnostic."));
-            rootCommand.Add(new Option<string[]>("--trace", Array.Empty<string>(), "Output additional trace loggers specified by name."));
+            rootCommand.Add(new Option<VerbosityLevel>("--verbosity", () => VerbosityLevel.Normal, "Output verbosity level. Allowed values are normal and diagnostic."));
+            rootCommand.Add(new Option<string[]>("--trace", () => Array.Empty<string>(), "Output additional trace loggers specified by name."));
 
             var buildCommand = new Command("build", "Generates C# code, database model file and other project assets.");
             // CurrentDirectory by default, because rhetos.exe on *build* is expected to be located in NuGet package cache.
             buildCommand.Add(new Argument<DirectoryInfo>("project-root-folder", () => new DirectoryInfo(Environment.CurrentDirectory)) { Description = "Project folder where csproj file is located. If not specified, current working directory is used by default." });
-            buildCommand.Add(new Option<bool>("--msbuild-format", false, "Adjust error output format for MSBuild integration."));
+            buildCommand.Add(new Option<bool>("--msbuild-format", () => false, "Adjust error output format for MSBuild integration."));
             buildCommand.Handler = CommandHandler.Create((DirectoryInfo projectRootFolder, bool msbuildFormat, VerbosityLevel verbosity, string[] trace) =>
             {
                 var program = new Program(verbosity, trace);

@@ -13,8 +13,8 @@
     <tags>Rhetos plugin</tags>
     <dependencies>
       <dependency id="Rhetos" version="[5.0.0-dev,5.1.0)" />
-      <dependency id="System.Runtime.Caching" version="4.7.0" />
-      <dependency id="Microsoft.CodeAnalysis.CSharp" version="3.7.0" />
+      <dependency id="System.Runtime.Caching" version="5.0.0" />
+      <dependency id="Microsoft.CodeAnalysis.CSharp" version="3.11.0" />
     </dependencies>
   </metadata>
   <files>

@@ -11,7 +11,7 @@
     <copyright>Copyright Omega software 2013</copyright>
     <tags>Rhetos</tags>
     <dependencies>
-      <dependency id="Autofac" version="6.2.0" />
+      <dependency id="Autofac" version="6.3.0" />
       <dependency id="EntityFramework" version="6.4.4" />
       <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="5.0.0" />
       <dependency id="Microsoft.Extensions.Hosting" version="5.0.0" />
@@ -19,14 +19,14 @@
       <dependency id="Microsoft.Extensions.Logging" version="5.0.0" />
       <dependency id="Microsoft.Extensions.Logging.Console" version="5.0.0" />
       <dependency id="Microsoft.Extensions.Options" version="5.0.0" />
-      <dependency id="Newtonsoft.Json" version="12.0.2" />
-      <dependency id="NLog" version="4.6.7" />
-      <dependency id="System.ComponentModel.Composition" version="4.7.0" /> <!-- Rhetos plugins use MEF. -->
-      <dependency id="System.CommandLine" version="2.0.0-beta1.20071.2" /> <!-- For RhetosCli. -->
-      <dependency id="System.Configuration.ConfigurationManager" version="4.7.0" />
-      <dependency id="System.Data.SqlClient" version="4.8.1" />
+      <dependency id="Newtonsoft.Json" version="13.0.1" />
+      <dependency id="NLog" version="4.7.11" />
+      <dependency id="System.ComponentModel.Composition" version="5.0.0" /> <!-- Rhetos plugins use MEF. -->
+      <dependency id="System.CommandLine" version="2.0.0-beta1.21308.1" /> <!-- For RhetosCli. -->
+      <dependency id="System.Configuration.ConfigurationManager" version="5.0.0" />
+      <dependency id="System.Data.SqlClient" version="4.8.3" />
       <dependency id="System.Text.Encoding.CodePages" version="5.0.0" />
-      <dependency id="Oracle.ManagedDataAccess.Core" version="2.19.91" />
+      <dependency id="Oracle.ManagedDataAccess.Core" version="3.21.3" />
     </dependencies>
   </metadata>
   <files>
