@@ -17,21 +17,39 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Logging;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Rhetos.Persistence
 {
+    /// <summary>
+    /// Contains some default implementations for <see cref="Rhetos.Utilities.ISqlExecuter" />.
+    /// Consumer should use it as a mixin class, without having to reimplement the default methods.
+    /// Also, it provides some cross-cutting concern utility methods, which are database provider agnostic.
+    /// </summary>
     public class BaseSqlExecuter
     {
         protected readonly IPersistenceTransaction _persistenceTransaction;
+        protected readonly IUserInfo _userInfo;
+        protected readonly ILogger _logger;
+        protected readonly ILogger _performanceLogger;
 
-        public BaseSqlExecuter(IPersistenceTransaction persistenceTransaction)
+        public BaseSqlExecuter(ILogProvider logProvider, 
+            IUserInfo userInfo,
+            IPersistenceTransaction persistenceTransaction)
         {
+            _logger = logProvider.GetLogger(GetType().Name);
+            _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
+            _userInfo = userInfo;
             _persistenceTransaction = persistenceTransaction;
         }
 
@@ -97,6 +115,49 @@ namespace Rhetos.Persistence
             }
 
             command.CommandText = string.Format(sql, substitutions.ToArray());
+        }
+
+        protected void LogPerformanceIssue(Stopwatch sw, string sql)
+        {
+            if (sw.Elapsed >= LoggerHelper.SlowEvent) // Avoid flooding the performance trace log.
+                _performanceLogger.Write(sw, () => sql.Limit(50000, true));
+            else
+                sw.Restart(); // _performanceLogger.Write would restart the stopwatch.
+        }
+
+        protected void ExecuteReader(DbCommand sqlCommand, Action<DbDataReader> action)
+        {
+            var sw = Stopwatch.StartNew();
+            try
+            {
+                var dataReader = sqlCommand.ExecuteReader();
+                while (!dataReader.IsClosed && dataReader.Read())
+                    action(dataReader);
+                dataReader.Close();
+            }
+            finally
+            {
+                LogPerformanceIssue(sw, sqlCommand.CommandText);
+            }
+        }
+
+        protected static string ReportSqlScripts(IEnumerable<string> commands, int maxLength)
+        {
+            var report = new StringBuilder();
+            report.Append($"Executing {commands.Count()} scripts:");
+
+            foreach (var sql in commands)
+            {
+                report.Append("\r\n");
+                report.Append(sql.Limit(maxLength, true));
+                if (report.Length > maxLength)
+                {
+                    report.Append("\r\n...");
+                    break;
+                }
+            }
+
+            return report.ToString();
         }
     }
 }

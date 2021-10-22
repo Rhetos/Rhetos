@@ -32,9 +32,6 @@ namespace Rhetos.Persistence
     public class MsSqlExecuter : BaseSqlExecuter, ISqlExecuter
     {
         private readonly string _connectionString;
-        private readonly IUserInfo _userInfo;
-        private readonly ILogger _logger;
-        private readonly ILogger _performanceLogger;
 
         /// <summary>
         /// This constructor is typically used in deployment time, when shared persistence transaction does not exist.
@@ -52,12 +49,13 @@ namespace Rhetos.Persistence
         /// at the end of the lifetime scope (for example, at the end of the web request).
         /// The exception here is ExecuteSql command called with useTransaction=false, which is not recommended at standard application runtime.
         /// </summary>
-        public MsSqlExecuter(ConnectionString connectionString, ILogProvider logProvider, IUserInfo userInfo, IPersistenceTransaction persistenceTransaction) : base(persistenceTransaction)
+        public MsSqlExecuter(ConnectionString connectionString, 
+            ILogProvider logProvider, 
+            IUserInfo userInfo, 
+            IPersistenceTransaction persistenceTransaction) 
+            : base(logProvider, userInfo, persistenceTransaction)
         {
             _connectionString = connectionString;
-            _userInfo = userInfo;
-            _logger = logProvider.GetLogger("MsSqlExecuter");
-            _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
         }
 
         public void ExecuteSql(IEnumerable<string> commands, bool useTransaction)
@@ -123,25 +121,6 @@ namespace Rhetos.Persistence
             }
         }
 
-        private static string ReportSqlScripts(IEnumerable<string> commands, int maxLength)
-        {
-            var report = new StringBuilder();
-            report.Append($"Executing {commands.Count()} scripts:");
-
-            foreach (var sql in commands)
-            {
-                report.Append("\r\n");
-                report.Append(sql.Limit(maxLength, true));
-                if (report.Length > maxLength)
-                {
-                    report.Append("\r\n...");
-                    break;
-                }
-            }
-
-            return report.ToString();
-        }
-
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]
         public void ExecuteReader(string commandText, Action<DbDataReader> action)
         {
@@ -150,19 +129,8 @@ namespace Rhetos.Persistence
             SafeExecuteCommand(
                 sqlCommand =>
                 {
-                    var sw = Stopwatch.StartNew();
-                    try
-                    {
-                        sqlCommand.CommandText = commandText;
-                        var dataReader = sqlCommand.ExecuteReader();
-                        while (!dataReader.IsClosed && dataReader.Read())
-                            action(dataReader);
-                        dataReader.Close();
-                    }
-                    finally
-                    {
-                        LogPerformanceIssue(sw, commandText);
-                    }
+                    sqlCommand.CommandText = commandText;
+                    ExecuteReader(sqlCommand, action);
                 },
                 _persistenceTransaction != null);
         }
@@ -236,14 +204,6 @@ namespace Rhetos.Persistence
                 return " in '" + CsUtility.FirstLine(command.CommandText).Substring(namePrefix.Length).Limit(1000, "...") + "'";
             else
                 return "";
-        }
-
-        private void LogPerformanceIssue(Stopwatch sw, string sql)
-        {
-            if (sw.Elapsed >= LoggerHelper.SlowEvent) // Avoid flooding the performance trace log.
-                _performanceLogger.Write(sw, () => sql.Limit(50000, true));
-            else
-                sw.Restart(); // _performanceLogger.Write would restart the stopwatch.
         }
 
         private void SetContextInfo(DbConnection connection, DbTransaction transaction)
