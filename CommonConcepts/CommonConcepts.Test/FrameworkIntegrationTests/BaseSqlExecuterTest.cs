@@ -20,10 +20,11 @@
 using CommonConcepts.Test;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Logging;
 using Rhetos.TestCommon;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 
@@ -40,7 +41,6 @@ namespace Rhetos.Persistence.Test
         {
             using (var scope = TestScope.Create())
             {
-                var persistenceTransaction = scope.Resolve<IPersistenceTransaction>();
                 var executionContext = scope.Resolve<Common.ExecutionContext>();
 
                 var principalNamePrefix = "BaseExecuter_";
@@ -49,7 +49,7 @@ namespace Rhetos.Persistence.Test
                 var principal2 = new Common.Principal { ID = Guid.NewGuid(), Name = principalNamePrefix + Guid.NewGuid().ToString() + principalNameSuffix };
                 executionContext.Repository.Common.Principal.Insert(principal1, principal2);
 
-                var baseSqlExecuter = new BaseSqlExecuter(persistenceTransaction);
+                var baseSqlExecuter = NewBaseSqlExecuter(scope);
 
                 var results = new List<Common.Principal>();
                 baseSqlExecuter.ExecuteReaderRaw("SELECT ID, Name FROM Common.Principal WHERE Name LIKE {0}+'%' AND Name LIKE '%'+@suffix",
@@ -60,19 +60,26 @@ namespace Rhetos.Persistence.Test
             }
         }
 
+        private static BaseSqlExecuter NewBaseSqlExecuter(UnitOfWorkScope scope)
+        {
+            var logProvider = scope.Resolve<ILogProvider>();
+            var userInfo = scope.Resolve<IUserInfo>();
+            var persistenceTransaction = scope.Resolve<IPersistenceTransaction>();
+            return new BaseSqlExecuter(logProvider, userInfo, persistenceTransaction);
+        }
+
         [TestMethod]
         public void ExecuteSqlTest()
         {
             using (var scope = TestScope.Create())
             {
-                var persistenceTransaction = scope.Resolve<IPersistenceTransaction>();
                 var executionContext = scope.Resolve<Common.ExecutionContext>();
 
                 var principalNamePrefix = "BaseExecuter_";
                 var principal1 = new Common.Principal { ID = Guid.NewGuid(), Name = principalNamePrefix + Guid.NewGuid().ToString() };
                 var principal2 = new Common.Principal { ID = Guid.NewGuid(), Name = principalNamePrefix + Guid.NewGuid().ToString() };
 
-                var baseSqlExecuter = new BaseSqlExecuter(persistenceTransaction);
+                var baseSqlExecuter = NewBaseSqlExecuter(scope);
 
                 baseSqlExecuter.ExecuteSqlRaw(@"
                         INSERT INTO Common.Principal (ID, Name) VALUES({0}, {1});
@@ -91,11 +98,10 @@ namespace Rhetos.Persistence.Test
         {
             using (var scope = TestScope.Create())
             {
-                var persistenceTransaction = scope.Resolve<IPersistenceTransaction>();
                 var executionContext = scope.Resolve<Common.ExecutionContext>();
 
                 var principalID = Guid.NewGuid();
-                var baseSqlExecuter = new BaseSqlExecuter(persistenceTransaction);
+                var baseSqlExecuter = NewBaseSqlExecuter(scope);
 
                 baseSqlExecuter.ExecuteSqlRaw("INSERT INTO TestEntity.Principal (ID, Name) VALUES({0}, {1});", new object[] { principalID, null });
 
@@ -110,9 +116,7 @@ namespace Rhetos.Persistence.Test
         {
             using (var scope = TestScope.Create())
             {
-                var persistenceTransaction = scope.Resolve<IPersistenceTransaction>();
-                var executionContext = scope.Resolve<Common.ExecutionContext>();
-                var baseSqlExecuter = new BaseSqlExecuter(persistenceTransaction);
+                var baseSqlExecuter = NewBaseSqlExecuter(scope);
 
                 var sqlParameter = new SqlParameter("@__p0", "Test");
                 TestUtility.ShouldFail<ArgumentException>(
