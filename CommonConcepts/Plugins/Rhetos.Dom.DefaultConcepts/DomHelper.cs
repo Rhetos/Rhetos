@@ -32,8 +32,13 @@ namespace Rhetos.Dom.DefaultConcepts
     public static class DomHelper
     {
         /// <summary>
-        /// Returns true if there are any records to save.
+        /// Initializes <paramref name="insertedNew"/> IDs, where not set.
+        /// If a LINQ query is provided as an argument, materializes it to a list.
+        /// Converts any null argument to an empty list.
         /// </summary>
+        /// <returns>
+        /// Returns true if there are any records to insert, update or delete.
+        /// </returns>
         public static bool InitializeSaveMethodItems<TEntity>(ref IEnumerable<TEntity> insertedNew, ref IEnumerable<TEntity> updatedNew, ref IEnumerable<TEntity> deletedIds)
             where TEntity : IEntity, new()
         {
