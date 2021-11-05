@@ -62,7 +62,7 @@ namespace Rhetos.Deployment
 
         private static readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings
         {
-            PreserveReferencesHandling = PreserveReferencesHandling.All,
+            PreserveReferencesHandling = PreserveReferencesHandling.None,
             ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
             Formatting = Formatting.Indented
         };

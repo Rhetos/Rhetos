@@ -100,17 +100,17 @@ namespace Rhetos.Dsl
             CsUtility.Materialize(ref concepts);
             _performanceLogger.Write(sw, "SaveConcepts: Materialize.");
 
-            var serializerSettings = new JsonSerializerSettings
-            {
-                PreserveReferencesHandling = PreserveReferencesHandling.All,
-                ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
-                TypeNameHandling = TypeNameHandling.All,
-                Formatting = Formatting.Indented,
-            };
-
-            JsonUtility.SerializeToFile(concepts, DslModelFilePath, serializerSettings);
+            JsonUtility.SerializeToFile(concepts, DslModelFilePath, _serializerSettings);
             _performanceLogger.Write(sw, "SaveConcepts: Serialize and write.");
         }
+
+        private static readonly JsonSerializerSettings _serializerSettings = new()
+        {
+            PreserveReferencesHandling = PreserveReferencesHandling.Objects,
+            ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
+            TypeNameHandling = TypeNameHandling.All,
+            Formatting = Formatting.Indented,
+        };
 
         private string DslModelFilePath => Path.Combine(_rhetosEnvironment.AssetsFolder, DslModelFileName);
 
@@ -118,14 +118,7 @@ namespace Rhetos.Dsl
         {
             var sw = Stopwatch.StartNew();
 
-            var serializerSettings = new JsonSerializerSettings
-            {
-                PreserveReferencesHandling = PreserveReferencesHandling.All,
-                ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
-                TypeNameHandling = TypeNameHandling.All,
-            };
-
-            var concepts = JsonUtility.DeserializeFromFile<IEnumerable<IConceptInfo>>(DslModelFilePath, serializerSettings);
+            var concepts = JsonUtility.DeserializeFromFile<IEnumerable<IConceptInfo>>(DslModelFilePath, _serializerSettings);
             _performanceLogger.Write(sw, "Load.");
             return concepts;
         }
