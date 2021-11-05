@@ -60,7 +60,7 @@ namespace Rhetos.Dsl.Test
 
             var parsedNode = this.Invoke(nameof(ParseNextConcept), tokenReader, newContext, conceptParsers).Item1;
 
-            return ConceptInfoHelper.ConvertNodeToConceptInfo(parsedNode);
+            return ConceptInfoHelper.ConvertNodeToConceptInfo(parsedNode, new Dictionary<ConceptSyntaxNode, IConceptInfo>());
         }
     }
 }

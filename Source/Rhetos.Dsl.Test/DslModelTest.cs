@@ -595,6 +595,51 @@ namespace Rhetos.Dsl.Test
         }
 
         [TestMethod]
+        public void ConvertNodesToConceptInfos()
+        {
+            string dsl = "SIMPLE s d { ALTER1 { ALTER2 d2; } }";
+            var syntax = new IConceptInfo[] { new SimpleConceptInfo(), new AlternativeConcept1(), new AlternativeConcept2() };
+            var parsedConcepts = new TestDslParser(dsl, syntax).GetConcepts();
+            var conceptInfos = ConceptInfoHelper.ConvertNodesToConceptInfos(parsedConcepts);
+
+            Assert.AreEqual("alter1, alter2, SIMPLE", TestUtility.DumpSorted(conceptInfos, c => c.GetKeywordOrTypeName()));
+            var s = conceptInfos.OfType<SimpleConceptInfo>().Single();
+            var a1 = conceptInfos.OfType<AlternativeConcept1>().Single();
+            var a2 = conceptInfos.OfType<AlternativeConcept2>().Single();
+
+            Assert.AreEqual("Rhetos.Dsl.Test.DslModelTest+SimpleConceptInfo Name=s Data=d", s.GetErrorDescription());
+            Assert.AreEqual("Rhetos.Dsl.Test.DslModelTest+AlternativeConcept1 Parent=s Name=<null> RefToParent=<null>", a1.GetErrorDescription());
+            Assert.AreEqual("Rhetos.Dsl.Test.DslModelTest+AlternativeConcept2 Alter1=s.<null> Name=<null> Data=d2", a2.GetErrorDescription());
+
+            Assert.AreSame(s, a1.Parent);
+            Assert.AreSame(a1, a2.Alter1);
+        }
+
+        [TestMethod]
+        public void ConvertNodesToConceptInfos_Reversed()
+        {
+            string dsl = "SIMPLE s d { ALTER1 { ALTER2 d2; } }";
+            var syntax = new IConceptInfo[] { new SimpleConceptInfo(), new AlternativeConcept1(), new AlternativeConcept2() };
+            var parsedConcepts = new TestDslParser(dsl, syntax).GetConcepts();
+            // By reversing parsedConcepts, ConvertNodesToConceptInfos is tested for more robust matching of references between concepts
+            // (see Assert.AreSame at the end of the test), when a new concept is referenced before it appears in the list that is provided to ConvertNodesToConceptInfos.
+            parsedConcepts = parsedConcepts.Reverse().ToList();
+            var conceptInfos = ConceptInfoHelper.ConvertNodesToConceptInfos(parsedConcepts);
+
+            Assert.AreEqual("alter1, alter2, SIMPLE", TestUtility.DumpSorted(conceptInfos, c => c.GetKeywordOrTypeName()));
+            var s = conceptInfos.OfType<SimpleConceptInfo>().Single();
+            var a1 = conceptInfos.OfType<AlternativeConcept1>().Single();
+            var a2 = conceptInfos.OfType<AlternativeConcept2>().Single();
+
+            Assert.AreEqual("Rhetos.Dsl.Test.DslModelTest+SimpleConceptInfo Name=s Data=d", s.GetErrorDescription());
+            Assert.AreEqual("Rhetos.Dsl.Test.DslModelTest+AlternativeConcept1 Parent=s Name=<null> RefToParent=<null>", a1.GetErrorDescription());
+            Assert.AreEqual("Rhetos.Dsl.Test.DslModelTest+AlternativeConcept2 Alter1=s.<null> Name=<null> Data=d2", a2.GetErrorDescription());
+
+            Assert.AreSame(s, a1.Parent);
+            Assert.AreSame(a1, a2.Alter1);
+        }
+
+        [TestMethod]
         public void InitiallyParsedAlternativeInitializationConceptTest()
         {
             string dsl = "SIMPLE s d; ALTER1 s; ALTER2 s.a1 d2;";
