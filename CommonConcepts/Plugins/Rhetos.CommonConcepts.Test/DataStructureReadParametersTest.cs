@@ -22,6 +22,7 @@ using Rhetos.Dom.DefaultConcepts;
 using Rhetos.TestCommon;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Rhetos.CommonConcepts.Test
 {
@@ -60,7 +61,34 @@ namespace Rhetos.CommonConcepts.Test
                 "TestFilterClass: RhetosCommonConceptsTestModule.TestFilterClass",
 
                 "System.Collections.Generic.IEnumerable<System.Guid>: System.Collections.Generic.IEnumerable`1[System.Guid]",
-                "IEnumerable<System.Guid>: System.Collections.Generic.IEnumerable`1[System.Guid]",
+                "IEnumerable<Guid>: System.Collections.Generic.IEnumerable`1[System.Guid]",
+                "System.Guid[]: System.Guid[]",
+                "Guid[]: System.Guid[]",
+            };
+
+            Assert.AreEqual(
+                TestUtility.DumpSorted(expectedExtended),
+                TestUtility.DumpSorted(
+                    readParameters.GetReadParameters("RhetosCommonConceptsTestModule.TestDataStructure", extendedSet: true)));
+        }
+
+        [TestMethod]
+        public void ShortParameterNameHeuristics()
+        {
+            Type complexType = typeof(System.Tuple<System.String, RhetosCommonConceptsTestModule.TestFilterClass, System.Collections.Generic.List<System.String>>);
+            string complexTypeName = "System.Tuple<System.String, RhetosCommonConceptsTestModule.TestFilterClass, System.Collections.Generic.List<System.String>>";
+
+            var readParameters = new DataStructureReadParameters(new Dictionary<string, KeyValuePair<string, Type>[]> {
+                { "RhetosCommonConceptsTestModule.TestDataStructure", new[] { new KeyValuePair<string, Type>(complexTypeName, complexType) } }
+            });
+
+            var expectedExtended = new[]
+            {
+                "System.Tuple<System.String, RhetosCommonConceptsTestModule.TestFilterClass, System.Collections.Generic.List<System.String>>: System.Tuple`3[System.String,RhetosCommonConceptsTestModule.TestFilterClass,System.Collections.Generic.List`1[System.String]]",
+                "Tuple<String, TestFilterClass, List<String>>: System.Tuple`3[System.String,RhetosCommonConceptsTestModule.TestFilterClass,System.Collections.Generic.List`1[System.String]]",
+
+                "System.Collections.Generic.IEnumerable<System.Guid>: System.Collections.Generic.IEnumerable`1[System.Guid]",
+                "IEnumerable<Guid>: System.Collections.Generic.IEnumerable`1[System.Guid]",
                 "System.Guid[]: System.Guid[]",
                 "Guid[]: System.Guid[]",
             };

@@ -903,13 +903,14 @@ IEnumerable<MultipleReadTypes>: System.Collections.Generic.IEnumerable`1[TestFil
 MultipleReadTypes[]: TestFilter.MultipleReadTypes[]
 
 List<TestFilter.MultipleReadTypes>: System.Collections.Generic.List`1[TestFilter.MultipleReadTypes]
+List<MultipleReadTypes>: System.Collections.Generic.List`1[TestFilter.MultipleReadTypes]
 
 QueryFilter1: TestFilter.QueryFilter1
 
 string[]: System.String[]
 
 System.Collections.Generic.IEnumerable<System.Guid>: System.Collections.Generic.IEnumerable`1[System.Guid]
-IEnumerable<System.Guid>: System.Collections.Generic.IEnumerable`1[System.Guid]
+IEnumerable<Guid>: System.Collections.Generic.IEnumerable`1[System.Guid]
 System.Guid[]: System.Guid[]
 Guid[]: System.Guid[]
 

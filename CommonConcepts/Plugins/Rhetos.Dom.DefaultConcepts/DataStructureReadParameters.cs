@@ -21,6 +21,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -75,13 +76,16 @@ namespace Rhetos.Dom.DefaultConcepts
             return allFilterTypes.Distinct().ToList();
         }
 
+        /// <summary>
+        /// Heuristics that allows providing array instead of IEnumerable parameter (covariance).
+        /// </summary>
         private void AddAlternativeArrayTypesForIEnumerable(List<DataStructureReadParameter> allFilterTypes)
         {
             var enumerablePrefixes = new[] { "IEnumerable<", "System.Collections.Generic.IEnumerable<" };
             foreach (var filterType in allFilterTypes.ToList()) // Using a copy of the list in the foreach, to avoid modifying it while enumerating.
-                if (filterType.Type.Name == "IEnumerable`1" && filterType.Name.EndsWith(">"))
+                if (filterType.Type.Name == "IEnumerable`1")
                     foreach (string prefix in enumerablePrefixes)
-                        if (filterType.Name.StartsWith(prefix))
+                        if (filterType.Name.StartsWith(prefix) && filterType.Name.EndsWith(">"))
                         {
                             var innerName = filterType.Name.Substring(prefix.Length, filterType.Name.Length - 1 - prefix.Length);
                             var elementType = filterType.Type.GetGenericArguments().Single();
@@ -90,6 +94,9 @@ namespace Rhetos.Dom.DefaultConcepts
                         }
         }
 
+        /// <summary>
+        /// Heuristics that allows some common simplified type descriptions without specifying default namespaces.
+        /// </summary>
         private void AddAlternativeDefaultNamepaceTypeNames(List<DataStructureReadParameter> allFilterTypes, string dataStuctureFullName)
         {
             var removablePrefixes = new List<string>(_defaultNamespaces.Length + 1);
@@ -101,10 +108,24 @@ namespace Rhetos.Dom.DefaultConcepts
 
             foreach (var filterType in allFilterTypes.ToList()) // Using a copy of the list in the foreach, to avoid modifying it while enumerating.
             {
-                var removablePrefix = removablePrefixes.FirstOrDefault(prefix => filterType.Name.StartsWith(prefix));
-                if (removablePrefix != null)
-                    allFilterTypes.Add(new DataStructureReadParameter(filterType.Name.Substring(removablePrefix.Length), filterType.Type));
+                string shortName = filterType.Name;
+
+                foreach (var namePart in NamePartsRegex.Matches(shortName).Reverse()) // Reverse to avoid corrupting remaining matches after removing some prefixes.
+                    shortName = TryRemovePrefix(shortName, namePart.Index, namePart.Length, removablePrefixes);
+
+                if (shortName != filterType.Name)
+                    allFilterTypes.Add(new DataStructureReadParameter(shortName, filterType.Type));
             }
+        }
+
+        private static readonly Regex NamePartsRegex = new Regex(@"[\w.]+");
+
+        private static string TryRemovePrefix(string filterName, int index, int length, List<string> removablePrefixes)
+        {
+            var removablePrefix = removablePrefixes.FirstOrDefault(prefix => filterName.AsSpan(index, length).StartsWith(prefix));
+            if (removablePrefix != null)
+                return filterName.Substring(0, index) + filterName.Substring(index + removablePrefix.Length);
+            return filterName;
         }
     }
 }
