@@ -21,7 +21,6 @@ using Autofac;
 using CommonConcepts.Test.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Dom.DefaultConcepts;
-using Rhetos.Persistence;
 using Rhetos.Security;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
@@ -120,20 +119,21 @@ namespace CommonConcepts.Test
             }
             rhetosAppOptions.AuthorizationAddUnregisteredPrincipals = true;
 
-            for (int test = 0; test < 5; test++)
-            {
-                Console.WriteLine("Test: " + test);
+            foreach (bool authorizationCache in new[] { false, true })
+                for (int test = 0; test < 5; test++)
+                {
+                    Console.WriteLine($"Test: {test}, authorizationCache: {authorizationCache}, commitChanges: False");
+                    DeleteTestPrincipals();
+                    var reportWithRollback = ParallelGetPrincipal(testUserName, rhetosAppOptions, authorizationCache, commitChanges: false);
+                    AssertAllSame(reportWithRollback.Select(principal => principal.Name), $"Principal name should be same. Transactions rolled back. authorizationCache={authorizationCache}");
+                    AssertAllDifferent(reportWithRollback.Select(principal => principal.ID), $"Principal IDs should be all different when parallel transactions rolled back. authorizationCache={authorizationCache}");
 
-                DeleteTestPrincipals();
-                var reportWithRollback = ParallelGetPrincipal(testUserName, rhetosAppOptions, commitChanges: false);
-                AssertAllSame(reportWithRollback.Select(principal => principal.Name), "Principal name should be same. Transactions rolled back.");
-                AssertAllDifferent(reportWithRollback.Select(principal => principal.ID), "Principal IDs should be all different when parallel transactions rolled back.");
-
-                DeleteTestPrincipals();
-                var reportWithCommit = ParallelGetPrincipal(testUserName, rhetosAppOptions, commitChanges: true);
-                AssertAllSame(reportWithCommit.Select(principal => principal.Name), "Principal name should be same. Transactions committed.");
-                AssertAllSame(reportWithCommit.Select(principal => principal.ID), "Principal ID should be same when parallel transactions committed.");
-            }
+                    Console.WriteLine($"Test: {test}, authorizationCache: {authorizationCache}, commitChanges: True");
+                    DeleteTestPrincipals();
+                    var reportWithCommit = ParallelGetPrincipal(testUserName, rhetosAppOptions, authorizationCache, commitChanges: true);
+                    AssertAllSame(reportWithCommit.Select(principal => principal.Name), $"Principal name should be same. Transactions committed. authorizationCache={authorizationCache}");
+                    AssertAllSame(reportWithCommit.Select(principal => principal.ID), $"Principal ID should be same when parallel transactions committed. authorizationCache={authorizationCache}");
+                }
         }
 
         private void AssertAllSame<T>(IEnumerable<T> items, string message)
@@ -148,7 +148,7 @@ namespace CommonConcepts.Test
                 Assert.Fail($"{message} Values: {TestUtility.Dump(items)}");
         }
 
-        private static List<PrincipalInfo> ParallelGetPrincipal(string testUserName, RhetosAppOptions rhetosAppOptions, bool commitChanges)
+        private static List<PrincipalInfo> ParallelGetPrincipal(string testUserName, RhetosAppOptions rhetosAppOptions, bool authorizationCache, bool commitChanges)
         {
             var report = new ConcurrentDictionary<int, PrincipalInfo>();
 
@@ -158,7 +158,9 @@ namespace CommonConcepts.Test
             {
                 using (var scope = TestScope.Create(builder => builder.RegisterInstance(rhetosAppOptions).ExternallyOwned()))
                 {
-                    var authorizationData = scope.Resolve<AuthorizationDataLoader>();
+                    IAuthorizationData authorizationData = authorizationCache
+                        ? scope.Resolve<AuthorizationDataCache>()
+                        : scope.Resolve<AuthorizationDataLoader>();
 
                     // First call will automatically create a new principal, see AuthorizationAddUnregisteredPrincipals above.
                     // Other calls should return the same principal.

@@ -50,17 +50,23 @@ namespace Rhetos.Persistence
         void DiscardOnDispose();
 
         /// <summary>
+        /// Invoked before the transaction is committed.
+        /// </summary>
+        /// <remarks>
         /// Use for cleanup code, such as deleting temporary data that may be used until the transaction is closed.
         /// This event will not be invoked if the transaction rollback was executed (see <see cref="CommitOnDispose"/> and <see cref="DiscardOnDispose"/>).
-        /// </summary>
+        /// </remarks>
         event Action BeforeClose;
 
         /// <summary>
-        /// Use for optional notification that do not affect validity of the operation executed in this transaction.
+        /// Invoked after the transaction is committed.
+        /// </summary>
+        /// <remarks>
+        /// Use for optional features that do not affect validity of the operation executed in this transaction.
         /// If the <see cref="AfterClose"/> event <b>fails</b>, any data modifications from the current transaction will
         /// remain in the database.
-        /// This event will not be invoked if the transaction rollback was executed (see <see cref="DiscardOnDispose()"/>).
-        /// </summary>
+        /// This event will not be invoked if the current transaction is rolled back (see <see cref="DiscardOnDispose()"/>).
+        /// </remarks>
         event Action AfterClose;
 
         /// <summary>

@@ -17,8 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Extensibility;
 using Rhetos.Logging;
+using Rhetos.Persistence;
 using Rhetos.Security;
 using Rhetos.Utilities;
 using System;
@@ -34,20 +34,19 @@ namespace Rhetos.Dom.DefaultConcepts
         private readonly RhetosAppOptions _rhetosAppOptions;
         private readonly Lazy<AuthorizationDataLoader> _authorizationDataReader;
         private readonly ObjectCache _cache = MemoryCache.Default;
+        private readonly IPersistenceTransaction _persistenceTransaction;
 
         public AuthorizationDataCache(
             ILogProvider logProvider,
             RhetosAppOptions rhetosAppOptions,
-            Lazy<AuthorizationDataLoader> authorizationDataReader)
+            Lazy<AuthorizationDataLoader> authorizationDataReader,
+            IPersistenceTransaction persistenceTransaction)
         {
             _logger = logProvider.GetLogger(GetType().Name);
             _rhetosAppOptions = rhetosAppOptions;
             _authorizationDataReader = authorizationDataReader;
+            _persistenceTransaction = persistenceTransaction;
         }
-
-        // This property must not be static, and AuthorizationDataCache must be registered as InstancePerLifetimeScope,
-        // in order to avoid multiple reading of data on parallel requests from the same user and to avoid locking between users.
-        private readonly object _userLevelCacheUpdateLock = new object();
 
         public static void ClearCache()
         {
@@ -108,19 +107,19 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             T value = (T)_cache.Get(key);
             if (value == null)
-                lock (_userLevelCacheUpdateLock) // Avoiding multiple invocations of valueCreator on parallel requests.
-                {
-                    value = (T)_cache.Get(key);
-                    if (value == null)
-                    {
-                        _logger.Trace(() => "Cache miss: " + key + ".");
-                        value = valueCreator();
-                        if (value != null)
-                            _cache.Set(key, value, DateTimeOffset.Now.AddSeconds(relativeExpirationInSeconds));
-                        else
-                            _logger.Trace(() => "Not caching null value: " + key + ".");
-                    }
-                }
+            {
+                _logger.Trace(() => "Cache miss: " + key + ".");
+                value = valueCreator();
+
+                if (value != null)
+                    // Updating cache *after* database commit, to make sure that the cache does not contain incorrect data in case that
+                    // 1. the authorization data was modified in the current transaction (see AuthorizationAddUnregisteredPrincipals options or Rhetos.ActiveDirectorySync package, e.g.),
+                    // and 2. the current transaction was rolled back.
+                    // This delayed cache update will unfortunately increase the number of cache misses on parallel requests, but will fix bugs on edge cases as described above.
+                    _persistenceTransaction.AfterClose += () => _cache.Set(key, value, DateTimeOffset.Now.AddSeconds(relativeExpirationInSeconds));
+                else
+                    _logger.Trace(() => "Not caching null value: " + key + ".");
+            }
             return value;
         }
 
