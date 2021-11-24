@@ -154,6 +154,20 @@ namespace Rhetos.Utilities
         }
 
         /// <summary>
+        /// When joining zero or one collections, no new IEnumerable "wrapper" objects are created.
+        /// </summary>
+        public static IEnumerable<T> Concatenate<T>(List<IEnumerable<T>> _values)
+        {
+            if (_values.Count == 0)
+                return Enumerable.Empty<T>();
+
+            IEnumerable<T> all = _values[0];
+            for (int x = 1; x < _values.Count; x++)
+                all = all.Concat(_values[x]);
+            return all;
+        }
+
+        /// <summary>
         /// Use this method to sort strings respecting the number values in the string.
         /// Example: new[] { "a10", "a11", "a9", "b3-11", "b3-2" }.OrderBy(s => GetNaturalSortString(s))
         /// Returns: "a9", "a10", "a11", "b3-2", "b3-11"

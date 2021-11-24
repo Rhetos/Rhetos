@@ -155,6 +155,31 @@ namespace Rhetos.Utilities.Test
         }
 
         [TestMethod]
+        public void Concatenate()
+        {
+            var tests = new (List<IEnumerable<string>> Input, int ExpectedCount, string ExpectedType)[]
+            {
+                (new List<IEnumerable<string>> { }, 0, "System.Linq.EmptyPartition`1[System.String]"),
+                (new List<IEnumerable<string>> { new[] { "a" } }, 1, "System.String[]"),
+                (new List<IEnumerable<string>> { new[] { "a" }, new[] { "b" } }, 2, "System.Linq.Enumerable+Concat2Iterator`1[System.String]"),
+            };
+
+            List<string> actualReport = new();
+            List<string> expectedReport = new();
+            foreach (var test in tests)
+            {
+                IEnumerable<string> output = CsUtility.Concatenate(test.Input);
+
+                actualReport.Add($"{output.Count()} {output.GetType()}");
+                expectedReport.Add($"{test.ExpectedCount} {test.ExpectedType}");
+            }
+
+            Assert.AreEqual(
+                string.Join(Environment.NewLine, expectedReport),
+                string.Join(Environment.NewLine, actualReport));
+        }
+
+        [TestMethod]
         public void NaturalSortTest_Simple()
         {
             string test = @"0, 1, 9, 10, 11, 100, s1:1\9.9\x, s2:1\9.10\x, s3:1\10.9\x, s4:1\10.10\x, s5:1\11\x, s6:1\11.next\x";

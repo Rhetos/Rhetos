@@ -20,7 +20,9 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.CommonConcepts.Test.Mocks;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Dom.DefaultConcepts.Authorization;
 using Rhetos.Extensibility;
+using Rhetos.Persistence;
 using Rhetos.Security;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
@@ -28,6 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Caching;
 using System.Text;
 
 namespace Rhetos.CommonConcepts.Test
@@ -211,6 +214,17 @@ namespace Rhetos.CommonConcepts.Test
             public AuthorizationDataLoader AuthorizationDataLoader;
             public AuthorizationDataCache AuthorizationDataCache;
             public CommonAuthorizationProvider CommonAuthorizationProvider;
+            public IPersistenceTransaction PersistenceTransaction;
+
+            /// <summary>
+            /// Commit will move cached data from the request cache (scope of NewAuthorizationContext instance) to the global cache.
+            /// </summary>
+            public void Close(bool commit)
+            {
+                if (commit)
+                    PersistenceTransaction?.CommitOnDispose();
+                PersistenceTransaction?.Dispose();
+            }
         };
 
         private AuthorizationContext NewAuthorizationContext(IPrincipal[] principals, IRole[] roles, IPrincipalHasRole[] principalRoles, IRoleInheritsRole[] roleRoles, ICommonClaim[] commonClaims, IRolePermission[] rolePermissions, IPrincipalPermission[] principalPermissions,
@@ -228,10 +242,16 @@ namespace Rhetos.CommonConcepts.Test
                 new MockRepositories(principalRoles, principals, roleRoles, principalPermissions, rolePermissions, roles, commonClaims));
 
             if (useCache)
+            {
+                context.PersistenceTransaction = new FakePersistenceTransaction();
                 context.AuthorizationDataCache = new AuthorizationDataCache(
-                    context.ConsoleLogProvider, 
-                    new RhetosAppOptions() { AuthorizationCacheExpirationSeconds = authorizationCacheExpirationSeconds }, 
-                    new Lazy<AuthorizationDataLoader>(() => context.AuthorizationDataLoader));
+                    context.ConsoleLogProvider,
+                    new Lazy<AuthorizationDataLoader>(() => context.AuthorizationDataLoader),
+                    new RequestAndGlobalCache(
+                        context.ConsoleLogProvider,
+                        new RhetosAppOptions() { AuthorizationCacheExpirationSeconds = authorizationCacheExpirationSeconds },
+                        context.PersistenceTransaction));
+            }
             else
                 context.AuthorizationDataCache = null;
 
@@ -242,7 +262,7 @@ namespace Rhetos.CommonConcepts.Test
 
         private string ReportCacheMisses(List<string> log)
         {
-            const string pattern = "AuthorizationDataCache: Cache miss: AuthorizationDataCache.";
+            const string pattern = ": Cache miss: AuthorizationDataCache.";
             return string.Join("\r\n",
                 log.Select(line => new { line, patternIndex = line.IndexOf(pattern) })
                     .Where(lineInfo => lineInfo.patternIndex >= 0)
@@ -256,12 +276,27 @@ namespace Rhetos.CommonConcepts.Test
             Assert.AreEqual("", ReportCacheMisses(log));
         }
 
+        /// <summary>
+        /// This method cleans global cache for AuthorizationDataCache.
+        /// Note that it does not clean _currentRequestCache member of existing instances of AuthorizationDataCache,
+        /// so it can be helpful only for static initialization before running a test.
+        /// </summary>
+        private static void ClearGlobalCacheAuthorizationData()
+        {
+            var cache = MemoryCache.Default;
+            var deleteKeys = cache.Select(item => item.Key)
+                .Where(key => key.StartsWith("AuthorizationDataCache.", StringComparison.Ordinal))
+                .ToList();
+            foreach (string key in deleteKeys)
+                cache.Remove(key);
+        }
+
         [TestMethod]
         public void SimpleTest_Cache()
         {
             var expiration = (double)60 * 60 * 24 * 365; // Very long expiration time for simpler debugging.
 
-            AuthorizationDataCache.ClearCache();
+            ClearGlobalCacheAuthorizationData();
 
             var log1 = SimpleTest(true, expiration);
             Assert.AreEqual(@"Principal.pr0.
@@ -286,7 +321,7 @@ RolePermissions.55595e07-8d14-4db9-bd79-c0c3e8407feb.", ReportCacheMisses(log1))
             Assert.AreEqual("", ReportCacheMisses(log2));
         }
 
-        public List<string> SimpleTest(bool useCache, double authorizationCacheExpirationSeconds)
+        public List<string> SimpleTest(bool useCache, double authorizationCacheExpirationSeconds, bool commit = true)
         {
             var principals = new IPrincipal[] {
                 new MockPrincipal { ID = new Guid("11195e07-8d14-4db9-bd79-c0c3e8407feb"), Name = "pr0" },
@@ -348,6 +383,8 @@ RolePermissions.55595e07-8d14-4db9-bd79-c0c3e8407feb.", ReportCacheMisses(log1))
             Assert.AreEqual("True, True, False, False, False, True, False, False", TestUtility.Dump(provider.GetAuthorizations(new TestUserInfo("pr0"), claims)));
             Assert.AreEqual("False, True, False, False, False, False, True, False", TestUtility.Dump(provider.GetAuthorizations(new TestUserInfo("pr1"), claims)));
 
+            authorizationContext.Close(commit);
+
             return authorizationContext.Log;
         }
 
@@ -363,7 +400,7 @@ RolePermissions.55595e07-8d14-4db9-bd79-c0c3e8407feb.", ReportCacheMisses(log1))
         {
             var expiration = (double)60 * 60 * 24 * 365; // Very long expiration time for simpler debugging.
 
-            AuthorizationDataCache.ClearCache();
+            ClearGlobalCacheAuthorizationData();
 
             var log1 = SimilarClaimsTest(true, expiration);
             Assert.AreEqual(@"Principal.pr0.
@@ -386,7 +423,7 @@ PrincipalPermissions.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.", ReportCacheMiss
             Assert.AreEqual("", ReportCacheMisses(log2));
         }
 
-        public List<string> SimilarClaimsTest(bool useCache, double authorizationCacheExpirationSeconds)
+        public List<string> SimilarClaimsTest(bool useCache, double authorizationCacheExpirationSeconds, bool commit = true)
         {
             var principals = new IPrincipal[] {
                 new MockPrincipal { ID = new Guid("11195E07-8D14-4DB9-BD79-C0C3E8407FEB"), Name = "pr0" },
@@ -441,6 +478,8 @@ PrincipalPermissions.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.", ReportCacheMiss
             Assert.AreEqual("True, True, True, False, True, False, True, True, True, True", TestUtility.Dump(provider.GetAuthorizations(new TestUserInfo("pr0"), claims)));
             Assert.AreEqual("False, True, False, False, False, False, False, False, True, True", TestUtility.Dump(provider.GetAuthorizations(new TestUserInfo("pr1"), claims)));
 
+            authorizationContext.Close(commit);
+
             return authorizationContext.Log;
         }
 
@@ -449,9 +488,9 @@ PrincipalPermissions.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.", ReportCacheMiss
         {
             var expiration = (double)60 * 60 * 24 * 365; // Very long expiration time for simpler debugging.
 
-            AuthorizationDataCache.ClearCache();
+            ClearGlobalCacheAuthorizationData();
 
-            var log1 = ClearCachePrincipalsRoles_GetAuthorization(expiration);
+            var log1 = ClearCachePrincipalsRoles_GetAuthorization(expiration, editSystemRole: false);
             Assert.AreEqual(@"Principal.pr0.
 PrincipalRoles.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
 SystemRoles.
@@ -470,7 +509,7 @@ PrincipalPermissions.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.", ReportCacheMiss
 
             Console.WriteLine("Reusing some parts of cache.");
 
-            var log2 = ClearCachePrincipalsRoles_GetAuthorization(expiration);
+            var log2 = ClearCachePrincipalsRoles_GetAuthorization(expiration, editSystemRole: false);
             Assert.AreEqual(@"Principal.pr0.
 PrincipalRoles.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
 RoleRoles.33395e07-8d14-4db9-bd79-c0c3e8407feb.
@@ -490,7 +529,7 @@ RolePermissions.55595e07-8d14-4db9-bd79-c0c3e8407feb.
 Roles.", ReportCacheMisses(log3));
         }
 
-        public List<string> ClearCachePrincipalsRoles_GetAuthorization(double authorizationCacheExpirationSeconds, bool editSystemRole = false)
+        public List<string> ClearCachePrincipalsRoles_GetAuthorization(double authorizationCacheExpirationSeconds, bool editSystemRole, bool commit = true)
         {
             var principals = new IPrincipal[] {
                 new MockPrincipal { ID = new Guid("11195E07-8D14-4DB9-BD79-C0C3E8407FEB"), Name = "pr0" },
@@ -556,6 +595,8 @@ Roles.", ReportCacheMisses(log3));
             var provider = authorizationContext.CommonAuthorizationProvider;
             Assert.AreEqual("True, True, False, False, False, True, False, False", TestUtility.Dump(provider.GetAuthorizations(new TestUserInfo("pr0"), claims)));
             Assert.AreEqual("False, True, False, False, False, False, True, False", TestUtility.Dump(provider.GetAuthorizations(new TestUserInfo("pr1"), claims)));
+
+            authorizationContext.Close(commit);
 
             return authorizationContext.Log;
         }
