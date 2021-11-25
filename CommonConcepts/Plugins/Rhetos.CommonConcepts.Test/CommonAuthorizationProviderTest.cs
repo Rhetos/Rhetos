@@ -298,8 +298,36 @@ namespace Rhetos.CommonConcepts.Test
 
             ClearGlobalCacheAuthorizationData();
 
+            Console.WriteLine("First call");
             var log1 = SimpleTest(true, expiration);
-            Assert.AreEqual(@"Principal.pr0.
+            Assert.AreEqual(SimpleTestExpectedLog, ReportCacheMisses(log1));
+
+            Console.WriteLine("Second call");
+            var log2 = SimpleTest(true, expiration);
+            // Cached data should be reused in second call; no cache misses expected.
+            Assert.AreEqual("", ReportCacheMisses(log2));
+        }
+
+        [TestMethod]
+        public void SimpleTest_CacheRollback()
+        {
+            var expiration = (double)60 * 60 * 24 * 365; // Very long expiration time for simpler debugging.
+
+            ClearGlobalCacheAuthorizationData();
+
+            Console.WriteLine("First call");
+            var log1 = SimpleTest(true, expiration, commit: false);
+            Assert.AreEqual(SimpleTestExpectedLog, ReportCacheMisses(log1));
+
+            Console.WriteLine("Second call");
+            var log2 = SimpleTest(true, expiration);
+            // Cached data should not be reused in second call, because the first call was not committed.
+            // The exception are Claims, which are considered unchangeable at runtime. They are cached directly to global cache,
+            // regardless of transaction commit or rollback.
+            Assert.AreEqual(SimpleTestExpectedLogWithoutClaims, ReportCacheMisses(log2));
+        }
+
+        private const string SimpleTestExpectedLog = @"Principal.pr0.
 PrincipalRoles.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
 SystemRoles.
 RoleRoles.33395e07-8d14-4db9-bd79-c0c3e8407feb.
@@ -313,14 +341,26 @@ Principal.pr1.
 PrincipalRoles.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.
 RoleRoles.55595e07-8d14-4db9-bd79-c0c3e8407feb.
 PrincipalPermissions.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.
-RolePermissions.55595e07-8d14-4db9-bd79-c0c3e8407feb.", ReportCacheMisses(log1));
+RolePermissions.55595e07-8d14-4db9-bd79-c0c3e8407feb.";
 
-            Console.WriteLine("Reusing cache");
+        private const string SimpleTestExpectedLogWithoutClaims = @"Principal.pr0.
+PrincipalRoles.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
+SystemRoles.
+RoleRoles.33395e07-8d14-4db9-bd79-c0c3e8407feb.
+RoleRoles.44495e07-8d14-4db9-bd79-c0c3e8407feb.
+PrincipalPermissions.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
+RolePermissions.33395e07-8d14-4db9-bd79-c0c3e8407feb.
+RolePermissions.44495e07-8d14-4db9-bd79-c0c3e8407feb.
+Roles.
+Principal.pr1.
+PrincipalRoles.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.
+RoleRoles.55595e07-8d14-4db9-bd79-c0c3e8407feb.
+PrincipalPermissions.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.
+RolePermissions.55595e07-8d14-4db9-bd79-c0c3e8407feb.";
 
-            var log2 = SimpleTest(true, expiration);
-            Assert.AreEqual("", ReportCacheMisses(log2));
-        }
-
+        /// <param name="commit">
+        /// Commit will move cached data from the request cache (scope of NewAuthorizationContext instance) to the global cache.
+        /// </param>
         public List<string> SimpleTest(bool useCache, double authorizationCacheExpirationSeconds, bool commit = true)
         {
             var principals = new IPrincipal[] {

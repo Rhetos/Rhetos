@@ -27,6 +27,7 @@ using Rhetos.TestCommon;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Caching;
 using System.Text.RegularExpressions;
 
 namespace CommonConcepts.Test
@@ -225,7 +226,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InsertOrUpdateSystemRole()
         {
-            AuthorizationDataCache.ClearCache();
+            ClearGlobalCacheAuthorizationData();
             Assert.AreEqual("Roles, SystemRoles",
                 TestPermissionsCachingOnChange(
                     context =>
@@ -288,6 +289,21 @@ namespace CommonConcepts.Test
                     new[] { true, false, false }));
         }
 
+        /// <summary>
+        /// This method cleans global cache for AuthorizationDataCache.
+        /// Note that it does not clean _currentRequestCache member of existing instances of AuthorizationDataCache,
+        /// so it can be helpful only for static initialization before running a test.
+        /// </summary>
+        public static void ClearGlobalCacheAuthorizationData()
+        {
+            var cache = MemoryCache.Default;
+            var deleteKeys = cache.Select(item => item.Key)
+                .Where(key => key.StartsWith("AuthorizationDataCache.", StringComparison.Ordinal))
+                .ToList();
+            foreach (string key in deleteKeys)
+                cache.Remove(key);
+        }
+
         public string TestPermissionsCachingOnChange(Action<Common.ExecutionContext> change, bool[] expectedPermissionsAfterChange, Action<Common.ExecutionContext> init = null)
         {
             var log = new List<string>();
@@ -302,7 +318,7 @@ namespace CommonConcepts.Test
                 init?.Invoke(context);
                 Console.WriteLine("== End test initialization ==");
 
-                AuthorizationDataCache.ClearCache();
+                ClearGlobalCacheAuthorizationData();
 
                 // Get user authorization:
 
@@ -342,7 +358,7 @@ namespace CommonConcepts.Test
 
         private string ReportCacheMisses(IList<string> log, string title)
         {
-            const string pattern = "AuthorizationDataCache: Cache miss: AuthorizationDataCache.";
+            const string pattern = ": Cache miss: AuthorizationDataCache.";
             var cacheMisses = string.Join("\r\n",
                 log.Select(line => new { line, patternIndex = line.IndexOf(pattern) })
                     .Where(lineInfo => lineInfo.patternIndex >= 0)
