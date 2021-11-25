@@ -22,6 +22,7 @@ using Rhetos.Persistence;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Caching;
 
 namespace Rhetos.Dom.DefaultConcepts.Authorization
@@ -48,12 +49,6 @@ namespace Rhetos.Dom.DefaultConcepts.Authorization
             _logger = logProvider.GetLogger(GetType().Name);
             _rhetosAppOptions = rhetosAppOptions;
             _persistenceTransaction = persistenceTransaction;
-        }
-
-        public void RemoveFromBothCaches(string key)
-        {
-            _currentRequestCache.Remove(key);
-            _globalCache.Remove(key);
         }
 
         /// <returns>
@@ -139,6 +134,25 @@ namespace Rhetos.Dom.DefaultConcepts.Authorization
             foreach (var item in _currentRequestCache)
                 _globalCache.Set(item.Key, item.Value, DateTimeOffset.Now.AddSeconds(_rhetosAppOptions.AuthorizationCacheExpirationSeconds));
             _currentRequestCache.Clear();
+        }
+
+        public void RemoveFromBothCaches(string key)
+        {
+            _currentRequestCache.Remove(key);
+            _globalCache.Remove(key);
+        }
+
+        /// <summary>
+        /// For unit testing.
+        /// </summary>
+        public static void ClearGlobalCache(string keyPrefix)
+        {
+            var globalCache = MemoryCache.Default;
+            var deleteKeys = globalCache.Select(item => item.Key)
+                .Where(key => key.StartsWith(keyPrefix, StringComparison.Ordinal))
+                .ToList();
+            foreach (string key in deleteKeys)
+                globalCache.Remove(key);
         }
     }
 }

@@ -276,27 +276,12 @@ namespace Rhetos.CommonConcepts.Test
             Assert.AreEqual("", ReportCacheMisses(log));
         }
 
-        /// <summary>
-        /// This method cleans global cache for AuthorizationDataCache.
-        /// Note that it does not clean _currentRequestCache member of existing instances of AuthorizationDataCache,
-        /// so it can be helpful only for static initialization before running a test.
-        /// </summary>
-        private static void ClearGlobalCacheAuthorizationData()
-        {
-            var cache = MemoryCache.Default;
-            var deleteKeys = cache.Select(item => item.Key)
-                .Where(key => key.StartsWith("AuthorizationDataCache.", StringComparison.Ordinal))
-                .ToList();
-            foreach (string key in deleteKeys)
-                cache.Remove(key);
-        }
-
         [TestMethod]
         public void SimpleTest_Cache()
         {
             var expiration = (double)60 * 60 * 24 * 365; // Very long expiration time for simpler debugging.
 
-            ClearGlobalCacheAuthorizationData();
+            AuthorizationDataCache.ClearCache();
 
             Console.WriteLine("First call");
             var log1 = SimpleTest(true, expiration);
@@ -313,7 +298,7 @@ namespace Rhetos.CommonConcepts.Test
         {
             var expiration = (double)60 * 60 * 24 * 365; // Very long expiration time for simpler debugging.
 
-            ClearGlobalCacheAuthorizationData();
+            AuthorizationDataCache.ClearCache();
 
             Console.WriteLine("First call");
             var log1 = SimpleTest(true, expiration, commit: false);
@@ -440,7 +425,7 @@ RolePermissions.55595e07-8d14-4db9-bd79-c0c3e8407feb.";
         {
             var expiration = (double)60 * 60 * 24 * 365; // Very long expiration time for simpler debugging.
 
-            ClearGlobalCacheAuthorizationData();
+            AuthorizationDataCache.ClearCache();
 
             var log1 = SimilarClaimsTest(true, expiration);
             Assert.AreEqual(@"Principal.pr0.
@@ -528,7 +513,7 @@ PrincipalPermissions.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.", ReportCacheMiss
         {
             var expiration = (double)60 * 60 * 24 * 365; // Very long expiration time for simpler debugging.
 
-            ClearGlobalCacheAuthorizationData();
+            AuthorizationDataCache.ClearCache();
 
             var log1 = ClearCachePrincipalsRoles_GetAuthorization(expiration, editSystemRole: false);
             Assert.AreEqual(@"Principal.pr0.

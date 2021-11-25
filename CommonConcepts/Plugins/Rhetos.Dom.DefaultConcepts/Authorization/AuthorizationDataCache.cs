@@ -43,50 +43,6 @@ namespace Rhetos.Dom.DefaultConcepts
             _cache = cache;
         }
 
-        /// <summary>
-        /// Clears the principals' authorization data from the cache: Principal, PrincipalRoles and PrincipalPermissions.
-        /// </summary>
-        public void ClearCachePrincipals(IEnumerable<IPrincipal> principals)
-        {
-            CsUtility.Materialize(ref principals);
-            _logger.Trace(() => "ClearCachePrincipals: " + string.Join(", ", principals.Select(p => p.Name + " " + p.ID.ToString())) + ".");
-
-            var deleteKeys =
-                principals.Select(principal => "AuthorizationDataCache.Principal." + principal.Name.ToLower())
-                .Concat(principals.Select(principal => "AuthorizationDataCache.PrincipalRoles." + principal.Name.ToLower() + "." + principal.ID.ToString()))
-                .Concat(principals.Select(principal => "AuthorizationDataCache.PrincipalPermissions." + principal.Name.ToLower() + "." + principal.ID.ToString()))
-                .Distinct();
-
-            foreach (string key in deleteKeys)
-                _cache.RemoveFromBothCaches(key);
-        }
-
-        /// <summary>
-        /// Clears the roles' authorization data from the cache: RoleRoles, RolePermissions and Role (full list).
-        /// </summary>
-        public void ClearCacheRoles(IEnumerable<Guid> roleIds)
-        {
-            CsUtility.Materialize(ref roleIds);
-            _logger.Trace(() => "ClearCacheRoles: " + string.Join(", ", roleIds) + ".");
-
-            var deleteKeys =
-                roleIds.Distinct()
-                .Select(roleId => "AuthorizationDataCache.RoleRoles." + roleId.ToString())
-                .Concat(roleIds.Select(roleId => "AuthorizationDataCache.RolePermissions." + roleId.ToString()))
-                .Concat(new[] { "AuthorizationDataCache.Roles" });
-
-            foreach (string key in deleteKeys)
-                _cache.RemoveFromBothCaches(key);
-
-            var systemRoles = _cache.GetAllDataFromBothCaches<IDictionary<SystemRole, Guid>>("AuthorizationDataCache.SystemRoles");
-            var invalidatedSystemRoles = systemRoles.SelectMany(sr => sr.Values).Intersect(roleIds);
-            if (invalidatedSystemRoles.Any())
-            {
-                _logger.Trace(() => "ClearCacheRoles: SystemRoles.");
-                _cache.RemoveFromBothCaches("AuthorizationDataCache.SystemRoles");
-            }
-        }
-
         public PrincipalInfo GetPrincipal(string username)
         {
             return _cache.GetOrAdd("AuthorizationDataCache.Principal." + username.ToLower(),
@@ -184,6 +140,62 @@ namespace Rhetos.Dom.DefaultConcepts
             return _cache.GetOrAdd("AuthorizationDataCache.Claims",
                 () => _authorizationDataReader.Value.GetClaims(null),
                 immutable: true); // Claims do not expire. They cannot be modified at run-time, only at deploy-time.
+        }
+
+        /// <summary>
+        /// Clears global authorization cache, for <b>unit testing</b>.
+        /// </summary>
+        /// <remarks>
+        /// Note that it does not clear the current scope cache from existing instances of AuthorizationDataCache.
+        /// See <see cref="RequestAndGlobalCache"/> for more info.
+        /// </remarks>
+        public static void ClearCache()
+        {
+            RequestAndGlobalCache.ClearGlobalCache("AuthorizationDataCache.");
+        }
+
+        /// <summary>
+        /// Clears the principals' authorization data from the cache: Principal, PrincipalRoles and PrincipalPermissions.
+        /// </summary>
+        public void ClearCachePrincipals(IEnumerable<IPrincipal> principals)
+        {
+            CsUtility.Materialize(ref principals);
+            _logger.Trace(() => "ClearCachePrincipals: " + string.Join(", ", principals.Select(p => p.Name + " " + p.ID.ToString())) + ".");
+
+            var deleteKeys =
+                principals.Select(principal => "AuthorizationDataCache.Principal." + principal.Name.ToLower())
+                .Concat(principals.Select(principal => "AuthorizationDataCache.PrincipalRoles." + principal.Name.ToLower() + "." + principal.ID.ToString()))
+                .Concat(principals.Select(principal => "AuthorizationDataCache.PrincipalPermissions." + principal.Name.ToLower() + "." + principal.ID.ToString()))
+                .Distinct();
+
+            foreach (string key in deleteKeys)
+                _cache.RemoveFromBothCaches(key);
+        }
+
+        /// <summary>
+        /// Clears the roles' authorization data from the cache: RoleRoles, RolePermissions and Role (full list).
+        /// </summary>
+        public void ClearCacheRoles(IEnumerable<Guid> roleIds)
+        {
+            CsUtility.Materialize(ref roleIds);
+            _logger.Trace(() => "ClearCacheRoles: " + string.Join(", ", roleIds) + ".");
+
+            var deleteKeys =
+                roleIds.Distinct()
+                .Select(roleId => "AuthorizationDataCache.RoleRoles." + roleId.ToString())
+                .Concat(roleIds.Select(roleId => "AuthorizationDataCache.RolePermissions." + roleId.ToString()))
+                .Concat(new[] { "AuthorizationDataCache.Roles" });
+
+            foreach (string key in deleteKeys)
+                _cache.RemoveFromBothCaches(key);
+
+            var systemRoles = _cache.GetAllDataFromBothCaches<IDictionary<SystemRole, Guid>>("AuthorizationDataCache.SystemRoles");
+            var invalidatedSystemRoles = systemRoles.SelectMany(sr => sr.Values).Intersect(roleIds);
+            if (invalidatedSystemRoles.Any())
+            {
+                _logger.Trace(() => "ClearCacheRoles: SystemRoles.");
+                _cache.RemoveFromBothCaches("AuthorizationDataCache.SystemRoles");
+            }
         }
     }
 }
