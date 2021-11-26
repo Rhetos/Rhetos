@@ -49,7 +49,7 @@ namespace Rhetos.Dom.DefaultConcepts
             string entity = info.Name;
 
             string repositorySnippet = $@"{RepositoryAttributes.Evaluate(info)}
-    public class {entity}_Repository : {OverrideBaseTypeTag.Evaluate(info)} global::Common.RepositoryBase
+    public partial class {entity}_Repository : {OverrideBaseTypeTag.Evaluate(info)} global::Common.RepositoryBase
         {RepositoryInterfaces.Evaluate(info)}
     {{
         {RepositoryPrivateMembers.Evaluate(info)}
