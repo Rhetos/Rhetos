@@ -33,6 +33,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// resulting with better performance.
     /// </summary>
     [Export(typeof(IConceptInfo))]
+    [ConceptKeyword("Filter")]
     public class FilterInfo : IConceptInfo
     {
         [ConceptKey]

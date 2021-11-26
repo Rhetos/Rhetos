@@ -74,7 +74,7 @@ namespace Rhetos.CommonConcepts.Test
                 typeof(SimpleEntity).FullName);
 
             TestUtility.ShouldFail(() => repos.Query("abc"),
-                "does not implement a loader, a query or a filter",
+                "does not implement a load method, a query or a filter",
                 "string",
                 typeof(SimpleEntity).FullName);
         }
@@ -133,7 +133,7 @@ namespace Rhetos.CommonConcepts.Test
             Assert.AreEqual("qb", repos.Query(item => item.Name.Contains("b")).Single().Name);
 
             TestUtility.ShouldFail(() => repos.Query(null, typeof(Parameter1)),
-                "does not implement a loader, a query or a filter with parameter",
+                "does not implement a load method, a query or a filter with parameter",
                 typeof(SimpleEntity).FullName,
                 typeof(Parameter1).FullName);
 

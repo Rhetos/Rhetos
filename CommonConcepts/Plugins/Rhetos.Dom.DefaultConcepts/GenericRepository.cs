@@ -367,7 +367,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 }
             }
 
-            throw new FrameworkException($"{EntityName} does not implement a loader, a query or a filter with parameter {parameterType.FullName}.");
+            throw new FrameworkException($"{EntityName} does not implement a load method, a query or a filter with parameter {parameterType.FullName}.");
         }
 
         private IEnumerable<TEntityInterface> ExecuteGenericFilter(IEnumerable<FilterCriteria> genericFilter, bool preferQuery, IEnumerable<TEntityInterface> items = null)
@@ -542,7 +542,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 return items.Where(item => ((List<Guid>)parameter).Contains(item.ID));
             }
 
-            string errorMessage = $"{EntityName} does not implement a filter with parameter {parameterType.FullName}.";
+            string errorMessage = $"{EntityName} does not implement a filter method with parameter {parameterType.FullName}.";
 
             if (Reflection.RepositoryLoadWithParameterMethod(parameterType) != null)
             {

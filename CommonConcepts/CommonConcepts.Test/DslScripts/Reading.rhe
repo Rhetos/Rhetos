@@ -1,0 +1,22 @@
+Module TestReading
+{
+    Entity Simple
+    {
+        ShortString Name;
+        LongString Data;
+
+        FilterBy FilterA '(repository, parameter) => this.CustomFilterA()';
+
+        ComposableFilterBy FilterB '(query, repository, parameter) => this.CustomFilterB(query)';
+
+        Load 'string[]';
+
+        QueryFilter Prefix;
+    }
+
+    Parameter FilterA;
+
+    Parameter FilterB;
+
+    Parameter Prefix { ShortString Pattern; }
+}
