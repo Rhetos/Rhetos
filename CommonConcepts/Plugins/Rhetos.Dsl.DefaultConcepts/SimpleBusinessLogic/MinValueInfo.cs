@@ -17,12 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.ComponentModel.Composition;
-using Rhetos.Utilities;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Rhetos.Dsl.DefaultConcepts
@@ -39,19 +38,19 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public string Value { get; set; }
 
-        public static readonly Dictionary<Type, Func<string, string>> LimitSnippetByType = new Dictionary<Type,Func<string, string>>
+        public static readonly IReadOnlyDictionary<Type, Func<string, string>> LimitSnippetByType = new Dictionary<Type,Func<string, string>>
         {
-            { typeof(IntegerPropertyInfo), limit => "int limit = " + limit },
-            { typeof(DecimalPropertyInfo), limit => "decimal limit = " + limit + "M" },
-            { typeof(MoneyPropertyInfo), limit => "decimal limit = " + limit + "M" },
-            { typeof(DatePropertyInfo), limit => String.Format(@"var limit = DateTime.Parse({0})", CsUtility.QuotedString(limit)) },
-            { typeof(DateTimePropertyInfo), limit => String.Format(@"var limit = DateTime.Parse({0})", CsUtility.QuotedString(limit)) },
+            { typeof(IntegerPropertyInfo), limit => $"int limit = {limit}" },
+            { typeof(DecimalPropertyInfo), limit => $"decimal limit = {limit}M" },
+            { typeof(MoneyPropertyInfo), limit => $"decimal limit = {limit}M" },
+            { typeof(DatePropertyInfo), limit => $@"var limit = DateTime.Parse({CsUtility.QuotedString(limit)})" },
+            { typeof(DateTimePropertyInfo), limit => $@"var limit = DateTime.Parse({CsUtility.QuotedString(limit)})" },
         };
 
         public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
             string limitSnippet = LimitSnippetByType
-                .Where(snippet => snippet.Key.IsAssignableFrom(Property.GetType()))
+                .Where(snippet => snippet.Key.IsInstanceOfType(Property))
                 .Select(snippet => snippet.Value.Invoke(Value))
                 .Single();
 
@@ -62,7 +61,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             };
             var filter = new QueryFilterExpressionInfo
             {
-                Expression = String.Format(@"(items, parameter) => {{ {1}; return items.Where(item => item.{0} != null && item.{0} < limit); }}", Property.Name, limitSnippet),
+                Expression = $@"(items, parameter) => {{ {limitSnippet}; return items.Where(item => item.{Property.Name} != null && item.{Property.Name} < limit); }}",
                 Parameter = filterParameter.Module.Name + "." + filterParameter.Name,
                 Source = Property.DataStructure
             };

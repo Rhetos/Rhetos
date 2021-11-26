@@ -83,7 +83,8 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             try
             {
-                new Regex(RegularExpression);
+                // Regex constructor will throw an exception if the pattern if incorrectly formatted.
+                _ = new Regex(RegularExpression);
             }
             catch (Exception ex)
             {

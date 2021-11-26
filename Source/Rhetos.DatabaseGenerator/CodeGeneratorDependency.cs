@@ -23,8 +23,8 @@ namespace Rhetos.DatabaseGenerator
 {
     public class CodeGeneratorDependency : IEquatable<CodeGeneratorDependency>
     {
-        public CodeGenerator DependsOn;
-        public CodeGenerator Dependent;
+        public CodeGenerator DependsOn { get; init; }
+        public CodeGenerator Dependent { get; init; }
 
         public bool Equals(CodeGeneratorDependency other)
             => other.DependsOn.Id == DependsOn.Id && other.Dependent.Id == Dependent.Id;

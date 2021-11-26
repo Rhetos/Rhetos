@@ -98,7 +98,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     throw new FrameworkException("Assign function supports only simple property selector. (" + member.expression.ToString() + " is not a MemberExpression)");
 
                 var propertyInfo = memberExpression.Member as PropertyInfo;
-                if (memberExpression == null)
+                if (propertyInfo == null)
                     throw new FrameworkException("Assign function supports only simple property selector. (" + memberExpression.Member.ToString() + " is not a PropertyInfo)");
 
                 if (!(memberExpression.Expression is ParameterExpression))
