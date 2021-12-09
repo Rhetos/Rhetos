@@ -52,6 +52,7 @@ namespace Rhetos
             }
             rhetosServiceCollectionBuilder.ConfigureRhetosHost(ConfigureLocalizer);
             rhetosServiceCollectionBuilder.Services.AddSingleton<HostLocalizer>();
+            rhetosServiceCollectionBuilder.Services.AddSingleton(typeof(HostLocalizer<>));
 
             return rhetosServiceCollectionBuilder;
         }
@@ -63,7 +64,12 @@ namespace Rhetos
 
         private static void ConfigureLocalizer(IServiceProvider serviceProvider, IRhetosHostBuilder rhetosHostBuilder)
         {
-            rhetosHostBuilder.ConfigureContainer(builder => builder.RegisterInstance<ILocalizer>(serviceProvider.GetRequiredService<HostLocalizer>()));
+            rhetosHostBuilder.ConfigureContainer(builder => builder
+                .RegisterInstance<ILocalizer>(serviceProvider.GetRequiredService<HostLocalizer>()));
+            rhetosHostBuilder.ConfigureContainer(builder => builder
+                .RegisterGeneric((context, args) => serviceProvider.GetRequiredService(typeof(HostLocalizer<>).MakeGenericType(args)))
+                .As(typeof(ILocalizer<>))
+                .SingleInstance());
         }
     }
 }

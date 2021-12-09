@@ -17,11 +17,21 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Utilities;
+
 namespace Rhetos.Host.Net
 {
     public class HostLocalizerOptions
     {
-        public string BaseName { get; set; } = "Rhetos";
+        /// <summary>
+        /// Default context for translating message keys (see "msgctxt" in .po files).
+        /// </summary>
+        /// <remarks>
+        /// This configured context is used only for default localizer (<see cref="ILocalizer"/>).
+        /// The entity-specific localizer (<see cref="ILocalizer{TEntity}"/>) uses FullName of the entity type for localization context instead.
+        /// </remarks>
+        public string BaseName { get; set; } = "";
+
         public string Location { get; set; } = "";
     }
 }

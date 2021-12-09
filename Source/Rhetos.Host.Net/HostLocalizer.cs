@@ -25,11 +25,16 @@ namespace Rhetos.Host.Net
 {
     public class HostLocalizer : ILocalizer
     {
-        private readonly IStringLocalizer stringLocalizer;
+        protected readonly IStringLocalizer stringLocalizer;
+
+        protected HostLocalizer(IStringLocalizer stringLocalizer)
+        {
+            this.stringLocalizer = stringLocalizer;
+        }
 
         public HostLocalizer(IStringLocalizerFactory stringLocalizerFactory, IOptions<HostLocalizerOptions> localizerOptions)
         {
-            stringLocalizer = stringLocalizerFactory.Create(localizerOptions.Value.BaseName, localizerOptions.Value.Location);
+            this.stringLocalizer = stringLocalizerFactory.Create(localizerOptions.Value.BaseName, localizerOptions.Value.Location);
         }
 
         public string this[object message, params object[] args]
@@ -41,6 +46,14 @@ namespace Rhetos.Host.Net
                     return stringLocalizer["{0}", message];
 
             }
+        }
+    }
+
+    public class HostLocalizer<T> : HostLocalizer, ILocalizer<T>
+    {
+        public HostLocalizer(IStringLocalizerFactory stringLocalizerFactory)
+            : base(stringLocalizerFactory.Create(typeof(T)))
+        {
         }
     }
 }

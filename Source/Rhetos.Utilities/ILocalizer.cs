@@ -41,4 +41,16 @@ namespace Rhetos.Utilities
             get;
         }
     }
+
+    /// <summary>
+    /// Used for localization of end-user messages.
+    /// Use the indexer method to translate a message to the client's language.
+    /// </summary>
+    /// <remarks>
+    /// Full name of type <typeparamref name="T"/> is used as a base name (or context) for localization key.
+    /// This can be used for localization of the property names for an entity of the given type, to allow different translations of the same property name on a different entity type.
+    /// </remarks>
+    public interface ILocalizer<T> : ILocalizer
+    {
+    }
 }
