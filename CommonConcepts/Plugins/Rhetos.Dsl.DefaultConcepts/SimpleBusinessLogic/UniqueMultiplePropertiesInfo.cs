@@ -59,6 +59,9 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             var newConcepts = new List<IConceptInfo>();
 
+            if (conceptInfo.DataStructure is IWritableOrmDataStructure)
+                newConcepts.Add(new DataStructureLocalizerInfo { DataStructure = conceptInfo.DataStructure });
+
             var uniquePropertis = conceptInfo.PropertyNames.Split(' ')
                 .Select(name => new PropertyInfo { DataStructure = conceptInfo.DataStructure, Name = name })
                 .Select(property => new UniqueMultiplePropertyInfo { Unique = conceptInfo, Property = property });

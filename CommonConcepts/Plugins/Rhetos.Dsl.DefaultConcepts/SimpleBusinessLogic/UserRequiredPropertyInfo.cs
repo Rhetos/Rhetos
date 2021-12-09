@@ -30,9 +30,15 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("UserRequired")]
-    public class UserRequiredPropertyInfo : IConceptInfo
+    public class UserRequiredPropertyInfo : IConceptInfo, IMacroConcept
     {
         [ConceptKey]
         public PropertyInfo Property { get; set; }
+
+        public IEnumerable<IConceptInfo> CreateNewConcepts()
+        {
+            if (Property.DataStructure is IWritableOrmDataStructure)
+                yield return new DataStructureLocalizerInfo { DataStructure = Property.DataStructure };
+        }
     }
 }

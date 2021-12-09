@@ -40,7 +40,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 var invalid = insertedNew.Concat(updatedNew).FirstOrDefault(item => item." + CsPropertyName(info.Property) + @" == null " + OrCondition.Evaluate(info) + @");
                 if (invalid != null)
                     throw new Rhetos.UserException(""It is not allowed to enter {0} because the required property {1} is not set."",
-                        new[] { """ + dataStructureFullName + @""", """ + info.Property.Name + @""" },
+                        new[] { _localizer[""" + dataStructureFullName + @"""], _localizer[""" + info.Property.Name + @"""] },
                         ""DataStructure:" + dataStructureFullName + @",ID:"" + invalid.ID.ToString() + "",Property:" + CsPropertyName(info.Property) + @""", null);
             }
             ";
@@ -59,7 +59,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (RequiredPropertyInfo)conceptInfo;
-            if (IsSupported(info.Property))
+            if (info.IsSupported())
             {
                 codeBuilder.InsertCode(CheckDataSnippet(info), WritableOrmDataStructureCodeGenerator.ProcessedOldDataTag, info.Property.DataStructure);
             }

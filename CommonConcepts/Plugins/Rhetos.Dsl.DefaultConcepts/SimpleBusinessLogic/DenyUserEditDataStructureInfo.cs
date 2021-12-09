@@ -31,7 +31,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("DenyUserEdit")]
-    public class DenyUserEditDataStructureInfo : IValidatedConcept
+    public class DenyUserEditDataStructureInfo : IValidatedConcept, IMacroConcept
     {
         [ConceptKey]
         public DataStructureInfo DataStructure { get; set; }
@@ -40,6 +40,11 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             if (!(DataStructure is IWritableOrmDataStructure))
                 throw new DslSyntaxException(this, this.GetKeywordOrTypeName() + " may only be used on a writable data structure, such as an Entity.");
+        }
+
+        public IEnumerable<IConceptInfo> CreateNewConcepts()
+        {
+            yield return new DataStructureLocalizerInfo { DataStructure = DataStructure };
         }
     }
 }

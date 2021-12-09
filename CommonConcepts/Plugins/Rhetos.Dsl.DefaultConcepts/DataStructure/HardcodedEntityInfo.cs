@@ -35,10 +35,8 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
-            return new List<IConceptInfo>
-            {
-                new ShortStringPropertyInfo{ DataStructure = this, Name = "Name" }
-            };
+            yield return new ShortStringPropertyInfo { DataStructure = this, Name = "Name" };
+            yield return new DataStructureLocalizerInfo { DataStructure = this };
         }
     }
 }

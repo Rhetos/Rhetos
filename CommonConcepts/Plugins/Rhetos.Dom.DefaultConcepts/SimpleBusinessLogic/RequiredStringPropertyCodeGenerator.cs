@@ -39,7 +39,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var info = (RequiredPropertyInfo)conceptInfo;
 
-            if (RequiredPropertyCodeGenerator.IsSupported(info.Property)
+            if (info.IsSupported()
                 && (info.Property is ShortStringPropertyInfo || info.Property is LongStringPropertyInfo))
             {
                 codeBuilder.InsertCode("|| string.IsNullOrWhiteSpace(item." + info.Property.Name + ") ", RequiredPropertyCodeGenerator.OrCondition, info);

@@ -71,7 +71,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                 {{
                     throw new Rhetos.UserException(
                         ""It is not allowed to enter a circular dependency between records in hierarchy {{0}} by {{1}}."",
-                        new[] {{ ""{0}.{1}"", ""{2}"" }}, null, null);
+                        new[] {{ _localizer[""{0}.{1}""], _localizer[""{2}""] }}, null, null);
                 }}
             }}",
                DataStructure.Module.Name,

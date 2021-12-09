@@ -103,7 +103,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                 {{
                     throw new Rhetos.UserException(
                         ""It is not allowed to enter a circular dependency between records in hierarchy {{0}} by {{1}}."",
-                        new[] {{ ""{0}.{1}"", ""{2}"" }}, null, null);
+                        new[] {{ _localizer[""{0}.{1}""], _localizer[""{2}""] }}, null, null);
                 }}
             }}",
                DataStructure.Module.Name,
@@ -118,7 +118,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             {{
                 var child = _domRepository.{0}.{1}.Query().Where(item => item.ID == parameter.ID).SingleOrDefault();
                 if (child == null)
-                    throw new Rhetos.UserException(""Given record does not exist: {{0}}, ID {{1}}."", new object[] {{ ""{0}.{1}"", parameter.ID }}, null, null);
+                    throw new Rhetos.UserException(""Given record does not exist: {{0}}, ID {{1}}."", new object[] {{ _localizer[""{0}.{1}""], parameter.ID }}, null, null);
                 int leftIndex = child.Extension_{1}{2}Hierarchy.LeftIndex.Value;
 
                 return items.Where(item =>
@@ -136,7 +136,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             {{
                 var parent = _domRepository.{0}.{1}.Query().Where(item => item.ID == parameter.ID).SingleOrDefault();
                 if (parent == null)
-                    throw new Rhetos.UserException(""Given record does not exist: {{0}}, ID {{1}}."", new object[] {{ ""{0}.{1}"", parameter.ID }}, null, null);
+                    throw new Rhetos.UserException(""Given record does not exist: {{0}}, ID {{1}}."", new object[] {{ _localizer[""{0}.{1}""], parameter.ID }}, null, null);
                 int leftIndex = parent.Extension_{1}{2}Hierarchy.LeftIndex.Value;
                 int rightIndex = parent.Extension_{1}{2}Hierarchy.RightIndex.Value;
 
@@ -176,6 +176,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             {
                 // Computing the hierarchy information:
                 computedDataStructure,
+                new DataStructureLocalizerInfo { DataStructure = computedDataStructure }, // computedDataStructure code snippet uses '_localizer' property.
                 new DataStructureExtendsInfo { Extension = computedDataStructure, Base = conceptInfo.DataStructure },
                 new IntegerPropertyInfo { DataStructure = computedDataStructure, Name = "LeftIndex" },
                 new IntegerPropertyInfo { DataStructure = computedDataStructure, Name = "RightIndex" },
@@ -195,6 +196,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                 new GuidPropertyInfo { DataStructure = filterDescendantsParameter, Name = "ID" },
                 new QueryFilterExpressionInfo { Source = conceptInfo.DataStructure, Parameter = conceptInfo.Name + "HierarchyAncestors", Expression = conceptInfo.FilterAncestorsExpression() },
                 new QueryFilterExpressionInfo { Source = conceptInfo.DataStructure, Parameter = conceptInfo.Name + "HierarchyDescendants", Expression = conceptInfo.FilterDescendantsExpression() },
+                new DataStructureLocalizerInfo { DataStructure = conceptInfo.DataStructure }, // FilterAncestorsExpression() and FilterDescendantsExpression() use '_localizer' property.
 
             }.Concat(computedDataStructureDependencies);
         }

@@ -27,12 +27,17 @@ using System.ComponentModel.Composition;
 namespace Rhetos.Dsl.DefaultConcepts
 {
     [Export(typeof(IConceptInfo))]
-    public class HierarchySingleRootInternalInfo : IConceptInfo
+    public class HierarchySingleRootInternalInfo : IConceptInfo, IMacroConcept
     {
         // TODO: Remove this class after we make possible alternative constructors for IConceptInfo implementations.
         [ConceptKey]
         public HierarchyInfo Hierarchy { get; set; }
 
         public DataStructureInfo DependsOnComputation { get; set; }
+
+        public IEnumerable<IConceptInfo> CreateNewConcepts()
+        {
+            yield return new DataStructureLocalizerInfo { DataStructure = Hierarchy.DataStructure };
+        }
     }
 }

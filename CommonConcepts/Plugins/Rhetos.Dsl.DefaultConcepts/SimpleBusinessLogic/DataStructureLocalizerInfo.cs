@@ -17,34 +17,31 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.ComponentModel.Composition;
 using Rhetos.Utilities;
+using System.Collections.Generic;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// Client application is not allowed to directly insert or update the property.
+    /// Adds a standard "_localizer" property to the repository class.
+    /// It is a typed localizer (<see cref="ILocalizer{TEntity}"/>) that allows custom property name localization of the given data structure.
     /// </summary>
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("DenyUserEdit")]
-    public class DenyUserEditPropertyInfo : IValidatedConcept, IMacroConcept
+    [ConceptKeyword("DataStructureLocalizer")]
+    public class DataStructureLocalizerInfo : RepositoryUsesInfo, IAlternativeInitializationConcept
     {
-        [ConceptKey]
-        public PropertyInfo Property { get; set; }
-
-        public void CheckSemantics(IDslModel existingConcepts)
+        public IEnumerable<string> DeclareNonparsableProperties()
         {
-            if (!(Property.DataStructure is IWritableOrmDataStructure))
-                throw new DslSyntaxException(this, this.GetKeywordOrTypeName() + " may only be used on a writable data structure, such as an Entity.");
+            return new[] { nameof(PropertyName), nameof(PropertyType) };
         }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts()
+        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
         {
-            yield return new DataStructureLocalizerInfo { DataStructure = Property.DataStructure };
+            PropertyName = "_localizer";
+            PropertyType = $"Rhetos.Utilities.ILocalizer<{DataStructure.FullName}>";
+
+            createdConcepts = null;
         }
     }
 }

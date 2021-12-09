@@ -33,7 +33,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             HardcodedEntityInfo info = (HardcodedEntityInfo)conceptInfo;
             var codeSnippet =
-            $@"throw new Rhetos.UserException(""It is not allowed to modify hard-coded data in {{0}}."", new []{{""{conceptInfo.GetKeyProperties()}""}}, null, null);
+            $@"throw new Rhetos.UserException(""It is not allowed to modify hard-coded data in {{0}}."", new [] {{ _localizer[""{info.FullName}""] }}, null, null);
             ";
             codeBuilder.InsertCode(codeSnippet, WritableOrmDataStructureCodeGenerator.ArgumentValidationTag, info);
         }

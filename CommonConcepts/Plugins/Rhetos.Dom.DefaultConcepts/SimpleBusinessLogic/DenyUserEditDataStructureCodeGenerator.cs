@@ -40,7 +40,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return string.Format(
             @"if (checkUserPermissions)
                 throw new Rhetos.UserException(
-                    ""It is not allowed to directly modify {{0}}."", new[] {{ ""{0}.{1}"" }}, null, null);
+                    ""It is not allowed to directly modify {{0}}."", new[] {{ _localizer[""{0}.{1}""] }}, null, null);
             ",
                 info.DataStructure.Module.Name,
                 info.DataStructure.Name);

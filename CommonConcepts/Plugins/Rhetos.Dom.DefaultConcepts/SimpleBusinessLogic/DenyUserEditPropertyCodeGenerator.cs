@@ -41,7 +41,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return $@"if (invalidItem != null)
                     throw new Rhetos.UserException(
                         ""It is not allowed to directly enter {{0}} property of {{1}}."",
-                        new[] {{ ""{info.Property.Name}"", ""{info.Property.DataStructure.Module.Name}.{info.Property.DataStructure.Name}"" }},
+                        new[] {{ _localizer[""{info.Property.Name}""], _localizer[""{info.Property.DataStructure.Module.Name}.{info.Property.DataStructure.Name}""] }},
                         ""DataStructure:{info.Property.DataStructure.Module.Name}.{info.Property.DataStructure.Name},ID:"" + invalidItem.ID + "",Property:{info.Property.Name}"",
                         null);
             ";

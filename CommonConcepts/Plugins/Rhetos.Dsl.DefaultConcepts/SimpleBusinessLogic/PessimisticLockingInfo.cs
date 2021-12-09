@@ -57,12 +57,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                     Reference = reference
                 }));
 
-            newConcepts.Add(new RepositoryUsesInfo
-            {
-                DataStructure = conceptInfo.Resource,
-                PropertyName = "_localizer",
-                PropertyType = "Rhetos.Utilities.ILocalizer, Rhetos.Utilities"
-            });
+            newConcepts.Add(new DataStructureLocalizerInfo { DataStructure = conceptInfo.Resource });
 
             return newConcepts;
         }

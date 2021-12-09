@@ -86,7 +86,7 @@ namespace Rhetos.Dom.DefaultConcepts.SimpleBusinessLogic
                             + "" '"" + {5} + ""'"";
                         throw new Rhetos.UserException(
                             ""It is not allowed to enter a duplicate record in {{0}}. A record with the same value already exists: {{1}}."",
-                            new[] {{ ""{0}.{1}"", duplicateValue }}, null, null);
+                            new[] {{ _localizer[""{0}.{1}""], duplicateValue }}, null, null);
                     }}
                 }}
                 ",
