@@ -33,6 +33,7 @@
   <Reference Relative="..\EntityFramework.SqlServer.dll">..\EntityFramework.SqlServer.dll</Reference>
   <Reference Relative="..\Microsoft.CodeAnalysis.CSharp.dll">..\Microsoft.CodeAnalysis.CSharp.dll</Reference>
   <Reference Relative="..\Microsoft.CodeAnalysis.dll">..\Microsoft.CodeAnalysis.dll</Reference>
+  <Reference Relative="..\Microsoft.Extensions.Localization.Abstractions.dll">..\Microsoft.Extensions.Localization.Abstractions.dll</Reference>
   <Reference Relative="..\Microsoft.Win32.SystemEvents.dll">..\Microsoft.Win32.SystemEvents.dll</Reference>
   <Reference Relative="..\Newtonsoft.Json.dll">..\Newtonsoft.Json.dll</Reference>
   <Reference Relative="..\NLog.dll">..\NLog.dll</Reference>

@@ -37,7 +37,7 @@ namespace Rhetos.Host.Net
             this.stringLocalizer = stringLocalizerFactory.Create(localizerOptions.Value.BaseName, localizerOptions.Value.Location);
         }
 
-        public string this[object message, params object[] args]
+        public LocalizedString this[object message, params object[] args]
         {
             get {
                 if(message is string)

@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Microsoft.Extensions.Localization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,7 +37,7 @@ namespace Rhetos.Utilities
         /// Example: <code>string translatedMsg = _localizer["{0} cannot have value {1}.", somePropertyName, newValue]</code>
         /// </summary>
         /// <param name="message">The parameter type is object, instead of string, to enable simple localization of DateTime and other types.</param>
-        string this[object message, params object[] args]
+        LocalizedString this[object message, params object[] args]
         {
             get;
         }

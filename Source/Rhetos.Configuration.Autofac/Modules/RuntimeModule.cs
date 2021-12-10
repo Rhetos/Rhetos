@@ -52,7 +52,7 @@ namespace Rhetos.Configuration.Autofac.Modules
             var pluginRegistration = builder.GetRhetosPluginRegistration();
             AddDsl(builder, pluginRegistration);
             AddSecurity(builder, pluginRegistration);
-            AddUtilities(builder, pluginRegistration);
+            AddUtilities(builder);
             AddCommandsProcessing(builder, pluginRegistration);
 
             base.Load(builder);
@@ -78,10 +78,10 @@ namespace Rhetos.Configuration.Autofac.Modules
             pluginRegistration.FindAndRegisterPlugins<IClaimProvider>();
         }
 
-        private void AddUtilities(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
+        private void AddUtilities(ContainerBuilder builder)
         {
-            pluginRegistration.FindAndRegisterPlugins<ILocalizer>();
-            builder.RegisterType<NoLocalizer>().As<ILocalizer>().SingleInstance().PreserveExistingDefaults();
+            builder.RegisterType<NoLocalizer>().As<ILocalizer>().SingleInstance();
+            builder.RegisterGeneric(typeof(NoLocalizer<>)).As(typeof(ILocalizer<>)).SingleInstance();
         }
 
         private static void AddCommandsProcessing(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)

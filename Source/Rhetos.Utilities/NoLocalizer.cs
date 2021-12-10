@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Microsoft.Extensions.Localization;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -32,15 +33,24 @@ namespace Rhetos.Utilities
     /// </summary>
     public class NoLocalizer : ILocalizer
     {
-        public string this[object message, params object[] args]
+        public LocalizedString this[object message, params object[] args]
         {
             get
             {
+                string messageText = message.ToString();
                 if (args != null)
-                    return string.Format(CultureInfo.InvariantCulture, message.ToString(), args ?? Array.Empty<object>());
+                    return new LocalizedString(messageText, string.Format(CultureInfo.InvariantCulture, messageText, args));
                 else
-                    return message.ToString();
+                    return new LocalizedString(messageText, messageText);
             }
         }
+    }
+
+    /// <summary>
+    /// This is the default implementation of ILocalizer.
+    /// It simply returns the given string, without modification.
+    /// </summary>
+    public class NoLocalizer<T> : NoLocalizer, ILocalizer<T>
+    {
     }
 }
