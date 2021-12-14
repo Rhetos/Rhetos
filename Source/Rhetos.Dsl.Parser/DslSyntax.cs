@@ -18,6 +18,7 @@
 */
 
 using Rhetos.Utilities;
+using System;
 using System.Collections.Generic;
 
 namespace Rhetos.Dsl
@@ -29,9 +30,33 @@ namespace Rhetos.Dsl
     public class DslSyntax
     {
         /// <summary>
-        /// Semantic Versioning 2.0.0.
+        /// DSL syntax version used by the Rhetos app from which the DSL syntax is create or loaded.
         /// </summary>
-        public string Version { get; set; }
+        /// <remarks>
+        /// This version may be different from <see cref="CurrentVersion"/> when using Rhetos libraries
+        /// in a tool that loads DslSyntax from a given Rhetos app (for example, DSL IntelliSense).
+        /// Tools such as DSL IntelliSense should report a warning or an error if the application's DSL version
+        /// is larger then the version supported by currently used libraries (<see cref="CurrentVersion"/>),
+        /// and suggest to use a newer version of the tool.
+        /// It is expected that the new version will support previous DSL versions.
+        /// </remarks>
+        public Version Version { get; set; }
+
+        /// <summary>
+        /// DSL syntax version supported by the currently loaded Rhetos libraries.
+        /// </summary>
+        /// <remarks>
+        /// See <see cref="Version"/> for more info.
+        /// </remarks>
+        public static readonly Version CurrentVersion = new Version(5, 0);
+
+        /// <summary>
+        /// Version of Rhetos framework (information only).
+        /// </summary>
+        /// <remarks>
+        /// Semantic Versioning 2.0.0 format.
+        /// </remarks>
+        public string RhetosVersion { get; set; }
 
         /// <summary>
         /// Value is initially configured from BuildOptions class.

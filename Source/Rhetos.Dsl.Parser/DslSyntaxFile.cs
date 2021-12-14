@@ -18,6 +18,7 @@
 */
 
 using Newtonsoft.Json;
+using Rhetos.Logging;
 using Rhetos.Utilities;
 using System.IO;
 
@@ -28,10 +29,12 @@ namespace Rhetos.Dsl
         public static readonly string DslSyntaxFileName = "DslSyntax.json";
 
         private readonly RhetosBuildEnvironment _rhetosBuildEnvironment;
+        private readonly ILogger _logger;
 
-        public DslSyntaxFile(RhetosBuildEnvironment rhetosBuildEnvironment)
+        public DslSyntaxFile(RhetosBuildEnvironment rhetosBuildEnvironment, ILogProvider logProvider)
         {
             _rhetosBuildEnvironment = rhetosBuildEnvironment;
+            _logger = logProvider.GetLogger(GetType().Name);
         }
 
         private readonly JsonSerializerSettings _jsonSettings = new()
@@ -65,7 +68,12 @@ namespace Rhetos.Dsl
             using (var jsonReader = new JsonTextReader(fileReader))
             {
                 JsonSerializer serializer = JsonSerializer.Create(_jsonSettings);
-                return serializer.Deserialize<DslSyntax>(jsonReader);
+                var dslSyntax = serializer.Deserialize<DslSyntax>(jsonReader);
+                if (dslSyntax.Version == null)
+                    _logger.Warning(() => $"Cannot detect the application's DSL syntax version (Rhetos {dslSyntax.RhetosVersion}). This utility supports DSL version v{DslSyntax.CurrentVersion}.");
+                if (dslSyntax.Version > DslSyntax.CurrentVersion)
+                    _logger.Warning(() => $"The application uses a newer version of the DSL syntax (v{dslSyntax.Version}, Rhetos {dslSyntax.RhetosVersion}) then supported by this utility (v{DslSyntax.CurrentVersion}).");
+                return dslSyntax;
             }
         }
     }

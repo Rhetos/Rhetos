@@ -42,7 +42,8 @@ namespace Rhetos.Dsl
             return new DslSyntax
             {
                 ConceptTypes = CreateConceptTypesAndMembers(_conceptInfoPlugins.Select(ci => ci.GetType())),
-                Version = SystemUtility.GetRhetosVersion(),
+                Version = DslSyntax.CurrentVersion,
+                RhetosVersion = SystemUtility.GetRhetosVersion(),
                 ExcessDotInKey = _buildOptions.DslSyntaxExcessDotInKey,
                 DatabaseLanguage = _databaseSettings.DatabaseLanguage,
             };
