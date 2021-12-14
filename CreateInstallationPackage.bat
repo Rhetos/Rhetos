@@ -7,6 +7,7 @@ IF NOT EXIST Install\ MD Install
 DEL /F /S /Q Install\* || GOTO Error0
 
 NuGet.exe pack Source\Rhetos.nuspec -OutputDirectory Install -Exclude "**.pdb" || GOTO Error0
+NuGet.exe pack Source\Rhetos.DslParser.nuspec -OutputDirectory Install -Exclude "**.pdb" || GOTO Error0
 NuGet.exe pack Source\Rhetos.Host.Net.nuspec -OutputDirectory Install -Exclude "**.pdb" || GOTO Error0
 NuGet.exe pack Source\Rhetos.Host.AspNet.nuspec -OutputDirectory Install -Exclude "**.pdb" || GOTO Error0
 NuGet.exe pack Source\Rhetos.MSBuild.nuspec -OutputDirectory Install -Exclude "**.pdb" || GOTO Error0
@@ -15,6 +16,7 @@ NuGet.exe pack Source\Rhetos.TestCommon.nuspec -OutputDirectory Install -Exclude
 NuGet.exe pack CommonConcepts\Rhetos.CommonConcepts.nuspec -OutputDirectory Install -Exclude "**.pdb" || GOTO Error0
 
 NuGet.exe pack Source\Rhetos.nuspec  -Symbols -SymbolPackageFormat snupkg -OutputDirectory Install || GOTO Error0
+NuGet.exe pack Source\Rhetos.DslParser.nuspec  -Symbols -SymbolPackageFormat snupkg -OutputDirectory Install || GOTO Error0
 NuGet.exe pack Source\Rhetos.Host.Net.nuspec -Symbols -SymbolPackageFormat snupkg -OutputDirectory Install || GOTO Error0
 NuGet.exe pack Source\Rhetos.Host.AspNet.nuspec -Symbols -SymbolPackageFormat snupkg -OutputDirectory Install || GOTO Error0
 NuGet.exe pack Source\Rhetos.MSBuild.nuspec -Symbols -SymbolPackageFormat snupkg -OutputDirectory Install || GOTO Error0

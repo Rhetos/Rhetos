@@ -20,6 +20,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Source\Rhetos.Host.nuspec = Source\Rhetos.Host.nuspec
 		Source\Rhetos.MSBuild.nuspec = Source\Rhetos.MSBuild.nuspec
 		Source\Rhetos.nuspec = Source\Rhetos.nuspec
+		Source\Rhetos.DslParser.nuspec = Source\Rhetos.DslParser.nuspec
 		Source\Rhetos.TestCommon.nuspec = Source\Rhetos.TestCommon.nuspec
 		Tools\Configuration\Template.rhetos-app.local.settings.json = Tools\Configuration\Template.rhetos-app.local.settings.json
 	EndProjectSection

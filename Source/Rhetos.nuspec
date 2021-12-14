@@ -11,6 +11,7 @@
     <copyright>Copyright Omega software 2013</copyright>
     <tags>Rhetos</tags>
     <dependencies>
+      <dependency id="Rhetos.DslParser" version="[5.0.0-dev,5.1.0)" />
       <dependency id="Autofac" version="6.3.0" />
       <dependency id="EntityFramework" version="6.4.4" />
       <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="5.0.0" />
@@ -25,7 +26,6 @@
       <dependency id="System.ComponentModel.Composition" version="5.0.0" /> <!-- Rhetos plugins use MEF. -->
       <dependency id="System.Configuration.ConfigurationManager" version="5.0.0" />
       <dependency id="System.Data.SqlClient" version="4.8.3" />
-      <dependency id="System.Text.Encoding.CodePages" version="5.0.0" />
       <dependency id="Oracle.ManagedDataAccess.Core" version="3.21.3" />
     </dependencies>
   </metadata>
@@ -51,24 +51,12 @@
     <file src="Rhetos.Dsl\bin\Debug\net5.0\Rhetos.Dsl.dll" target="lib\net5.0" />
     <file src="Rhetos.Dsl\bin\Debug\net5.0\Rhetos.Dsl.pdb" target="lib\net5.0" />
     <file src="Rhetos.Dsl\bin\Debug\net5.0\Rhetos.Dsl.xml" target="lib\net5.0" />
-    <file src="Rhetos.Dsl.Interfaces\bin\Debug\netstandard2.1\Rhetos.Dsl.Interfaces.dll" target="lib\net5.0" />
-    <file src="Rhetos.Dsl.Interfaces\bin\Debug\netstandard2.1\Rhetos.Dsl.Interfaces.pdb" target="lib\net5.0" />
-    <file src="Rhetos.Dsl.Interfaces\bin\Debug\netstandard2.1\Rhetos.Dsl.Interfaces.xml" target="lib\net5.0" />
-    <file src="Rhetos.Dsl.Parser\bin\Debug\netstandard2.1\Rhetos.Dsl.Parser.dll" target="lib\net5.0" />
-    <file src="Rhetos.Dsl.Parser\bin\Debug\netstandard2.1\Rhetos.Dsl.Parser.pdb" target="lib\net5.0" />
-    <file src="Rhetos.Dsl.Parser\bin\Debug\netstandard2.1\Rhetos.Dsl.Parser.xml" target="lib\net5.0" />
     <file src="Rhetos.Extensibility\bin\Debug\net5.0\Rhetos.Extensibility.dll" target="lib\net5.0" />
     <file src="Rhetos.Extensibility\bin\Debug\net5.0\Rhetos.Extensibility.pdb" target="lib\net5.0" />
     <file src="Rhetos.Extensibility\bin\Debug\net5.0\Rhetos.Extensibility.xml" target="lib\net5.0" />
-    <file src="Rhetos.Extensibility.Interfaces\bin\Debug\netstandard2.0\Rhetos.Extensibility.Interfaces.dll" target="lib\net5.0" />
-    <file src="Rhetos.Extensibility.Interfaces\bin\Debug\netstandard2.0\Rhetos.Extensibility.Interfaces.pdb" target="lib\net5.0" />
-    <file src="Rhetos.Extensibility.Interfaces\bin\Debug\netstandard2.0\Rhetos.Extensibility.Interfaces.xml" target="lib\net5.0" />
     <file src="Rhetos.Logging\bin\Debug\net5.0\Rhetos.Logging.dll" target="lib\net5.0" />
     <file src="Rhetos.Logging\bin\Debug\net5.0\Rhetos.Logging.pdb" target="lib\net5.0" />
     <file src="Rhetos.Logging\bin\Debug\net5.0\Rhetos.Logging.xml" target="lib\net5.0" />
-    <file src="Rhetos.Logging.Interfaces\bin\Debug\netstandard2.0\Rhetos.Logging.Interfaces.dll" target="lib\net5.0" />
-    <file src="Rhetos.Logging.Interfaces\bin\Debug\netstandard2.0\Rhetos.Logging.Interfaces.pdb" target="lib\net5.0" />
-    <file src="Rhetos.Logging.Interfaces\bin\Debug\netstandard2.0\Rhetos.Logging.Interfaces.xml" target="lib\net5.0" />
     <file src="Rhetos.Persistence\bin\Debug\net5.0\Rhetos.Persistence.dll" target="lib\net5.0" />
     <file src="Rhetos.Persistence\bin\Debug\net5.0\Rhetos.Persistence.pdb" target="lib\net5.0" />
     <file src="Rhetos.Persistence\bin\Debug\net5.0\Rhetos.Persistence.xml" target="lib\net5.0" />
@@ -90,9 +78,6 @@
     <file src="Rhetos.Utilities\bin\Debug\net5.0\Rhetos.Utilities.dll" target="lib\net5.0" />
     <file src="Rhetos.Utilities\bin\Debug\net5.0\Rhetos.Utilities.pdb" target="lib\net5.0" />
     <file src="Rhetos.Utilities\bin\Debug\net5.0\Rhetos.Utilities.xml" target="lib\net5.0" />
-    <file src="Rhetos.Utilities.Interfaces\bin\Debug\netstandard2.0\Rhetos.Utilities.Interfaces.dll" target="lib\net5.0" />
-    <file src="Rhetos.Utilities.Interfaces\bin\Debug\netstandard2.0\Rhetos.Utilities.Interfaces.pdb" target="lib\net5.0" />
-    <file src="Rhetos.Utilities.Interfaces\bin\Debug\netstandard2.0\Rhetos.Utilities.Interfaces.xml" target="lib\net5.0" />
     <file src="Rhetos.XmlSerialization\bin\Debug\net5.0\Rhetos.XmlSerialization.dll" target="lib\net5.0" />
     <file src="Rhetos.XmlSerialization\bin\Debug\net5.0\Rhetos.XmlSerialization.pdb" target="lib\net5.0" />
     <file src="Rhetos.XmlSerialization\bin\Debug\net5.0\Rhetos.XmlSerialization.xml" target="lib\net5.0" />
