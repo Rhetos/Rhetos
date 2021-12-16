@@ -86,7 +86,7 @@ namespace Rhetos.Dom.DefaultConcepts
             string parameterRepository = parsedExpression.ExpressionParameters[1].Name;
             string parameterFilter = parsedExpression.ExpressionParameters[2].Name;
 
-            // Trying to remove usage of expression arguments other then input source and filter parameters.
+            // Trying to remove usage of expression arguments other than input source and filter parameters.
             var simplifiedMethodBody = parsedExpression.MethodBody;
             if (_commonConceptsOptions.ComposableFilterByOptimizeRepositoryAndContextUsage)
             {

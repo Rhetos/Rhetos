@@ -167,7 +167,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             var query = items as IQueryable<TEntityInterface>;
             if (query == null && items != null)
-                throw new FrameworkException($"{EntityName} does not implement a query method or a filter with parameter {parameterType.FullName} than returns an IQueryable. There is an IEnumerable loader of filter implemented, so try using the Load function instead of the Query function.");
+                throw new FrameworkException($"{EntityName} does not implement a query method or a filter with parameter {parameterType.FullName} that returns an IQueryable. There is an IEnumerable loader of filter implemented, so try using the Load function instead of the Query function.");
 
             return query;
         }

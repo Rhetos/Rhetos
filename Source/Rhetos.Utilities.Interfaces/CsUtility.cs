@@ -376,7 +376,7 @@ namespace Rhetos.Utilities
         /// <summary>
         /// Shortens the text if needed to match the limit.
         /// If shortened, the text will end with hash value that represent the erased suffix.
-        /// This reduces name collisions if two string have same prefix longer then <paramref name="maxLength"/>.
+        /// This reduces name collisions if two string have same prefix longer than <paramref name="maxLength"/>.
         /// </summary>
         public static string LimitWithHash(this string text, int maxLength)
         {

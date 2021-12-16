@@ -57,7 +57,7 @@ namespace Rhetos
         /// </summary>
         /// <param name="message">
         /// Error message for the end user.
-        /// Use parameters similar to <see cref="string.Format(string, object[])"/> to simplify localization, for example "Value of {0} should be less then {1}.".
+        /// Use parameters similar to <see cref="string.Format(string, object[])"/> to simplify localization, for example "Value of {0} should be less than {1}.".
         /// Single message translation can be used in multiple scenarios with different parameter values.
         /// </param>
         /// <param name="messageParameters">
@@ -73,7 +73,7 @@ namespace Rhetos
         /// </summary>
         /// <param name="message">
         /// Error message for the end user.
-        /// Use parameters similar to <see cref="string.Format(string, object[])"/> to simplify localization, for example "Value of {0} should be less then {1}.".
+        /// Use parameters similar to <see cref="string.Format(string, object[])"/> to simplify localization, for example "Value of {0} should be less than {1}.".
         /// Single message translation can be used in multiple scenarios with different parameter values.
         /// </param>
         /// <param name="messageParameters">

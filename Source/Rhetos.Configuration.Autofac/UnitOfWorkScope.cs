@@ -34,7 +34,7 @@ namespace Rhetos
     public class UnitOfWorkScope : IDisposable, IUnitOfWork
     {
         /// <summary>
-        /// A "lifetime scope tag" that prevents developers from accidentally resolving "scope-critical" components from a scope other then
+        /// A "lifetime scope tag" that prevents developers from accidentally resolving "scope-critical" components from a scope other than
         /// this unit of work (for example, from the global root scope as a singleton).
         /// This prevents some bugs in custom application code such as database transaction staying open after a command has finished,
         /// or user authentication leaking into different scopes.

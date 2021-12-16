@@ -36,7 +36,7 @@ namespace Rhetos.Dsl
         /// This version may be different from <see cref="CurrentVersion"/> when using Rhetos libraries
         /// in a tool that loads DslSyntax from a given Rhetos app (for example, DSL IntelliSense).
         /// Tools such as DSL IntelliSense should report a warning or an error if the application's DSL version
-        /// is larger then the version supported by currently used libraries (<see cref="CurrentVersion"/>),
+        /// is larger than the version supported by currently used libraries (<see cref="CurrentVersion"/>),
         /// and suggest to use a newer version of the tool.
         /// It is expected that the new version will support previous DSL versions.
         /// </remarks>

@@ -27,7 +27,7 @@ namespace Rhetos.Dom.DefaultConcepts
     {
         /// <summary>
         /// Number of records inserted updated or deleted in a single SQL command.
-        /// When saving a list of records with count larger then this limit, the list will be automatically split to batches.
+        /// When saving a list of records with count larger than this limit, the list will be automatically split to batches.
         /// </summary>
         public int SaveSqlCommandBatchSize { get; set; } = 20;
 

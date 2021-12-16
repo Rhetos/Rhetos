@@ -72,7 +72,7 @@ namespace Rhetos.Dsl
                 if (dslSyntax.Version == null)
                     _logger.Warning(() => $"Cannot detect the application's DSL syntax version (Rhetos {dslSyntax.RhetosVersion}). This utility supports DSL version v{DslSyntax.CurrentVersion}.");
                 if (dslSyntax.Version > DslSyntax.CurrentVersion)
-                    _logger.Warning(() => $"The application uses a newer version of the DSL syntax (v{dslSyntax.Version}, Rhetos {dslSyntax.RhetosVersion}) then supported by this utility (v{DslSyntax.CurrentVersion}).");
+                    _logger.Warning(() => $"The application uses a newer version of the DSL syntax (v{dslSyntax.Version}, Rhetos {dslSyntax.RhetosVersion}) than supported by this utility (v{DslSyntax.CurrentVersion}).");
                 return dslSyntax;
             }
         }

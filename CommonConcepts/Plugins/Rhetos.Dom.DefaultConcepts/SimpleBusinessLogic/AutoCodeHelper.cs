@@ -104,7 +104,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     maxNumber = reader.GetInt32(0);
                 });
 
-                // If there are newly inserted records greater then the existing records:
+                // If there are newly inserted records greater than the existing records:
                 if (autoCodeGroup.MaxProvidedCode != null && autoCodeGroup.MaxProvidedCode > maxNumber)
                 {
                     maxNumber = autoCodeGroup.MaxProvidedCode.Value;
@@ -181,7 +181,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     maxSuffixLength = reader.GetInt32(1);
                 });
 
-                // If there are newly inserted records greater then the existing records:
+                // If there are newly inserted records greater than the existing records:
                 if (autoCodeGroup.MaxProvidedCode != null && autoCodeGroup.MaxProvidedCode > maxSuffixNumber)
                 {
                     maxSuffixNumber = autoCodeGroup.MaxProvidedCode.Value;

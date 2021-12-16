@@ -27,7 +27,7 @@ namespace Rhetos.Utilities
     {
         /// <summary>
         /// Timeout in seconds for warning on long operations, typically used on deployment.
-        /// If an operation takes longer then the timeout value, a warning is written to log in a separate thread, while the operation continues.
+        /// If an operation takes longer than the timeout value, a warning is written to log in a separate thread, while the operation continues.
         /// If the value is 0, the logging is turned off.
         /// For usage see <see cref="IDelayedLogger"/>.
         /// </summary>
