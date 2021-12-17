@@ -81,6 +81,8 @@ namespace Rhetos.Dsl
 
         private DslContainer Initialize(DslContainer dslContainer)
         {
+            _logger.Info(() => "Parsing DSL scripts.");
+
             var swTotal = Stopwatch.StartNew();
             var nodes = _dslParser.GetConcepts();
 
@@ -103,6 +105,8 @@ namespace Rhetos.Dsl
             _dslModelFile.SaveConcepts(dslContainer.Concepts);
 
             _performanceLogger.Write(swTotal, $"Initialize ({dslContainer.Concepts.Count()} concepts).");
+
+            _logger.Info(() => $"Application model has {dslContainer.Concepts.Count()} statements.");
             return dslContainer;
         }
 

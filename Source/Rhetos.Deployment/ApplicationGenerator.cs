@@ -34,7 +34,6 @@ namespace Rhetos.Deployment
         private readonly ILogProvider _logProvider;
         private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
-        private readonly IDslModel _dslModel;
         private readonly IPluginsContainer<IGenerator> _generatorsContainer;
         private readonly RhetosBuildEnvironment _buildEnvironment;
         private readonly FilesUtility _filesUtility;
@@ -43,7 +42,6 @@ namespace Rhetos.Deployment
 
         public ApplicationGenerator(
             ILogProvider logProvider,
-            IDslModel dslModel,
             IPluginsContainer<IGenerator> generatorsContainer,
             RhetosBuildEnvironment buildEnvironment,
             FilesUtility filesUtility,
@@ -53,7 +51,6 @@ namespace Rhetos.Deployment
             _logProvider = logProvider;
             _logger = logProvider.GetLogger(GetType().Name);
             _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
-            _dslModel = dslModel;
             _generatorsContainer = generatorsContainer;
             _buildEnvironment = buildEnvironment;
             _filesUtility = filesUtility;
@@ -68,9 +65,9 @@ namespace Rhetos.Deployment
             if (!string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder))
                 _filesUtility.SafeCreateDirectory(_buildEnvironment.GeneratedSourceFolder); // Obsolete source files will be cleaned later. Keeping the existing files to allowing source change detection in Visual Studio.
 
-            CheckDslModelErrors();
-
-            var generators = _generatorsContainer.GetPlugins().ToArray();
+            var generators = _generatorsContainer.GetPlugins()
+                .OrderBy(DslParserPriority)
+                .ToArray();
             var job = PrepareGeneratorsJob(generators);
 
             _logger.Trace(() => $"Starting parallel execution of {generators.Length} generators.");
@@ -83,6 +80,27 @@ namespace Rhetos.Deployment
 
             if (!string.IsNullOrEmpty(_buildEnvironment.GeneratedSourceFolder))
                 _sourceWriter.CleanUp();
+        }
+
+        /// <summary>
+        /// Generate DSL syntax files earlier, to make sure that DSL IntelliSense will work even if there are syntax errors in DSL script or if any other IGenerator fails.
+        /// </summary>
+        /// <remarks>
+        /// The generators are already sorted by some of their dependencies in <see cref="IPluginsContainer{TPlugin}.GetPlugins"/>,
+        /// but we can ignore that initial sort here, because the dependencies are handled here in a completely different way
+        /// in <see cref="PrepareGeneratorsJob"/> method.
+        /// </remarks>
+        private int DslParserPriority(IGenerator generator)
+        {
+            switch (generator.GetType().FullName)
+            {
+                case "Rhetos.Dsl.DslSyntaxFileGenerator":
+                    return 1;
+                case "Rhetos.Dsl.DslDocumentationFileGenerator":
+                    return 2;
+                default:
+                    return 3;
+            }
         }
 
         private ParallelJob PrepareGeneratorsJob(IList<IGenerator> generators)
@@ -184,17 +202,6 @@ namespace Rhetos.Deployment
             }
 
             return pairs;
-        }
-
-        /// <summary>
-        /// Creating the DSL model instance *before* executing code generators, to proved better error reporting
-        /// and make it clear that a code generator did not cause a parser error.
-        /// </summary>
-        private void CheckDslModelErrors()
-        {
-            _logger.Info(() => "Parsing DSL scripts.");
-            int dslModelConceptsCount = _dslModel.Concepts.Count();
-            _logger.Info(() => $"Application model has {dslModelConceptsCount} statements.");
         }
 
         private static string GetGeneratorName(IGenerator generator) =>

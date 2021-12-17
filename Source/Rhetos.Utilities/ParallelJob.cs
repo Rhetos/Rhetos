@@ -123,6 +123,11 @@ namespace Rhetos.Utilities
             var errors = completedTasks.Values
                 .Where(task => task.IsFaulted)
                 .Select(task => task.Exception?.InnerException ?? task.Exception)
+                // Distinct() is used here because parallel calls to components with Lazy initialization can result with the same exception
+                // returned to multiple tasks (for example, exceptions from parsing DSL script).
+                // This exception sometime has stack trace with multiple task calls visible, separated by "End of stack trace from previous location",
+                // and sometimes just have the first caller in the stack trace.
+                .Distinct()
                 .ToList();
 
             if (errors.Count == 1)

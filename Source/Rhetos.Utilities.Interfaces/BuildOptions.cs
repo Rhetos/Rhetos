@@ -45,7 +45,7 @@ namespace Rhetos.Utilities
         public int MaxExecuteGeneratorsParallelism { get; set; } = 0;
 
         /// <summary>
-        /// List of pairs specifying additional dependencies for generators. Each entry is formatted as "GeneratorTypeFullName:GeneratorDependencyTypeFullName";
+        /// List of pairs specifying additional dependencies for generators. Each entry is formatted as "GeneratorTypeFullName:GeneratorDependencyTypeFullName".
         /// </summary>
         public IEnumerable<string> AdditionalGeneratorDependencies { get; set; }
     }
