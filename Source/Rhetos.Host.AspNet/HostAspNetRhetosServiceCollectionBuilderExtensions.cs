@@ -17,11 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Autofac;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Rhetos.Host.AspNet;
 using Rhetos.Host.AspNet.Dashboard;
 using Rhetos.Host.AspNet.Dashboard.RhetosDashboardSnippets;
 using Rhetos.Utilities;
+using System;
 
 namespace Rhetos
 {
@@ -41,8 +44,13 @@ namespace Rhetos
         {
             rhetosServiceCollectionBuilder.Services.AddHttpContextAccessor();
 
-            // not using TryAdd, allows subsequent calls to override previous ones
-            rhetosServiceCollectionBuilder.Services.AddScoped<IUserInfo, RhetosAspNetCoreIdentityUser>();
+            rhetosServiceCollectionBuilder.ConfigureRhetosHost((serviceProvider, rhetosHostBuilder) =>
+                rhetosHostBuilder.ConfigureContainer(containerBuilder =>
+                {
+                    containerBuilder.Register(_ => serviceProvider.GetRequiredService<IHttpContextAccessor>()).SingleInstance().ExternallyOwned();
+                    containerBuilder.RegisterType<RhetosAspNetCoreIdentityUser>().As<IUserInfo>().InstancePerMatchingLifetimeScope(UnitOfWorkScope.ScopeName);
+                }));
+
             return rhetosServiceCollectionBuilder;
         }
 

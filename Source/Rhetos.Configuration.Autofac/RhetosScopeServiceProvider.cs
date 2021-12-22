@@ -17,8 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Autofac;
-using Rhetos.Utilities;
 using System;
 
 namespace Rhetos
@@ -30,9 +28,9 @@ namespace Rhetos
     {
         private readonly IUnitOfWorkScope unitOfWorkScope;
 
-        public RhetosScopeServiceProvider(RhetosHost rhetosHost, IUserInfo rhetosUser)
+        public RhetosScopeServiceProvider(RhetosHost rhetosHost)
         {
-            unitOfWorkScope = rhetosHost.CreateScope(builder => builder.RegisterInstance(rhetosUser));
+            unitOfWorkScope = rhetosHost.CreateScope();
         }
 
         public T Resolve<T>()

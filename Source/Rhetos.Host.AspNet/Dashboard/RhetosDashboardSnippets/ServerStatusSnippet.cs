@@ -31,11 +31,11 @@ namespace Rhetos.Host.AspNet.Dashboard.RhetosDashboardSnippets
 
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IUserInfo _userInfo;
-    
-        public ServerStatusSnippet(IHttpContextAccessor httpContextAccessor, IUserInfo userInfo)
+
+        public ServerStatusSnippet(IHttpContextAccessor httpContextAccessor, IRhetosComponent<IUserInfo> userInfo)
         {
             _httpContextAccessor = httpContextAccessor;
-            _userInfo = userInfo;
+            _userInfo = userInfo.Value;
         }
 
         public string RenderHtml()
