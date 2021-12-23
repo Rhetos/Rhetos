@@ -41,6 +41,8 @@ namespace Rhetos
 
         /// <summary>
         /// Configures Rhetos dependency injection container and Rhetos configuration settings.
+        /// The provided delegate will be executed to configure a singleton <see cref="RhetosHost"/>,
+        /// therefore is should not be used to resolve <i>scoped</i> services from <see cref="IServiceProvider"/>.
         /// </summary>
         public RhetosServiceCollectionBuilder ConfigureRhetosHost(Action<IServiceProvider, IRhetosHostBuilder> configureRhetosHost)
         {
