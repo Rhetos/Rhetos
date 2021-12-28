@@ -142,11 +142,6 @@ dotnet_diagnostic.CA2241.severity = suggestion
 # CA1725: Parameter names should match base declaration
 dotnet_diagnostic.CA1725.severity = suggestion
 
-# This warning should beenabled but MsSqlExecuter.SafeExecuteCommand has a very specific
-# behaviour for the disposal of SqlConnection
-# CA2000: Dispose objects before losing scope
-dotnet_diagnostic.CA2000.severity = suggestion
-
 # const interpolated string are currently in preview mode (which are suggested by by the analyzer) and the analyzer does not take this into account
 # remove the suppression for this warning after the feature will be available
 # CA1802: Use Literals Where Appropriate

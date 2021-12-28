@@ -137,7 +137,7 @@ namespace Rhetos.DatabaseGenerator.Test
 
             public void ExecuteReader(string command, Action<DbDataReader> action)
             {
-                var table = new DataTable();
+                using var table = new DataTable();
                 var sqlSplit = new Regex(@"\W+").Split(command);
 
                 if (sqlSplit.Contains("AppliedConcept"))

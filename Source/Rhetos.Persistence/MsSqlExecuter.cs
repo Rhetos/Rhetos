@@ -138,11 +138,13 @@ namespace Rhetos.Persistence
         private void SafeExecuteCommand(Action<DbCommand> action, bool useTransaction)
         {
             bool createOwnConnection = _persistenceTransaction == null || !useTransaction;
-
-            var connection = createOwnConnection ? new SqlConnection(_connectionString) : _persistenceTransaction.Connection;
+            DbConnection connection = null;
 
             try
             {
+#pragma warning disable CA2000 // Dispose objects before losing scope. This method has a custom SqlConnection disposal mechanism.
+                connection = createOwnConnection ? new SqlConnection(_connectionString) : _persistenceTransaction.Connection;
+#pragma warning restore CA2000 // Dispose objects before losing scope
                 DbTransaction createdTransaction = null;
                 DbCommand command;
 

@@ -45,10 +45,11 @@ SELECT
 	
 AND ([{EntityFrameworkMapping.StorageModelNamespace}].[InterceptFullTextSearch]([Extent1].[ID2], N'a2', N'TestFullTextSearch.Simple_Search2', N'(a, b, c)')) = 1";
 
-            var command = new SqlCommand(generatedQuery);
-            new FullTextSearchInterceptor().ReaderExecuting(command, null);
+            using (var command = new SqlCommand(generatedQuery))
+            {
+                new FullTextSearchInterceptor().ReaderExecuting(command, null);
 
-            string expected = @"
+                string expected = @"
 SELECT 
     CASE WHEN ([Extent1].[Code] IS NULL) THEN N'' ELSE  CAST( [Extent1].[Code] AS nvarchar(max)) END + N'-' + CASE WHEN ([Extent1].[Name] IS NULL) THEN N'' ELSE [Extent1].[Name] END AS [C1]
     FROM  [TestFullTextSearch].[Simple] AS [Extent1]
@@ -58,7 +59,8 @@ SELECT
 AND [Extent1].[ID2] IN (SELECT [KEY] FROM CONTAINSTABLE(TestFullTextSearch.Simple_Search2, (a, b, c), N'a2'))";
 
 
-            Assert.AreEqual(expected, command.CommandText);
+                Assert.AreEqual(expected, command.CommandText);
+            }
         }
 
         [TestMethod]
@@ -82,12 +84,14 @@ AND [Extent1].[ID2] IN (SELECT [KEY] FROM CONTAINSTABLE(TestFullTextSearch.Simpl
 
             foreach (var test in tests)
             {
-                var command = new SqlCommand(test.Key);
-                new FullTextSearchInterceptor().ReaderExecuting(command, null);
-                Assert.AreEqual(test.Value, command.CommandText);
+                using (var command = new SqlCommand(test.Key))
+                {
+                    new FullTextSearchInterceptor().ReaderExecuting(command, null);
+                    Assert.AreEqual(test.Value, command.CommandText);
+                }
             }
         }
-        
+
         [TestMethod]
         public void InvalidQueries()
         {
@@ -122,10 +126,12 @@ AND [Extent1].[ID2] IN (SELECT [KEY] FROM CONTAINSTABLE(TestFullTextSearch.Simpl
 
             foreach (var test in tests)
             {
-                var command = new SqlCommand(test.Key);
-                TestUtility.ShouldFail<FrameworkException>(
-                    () => new FullTextSearchInterceptor().ReaderExecuting(command, null),
-                    test.Value);
+                using (var command = new SqlCommand(test.Key))
+                {
+                    TestUtility.ShouldFail<FrameworkException>(
+                        () => new FullTextSearchInterceptor().ReaderExecuting(command, null),
+                        test.Value);
+                }
             }
         }
     }

@@ -36,7 +36,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
 
         public IDictionary<string, ConfigurationValue> Load()
         {
-            var reader = new JsonTextReader(new StringReader(_jsonText));
+            using var reader = new JsonTextReader(new StringReader(_jsonText));
             reader.DateParseHandling = DateParseHandling.None;
             var parsedJson = JObject.Load(reader);
             var jsonOptions = new Dictionary<string, ConfigurationValue>();

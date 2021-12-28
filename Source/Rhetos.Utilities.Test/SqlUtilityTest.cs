@@ -133,11 +133,11 @@ namespace Rhetos.Utilities.Test
             {
                 if (command == "SELECT SYSDATETIME()")
                 {
-                    var dataTable = new DataTable("mocktable");
+                    using var dataTable = new DataTable("mocktable");
                     dataTable.Columns.Add("column0", typeof(DateTime));
                     dataTable.Rows.Add(new DateTime(2001, 2, 3, 4, 5, 6, 7));
 
-                    var dataReader = new DataTableReader(dataTable);
+                    using var dataReader = new DataTableReader(dataTable);
                     while (dataReader.Read())
                         action(dataReader);
                     dataReader.Close();

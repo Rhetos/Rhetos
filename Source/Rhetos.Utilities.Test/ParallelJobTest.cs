@@ -100,7 +100,7 @@ namespace Rhetos.Utilities.Test
                 .AddTask("c", () => result.Enqueue("c"), new[] {"a"});
 
 
-            var e = TestUtility.ShouldFail<InvalidOperationException>(() => job.RunAllTasks(), "Test exception");
+            _ = TestUtility.ShouldFail<InvalidOperationException>(() => job.RunAllTasks(), "Test exception");
 
             Assert.AreEqual("ab", string.Concat(result.OrderBy(a => a)));
         }
@@ -108,9 +108,9 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void CorrectlyCancels()
         {
-            var lockAStart = new SemaphoreSlim(0, 1);
-            var lockAFinished = new SemaphoreSlim(0, 1);
-            var lockBFinished = new SemaphoreSlim(0, 1);
+            using var lockAStart = new SemaphoreSlim(0, 1);
+            using var lockAFinished = new SemaphoreSlim(0, 1);
+            using var lockBFinished = new SemaphoreSlim(0, 1);
 
             var result = new ConcurrentQueue<string>();
             var job = new ParallelJob(new ConsoleLogProvider())
@@ -127,7 +127,7 @@ namespace Rhetos.Utilities.Test
                 })
                 .AddTask("c", () => result.Enqueue("c"), new[] { "a" });
 
-            var cancellationTokenSource = new CancellationTokenSource();
+            using var cancellationTokenSource = new CancellationTokenSource();
             var task = Task.Run(() => job.RunAllTasks(0, cancellationTokenSource.Token));
 
             lockBFinished.Wait(); // Wait for "b" to finish.

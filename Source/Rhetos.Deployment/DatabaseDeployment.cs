@@ -108,7 +108,12 @@ namespace Rhetos.Deployment
             var resourceStream = GetType().Assembly.GetManifestResourceStream(rhetosDatabaseScriptResourceName);
             if (resourceStream == null)
                 throw new FrameworkException("Cannot find resource '" + rhetosDatabaseScriptResourceName + "'.");
-            var sql = new StreamReader(resourceStream).ReadToEnd();
+
+            string sql;
+            using (var reader = new StreamReader(resourceStream))
+            {
+                sql = reader.ReadToEnd();
+            }
 
             var sqlScripts = SqlUtility.SplitBatches(sql);
             _sqlExecuter.ExecuteSql(sqlScripts);
