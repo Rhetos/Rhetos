@@ -27,6 +27,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
+#pragma warning disable CA1801 // Review unused parameters
+
 namespace Rhetos.CommonConcepts.Test
 {
     [TestClass]
@@ -743,3 +745,5 @@ namespace Rhetos.CommonConcepts.Test
         }
     }
 }
+
+#pragma warning restore CA1801 // Review unused parameters

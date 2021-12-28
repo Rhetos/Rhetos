@@ -44,12 +44,12 @@ namespace Rhetos.Utilities.Test
             {
                 { null, null },
                 { new FrameworkException("abc"), null },
-                { new Exception(), null },
+                { new InvalidOperationException(), null },
                 { NewSqlException("test message", 50000, 16, 101), "UserException: test message" },
                 { NewSqlException("test message", 50000, 16, 0), null },
-                { new Exception("ex1", NewSqlException("test message", 50000, 16, 101)), "UserException: test message" },
-                { new Exception("ex1", NewSqlException("test message", 50000, 16, 0)), null },
-                { new Exception("ex1", new Exception("ex2", NewSqlException("test message", 50000, 16, 101))), "UserException: test message" },
+                { new InvalidOperationException("ex1", NewSqlException("test message", 50000, 16, 101)), "UserException: test message" },
+                { new InvalidOperationException("ex1", NewSqlException("test message", 50000, 16, 0)), null },
+                { new InvalidOperationException("ex1", new InvalidOperationException("ex2", NewSqlException("test message", 50000, 16, 101))), "UserException: test message" },
             });
         }
 

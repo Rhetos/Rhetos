@@ -84,7 +84,7 @@ namespace Rhetos.Dom.DefaultConcepts
             {
                 if (node.Object != null && node.Object.NodeType == ExpressionType.MemberAccess)
                 {
-                    FieldInfo innerField = (node.Object as MemberExpression )?.Member as FieldInfo;
+                    FieldInfo innerField = (node.Object as MemberExpression)?.Member as FieldInfo;
                     ConstantExpression ce = (node.Object as MemberExpression)?.Expression as ConstantExpression;
 
                     if (innerField == null || ce == null)

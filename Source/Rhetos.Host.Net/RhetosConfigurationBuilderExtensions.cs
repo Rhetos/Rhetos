@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
 
@@ -38,7 +39,7 @@ namespace Rhetos
                     var key = configurationItem.Key;
                     if (configurationToMap is IConfigurationSection configurationSection && !string.IsNullOrEmpty(configurationSection.Path))
                     {
-                        if (key.StartsWith(configurationSection.Path + ":"))
+                        if (key.StartsWith(configurationSection.Path + ":", StringComparison.Ordinal))
                             key = key.Substring(configurationSection.Path.Length + 1);
                     }
                     builder.AddKeyValue(key, configurationItem.Value);

@@ -51,7 +51,7 @@ namespace Rhetos.XmlSerialization
             var type = _domainObjectModel.GetType(domainType);
 
             if (type == null)
-                throw new Exception("DomainObjectModel does not contain type " + domainType + ".");
+                throw new ArgumentException("DomainObjectModel does not contain type " + domainType + ".");
 
             return new XmlDataArray(_domainObjectModel, type);
         }

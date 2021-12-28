@@ -32,6 +32,8 @@ namespace Rhetos.Dom.DefaultConcepts
     /// </summary>
     public class FilterExpression<T>
     {
+#pragma warning disable CA1000 // Do not declare static members on generic types
+
         private static readonly Expression<Func<T, bool>> _selectAll = item => true;
         private static readonly Expression<Func<T, bool>> _selectNone = item => false;
 
@@ -124,5 +126,6 @@ namespace Rhetos.Dom.DefaultConcepts
             var parameterReplacer = new ParameterReplacer(b.Parameters.Single(), a.Parameters.Single());
             b = (Expression<Func<T, bool>>)parameterReplacer.Visit(b);
         }
+#pragma warning restore CA1000 // Do not declare static members on generic types
     }
 }

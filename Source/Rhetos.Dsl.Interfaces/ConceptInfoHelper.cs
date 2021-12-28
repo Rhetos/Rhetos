@@ -319,8 +319,7 @@ namespace Rhetos.Dsl
                 }
                 else
                 {
-                    var valueType = value?.GetType().Name ?? "null";
-                    throw new ArgumentException($"Value type {valueType} is not expected in {nameof(ConceptSyntaxNode)} parameter {node.Concept.TypeName}.{member.Name}.");
+                    throw new ArgumentException($"Value type {value.GetType()} is not expected in {nameof(ConceptSyntaxNode)} parameter {node.Concept.TypeName}.{member.Name}.");
                 }
             }
 

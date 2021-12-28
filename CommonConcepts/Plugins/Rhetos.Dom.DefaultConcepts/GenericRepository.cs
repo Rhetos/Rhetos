@@ -870,7 +870,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     toDelete = CreateList(0);
                 else
                 {
-                    var toDeactivateIndex = new HashSet<TEntityInterface>(toDeactivate, new InstanceComparer());
+                    var toDeactivateIndex = new HashSet<TEntityInterface>(toDeactivate, ReferenceEqualityComparer.Instance);
                     toDelete = Reflection.ToListOfEntity(toDelete.Where(item => !toDeactivateIndex.Contains(item)));
                 }
                 if (toDelete.Count() + toDeactivate.Count() != oldDeleteCount)
@@ -898,19 +898,6 @@ namespace Rhetos.Dom.DefaultConcepts
             }
             Save(toInsert, toUpdate, toDelete);
             _performanceLogger.Write(stopwatch, () => $"InsertOrUpdateOrDeleteOrDeactivate: Save ({newItems.Count()} new items, {oldItems.Count()} old items, {toInsert.Count()} to insert, {toUpdate.Count()} to update, {toDelete.Count()} to delete)");
-        }
-
-        private class InstanceComparer : IEqualityComparer<TEntityInterface>
-        {
-            public bool Equals(TEntityInterface x, TEntityInterface y)
-            {
-                return ReferenceEquals(x, y);
-            }
-
-            public int GetHashCode(TEntityInterface obj)
-            {
-                return System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(obj);
-            }
         }
 
         public IEnumerable<TEntityInterface> RecomputeFrom(

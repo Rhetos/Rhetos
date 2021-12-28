@@ -56,7 +56,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     _entityType = _domainObjectModel.GetType(_entityName);
 
                     if (_entityType == null)
-                        throw new Exception("DomainObjectModel does not contain type " + _entityName + ".");
+                        throw new ArgumentException("DomainObjectModel does not contain type " + _entityName + ".");
 
                     if (!typeof(TEntityInterface).IsAssignableFrom(_entityType))
                         throw new FrameworkException(string.Format(
@@ -162,6 +162,8 @@ namespace Rhetos.Dom.DefaultConcepts
             return IsPredicateExpression(expressionType, EntityNavigationType);
         }
 
+#pragma warning disable CA1000 // Do not declare static members on generic types
+
         public static bool IsPredicateExpression(Type expressionType, Type acceptingArgument)
         {
             var parameterType = GetPredicateExpressionParameter(expressionType);
@@ -187,6 +189,8 @@ namespace Rhetos.Dom.DefaultConcepts
             if (funcArgs[1] != typeof(bool)) return null;
             return funcArgs[0];
         }
+
+#pragma warning restore CA1000 // Do not declare static members on generic types
 
         #endregion
         //===================================================

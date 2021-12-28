@@ -18,6 +18,7 @@
 */
 
 using Rhetos.Dsl;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -27,12 +28,12 @@ namespace Rhetos.DatabaseGenerator.Test
     {
         public static ConceptApplication Find<T>(this IEnumerable<ConceptApplication> conceptApplications) where T : IConceptInfo
         {
-            return conceptApplications.Where(ca => ca.ConceptInfoTypeName.StartsWith(typeof(T).FullName + ",")).Single();
+            return conceptApplications.Single(ca => ca.ConceptInfoTypeName.StartsWith(typeof(T).FullName + ",", StringComparison.Ordinal));
         }
 
         public static DatabaseObject Find<T>(this IEnumerable<DatabaseObject> conceptApplications) where T : IConceptInfo
         {
-            return conceptApplications.Where(ca => ca.ConceptInfoTypeName.StartsWith(typeof(T).FullName + ",")).Single();
+            return conceptApplications.Single(ca => ca.ConceptInfoTypeName.StartsWith(typeof(T).FullName + ",", StringComparison.Ordinal));
         }
     }
 }

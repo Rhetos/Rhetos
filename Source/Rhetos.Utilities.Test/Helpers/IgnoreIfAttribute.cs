@@ -13,7 +13,7 @@ namespace Rhetos.Utilities.Test.Helpers
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class IgnoreIfAttribute : Attribute
     {
-        public string IgnoreCriteriaMethodName { get; set; }
+        public string IgnoreCriteriaMethodName { get; }
 
         public IgnoreIfAttribute(string ignoreCriteriaMethodName = "IgnoreIf")
         {

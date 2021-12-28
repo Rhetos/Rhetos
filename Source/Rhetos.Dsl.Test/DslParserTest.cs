@@ -81,7 +81,7 @@ namespace Rhetos.Dsl.Test
                     else
                         return ValueOrError.CreateError(ErrorMessage);
                 }
-                return ValueOrError<ConceptSyntaxNode>.CreateError("");
+                return ValueOrError.CreateError("");
             }
         }
 

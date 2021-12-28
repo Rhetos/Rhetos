@@ -56,7 +56,8 @@ namespace Rhetos
         {
             var legacyLibraries = _installedPackages.Packages.SelectMany(
                     package => package.ContentFiles
-                        .Where(file => file.InPackagePath.StartsWith("Plugins" + Path.DirectorySeparatorChar) && file.InPackagePath.EndsWith(".dll"))
+                        .Where(file => file.InPackagePath.StartsWith("Plugins" + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+                        && file.InPackagePath.EndsWith(".dll", StringComparison.Ordinal))
                         .Select(file => (Package: package, File: file)));
 
             if (legacyLibraries.Any())

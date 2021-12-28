@@ -61,7 +61,7 @@ namespace Rhetos.Dsl
                 return result;
             }
             else
-                return ValueOrError<ConceptSyntaxNode>.CreateError("");
+                return ValueOrError.CreateError("");
         }
 
         private void AddWarning(string warning)
@@ -83,7 +83,7 @@ namespace Rhetos.Dsl
             var parentProperty = GetParentProperty(listOfMembers);
 
             if (useLastConcept != null && parentProperty == null)
-                return ValueOrError<ConceptSyntaxNode>.CreateError($"This concept cannot be nested within {useLastConcept.Concept.TypeName}. Trying to read {_conceptType.TypeName}.");
+                return ValueOrError.CreateError($"This concept cannot be nested within {useLastConcept.Concept.TypeName}. Trying to read {_conceptType.TypeName}.");
 
             foreach (ConceptMemberSyntax member in listOfMembers)
             {
@@ -94,7 +94,7 @@ namespace Rhetos.Dsl
                 OnMemberRead?.Invoke(tokenReader, node, member, valueOrError);
 
                 if (valueOrError.IsError)
-                    return ValueOrError<ConceptSyntaxNode>.CreateError(string.Format(CultureInfo.InvariantCulture,
+                    return ValueOrError.CreateError(string.Format(CultureInfo.InvariantCulture,
                         "Cannot read the value of {0} in {1}. {2}",
                         member.Name, _conceptType.TypeName, valueOrError.Error));
 
@@ -102,7 +102,7 @@ namespace Rhetos.Dsl
                 firstMember = false;
             }
 
-            return ValueOrError<ConceptSyntaxNode>.CreateValue(node);
+            return ValueOrError.CreateValue(node);
         }
 
         /// <summary>
@@ -123,12 +123,12 @@ namespace Rhetos.Dsl
                 if (member.IsStringType)
                 {
                     if (useLastConcept != null)
-                        return ValueOrError<object>.CreateError($"This concept cannot be nested within {useLastConcept.Concept.TypeName}. Trying to read {_conceptType.TypeName}.");
+                        return ValueOrError.CreateError($"This concept cannot be nested within {useLastConcept.Concept.TypeName}. Trying to read {_conceptType.TypeName}.");
 
                     if (readingAReference && parsedFirstReferenceElement)
                     {
                         if (!tokenReader.TryRead("."))
-                            return ValueOrError<object>.CreateError(string.Format(
+                            return ValueOrError.CreateError(string.Format(
                                 "Parent property and the following key value ({0}) must be separated with a dot. Expected \".\"",
                                 member.Name));
                     }
@@ -148,7 +148,7 @@ namespace Rhetos.Dsl
                     if (useLastConcept != null)
                         return (object)useLastConcept;
                     else
-                        return ValueOrError<object>.CreateError($"Member of type IConceptInfo can only be nested within" +
+                        return ValueOrError.CreateError($"Member of type IConceptInfo can only be nested within" +
                             $" the referenced parent concept. It must be a first member or marked with {nameof(ConceptParentAttribute)}.");
                 }
 
@@ -188,7 +188,7 @@ namespace Rhetos.Dsl
             }
             catch (DslSyntaxException ex)
             {
-                return ValueOrError<object>.CreateError(ex.Message);
+                return ValueOrError.CreateError(ex.Message);
             }
         }
     }

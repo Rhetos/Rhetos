@@ -162,6 +162,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public const string InterceptFullTextSearchFunction = "InterceptFullTextSearch";
 
+#pragma warning disable CA1801 // Review unused parameters
+
         /// <param name="tableName">Table that contains the full-text search indexed columns. It is usually the entity's table or a table that references the entity's table.</param>
         /// <param name="searchColumns">Full-text search indexed columns. See the columns list parameter on CONTAINSTABLE function for Microsoft SQL server database.</param>
         [DbFunction(EntityFrameworkMapping.StorageModelNamespace, InterceptFullTextSearchFunction)]
@@ -193,5 +195,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             throw new ClientException("Full-text search cannot be executed on loaded data. Use this function in a LINQ query to execute FTS on database.");
         }
+
+#pragma warning restore CA1801 // Review unused parameters
     }
 }

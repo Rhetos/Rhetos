@@ -400,7 +400,7 @@ namespace Rhetos.CommonConcepts.Test
 
         class SimpleEntityCompareName : IComparer<ISimpleEntity>
         {
-            public int Compare(ISimpleEntity x, ISimpleEntity y) { return string.Compare(x.Name, y.Name, StringComparison.InvariantCultureIgnoreCase); }
+            public int Compare(ISimpleEntity x, ISimpleEntity y) { return string.Compare(x.Name, y.Name, StringComparison.OrdinalIgnoreCase); }
         }
 
         static bool SimpleEntityEqualSize(ISimpleEntity x, ISimpleEntity y) { return x.Size == y.Size; }
@@ -515,7 +515,7 @@ namespace Rhetos.CommonConcepts.Test
 
         class CaseInsensitiveName : IComparer<ISimpleEntity>
         {
-            public int Compare(ISimpleEntity x, ISimpleEntity y) { return string.Compare(x.Name, y.Name, StringComparison.InvariantCultureIgnoreCase); }
+            public int Compare(ISimpleEntity x, ISimpleEntity y) { return string.Compare(x.Name, y.Name, StringComparison.OrdinalIgnoreCase); }
         }
 
         static bool CaseSensitiveNameSize(ISimpleEntity x, ISimpleEntity y) { return string.Equals(x.Name, y.Name, StringComparison.Ordinal) && x.Size == y.Size; }
@@ -572,7 +572,7 @@ namespace Rhetos.CommonConcepts.Test
 
         class DeacCompareName : IComparer<IDeacEntity>
         {
-            public int Compare(IDeacEntity x, IDeacEntity y) { return string.Compare(x.Name, y.Name, StringComparison.InvariantCultureIgnoreCase); }
+            public int Compare(IDeacEntity x, IDeacEntity y) { return string.Compare(x.Name, y.Name, StringComparison.OrdinalIgnoreCase); }
         }
 
         static bool DeacCompareNameValue(IDeacEntity x, IDeacEntity y) { return string.Equals(x.Name, y.Name, StringComparison.Ordinal) && x.Active == y.Active; }

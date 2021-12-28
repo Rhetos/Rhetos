@@ -120,10 +120,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
             string report;
 
-            if (value is IList && value != null)
+            if (value is IList list)
             {
-                var list = (IList)value;
-
                 report = list.Count + " items";
                 if (list.Count >= 1)
                     report += ": " + SingleValueDescription(list[0]);

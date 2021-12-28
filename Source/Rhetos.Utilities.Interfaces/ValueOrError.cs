@@ -32,19 +32,6 @@ namespace Rhetos.Utilities
     /// <typeparam name="T">Type of the value.</typeparam>
     public class ValueOrError<T> : IValueOrError
     {
-        /// <summary>
-        /// Implicit cast can be used instead of this function.
-        /// </summary>
-        public static ValueOrError<T> CreateValue(T value)
-        {
-            return new ValueOrError<T>(false, value, null);
-        }
-
-        public static ValueOrError<T> CreateError(string error)
-        {
-            return new ValueOrError<T>(true, default, error);
-        }
-
         private readonly T _value;
         public T Value
         {
@@ -77,7 +64,7 @@ namespace Rhetos.Utilities
                 return "Value: " + (_value != null ? _value.ToString() : "<null>");
         }
 
-        protected ValueOrError(bool isError, T value, string error)
+        internal ValueOrError(bool isError, T value, string error)
         {
             if (IsError && error is null)
                 throw new ArgumentNullException(nameof(error), "The error message cannot be null when returning an error object.");
@@ -127,6 +114,14 @@ namespace Rhetos.Utilities
         private ValueOrError(string error)
         {
             _error = error;
+        }
+
+        /// <remarks>
+        /// Instead of calling this method, it is often simpler to use automatic implicit cast from T to ValueOrError&lt;T&gt;.
+        /// </remarks>
+        public static ValueOrError<T> CreateValue<T>(T value)
+        {
+            return new ValueOrError<T>(false, value, null);
         }
 
         public static ValueOrError CreateError(string error)

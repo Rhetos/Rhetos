@@ -185,7 +185,7 @@ namespace Rhetos.Utilities.Test
 
             var sqlExecuter = new MockSqlExecuter();
 
-            Enumerable.Range(0, 4).Select(x => SqlUtility.GetDatabaseTime(sqlExecuter)); // Caching initialization.
+            _ = Enumerable.Range(0, 4).Select(x => SqlUtility.GetDatabaseTime(sqlExecuter)); // Caching initialization.
 
             var notCachedDatabaseTime = MsSqlUtility.GetDatabaseTime(sqlExecuter);
             var cachedTime = SqlUtility.GetDatabaseTime(sqlExecuter);

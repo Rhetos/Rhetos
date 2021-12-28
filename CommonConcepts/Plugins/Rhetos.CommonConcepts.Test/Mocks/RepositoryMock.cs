@@ -76,7 +76,7 @@ namespace Rhetos.CommonConcepts.Test.Mocks
             foreach (int test in Enumerable.Range(1, 2))
                 foreach (var item in insertedNew.Concat(updatedNew).Concat(deletedIds))
                     if (newGuid == item.ID)
-                        throw new ApplicationException("This exception is not reachable");
+                        throw new InvalidOperationException("This exception is not reachable");
         }
 
         private void AppendLog(string message, IEnumerable<TEntity> items)

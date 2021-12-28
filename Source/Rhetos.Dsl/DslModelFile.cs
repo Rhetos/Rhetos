@@ -104,6 +104,9 @@ namespace Rhetos.Dsl
             _performanceLogger.Write(sw, "SaveConcepts: Serialize and write.");
         }
 
+#pragma warning disable CA2326 // Do not use TypeNameHandling values other than None. DslModel JSON file is within trusted boundary: in app's bin folder.
+#pragma warning disable CA2327 // Do not use insecure JsonSerializerSettings. DslModel JSON file is within trusted boundary: in app's bin folder.
+
         private static readonly JsonSerializerSettings _serializerSettings = new()
         {
             PreserveReferencesHandling = PreserveReferencesHandling.Objects,
@@ -111,6 +114,9 @@ namespace Rhetos.Dsl
             TypeNameHandling = TypeNameHandling.All,
             Formatting = Formatting.Indented,
         };
+
+#pragma warning restore CA2326 // Do not use TypeNameHandling values other than None
+#pragma warning restore CA2327 // Do not use insecure JsonSerializerSettings
 
         private string DslModelFilePath => Path.Combine(_rhetosEnvironment.AssetsFolder, DslModelFileName);
 

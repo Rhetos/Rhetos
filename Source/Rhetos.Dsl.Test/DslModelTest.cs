@@ -304,7 +304,7 @@ namespace Rhetos.Dsl.Test
             public void CheckSemantics(IDslModel dslModel)
             {
                 if (Name.Length > 3)
-                    throw new Exception("Name too long.");
+                    throw new ArgumentException("Name too long.");
             }
         }
 
@@ -316,7 +316,7 @@ namespace Rhetos.Dsl.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(Exception), "Name too long.")]
+        [ExpectedException(typeof(ArgumentException), "Name too long.")]
         public void CheckSemanticsTest_Fail()
         {
             List<IConceptInfo> concepts = new List<IConceptInfo>() { new ConceptWithSemanticsValidation { Name = "abcd" } };
@@ -463,7 +463,7 @@ namespace Rhetos.Dsl.Test
 
             try
             {
-                DslModelFromConcepts(concepts).Select(c => c.GetUserDescription()).ToList();
+                _ = DslModelFromConcepts(concepts).Select(c => c.GetUserDescription()).ToList();
             }
             catch (Exception ex)
             {

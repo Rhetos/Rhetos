@@ -28,6 +28,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+#pragma warning disable CA1801 // Review unused parameters
+
 namespace Rhetos.CommonConcepts.Test
 {
     static class LegacyExtension
@@ -203,3 +205,5 @@ namespace Rhetos.CommonConcepts.Test
         }
     }
 }
+
+#pragma warning restore CA1801 // Review unused parameters

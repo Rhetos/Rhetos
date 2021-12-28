@@ -47,7 +47,7 @@ namespace Rhetos
             if (startupAssembly == null)
                 throw new FrameworkException($"Could not resolve assembly from path '{rhetosHostAssemblyPath}'.");
 
-            var entryPointType = startupAssembly?.EntryPoint?.DeclaringType;
+            var entryPointType = startupAssembly.EntryPoint?.DeclaringType;
             if (entryPointType == null)
                 throw new FrameworkException($"Startup assembly '{startupAssembly.Location}' doesn't have an entry point.");
 

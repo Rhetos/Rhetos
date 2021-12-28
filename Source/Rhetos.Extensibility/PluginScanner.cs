@@ -199,7 +199,7 @@ namespace Rhetos.Extensibility
 
         private void ValidateAssembliesEquivalent(string requestedPath, string actualPath)
         {
-            if (requestedPath.Equals(actualPath, StringComparison.InvariantCultureIgnoreCase)) 
+            if (requestedPath.Equals(actualPath, StringComparison.OrdinalIgnoreCase)) 
                 return;
 
             var requestedFile = new FileInfo(requestedPath);

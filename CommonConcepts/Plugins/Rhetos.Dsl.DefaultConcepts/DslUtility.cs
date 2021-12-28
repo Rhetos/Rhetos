@@ -184,8 +184,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                 if (baseDataStructure != null)
                     return baseDataStructure;
 
-                if (selectedProperty == null)
-                    return ValueOrError.CreateError("There is no property '" + referenceName + "' nor a base data structure on " + source.GetUserDescription() + ".");
+                return ValueOrError.CreateError("There is no property '" + referenceName + "' nor a base data structure on " + source.GetUserDescription() + ".");
             }
 
             if (selectedProperty == null && referenceName.StartsWith("Extension_"))
@@ -198,8 +197,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                 if (extensionDataStructure != null)
                     return extensionDataStructure;
 
-                if (selectedProperty == null)
-                    return ValueOrError.CreateError("There is no property '" + referenceName + "' nor an extension '" + extensionName + "' on " + source.GetUserDescription() + ".");
+                return ValueOrError.CreateError("There is no property '" + referenceName + "' nor an extension '" + extensionName + "' on " + source.GetUserDescription() + ".");
             }
 
             if (selectedProperty == null)

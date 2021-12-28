@@ -70,7 +70,7 @@ namespace Rhetos.Deployment.Test
                 foreach (var s in schemas.Split(',').Select(x => x.Trim()).Where(x => !string.IsNullOrEmpty(x)))
                 {
                     if (!s.StartsWith("_"))
-                        throw new Exception("Invalid test data: Migration schema name must start with '_'.");
+                        throw new ArgumentException("Invalid test data: Migration schema name must start with '_'.");
                     Schemas.Rows.Add(s);
                 }
             }
@@ -133,7 +133,7 @@ namespace Rhetos.Deployment.Test
                         continue;
                     }
 
-                    throw new Exception("Unexpected SQL command in MockSqlExecuter.");
+                    throw new ArgumentException("Unexpected SQL command in MockSqlExecuter.");
                 }
             }
 

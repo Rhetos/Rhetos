@@ -86,7 +86,7 @@ namespace Rhetos.Dom.DefaultConcepts
             $@"hostBuilder.ConfigureConfiguration(builder => {{
                 builder.AddOptions(new Rhetos.Dom.DefaultConcepts.CommonConceptsDatabaseSettings
                 {{
-                    UseLegacyMsSqlDateTime = {_databaseSettings.UseLegacyMsSqlDateTime.ToString().ToLowerInvariant()},
+                    UseLegacyMsSqlDateTime = {_databaseSettings.UseLegacyMsSqlDateTime.ToString().ToLower()},
                     DateTimePrecision = {_databaseSettings.DateTimePrecision},
                     MoneyPrecision = {_databaseSettings.MoneyPrecision},
                     MoneyScale = {_databaseSettings.MoneyScale},

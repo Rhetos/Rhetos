@@ -61,6 +61,11 @@ namespace Rhetos
 
         UnitOfWorkScope IUnitOfWorkFactory.CreateScope(Action<ContainerBuilder> registerScopeComponentsAction)
         {
+            return CreateScope(registerScopeComponentsAction);
+        }
+
+        protected UnitOfWorkScope CreateScope(Action<ContainerBuilder> registerScopeComponentsAction)
+        {
             var container = GetContainer();
             return new UnitOfWorkScope(container, _customRegistrations + registerScopeComponentsAction);
         }

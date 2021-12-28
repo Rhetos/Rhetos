@@ -450,7 +450,7 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void RequiredTokenDelimiters()
         {
-            ShouldFail(delegate { new FastReplacer("", ""); }, "Expected exception if token delimiters are not provided.");
+            ShouldFail(delegate { _ = new FastReplacer("", ""); }, "Expected exception if token delimiters are not provided.");
         }
 
         [TestMethod]

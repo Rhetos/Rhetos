@@ -56,8 +56,7 @@ namespace Rhetos.Dsl.Test
                 }
                 else
                 {
-                    var valueType = value?.GetType().Name ?? "null";
-                    throw new ArgumentException($"Value type {valueType} is not expected in '{ci.GetUserDescription()}', parameter {members[m].Name}.");
+                    throw new ArgumentException($"Value type {value.GetType()} is not expected in '{ci.GetUserDescription()}', parameter {members[m].Name}.");
                 }
             }
 

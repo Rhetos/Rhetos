@@ -30,7 +30,7 @@ namespace Rhetos.Utilities.Test
         {
             var tests = new ListOfTuples<Exception, string>
             {
-                { new Exception("abc"), "abc" },
+                { new InvalidOperationException("abc"), "abc" },
                 { new UserException("abc"), "abc" },
                 { new UserException("abc", null, null, null), "abc" },
                 { new UserException("abc", new object[] { 123 }, null, null), "abc" },

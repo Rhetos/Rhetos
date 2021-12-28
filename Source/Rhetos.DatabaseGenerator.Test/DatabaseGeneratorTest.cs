@@ -116,7 +116,7 @@ namespace Rhetos.DatabaseGenerator.Test
 
         private string RemoveName(string script)
         {
-            if (!script.StartsWith("--Name: "))
+            if (!script.StartsWith("--Name: ", StringComparison.Ordinal))
                 return script;
             var eol = script.IndexOf("\n", StringComparison.Ordinal);
             if (eol < 0)

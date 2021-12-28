@@ -76,7 +76,9 @@ namespace Rhetos
         {
             if (_singleRhetosHost == null)
                 lock (_singleContainerLock)
+#pragma warning disable CA1508 // Avoid dead conditional code. This code uses standard double-checked locking, see https://en.wikipedia.org/wiki/Double-checked_locking#Usage_in_C#
                     if (_singleRhetosHost == null)
+#pragma warning restore CA1508 // Avoid dead conditional code
                     {
                         _singleRhetosHostAssemblyPath = rhetosAppAssemblyPath;
                         _singleRhetosHost = RhetosHost.CreateFrom(rhetosAppAssemblyPath, ConfigureRhetosHost, OverrideHostLogging + configureServices);

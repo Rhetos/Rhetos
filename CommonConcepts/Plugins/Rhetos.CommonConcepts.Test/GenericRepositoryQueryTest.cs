@@ -25,6 +25,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+#pragma warning disable CA1801 // Review unused parameters
+
 namespace Rhetos.CommonConcepts.Test
 {
     [TestClass]
@@ -90,25 +92,25 @@ namespace Rhetos.CommonConcepts.Test
 
             public IEnumerable<SimpleEntity> Load(Parameter2 parameter)
             {
-                if (parameter != null) throw new Exception("Parameter null is expected.");
+                if (parameter != null) throw new ArgumentException("Parameter null is expected.");
                 return new SimpleEntityList { "l2" };
             }
 
             public IEnumerable<SimpleEntity> Filter(IEnumerable<SimpleEntity> items, Parameter3 parameter)
             {
-                if (parameter != null) throw new Exception("Parameter null is expected.");
+                if (parameter != null) throw new ArgumentException("Parameter null is expected.");
                 return new SimpleEntityList { "ef3" };
             }
 
             public IQueryable<SimpleEntity> Query(Parameter4 parameter)
             {
-                if (parameter != null) throw new Exception("Parameter null is expected.");
+                if (parameter != null) throw new ArgumentException("Parameter null is expected.");
                 return new SimpleEntityList { "q4" }.AsQueryable();
             }
 
             public IQueryable<SimpleEntity> Filter(IQueryable<SimpleEntity> items, Parameter5 parameter)
             {
-                if (parameter != null) throw new Exception("Parameter null is expected.");
+                if (parameter != null) throw new ArgumentException("Parameter null is expected.");
                 return new SimpleEntityList { "qf5" }.AsQueryable();
             }
 
@@ -183,3 +185,5 @@ namespace Rhetos.CommonConcepts.Test
         }
     }
 }
+
+#pragma warning restore CA1801 // Review unused parameters

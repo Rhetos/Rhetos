@@ -27,6 +27,21 @@ using System.Linq;
 
 namespace Rhetos.CommonConcepts.Test
 {
+    public class GenericRepositoryTestException : Exception
+    {
+        public GenericRepositoryTestException()
+        {
+        }
+
+        public GenericRepositoryTestException(string message) : base(message)
+        {
+        }
+
+        public GenericRepositoryTestException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+    }
+
     [TestClass]
     public class GenericRepositoryErrorsTest
     {
@@ -40,28 +55,31 @@ namespace Rhetos.CommonConcepts.Test
         {
             public IEnumerable<SimpleEntity> Load()
             {
-                throw new ApplicationException("fun Load");
+                throw new GenericRepositoryTestException("fun Load");
             }
+
+#pragma warning disable CA1801 // Review unused parameters
 
             public SimpleEntity[] Load(string parameter)
             {
-                throw new ApplicationException("fun Load string");
+                throw new GenericRepositoryTestException("fun Load string");
             }
 
             public IQueryable<SimpleEntity> Query()
             {
-                throw new ApplicationException("fun Query");
+                throw new GenericRepositoryTestException("fun Query");
             }
 
             public IQueryable<SimpleEntity> Filter(IQueryable<SimpleEntity> source, string parameter)
             {
-                throw new ApplicationException("fun Filter source string");
+                throw new GenericRepositoryTestException("fun Filter source string");
             }
 
             public void Save(IEnumerable<SimpleEntity> insertedNew, IEnumerable<SimpleEntity> updatedNew, IEnumerable<SimpleEntity> deletedIds, bool checkUserPermissions = false)
             {
-                throw new ApplicationException("fun Save");
+                throw new GenericRepositoryTestException("fun Save");
             }
+#pragma warning restore CA1801 // Review unused parameters
         }
 
         GenericRepository<SimpleEntity> NewRepos(IRepository repository)
@@ -71,7 +89,7 @@ namespace Rhetos.CommonConcepts.Test
 
         void TestError(Action action, string errorMessage, string locationFunctionName)
         {
-            var ex = TestUtility.ShouldFail<ApplicationException>(action, errorMessage);
+            var ex = TestUtility.ShouldFail<GenericRepositoryTestException>(action, errorMessage);
 
             string errorLocation = "at " + typeof(ErrorRepository).FullName.Replace("+", ".") + "." + locationFunctionName + "(";
             TestUtility.AssertContains(ex.ToString(), errorLocation);

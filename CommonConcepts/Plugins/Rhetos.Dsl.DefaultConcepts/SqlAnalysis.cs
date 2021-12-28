@@ -80,22 +80,22 @@ namespace Rhetos.Dsl.DefaultConcepts
             if (function)
             {
                 newConcepts.AddRange(existingConcepts.FindByType<SqlFunctionInfo>()
-                    .Where(ci => ci.Module.Name.Equals(nameParts[0], StringComparison.InvariantCultureIgnoreCase)
-                        && ci.Name.Equals(nameParts[1], StringComparison.InvariantCultureIgnoreCase)
+                    .Where(ci => ci.Module.Name.Equals(nameParts[0], StringComparison.OrdinalIgnoreCase)
+                        && ci.Name.Equals(nameParts[1], StringComparison.OrdinalIgnoreCase)
                         && ci != dependent)
                     .Select(ci => new SqlDependsOnSqlFunctionInfo { Dependent = dependent, DependsOn = ci }));
             }
             else
             {
                 newConcepts.AddRange(existingConcepts.FindByType<DataStructureInfo>()
-                    .Where(ci => ci.Module.Name.Equals(nameParts[0], StringComparison.InvariantCultureIgnoreCase)
-                        && ci.Name.Equals(nameParts[1], StringComparison.InvariantCultureIgnoreCase)
+                    .Where(ci => ci.Module.Name.Equals(nameParts[0], StringComparison.OrdinalIgnoreCase)
+                        && ci.Name.Equals(nameParts[1], StringComparison.OrdinalIgnoreCase)
                         && ci != dependent)
                     .Select(ci => new SqlDependsOnDataStructureInfo { Dependent = dependent, DependsOn = ci }));
 
                 newConcepts.AddRange(existingConcepts.FindByType<SqlViewInfo>()
-                    .Where(ci => ci.Module.Name.Equals(nameParts[0], StringComparison.InvariantCultureIgnoreCase)
-                        && ci.Name.Equals(nameParts[1], StringComparison.InvariantCultureIgnoreCase)
+                    .Where(ci => ci.Module.Name.Equals(nameParts[0], StringComparison.OrdinalIgnoreCase)
+                        && ci.Name.Equals(nameParts[1], StringComparison.OrdinalIgnoreCase)
                         && ci != dependent)
                     .Select(ci => new SqlDependsOnSqlViewInfo { Dependent = dependent, DependsOn = ci }));
             }

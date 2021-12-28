@@ -71,7 +71,7 @@ namespace Rhetos.Dsl
             if (PositionInTokenList >= _tokenList.Count || CurrentToken.Type == TokenType.EndOfFile)
                 return false;
 
-            if (!string.Equals(CurrentToken.Value, value, StringComparison.InvariantCultureIgnoreCase))
+            if (!string.Equals(CurrentToken.Value, value, StringComparison.OrdinalIgnoreCase))
                 return false;
 
             PositionInTokenList++;
