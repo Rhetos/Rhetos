@@ -45,10 +45,13 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
 
         public MetadataWorkspace MetadataWorkspace => _loadedMetadata.Value;
 
-        // we need to inject DbCofiguration here in order to globally initialize configuration before doing any operations
-        // on EF objects
-        public MetadataWorkspaceFileProvider(RhetosAppOptions rhetosAppOptions, ILogProvider logProvider, ConnectionString connectionString,
+        public MetadataWorkspaceFileProvider(
+            RhetosAppOptions rhetosAppOptions,
+            ILogProvider logProvider,
+            ConnectionString connectionString,
+#pragma warning disable CA1801 // Review unused parameters. DbCofiguration is injected here in order to globally initialize configuration before doing any operations on EF objects.
             DbConfiguration dbConfiguration)
+#pragma warning restore CA1801 // Review unused parameters
         {
             _rhetosAppOptions = rhetosAppOptions;
             _connectionString = connectionString;

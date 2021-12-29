@@ -43,7 +43,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 {info.Expression};
             return Compute(_domRepository.{info.Base.FullName}.Query(), _domRepository{parameterArgsTag});";
 
-            DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, $"EntityBase<{info.FullName}>", typeof(EntityBase<>), info);
+            DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, $"EntityBase<{info.FullName}>", info);
             RepositoryHelper.GenerateQueryableRepository(info, codeBuilder, querySnippet);
         }
     }

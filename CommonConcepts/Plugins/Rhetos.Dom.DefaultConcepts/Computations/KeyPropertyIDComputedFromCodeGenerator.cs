@@ -38,15 +38,13 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (KeyPropertyIDComputedFromInfo)conceptInfo;
-            codeBuilder.InsertCode(Snippet(info), AlternativeKeyComparerCodeGenerator.CompareKeyPropertyTag, info.Dependency_AlternativeKeyComparer);
-        }
 
-        private static string Snippet(KeyPropertyIDComputedFromInfo info)
-        {
-            return string.Format(
+            string snippet =
                 @"diff = x.ID.CompareTo(y.ID);
                 if (diff != 0) return diff;
-                ");
+                ";
+
+            codeBuilder.InsertCode(snippet, AlternativeKeyComparerCodeGenerator.CompareKeyPropertyTag, info.Dependency_AlternativeKeyComparer);
         }
     }
 }

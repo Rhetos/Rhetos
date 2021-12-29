@@ -34,23 +34,25 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(PessimisticLockingParentInfo))]
     public class PessimisticLockingParentCodeGenerator : IConceptCodeGenerator
     {
-        private string CodeSnippet(PessimisticLockingParentInfo info)
+        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            return string.Format(
-                @"if (deniedLock == null)
+            var info = (PessimisticLockingParentInfo)conceptInfo;
+            var master = info.Reference.Referenced;
+
+            string snippet = $@"if (deniedLock == null)
                 {{
-                    // Check locks for parent {3}.{4}:
-                    Guid[] parentResourceIDs = updated.Where(item => item.{2}ID != null).Select(item => item.{2}ID.Value)
-                        .Concat(deleted.Where(item => item.{2}ID != null).Select(item => item.{2}ID.Value))
-                        .Concat(insertedNew.Where(item => item.{2}ID != null).Select(item => item.{2}ID.Value))
-                        .Concat(updatedNew.Where(item => item.{2}ID != null).Select(item => item.{2}ID.Value))
+                    // Check locks for parent {master.FullName}:
+                    Guid[] parentResourceIDs = updated.Where(item => item.{info.Reference.Name}ID != null).Select(item => item.{info.Reference.Name}ID.Value)
+                        .Concat(deleted.Where(item => item.{info.Reference.Name}ID != null).Select(item => item.{info.Reference.Name}ID.Value))
+                        .Concat(insertedNew.Where(item => item.{info.Reference.Name}ID != null).Select(item => item.{info.Reference.Name}ID.Value))
+                        .Concat(updatedNew.Where(item => item.{info.Reference.Name}ID != null).Select(item => item.{info.Reference.Name}ID.Value))
                             .Distinct().ToArray();
 
                     if (parentResourceIDs.Count() > 0)
                     {{
                         var now = SqlUtility.GetDatabaseTime(_executionContext.SqlExecuter);
                         var queryParentLock = _domRepository.Common.ExclusiveLock.Query().Where(itemLock =>
-                            itemLock.ResourceType == ""{3}.{4}""
+                            itemLock.ResourceType == ""{master.FullName}""
                             && parentResourceIDs.Contains(itemLock.ResourceID.Value)
                             && itemLock.LockFinish >= now);
 
@@ -63,18 +65,9 @@ namespace Rhetos.Dom.DefaultConcepts
                     }}
                 }}
                 
-                ",
-                info.Reference.DataStructure.Module.Name, // Detail
-                info.Reference.DataStructure.Name, // Detail
-                info.Reference.Name,
-                info.Reference.Referenced.Module.Name, // Master
-                info.Reference.Referenced.Name); // Master
-        }
+                ";
 
-        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
-        {
-            var info = (PessimisticLockingParentInfo)conceptInfo;
-            codeBuilder.InsertCode(CodeSnippet(info), PessimisticLockingCodeGenerator.AdditionalLocksTag, info.Detail);
+            codeBuilder.InsertCode(snippet, PessimisticLockingCodeGenerator.AdditionalLocksTag, info.Detail);
         }
     }
 }

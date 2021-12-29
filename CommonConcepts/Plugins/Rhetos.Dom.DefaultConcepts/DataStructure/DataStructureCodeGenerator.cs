@@ -31,7 +31,17 @@ namespace Rhetos.Dom.DefaultConcepts
     public class DataStructureCodeGenerator : IConceptCodeGenerator
     {
         public static readonly CsTag<DataStructureInfo> AttributesTag = "ClassAttributes";
+
+        /// <summary>
+        /// Add an interface to the simple POCO model class for the DataStructure.
+        /// </summary>
+        /// <remarks>
+        /// Use codeBuilder.InsertCode to insert <b>FullName of the interface type</b> at this tag.
+        /// The tag is configured to automatically add ':' and ',' to separate class name and interfaces.
+        /// See also <see cref="DataStructureQueryableCodeGenerator.InterfaceTag"/>.
+        /// </remarks>
         public static readonly CsTag<DataStructureInfo> InterfaceTag = new CsTag<DataStructureInfo>("ClassInterace", TagType.Appendable, " : {0}", ", {0}");
+
         public static readonly CsTag<DataStructureInfo> BodyTag = "ClassBody";
 
         protected static string CodeSnippet(DataStructureInfo info)
@@ -51,14 +61,20 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.InsertCode(CodeSnippet(info), ModuleCodeGenerator.NamespaceMembersTag, info.Module);
         }
 
+        /// <summary>
+        /// Add an interface to the simple POCO model class for the DataStructure.
+        /// </summary>
         public static void AddInterfaceAndReference(ICodeBuilder codeBuilder, Type type, DataStructureInfo dataStructureInfo)
         {
-            AddInterfaceAndReference(codeBuilder, type.FullName, type, dataStructureInfo);
+            AddInterfaceAndReference(codeBuilder, type.FullName, dataStructureInfo);
         }
 
-        public static void AddInterfaceAndReference(ICodeBuilder codeBuilder, string typeName, Type type, DataStructureInfo dataStructureInfo)
+        /// <summary>
+        /// Add an interface to the simple POCO model class for the DataStructure.
+        /// </summary>
+        public static void AddInterfaceAndReference(ICodeBuilder codeBuilder, string typeName, DataStructureInfo dataStructureInfo)
         {
-            codeBuilder.InsertCode(typeName, DataStructureCodeGenerator.InterfaceTag, dataStructureInfo);
+            codeBuilder.InsertCode(typeName, InterfaceTag, dataStructureInfo);
         }
     }
 }

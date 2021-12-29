@@ -459,7 +459,6 @@ namespace Rhetos.Dsl.Test
                                                   new SimpleConceptInfo("b1", "xxx"),
                                                   new MacroConceptInfo("b")
                                               };
-            List<string> expected = new List<string> { "MACRO b", "SIMPLE b1", "SIMPLE b2" };
 
             try
             {

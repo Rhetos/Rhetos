@@ -104,6 +104,9 @@ dotnet_diagnostic.CA1820.severity = suggestion
 # CA1003: Use generic event handler instances
 dotnet_diagnostic.CA1003.severity = suggestion
 
+# CA1813: Avoid unsealed attributes
+dotnet_diagnostic.CA1813.severity = suggestion
+
 # CA2227: Collection properties should be read only
 dotnet_diagnostic.CA2227.severity = suggestion
 

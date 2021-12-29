@@ -32,7 +32,17 @@ namespace Rhetos.Dom.DefaultConcepts
     public class DataStructureQueryableCodeGenerator : IConceptCodeGenerator
     {
         public static readonly CsTag<DataStructureInfo> AttributesTag = "QueryableClassAttributes";
+
+        /// <summary>
+        /// Add an interface to the queryable model class for the DataStructure.
+        /// </summary>
+        /// <remarks>
+        /// Use codeBuilder.InsertCode to insert <b>FullName of the interface type</b> at this tag.
+        /// The tag is configured to automatically add ':' and ',' to separate class name and interfaces.
+        /// See also <see cref="DataStructureCodeGenerator.InterfaceTag"/>.
+        /// </remarks>
         public static readonly CsTag<DataStructureInfo> InterfaceTag = new ("QueryableClassInterace", TagType.Appendable, ", {0}");
+
         public static readonly CsTag<DataStructureInfo> MembersTag = "QueryableClassMembers";
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
@@ -99,12 +109,18 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.InsertCode(propertySnippet, MembersTag, dataStructure);
         }
 
+        /// <summary>
+        /// Add an interface to the queryable model class for the DataStructure.
+        /// </summary>
         public static void AddInterfaceAndReference(ICodeBuilder codeBuilder, Type type, DataStructureInfo dataStructureInfo)
         {
-            AddInterfaceAndReference(codeBuilder, type.FullName, type, dataStructureInfo);
+            AddInterfaceAndReference(codeBuilder, type.FullName, dataStructureInfo);
         }
 
-        public static void AddInterfaceAndReference(ICodeBuilder codeBuilder, string typeName, Type type, DataStructureInfo dataStructureInfo)
+        /// <summary>
+        /// Add an interface to the queryable model class for the DataStructure.
+        /// </summary>
+        public static void AddInterfaceAndReference(ICodeBuilder codeBuilder, string typeName, DataStructureInfo dataStructureInfo)
         {
             codeBuilder.InsertCode(typeName, InterfaceTag, dataStructureInfo);
         }

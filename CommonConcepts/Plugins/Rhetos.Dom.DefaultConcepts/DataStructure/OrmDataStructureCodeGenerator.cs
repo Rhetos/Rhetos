@@ -44,7 +44,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 string module = info.Module.Name;
                 string entity = info.Name;
 
-                DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, $"EntityBase<{module}.{entity}>", typeof(EntityBase<>), info);
+                DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, $"EntityBase<{module}.{entity}>", info);
 
                 RepositoryHelper.GenerateQueryableRepository(info, codeBuilder);
                 codeBuilder.InsertCode($"Common.OrmRepositoryBase<Common.Queryable.{module}_{entity}, {module}.{entity}>", RepositoryHelper.OverrideBaseTypeTag, info);

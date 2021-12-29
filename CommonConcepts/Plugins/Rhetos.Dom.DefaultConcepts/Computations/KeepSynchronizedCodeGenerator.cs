@@ -36,44 +36,34 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (KeepSynchronizedInfo)conceptInfo;
+            var source = info.EntityComputedFrom.Source;
+            var target = info.EntityComputedFrom.Target;
 
-            codeBuilder.InsertCode(FilterSaveFunction(info), RepositoryHelper.RepositoryMembers, info.EntityComputedFrom.Target);
-            codeBuilder.InsertCode(SnippetDefaultFilterSaveOnRecompute(info), EntityComputedFromCodeGenerator.OverrideDefaultFiltersTag, info.EntityComputedFrom);
-        }
+            string filterSaveFunctionName = $"FilterSaveKeepSynchronizedOnChangedItems_{source.Module.Name}_{source.Name}";
 
-        private static string FilterSaveFunction(KeepSynchronizedInfo info)
-        {
-            if (!string.IsNullOrWhiteSpace(info.FilterSaveExpression))
-                return string.Format(
-        @"public IEnumerable<{0}.{1}> FilterSaveKeepSynchronizedOnChangedItems_{3}_{4}(IEnumerable<{0}.{1}> filterSave_items)
-        {{
-            Func<IEnumerable<{0}.{1}>, Common.DomRepository, IEnumerable<{0}.{1}>> filterSaveKeepSynchronizedOnChangedItems_{3}_{4} =
-                {2};
-
-            return filterSaveKeepSynchronizedOnChangedItems_{3}_{4}(filterSave_items, _domRepository);
-        }}
-
-        ",
-                    info.EntityComputedFrom.Target.Module.Name, info.EntityComputedFrom.Target.Name, info.FilterSaveExpression,
-                    info.EntityComputedFrom.Source.Module.Name, info.EntityComputedFrom.Source.Name);
+            string filterSaveFunctionBody;
+            if (string.IsNullOrWhiteSpace(info.FilterSaveExpression))
+                filterSaveFunctionBody = $@"return filterSave_items;";
             else
-                return string.Format(
-        @"public IEnumerable<{0}.{1}> FilterSaveKeepSynchronizedOnChangedItems_{3}_{4}(IEnumerable<{0}.{1}> items)
+                filterSaveFunctionBody =
+            $@"Func<IEnumerable<{target.FullName}>, Common.DomRepository, IEnumerable<{target.FullName}>> filterSaveKeepSynchronizedOnChangedItems =
+                {info.FilterSaveExpression};
+
+            return filterSaveKeepSynchronizedOnChangedItems(filterSave_items, _domRepository);";
+
+            string filterSaveFunction = $@"public IEnumerable<{target.Module.Name}.{target.Name}> {filterSaveFunctionName}(IEnumerable<{target.Module.Name}.{target.Name}> filterSave_items)
         {{
-            return items;
+            {filterSaveFunctionBody}
         }}
 
-        ",
-                    info.EntityComputedFrom.Target.Module.Name, info.EntityComputedFrom.Target.Name, info.FilterSaveExpression,
-                    info.EntityComputedFrom.Source.Module.Name, info.EntityComputedFrom.Source.Name);
-        }
+        ";
 
-        private static string SnippetDefaultFilterSaveOnRecompute(KeepSynchronizedInfo info)
-        {
-            return string.Format(@"
-            filterSave = filterSave ?? FilterSaveKeepSynchronizedOnChangedItems_{3}_{4};",
-                info.EntityComputedFrom.Target.Module.Name, info.EntityComputedFrom.Target.Name, info.FilterSaveExpression,
-                info.EntityComputedFrom.Source.Module.Name, info.EntityComputedFrom.Source.Name);
+            codeBuilder.InsertCode(filterSaveFunction, RepositoryHelper.RepositoryMembers, target);
+
+            string overrideDefaultFilters = $@"
+            filterSave = filterSave ?? {filterSaveFunctionName};";
+
+            codeBuilder.InsertCode(overrideDefaultFilters, EntityComputedFromCodeGenerator.OverrideDefaultFiltersTag, info.EntityComputedFrom);
         }
     }
 }

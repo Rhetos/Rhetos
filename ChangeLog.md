@@ -151,6 +151,7 @@ Changes in Rhetos libraries API:
 19. Removed IPersistenceCache interface and ToNavigation() methods. They where Rhetos-specific helpers for saving entities with Entity Framework.
     * If custom application code overrides repository's standard Save method, use DomHelper.WriteToDatabase to save an entity, instead of Entity Framework methods. For reference, see the new generated source code for repository Save methods.
     * Navigation properties behavior can no longer be extended with custom tags *DataStructureQueryable Getter* and *DataStructureQueryable Setter*.
+20. Removed Type argument from AddInterfaceAndReference methods.
 
 ### New features
 

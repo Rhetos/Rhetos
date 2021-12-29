@@ -46,7 +46,7 @@ namespace Rhetos.Dom.DefaultConcepts
             string module = info.Module.Name;
             string entity = info.Name;
 
-            DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, $"EntityBase<{module}.{entity}>", typeof(EntityBase<>), info);
+            DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, $"EntityBase<{module}.{entity}>", info);
             RepositoryHelper.GenerateQueryableRepository(info, codeBuilder, $"return Query(_domRepository.{info.Source.Module.Name}.{info.Source.Name}.Query());");
 
             string querySnippet = $@"public IQueryable<Common.Queryable.{module}_{entity}> Query(IQueryable<Common.Queryable.{info.Source.Module.Name}_{info.Source.Name}> source)

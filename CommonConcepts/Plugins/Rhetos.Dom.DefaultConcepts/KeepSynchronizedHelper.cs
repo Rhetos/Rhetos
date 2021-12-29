@@ -57,7 +57,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return true;
         }
 
-        public static bool OptimizeFiltersUnion(FilterAll a, FilterAll b, out FilterAll union)
+        public static bool OptimizeFiltersUnion(FilterAll a, FilterAll _, out FilterAll union)
         {
             union = a;
             return true;

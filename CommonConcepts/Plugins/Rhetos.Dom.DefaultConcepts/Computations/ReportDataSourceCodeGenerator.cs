@@ -37,28 +37,21 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (ReportDataSourceInfo)conceptInfo;
-            codeBuilder.InsertCode(GetReportDataSnippet(info), ReportDataCodeGenerator.GetReportDataTag, info.Report);
-            codeBuilder.InsertCode(DataSourceNameSnippet(info), ReportDataCodeGenerator.DataSourceNameTag, info.Report);
-        }
 
-        private static string GetReportDataSnippet(ReportDataSourceInfo info)
-        {
-            return string.Format(@"
+            string reportDataSnippet = $@"
 	        {{
-                var dataSourceRepositiory = _domRepository.{1};
+                var dataSourceRepositiory = _domRepository.{info.DataSource.FullName};
                 var data = dataSourceRepositiory.Load(parameter);
-                var order = {2};
+                var order = {CsUtility.QuotedString(info.Order)};
 	            reportData.Add(order, data);
             }}
-",
-            info.Report.GetKeyProperties(),
-            info.DataSource.GetKeyProperties(),
-            CsUtility.QuotedString(info.Order));
-        }
+";
 
-        private static string DataSourceNameSnippet(ReportDataSourceInfo info)
-        {
-            return CsUtility.QuotedString(info.DataSource.GetKeyProperties()) + @", ";
+            codeBuilder.InsertCode(reportDataSnippet, ReportDataCodeGenerator.GetReportDataTag, info.Report);
+
+            string dataSourceName = CsUtility.QuotedString(info.DataSource.FullName) + @", ";
+
+            codeBuilder.InsertCode(dataSourceName, ReportDataCodeGenerator.DataSourceNameTag, info.Report);
         }
     }
 }

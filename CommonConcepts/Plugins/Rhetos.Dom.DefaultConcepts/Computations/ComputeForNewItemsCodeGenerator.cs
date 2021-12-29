@@ -21,7 +21,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 using Rhetos.Compiler;
 using Rhetos.Dsl;
@@ -38,7 +37,6 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var info = (ComputeForNewItemsInfo) conceptInfo;
 
-            var persistedExtension = info.EntityComputedFrom.Target;
             var uniqueSuffixInTarget = GetUniqueSuffixWithinTarget(info);
 
             codeBuilder.InsertCode(RecomputeForNewItemsSnippet(info, uniqueSuffixInTarget), WritableOrmDataStructureCodeGenerator.OnSaveTag1, info.EntityComputedFrom.Target);
@@ -54,34 +52,23 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static string RecomputeForNewItemsSnippet(ComputeForNewItemsInfo info, string uniqueSuffix)
         {
-            DataStructureInfo hookOnSave = info.EntityComputedFrom.Target;
-            EntityInfo updatePersistedComputation = info.EntityComputedFrom.Target;
+            string optionalFilterSaveFunctionName = !string.IsNullOrWhiteSpace(info.FilterSaveExpression) ? $", _filterSaveComputeForNewItems_{uniqueSuffix}" : "";
+            string recomputeMethodName = EntityComputedFromCodeGenerator.RecomputeFunctionName(info.EntityComputedFrom);
 
-            return string.Format(
-            @"if (inserted.Count() > 0)
+            return $@"if (inserted.Count() > 0)
             {{
                 var filter = inserted.Select(item => item.ID).ToArray();
-                {4}(filter{3});
+                {recomputeMethodName}(filter{optionalFilterSaveFunctionName});
             }}
-            ",
-                hookOnSave.Module.Name,
-                hookOnSave.Name,
-                uniqueSuffix,
-                !string.IsNullOrWhiteSpace(info.FilterSaveExpression) ? (", _filterSaveComputeForNewItems_" + uniqueSuffix) : "",
-                EntityComputedFromCodeGenerator.RecomputeFunctionName(info.EntityComputedFrom));
+            ";
         }
 
         private static string FilterSaveFunction(ComputeForNewItemsInfo info, string uniqueSuffix)
         {
-            return string.Format(
-        @"private static readonly Func<IEnumerable<{0}.{1}>, IEnumerable<{0}.{1}>> _filterSaveComputeForNewItems_{2} =
-            {3};
+            return $@"private static readonly Func<IEnumerable<{info.EntityComputedFrom.Target.FullName}>, IEnumerable<{info.EntityComputedFrom.Target.FullName}>> _filterSaveComputeForNewItems_{uniqueSuffix} =
+            {info.FilterSaveExpression};
 
-        ",
-                info.EntityComputedFrom.Target.Module.Name,
-                info.EntityComputedFrom.Target.Name,
-                uniqueSuffix,
-                info.FilterSaveExpression);
+        ";
         }
     }
 }
