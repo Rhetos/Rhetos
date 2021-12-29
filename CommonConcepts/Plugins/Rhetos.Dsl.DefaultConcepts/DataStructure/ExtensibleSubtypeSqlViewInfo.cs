@@ -46,7 +46,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             return new[] { "Module", "Name", "ViewSource" };
         }
 
-        void IAlternativeInitializationConcept.InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
         {
             var prototype = IsSubtypeOf.GetImplementationViewPrototype();
 

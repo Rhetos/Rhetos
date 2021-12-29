@@ -49,6 +49,8 @@ namespace Rhetos.Persistence
         /// </summary>
         void DiscardOnDispose();
 
+#pragma warning disable CA1713 // Events should not have 'Before' or 'After' prefix
+
         /// <summary>
         /// Invoked before the transaction is committed.
         /// </summary>
@@ -68,6 +70,8 @@ namespace Rhetos.Persistence
         /// This event will not be invoked if the current transaction is rolled back (see <see cref="DiscardOnDispose()"/>).
         /// </remarks>
         event Action AfterClose;
+
+#pragma warning restore CA1713 // Events should not have 'Before' or 'After' prefix
 
         /// <summary>
         /// When reading this property the database connection will be automatically opened and a transaction started.

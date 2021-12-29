@@ -109,7 +109,7 @@ namespace Rhetos.Utilities
             if (name == null)
                 return "Identifier name is null.";
 
-            if (string.IsNullOrEmpty(name))
+            if (name == "")
                 return "Identifier name is empty.";
 
             if (IsNotLetterOrUnderscore(name[0]))
@@ -252,8 +252,11 @@ namespace Rhetos.Utilities
                 }
                 catch (Exception ex)
                 {
-                    Exception[] reportExceptions = (ex as ReflectionTypeLoadException)?.LoaderExceptions;
-                    if (reportExceptions == null || !reportExceptions.Any())
+                    Exception[] reportExceptions;
+
+                    if (ex is ReflectionTypeLoadException rtle && rtle.LoaderExceptions?.Any() == true)
+                        reportExceptions = rtle.LoaderExceptions;
+                    else
                         reportExceptions = new[] { ex };
 
                     foreach (var exceptionInfo in reportExceptions.Select(re => re.GetType().Name + ": " + re.Message).Distinct().Take(5))

@@ -42,6 +42,6 @@ namespace Rhetos.DatabaseGenerator
             _databaseModelFile.Save(_databaseModelBuilder.CreateDatabaseModel());
         }
 
-        IEnumerable<string> IGenerator.Dependencies => Array.Empty<string>();
+        public IEnumerable<string> Dependencies => Array.Empty<string>();
     }
 }

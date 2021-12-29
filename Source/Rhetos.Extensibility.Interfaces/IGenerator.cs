@@ -27,8 +27,16 @@ namespace Rhetos.Extensibility
 {
     public interface IGenerator
     {
-        IEnumerable<string> Dependencies { get; }
-
+        /// <summary>
+        /// Generate additional application project content, for example, additional C# source code or assets files.
+        /// This method will be executed when building the application project (msbuild or dotnet build),
+        /// before the application's C# code is compiled.
+        /// </summary>
         void Generate();
+
+        /// <summary>
+        /// FullName of other generator types that should be executed before the current generator.
+        /// </summary>
+        IEnumerable<string> Dependencies { get; }
     }
 }

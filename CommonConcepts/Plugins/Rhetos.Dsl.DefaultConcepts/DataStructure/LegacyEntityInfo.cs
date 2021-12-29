@@ -39,16 +39,11 @@ namespace Rhetos.Dsl.DefaultConcepts
     public class LegacyEntityInfo : DataStructureInfo, IWritableOrmDataStructure
     {
         public string Table { get; set; }
+
         public string View { get; set; }
 
-        string IOrmDataStructure.GetOrmSchema()
-        {
-            return SqlUtility.GetSchemaName(View);
-        }
+        public string GetOrmSchema() => SqlUtility.GetSchemaName(View);
 
-        string IOrmDataStructure.GetOrmDatabaseObject()
-        {
-            return SqlUtility.GetShortName(View);
-        }
+        public string GetOrmDatabaseObject() => SqlUtility.GetShortName(View);
     }
 }

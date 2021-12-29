@@ -39,13 +39,16 @@ namespace Rhetos.Host.Net
 
         public LocalizedString this[object message, params object[] args]
         {
-            get {
+#pragma warning disable CA1508 // Avoid dead conditional code. This warning is false positive here for params args.
+            get
+            {
                 if(message is string)
                     return stringLocalizer[message.ToString(), args ?? System.Array.Empty<object>()];
                 else
                     return stringLocalizer["{0}", message];
 
             }
+#pragma warning restore CA1508 // Avoid dead conditional code
         }
     }
 

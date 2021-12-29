@@ -82,10 +82,10 @@ namespace Rhetos.Dom.DefaultConcepts
 
             protected override Expression VisitMethodCall(MethodCallExpression node)
             {
-                if (node.Object != null && node.Object.NodeType == ExpressionType.MemberAccess)
+                if (node.Object != null && node.Object.NodeType == ExpressionType.MemberAccess && node.Object is MemberExpression memberExpression)
                 {
-                    FieldInfo innerField = (node.Object as MemberExpression)?.Member as FieldInfo;
-                    ConstantExpression ce = (node.Object as MemberExpression)?.Expression as ConstantExpression;
+                    FieldInfo innerField = memberExpression.Member as FieldInfo;
+                    ConstantExpression ce = memberExpression.Expression as ConstantExpression;
 
                     if (innerField == null || ce == null)
                         return base.VisitMethodCall(node);

@@ -525,7 +525,7 @@ namespace Rhetos.Dom.DefaultConcepts
             // (instead of assembly qualified names only) for the filters that are specified on the given data structure in the DSL model.
 
             List<Type> matchingTypes = _dataStructureReadParameters.GetReadParameters(dataStructureFullName, true)
-                .Where(f => f.Name.Equals(filterName)).Select(f => f.Type).Distinct().ToList();
+                .Where(f => f.Name.Equals(filterName, StringComparison.Ordinal)).Select(f => f.Type).Distinct().ToList();
 
             if (matchingTypes.Count > 1)
                 throw new ClientException($"Filter type '{filterName}' on '{dataStructureFullName}' is ambiguous ({matchingTypes.First().FullName}, {matchingTypes.Last().FullName})." +

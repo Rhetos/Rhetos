@@ -46,6 +46,8 @@ namespace Rhetos.Utilities
 
         public string GeneratedSourceFolder { get; set; }
 
+#pragma warning disable CA1033 // Interface methods should be callable by child types
         string IAssetsOptions.AssetsFolder => GeneratedAssetsFolder;
+#pragma warning restore CA1033 // Interface methods should be callable by child types
     }
 }

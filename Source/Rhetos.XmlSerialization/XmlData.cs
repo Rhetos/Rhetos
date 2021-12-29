@@ -81,10 +81,8 @@ namespace Rhetos.XmlSerialization
             }
         }
 
-        object ICommandData.Value
-        {
-            get { return Xml; }
-        }
-
+#pragma warning disable CA1033 // Interface methods should be callable by child types
+        object ICommandData.Value => Xml;
+#pragma warning restore CA1033 // Interface methods should be callable by child types
     }
 }

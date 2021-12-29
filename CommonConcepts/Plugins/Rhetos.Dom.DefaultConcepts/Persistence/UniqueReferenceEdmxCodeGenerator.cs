@@ -114,7 +114,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static string GetNavigationPropertyNameForConceptualModelForExtension(UniqueReferenceInfo uniqueReferenceInfo)
         {
-            if (uniqueReferenceInfo.Base.Module.Name.Equals(uniqueReferenceInfo.Extension.Module.Name))
+            if (uniqueReferenceInfo.Base.Module.Name.Equals(uniqueReferenceInfo.Extension.Module.Name, System.StringComparison.Ordinal))
                 return $@"Extension_{uniqueReferenceInfo.Extension.Name}";
             else
                 return $@"Extension_{uniqueReferenceInfo.Extension.Module.Name}_{uniqueReferenceInfo.Extension.Name}";

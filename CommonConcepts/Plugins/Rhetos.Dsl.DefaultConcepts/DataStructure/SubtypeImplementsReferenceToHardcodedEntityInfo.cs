@@ -42,7 +42,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public EntryInfo Entry { get; set; }
 
-        IEnumerable<IConceptInfo> IMacroConcept.CreateNewConcepts()
+        public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
             return new List<IConceptInfo>
             {

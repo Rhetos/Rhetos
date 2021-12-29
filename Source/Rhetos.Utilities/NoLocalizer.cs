@@ -35,6 +35,7 @@ namespace Rhetos.Utilities
     {
         public LocalizedString this[object message, params object[] args]
         {
+#pragma warning disable CA1508 // Avoid dead conditional code. This warning is false positive here for params args.
             get
             {
                 string messageText = message.ToString();
@@ -43,6 +44,7 @@ namespace Rhetos.Utilities
                 else
                     return new LocalizedString(messageText, messageText);
             }
+#pragma warning restore CA1508 // Avoid dead conditional code
         }
     }
 

@@ -25,6 +25,8 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
+#pragma warning disable CA1309 // Use ordinal string comparison
+
 namespace Rhetos.Dom.DefaultConcepts
 {
     /// <summary>
@@ -199,3 +201,5 @@ namespace Rhetos.Dom.DefaultConcepts
 #pragma warning restore CA1801 // Review unused parameters
     }
 }
+
+#pragma warning restore CA1309 // Use ordinal string comparison

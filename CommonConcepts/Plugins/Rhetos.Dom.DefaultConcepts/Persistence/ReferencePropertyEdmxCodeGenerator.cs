@@ -39,13 +39,13 @@ namespace Rhetos.Dom.DefaultConcepts
                 if (referencePropertyInfo.Referenced is IOrmDataStructure)
                 {
                     codeBuilder.InsertCode(GetNavigationPropertyNodeForConceptualModel(referencePropertyInfo), DataStructureEdmxCodeGenerator.ConceptualModelEntityTypeNavigationPropertyTag.Evaluate(referencePropertyInfo.DataStructure));
-                    if (referencePropertyInfo.Referenced.GetKeyProperties().Equals(referencePropertyInfo.DataStructure.GetKeyProperties()))
+                    if (referencePropertyInfo.Referenced.GetKeyProperties().Equals(referencePropertyInfo.DataStructure.GetKeyProperties(), System.StringComparison.Ordinal))
                         codeBuilder.InsertCode(GetAssoctiationNodeForConceptualModelForSelfReference(referencePropertyInfo), EntityFrameworkMapping.ConceptualModelTag);
                     else
                         codeBuilder.InsertCode(GetAssoctiationNodeForConceptualModel(referencePropertyInfo), EntityFrameworkMapping.ConceptualModelTag);
                     codeBuilder.InsertCode(GetAssoctiationSetNodeForConceptualModel(referencePropertyInfo), EntityFrameworkMapping.ConceptualModelEntityContainerTag);
 
-                    if (referencePropertyInfo.Referenced.GetKeyProperties().Equals(referencePropertyInfo.DataStructure.GetKeyProperties()))
+                    if (referencePropertyInfo.Referenced.GetKeyProperties().Equals(referencePropertyInfo.DataStructure.GetKeyProperties(), System.StringComparison.Ordinal))
                     {
                         codeBuilder.InsertCode(GetAssoctiationNodeForStorageModelForSelfReference(referencePropertyInfo), EntityFrameworkMapping.StorageModelTag);
                         codeBuilder.InsertCode(GetAssoctiationSetNodeForStorageModelForSelfeference(referencePropertyInfo), EntityFrameworkMapping.StorageModelEntityContainerTag);

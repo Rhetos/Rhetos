@@ -67,7 +67,9 @@ namespace Rhetos.Deployment
         /// </summary>
         public int CompareTo(DataMigrationScript other)
         {
+#pragma warning disable CA1309 // Use ordinal string comparison. Suppressed for backward compatibility.
             return string.Compare(OrderWithinPackage, other.OrderWithinPackage, StringComparison.InvariantCultureIgnoreCase);
+#pragma warning restore CA1309 // Use ordinal string comparison
         }
     }
 }

@@ -72,8 +72,10 @@ namespace Rhetos.Persistence
             Dispose();
         }
 
+#pragma warning disable CA1713 // Events should not have 'Before' or 'After' prefix
         public event Action BeforeClose;
         public event Action AfterClose;
+#pragma warning restore CA1713 // Events should not have 'Before' or 'After' prefix
 
         protected virtual void Dispose(bool disposing)
         {

@@ -29,8 +29,10 @@ namespace Rhetos.CommonConcepts.Test.Mocks
 
         public DbTransaction Transaction => throw new NotImplementedException();
 
+#pragma warning disable CA1713 // Events should not have 'Before' or 'After' prefix
         public event Action BeforeClose;
         public event Action AfterClose;
+#pragma warning restore CA1713 // Events should not have 'Before' or 'After' prefix
 
         bool _commitOnDispose;
         bool _discardOnDispose;

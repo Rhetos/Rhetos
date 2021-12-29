@@ -35,14 +35,8 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         public string SqlSource { get; set; }
 
-        string IOrmDataStructure.GetOrmSchema()
-        {
-            return Module.Name;
-        }
+        public string GetOrmSchema() => Module.Name;
 
-        string IOrmDataStructure.GetOrmDatabaseObject()
-        {
-            return Name;
-        }
+        public string GetOrmDatabaseObject() => Name;
     }
 }

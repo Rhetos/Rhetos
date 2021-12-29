@@ -97,9 +97,15 @@ dotnet_diagnostic.CA1310.severity = suggestion
 # CA1711: Identifiers should not have incorrect suffix
 dotnet_diagnostic.CA1711.severity = suggestion
 
-# CA1713: Events should not have 'Before' or 'After' prefix
-dotnet_diagnostic.CA1713.severity = suggestion
-
 # This warning is suppressed because there are many comparisons in this solution where it is important to check for empty string and not null.
 # CA1820: Test for empty strings using string length
 dotnet_diagnostic.CA1820.severity = suggestion
+
+# CA1003: Use generic event handler instances
+dotnet_diagnostic.CA1003.severity = suggestion
+
+# CA2227: Collection properties should be read only
+dotnet_diagnostic.CA2227.severity = suggestion
+
+# CA2100: Review SQL queries for security vulnerabilities
+dotnet_diagnostic.CA2100.severity = suggestion

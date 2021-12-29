@@ -33,14 +33,8 @@ namespace Rhetos.Dsl.DefaultConcepts
     [ConceptKeyword("Entity")]
     public class EntityInfo : DataStructureInfo, IWritableOrmDataStructure
     {
-        string IOrmDataStructure.GetOrmSchema()
-        {
-            return Module.Name;
-        }
+        public string GetOrmSchema() => Module.Name;
 
-        string IOrmDataStructure.GetOrmDatabaseObject()
-        {
-            return Name;
-        }
+        public string GetOrmDatabaseObject() => Name;
     }
 }

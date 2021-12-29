@@ -76,7 +76,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             if (ImplementationName == null)
                 throw new DslSyntaxException(this, "ImplementationName must not be null. It is allowed to be an empty string.");
 
-            if (!string.IsNullOrEmpty(ImplementationName))
+            if (ImplementationName != "")
                 DslUtility.ValidateIdentifier(ImplementationName, this, "Invalid ImplementationName value.");
 
             if (existingConcepts.FindByReference<PolymorphicMaterializedInfo>(pm => pm.Polymorphic, Supertype).Any())
