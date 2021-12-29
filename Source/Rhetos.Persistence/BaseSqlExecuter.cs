@@ -62,7 +62,7 @@ namespace Rhetos.Persistence
         public async Task<int> ExecuteSqlRawAsync(string query, object[] parameters, CancellationToken cancellationToken)
         {
             using var command = CreateCommand(query, parameters);
-            return await command.ExecuteNonQueryAsync(cancellationToken);
+            return await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
 
         public void ExecuteReaderRaw(string query, object[] parameters, Action<DbDataReader> read)
@@ -76,8 +76,8 @@ namespace Rhetos.Persistence
         public async Task ExecuteReaderRawAsync(string query, object[] parameters, Action<DbDataReader> read, CancellationToken cancellationToken)
         {
             using var command = CreateCommand(query, parameters);
-            using var reader = await command.ExecuteReaderAsync(cancellationToken);
-            while (await reader.ReadAsync(cancellationToken))
+            using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+            while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
                 read(reader);
         }
 
