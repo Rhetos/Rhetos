@@ -83,12 +83,15 @@ namespace Rhetos.Configuration.Autofac
 
             if (disposing)
             {
-                if(_commitChanges)
+                if (_commitChanges)
                     _transactionScope?.CommitAndClose();
                 else
                     _transactionScope?.RollbackAndClose();
+                _transactionScope?.Dispose();
             }
 
+            InitializeSession = null;
+            _transactionScope = null;
             disposed = true;
         }
 

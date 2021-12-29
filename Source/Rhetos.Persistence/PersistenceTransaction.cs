@@ -87,15 +87,18 @@ namespace Rhetos.Persistence
                     {
                         _logger.Trace(() => "Disposing (" + _persistenceTransactionId + ").");
                         if (_commitOnDispose && !_discardOnDispose)
-                            Commit();
+                            DisposingCommit();
                         else
-                            Rollback();
+                            DisposingRollback();
                     }
                 }
                 finally
                 {
                     BeforeClose = null;
                     AfterClose = null;
+                    _transaction = null;
+                    _connection = null;
+
                     _disposed = true;
                 }
             }
@@ -107,49 +110,31 @@ namespace Rhetos.Persistence
             GC.SuppressFinalize(this);
         }
 
-        private void Commit()
+        private void DisposingCommit()
         {
             _logger.Trace(() => "Committing (" + _persistenceTransactionId + ").");
             var exceptions = new List<Exception>();
 
-            Try(
-                BeforeClose,
-                () => BeforeClose = null,
-                exceptions);
+            Try(BeforeClose, exceptions);
 
-            Try(
-                !exceptions.Any() ? (Action)CommitTransaction : (Action)RollbackTransaction,
-                () => _transaction = null,
-                exceptions);
+            Try(!exceptions.Any() ? CommitTransactionAndDispose : RollbackTransactionAndDispose, exceptions);
 
-            Try(
-                CloseConnection,
-                () => _connection = null,
-                exceptions);
+            Try(CloseConnection, exceptions);
 
             if (exceptions.Any())
                 ExceptionsUtility.Rethrow(exceptions.First());
 
             AfterClose?.Invoke();
-            AfterClose = null;
         }
 
-        private void Rollback()
+        private void DisposingRollback()
         {
             _logger.Trace(() => "Rolling back (" + _persistenceTransactionId + ").");
             var exceptions = new List<Exception>();
-            BeforeClose = null;
-            AfterClose = null;
 
-            Try(
-                RollbackTransaction,
-                () => _transaction = null,
-                exceptions);
+            Try(RollbackTransactionAndDispose, exceptions);
 
-            Try(
-                CloseConnection,
-                () => _connection = null,
-                exceptions);
+            Try(CloseConnection, exceptions);
 
             // Failure on rollback should be ignored to allow other cleanup code to be executed, and also to avoid masking the original exception on transaction disposal.
             if (exceptions.Any())
@@ -158,7 +143,7 @@ namespace Rhetos.Persistence
                 _logger.Trace("Error on rollback, it can be safely ignored. " + exceptions.First());
         }
 
-        private static void Try(Action action, Action cleanup, List<Exception> exceptions)
+        private static void Try(Action action, List<Exception> exceptions)
         {
             try
             {
@@ -168,27 +153,25 @@ namespace Rhetos.Persistence
             {
                 exceptions.Add(e);
             }
-            finally
-            {
-                cleanup?.Invoke();
-            }
         }
 
-        private void CommitTransaction()
+        private void CommitTransactionAndDispose()
         {
             if (_transaction != null)
             {
                 _logger.Trace(() => "Committing transaction (" + _persistenceTransactionId + ").");
                 _transaction.Commit();
+                _transaction.Dispose();
             }
         }
 
-        private void RollbackTransaction()
+        private void RollbackTransactionAndDispose()
         {
             if (_transaction != null)
             {
                 _logger.Trace(() => "Rolling back transaction (" + _persistenceTransactionId + ").");
                 _transaction.Rollback();
+                _transaction.Dispose();
             }
         }
         private void CloseConnection()
