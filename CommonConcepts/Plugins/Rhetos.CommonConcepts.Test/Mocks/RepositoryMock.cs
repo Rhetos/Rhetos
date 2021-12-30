@@ -45,7 +45,7 @@ namespace Rhetos.CommonConcepts.Test.Mocks
 
         public IQueryable<TEntityInterface> Query()
         {
-            return (IQueryable<TEntityInterface>)_items.AsQueryable();
+            return _items.AsQueryable();
         }
 
         public List<object> InsertedGroups = new List<object>();

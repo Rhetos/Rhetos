@@ -500,7 +500,7 @@ namespace Rhetos.Dsl.Test
         {
             public IEnumerable<IConceptInfo> CreateNewConcepts(MultiplePassMacroConceptInfo2 conceptInfo, IDslModel existingConcepts)
             {
-                int count = existingConcepts.Concepts.OfType<SimpleConceptInfo>().Where(c => !c.Name.StartsWith("dup")).Count();
+                int count = existingConcepts.Concepts.OfType<SimpleConceptInfo>().Count(c => !c.Name.StartsWith("dup"));
                 if (count < 3)
                     return new List<IConceptInfo> { new SimpleConceptInfo { Name = count.ToString(), Data = "" } };
                 return null;
@@ -524,8 +524,8 @@ namespace Rhetos.Dsl.Test
             var result = DslModelFromConcepts(concepts, macros);
             Console.WriteLine(string.Join(", ", result.Select(c => c.GetUserDescription())));
 
-            Assert.AreEqual(3, result.OfType<SimpleConceptInfo>().Where(c => !c.Name.StartsWith("dup")).Count());
-            Assert.AreEqual(3, result.OfType<SimpleConceptInfo>().Where(c => c.Name.StartsWith("dup")).Count());
+            Assert.AreEqual(3, result.OfType<SimpleConceptInfo>().Count(c => !c.Name.StartsWith("dup")));
+            Assert.AreEqual(3, result.OfType<SimpleConceptInfo>().Count(c => c.Name.StartsWith("dup")));
         }
 
         [TestMethod]

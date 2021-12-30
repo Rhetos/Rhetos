@@ -103,10 +103,13 @@ namespace Rhetos.Dom.DefaultConcepts
             Type filterType = null;
             try
             {
-                filterType = Type.GetType(filter, throwOnError: false); // Even when throwOnError is false, some exceptions are thrown.
+                filterType = Type.GetType(filter, throwOnError: false);
             }
             catch
             {
+                // Trying to get the filter type just to improve the reported description.
+                // Any errors resolving the type can be ignored.
+                // Note: Even when throwOnError is false in Type.GetType, some exceptions are thrown.
             }
             if (filterType != null)
                 return filterType.ToString();
@@ -140,8 +143,8 @@ namespace Rhetos.Dom.DefaultConcepts
                 return "null";
             if (value.GetType().IsValueType || value is string)
                 return value.ToString();
-            if (value is IEntity)
-                return "ID " + ((IEntity)value).ID.ToString();
+            if (value is IEntity entity)
+                return "ID " + entity.ID.ToString();
             return "...";
         }
     }

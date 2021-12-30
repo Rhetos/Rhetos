@@ -29,12 +29,12 @@ namespace Rhetos
     [Serializable]
     public class UserException : RhetosException
     {
-        public string SystemMessage; // TODO: Remove this property and switch to RhetosException.Info property for error metadata.
+        public string SystemMessage { get; set; } // TODO: Remove this property and switch to RhetosException.Info property for error metadata.
 
         /// <summary>
         /// The MessageParameters are used with the Message property, matching the arguments of the string.Format(Message, MessageParameters) method.
         /// </summary>
-        public readonly object[] MessageParameters;
+        public object[] MessageParameters { get; }
 
         public UserException() { }
 

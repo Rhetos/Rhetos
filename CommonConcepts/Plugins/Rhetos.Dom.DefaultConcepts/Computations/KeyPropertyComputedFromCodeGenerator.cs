@@ -63,7 +63,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public bool IsSupported(PropertyInfo targetProperty)
         {
-            return _supportedSnippets.Keys.Any(type => type.IsAssignableFrom(targetProperty.GetType()));
+            return _supportedSnippets.Keys.Any(type => type.IsInstanceOfType(targetProperty));
         }
 
         private static string Snippet(KeyPropertyComputedFromInfo info)

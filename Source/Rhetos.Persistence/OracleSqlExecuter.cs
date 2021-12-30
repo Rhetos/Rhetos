@@ -149,6 +149,9 @@ namespace Rhetos.Persistence
             }
             catch
             {
+                // Error on rollback can be ignored.
+                // It would probably result from another earlier error that closed the transaction,
+                // so any exception here would just add noise to the original exception report.
             }
         }
 

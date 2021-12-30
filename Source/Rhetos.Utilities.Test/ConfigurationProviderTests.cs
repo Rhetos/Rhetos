@@ -107,7 +107,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual("Hello2", provider.GetValue("App.TestSection:StringValue", "n/a"));
         }
 
-        public enum TestEnum
+        public enum TestEnumeration
         {
             None,
             ValueA,
@@ -125,7 +125,7 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual(0, provider.GetValue<int>("IntValue"));
             Assert.AreEqual(0, provider.GetValue<double>("DoubleValue"));
             Assert.AreEqual(false, provider.GetValue<bool>("BoolValue"));
-            Assert.AreEqual(TestEnum.None, provider.GetValue<TestEnum>("EnumValue"));
+            Assert.AreEqual(TestEnumeration.None, provider.GetValue<TestEnumeration>("EnumValue"));
         }
 
         [TestMethod]
@@ -141,7 +141,7 @@ namespace Rhetos.Utilities.Test
                 .AddKeyValue("d1", 1.23)
                 .AddKeyValue("d2", "1.23")
                 .AddKeyValue("d3", null)
-                .AddKeyValue("e1", TestEnum.ValueA)
+                .AddKeyValue("e1", TestEnumeration.ValueA)
                 .AddKeyValue("e2", "ValueA")
                 .AddKeyValue("e3", null)
                 .Build();
@@ -161,10 +161,10 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual(null, provider.GetValue<double?>("d3"));
             Assert.AreEqual(null, provider.GetValue<double?>("d4"));
 
-            Assert.AreEqual(TestEnum.ValueA, provider.GetValue<TestEnum?>("e1"));
-            Assert.AreEqual(TestEnum.ValueA, provider.GetValue<TestEnum?>("e2"));
-            Assert.AreEqual(null, provider.GetValue<TestEnum?>("e3"));
-            Assert.AreEqual(null, provider.GetValue<TestEnum?>("e4"));
+            Assert.AreEqual(TestEnumeration.ValueA, provider.GetValue<TestEnumeration?>("e1"));
+            Assert.AreEqual(TestEnumeration.ValueA, provider.GetValue<TestEnumeration?>("e2"));
+            Assert.AreEqual(null, provider.GetValue<TestEnumeration?>("e3"));
+            Assert.AreEqual(null, provider.GetValue<TestEnumeration?>("e4"));
         }
 
         [TestMethod]
@@ -174,11 +174,11 @@ namespace Rhetos.Utilities.Test
                 .AddKeyValue("EnumValue", "hello")
                 .Build();
 
-            var frameworkException = TestUtility.ShouldFail<FrameworkException>(() => provider.GetValue<TestEnum>("EnumValue"));
-            Assert.IsTrue(frameworkException.Message.Contains("Allowed values for TestEnum are: None, ValueA, ValueB"));
+            var frameworkException = TestUtility.ShouldFail<FrameworkException>(() => provider.GetValue<TestEnumeration>("EnumValue"));
+            Assert.IsTrue(frameworkException.Message.Contains("Allowed values for TestEnumeration are: None, ValueA, ValueB"));
         }
 
-        public enum FakeEnum
+        public enum FakeEnumeration
         {
             None
         }
@@ -192,9 +192,9 @@ namespace Rhetos.Utilities.Test
                 .AddKeyValue("BoolValue", true)
                 .AddKeyValue("BoolValueFalse", false)
                 .AddKeyValue("DoubleValue", 3.14)
-                .AddKeyValue("EnumNone", TestEnum.None)
-                .AddKeyValue("EnumA", TestEnum.ValueA)
-                .AddKeyValue("EnumB", TestEnum.ValueB)
+                .AddKeyValue("EnumNone", TestEnumeration.None)
+                .AddKeyValue("EnumA", TestEnumeration.ValueA)
+                .AddKeyValue("EnumB", TestEnumeration.ValueB)
                 .Build();
 
             TestUtility.ShouldFail<FrameworkException>(() => provider.GetValue("IntValue", "n/a"), "Can't convert");
@@ -210,11 +210,11 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual(3.14, provider.GetValue("DoubleValue", -1.5));
 
             // enums should fail when mixed
-            TestUtility.ShouldFail<FrameworkException>(() => provider.GetValue("EnumNone", FakeEnum.None), "Can't convert");
+            TestUtility.ShouldFail<FrameworkException>(() => provider.GetValue("EnumNone", FakeEnumeration.None), "Can't convert");
 
-            Assert.AreEqual(TestEnum.None, provider.GetValue("EnumNA", TestEnum.None));
-            Assert.AreEqual(TestEnum.ValueA, provider.GetValue("EnumA", TestEnum.None));
-            Assert.AreEqual(TestEnum.ValueB, provider.GetValue("EnumB", TestEnum.None));
+            Assert.AreEqual(TestEnumeration.None, provider.GetValue("EnumNA", TestEnumeration.None));
+            Assert.AreEqual(TestEnumeration.ValueA, provider.GetValue("EnumA", TestEnumeration.None));
+            Assert.AreEqual(TestEnumeration.ValueB, provider.GetValue("EnumB", TestEnumeration.None));
         }
 
         public class PocoOptions
@@ -229,8 +229,8 @@ namespace Rhetos.Utilities.Test
             public double DoubleValueComma { get; set; } = -1.5;
             public double DoubleValueDot { get; set; } = -1.5;
             public double DoubleValueObject { get; set; } = -1.5;
-            public TestEnum EnumValueString { get; set; } = TestEnum.None;
-            public TestEnum EnumValueObject { get; set; } = TestEnum.None;
+            public TestEnumeration EnumValueString { get; set; } = TestEnumeration.None;
+            public TestEnumeration EnumValueObject { get; set; } = TestEnumeration.None;
             public int JustAField = 0;
         }
 
@@ -248,7 +248,7 @@ namespace Rhetos.Utilities.Test
                 .AddKeyValue("app:doubleValueDOT", "3.99") // override previous setting
                 .AddKeyValue("App:DoubleValueObject", "3.16")
                 .AddKeyValue("App:EnumValueString", "ValueA")
-                .AddKeyValue("App:EnumValueObject", TestEnum.ValueB)
+                .AddKeyValue("App:EnumValueObject", TestEnumeration.ValueB)
                 .AddKeyValue("App:ArrayOfStrings:0", "A")
                 .AddKeyValue("App:ArrayOfStrings:1", "B")
                 .Build();
@@ -263,8 +263,8 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual(3.14, options.DoubleValueComma);
             Assert.AreEqual(3.99, options.DoubleValueDot);
             Assert.AreEqual(3.16, options.DoubleValueObject);
-            Assert.AreEqual(TestEnum.ValueA, options.EnumValueString);
-            Assert.AreEqual(TestEnum.ValueB, options.EnumValueObject);
+            Assert.AreEqual(TestEnumeration.ValueA, options.EnumValueString);
+            Assert.AreEqual(TestEnumeration.ValueB, options.EnumValueObject);
             Assert.AreEqual("A, B", TestUtility.Dump(options.ArrayOfStrings));
             Assert.AreEqual("defaultString", TestUtility.Dump(options.ArrayOfStringsDefault));
         }
@@ -297,7 +297,7 @@ namespace Rhetos.Utilities.Test
                 .Build();
 
             var options = provider.GetOptions<PocoOptions>();
-            Assert.AreEqual(options.JustAField, 1337);
+            Assert.AreEqual(1337, options.JustAField);
         }
 
         public class Poco2

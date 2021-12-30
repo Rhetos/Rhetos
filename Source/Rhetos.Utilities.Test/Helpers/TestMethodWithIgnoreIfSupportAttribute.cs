@@ -46,8 +46,7 @@ namespace Rhetos.Utilities.Test.Helpers
             {
                 ignoreAttributes.AddRange(
                     type.GetCustomAttributes(inherit: true)
-                        .Where(o => o is IgnoreIfAttribute)
-                        .Select(o => o as IgnoreIfAttribute));
+                        .OfType<IgnoreIfAttribute>());
                 type = type.DeclaringType;
             }
             return ignoreAttributes;

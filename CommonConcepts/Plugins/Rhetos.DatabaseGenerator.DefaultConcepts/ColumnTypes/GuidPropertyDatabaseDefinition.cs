@@ -30,7 +30,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(GuidPropertyInfo))]
     public class GuidPropertyDatabaseDefinition : IConceptDatabaseDefinition
     {
-        ConceptMetadata _conceptMetadata;
+        private readonly ConceptMetadata _conceptMetadata;
 
         public GuidPropertyDatabaseDefinition(ConceptMetadata conceptMetadata)
         {

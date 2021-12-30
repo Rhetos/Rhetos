@@ -158,7 +158,7 @@ namespace Rhetos.TestCommon
         {
             if (selector == null)
                 selector = item => item;
-            var result = string.Join(", ", list.Select(element => selector((T)element)?.ToString() ?? "<null>").OrderBy(text => text));
+            var result = string.Join(", ", list.Select(element => selector(element)?.ToString() ?? "<null>").OrderBy(text => text));
             Console.WriteLine("[DumpSorted] " + result);
             return result;
         }
@@ -175,7 +175,7 @@ namespace Rhetos.TestCommon
         {
             if (selector == null)
                 selector = item => item;
-            var result = string.Join(", ", list.Select(element => selector((T)element).ToString()));
+            var result = string.Join(", ", list.Select(element => selector(element).ToString()));
             Console.WriteLine("[Dump] " + result);
             return result;
         }

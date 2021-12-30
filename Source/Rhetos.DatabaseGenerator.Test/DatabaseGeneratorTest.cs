@@ -287,7 +287,7 @@ namespace Rhetos.DatabaseGenerator.Test
         [TestMethod]
         public void MustRecreateDependentConceptInCorrectOrder()
         {
-            // A <- B <- C;
+            // A <- B <- C
             var oldA = new SimpleConcept("A", "sqlA1");
             var newA = new SimpleConcept("A", "sqlA2"); // Changed.
 
@@ -310,7 +310,7 @@ namespace Rhetos.DatabaseGenerator.Test
         [TestMethod]
         public void UnchangedMiddleReferenceWithoutDatabaseGenerator()
         {
-            // A <- B <- C;
+            // A <- B <- C
             var oldA = new SimpleConcept("A", "sqlA1");
             var newA = new SimpleConcept("A", "sqlA2"); // Changed.
 

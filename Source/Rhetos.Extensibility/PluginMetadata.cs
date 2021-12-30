@@ -33,6 +33,10 @@ namespace Rhetos.Extensibility
     /// </summary>
     public class PluginMetadata<T>
     {
+        // The generic argument type T is not used directly in this class. It is used for DI registration, in order to allow other components
+        // to simply resolve PluginMetadata for a given type, for any type registered in DI container.
+        // This mechanism is controlled by PluginMetadataRegistrationSource.
+
         public PluginMetadata(Type pluginType, IDictionary<string, object> metadata)
         {
             PluginType = pluginType;

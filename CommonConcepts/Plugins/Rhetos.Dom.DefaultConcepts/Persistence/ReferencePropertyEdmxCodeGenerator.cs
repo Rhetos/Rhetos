@@ -157,7 +157,7 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string GetPropertyElementForStorageModel(ReferencePropertyInfo referencePropertyInfo)
         {
             return $@"
-    <Property Name=""{referencePropertyInfo.Name}ID"" Type=""uniqueidentifier"" customannotation:Index=""{{ Name: IX_{referencePropertyInfo.Name}ID, Order: 0 }}"" Nullable=""true"" />"; ;
+    <Property Name=""{referencePropertyInfo.Name}ID"" Type=""uniqueidentifier"" customannotation:Index=""{{ Name: IX_{referencePropertyInfo.Name}ID, Order: 0 }}"" Nullable=""true"" />";
         }
 
         private static string GetPropertyElementForConceptualModel(ReferencePropertyInfo referencePropertyInfo)

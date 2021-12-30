@@ -37,13 +37,13 @@ namespace Rhetos.Dom.DefaultConcepts
         public void NonQueryExecuting(
             DbCommand command, DbCommandInterceptionContext<int> interceptionContext)
         {
-
+            // This interceptor is intended to rewrite only read or scalar queries before executed.
         }
 
         public void NonQueryExecuted(
             DbCommand command, DbCommandInterceptionContext<int> interceptionContext)
         {
-
+            // This interceptor is intended to rewrite only read or scalar queries before executed.
         }
 
         public void ReaderExecuting(
@@ -55,7 +55,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public void ReaderExecuted(
             DbCommand command, DbCommandInterceptionContext<DbDataReader> interceptionContext)
         {
-
+            // This interceptor is intended to rewrite only read or scalar queries before executed.
         }
 
         public void ScalarExecuting(
@@ -67,7 +67,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public void ScalarExecuted(
             DbCommand command, DbCommandInterceptionContext<object> interceptionContext)
         {
-
+            // This interceptor is intended to rewrite only read or scalar queries before executed.
         }
 
         private static void RewriteQuery(DbCommand cmd)

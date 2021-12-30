@@ -45,8 +45,8 @@ namespace Rhetos.Utilities.Test
             ILocalizer testLocalizer = new NoLocalizer();
 
             // Expecting the same behavior as string.Format().
-            TestUtility.ShouldFail<NullReferenceException>(() => { string msg = testLocalizer[null]; });
-            TestUtility.ShouldFail<FormatException>(() => { string msg = testLocalizer["{0}{1}", 123]; });
+            TestUtility.ShouldFail<NullReferenceException>(() => { _ = testLocalizer[null]; });
+            TestUtility.ShouldFail<FormatException>(() => { _ = testLocalizer["{0}{1}", 123]; });
         }
     }
 }

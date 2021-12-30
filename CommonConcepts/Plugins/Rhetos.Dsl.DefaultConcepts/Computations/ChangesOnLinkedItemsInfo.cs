@@ -58,7 +58,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                     + "'. The reference should point to computation's base data structure '" + extendsConcept.Base.GetUserDescription()
                     + "'. Instead it points to '" + conceptInfo.LinkedItemsReference.Referenced.GetUserDescription() + "'.");
 
-            if (!typeof(EntityInfo).IsAssignableFrom(conceptInfo.LinkedItemsReference.DataStructure.GetType()))
+            if (!(conceptInfo.LinkedItemsReference.DataStructure is EntityInfo))
                 throw new DslSyntaxException("ChangesOnLinkedItems is used on '" + conceptInfo.Computation.GetUserDescription()
                 + "', but the data structure it depends on '" + conceptInfo.LinkedItemsReference.DataStructure.GetUserDescription()
                 + "' is not Entity. Currently only entities are supported in automatic handling of dependencies.");

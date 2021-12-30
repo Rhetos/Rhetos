@@ -136,9 +136,9 @@ namespace Rhetos.DatabaseGenerator.Test
         [TestMethod]
         public void ExtractCreateQueries_BeforeFirst1()
         {
-            var ca1 = new CodeGenerator(new BaseCi { Name = "ci1" }, new SimpleConceptImplementation());
+            _ = new CodeGenerator(new BaseCi { Name = "ci1" }, new SimpleConceptImplementation());
             const string createQuery1 = "create query 1";
-            var ca2 = new CodeGenerator(new BaseCi { Name = "ci2" }, new SimpleConceptImplementation());
+            _ = new CodeGenerator(new BaseCi { Name = "ci2" }, new SimpleConceptImplementation());
             const string createQuery2 = "create query 2";
 
             var sqlCodeBuilder = new CodeBuilder("/*", "*/");
@@ -170,7 +170,6 @@ namespace Rhetos.DatabaseGenerator.Test
             var sqlCodeBuilder = new CodeBuilder("/*", "*/");
             sqlCodeBuilder.InsertCode("before first");
 
-            var newConceptApplications = new List<CodeGenerator>();
             TestUtility.ShouldFail<FrameworkException>(
                 () => DatabaseModelBuilderAccessor.ExtractCreateQueries(sqlCodeBuilder.GenerateCode()),
                 "The first segment should be empty");

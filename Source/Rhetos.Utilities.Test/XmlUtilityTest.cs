@@ -265,14 +265,14 @@ namespace Rhetos.Utilities.Test
 
         public class ClassWithEnum
         {
-            public enum TestEnum { ValueA, ValueB };
-            public TestEnum testEnumValue;
+            public enum TestEnumeration { ValueA, ValueB };
+            public TestEnumeration testEnumValue;
         }
 
         [TestMethod]
         public void SerializeToXml_EnumTest()
         {
-            var orig = new ClassWithEnum { testEnumValue = ClassWithEnum.TestEnum.ValueB };
+            var orig = new ClassWithEnum { testEnumValue = ClassWithEnum.TestEnumeration.ValueB };
             var copy = SerializeDeserialize<ClassWithEnum>(orig);
             Assert.AreEqual(orig.testEnumValue, copy.testEnumValue);
         }
@@ -302,8 +302,8 @@ namespace Rhetos.Utilities.Test
             Assert.AreEqual(orig.Length, copy.Length, msg);
             Assert.AreEqual(orig[0].a, copy[0].a, msg);
             Assert.AreEqual(orig[1].a, copy[1].a, msg);
-            Assert.AreEqual(((ClassWithInterface)orig[0]).b, ((ClassWithInterface)copy[0]).b, msg);
-            Assert.AreEqual(((ClassWithInterface)orig[1]).b, ((ClassWithInterface)copy[1]).b, msg);
+            Assert.AreEqual(((ClassWithInterface)orig[0]).b, copy[0].b, msg);
+            Assert.AreEqual(((ClassWithInterface)orig[1]).b, copy[1].b, msg);
         }
 
         [TestMethod]

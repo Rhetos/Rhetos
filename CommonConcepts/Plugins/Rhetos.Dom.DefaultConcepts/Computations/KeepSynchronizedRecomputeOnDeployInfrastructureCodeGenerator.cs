@@ -37,8 +37,6 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (InitializationConcept)conceptInfo;
-
             string listOfSynchronizations = $@"public static readonly CurrentKeepSynchronizedMetadata CurrentKeepSynchronizedMetadata = new CurrentKeepSynchronizedMetadata
         {{
             {AddKeepSynchronizedMetadataTag}

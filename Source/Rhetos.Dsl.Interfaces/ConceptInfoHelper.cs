@@ -323,8 +323,7 @@ namespace Rhetos.Dsl
                 }
             }
 
-            if (keepReferences != null)
-                keepReferences[node] = ci;
+            keepReferences[node] = ci;
             return ci;
         }
     }

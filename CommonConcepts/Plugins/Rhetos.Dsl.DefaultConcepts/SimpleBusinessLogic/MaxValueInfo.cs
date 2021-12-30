@@ -42,7 +42,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
             string limitSnippet = MinValueInfo.LimitSnippetByType
-                .Where(snippet => snippet.Key.IsAssignableFrom(Property.GetType()))
+                .Where(snippet => snippet.Key.IsInstanceOfType(Property))
                 .Select(snippet => snippet.Value.Invoke(Value))
                 .Single();
 

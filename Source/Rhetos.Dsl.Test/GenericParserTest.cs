@@ -243,7 +243,6 @@ namespace Rhetos.Dsl.Test
         public void ParseEnclosedInlineError()
         {
             var enclosedParser = new GenericParserHelper<EnclosedConceptInfoLevel2>("enclosedlevel2");
-            var root = new SimpleConceptInfo { Name = "a" };
             TestUtility.ShouldFail<InvalidOperationException>(
                 () => enclosedParser.QuickParse("enclosedlevel2 a b c"),
                 "\".\"");
@@ -312,7 +311,6 @@ namespace Rhetos.Dsl.Test
         {
             var parent = new SimpleConceptInfo { Name = "parent" };
             var enclosed1 = new EnclosedSingleProperty1 { Parent = parent };
-            var enclosed2 = new EnclosedSingleProperty2 { Parent = enclosed1 };
 
             {
                 // simple parent { enclosed1; }

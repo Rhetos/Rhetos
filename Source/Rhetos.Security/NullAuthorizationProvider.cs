@@ -26,7 +26,7 @@ namespace Rhetos.Security
 {
     public class NullAuthorizationProvider : IAuthorizationProvider
     {
-        private ILogger _logger;
+        private readonly ILogger _logger;
 
         public NullAuthorizationProvider(ILogProvider logProvider)
         {

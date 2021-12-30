@@ -53,7 +53,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             if (extendsConcept == null)
                 return null; // Wait for other macro concepts to evaluate.
 
-            if (!typeof(EntityInfo).IsAssignableFrom(extendsConcept.Base.GetType()))
+            if (!(extendsConcept.Base is EntityInfo))
                 throw new DslSyntaxException("ChangesOnBaseItem is used on '" + conceptInfo.Computation.GetUserDescription()
                 + "', but the base data structure '" + extendsConcept.Base.GetUserDescription()
                 + "' is not Entity. Currently only entities are supported in automatic handling of dependencies.");

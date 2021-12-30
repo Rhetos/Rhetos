@@ -79,14 +79,14 @@ namespace Rhetos.CommonConcepts.Test
             {
                 Expression<Func<ItemMaster, bool>> exp = a => a.id > 5;
                 TestUtility.ShouldFail(
-                    () => { var rep = new ReplaceWithReference<ItemMaster, Item>(exp, "noreference", "item").NewExpression; },
+                    () => { _ = new ReplaceWithReference<ItemMaster, Item>(exp, "noreference", "item").NewExpression; },
                     "Item", "noreference");
             }
 
             {
                 Expression<Func<ItemMaster, bool>> exp = a => a.id > 5;
                 TestUtility.ShouldFail(
-                    () => { var rep = new ReplaceWithReference<ItemMaster, Item>(exp, "invalid reference format", "item").NewExpression; },
+                    () => { _ = new ReplaceWithReference<ItemMaster, Item>(exp, "invalid reference format", "item").NewExpression; },
                     "Item", "invalid reference format");
             }
         }

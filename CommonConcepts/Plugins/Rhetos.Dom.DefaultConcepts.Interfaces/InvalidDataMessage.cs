@@ -25,20 +25,18 @@ namespace Rhetos.Dom.DefaultConcepts
 {
     public class InvalidDataMessage
     {
-        public string Message;
-        public object[] MessageParameters = Array.Empty<object>();
-        public Guid ID;
-        public IDictionary<string, object> Metadata;
+        public string Message { get; set; }
+        public object[] MessageParameters { get; set; } = Array.Empty<object>();
+        public Guid ID { get; set; }
+        public IDictionary<string, object> Metadata { get; set; }
 
         public string Property { get { return (string)GetMetadata("Property"); } }
         public string Validation { get { return (string)GetMetadata("Validation"); } }
 
         public object GetMetadata(string key)
         {
-            object value;
-            if (Metadata != null)
-                if (Metadata.TryGetValue(key, out value))
-                    return value;
+            if (Metadata != null && Metadata.TryGetValue(key, out object value))
+                return value;
             return null;
         }
 
