@@ -21,10 +21,11 @@ using Rhetos.Compiler;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Utilities;
 using System;
+using System.IO;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-    public static class RepositoryHelper
+    public class RepositoryHelper
     {
         // Repository:
         public static readonly CsTag<DataStructureInfo> RepositoryAttributes = "RepositoryAttributes";
@@ -35,7 +36,6 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly CsTag<DataStructureInfo> ConstructorArguments = "RepositoryConstructorArguments";
         public static readonly CsTag<DataStructureInfo> ConstructorCode = "RepositoryConstructorCode";
         public static readonly CsTag<DataStructureInfo> ReadParameterTypesTag = "ReadParameterTypes";
-        
 
         // Readable repository:
         public static readonly CsTag<DataStructureInfo> BeforeQueryTag = "RepositoryBeforeQuery";
@@ -43,12 +43,26 @@ namespace Rhetos.Dom.DefaultConcepts
         // Queryable repository:
         public static readonly CsTag<DataStructureInfo> AssignSimplePropertyTag = "AssignSimpleProperty";
 
-        public static void GenerateRepository(DataStructureInfo info, ICodeBuilder codeBuilder)
+        private readonly CommonConceptsOptions _commonConceptsOptions;
+
+        public RepositoryHelper(CommonConceptsOptions commonConceptsOptions)
+        {
+            _commonConceptsOptions = commonConceptsOptions;
+        }
+
+        public void GenerateRepository(DataStructureInfo info, ICodeBuilder codeBuilder)
         {
             string module = info.Module.Name;
             string entity = info.Name;
 
-            string repositorySnippet = $@"{RepositoryAttributes.Evaluate(info)}
+            string repositorySnippet =
+$@"{DomInitializationCodeGenerator.DisableWarnings(_commonConceptsOptions)}{DomInitializationCodeGenerator.StandardNamespacesSnippet}
+
+namespace {module}._Helper
+{{
+    {DataStructureCodeGenerator.UsingTag.Evaluate(info)}
+
+    {RepositoryAttributes.Evaluate(info)}
     public partial class {entity}_Repository : {OverrideBaseTypeTag.Evaluate(info)} global::Common.RepositoryBase
         {RepositoryInterfaces.Evaluate(info)}
     {{
@@ -63,9 +77,12 @@ namespace Rhetos.Dom.DefaultConcepts
 
         {RepositoryMembers.Evaluate(info)}
     }}
+}}{DomInitializationCodeGenerator.RestoreWarnings(_commonConceptsOptions)}
+";
 
-    ";
-            codeBuilder.InsertCode(repositorySnippet, ModuleCodeGenerator.HelperNamespaceMembersTag, info.Module);
+            string repositoryFile = $"{Path.Combine(GeneratedSourceDirectories.Repositories.ToString(), info.Module.Name, info.Name + "Repository")}";
+
+            codeBuilder.InsertCodeToFile(repositorySnippet, repositoryFile);
 
             string callFromModuleRepostiorySnippet = $@"private {entity}_Repository _{entity}_Repository;
         public {entity}_Repository {entity} {{ get {{ return _{entity}_Repository ?? (_{entity}_Repository = ({entity}_Repository)Rhetos.Extensibility.NamedPluginsExtensions.GetPlugin(_repositories, {CsUtility.QuotedString(module + "." + entity)})); }} }}
@@ -78,7 +95,7 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.InsertCode(registerRepository, ModuleCodeGenerator.CommonAutofacConfigurationMembersTag);
         }
         
-        public static void GenerateReadableRepository(DataStructureInfo info, ICodeBuilder codeBuilder, string loadFunctionBody = null)
+        public void GenerateReadableRepository(DataStructureInfo info, ICodeBuilder codeBuilder, string loadFunctionBody = null)
         {
             GenerateRepository(info, codeBuilder);
 
@@ -113,7 +130,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 ModuleCodeGenerator.DataStructuresReadParameterTypesTag);
         }
 
-        public static void GenerateQueryableRepository(DataStructureInfo info, ICodeBuilder codeBuilder, string queryFunctionBody = null, string loadFunctionBody = null)
+        public void GenerateQueryableRepository(DataStructureInfo info, ICodeBuilder codeBuilder, string queryFunctionBody = null, string loadFunctionBody = null)
         {
             GenerateReadableRepository(info, codeBuilder, loadFunctionBody);
 

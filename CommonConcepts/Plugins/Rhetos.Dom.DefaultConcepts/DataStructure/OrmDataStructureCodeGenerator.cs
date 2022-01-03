@@ -22,12 +22,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Rhetos.Dsl.DefaultConcepts;
-using System.Globalization;
 using System.ComponentModel.Composition;
 using Rhetos.Extensibility;
 using Rhetos.Dsl;
 using Rhetos.Compiler;
-using Rhetos.Processing.DefaultCommands;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -36,6 +34,13 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.DependsOn, typeof(DataStructureQueryableCodeGenerator))]
     public class OrmDataStructureCodeGenerator : IConceptCodeGenerator
     {
+        private readonly RepositoryHelper _repositoryHelper;
+
+        public OrmDataStructureCodeGenerator(RepositoryHelper repositoryHelper)
+        {
+            _repositoryHelper = repositoryHelper;
+        }
+
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (DataStructureInfo)conceptInfo;
@@ -46,7 +51,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
                 DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, $"EntityBase<{module}.{entity}>", info);
 
-                RepositoryHelper.GenerateQueryableRepository(info, codeBuilder);
+                _repositoryHelper.GenerateQueryableRepository(info, codeBuilder);
                 codeBuilder.InsertCode($"Common.OrmRepositoryBase<Common.Queryable.{module}_{entity}, {module}.{entity}>", RepositoryHelper.OverrideBaseTypeTag, info);
 
                 codeBuilder.InsertCode(

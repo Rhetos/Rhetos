@@ -17,20 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rhetos.Dsl.DefaultConcepts;
-using System.Globalization;
-using System.ComponentModel.Composition;
-using Rhetos.Extensibility;
-using Rhetos.Dsl;
 using Rhetos.Compiler;
-using System.Diagnostics.Contracts;
-using Rhetos.Dom;
-using Rhetos.Persistence;
-using Rhetos.Processing.DefaultCommands;
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Extensibility;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -40,6 +31,13 @@ namespace Rhetos.Dom.DefaultConcepts
     {
         public static readonly CsTag<BrowseDataStructureInfo> BrowsePropertiesTag = "BrowseProperties";
 
+        private readonly RepositoryHelper _repositoryHelper;
+
+        public BrowseDataStructureCodeGenerator(RepositoryHelper repositoryHelper)
+        {
+            _repositoryHelper = repositoryHelper;
+        }
+
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (BrowseDataStructureInfo)conceptInfo;
@@ -47,7 +45,7 @@ namespace Rhetos.Dom.DefaultConcepts
             string entity = info.Name;
 
             DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, $"EntityBase<{module}.{entity}>", info);
-            RepositoryHelper.GenerateQueryableRepository(info, codeBuilder, $"return Query(_domRepository.{info.Source.Module.Name}.{info.Source.Name}.Query());");
+            _repositoryHelper.GenerateQueryableRepository(info, codeBuilder, $"return Query(_domRepository.{info.Source.Module.Name}.{info.Source.Name}.Query());");
 
             string querySnippet = $@"public IQueryable<Common.Queryable.{module}_{entity}> Query(IQueryable<Common.Queryable.{info.Source.Module.Name}_{info.Source.Name}> source)
         {{

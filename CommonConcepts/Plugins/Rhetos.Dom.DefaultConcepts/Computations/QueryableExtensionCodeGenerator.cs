@@ -29,6 +29,13 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(QueryableExtensionInfo))]
     public class QueryableExtensionCodeGenerator : IConceptCodeGenerator
     {
+        private readonly RepositoryHelper _repositoryHelper;
+
+        public QueryableExtensionCodeGenerator(RepositoryHelper repositoryHelper)
+        {
+            _repositoryHelper = repositoryHelper;
+        }
+
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (QueryableExtensionInfo)conceptInfo;
@@ -44,7 +51,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return Compute(_domRepository.{info.Base.FullName}.Query(), _domRepository{parameterArgsTag});";
 
             DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, $"EntityBase<{info.FullName}>", info);
-            RepositoryHelper.GenerateQueryableRepository(info, codeBuilder, querySnippet);
+            _repositoryHelper.GenerateQueryableRepository(info, codeBuilder, querySnippet);
         }
     }
 }

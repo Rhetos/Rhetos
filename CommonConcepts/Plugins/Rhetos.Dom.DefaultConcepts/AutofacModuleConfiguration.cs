@@ -36,6 +36,7 @@ namespace Rhetos.Dom.DefaultConcepts
             builder.RegisterType<GenericRepositories>();
             builder.RegisterGeneric(typeof(GenericRepository<>));
             builder.RegisterType<GenericFilterHelper>();
+            builder.RegisterType<RepositoryHelper>();
 
             // Permission loading is done with repositories that use the user's context (IUserInfo),
             // but it is expected that the user's context will not affect the loading of permissions.

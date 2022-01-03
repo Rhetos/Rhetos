@@ -33,6 +33,13 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(ComputedInfo))]
     public class ComputedCodeGenerator : IConceptCodeGenerator
     {
+        private readonly RepositoryHelper _repositoryHelper;
+
+        public ComputedCodeGenerator(RepositoryHelper repositoryHelper)
+        {
+            _repositoryHelper = repositoryHelper;
+        }
+
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (ComputedInfo)conceptInfo;
@@ -43,7 +50,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             return compute_Function(_domRepository{DataStructureUtility.ComputationAdditionalParametersArgumentTag.Evaluate(info)});";
 
-            RepositoryHelper.GenerateReadableRepository(info, codeBuilder, loadFunctionBodySnippet);
+            _repositoryHelper.GenerateReadableRepository(info, codeBuilder, loadFunctionBodySnippet);
 
             DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, $"EntityBase<{info.Module.Name}.{info.Name}>", info);
         }

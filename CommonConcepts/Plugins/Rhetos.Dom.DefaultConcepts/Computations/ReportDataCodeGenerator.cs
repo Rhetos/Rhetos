@@ -36,6 +36,13 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly CsTag<ReportDataInfo> GetReportDataTag = "GetReportData";
         public static readonly CsTag<ReportDataInfo> DataSourceNameTag = "DataSourceName";
 
+        private readonly RepositoryHelper _repositoryHelper;
+
+        public ReportDataCodeGenerator(RepositoryHelper repositoryHelper)
+        {
+            _repositoryHelper = repositoryHelper;
+        }
+
         private static string RepositoryFunctionsSnippet(ReportDataInfo info)
         {
             return string.Format(
@@ -61,7 +68,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var info = (ReportDataInfo)conceptInfo;
 
-            RepositoryHelper.GenerateRepository(info, codeBuilder);
+            _repositoryHelper.GenerateRepository(info, codeBuilder);
             codeBuilder.InsertCode(RepositoryFunctionsSnippet(info), RepositoryHelper.RepositoryMembers, info);
         }
     }

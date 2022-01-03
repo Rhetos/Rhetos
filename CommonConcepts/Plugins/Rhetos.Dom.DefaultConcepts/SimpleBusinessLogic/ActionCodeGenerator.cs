@@ -32,6 +32,13 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly CsTag<ActionInfo> BeforeActionTag = "BeforeAction";
         public static readonly CsTag<ActionInfo> AfterActionTag = "AfterAction";
 
+        private readonly RepositoryHelper _repositoryHelper;
+
+        public ActionCodeGenerator(RepositoryHelper repositoryHelper)
+        {
+            _repositoryHelper = repositoryHelper;
+        }
+
         protected static string RepositoryFunctionsSnippet(ActionInfo info)
         {
             // Using nonstandard naming of variables to avoid name clashes with injected code.
@@ -80,7 +87,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var info = (ActionInfo)conceptInfo;
 
-            RepositoryHelper.GenerateRepository(info, codeBuilder);
+            _repositoryHelper.GenerateRepository(info, codeBuilder);
             codeBuilder.InsertCode("IActionRepository", RepositoryHelper.RepositoryInterfaces, info);
             codeBuilder.InsertCode(RepositoryFunctionsSnippet(info), RepositoryHelper.RepositoryMembers, info);
             codeBuilder.InsertCode(RegisterRepository(info), ModuleCodeGenerator.CommonAutofacConfigurationMembersTag);

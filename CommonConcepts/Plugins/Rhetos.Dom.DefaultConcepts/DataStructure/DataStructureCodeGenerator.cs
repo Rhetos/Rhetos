@@ -23,6 +23,7 @@ using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
 using System;
 using System.ComponentModel.Composition;
+using System.IO;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -30,7 +31,11 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(DataStructureInfo))]
     public class DataStructureCodeGenerator : IConceptCodeGenerator
     {
+        public static readonly CsTag<DataStructureInfo> UsingTag = "Using";
+
         public static readonly CsTag<DataStructureInfo> AttributesTag = "ClassAttributes";
+
+        public static readonly CsTag<DataStructureInfo> ModelTag = "Model";
 
         /// <summary>
         /// Add an interface to the simple POCO model class for the DataStructure.
@@ -44,18 +49,36 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public static readonly CsTag<DataStructureInfo> BodyTag = "ClassBody";
 
+        private readonly CommonConceptsOptions _commonConceptsOptions;
+
+        public DataStructureCodeGenerator(CommonConceptsOptions commonConceptsOptions)
+        {
+            _commonConceptsOptions = commonConceptsOptions;
+        }
+
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             DataStructureInfo info = (DataStructureInfo)conceptInfo;
 
-            string snippet = $@"{AttributesTag.Evaluate(info)}
+            string modelCodeSnippet =
+$@"{DomInitializationCodeGenerator.DisableWarnings(_commonConceptsOptions)}{DomInitializationCodeGenerator.StandardNamespacesSnippet}
+
+namespace {info.Module.Name}
+{{
+    {UsingTag.Evaluate(info)}
+
+    {AttributesTag.Evaluate(info)}
     public class {info.Name}{InterfaceTag.Evaluate(info)}
     {{
         {BodyTag.Evaluate(info)}
     }}
+}}
 
-    ";
-            codeBuilder.InsertCode(snippet, ModuleCodeGenerator.NamespaceMembersTag, info.Module);
+{ModelTag.Evaluate(info)}{DomInitializationCodeGenerator.RestoreWarnings(_commonConceptsOptions)}";
+
+            string modelFile = $"{Path.Combine(GeneratedSourceDirectories.Model.ToString(), info.Module.Name, info.Name + GeneratedSourceDirectories.Model)}";
+
+            codeBuilder.InsertCodeToFile(modelCodeSnippet, modelFile);
         }
 
         /// <summary>

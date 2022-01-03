@@ -152,6 +152,8 @@ Changes in Rhetos libraries API:
     * If custom application code overrides repository's standard Save method, use DomHelper.WriteToDatabase to save an entity, instead of Entity Framework methods. For reference, see the new generated source code for repository Save methods.
     * Navigation properties behavior can no longer be extended with custom tags *DataStructureQueryable Getter* and *DataStructureQueryable Setter*.
 20. Removed Type argument from AddInterfaceAndReference methods.
+21. ModuleCodeGenerator.UsingTag moved to DataStructureCodeGenerator.UsingTag. It requires DataStructureInfo as an argument, and it does not apply to the whole module anymore.
+22. RepositoryHelper class methods are no longer *static*: GenerateRepository, GenerateReadableRepository, GenerateQueryableRepository. RepositoryHelper is registered to dependency injection container.
 
 ### New features
 

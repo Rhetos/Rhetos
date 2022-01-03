@@ -55,7 +55,9 @@ namespace Rhetos.Dom.DefaultConcepts
                 string entity = info.Name;
 
                 string queryableClass =
-    $@"{AttributesTag.Evaluate(info)}
+    $@"namespace Common.Queryable
+{{
+    {AttributesTag.Evaluate(info)}
     public class {module}_{entity} : global::{module}.{entity}, IQueryableEntity<{module}.{entity}>, System.IEquatable<{module}_{entity}>{InterfaceTag.Evaluate(info)}
     {{
         {MembersTag.Evaluate(info)}
@@ -75,9 +77,10 @@ namespace Rhetos.Dom.DefaultConcepts
             }};
         }}
     }}
+}}
 
-    ";
-                codeBuilder.InsertCode(queryableClass, ModuleCodeGenerator.CommonQueryableMemebersTag, info.Module);
+";
+                codeBuilder.InsertCode(queryableClass, DataStructureCodeGenerator.ModelTag, info);
 
                 string snippetToSimpleObjectsConversion = $@"/// <summary>Converts the objects with navigation properties to simple objects with primitive properties.</summary>
         public static IQueryable<{module}.{entity}> ToSimple(this IQueryable<Common.Queryable.{module}_{entity}> query)

@@ -30,11 +30,7 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(ModuleInfo))]
     public class ModuleCodeGenerator : IConceptCodeGenerator
     {
-        public static readonly CsTag<ModuleInfo> UsingTag = "Using";
-        public static readonly CsTag<ModuleInfo> NamespaceMembersTag = "Body";
         public static readonly CsTag<ModuleInfo> RepositoryMembersTag = "RepositoryMembers";
-        public static readonly CsTag<ModuleInfo> HelperNamespaceMembersTag = "HelperNamespaceMembers";
-        public static readonly CsTag<ModuleInfo> CommonQueryableMemebersTag = "CommonQueryableMemebers";
         private readonly CommonConceptsOptions _commonConceptsOptions;
 
         public ModuleCodeGenerator(CommonConceptsOptions commonConceptsOptions)
@@ -46,30 +42,10 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var info = (ModuleInfo)conceptInfo;
 
-            codeBuilder.InsertCodeToFile(
-$@"namespace {info.Name}
-{{
-    {DomInitializationCodeGenerator.DisableWarnings(_commonConceptsOptions)}{DomInitializationCodeGenerator.StandardNamespacesSnippet}
-
-    {UsingTag.Evaluate(info)}
-
-    {NamespaceMembersTag.Evaluate(info)}{DomInitializationCodeGenerator.RestoreWarnings(_commonConceptsOptions)}
-}}
-
-namespace Common.Queryable
-{{
-    {DomInitializationCodeGenerator.DisableWarnings(_commonConceptsOptions)}{DomInitializationCodeGenerator.StandardNamespacesSnippet}
-
-    {CommonQueryableMemebersTag.Evaluate(info)}{DomInitializationCodeGenerator.RestoreWarnings(_commonConceptsOptions)}
-}}
-", $"{Path.Combine(GeneratedSourceDirectories.Model.ToString(), info.Name + GeneratedSourceDirectories.Model)}");
-
-            codeBuilder.InsertCodeToFile(
+            string moduleRepositorySnippet =
 $@"namespace {info.Name}._Helper
 {{
     {DomInitializationCodeGenerator.DisableWarnings(_commonConceptsOptions)}{DomInitializationCodeGenerator.StandardNamespacesSnippet}
-
-    {UsingTag.Evaluate(info)}
 
     public class _ModuleRepository
     {{
@@ -81,12 +57,12 @@ $@"namespace {info.Name}._Helper
         }}
 
         {RepositoryMembersTag.Evaluate(info)}
-    }}
-
-    {HelperNamespaceMembersTag.Evaluate(info)}{DomInitializationCodeGenerator.RestoreWarnings(_commonConceptsOptions)}
+    }}{DomInitializationCodeGenerator.RestoreWarnings(_commonConceptsOptions)}
 }}
+";
+            string moduleRepositoryFile = $"{Path.Combine(GeneratedSourceDirectories.Repositories.ToString(), info.Name + "ModuleRepository")}";
 
-", $"{Path.Combine(GeneratedSourceDirectories.Repositories.ToString(), info.Name + GeneratedSourceDirectories.Repositories)}");
+            codeBuilder.InsertCodeToFile(moduleRepositorySnippet, moduleRepositoryFile);
 
             codeBuilder.InsertCode($@"private {info.Name}._Helper._ModuleRepository _{info.Name};
         public {info.Name}._Helper._ModuleRepository {info.Name} {{ get {{ return _{info.Name} ?? (_{info.Name} = new {info.Name}._Helper._ModuleRepository(_repositories)); }} }}
@@ -106,6 +82,5 @@ $@"namespace {info.Name}._Helper
         public const string CommonNamespaceMembersTag = "/*CommonNamespaceMembers*/";
         public const string CommonInfrastructureMembersTag = "/*CommonInfrastructureMembers*/";
         public const string DataStructuresReadParameterTypesTag = "/*DataStructuresReadParameterTypes*/";
-
     }
 }
