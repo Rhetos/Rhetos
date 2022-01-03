@@ -42,16 +42,6 @@ namespace Rhetos.Dom.DefaultConcepts
             _commonConceptsOptions = commonConceptsOptions;
         }
 
-        private static string ModuleRepositoryInCommonRepositorySnippet(ModuleInfo info)
-        {
-            return string.Format(
-                @"private {0}._Helper._ModuleRepository _{0};
-        public {0}._Helper._ModuleRepository {0} {{ get {{ return _{0} ?? (_{0} = new {0}._Helper._ModuleRepository(_repositories)); }} }}
-
-        ",
-                info.Name);
-        }
-
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (ModuleInfo)conceptInfo;
@@ -98,7 +88,10 @@ $@"namespace {info.Name}._Helper
 
 ", $"{Path.Combine(GeneratedSourceDirectories.Repositories.ToString(), info.Name + GeneratedSourceDirectories.Repositories)}");
 
-            codeBuilder.InsertCode(ModuleRepositoryInCommonRepositorySnippet(info), CommonDomRepositoryMembersTag);
+            codeBuilder.InsertCode($@"private {info.Name}._Helper._ModuleRepository _{info.Name};
+        public {info.Name}._Helper._ModuleRepository {info.Name} {{ get {{ return _{info.Name} ?? (_{info.Name} = new {info.Name}._Helper._ModuleRepository(_repositories)); }} }}
+
+        ", CommonDomRepositoryMembersTag);
         }
 
         // TODO: Move this tags to DomInitializationCodeGenerator (breaking backward compatibility for other DSL packages)

@@ -44,21 +44,18 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public static readonly CsTag<DataStructureInfo> BodyTag = "ClassBody";
 
-        protected static string CodeSnippet(DataStructureInfo info)
-        {
-            return AttributesTag.Evaluate(info) + @"
-    public class " + info.Name + InterfaceTag.Evaluate(info) + @"
-    {
-        " + BodyTag.Evaluate(info) + @"
-    }
-
-    ";
-        }
-
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             DataStructureInfo info = (DataStructureInfo)conceptInfo;
-            codeBuilder.InsertCode(CodeSnippet(info), ModuleCodeGenerator.NamespaceMembersTag, info.Module);
+
+            string snippet = $@"{AttributesTag.Evaluate(info)}
+    public class {info.Name}{InterfaceTag.Evaluate(info)}
+    {{
+        {BodyTag.Evaluate(info)}
+    }}
+
+    ";
+            codeBuilder.InsertCode(snippet, ModuleCodeGenerator.NamespaceMembersTag, info.Module);
         }
 
         /// <summary>
