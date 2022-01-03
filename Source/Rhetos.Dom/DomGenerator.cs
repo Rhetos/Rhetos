@@ -19,8 +19,10 @@
 
 using Rhetos.Compiler;
 using Rhetos.Extensibility;
+using Rhetos.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Rhetos.Dom
 {
@@ -30,17 +32,20 @@ namespace Rhetos.Dom
         private readonly ICodeGenerator _codeGenerator;
         private readonly ISourceWriter _sourceWriter;
         private readonly InitialDomCodeGenerator _initialDomCodeGenerator;
+        private readonly ILogger _logger;
 
         public DomGenerator(
             IPluginsContainer<IConceptCodeGenerator> plugins,
             ICodeGenerator codeGenerator,
             ISourceWriter sourceWriter,
-            InitialDomCodeGenerator initialDomCodeGenerator)
+            InitialDomCodeGenerator initialDomCodeGenerator,
+            ILogProvider logProvider)
         {
             _pluginRepository = plugins;
             _codeGenerator = codeGenerator;
             _sourceWriter = sourceWriter;
             _initialDomCodeGenerator = initialDomCodeGenerator;
+            _logger = logProvider.GetLogger(GetType().Name);
         }
 
         public IEnumerable<string> Dependencies => Array.Empty<string>();
@@ -49,8 +54,14 @@ namespace Rhetos.Dom
         {
             var sourceFiles = _codeGenerator.ExecutePluginsToFiles(_pluginRepository, "/*", "*/", _initialDomCodeGenerator);
 
+            var summary = Enum.GetValues<SourceWriterResult>().ToDictionary(r => r, r => 0);
             foreach (var sourceFile in sourceFiles)
-                _sourceWriter.Add(sourceFile.Key + ".cs", sourceFile.Value);
+            {
+                var result = _sourceWriter.Add(sourceFile.Key + ".cs", sourceFile.Value);
+                summary[result]++;
+            }
+
+            _logger.Info(() => $"{summary[SourceWriterResult.Creating]} files created, {summary[SourceWriterResult.Updating]} files updated.");
         }
     }
 }

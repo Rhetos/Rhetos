@@ -41,7 +41,7 @@ namespace Rhetos.Compiler
             _filesUtility = filesUtility;
         }
 
-        public void Add(string relativePath, string content)
+        public SourceWriterResult Add(string relativePath, string content)
         {
             string filePath = Path.GetFullPath(Path.Combine(_buildEnvironment.GeneratedSourceFolder, relativePath));
 
@@ -56,18 +56,21 @@ namespace Rhetos.Compiler
                 if (File.ReadAllText(filePath, Encoding.UTF8).Equals(content, StringComparison.Ordinal))
                 {
                     Log("Unchanged", filePath, EventType.Trace);
+                    return SourceWriterResult.Unchanged;
                 }
                 else
                 {
                     Log("Updating", filePath, EventType.Trace);
                     WriteFile(content, filePath);
+                    return SourceWriterResult.Updating;
                 }
             }
             else
             {
-                Log("Creating", filePath, EventType.Info);
+                Log("Creating", filePath, EventType.Trace);
                 _filesUtility.SafeCreateDirectory(Path.GetDirectoryName(filePath));
                 WriteFile(content, filePath);
+                return SourceWriterResult.Creating;
             }
         }
 

@@ -27,11 +27,13 @@ namespace Rhetos.Compiler
         /// <param name="relativePath">
         /// Path should be a file name or a relative path inside the generated source folder.
         /// </param>
-        void Add(string relativePath, string content);
+        SourceWriterResult Add(string relativePath, string content);
 
         /// <summary>
         /// Deletes all other files it generated source directory, that have not been written in the current build.
         /// </summary>
         void CleanUp();
     }
+
+    public enum SourceWriterResult { Unchanged, Updating, Creating };
 }
