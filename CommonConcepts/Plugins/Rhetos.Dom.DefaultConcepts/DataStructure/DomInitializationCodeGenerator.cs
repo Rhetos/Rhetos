@@ -51,13 +51,13 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public static readonly string StandardNamespacesSnippet =
 @"using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Linq.Expressions;
-    using System.Runtime.Serialization;
-    using Rhetos.Dom.DefaultConcepts;
-    using Rhetos.Utilities;";
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Linq.Expressions;
+using System.Runtime.Serialization;
+using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Utilities;";
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
@@ -72,12 +72,12 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public static string DisableWarnings(CommonConceptsOptions commonConceptsOptions)
         {
-            return commonConceptsOptions.CompilerWarningsInGeneratedCode ? "" : $"#pragma warning disable // See configuration setting {ConfigurationProvider.GetKey((CommonConceptsOptions o) => o.CompilerWarningsInGeneratedCode)}.\r\n\r\n    ";
+            return commonConceptsOptions.CompilerWarningsInGeneratedCode ? "" : $"#pragma warning disable // See configuration setting {ConfigurationProvider.GetKey((CommonConceptsOptions o) => o.CompilerWarningsInGeneratedCode)}.\r\n";
         }
 
         public static string RestoreWarnings(CommonConceptsOptions commonConceptsOptions)
         {
-            return commonConceptsOptions.CompilerWarningsInGeneratedCode ? "" : $"\r\n\r\n    #pragma warning restore // See configuration setting {ConfigurationProvider.GetKey((CommonConceptsOptions o) => o.CompilerWarningsInGeneratedCode)}.";
+            return commonConceptsOptions.CompilerWarningsInGeneratedCode ? "" : $"\r\n#pragma warning restore // See configuration setting {ConfigurationProvider.GetKey((CommonConceptsOptions o) => o.CompilerWarningsInGeneratedCode)}.";
         }
 
         private string GetInitialConfigurationSnippet()
@@ -96,10 +96,10 @@ namespace Rhetos.Dom.DefaultConcepts
         }
 
         private string GetModelSnippet() =>
-$@"namespace System.Linq
-{{
-    {DisableWarnings(_commonConceptsOptions)}{StandardNamespacesSnippet}
+$@"{DisableWarnings(_commonConceptsOptions)}{StandardNamespacesSnippet}
 
+namespace System.Linq
+{{
     public static class QueryExtensions
     {{
         {QueryExtensionsMembersTag}
@@ -137,14 +137,15 @@ $@"namespace System.Linq
                 }}
             }}
         }}
-    }}{RestoreWarnings(_commonConceptsOptions)}
-}}
+    }}
+}}{RestoreWarnings(_commonConceptsOptions)}
 ";
 
         private string GetOrmSnippet() =>
-$@"namespace Common
+$@"{DisableWarnings(_commonConceptsOptions)}{StandardNamespacesSnippet}
+
+namespace Common
 {{
-    {DisableWarnings(_commonConceptsOptions)}{StandardNamespacesSnippet}
     using Autofac;
     {ModuleCodeGenerator.CommonUsingTag}
 
@@ -186,14 +187,15 @@ $@"namespace Common
 
             System.Data.Entity.DbConfiguration.SetConfiguration(this);
         }}
-    }}{RestoreWarnings(_commonConceptsOptions)}
-}}
+    }}
+}}{RestoreWarnings(_commonConceptsOptions)}
 ";
 
         private string GetRepositoriesSnippet() =>
-$@"namespace Common
+$@"{DisableWarnings(_commonConceptsOptions)}{StandardNamespacesSnippet}
+
+namespace Common
 {{
-    {DisableWarnings(_commonConceptsOptions)}{StandardNamespacesSnippet}
     using Autofac;
     {ModuleCodeGenerator.CommonUsingTag}
 
@@ -474,20 +476,19 @@ $@"namespace Common
         {OrmRepositoryBaseMembersTag}
     }}
 
-    {ModuleCodeGenerator.CommonNamespaceMembersTag}{RestoreWarnings(_commonConceptsOptions)}
-}}
+    {ModuleCodeGenerator.CommonNamespaceMembersTag}
+}}{RestoreWarnings(_commonConceptsOptions)}
 ";
 
         private string GetPersistenceStorageMapperSnippet() =>
-$@"namespace Common
-{{
-    {DisableWarnings(_commonConceptsOptions)}
-    using System;
-    using Rhetos.Dom.DefaultConcepts;
-    using Rhetos.Utilities;
-    using System.Collections.Generic;
-    using System.Data.SqlClient;
+$@"{DisableWarnings(_commonConceptsOptions)}using System;
+using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Utilities;
+using System.Collections.Generic;
+using System.Data.SqlClient;
 
+namespace Common
+{{
     public class PersistenceStorageObjectMappings : IPersistenceStorageObjectMappings
     {{
         private readonly Dictionary<Type, IPersistenceStorageObjectMapper> _mappings = new Dictionary<Type, IPersistenceStorageObjectMapper>();
@@ -508,7 +509,7 @@ $@"namespace Common
     }}
 
     {PersistenceStorageMappingsTag}
-}}
+}}{RestoreWarnings(_commonConceptsOptions)}
 ";
     }
 }

@@ -74,7 +74,8 @@ namespace {info.Module.Name}
     }}
 }}
 
-{ModelTag.Evaluate(info)}{DomInitializationCodeGenerator.RestoreWarnings(_commonConceptsOptions)}";
+{ModelTag.Evaluate(info)}{DomInitializationCodeGenerator.RestoreWarnings(_commonConceptsOptions)}
+";
 
             string modelFile = $"{Path.Combine(GeneratedSourceDirectories.Model.ToString(), info.Module.Name, info.Name + GeneratedSourceDirectories.Model)}";
 

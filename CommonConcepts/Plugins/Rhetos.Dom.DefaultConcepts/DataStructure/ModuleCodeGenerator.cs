@@ -43,10 +43,10 @@ namespace Rhetos.Dom.DefaultConcepts
             var info = (ModuleInfo)conceptInfo;
 
             string moduleRepositorySnippet =
-$@"namespace {info.Name}._Helper
-{{
-    {DomInitializationCodeGenerator.DisableWarnings(_commonConceptsOptions)}{DomInitializationCodeGenerator.StandardNamespacesSnippet}
+$@"{DomInitializationCodeGenerator.DisableWarnings(_commonConceptsOptions)}{DomInitializationCodeGenerator.StandardNamespacesSnippet}
 
+namespace {info.Name}._Helper
+{{
     public class _ModuleRepository
     {{
         private readonly Rhetos.Extensibility.INamedPlugins<IRepository> _repositories;
@@ -57,8 +57,8 @@ $@"namespace {info.Name}._Helper
         }}
 
         {RepositoryMembersTag.Evaluate(info)}
-    }}{DomInitializationCodeGenerator.RestoreWarnings(_commonConceptsOptions)}
-}}
+    }}
+}}{DomInitializationCodeGenerator.RestoreWarnings(_commonConceptsOptions)}
 ";
             string moduleRepositoryFile = $"{Path.Combine(GeneratedSourceDirectories.Repositories.ToString(), info.Name + "ModuleRepository")}";
 
