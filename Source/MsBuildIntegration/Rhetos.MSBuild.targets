@@ -14,7 +14,7 @@
         </ItemGroup>
     </Target>
 
-    <Target Name="ResolveRhetosProjectAssets" DependsOnTargets="ResolveLockFileReferences;ResolveAssemblyReferences;ResolveReferences" BeforeTargets="CoreCompile">
+    <Target Name="ResolveRhetosProjectAssets" DependsOnTargets="ResolveLockFileReferences;ResolveAssemblyReferences;ResolveReferences" BeforeTargets="BeforeCompile">
         <Message Text="ResolveRhetosProjectAssets" />
         <ResolveRhetosProjectAssets
             ProjectDirectory="$(ProjectDir)."
@@ -37,14 +37,14 @@
         </ItemGroup>
     </Target>
 
-    <Target Name="BuildRhetosApp" DependsOnTargets="ResolveRhetosProjectAssets;ResolveBuildRhetosAppTargetInput" BeforeTargets="CoreCompile" Condition="'$(RhetosBuild)'=='True' and $(BuildingProject)=='True'" Inputs="@(RhetosInput);@(RhetosBuild);@(ReferencePath)" Outputs="@(RhetosOutput)">
+    <Target Name="BuildRhetosApp" DependsOnTargets="ResolveRhetosProjectAssets;ResolveBuildRhetosAppTargetInput" BeforeTargets="BeforeCompile" Condition="'$(RhetosBuild)'=='True' AND '$(DesignTimeBuild)'!='true' AND '$(BuildingProject)'=='true'" Inputs="@(RhetosInput);@(RhetosBuild);@(ReferencePath)" Outputs="@(RhetosOutput)">
         <Message Text="BuildRhetosApp" />
         <Delete Files="$(RhetosBuildCompleteFile)" />
         <Exec Command="dotnet &quot;$(RhetosCliAssemblyPath)&quot; build &quot;$(ProjectDir).&quot; --msbuild-format" CustomErrorRegularExpression="\[Error\]" CustomWarningRegularExpression="\[(Warn|Warning)\]" />
         <WriteLinesToFile File="$(RhetosBuildCompleteFile)" Lines="" Overwrite="true" />
     </Target>
 
-    <Target Name="AddRhetosSourceFiles" DependsOnTargets="BuildRhetosApp" BeforeTargets="CoreCompile">
+    <Target Name="AddRhetosSourceFiles" DependsOnTargets="BuildRhetosApp" BeforeTargets="BeforeCompile">
         <Message Text="AddRhetosSourceFiles" />
         <ItemGroup>
             <RhetosSourceFiles Include="obj\Rhetos\Source\**\*.cs" />
