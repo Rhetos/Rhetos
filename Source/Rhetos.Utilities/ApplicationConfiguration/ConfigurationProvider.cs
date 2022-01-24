@@ -274,10 +274,15 @@ namespace Rhetos
         /// <summary>
         /// Returns the expected configuration key with full path, for the given option.
         /// </summary>
-        public static string GetKey<TOptions, TProperty>(Expression<Func<TOptions, TProperty>> propertySelector)
+        public static string GetKey<TOptions>(Expression<Func<TOptions, object>> propertySelector)
         {
             string path = OptionsAttribute.GetConfigurationPath<TOptions>();
-            string propertyKey = ((MemberExpression)propertySelector.Body).Member.Name;
+
+            Expression memberExpression = propertySelector.Body;
+            if (memberExpression is UnaryExpression unaryExpression)
+                memberExpression = unaryExpression.Operand;
+            string propertyKey = ((MemberExpression)memberExpression).Member.Name;
+
             if (string.IsNullOrEmpty(path))
                 return propertyKey;
             else
