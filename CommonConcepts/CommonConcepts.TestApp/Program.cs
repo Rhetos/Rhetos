@@ -25,7 +25,7 @@ using Rhetos.Security;
 using Rhetos.Utilities;
 using System;
 
-namespace CommonConcepts.Test
+namespace CommonConcepts.TestApp
 {
     public static class Program
     {

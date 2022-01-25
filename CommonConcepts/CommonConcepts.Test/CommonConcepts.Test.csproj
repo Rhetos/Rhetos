@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-    <GenerateProgramFile>false</GenerateProgramFile>
     <IsPackable>false</IsPackable>
     <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);..\..\Install</RestoreAdditionalProjectSources>
   </PropertyGroup>
@@ -12,18 +11,11 @@
     <PackageReference Include="MSTest.TestAdapter" Version="2.2.7" />
     <PackageReference Include="MSTest.TestFramework" Version="2.2.7" />
     <PackageReference Include="coverlet.collector" Version="3.1.0" />
-    <PackageReference Include="Rhetos.Host" Version="5.0.0-dev*" />
-    <PackageReference Include="Rhetos.Host.Net" Version="5.0.0-dev*" />
     <PackageReference Include="Rhetos.TestCommon" Version="5.0.0-dev*" />
-    <PackageReference Include="Rhetos.MSBuild" Version="5.0.0-dev*" />
-    <PackageReference Include="Rhetos" Version="5.0.0-dev*" />
-    <PackageReference Include="Rhetos.CommonConcepts" Version="5.0.0-dev*" />
   </ItemGroup>
-
+  
   <ItemGroup>
-    <None Update="rhetos-app.local.settings.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <ProjectReference Include="..\CommonConcepts.TestApp\CommonConcepts.TestApp.csproj" />
   </ItemGroup>
 
 </Project>

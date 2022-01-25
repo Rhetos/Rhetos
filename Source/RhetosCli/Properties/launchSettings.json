@@ -1,13 +1,13 @@
 {
   "profiles": {
-    "build CommonConcepts.Test": {
+    "build CommonConcepts.TestApp": {
       "commandName": "Project",
-      "commandLineArgs": "build \"..\\..\\..\\..\\..\\CommonConcepts\\CommonConcepts.Test\""
+      "commandLineArgs": "build \"..\\..\\..\\..\\..\\CommonConcepts\\CommonConcepts.TestApp\""
     },
-    "dbupdate CommonConcepts.Test": {
+    "dbupdate CommonConcepts.TestApp": {
       "commandName": "Executable",
       "executablePath": "dotnet",
-      "commandLineArgs": "exec --runtimeconfig \"..\\..\\..\\..\\..\\CommonConcepts\\CommonConcepts.Test\\bin\\Debug\\net5.0\\CommonConcepts.Test.runtimeconfig.json\" --depsfile \"..\\..\\..\\..\\..\\CommonConcepts\\CommonConcepts.Test\\bin\\Debug\\net5.0\\CommonConcepts.Test.deps.json\" \"rhetos.dll\" dbupdate ..\\..\\..\\..\\..\\CommonConcepts\\CommonConcepts.Test\\bin\\Debug\\net5.0\\CommonConcepts.Test.dll --execute-command-in-current-process"
+      "commandLineArgs": "exec --runtimeconfig \"..\\..\\..\\..\\..\\CommonConcepts\\CommonConcepts.TestApp\\bin\\Debug\\net5.0\\CommonConcepts.TestApp.runtimeconfig.json\" --depsfile \"..\\..\\..\\..\\..\\CommonConcepts\\CommonConcepts.TestApp\\bin\\Debug\\net5.0\\CommonConcepts.TestApp.deps.json\" \"rhetos.dll\" dbupdate ..\\..\\..\\..\\..\\CommonConcepts\\CommonConcepts.TestApp\\bin\\Debug\\net5.0\\CommonConcepts.TestApp.dll --execute-command-in-current-process"
     }
   }
 }

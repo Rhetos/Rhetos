@@ -35,7 +35,7 @@ namespace CommonConcepts.Test
         {
             var id = Guid.NewGuid();
 #pragma warning disable CS0618 // Type or member is obsolete
-            using (var rhetos = new RhetosTestContainer("CommonConcepts.Test.dll", true))
+            using (var rhetos = new RhetosTestContainer("CommonConcepts.TestApp.dll", true))
             {
 #pragma warning restore CS0618
                 var repository = rhetos.Resolve<Common.DomRepository>();
@@ -54,7 +54,7 @@ namespace CommonConcepts.Test
         {
             var id = Guid.NewGuid();
 #pragma warning disable CS0618 // Type or member is obsolete
-            using (var rhetos = new RhetosTestContainer("CommonConcepts.Test.dll", false))
+            using (var rhetos = new RhetosTestContainer("CommonConcepts.TestApp.dll", false))
             {
 #pragma warning restore CS0618
                 var repository = rhetos.Resolve<Common.DomRepository>();

@@ -36,7 +36,7 @@ namespace CommonConcepts.Test
             using (var scope = TestScope.Create(builder =>
             {
                 builder.RegisterType<DslDocumentationFile>();
-                builder.RegisterInstance(new RhetosBuildEnvironment { CacheFolder = @"..\..\..\obj\Rhetos" });
+                builder.RegisterInstance(new RhetosBuildEnvironment { CacheFolder = @"..\..\..\..\CommonConcepts.TestApp\obj\Rhetos" });
             }))
             {
                 var dslDocumentationFile = scope.Resolve<DslDocumentationFile>();
