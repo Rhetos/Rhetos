@@ -26,7 +26,7 @@ using System.Runtime.Serialization;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Utilities;
 
-namespace TestReading._Helper
+namespace TestReading.Repositories
 {
     public partial class Simple_Repository
     {

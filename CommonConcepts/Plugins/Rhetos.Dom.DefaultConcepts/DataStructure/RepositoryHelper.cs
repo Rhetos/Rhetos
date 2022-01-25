@@ -73,7 +73,7 @@ namespace Rhetos.Dom.DefaultConcepts
         ";
             codeBuilder.InsertCode(callFromModuleRepostiorySnippet, ModuleCodeGenerator.RepositoryMembersTag, info.Module);
 
-            string registerRepository = $@"builder.RegisterType<{module}._Helper.{entity}_Repository>().Keyed<IRepository>(""{module}.{entity}"").InstancePerLifetimeScope();
+            string registerRepository = $@"builder.RegisterType<{module}.Repositories.{entity}_Repository>().Keyed<IRepository>(""{module}.{entity}"").InstancePerLifetimeScope();
             ";
             codeBuilder.InsertCode(registerRepository, ModuleCodeGenerator.CommonAutofacConfigurationMembersTag);
         }
@@ -108,7 +108,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 RepositoryMembers, info);
 
             codeBuilder.InsertCode(
-            $@"{{ ""{module}.{entity}"", {module}._Helper.{entity}_Repository.ReadParameterTypes }},
+            $@"{{ ""{module}.{entity}"", {module}.Repositories.{entity}_Repository.ReadParameterTypes }},
             ",
                 ModuleCodeGenerator.DataStructuresReadParameterTypesTag);
         }

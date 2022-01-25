@@ -153,6 +153,7 @@ Changes in Rhetos libraries API:
     * Navigation properties behavior can no longer be extended with custom tags *DataStructureQueryable Getter* and *DataStructureQueryable Setter*.
 20. Removed Type argument from AddInterfaceAndReference methods.
 21. Removed second generic parameter from ConfigurationProvider.GetKey method.
+22. Renamed namespace `_Helper` to `Repositories`.
 
 ### New features
 
