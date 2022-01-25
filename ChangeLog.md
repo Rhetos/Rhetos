@@ -154,6 +154,7 @@ Changes in Rhetos libraries API:
 20. Removed Type argument from AddInterfaceAndReference methods.
 21. Removed second generic parameter from ConfigurationProvider.GetKey method.
 22. Renamed namespace `_Helper` to `Repositories`.
+23. Renamed class `_ModuleRepository` to `ModuleRepository`.
 
 ### New features
 

@@ -73,11 +73,11 @@ namespace {info.Name}.Repositories
 
     {UsingTag.Evaluate(info)}
 
-    public class _ModuleRepository
+    public class ModuleRepository
     {{
         private readonly Rhetos.Extensibility.INamedPlugins<IRepository> _repositories;
 
-        public _ModuleRepository(Rhetos.Extensibility.INamedPlugins<IRepository> repositories)
+        public ModuleRepository(Rhetos.Extensibility.INamedPlugins<IRepository> repositories)
         {{
             _repositories = repositories;
         }}
@@ -90,8 +90,8 @@ namespace {info.Name}.Repositories
 
 ", $"{Path.Combine(GeneratedSourceDirectories.Repositories.ToString(), info.Name + GeneratedSourceDirectories.Repositories)}");
 
-            codeBuilder.InsertCode($@"private {info.Name}.Repositories._ModuleRepository _{info.Name};
-        public {info.Name}.Repositories._ModuleRepository {info.Name} {{ get {{ return _{info.Name} ?? (_{info.Name} = new {info.Name}.Repositories._ModuleRepository(_repositories)); }} }}
+            codeBuilder.InsertCode($@"private {info.Name}.Repositories.ModuleRepository _{info.Name};
+        public {info.Name}.Repositories.ModuleRepository {info.Name} {{ get {{ return _{info.Name} ?? (_{info.Name} = new {info.Name}.Repositories.ModuleRepository(_repositories)); }} }}
 
         ", CommonDomRepositoryMembersTag);
         }
