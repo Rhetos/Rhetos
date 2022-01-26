@@ -25,7 +25,6 @@ using System.Data.Common;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 
 namespace Rhetos.Persistence
 {
@@ -84,19 +83,10 @@ namespace Rhetos.Persistence
                         if (string.IsNullOrWhiteSpace(sql))
                             continue;
 
-                        var sw = Stopwatch.StartNew();
-                        try
-                        {
-                            com.CommandText = sql;
-
-                            beforeExecute?.Invoke(count - 1);
-                            com.ExecuteNonQuery();
-                        }
-                        finally
-                        {
-                            afterExecute?.Invoke(count - 1);
-                            LogPerformanceIssue(sw, sql);
-                        }
+                        com.CommandText = sql;
+                        beforeExecute?.Invoke(count - 1);
+                        ExecuteSql(com);
+                        afterExecute?.Invoke(count - 1);
                     }
                     CheckTransactionState(useTransaction, com, commands);
                 },

@@ -55,30 +55,30 @@ namespace Rhetos.Persistence
 
         public int ExecuteSqlRaw(string query, object[] parameters)
         {
+            _logger.Trace(() => "Executing command: " + query);
             using var command = CreateCommand(query, parameters);
-            return command.ExecuteNonQuery();
+            return ExecuteSql(command);
         }
 
         public async Task<int> ExecuteSqlRawAsync(string query, object[] parameters, CancellationToken cancellationToken)
         {
+            _logger.Trace(() => "Executing command: " + query);
             using var command = CreateCommand(query, parameters);
-            return await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+            return await ExecuteSqlAsync(command, cancellationToken).ConfigureAwait(false);
         }
 
         public void ExecuteReaderRaw(string query, object[] parameters, Action<DbDataReader> read)
         {
+            _logger.Trace(() => "Executing reader: " + query);
             using var command = CreateCommand(query, parameters);
-            using var reader = command.ExecuteReader();
-            while (reader.Read())
-                read(reader);
+            ExecuteReader(command, read);
         }
 
         public async Task ExecuteReaderRawAsync(string query, object[] parameters, Action<DbDataReader> read, CancellationToken cancellationToken)
         {
+            _logger.Trace(() => "Executing reader: " + query);
             using var command = CreateCommand(query, parameters);
-            using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
-            while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
-                read(reader);
+            await ExecuteReaderAsync(command, read, cancellationToken).ConfigureAwait(false);
         }
 
         private DbCommand CreateCommand(string sql, object[] parameters)
@@ -91,8 +91,14 @@ namespace Rhetos.Persistence
 
         private const string parameterPrefix = "@__p";
 
-        private void PrepareCommandTextAndParameters(DbCommand command, string sql, object[] parameters)
+        protected void PrepareCommandTextAndParameters(DbCommand command, string sql, object[] parameters)
         {
+            if (parameters == null)
+            {
+                command.CommandText = sql;
+                return;
+            }
+
             var substitutions = new List<string>();
             for (var i = 0; i < parameters.Length; i++)
             {
@@ -125,15 +131,65 @@ namespace Rhetos.Persistence
                 sw.Restart(); // _performanceLogger.Write would restart the stopwatch.
         }
 
-        protected void ExecuteReader(DbCommand sqlCommand, Action<DbDataReader> action)
+        protected int ExecuteSql(DbCommand command)
         {
             var sw = Stopwatch.StartNew();
             try
             {
-                var dataReader = sqlCommand.ExecuteReader();
+                return command.ExecuteNonQuery();
+            }
+            finally
+            {
+                LogPerformanceIssue(sw, command.CommandText);
+            }
+        }
+
+        protected async Task<int> ExecuteSqlAsync(DbCommand command, CancellationToken cancellationToken)
+        {
+            var sw = Stopwatch.StartNew();
+            try
+            {
+                return await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                LogPerformanceIssue(sw, command.CommandText);
+            }
+        }
+
+        protected void ExecuteReader(DbCommand command, Action<DbDataReader> action)
+        {
+            var sw = Stopwatch.StartNew();
+            try
+            {
+                var dataReader = command.ExecuteReader();
                 while (!dataReader.IsClosed && dataReader.Read())
                     action(dataReader);
+
+                // "Always call the Close method when you have finished using the DataReader object."
+                // https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/retrieving-data-using-a-datareader#closing-the-datareader
+                // Examples on docs.microsoft.com do not dispose SqlDataReader, even though it is IDisposable.
                 dataReader.Close();
+            }
+            finally
+            {
+                LogPerformanceIssue(sw, command.CommandText);
+            }
+        }
+
+        protected async Task ExecuteReaderAsync(DbCommand sqlCommand, Action<DbDataReader> action, CancellationToken cancellationToken)
+        {
+            var sw = Stopwatch.StartNew();
+            try
+            {
+                var dataReader = await sqlCommand.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+                while (!dataReader.IsClosed && await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
+                    action(dataReader);
+
+                // Examples on docs.microsoft.com do not dispose SqlDataReader, even though it is IDisposable.
+                // "Always call the Close method when you have finished using the DataReader object."
+                // https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/retrieving-data-using-a-datareader#closing-the-datareader
+                await dataReader.CloseAsync().ConfigureAwait(false);
             }
             finally
             {
