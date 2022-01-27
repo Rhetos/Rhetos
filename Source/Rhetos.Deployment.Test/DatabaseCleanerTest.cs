@@ -101,12 +101,12 @@ namespace Rhetos.Deployment.Test
             public List<string> DroppedTables = new List<string>();
             public List<string> DroppedSchemas = new List<string>();
 
-            public void ExecuteSql(IEnumerable<string> commands, bool useTransaction)
+            public void ExecuteSql(IEnumerable<string> commands)
             {
-                ExecuteSql(commands, useTransaction, null, null);
+                ExecuteSql(commands, null, null);
             }
 
-            public void ExecuteSql(IEnumerable<string> commands, bool useTransaction, Action<int> beforeExecute, Action<int> afterExecute)
+            public void ExecuteSql(IEnumerable<string> commands, Action<int> beforeExecute, Action<int> afterExecute)
             {
                 foreach (var command in commands)
                 {
@@ -153,6 +153,11 @@ namespace Rhetos.Deployment.Test
             }
 
             public Task<int> ExecuteSqlRawAsync(string query, object[] parameters, CancellationToken cancellationToken = default)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void CheckTransactionCount(int expected)
             {
                 throw new NotImplementedException();
             }

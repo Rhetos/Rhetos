@@ -19,6 +19,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
+using Rhetos.Utilities.Test.Helpers;
 using System.Linq;
 
 namespace Rhetos.Utilities.Test
@@ -59,7 +60,11 @@ namespace Rhetos.Utilities.Test
                     MaxJoinedScriptCount = test.Item2,
                     MaxJoinedScriptSize = test.Item3,
                 };
-                var batches = new SqlTransactionBatches(null, options, new ConsoleLogProvider(), new DelayedLogProvider(new LoggingOptions { DelayedLogTimout = 0 }, null));
+                var batches = new SqlTransactionBatches(
+                    options, new FakeUnitOfWorkFactory(), new PersistenceTransactionOptions(),
+                    new TestUserInfo(), new ConsoleLogProvider(),
+                    new DelayedLogProvider(new LoggingOptions { DelayedLogTimout = 0 }, new ConsoleLogProvider()));
+
                 var joinedScripts = batches.JoinScripts(test.Item1);
 
                 Assert.AreEqual(

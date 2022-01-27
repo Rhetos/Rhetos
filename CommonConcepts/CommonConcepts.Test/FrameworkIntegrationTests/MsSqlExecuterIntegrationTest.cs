@@ -19,10 +19,12 @@
 
 using CommonConcepts.Test;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos.Logging;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 
@@ -279,6 +281,155 @@ raiserror('fff', 18, 118)"
                 $"SELECT {contextInfoToText}",
                 reader => result.Add(reader[0].ToString()));
             return result.Single();
+        }
+
+
+        [TestMethod]
+        public void ConsistentRead()
+        {
+            var tests = new (string Query, string Parameter)[]
+            {
+                ("WAITFOR DELAY '00:00:01'", ""),
+                ("SELECT ClaimRight FROM Common.Claim WHERE ClaimResource = {0} ORDER BY test1", "Common.Claim"),
+                ("SELECT ClaimRight FROM Common.Claim WHERE ClaimResource = {0} ORDER BY 1", "Common.Claim"),
+            };
+
+            var msSqlExecuterReport = new List<string>();
+            var baseSqlExecuterReport = new List<string>();
+
+            foreach (var test in tests)
+            {
+                string title = $"## Testing [{test.Query}], parameter [{test.Parameter}].";
+                Console.WriteLine(title);
+                msSqlExecuterReport.Add(Environment.NewLine + title);
+                baseSqlExecuterReport.Add(Environment.NewLine + title);
+
+                var log = new List<string>();
+                using (var scope = TestScope.Create(builder => builder.ConfigureLogMonitor(log)))
+                {
+                    Assert.IsNotNull(scope.Resolve<IPersistenceTransaction>().Connection); // Initialize transaction to avoid doing it on first test and not on second.
+                    var sqlExecuter = scope.Resolve<ISqlExecuter>();
+
+                    var msSqlExecuterResult = TestSqlReader(
+                        read => sqlExecuter.ExecuteReader(string.Format(test.Query, SqlUtility.QuoteText(test.Parameter)), read),
+                        log);
+                    msSqlExecuterReport.Add(msSqlExecuterResult);
+
+                    var baseSqlExecuterResult = TestSqlReader(
+                        read => sqlExecuter.ExecuteReaderRaw(test.Query, new[] { test.Parameter }, read),
+                        log);
+                    baseSqlExecuterReport.Add(baseSqlExecuterResult);
+
+                    Console.WriteLine(msSqlExecuterResult);
+                }
+            }
+
+            Assert.AreEqual(
+                string.Join(Environment.NewLine, msSqlExecuterReport),
+                string.Join(Environment.NewLine, baseSqlExecuterReport),
+                $"{nameof(msSqlExecuterReport)} result does not match {nameof(baseSqlExecuterReport)}.");
+        }
+
+        private static string TestSqlReader(Action<Action<DbDataReader>> executeReader, List<string> log)
+        {
+            log.Clear();
+            int? lastSizeAfterReader = null;
+            
+            var oldSlowEventLimit = LoggerHelper.SlowEvent;
+            string queryResult = null;
+            try
+            {
+                List<string> records = new();
+                LoggerHelper.SlowEvent = TimeSpan.FromSeconds(0.5);
+                executeReader(reader => records.Add(reader.GetString(0)));
+                lastSizeAfterReader = log.Count;
+                queryResult = TestUtility.DumpSorted(records);
+            }
+            catch (Exception e)
+            {
+                queryResult = $"{e.GetType()}: {e.Message}";
+            }
+            finally
+            {
+                LoggerHelper.SlowEvent = oldSlowEventLimit;
+            }
+
+            lastSizeAfterReader = lastSizeAfterReader ?? log.Count;
+            return "Result: " + queryResult + Environment.NewLine + "Log:" + Environment.NewLine + string.Join(Environment.NewLine, log.Take(lastSizeAfterReader.Value));
+        }
+
+        [TestMethod]
+        public void ConsistentExecute()
+        {
+            var tests = new (string Query, string Parameter)[]
+            {
+                ("WAITFOR DELAY '00:00:01'", ""),
+                ("PRINT test1", "test2"),
+                ("PRINT {0}", "test3"),
+            };
+
+            var msSqlExecuterReport = new List<string>();
+            var baseSqlExecuterReport = new List<string>();
+
+            foreach (var test in tests)
+            {
+                string title = $"## Testing [{test.Query}], parameter [{test.Parameter}].";
+                Console.WriteLine(title);
+                msSqlExecuterReport.Add(Environment.NewLine + title);
+                baseSqlExecuterReport.Add(Environment.NewLine + title);
+
+                var log = new List<string>();
+                using (var scope = TestScope.Create(builder => builder.ConfigureLogMonitor(log)))
+                {
+                    Assert.IsNotNull(scope.Resolve<IPersistenceTransaction>().Connection); // Initialize transaction to avoid doing it on first test and not on second.
+                    var sqlExecuter = scope.Resolve<ISqlExecuter>();
+
+                    var msSqlExecuterResult = TestSqlExecuter(
+                        read => sqlExecuter.ExecuteSql(string.Format(test.Query, SqlUtility.QuoteText(test.Parameter))),
+                        log);
+                    msSqlExecuterReport.Add(msSqlExecuterResult);
+
+                    var baseSqlExecuterResult = TestSqlExecuter(
+                        read => sqlExecuter.ExecuteSqlRaw(test.Query, new[] { test.Parameter }),
+                        log);
+                    baseSqlExecuterReport.Add(baseSqlExecuterResult);
+
+                    Console.WriteLine(msSqlExecuterResult);
+                }
+            }
+
+            Assert.AreEqual(
+                string.Join(Environment.NewLine, msSqlExecuterReport),
+                string.Join(Environment.NewLine, baseSqlExecuterReport),
+                $"{nameof(msSqlExecuterReport)} result does not match {nameof(baseSqlExecuterReport)}.");
+        }
+
+        private static string TestSqlExecuter(Action<Action<DbDataReader>> executeReader, List<string> log)
+        {
+            log.Clear();
+            int? lastSizeAfterReader = null;
+
+            var oldSlowEventLimit = LoggerHelper.SlowEvent;
+            string queryResult = null;
+            try
+            {
+                List<string> records = new();
+                LoggerHelper.SlowEvent = TimeSpan.FromSeconds(0.5);
+                executeReader(reader => records.Add(reader.GetString(0)));
+                lastSizeAfterReader = log.Count;
+                queryResult = TestUtility.DumpSorted(records);
+            }
+            catch (Exception e)
+            {
+                queryResult = $"{e.GetType()}: {e.Message}";
+            }
+            finally
+            {
+                LoggerHelper.SlowEvent = oldSlowEventLimit;
+            }
+
+            lastSizeAfterReader = lastSizeAfterReader ?? log.Count;
+            return "Result: " + queryResult + Environment.NewLine + "Log:" + Environment.NewLine + string.Join(Environment.NewLine, log.Take(lastSizeAfterReader.Value));
         }
     }
 }

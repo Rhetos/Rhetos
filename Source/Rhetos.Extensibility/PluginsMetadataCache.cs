@@ -18,7 +18,6 @@
 */
 
 using Autofac.Features.Indexed;
-using Rhetos.Persistence;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Concurrent;
@@ -30,7 +29,7 @@ namespace Rhetos.Extensibility
     /// <summary>
     /// This class must not cache TPlugin instances, because it is registered as SingleInstance (singleton).
     /// New TPlugin instances must be created separately for each client request, so they can use current
-    /// contextual information such as <see cref="IUserInfo"/> or <see cref="IPersistenceTransaction"/>.
+    /// contextual information such as IUserInfo or IPersistenceTransaction.
     /// </summary>
     /// <typeparam name="TPlugin"></typeparam>
     public class PluginsMetadataCache<TPlugin>

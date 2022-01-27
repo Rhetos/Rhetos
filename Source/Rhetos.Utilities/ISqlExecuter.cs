@@ -28,8 +28,10 @@ namespace Rhetos.Utilities
     public interface ISqlExecuter
     {
         void ExecuteReader(string command, Action<DbDataReader> action);
-        void ExecuteSql(IEnumerable<string> commands, bool useTransaction);
-        void ExecuteSql(IEnumerable<string> commands, bool useTransaction, Action<int> beforeExecute, Action<int> afterExecute);
+
+        void ExecuteSql(IEnumerable<string> commands);
+
+        void ExecuteSql(IEnumerable<string> commands, Action<int> beforeExecute, Action<int> afterExecute);
 
         /// <summary>
         /// Executes a parametrized query on the database.
@@ -54,6 +56,16 @@ namespace Rhetos.Utilities
         /// If you need more control on how a parameter is mapped to a database type, <see cref="DbParameter"/> can be used as a parameter.
         /// </summary>
         Task<int> ExecuteSqlRawAsync(string query, object[] parameters, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Throw an exception if database connection does not match the expected level count.
+        /// For example if it has already been committed or rolled back.
+        /// This check is specially useful in case when an database transaction
+        /// created by SQL script or stored procedure has been left unclosed by an error;
+        /// it might cause silent bugs and corrupted data when the application's commit
+        /// would only reduce transaction count, but not actually commit the transaction.
+        /// </summary>
+        void CheckTransactionCount(int expected);
     }
 
     public static class SqlExecuterExtensions
@@ -62,13 +74,7 @@ namespace Rhetos.Utilities
         /// Executes the SQL queries in a transaction.
         /// </summary>
         public static void ExecuteSql(this ISqlExecuter sqlExecuter, params string[] commands)
-            => sqlExecuter.ExecuteSql(commands, useTransaction: true);
-
-        /// <summary>
-        /// Executes the SQL queries in a transaction.
-        /// </summary>
-        public static void ExecuteSql(this ISqlExecuter sqlExecuter, IEnumerable<string> commands)
-            => sqlExecuter.ExecuteSql(commands, useTransaction: true);
+            => sqlExecuter.ExecuteSql(commands);
 
         /// <summary>
         /// Uses interpolated string to execute a parametrized command on the database

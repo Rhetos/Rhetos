@@ -129,6 +129,11 @@ namespace Rhetos.Utilities.Test
 
         class MockSqlExecuter : ISqlExecuter
         {
+            public void CheckTransactionCount(int expected)
+            {
+                throw new NotImplementedException();
+            }
+
             public void ExecuteReader(string command, Action<System.Data.Common.DbDataReader> action)
             {
                 if (command == "SELECT SYSDATETIME()")
@@ -156,12 +161,12 @@ namespace Rhetos.Utilities.Test
                 throw new NotImplementedException();
             }
 
-            public void ExecuteSql(IEnumerable<string> commands, bool useTransaction)
+            public void ExecuteSql(IEnumerable<string> commands)
             {
                 throw new NotImplementedException();
             }
 
-            public void ExecuteSql(IEnumerable<string> commands, bool useTransaction, Action<int> beforeExecute, Action<int> afterExecute)
+            public void ExecuteSql(IEnumerable<string> commands, Action<int> beforeExecute, Action<int> afterExecute)
             {
                 throw new NotImplementedException();
             }

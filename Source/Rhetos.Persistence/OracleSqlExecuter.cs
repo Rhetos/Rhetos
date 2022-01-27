@@ -42,12 +42,12 @@ namespace Rhetos.Persistence
             _connectionString = connectionString;
         }
 
-        public void ExecuteSql(IEnumerable<string> commands, bool useTransaction)
+        public void ExecuteSql(IEnumerable<string> commands)
         {
-            ExecuteSql(commands, useTransaction, null, null);
+            ExecuteSql(commands, null, null);
         }
 
-        public void ExecuteSql(IEnumerable<string> commands, bool useTransaction, Action<int> beforeExecute, Action<int> afterExecute)
+        public void ExecuteSql(IEnumerable<string> commands, Action<int> beforeExecute, Action<int> afterExecute)
         {
             _logger.Trace("Executing {0} commands.", commands.Count());
 
@@ -173,6 +173,11 @@ namespace Rhetos.Persistence
             }
 
             return sb.ToString();
+        }
+
+        public void CheckTransactionCount(int expected)
+        {
+            // Currently not verifying.
         }
     }
 }

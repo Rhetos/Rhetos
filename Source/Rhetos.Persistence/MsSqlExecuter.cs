@@ -23,50 +23,40 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SqlClient;
-using System.Diagnostics;
 using System.Linq;
 
 namespace Rhetos.Persistence
 {
     public class MsSqlExecuter : BaseSqlExecuter, ISqlExecuter
     {
-        private readonly string _connectionString;
-
         /// <summary>
-        /// This constructor is typically used in deployment time, when shared persistence transaction does not exist.
-        /// It results with each Execute command call creating and committing its own transaction.
-        /// </summary>
-        public MsSqlExecuter(ConnectionString connectionString, ILogProvider logProvider, IUserInfo userInfo)
-            : this(connectionString, logProvider, userInfo, null)
-        {
-        }
-
-        /// <summary>
-        /// This constructor is typically used in run-time, when shared persistence transaction is active,
-        /// in order to execute the SQL queries in the same transaction.
+        /// In a typical unit of work (a web request, e.g.), a shared persistence transaction is active.
         /// It results with each Execute command call participating in a shared transaction that will be committed
         /// at the end of the lifetime scope (for example, at the end of the web request).
-        /// The exception here is ExecuteSql command called with useTransaction=false, which is not recommended at standard application runtime.
         /// </summary>
-        public MsSqlExecuter(ConnectionString connectionString, 
-            ILogProvider logProvider, 
-            IUserInfo userInfo, 
-            IPersistenceTransaction persistenceTransaction) 
+        /// <remarks>
+        /// At deployment time, any code that needs ISqlExecuter should manually create a unit-of-work scope
+        /// (see IUnitOfWorkFactory), with registered IPersistenceTransaction implementation,
+        /// and then resolve ISqlExecuter from the scope.
+        /// </remarks>
+        public MsSqlExecuter(
+            ILogProvider logProvider,
+            IUserInfo userInfo,
+            IPersistenceTransaction persistenceTransaction)
             : base(logProvider, userInfo, persistenceTransaction)
         {
-            _connectionString = connectionString;
         }
 
-        public void ExecuteSql(IEnumerable<string> commands, bool useTransaction)
+        public void ExecuteSql(IEnumerable<string> commands)
         {
-            ExecuteSql(commands, useTransaction, null, null);
+            ExecuteSql(commands, null, null);
         }
 
-        public void ExecuteSql(IEnumerable<string> commands, bool useTransaction, Action<int> beforeExecute, Action<int> afterExecute)
+        public void ExecuteSql(IEnumerable<string> commands, Action<int> beforeExecute, Action<int> afterExecute)
         {
             CsUtility.Materialize(ref commands);
 
-            _logger.Trace(() => "Executing " + commands.Count() + " commands" + (useTransaction ? "" : " without transaction") + ".");
+            _logger.Trace(() => "Executing " + commands.Count() + " commands.");
 
             SafeExecuteCommand(
                 com =>
@@ -88,28 +78,9 @@ namespace Rhetos.Persistence
                         ExecuteSql(com);
                         afterExecute?.Invoke(count - 1);
                     }
-                    CheckTransactionState(useTransaction, com, commands);
-                },
-                useTransaction);
+                });
         }
 
-        private static void CheckTransactionState(bool useTransaction, DbCommand com, IEnumerable<string> commands)
-        {
-            if (useTransaction)
-            {
-                try
-                {
-                    com.CommandText = @"IF @@TRANCOUNT <> 1 RAISERROR('Transaction count is %d, expected value is 1.', 16, 10, @@TRANCOUNT)";
-                    com.ExecuteNonQuery();
-                }
-                catch (SqlException ex)
-                {
-                    throw new FrameworkException(
-                        "The SQL scripts have changed transaction level. " + ReportSqlScripts(commands, 1000),
-                        ex);
-                }
-            }
-        }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]
         public void ExecuteReader(string commandText, Action<DbDataReader> action)
@@ -121,71 +92,26 @@ namespace Rhetos.Persistence
                 {
                     sqlCommand.CommandText = commandText;
                     ExecuteReader(sqlCommand, action);
-                },
-                _persistenceTransaction != null);
+                });
         }
 
-        private void SafeExecuteCommand(Action<DbCommand> action, bool useTransaction)
+        private void SafeExecuteCommand(Action<DbCommand> action)
         {
-            bool createOwnConnection = _persistenceTransaction == null || !useTransaction;
-            DbConnection connection = null;
+            DbCommand command = _persistenceTransaction.Connection.CreateCommand();
+            command.Transaction = _persistenceTransaction.Transaction;
+            command.CommandTimeout = SqlUtility.SqlCommandTimeout;
 
             try
             {
-#pragma warning disable CA2000 // Dispose objects before losing scope. This method has a custom SqlConnection disposal mechanism.
-                connection = createOwnConnection ? new SqlConnection(_connectionString) : _persistenceTransaction.Connection;
-#pragma warning restore CA2000 // Dispose objects before losing scope
-                DbTransaction createdTransaction = null;
-                DbCommand command;
-
-                try
-                {
-                    if (createOwnConnection)
-                        connection.Open();
-
-                    command = connection.CreateCommand();
-                    command.CommandTimeout = SqlUtility.SqlCommandTimeout;
-                    if (useTransaction)
-                    {
-                        if (createOwnConnection)
-                        {
-                            createdTransaction = connection.BeginTransaction();
-                            command.Transaction = createdTransaction;
-                        }
-                        else
-                            command.Transaction = _persistenceTransaction.Transaction;
-                    }
-
-                    if (createOwnConnection)
-                        SetContextInfo(command.Connection, command.Transaction);
-                }
-                catch (SqlException ex)
-                {
-                    SqlConnectionStringBuilder csb = new SqlConnectionStringBuilder(_connectionString);
-                    string secutiryInfo = csb.IntegratedSecurity ? $"integrated security account {Environment.UserName}" : $"SQL login '{csb.UserID}'";
-                    string msg = $"Could not connect to server '{csb.DataSource}', database '{csb.InitialCatalog}' using {secutiryInfo}.";
-                    throw new FrameworkException(msg, ex);
-                }
-
-                try
-                {
-                    action(command);
-                    if (createdTransaction != null)
-                        createdTransaction.Commit();
-                }
-                catch (SqlException ex)
-                {
-                    if (command != null && !string.IsNullOrWhiteSpace(command.CommandText))
-                        _logger.Error("Unable to execute SQL query:\r\n" + command.CommandText.Limit(1000000));
-
-                    string msg = $"{ex.GetType().Name} has occurred{ReportSqlName(command)}: {ReportSqlErrors(ex)}";
-                    throw new FrameworkException(msg, ex);
-                }
+                action(command);
             }
-            finally
+            catch (SqlException ex)
             {
-                if (createOwnConnection && connection != null)
-                    ((IDisposable)connection).Dispose();
+                if (command != null && !string.IsNullOrWhiteSpace(command.CommandText))
+                    _logger.Error("Unable to execute SQL query:\r\n" + command.CommandText.Limit(1000000));
+
+                string msg = $"{ex.GetType().Name} has occurred{ReportSqlName(command)}: {ReportSqlErrors(ex)}";
+                throw new FrameworkException(msg, ex);
             }
         }
 
@@ -196,17 +122,6 @@ namespace Rhetos.Persistence
                 return " in '" + CsUtility.FirstLine(command.CommandText).Substring(namePrefix.Length).Limit(1000, "...") + "'";
             else
                 return "";
-        }
-
-        private void SetContextInfo(DbConnection connection, DbTransaction transaction)
-        {
-            if (_userInfo.IsUserRecognized)
-            {
-                var sqlCommand = MsSqlUtility.SetUserContextInfoQuery(_userInfo);
-                sqlCommand.Connection = connection;
-                sqlCommand.Transaction = transaction;
-                sqlCommand.ExecuteNonQuery();
-            }
         }
 
         private static string ReportSqlErrors(SqlException exception)
@@ -227,6 +142,20 @@ namespace Rhetos.Persistence
                 ? $"Msg {e.Number}, Level {e.Class}, State {e.State}{errorProcedure}, Line {e.LineNumber}: "
                 : "";
             return errorMetadata + e.Message;
+        }
+
+        public void CheckTransactionCount(int expected)
+        {
+            try
+            {
+                using var command = _persistenceTransaction.Connection.CreateCommand();
+                command.CommandText = $"IF @@TRANCOUNT <> {expected} RAISERROR('Transaction count is %d, expected value is {expected}.', 16, 10, @@TRANCOUNT)";
+                command.ExecuteNonQuery();
+            }
+            catch (SqlException ex)
+            {
+                throw new FrameworkException("Cannot commit the database transaction because its state has been modified in SQL commands.", ex);
+            }
         }
     }
 }

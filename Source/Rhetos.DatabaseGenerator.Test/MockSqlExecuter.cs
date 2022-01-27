@@ -31,6 +31,11 @@ namespace Rhetos.DatabaseGenerator.Test
     {
         public List<(List<string> Scripts, bool UseTransaction)> ExecutedScriptsWithTransaction { get; private set; } = new List<(List<string> Scripts, bool UseTransaction)>();
 
+        public void CheckTransactionCount(int expected)
+        {
+            // No errors.
+        }
+
         public void ExecuteReader(string command, Action<DbDataReader> action)
         {
             throw new NotImplementedException();
@@ -46,15 +51,16 @@ namespace Rhetos.DatabaseGenerator.Test
             throw new NotImplementedException();
         }
 
-        public void ExecuteSql(IEnumerable<string> commands, bool useTransaction)
+        public void ExecuteSql(IEnumerable<string> commands)
         {
-            ExecuteSql(commands, useTransaction, null, null);
+            ExecuteSql(commands, null, null);
         }
 
-        public void ExecuteSql(IEnumerable<string> commands, bool useTransaction,
+        public void ExecuteSql(IEnumerable<string> commands,
             Action<int> beforeExecute, Action<int> afterExecute)
         {
-            ExecutedScriptsWithTransaction.Add((commands.ToList(), useTransaction));
+            // TODO: detect UseTransaction from options or from IPersistenceTransaction dependency.
+            ExecutedScriptsWithTransaction.Add((commands.ToList(), false));
         }
 
         public int ExecuteSqlRaw(string query, object[] parameters)

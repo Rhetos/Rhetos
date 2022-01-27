@@ -76,6 +76,12 @@ Changes in behavior:
       For example, before modifying the data, read the records with Load() instead of Query(),
       or call ToSimple() on a query before ToList().
 19. Updated dependencies to a newer version: Autofac v6.3.0, Newtonsoft.Json v13.0.1, NLog v4.7.11.
+20. ISqlExecuter.ExecuteSql method no longer has bool parameter useTransaction.
+    * Where ExecuteSql was called with useTransaction set to *true*, simply remove the parameter.
+    * If useTransaction was set to *false* (execute SQL command out of transaction),
+      the code needs to be refactored to create a new scope with [IUnitOfWorkFactory](https://github.com/Rhetos/Rhetos/wiki/Unit-of-work#manual-control-over-unit-of-work),
+      with disabled PersistenceTransactionOptions.UseDatabaseTransaction (and provided IUserInfo if needed),
+      and then resolve ISqlExecuter from the scope.
 
 Changes in Rhetos libraries API:
 
@@ -170,6 +176,8 @@ Changes in Rhetos libraries API:
 * `Rhetos:AppSecurity:AllClaimsForUsers` option does not require the server machine name to be specified.
   Instead of *username@servername* it is possible just to use *username*,
   but the old format *username@servername* is still recommended for increased security.
+* Bugfix: [AfterDeploy](https://github.com/Rhetos/AfterDeploy) SQL scripts sometimes failed with a deadlock
+  when using `/*DatabaseGenerator:NoTransaction*/` (SqlTransactionBatches no longer uses parent scope transaction).
 
 ## 4.3.0 (2021-03-05)
 

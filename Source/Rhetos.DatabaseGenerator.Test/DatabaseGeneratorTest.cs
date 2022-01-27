@@ -17,11 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Autofac;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Dsl;
 using Rhetos.Extensibility.Test;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
+using Rhetos.Utilities.Test.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -82,7 +84,14 @@ namespace Rhetos.DatabaseGenerator.Test
             var databaseModel = new DatabaseModel { DatabaseObjects = newConceptApplications.ToList() };
             var options = new SqlTransactionBatchesOptions { MaxJoinedScriptCount = 1 };
             var sqlExecuter = new MockSqlExecuter();
-            var sqlTransactionBatches = new SqlTransactionBatches(sqlExecuter, options, new ConsoleLogProvider(), new DelayedLogProvider(new LoggingOptions { DelayedLogTimout = 0 }, null));
+            var unitOfWorkFactory = new FakeUnitOfWorkFactory(builder =>
+                {
+                    builder.RegisterInstance<ISqlExecuter>(sqlExecuter);
+                });
+            var sqlTransactionBatches = new SqlTransactionBatches(
+                options, unitOfWorkFactory, new PersistenceTransactionOptions(), new TestUserInfo(),
+                new ConsoleLogProvider(),
+                new DelayedLogProvider(new LoggingOptions { DelayedLogTimout = 0 }, new ConsoleLogProvider()));
 
             var databaseAnalysis = new DatabaseAnalysis(
                 conceptApplicationRepository,

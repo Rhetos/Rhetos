@@ -185,12 +185,12 @@ namespace Rhetos.DatabaseGenerator.Test
                     ca.OldCreationOrder);
             }
 
-            public void ExecuteSql(IEnumerable<string> commands, bool useTransaction)
+            public void ExecuteSql(IEnumerable<string> commands)
             {
                 throw new NotImplementedException();
             }
 
-            public void ExecuteSql(IEnumerable<string> commands, bool useTransaction, Action<int> beforeExecute, Action<int> afterExecute)
+            public void ExecuteSql(IEnumerable<string> commands, Action<int> beforeExecute, Action<int> afterExecute)
             {
                 throw new NotImplementedException();
             }
@@ -211,6 +211,11 @@ namespace Rhetos.DatabaseGenerator.Test
             }
 
             public Task<int> ExecuteSqlRawAsync(string query, object[] parameters, CancellationToken cancellationToken = default)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void CheckTransactionCount(int expected)
             {
                 throw new NotImplementedException();
             }
