@@ -69,7 +69,7 @@ namespace Rhetos
             {
                 var performanceLogger = scope.Resolve<ILogProvider>().GetLogger("Performance." + GetType().Name);
                 performanceLogger.Write(stopwatch, "Modules and plugins registered.");
-                scope.LogRegistrationStatistics("UpdateDatabase component registrations", _logProvider);
+                ((UnitOfWorkScope)scope).LogRegistrationStatistics("UpdateDatabase component registrations", _logProvider);
                 scope.Resolve<DatabaseDeployment>().UpdateDatabase();
                 // DbUpdate scope does not contain IPersistenceTransaction, so there is no need to call scope.CommitOnDispose() here. It would throw an exception.
             }
@@ -125,7 +125,7 @@ namespace Rhetos
                     initializers = ApplicationInitialization.GetSortedInitializers(scope);
 
                     performanceLogger.Write(stopwatch, "New modules and plugins registered.");
-                    scope.LogRegistrationStatistics("InitializeApplication component registrations", _logProvider);
+                    ((UnitOfWorkScope)scope).LogRegistrationStatistics("InitializeApplication component registrations", _logProvider);
                     scope.CommitAndClose();
                 }
 

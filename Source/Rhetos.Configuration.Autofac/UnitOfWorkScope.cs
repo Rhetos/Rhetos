@@ -31,7 +31,7 @@ namespace Rhetos
     /// Note that the changes in database will be rolled back by default.
     /// To commit changes to database, call <see cref="CommitAndClose"/> at the end of the 'using' block.
     /// </summary>
-    public class UnitOfWorkScope : IDisposable, IUnitOfWork
+    public class UnitOfWorkScope : IUnitOfWorkScope
     {
         /// <summary>
         /// A "lifetime scope tag" that prevents developers from accidentally resolving "scope-critical" components from a scope other than

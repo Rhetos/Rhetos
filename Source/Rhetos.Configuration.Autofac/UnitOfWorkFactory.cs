@@ -59,12 +59,12 @@ namespace Rhetos
             _customRegistrations = customRegistrations;
         }
 
-        UnitOfWorkScope IUnitOfWorkFactory.CreateScope(Action<ContainerBuilder> registerScopeComponentsAction)
+        IUnitOfWorkScope IUnitOfWorkFactory.CreateScope(Action<ContainerBuilder> registerScopeComponentsAction)
         {
             return CreateScope(registerScopeComponentsAction);
         }
 
-        protected UnitOfWorkScope CreateScope(Action<ContainerBuilder> registerScopeComponentsAction)
+        protected IUnitOfWorkScope CreateScope(Action<ContainerBuilder> registerScopeComponentsAction)
         {
             var container = GetContainer();
             return new UnitOfWorkScope(container, _customRegistrations + registerScopeComponentsAction);

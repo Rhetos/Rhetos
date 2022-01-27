@@ -127,7 +127,7 @@ Changes in Rhetos libraries API:
     * ContainerBuilderExtensions.GetPluginRegistration: Use GetRhetosPluginRegistration instead.
     * ContainerBuilderExtensions.AddPluginModules: Use AddRhetosPluginModules instead.
     * ProcessContainer.CreateTransactionScopeContainer: Use CreateScope instead.
-    * TransactionScopeContainer: Use UnitOfWorkScope instead.
+    * TransactionScopeContainer: Use IUnitOfWorkScope instead.
     * ConceptImplementationVersionAttribute: This feature is no longer used by Rhetos. Database upgrade relies solely on SQL scripts generated from DSL concepts.
     * IInstalledPackages: Use InstalledPackages class instead.
     * DslSyntaxException.DslScript: Use FilePosition instead.
@@ -155,6 +155,7 @@ Changes in Rhetos libraries API:
 21. Removed second generic parameter from ConfigurationProvider.GetKey method.
 22. Renamed namespace `_Helper` to `Repositories`.
 23. Renamed class `_ModuleRepository` to `ModuleRepository`.
+24. UnitOfWorkScope type is replaced with IUnitOfWorkScope on various methods.
 
 ### New features
 
