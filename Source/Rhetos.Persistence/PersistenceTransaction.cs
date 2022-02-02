@@ -197,23 +197,23 @@ namespace Rhetos.Persistence
                 {
                     _logger.Trace(() => "Opening connection (" + _persistenceTransactionId + ").");
                     _connection = new SqlConnection(_connectionString);
-                    _connection.Open();
 
-                    if (_userInfo.IsUserRecognized)
+                    try
                     {
-                        try
+                        _connection.Open();
+                        if (_userInfo.IsUserRecognized)
                         {
                             var sqlCommand = MsSqlUtility.SetUserContextInfoQuery(_userInfo);
                             sqlCommand.Connection = _connection;
                             sqlCommand.ExecuteNonQuery();
                         }
-                        catch (SqlException ex)
-                        {
-                            var csb = new SqlConnectionStringBuilder(_connectionString);
-                            string secutiryInfo = csb.IntegratedSecurity ? $"integrated security account '{Environment.UserName}'" : $"SQL login '{csb.UserID}'";
-                            string msg = $"Could not connect to server '{csb.DataSource}', database '{csb.InitialCatalog}' using {secutiryInfo}.";
-                            throw new FrameworkException(msg, ex);
-                        }
+                    }
+                    catch (SqlException ex)
+                    {
+                        var csb = new SqlConnectionStringBuilder(_connectionString);
+                        string secutiryInfo = csb.IntegratedSecurity ? $"integrated security account '{Environment.UserName}'" : $"SQL login '{csb.UserID}'";
+                        string msg = $"Could not connect to server '{csb.DataSource}', database '{csb.InitialCatalog}' using {secutiryInfo}.";
+                        throw new FrameworkException(msg, ex);
                     }
 
                     _logger.Trace(() => "Beginning transaction (" + _persistenceTransactionId + ").");

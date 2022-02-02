@@ -29,12 +29,13 @@ namespace Rhetos.Utilities.Test.Helpers
         public FakeUnitOfWorkFactory(Action<ContainerBuilder> registerScopeComponentsAction = null)
         {
             var builder = new ContainerBuilder();
-            registerScopeComponentsAction(builder);
+            registerScopeComponentsAction?.Invoke(builder);
             container = builder.Build();
         }
 
         public IUnitOfWorkScope CreateScope(Action<ContainerBuilder> registerScopeComponentsAction = null)
         {
+            registerScopeComponentsAction ??= builder => { };
             var scope = container.BeginLifetimeScope(registerScopeComponentsAction);
             return new FakeUnitOfWorkScope(scope);
         }

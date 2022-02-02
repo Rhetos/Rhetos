@@ -39,11 +39,8 @@ namespace Rhetos.Persistence
         /// (see IUnitOfWorkFactory), with registered IPersistenceTransaction implementation,
         /// and then resolve ISqlExecuter from the scope.
         /// </remarks>
-        public MsSqlExecuter(
-            ILogProvider logProvider,
-            IUserInfo userInfo,
-            IPersistenceTransaction persistenceTransaction)
-            : base(logProvider, userInfo, persistenceTransaction)
+        public MsSqlExecuter(ILogProvider logProvider, IPersistenceTransaction persistenceTransaction)
+            : base(logProvider, persistenceTransaction)
         {
         }
 
@@ -82,7 +79,6 @@ namespace Rhetos.Persistence
         }
 
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]
         public void ExecuteReader(string commandText, Action<DbDataReader> action)
         {
             _logger.Trace(() => "Executing reader: " + commandText);
@@ -108,7 +104,7 @@ namespace Rhetos.Persistence
             catch (SqlException ex)
             {
                 if (command != null && !string.IsNullOrWhiteSpace(command.CommandText))
-                    _logger.Error("Unable to execute SQL query:\r\n" + command.CommandText.Limit(1000000));
+                    _logger.Error("Unable to execute SQL query:\r\n" + command.CommandText.Limit(1_000_000));
 
                 string msg = $"{ex.GetType().Name} has occurred{ReportSqlName(command)}: {ReportSqlErrors(ex)}";
                 throw new FrameworkException(msg, ex);
@@ -144,18 +140,12 @@ namespace Rhetos.Persistence
             return errorMetadata + e.Message;
         }
 
-        public void CheckTransactionCount(int expected)
+        public int GetTransactionCount()
         {
-            try
-            {
-                using var command = _persistenceTransaction.Connection.CreateCommand();
-                command.CommandText = $"IF @@TRANCOUNT <> {expected} RAISERROR('Transaction count is %d, expected value is {expected}.', 16, 10, @@TRANCOUNT)";
-                command.ExecuteNonQuery();
-            }
-            catch (SqlException ex)
-            {
-                throw new FrameworkException("Cannot commit the database transaction because its state has been modified in SQL commands.", ex);
-            }
+            using var command = _persistenceTransaction.Connection.CreateCommand();
+            command.Transaction = _persistenceTransaction.Transaction;
+            command.CommandText = "SELECT @@TRANCOUNT";
+            return (int)command.ExecuteScalar();
         }
     }
 }

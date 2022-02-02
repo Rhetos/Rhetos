@@ -85,4 +85,17 @@ Module TestAction
     {
         ShortString NewUsername;
     }
+
+    Action OutOfTransaction '(parameter, repository, userInfo) => InsertRecordOutOfTransaction(parameter)'
+    {
+        Guid ItemId;
+        RepositoryUses _unitOfWorkFactory 'Rhetos.IUnitOfWorkFactory';
+    }
+
+    Action SeparateTransaction '(parameter, repository, userInfo) => InsertRecordInSeparateTransaction(parameter)'
+    {
+        Guid ItemId;
+        Bool ThrowExceptionInInnerScope;
+        RepositoryUses _unitOfWorkFactory 'Rhetos.IUnitOfWorkFactory';
+    }
 }

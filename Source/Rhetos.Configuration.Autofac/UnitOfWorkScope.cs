@@ -40,7 +40,7 @@ namespace Rhetos
         /// or user authentication leaking into different scopes.
         /// The basic scope-critical components (such as <see cref="IUserInfo"/> or <see cref="IPersistenceTransaction"/>
         /// are registered to Autofac IoC container with "InstancePerMatchingLifetimeScope",
-        /// using <see cref="UnitOfWorkScope.ScopeName"/> as a lifetime scope tag.
+        /// using <see cref="ScopeName"/> as a lifetime scope tag.
         /// </summary>
         public static readonly string ScopeName = "UnitOfWork";
 

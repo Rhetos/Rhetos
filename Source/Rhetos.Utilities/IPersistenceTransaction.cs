@@ -33,6 +33,7 @@ namespace Rhetos.Persistence
     /// For those use cases see usage of <see cref="DbUpdateOptions.ShortTransactions"/> or <see cref="SqlUtility.NoTransactionTag"/>.
     /// <para>
     /// See also <see cref="IUnitOfWork"/> interface for high-level control of the transaction.
+    /// See <see cref="PersistenceTransactionOptions"/> for additional transaction configuration.
     /// </para>
     /// </remarks>
     public interface IPersistenceTransaction : IDisposable

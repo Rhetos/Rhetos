@@ -27,14 +27,22 @@ using System.Threading.Tasks;
 
 namespace Rhetos.DatabaseGenerator.Test
 {
+    public class MockSqlExecuterReport : List<(List<string> Scripts, bool UseTransaction)>
+    {
+    }
+
     public class MockSqlExecuter : ISqlExecuter
     {
-        public List<(List<string> Scripts, bool UseTransaction)> ExecutedScriptsWithTransaction { get; private set; } = new List<(List<string> Scripts, bool UseTransaction)>();
+        private readonly PersistenceTransactionOptions _persistenceTransactionOptions;
+        private readonly MockSqlExecuterReport _mockSqlExecuterReport;
 
-        public void CheckTransactionCount(int expected)
+        public MockSqlExecuter(PersistenceTransactionOptions persistenceTransactionOptions, MockSqlExecuterReport mockSqlExecuterReport)
         {
-            // No errors.
+            _persistenceTransactionOptions = persistenceTransactionOptions;
+            _mockSqlExecuterReport = mockSqlExecuterReport;
         }
+
+        public int GetTransactionCount() => _persistenceTransactionOptions.UseDatabaseTransaction ? 1 : 0;
 
         public void ExecuteReader(string command, Action<DbDataReader> action)
         {
@@ -59,8 +67,7 @@ namespace Rhetos.DatabaseGenerator.Test
         public void ExecuteSql(IEnumerable<string> commands,
             Action<int> beforeExecute, Action<int> afterExecute)
         {
-            // TODO: detect UseTransaction from options or from IPersistenceTransaction dependency.
-            ExecutedScriptsWithTransaction.Add((commands.ToList(), false));
+            _mockSqlExecuterReport.Add((commands.ToList(), _persistenceTransactionOptions.UseDatabaseTransaction));
         }
 
         public int ExecuteSqlRaw(string query, object[] parameters)

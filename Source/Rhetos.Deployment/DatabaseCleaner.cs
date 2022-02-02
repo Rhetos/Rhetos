@@ -28,11 +28,13 @@ namespace Rhetos.Deployment
     {
         private readonly ILogger _logger;
         private readonly ISqlExecuter _sqlExecuter;
+        private readonly ISqlTransactionBatches _sqlTransactionBatches;
 
-        public DatabaseCleaner(ILogProvider logProvider, ISqlExecuter sqlExecuter)
+        public DatabaseCleaner(ILogProvider logProvider, ISqlExecuter sqlExecuter, ISqlTransactionBatches sqlTransactionBatches)
         {
             _logger = logProvider.GetLogger(GetType().Name);
             _sqlExecuter = sqlExecuter;
+            _sqlTransactionBatches = sqlTransactionBatches;
         }
 
         public string DeleteAllMigrationData()
@@ -70,7 +72,8 @@ namespace Rhetos.Deployment
                 return reportSkip;
             }
 
-            _sqlExecuter.ExecuteSql(new[] { "DELETE FROM Rhetos.DataMigrationFreshRows;" });
+            var script = new SqlBatchScript { Sql = "DELETE FROM Rhetos.DataMigrationFreshRows;" };
+            _sqlTransactionBatches.Execute(new[] { script });
             return null;
         }
 
@@ -128,7 +131,8 @@ namespace Rhetos.Deployment
                 _logger.Trace("Deleting data-migration schema " + s + ".");
             sqlCommands.AddRange(deleteSchemas.Select(DropSchema));
 
-            _sqlExecuter.ExecuteSql(sqlCommands);
+            var scripts = sqlCommands.Select(sql => new SqlBatchScript { Sql = sql });
+            _sqlTransactionBatches.Execute(scripts);
         }
 
         private List<ColumnInfo> ReadAllColumnsFromDatabase()
@@ -136,6 +140,7 @@ namespace Rhetos.Deployment
             var allColumns = new List<ColumnInfo>();
 
             _sqlExecuter.ExecuteReader(
+                // PersistenceTransactionOptions.UseDatabaseTransaction is disable on dbupdate.
                 @"SELECT
                     c.TABLE_SCHEMA, c.TABLE_NAME, c.COLUMN_NAME
                 FROM
@@ -159,6 +164,7 @@ namespace Rhetos.Deployment
             var tables = new List<TableInfo>();
 
             _sqlExecuter.ExecuteReader(
+                // PersistenceTransactionOptions.UseDatabaseTransaction is disable on dbupdate.
                 "SELECT TABLE_SCHEMA, TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA LIKE '[_]%';",
                 reader =>
                 {
@@ -173,6 +179,7 @@ namespace Rhetos.Deployment
             var schemas= new List<string>();
 
             _sqlExecuter.ExecuteReader(
+                // PersistenceTransactionOptions.UseDatabaseTransaction is disable on dbupdate.
                 "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME LIKE '[_]%'",
                 reader =>
                 {

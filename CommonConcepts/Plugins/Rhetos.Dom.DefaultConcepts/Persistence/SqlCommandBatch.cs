@@ -55,7 +55,6 @@ namespace Rhetos.Dom.DefaultConcepts
 			using (var dbCommand = _persistenceTransaction.Connection.CreateCommand())
 			{
 				dbCommand.Transaction = _persistenceTransaction.Transaction;
-
 				dbCommand.CommandText = commandTextBuilder.ToString();
 				foreach (var parameter in commandParameters)
 					dbCommand.Parameters.Add(parameter);

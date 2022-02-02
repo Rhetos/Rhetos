@@ -35,7 +35,7 @@ namespace CommonConcepts.Test
     [TestClass]
     public class AuditablePropertiesTest
     {
-        private static void CheckCreatedDate(UnitOfWorkScope scope, DateTime start, DateTime finish)
+        private static void CheckCreatedDate(IUnitOfWorkScope scope, DateTime start, DateTime finish)
         {
             start = new DateTime(start.Year, start.Month, start.Day, start.Hour, start.Minute, start.Second); // ORM may trim milliseconds.
 

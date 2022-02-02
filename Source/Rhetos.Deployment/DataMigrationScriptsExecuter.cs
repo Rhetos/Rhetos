@@ -29,19 +29,19 @@ namespace Rhetos.Deployment
 {
     public class DataMigrationScriptsExecuter
     {
-        private readonly ISqlExecuter _sqlExecuter;
         private readonly ILogger _logger;
         private readonly DataMigrationScripts _dataMigrationScripts;
-        private readonly SqlTransactionBatches _sqlTransactionBatches;
+        private readonly ISqlTransactionBatches _sqlTransactionBatches;
+        private readonly ISqlExecuter _sqlExecuter;
         private readonly DbUpdateOptions _dbUpdateOptions;
 
-        public DataMigrationScriptsExecuter(ISqlExecuter sqlExecuter, ILogProvider logProvider, DataMigrationScripts dataMigrationScripts,
-            DbUpdateOptions dbUpdateOptions, SqlTransactionBatches sqlTransactionBatches)
+        public DataMigrationScriptsExecuter(ILogProvider logProvider, DataMigrationScripts dataMigrationScripts,
+            DbUpdateOptions dbUpdateOptions, ISqlTransactionBatches sqlTransactionBatches, ISqlExecuter sqlExecuter)
         {
-            _sqlExecuter = sqlExecuter;
             _logger = logProvider.GetLogger("DataMigration");
             _dataMigrationScripts = dataMigrationScripts;
             _sqlTransactionBatches = sqlTransactionBatches;
+            _sqlExecuter = sqlExecuter;
             _dbUpdateOptions = dbUpdateOptions;
         }
 
@@ -216,6 +216,7 @@ namespace Rhetos.Deployment
         {
             var scripts = new List<DataMigrationScript>();
             _sqlExecuter.ExecuteReader(
+                // PersistenceTransactionOptions.UseDatabaseTransaction is disable on dbupdate.
                 "SELECT Tag, Path, Content, Down FROM Rhetos.DataMigrationScript WHERE Active = 1 ORDER BY OrderExecuted",
                 reader => scripts.Add(new DataMigrationScript
                 {

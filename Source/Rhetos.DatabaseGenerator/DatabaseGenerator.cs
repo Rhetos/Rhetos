@@ -33,7 +33,7 @@ namespace Rhetos.DatabaseGenerator
     /// </summary>
     public class DatabaseGenerator : IDatabaseGenerator
     {
-        private readonly SqlTransactionBatches _sqlTransactionBatches;
+        private readonly ISqlTransactionBatches _sqlTransactionBatches;
         private readonly IConceptApplicationRepository _conceptApplicationRepository;
         private readonly ILogger _logger;
 		/// <summary>Special logger for keeping track of inserted/updated/deleted concept applications in database.</summary>
@@ -43,7 +43,7 @@ namespace Rhetos.DatabaseGenerator
         private readonly DatabaseAnalysis _databaseAnalysis;
 
         public DatabaseGenerator(
-            SqlTransactionBatches sqlTransactionBatches, 
+            ISqlTransactionBatches sqlTransactionBatches, 
             IConceptApplicationRepository conceptApplicationRepository,
             ILogProvider logProvider,
             DbUpdateOptions dbUpdateOptions,

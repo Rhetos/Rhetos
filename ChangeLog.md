@@ -77,11 +77,11 @@ Changes in behavior:
       or call ToSimple() on a query before ToList().
 19. Updated dependencies to a newer version: Autofac v6.3.0, Newtonsoft.Json v13.0.1, NLog v4.7.11.
 20. ISqlExecuter.ExecuteSql method no longer has bool parameter useTransaction.
-    * Where ExecuteSql was called with useTransaction set to *true*, simply remove the parameter.
-    * If useTransaction was set to *false* (execute SQL command out of transaction),
-      the code needs to be refactored to create a new scope with [IUnitOfWorkFactory](https://github.com/Rhetos/Rhetos/wiki/Unit-of-work#manual-control-over-unit-of-work),
-      with disabled PersistenceTransactionOptions.UseDatabaseTransaction (and provided IUserInfo if needed),
-      and then resolve ISqlExecuter from the scope.
+    * Where ExecuteSql was called as runtime with useTransaction set to *true*, simply remove the parameter.
+    * If useTransaction was set to *false* (executing SQL command out of transaction),
+      manually create a new SqlConnection and SqlCommand from Rhetos.Utilities.ConnectionString (from DI).
+      Alternatively, create a new [unit-of-work scope](https://github.com/Rhetos/Rhetos/wiki/Unit-of-work#manual-control-over-unit-of-work)
+      with PersistenceTransactionOptions.UseDatabaseTransaction disabled and IUserInfo added, and resolve ISqlExecuter from that scope.
 
 Changes in Rhetos libraries API:
 
@@ -140,7 +140,7 @@ Changes in Rhetos libraries API:
     * DslSyntaxException.Position: Use FilePosition instead.
     * IValidationConcept: Use IValidatedConcept instead of IValidationConcept.
     * IPersistenceTransaction.CommitAndReconnect: It is not longer needed for IServerInitializer plugins, because each plugin is executed in a separate connection.
-    * SqlTransactionBatch: Use SqlTransactionBatches instead.
+    * SqlTransactionBatch: Use ISqlTransactionBatches instead.
     * Function\<T\>.Create: Use an explicit Func type for the result variable, instead of 'var'.
 15. Removed support for the following concepts:
     * UseExecutionContext: Use repository member \_executionContext instead.
@@ -162,6 +162,7 @@ Changes in Rhetos libraries API:
 22. Renamed namespace `_Helper` to `Repositories`.
 23. Renamed class `_ModuleRepository` to `ModuleRepository`.
 24. UnitOfWorkScope type is replaced with IUnitOfWorkScope on various methods.
+25. SqlTransactionBatches is replaced with ISqlTransactionBatches in DI container.
 
 ### New features
 

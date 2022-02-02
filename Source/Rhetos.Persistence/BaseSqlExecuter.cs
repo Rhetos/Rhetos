@@ -39,17 +39,13 @@ namespace Rhetos.Persistence
     public class BaseSqlExecuter
     {
         protected readonly IPersistenceTransaction _persistenceTransaction;
-        protected readonly IUserInfo _userInfo;
         protected readonly ILogger _logger;
         protected readonly ILogger _performanceLogger;
 
-        public BaseSqlExecuter(ILogProvider logProvider, 
-            IUserInfo userInfo,
-            IPersistenceTransaction persistenceTransaction)
+        public BaseSqlExecuter(ILogProvider logProvider, IPersistenceTransaction persistenceTransaction)
         {
             _logger = logProvider.GetLogger(GetType().Name);
             _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
-            _userInfo = userInfo;
             _persistenceTransaction = persistenceTransaction;
         }
 

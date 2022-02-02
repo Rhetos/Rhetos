@@ -18,6 +18,7 @@
 */
 
 using Autofac;
+using Rhetos.Persistence;
 using Rhetos.Utilities;
 
 namespace Rhetos.Configuration.Autofac.Modules
@@ -31,8 +32,17 @@ namespace Rhetos.Configuration.Autofac.Modules
         {
             builder.RegisterInstance(new ConnectionString(SqlUtility.ConnectionString));
             builder.RegisterType(DatabaseTypes.GetSqlExecuterType(SqlUtility.DatabaseLanguage)).As<ISqlExecuter>().InstancePerLifetimeScope();
+
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<SqlTransactionBatchesOptions>()).InstancePerLifetimeScope();
-            builder.RegisterType<SqlTransactionBatches>().InstancePerLifetimeScope();
+            builder.RegisterType<SqlTransactionBatches>().As<ISqlTransactionBatches>().InstancePerLifetimeScope();
+
+            builder.RegisterType<UnitOfWorkFactory>().As<UnitOfWorkFactory>().As<IUnitOfWorkFactory>().SingleInstance();
+            builder.Register(context => context.Resolve<IConfiguration>().GetOptions<PersistenceTransactionOptions>()).SingleInstance().PreserveExistingDefaults();
+            // PersistenceTransactionOptions.UseDatabaseTransaction is disable on dbupdate,
+            // which means that ISqlExecuter will not use transactions.
+            // Transactions in dbupdate are often manually controlled by ISqlTransactionBatches.
+            builder.RegisterType<PersistenceTransaction>().As<IPersistenceTransaction>().As<IUnitOfWork>()
+                .InstancePerMatchingLifetimeScope(UnitOfWorkScope.ScopeName);
 
             base.Load(builder);
         }

@@ -39,8 +39,10 @@ namespace Rhetos.Deployment.Test
         {
             string invalidConnectionString = "<ENTER_CONNECTION_STRING_HERE>";
 
+            var connectionTesting = new ConnectionTesting(invalidConnectionString, sqlExecuter: null);
+
             var ex = TestUtility.ShouldFail<ArgumentException>(
-                () => ConnectionTesting.ValidateDbConnection(invalidConnectionString, null),
+                () => connectionTesting.ValidateDbConnection(),
                 "Database connection string has invalid format",
                 "ConnectionStrings:RhetosConnectionString");
 

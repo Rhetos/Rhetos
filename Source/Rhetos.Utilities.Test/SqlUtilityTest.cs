@@ -129,12 +129,9 @@ namespace Rhetos.Utilities.Test
 
         class MockSqlExecuter : ISqlExecuter
         {
-            public void CheckTransactionCount(int expected)
-            {
-                throw new NotImplementedException();
-            }
+            public int GetTransactionCount() => 1;
 
-            public void ExecuteReader(string command, Action<System.Data.Common.DbDataReader> action)
+            public void ExecuteReader(string command, Action<DbDataReader> action)
             {
                 if (command == "SELECT SYSDATETIME()")
                 {

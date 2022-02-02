@@ -61,7 +61,7 @@ namespace Rhetos.Utilities.Test
                     MaxJoinedScriptSize = test.Item3,
                 };
                 var batches = new SqlTransactionBatches(
-                    options, new FakeUnitOfWorkFactory(), new PersistenceTransactionOptions(),
+                    options, new FakeUnitOfWorkFactory(), null, new PersistenceTransactionOptions(),
                     new TestUserInfo(), new ConsoleLogProvider(),
                     new DelayedLogProvider(new LoggingOptions { DelayedLogTimout = 0 }, new ConsoleLogProvider()));
 

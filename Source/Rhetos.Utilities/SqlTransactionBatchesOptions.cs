@@ -23,7 +23,22 @@ namespace Rhetos.Utilities
     public class SqlTransactionBatchesOptions
     {
         public int ReportProgressMs { get; set; } = 60_000; // Report progress each minute by default
+
         public int MaxJoinedScriptCount { get; set; } = 100;
+
         public int MaxJoinedScriptSize { get; set; } = 100_000;
+
+        /// <summary>
+        /// If true (default), <see cref="ISqlTransactionBatches"/> executes scripts on a new <b>separate database connection</b> (not in the current scope),
+        /// and <b>commits transaction immediately</b> (changes will stay in database even if the current scope fails and rolls back).
+        /// </summary>
+        /// <remarks>
+        /// This option can be set to <see langword="false"/> for testing purpose, to achieve test isolation.
+        /// </remarks>
+        public bool ExecuteOnNewConnection { get; set; } = true;
+
+        public byte ErrorReportCommandsLimit { get; set; } = 20;
+
+        public int ErrorReportScriptSizeLimit { get; set; } = 10_000;
     }
 }

@@ -32,14 +32,16 @@ namespace Rhetos.Persistence
     public class OracleSqlExecuter : BaseSqlExecuter, ISqlExecuter
     {
         private readonly string _connectionString;
+        private readonly IUserInfo _userInfo;
 
         public OracleSqlExecuter(ConnectionString connectionString, 
             ILogProvider logProvider, 
             IUserInfo userInfo, 
             IPersistenceTransaction persistenceTransaction) 
-            : base(logProvider, userInfo, persistenceTransaction)
+            : base(logProvider, persistenceTransaction)
         {
             _connectionString = connectionString;
+            _userInfo = userInfo;
         }
 
         public void ExecuteSql(IEnumerable<string> commands)
@@ -175,9 +177,10 @@ namespace Rhetos.Persistence
             return sb.ToString();
         }
 
-        public void CheckTransactionCount(int expected)
+        public int GetTransactionCount()
         {
-            // Currently not verifying.
+            // Currently not implemented; returning expected value.
+            return _persistenceTransaction.Transaction != null ? 1 : 0;
         }
     }
 }

@@ -71,7 +71,7 @@ namespace Rhetos.DatabaseGenerator.Test
         /// </summary>
         private
             (string Report,
-            MockSqlExecuter SqlExecuter,
+            MockSqlExecuterReport SqlExecuterReport,
             List<ConceptApplication> RemovedConcepts,
             List<ConceptApplication> InsertedConcepts)
             DatabaseGeneratorUpdateDatabase(
@@ -83,14 +83,15 @@ namespace Rhetos.DatabaseGenerator.Test
             var conceptApplicationRepository = new MockConceptApplicationRepository(ConceptApplication.FromDatabaseObjects(oldConceptApplications));
             var databaseModel = new DatabaseModel { DatabaseObjects = newConceptApplications.ToList() };
             var options = new SqlTransactionBatchesOptions { MaxJoinedScriptCount = 1 };
-            var sqlExecuter = new MockSqlExecuter();
+            var sqlExecuterReport = new MockSqlExecuterReport();
             var unitOfWorkFactory = new FakeUnitOfWorkFactory(builder =>
                 {
-                    builder.RegisterInstance<ISqlExecuter>(sqlExecuter);
+                    builder.RegisterInstance(sqlExecuterReport).ExternallyOwned();
+                    builder.RegisterType<MockSqlExecuter>().As<ISqlExecuter>();
                 });
             var sqlTransactionBatches = new SqlTransactionBatches(
-                options, unitOfWorkFactory, new PersistenceTransactionOptions(), new TestUserInfo(),
-                new ConsoleLogProvider(),
+                options, unitOfWorkFactory, null, new PersistenceTransactionOptions(),
+                new TestUserInfo(), new ConsoleLogProvider(),
                 new DelayedLogProvider(new LoggingOptions { DelayedLogTimout = 0 }, new ConsoleLogProvider()));
 
             var databaseAnalysis = new DatabaseAnalysis(
@@ -110,13 +111,13 @@ namespace Rhetos.DatabaseGenerator.Test
             // Report changes in mock database:
 
             TestUtility.Dump(
-                sqlExecuter.ExecutedScriptsWithTransaction,
+                sqlExecuterReport,
                 script => (script.UseTransaction ? "tran" : "notran")
                     + string.Concat(script.Scripts.Select(sql => "\r\n  - " + sql.Replace('\r', ' ').Replace('\n', ' '))));
 
             return
-                (Report: string.Join(", ", sqlExecuter.ExecutedScriptsWithTransaction.SelectMany(script => RemoveName(script.Scripts))),
-                SqlExecuter: sqlExecuter,
+                (Report: string.Join(", ", sqlExecuterReport.SelectMany(script => RemoveName(script.Scripts))),
+                SqlExecuterReport: sqlExecuterReport,
                 RemovedConcepts: conceptApplicationRepository.DeletedLog,
                 InsertedConcepts: conceptApplicationRepository.InsertedLog.ToList());
         }
@@ -357,7 +358,7 @@ namespace Rhetos.DatabaseGenerator.Test
             var dbUpdate = DatabaseGeneratorUpdateDatabase(oldApplications, newApplications);
 
             string executedSqlReport = string.Concat(
-                dbUpdate.SqlExecuter.ExecutedScriptsWithTransaction
+                dbUpdate.SqlExecuterReport
                     .Select(scripts => (scripts.UseTransaction ? "TRAN" : "NOTRAN") + ": " + string.Join(", ", RemoveName(scripts.Scripts)) + ". "))
                     .Replace(SqlUtility.NoTransactionTag, "")
                     .Trim();

@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Persistence;
 using System;
 
 namespace Rhetos
@@ -24,7 +25,6 @@ namespace Rhetos
     /// <summary>
     /// Represents an atomic "unit of work" pattern where all operations are executed in a single database transaction.
     /// All operations in a single unit of work are either committed together, or all rolled back.
-    /// 
     /// </summary>
     /// <remarks>
     /// See also <see cref="IPersistenceTransaction"/> interface for low-level control of the database transaction.

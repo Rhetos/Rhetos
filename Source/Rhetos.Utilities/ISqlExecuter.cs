@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Persistence;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -25,47 +26,91 @@ using System.Threading.Tasks;
 
 namespace Rhetos.Utilities
 {
+    /// <summary>
+    /// <see cref="ISqlExecuter"/> is a helper for executing SQL commands.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="ISqlExecuter"/> uses a database transaction provided by the current unit-of-work scope,
+    /// if available, from <see cref="IPersistenceTransaction"/>.
+    /// <para>
+    /// At <b>run-time</b>, this means that every database command executed in a single scope (a single web request, for example)
+    /// will be executed in a single database transaction, that will be committed or rolled back at the and of the scope.
+    /// </para>
+    /// <para>
+    /// At <b>deployment (dbupdate)</b>, the global transaction is not used
+    /// (see <see cref="PersistenceTransactionOptions.UseDatabaseTransaction"/>).
+    /// Many dbupdate components use <see cref="ISqlTransactionBatches"/> instead,
+    /// that manages transactions for batches of SQL scripts.
+    /// </para>
+    /// </remarks>
     public interface ISqlExecuter
     {
+        /// <remarks>
+        /// Executes the SQL command in the current scope's database transaction, if <see cref="PersistenceTransactionOptions.UseDatabaseTransaction"/> is set (default).
+        /// </remarks>
         void ExecuteReader(string command, Action<DbDataReader> action);
 
+        /// <remarks>
+        /// Executes the SQL command in the current scope's database transaction, if <see cref="PersistenceTransactionOptions.UseDatabaseTransaction"/> is set (default).
+        /// </remarks>
         void ExecuteSql(IEnumerable<string> commands);
 
+        /// <remarks>
+        /// Executes the SQL command in the current scope's database transaction, if <see cref="PersistenceTransactionOptions.UseDatabaseTransaction"/> is set (default).
+        /// </remarks>
+        /// <param name="beforeExecute">Intended for progress reporting. The integer argument is the index of currently executing command in <paramref name="commands"/>.</param>
+        /// <param name="afterExecute">Intended for progress reporting. The integer argument is the index of currently executed command in <paramref name="commands"/>.</param>
         void ExecuteSql(IEnumerable<string> commands, Action<int> beforeExecute, Action<int> afterExecute);
 
         /// <summary>
         /// Executes a parametrized query on the database.
         /// If you need more control on how a parameter is mapped to a database type, <see cref="DbParameter"/> can be used as a parameter.
         /// </summary>
+        /// <remarks>
+        /// Executes the SQL command in the current scope's database transaction, if <see cref="PersistenceTransactionOptions.UseDatabaseTransaction"/> is set (default).
+        /// </remarks>
         void ExecuteReaderRaw(string query, object[] parameters, Action<DbDataReader> read);
 
         /// <summary>
         /// Executes a parametrized query on the database.
         /// If you need more control on how a parameter is mapped to a database type, <see cref="DbParameter"/> can be used as a parameter.
         /// </summary>
+        /// <remarks>
+        /// Executes the SQL command in the current scope's database transaction, if <see cref="PersistenceTransactionOptions.UseDatabaseTransaction"/> is set (default).
+        /// </remarks>
         Task ExecuteReaderRawAsync(string query, object[] parameters, Action<DbDataReader> read, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Executes a parametrized command on the database.
         /// If you need more control on how a parameter is mapped to a database type, <see cref="DbParameter"/> can be used as a parameter.
         /// </summary>
+        /// <remarks>
+        /// Executes the SQL command in the current scope's database transaction, if <see cref="PersistenceTransactionOptions.UseDatabaseTransaction"/> is set (default).
+        /// </remarks>
         int ExecuteSqlRaw(string query, object[] parameters);
 
         /// <summary>
         /// Executes a parametrized command on the database.
         /// If you need more control on how a parameter is mapped to a database type, <see cref="DbParameter"/> can be used as a parameter.
         /// </summary>
+        /// <remarks>
+        /// Executes the SQL command in the current scope's database transaction, if <see cref="PersistenceTransactionOptions.UseDatabaseTransaction"/> is set (default).
+        /// </remarks>
         Task<int> ExecuteSqlRawAsync(string query, object[] parameters, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Throw an exception if database connection does not match the expected level count.
-        /// For example if it has already been committed or rolled back.
-        /// This check is specially useful in case when an database transaction
-        /// created by SQL script or stored procedure has been left unclosed by an error;
+        /// Returns open transaction count for the current SQL connection.
+        /// </summary>
+        /// <remarks>
+        /// The result can differ from expected value,
+        /// for example if the transaction has already been committed or rolled back
+        /// without and error returned to the application.
+        /// Verifying transaction count is specially useful to detect a case when another database transaction
+        /// was created by SQL script or stored procedure, and left unclosed because of some a bug in the script;
         /// it might cause silent bugs and corrupted data when the application's commit
         /// would only reduce transaction count, but not actually commit the transaction.
-        /// </summary>
-        void CheckTransactionCount(int expected);
+        /// </remarks>
+        int GetTransactionCount();
     }
 
     public static class SqlExecuterExtensions

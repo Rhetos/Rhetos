@@ -23,13 +23,14 @@ using Rhetos.Dom.DefaultConcepts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace CommonConcepts.Test
 {
     [TestClass]
     public class UnitOfWorkFactoryTest
     {
-        private const string LogActionName = "UnitOfWorkFactoryTest";
+        private static string LogActionName => MethodBase.GetCurrentMethod().DeclaringType.Name;
 
         [TestMethod]
         public void IndependantDatabaseTransaction()

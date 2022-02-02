@@ -17,22 +17,30 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.TestCommon;
 using Rhetos.Utilities;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Rhetos.Deployment.Test
 {
-    class DataMigrationScriptsExecuterAccessor : DataMigrationScriptsExecuter, ITestAccessor
+    public class FakeSqlTransactionBatches : ISqlTransactionBatches
     {
-        public DataMigrationScriptsExecuterAccessor()
-            : base(new ConsoleLogProvider(), null, null, null, null)
+        private MockSqlExecuter _mockSqlExecuter;
+
+        public FakeSqlTransactionBatches(MockSqlExecuter mockSqlExecuter)
         {
+            _mockSqlExecuter = mockSqlExecuter;
         }
 
-        public List<DataMigrationScript> FindSkipedScriptsInEachPackage(List<DataMigrationScript> oldScripts, List<DataMigrationScript> newScripts)
+        public void Execute(IEnumerable<SqlBatchScript> sqlScripts)
         {
-            return this.Invoke(nameof(FindSkipedScriptsInEachPackage), oldScripts, newScripts);
+            _mockSqlExecuter.ExecuteSql(sqlScripts.Select(script => script.Sql));
+        }
+
+        public List<string> JoinScripts(IEnumerable<string> scripts)
+        {
+            throw new NotImplementedException();
         }
     }
 }

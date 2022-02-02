@@ -24,8 +24,16 @@ namespace Rhetos.Utilities
     [DebuggerDisplay("{Name ?? CsUtility.Limit(Sql, 100)}")]
     public class SqlBatchScript
     {
+        /// <summary>
+        /// Optional.
+        /// </summary>
         public string Name { get; set; }
 
+        /// <remarks>
+        /// Scripts beginning with <see cref="SqlUtility.NoTransactionTag"/> will be recognized by <see cref="ISqlTransactionBatches"/>
+        /// and executed out of transaction. This is used for special database changes that must be executed without transaction, for example
+        /// creating a full-text search index.
+        /// </remarks>
         public string Sql { get; set; }
 
         /// <summary>

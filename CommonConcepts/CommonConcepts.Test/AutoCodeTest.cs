@@ -17,11 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Autofac.Core;
-using CommonConcepts.Test.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos;
-using Rhetos.Configuration.Autofac;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
@@ -37,7 +34,7 @@ namespace CommonConcepts.Test
     [TestClass]
     public class AutoCodeTest
     {
-        private static void DeleteOldData(UnitOfWorkScope scope)
+        private static void DeleteOldData(IUnitOfWorkScope scope)
         {
             scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                 {
@@ -683,7 +680,7 @@ namespace CommonConcepts.Test
 
             using (var scope = TestScope.Create())
             {
-                ConcurrencyUtility.CheckForParallelism(scope.Resolve<ISqlExecuter>(), threadCount);
+                ConcurrencyUtility.CheckForParallelism(scope, threadCount);
                 DeleteOldData(scope);
                 scope.CommitAndClose();
             }
@@ -776,8 +773,7 @@ namespace CommonConcepts.Test
 
             using (var scope = TestScope.Create())
             {
-                var sqlExecuter = scope.Resolve<ISqlExecuter>();
-                ConcurrencyUtility.CheckForParallelism(sqlExecuter, threadCount);
+                ConcurrencyUtility.CheckForParallelism(scope, threadCount);
                 DeleteOldData(scope);
 
                 coldStartInsert(scope.Resolve<Common.ExecutionContext>());

@@ -37,6 +37,8 @@ namespace CommonConcepts.Test
             _log = log;
         }
 
+        public int GetTransactionCount() => 1;
+
         public void ExecuteReader(string command, Action<DbDataReader> action)
         {
             _log.Add(command);
@@ -52,19 +54,19 @@ namespace CommonConcepts.Test
         public async Task ExecuteReaderRawAsync(string query, object[] parameters, Action<DbDataReader> read, CancellationToken cancellationToken = default)
         {
             _log.Add(query);
-            await _decorated.ExecuteReaderRawAsync(query, parameters, read, cancellationToken);
+            await _decorated.ExecuteReaderRawAsync(query, parameters, read, cancellationToken).ConfigureAwait(false);
         }
 
-        public void ExecuteSql(IEnumerable<string> commands, bool useTransaction)
+        public void ExecuteSql(IEnumerable<string> commands)
         {
             _log.AddRange(commands);
-            _decorated.ExecuteSql(commands, useTransaction);
+            _decorated.ExecuteSql(commands);
         }
 
-        public void ExecuteSql(IEnumerable<string> commands, bool useTransaction, Action<int> beforeExecute, Action<int> afterExecute)
+        public void ExecuteSql(IEnumerable<string> commands, Action<int> beforeExecute, Action<int> afterExecute)
         {
             _log.AddRange(commands);
-            _decorated.ExecuteSql(commands, useTransaction, beforeExecute, afterExecute);
+            _decorated.ExecuteSql(commands, beforeExecute, afterExecute);
         }
 
         public int ExecuteSqlRaw(string query, object[] parameters)

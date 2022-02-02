@@ -38,7 +38,7 @@ namespace CommonConcepts.Test
     [TestClass]
     public class FilterTest
     {
-        private static ReadCommandResult ExecuteCommand(ReadCommandInfo commandInfo, UnitOfWorkScope scope)
+        private static ReadCommandResult ExecuteCommand(ReadCommandInfo commandInfo, IUnitOfWorkScope scope)
         {
             var commands = scope.Resolve<IIndex<Type, IEnumerable<ICommandImplementation>>>();
             var readCommand = (ReadCommand)commands[typeof(ReadCommandInfo)].Single();
@@ -385,7 +385,7 @@ namespace CommonConcepts.Test
             }
         }
 
-        private static string ReportFilteredBrowse(UnitOfWorkScope scope, ReadCommandInfo readCommandInfo)
+        private static string ReportFilteredBrowse(IUnitOfWorkScope scope, ReadCommandInfo readCommandInfo)
         {
             readCommandInfo.DataSource = "TestFilter.ComposableFilterBrowse";
 
@@ -610,7 +610,7 @@ namespace CommonConcepts.Test
             }
         }
 
-        private static void TestClientRead<T>(UnitOfWorkScope scope, string expected, Func<T, object> reporter, ReadCommandInfo readCommand = null)
+        private static void TestClientRead<T>(IUnitOfWorkScope scope, string expected, Func<T, object> reporter, ReadCommandInfo readCommand = null)
             where T : class, IEntity
         {
             readCommand = readCommand ?? new ReadCommandInfo();

@@ -215,10 +215,7 @@ namespace Rhetos.DatabaseGenerator.Test
                 throw new NotImplementedException();
             }
 
-            public void CheckTransactionCount(int expected)
-            {
-                throw new NotImplementedException();
-            }
+            public int GetTransactionCount() => 1;
         }
 
         private static string Dump(IEnumerable<ConceptApplication> appliedConcepts)

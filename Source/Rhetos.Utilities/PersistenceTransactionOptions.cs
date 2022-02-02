@@ -23,17 +23,20 @@ namespace Rhetos.Utilities
     public class PersistenceTransactionOptions
     {
         /// <summary>
-        /// <list type="bullet">
-        /// <item>
-        /// If true, a database transaction is automatically created for each unit-of-work scope (a web request, for example).
+        /// <para>
+        /// If true (default), a database transaction is automatically created for each unit-of-work scope (a web request, for example).
         /// It is shared between components within that scope, such as ISqlExecuter and EntityFrameworkContext (DbContext).
-        /// </item>
-        /// <item>
+        /// </para>
+        /// <para>
         /// If false, no database transaction will be automatically created for the unit-of-work scope.
         /// ISqlExecuter will execute database command without transaction.
-        /// </item>
-        /// </list>
+        /// </para>
         /// </summary>
+        /// <remarks>
+        /// This option is intended for configuring transaction usage in an new scope created by <see cref="IUnitOfWorkFactory"/>.
+        /// Since the <see cref="PersistenceTransactionOptions"/> is singleton, make sure not to modify the global
+        /// configuration unintentionally.
+        /// </remarks>
         public bool UseDatabaseTransaction { get; set; } = true;
     }
 }

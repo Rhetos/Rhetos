@@ -19,23 +19,22 @@
 
 using Autofac;
 using Rhetos.Logging;
-using Rhetos.Persistence;
 using System;
 using System.Collections.Generic;
-using System.Data.Common;
-using System.Data.SqlClient;
 using System.Linq;
+using System.Text;
 
 namespace Rhetos.Utilities
 {
     /// <summary>
-    /// This class adds additional functionality over ISqlExecuter for executing a batch SQL scripts (custom transaction handling and reporting),
+    /// This class adds additional functionality over ISqlExecuter for executing batches of SQL scripts with custom transaction handling and reporting,
     /// while allowing ISqlExecuter implementations to focus on the database technology.
     /// </summary>
-    public class SqlTransactionBatches
+    public class SqlTransactionBatches : ISqlTransactionBatches
     {
         private readonly SqlTransactionBatchesOptions _options;
         private readonly IUnitOfWorkFactory _unitOfWorkFactory;
+        private readonly Lazy<ISqlExecuter> _sqlExecuter;
         private readonly PersistenceTransactionOptions _persistenceTransactionOptions;
         private readonly IUserInfo _userInfo;
         private readonly ILogger _logger;
@@ -44,6 +43,7 @@ namespace Rhetos.Utilities
         public SqlTransactionBatches(
             SqlTransactionBatchesOptions options,
             IUnitOfWorkFactory unitOfWorkFactory,
+            Lazy<ISqlExecuter> sqlExecuter,
             PersistenceTransactionOptions persistenceTransactionOptions,
             IUserInfo userInfo,
             ILogProvider logProvider,
@@ -51,22 +51,13 @@ namespace Rhetos.Utilities
         {
             _options = options;
             _unitOfWorkFactory = unitOfWorkFactory;
+            _sqlExecuter = sqlExecuter;
             _persistenceTransactionOptions = persistenceTransactionOptions;
             _userInfo = userInfo;
             _logger = logProvider.GetLogger(nameof(SqlTransactionBatches));
             _delayedLogger = delayedLogProvider.GetLogger(nameof(SqlTransactionBatches));
         }
 
-        /// <summary>
-        /// The scripts are executed in a <b>separate database connection</b> (not in current scope),
-        /// and <b>committed immediately</b> (changes will stay in database even if the current scope fails and rolls back).
-        /// <list type="number">
-        /// <item>Splits the scripts by the SQL batch delimiter ("GO", for Microsoft SQL Server). See <see cref="SqlUtility.SplitBatches(string)"/>.</item>
-        /// <item>Detects and applies the transaction usage tag. See <see cref="SqlUtility.NoTransactionTag"/> and <see cref="SqlUtility.ScriptSupportsTransaction(string)"/>.</item>
-        /// <item>Reports progress (Info level) after each minute.</item>
-        /// <item>Prefixes each SQL script with a comment containing the script's name.</item>
-        /// </list>
-        /// </summary>
         public void Execute(IEnumerable<SqlBatchScript> sqlScripts)
         {
             var scriptParts = sqlScripts
@@ -137,15 +128,30 @@ namespace Rhetos.Utilities
                         ? script.Sql
                         : "--Name: " + script.Name.Replace("\r", " ").Replace("\n", " ") + "\r\n" + script.Sql);
 
-                using (var scope = CreateUnitOfWorkScope(sqlBatch.UseTransaction))
-                {
-                    var scopeSqlExecuter = scope.Resolve<ISqlExecuter>();
-                    scopeSqlExecuter.ExecuteSql(scriptsWithName, initializeProgress, reportProgress);
-                    scopeSqlExecuter.CheckTransactionCount(sqlBatch.UseTransaction ? 1 : 0);
-                    scope.CommitAndClose();
-                }
+                Execute(
+                    (ISqlExecuter sqlExecuter) => sqlExecuter.ExecuteSql(scriptsWithName, initializeProgress, reportProgress),
+                    sqlBatch.UseTransaction,
+                    sqlBatch.Scripts);
 
                 previousBatchesCount += sqlBatch.Scripts.Count;
+            }
+        }
+
+        private void Execute(Action<ISqlExecuter> sqlExecuterAction, bool useTransaction, IList<SqlBatchScript> errorContext)
+        {
+            if (_options.ExecuteOnNewConnection || !useTransaction)
+            {
+                using (var scope = CreateUnitOfWorkScope(useTransaction))
+                {
+                    var scopeSqlExecuter = scope.Resolve<ISqlExecuter>();
+                    sqlExecuterAction.Invoke(scopeSqlExecuter);
+                    CheckTransactionCount(scopeSqlExecuter, useTransaction ? 1 : 0, errorContext);
+                    scope.CommitAndClose();
+                }
+            }
+            else
+            {
+                sqlExecuterAction.Invoke(_sqlExecuter.Value);
             }
         }
 
@@ -161,11 +167,35 @@ namespace Rhetos.Utilities
             });
         }
 
-        /// <summary>
-        /// Combines multiple SQL scripts to a single one.
-        /// Use only for DML SQL scripts to avoid SQL syntax errors on DDL commands that need to stay in a separate scripts.
-        /// Scripts are joined to groups, respecting the configuration settings for the limit on total joined script size and count.
-        /// </summary>
+        private void CheckTransactionCount(ISqlExecuter scopeSqlExecuter, int expectedTranCount, IList<SqlBatchScript> errorContext)
+        {
+            var tranCount = scopeSqlExecuter.GetTransactionCount();
+            if (tranCount != expectedTranCount)
+            {
+                string msg = "Database transaction state has been unexpectedly modified in SQL commands."
+                    + $" Transaction count is {tranCount}, expected value is {expectedTranCount}.";
+
+                if (errorContext != null)
+                {
+                    var log = new StringBuilder(msg);
+                    msg += " See error log for more information.";
+
+                    log.AppendLine($" Executed {errorContext.Count} commands:");
+                    for (int i = 0; i < Math.Min(errorContext.Count, _options.ErrorReportCommandsLimit); i++)
+                    {
+                        var c = errorContext[i];
+                        log.AppendLine($"{i}: {(!string.IsNullOrEmpty(c.Name) ? c.Name : c.Sql.Limit(_options.ErrorReportScriptSizeLimit, appendTotalLengthInfo: true))}");
+                    }
+                    if (errorContext.Count > _options.ErrorReportCommandsLimit)
+                        log.AppendLine($"... (total {errorContext.Count} scripts)");
+
+                    _logger.Error(() => log.ToString());
+                }
+
+                throw new FrameworkException(msg);
+            }
+        }
+
         public List<string> JoinScripts(IEnumerable<string> scripts)
         {
             var joinedScripts = new List<string>();
