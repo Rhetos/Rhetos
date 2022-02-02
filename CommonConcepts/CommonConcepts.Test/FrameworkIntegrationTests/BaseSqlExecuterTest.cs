@@ -65,7 +65,7 @@ namespace Rhetos.Persistence.Test
             var logProvider = scope.Resolve<ILogProvider>();
             var userInfo = scope.Resolve<IUserInfo>();
             var persistenceTransaction = scope.Resolve<IPersistenceTransaction>();
-            return new BaseSqlExecuter(logProvider, persistenceTransaction);
+            return new BaseSqlExecuter(logProvider, persistenceTransaction, new DatabaseOptions());
         }
 
         [TestMethod]

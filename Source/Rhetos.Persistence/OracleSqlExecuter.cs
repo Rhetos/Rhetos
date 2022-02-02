@@ -37,8 +37,9 @@ namespace Rhetos.Persistence
         public OracleSqlExecuter(ConnectionString connectionString, 
             ILogProvider logProvider, 
             IUserInfo userInfo, 
-            IPersistenceTransaction persistenceTransaction) 
-            : base(logProvider, persistenceTransaction)
+            IPersistenceTransaction persistenceTransaction,
+            DatabaseOptions databaseOptions) 
+            : base(logProvider, persistenceTransaction, databaseOptions)
         {
             _connectionString = connectionString;
             _userInfo = userInfo;
@@ -95,7 +96,7 @@ namespace Rhetos.Persistence
 
                     transaction = connection.BeginTransaction();
                     com = connection.CreateCommand();
-                    com.CommandTimeout = SqlUtility.SqlCommandTimeout;
+                    com.CommandTimeout = _databaseOptions.SqlCommandTimeout;
                     com.Transaction = transaction;
                 }
                 catch (OracleException ex)

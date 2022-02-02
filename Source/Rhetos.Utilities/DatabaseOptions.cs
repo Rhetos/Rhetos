@@ -17,6 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System.Data.Common;
+
 namespace Rhetos.Utilities
 {
     /// <summary>
@@ -25,6 +27,10 @@ namespace Rhetos.Utilities
     [Options("Rhetos:Database")]
     public class DatabaseOptions
     {
+        /// <summary>
+        /// The time to wait (in seconds) for each SQL command to execute, <see cref="DbCommand.CommandTimeout"/>.
+        /// After the timeout, the command will be terminated and an error returned.
+        /// </summary>
         public int SqlCommandTimeout { get; set; } = 30;
     }
 }

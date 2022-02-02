@@ -39,8 +39,8 @@ namespace Rhetos.Persistence
         /// (see IUnitOfWorkFactory), with registered IPersistenceTransaction implementation,
         /// and then resolve ISqlExecuter from the scope.
         /// </remarks>
-        public MsSqlExecuter(ILogProvider logProvider, IPersistenceTransaction persistenceTransaction)
-            : base(logProvider, persistenceTransaction)
+        public MsSqlExecuter(ILogProvider logProvider, IPersistenceTransaction persistenceTransaction, DatabaseOptions databaseOptions)
+            : base(logProvider, persistenceTransaction, databaseOptions)
         {
         }
 
@@ -95,7 +95,7 @@ namespace Rhetos.Persistence
         {
             DbCommand command = _persistenceTransaction.Connection.CreateCommand();
             command.Transaction = _persistenceTransaction.Transaction;
-            command.CommandTimeout = SqlUtility.SqlCommandTimeout;
+            command.CommandTimeout = _databaseOptions.SqlCommandTimeout;
 
             try
             {

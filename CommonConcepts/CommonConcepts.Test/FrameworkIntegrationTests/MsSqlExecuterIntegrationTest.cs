@@ -51,7 +51,7 @@ namespace Rhetos.Persistence.Test
                 testUser,
                 new PersistenceTransactionOptions()))
             {
-                var sqlExecuter = new MsSqlExecuter(new ConsoleLogProvider(), persistenceTransaction);
+                var sqlExecuter = new MsSqlExecuter(new ConsoleLogProvider(), persistenceTransaction, new DatabaseOptions());
                 sqlExecuterAction.Invoke(sqlExecuter);
                 if (commit)
                     persistenceTransaction.CommitAndClose();

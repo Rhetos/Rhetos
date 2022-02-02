@@ -39,14 +39,16 @@ namespace Rhetos.Persistence
     public class BaseSqlExecuter
     {
         protected readonly IPersistenceTransaction _persistenceTransaction;
+        protected readonly DatabaseOptions _databaseOptions;
         protected readonly ILogger _logger;
         protected readonly ILogger _performanceLogger;
 
-        public BaseSqlExecuter(ILogProvider logProvider, IPersistenceTransaction persistenceTransaction)
+        public BaseSqlExecuter(ILogProvider logProvider, IPersistenceTransaction persistenceTransaction, DatabaseOptions databaseOptions)
         {
             _logger = logProvider.GetLogger(GetType().Name);
             _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _persistenceTransaction = persistenceTransaction;
+            _databaseOptions = databaseOptions;
         }
 
         public int ExecuteSqlRaw(string query, object[] parameters)
@@ -81,6 +83,7 @@ namespace Rhetos.Persistence
         {
             var command = _persistenceTransaction.Connection.CreateCommand();
             command.Transaction = _persistenceTransaction.Transaction;
+            command.CommandTimeout = _databaseOptions.SqlCommandTimeout;
             PrepareCommandTextAndParameters(command, sql, parameters);
             return command;
         }
