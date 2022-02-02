@@ -18,6 +18,7 @@
 */
 
 using Rhetos.Persistence;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -52,6 +53,7 @@ namespace Rhetos.Dom.DefaultConcepts
 			using (var dbCommand = _persistenceTransaction.Connection.CreateCommand())
 			{
 				dbCommand.Transaction = _persistenceTransaction.Transaction;
+				dbCommand.CommandTimeout = SqlUtility.SqlCommandTimeout;
 
 				dbCommand.CommandText = commandTextBuilder.ToString();
 				foreach (var parameter in commandParameters)
