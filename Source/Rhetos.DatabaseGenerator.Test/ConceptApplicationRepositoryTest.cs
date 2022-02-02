@@ -135,7 +135,7 @@ namespace Rhetos.DatabaseGenerator.Test
                 Expected = expected;
             }
 
-            public void ExecuteReader(string command, Action<DbDataReader> action)
+            public void ExecuteReaderRaw(string command, object[] parameters, Action<DbDataReader> action)
             {
                 using var table = new DataTable();
                 var sqlSplit = new Regex(@"\W+").Split(command);
@@ -183,21 +183,6 @@ namespace Rhetos.DatabaseGenerator.Test
                     ca.CreateQuery,
                     ca.RemoveQuery ?? "",
                     ca.OldCreationOrder);
-            }
-
-            public void ExecuteSql(IEnumerable<string> commands)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void ExecuteSql(IEnumerable<string> commands, Action<int> beforeExecute, Action<int> afterExecute)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void ExecuteReaderRaw(string query, object[] parameters, Action<DbDataReader> read)
-            {
-                throw new NotImplementedException();
             }
 
             public Task ExecuteReaderRawAsync(string query, object[] parameters, Action<DbDataReader> read, CancellationToken cancellationToken = default)

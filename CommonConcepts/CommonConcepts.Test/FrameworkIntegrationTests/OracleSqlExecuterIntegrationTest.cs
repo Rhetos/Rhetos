@@ -31,6 +31,45 @@ namespace Rhetos.Persistence.Test
     [TestClass]
     public class OracleSqlExecuterIntegrationTest
     {
+        class SqlScope : IDisposable
+        {
+            public OracleSqlExecuter SqlExecuter { get; }
+
+            private readonly IPersistenceTransaction _persistenceTransaction;
+
+            private bool _disposedValue;
+
+            public SqlScope(string connectionString = null, IUserInfo user = null)
+            {
+                _persistenceTransaction = new PersistenceTransaction(
+                    new ConsoleLogProvider(),
+                    connectionString ?? SqlUtility.ConnectionString,
+                    user ?? new NullUserInfo(),
+                    new PersistenceTransactionOptions(),
+                    new OracleSqlUtility());
+
+                SqlExecuter = new OracleSqlExecuter(new ConsoleLogProvider(), _persistenceTransaction, new DatabaseOptions());
+            }
+
+            protected virtual void Dispose(bool disposing)
+            {
+                if (!_disposedValue)
+                {
+                    if (disposing)
+                    {
+                        _persistenceTransaction.Dispose();
+                    }
+                    _disposedValue = true;
+                }
+            }
+
+            public void Dispose()
+            {
+                Dispose(disposing: true);
+                GC.SuppressFinalize(this);
+            }
+        }
+
         [TestInitialize]
         public void CheckDatabaseIsOracle()
         {
@@ -44,10 +83,11 @@ namespace Rhetos.Persistence.Test
         [ClassCleanup]
         public static void MyTestCleanup()
         {
+            using var sqlScope = new SqlScope();
             try { TestUtility.CheckDatabaseAvailability("Oracle"); }
             catch { return; }
 
-            GetSqlExecuter().ExecuteSql(new[] { @"declare
+            sqlScope.SqlExecuter.ExecuteSql(new[] { @"declare
   c integer;
 begin
   select count(*) into c from SYS.user$ where Name = 'RHETOSUNITTEST';
@@ -59,14 +99,10 @@ begin
 end;" });
         }
 
-        static OracleSqlExecuter GetSqlExecuter()
-        {
-            return new OracleSqlExecuter(SqlUtility.ConnectionString, new ConsoleLogProvider(), new NullUserInfo(), null, new DatabaseOptions());
-        }
-
         private string GetRandomTableName()
         {
-            GetSqlExecuter().ExecuteSql(new[] {
+            using var sqlScope = new SqlScope();
+            sqlScope.SqlExecuter.ExecuteSql(new[] {
 @"declare
   c integer;
 begin
@@ -89,32 +125,34 @@ end;" });
         [TestMethod]
         public void ExecuteSql_SaveLoadTest()
         {
-            OracleSqlExecuter sqlExecuter = GetSqlExecuter();
+            using var sqlScope = new SqlScope();
             string table = GetRandomTableName();
 
-            sqlExecuter.ExecuteSql(new[]
+            sqlScope.SqlExecuter.ExecuteSql(new[]
                 {
                     "CREATE TABLE " + table + " ( A INTEGER )",
                     "INSERT INTO " + table + " VALUES (123)"
                 });
             int actual = 0;
-            sqlExecuter.ExecuteReader("SELECT * FROM " + table, dr => actual = dr.GetInt32(0));
+            sqlScope.SqlExecuter.ExecuteReader("SELECT * FROM " + table, dr => actual = dr.GetInt32(0));
             Assert.AreEqual(123, actual);
         }
 
         [TestMethod]
         public void ExecuteSql_SimpleSqlError()
         {
+            using var sqlScope = new SqlScope();
             TestUtility.ShouldFail(
-                () => GetSqlExecuter().ExecuteSql(new[] { @"SELECT 2/0 FROM DUAL" }),
+                () => sqlScope.SqlExecuter.ExecuteSql(new[] { @"SELECT 2/0 FROM DUAL" }),
                 "divisor is equal to zero");
         }
 
         [TestMethod]
         public void ExecuteSql_ErrorDescription()
         {
+            using var sqlScope = new SqlScope();
             TestUtility.ShouldFail(
-                () => GetSqlExecuter().ExecuteSql(new[] { @"SELECT 1/0 FROM DUAL" }),
+                () => sqlScope.SqlExecuter.ExecuteSql(new[] { @"SELECT 1/0 FROM DUAL" }),
                      "divisor is equal to zero", "1476");
             /*
                 Error starting at line 1 in command:
@@ -130,8 +168,9 @@ end;" });
         [TestMethod]
         public void ExecuteSql_ErrorDescription2()
         {
+            using var sqlScope = new SqlScope();
             TestUtility.ShouldFail(
-                () => GetSqlExecuter().ExecuteSql(new[] {
+                () => sqlScope.SqlExecuter.ExecuteSql(new[] {
 @"BEGIN
   RAISE_APPLICATION_ERROR(-20000, 'abc', TRUE);
 END;" }),
@@ -160,8 +199,8 @@ END;" }),
             string dataSource = "localhost:1521/xe";
             string connectionString = @"User Id=" + userId + ";Password=" + password + ";Data Source=" + dataSource + ";";
 
-            OracleSqlExecuter sqlExecuter = new OracleSqlExecuter(connectionString, new ConsoleLogProvider(), new NullUserInfo(), null, new DatabaseOptions());
-            var ex = TestUtility.ShouldFail(() => sqlExecuter.ExecuteSql(new[] { "SELECT 123 FROM DUAL" }), userId, dataSource);
+            using var sqlScope = new SqlScope(connectionString);
+            var ex = TestUtility.ShouldFail(() => sqlScope.SqlExecuter.ExecuteSql(new[] { "SELECT 123 FROM DUAL" }), userId, dataSource);
             Assert.IsFalse(ex.ToString().Contains(password));
         }
 
@@ -170,9 +209,10 @@ END;" }),
         {
             string table = GetRandomTableName();
 
-            GetSqlExecuter().ExecuteSql(new[] { "CREATE TABLE " + table + " ( A INTEGER )" });
+            using var sqlScope = new SqlScope();
+            sqlScope.SqlExecuter.ExecuteSql(new[] { "CREATE TABLE " + table + " ( A INTEGER )" });
             AssertRowCount(0, table, "initialization");
-            GetSqlExecuter().ExecuteSql(new[] { "INSERT INTO " + table + " VALUES (123)" });
+            sqlScope.SqlExecuter.ExecuteSql(new[] { "INSERT INTO " + table + " VALUES (123)" });
 
             var sw = Stopwatch.StartNew();
             AssertRowCount(1, table, "after insert");
@@ -185,10 +225,11 @@ END;" }),
         {
             string table = GetRandomTableName();
 
-            GetSqlExecuter().ExecuteSql(new[] { "CREATE TABLE " + table + " ( A INTEGER )" });
+            using var sqlScope = new SqlScope();
+            sqlScope.SqlExecuter.ExecuteSql(new[] { "CREATE TABLE " + table + " ( A INTEGER )" });
             AssertRowCount(0, table, "initialization");
             TestUtility.ShouldFail(
-                () => GetSqlExecuter().ExecuteSql(new[] {
+                () => sqlScope.SqlExecuter.ExecuteSql(new[] {
                     "INSERT INTO " + table + " VALUES (123)",
                     "INSERT INTO " + table + " VALUES ('xxx')" }),
                 "invalid number");
@@ -202,24 +243,26 @@ END;" }),
         private static void AssertRowCount(int expectedCount, string table, string msg)
         {
             int cnt = -1;
-            GetSqlExecuter().ExecuteReader("SELECT COUNT(*) FROM " + table, reader => cnt = reader.GetInt32(0));
+            using var sqlScope = new SqlScope();
+            sqlScope.SqlExecuter.ExecuteReader("SELECT COUNT(*) FROM " + table, reader => cnt = reader.GetInt32(0));
             Assert.AreEqual(expectedCount, cnt, msg);
         }
 
         [TestMethod]
         public void ExecuteSql_StopExecutingScriptsAfterError()
         {
+            using var sqlScope = new SqlScope();
             string table = GetRandomTableName();
             try
             {
-                GetSqlExecuter().ExecuteSql(new[] {
+                sqlScope.SqlExecuter.ExecuteSql(new[] {
                     "create table forcederror",
                     "create table " + table + " ( a integer )" });
             }
             catch
             {
             }
-            GetSqlExecuter().ExecuteSql(new[] { "create table " + table + " ( a integer )" }); // Everything created in the first ExecuteSql call should have been rollbacked.
+            sqlScope.SqlExecuter.ExecuteSql(new[] { "create table " + table + " ( a integer )" }); // Everything created in the first ExecuteSql call should have been rollbacked.
         }
 
         [TestMethod]
@@ -227,12 +270,13 @@ END;" }),
         {
             string table = GetRandomTableName();
 
-            GetSqlExecuter().ExecuteSql(new[] { "CREATE TABLE " + table + " ( A INTEGER )" });
+            using var sqlScope = new SqlScope();
+            sqlScope.SqlExecuter.ExecuteSql(new[] { "CREATE TABLE " + table + " ( A INTEGER )" });
 
             AssertRowCount(0, table, "initialization");
 
             TestUtility.ShouldFail(
-                () => GetSqlExecuter().ExecuteSql(new[] {
+                () => sqlScope.SqlExecuter.ExecuteSql(new[] {
                     "INSERT INTO " + table + " VALUES (123)",
                     "ROLLBACK",
                     "INSERT INTO " + table + " VALUES (456)",
@@ -245,9 +289,9 @@ END;" }),
         [TestMethod]
         public void SendUserInfoInSqlContext_NoUser()
         {
-            var sqlExecuter = new OracleSqlExecuter(SqlUtility.ConnectionString, new ConsoleLogProvider(), new NullUserInfo(), null, new DatabaseOptions());
+            using var sqlScope = new SqlScope();
             var result = new List<object>();
-            sqlExecuter.ExecuteReader("SELECT SYS_CONTEXT('USERENV','CLIENT_INFO') FROM DUAL", reader => result.Add(reader[0]));
+            sqlScope.SqlExecuter.ExecuteReader("SELECT SYS_CONTEXT('USERENV','CLIENT_INFO') FROM DUAL", reader => result.Add(reader[0]));
             Console.WriteLine(result.Single());
             Assert.AreEqual(typeof(DBNull), result.Single().GetType());
         }
@@ -269,10 +313,10 @@ END;" }),
                                    UserName = "Bob",
                                    Workstation = "HAL9000"
                                };
-            var sqlExecuter = new OracleSqlExecuter(SqlUtility.ConnectionString, new ConsoleLogProvider(), testUser, null, new DatabaseOptions());
+            using var sqlScope = new SqlScope(user: testUser);
             var result = new List<string>();
 
-            sqlExecuter.ExecuteReader(@"SELECT SYS_CONTEXT('USERENV','CLIENT_INFO') FROM DUAL", reader => result.Add(reader[0].ToString()));
+            sqlScope.SqlExecuter.ExecuteReader(@"SELECT SYS_CONTEXT('USERENV','CLIENT_INFO') FROM DUAL", reader => result.Add(reader[0].ToString()));
 
             string clientInfo = result.Single();
             TestUtility.AssertContains(clientInfo, testUser.UserName, "CLIENT_INFO should contain username.");
@@ -289,13 +333,13 @@ END;" }),
                 UserName = "Bob",
                 Workstation = "HAL9000"
             };
-            var sqlExecuter = new OracleSqlExecuter(SqlUtility.ConnectionString, new ConsoleLogProvider(), testUser, null, new DatabaseOptions());
+            using var sqlScope = new SqlScope(user: testUser);
             string table = GetRandomTableName();
             var result = new List<string>();
 
-            sqlExecuter.ExecuteSql(new [] { @"CREATE TABLE " + table + " AS SELECT SYS_CONTEXT('USERENV','CLIENT_INFO') ClientInfo FROM DUAL" });
+            sqlScope.SqlExecuter.ExecuteSql(new [] { @"CREATE TABLE " + table + " AS SELECT SYS_CONTEXT('USERENV','CLIENT_INFO') ClientInfo FROM DUAL" });
 
-            sqlExecuter.ExecuteReader(@"SELECT * FROM " + table, reader => result.Add(reader[0].ToString()));
+            sqlScope.SqlExecuter.ExecuteReader(@"SELECT * FROM " + table, reader => result.Add(reader[0].ToString()));
             var clientInfo = result.Single();
             TestUtility.AssertContains(clientInfo, testUser.UserName, "CLIENT_INFO should contain username.");
             TestUtility.AssertContains(clientInfo, testUser.Workstation, "CLIENT_INFO should contain client workstation.");
@@ -306,9 +350,10 @@ END;" }),
         public void ExecuteSql_CaseInsenitive()
         {
             Console.WriteLine("NationalLanguage: " + SqlUtility.NationalLanguage);
+            using var sqlScope = new SqlScope();
 
             string table = GetRandomTableName();
-            var sqlExecuter = GetSqlExecuter();
+            var sqlExecuter = sqlScope.SqlExecuter;
 
             sqlExecuter.ExecuteSql(new[] {
                 "CREATE TABLE " + table + " ( S NVARCHAR2(256) )",
@@ -330,7 +375,7 @@ END;" }),
                 " (for example Rhetos.Oracle.GENERIC_M_CI or Rhetos.Oracle.XGERMAN_CI).");
 
             result.Clear();
-            sqlExecuter = new OracleSqlExecuter(SqlUtility.ConnectionString, new ConsoleLogProvider(), new NullUserInfo(), null, new DatabaseOptions());
+            sqlExecuter = sqlScope.SqlExecuter;
             sqlExecuter.ExecuteReader("SELECT * FROM " + table + " WHERE S LIKE 'a%'",
                 reader => result.Add(SqlUtility.EmptyNullString(reader, 0)));
 

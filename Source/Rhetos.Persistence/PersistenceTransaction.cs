@@ -22,7 +22,6 @@ using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
 
@@ -34,6 +33,7 @@ namespace Rhetos.Persistence
         private readonly string _connectionString;
         private readonly IUserInfo _userInfo;
         private readonly PersistenceTransactionOptions _persistenceTransactionOptions;
+        private readonly ISqlUtility _sqlUtility;
         private readonly int _persistenceTransactionId;
 
         private DbConnection _connection;
@@ -43,12 +43,18 @@ namespace Rhetos.Persistence
         private bool _commitOnDispose;
         static int _counter = 0;
 
-        public PersistenceTransaction(ILogProvider logProvider, ConnectionString connectionString, IUserInfo userInfo, PersistenceTransactionOptions persistenceTransactionOptions)
+        public PersistenceTransaction(
+            ILogProvider logProvider,
+            ConnectionString connectionString,
+            IUserInfo userInfo,
+            PersistenceTransactionOptions persistenceTransactionOptions,
+            ISqlUtility sqlUtility)
         {
             _logger = logProvider.GetLogger(GetType().Name);
             _connectionString = connectionString;
             _userInfo = userInfo;
             _persistenceTransactionOptions = persistenceTransactionOptions;
+            _sqlUtility = sqlUtility;
             _persistenceTransactionId = Interlocked.Increment(ref _counter);
         }
 
@@ -196,25 +202,8 @@ namespace Rhetos.Persistence
                 if (_connection == null)
                 {
                     _logger.Trace(() => "Opening connection (" + _persistenceTransactionId + ").");
-                    _connection = new SqlConnection(_connectionString);
 
-                    try
-                    {
-                        _connection.Open();
-                        if (_userInfo.IsUserRecognized)
-                        {
-                            var sqlCommand = MsSqlUtility.SetUserContextInfoQuery(_userInfo);
-                            sqlCommand.Connection = _connection;
-                            sqlCommand.ExecuteNonQuery();
-                        }
-                    }
-                    catch (SqlException ex)
-                    {
-                        var csb = new SqlConnectionStringBuilder(_connectionString);
-                        string secutiryInfo = csb.IntegratedSecurity ? $"integrated security account '{Environment.UserName}'" : $"SQL login '{csb.UserID}'";
-                        string msg = $"Could not connect to server '{csb.DataSource}', database '{csb.InitialCatalog}' using {secutiryInfo}.";
-                        throw new FrameworkException(msg, ex);
-                    }
+                    _connection = _sqlUtility.CreateConnection(_connectionString, _userInfo);
 
                     _logger.Trace(() => "Beginning transaction (" + _persistenceTransactionId + ").");
                     if (_persistenceTransactionOptions.UseDatabaseTransaction)

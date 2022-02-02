@@ -49,7 +49,8 @@ namespace Rhetos.Persistence.Test
                 new ConsoleLogProvider(),
                 connectionString,
                 testUser,
-                new PersistenceTransactionOptions()))
+                new PersistenceTransactionOptions(),
+                new MsSqlUtility()))
             {
                 var sqlExecuter = new MsSqlExecuter(new ConsoleLogProvider(), persistenceTransaction, new DatabaseOptions());
                 sqlExecuterAction.Invoke(sqlExecuter);
@@ -361,22 +362,30 @@ raiserror('fff', 18, 118)"
         [TestMethod]
         public void ConsistentRead()
         {
-            var tests = new (string Query, string Parameter)[]
+            var tests = new (string Query, string Parameter, string ExpectedReport)[]
             {
-                ("WAITFOR DELAY '00:00:01'", ""),
-                ("SELECT ClaimRight FROM Common.Claim WHERE ClaimResource = {0} ORDER BY test1", "Common.Claim"),
-                ("SELECT ClaimRight FROM Common.Claim WHERE ClaimResource = {0} ORDER BY 1", "Common.Claim"),
-            };
+                ("WAITFOR DELAY '00:00:01'", "",
+                    @"Result: 
+                    Log:
+                    [Trace] MsSqlExecuter: Executing reader: WAITFOR DELAY '00:00:01'
+                    [Info] Performance.MsSqlExecuter: 00:00:01.*ms WAITFOR DELAY '00:00:01'"),
 
-            var msSqlExecuterReport = new List<string>();
-            var baseSqlExecuterReport = new List<string>();
+                ("SELECT ClaimRight FROM Common.Claim WHERE ClaimResource = {0} ORDER BY test1", "Common.Claim",
+                    @"Result: Rhetos.FrameworkException: SqlException has occurred: Msg 207, Level 16, State 1, Line 1: Invalid column name 'test1'.
+                    Log:
+                    [Trace] MsSqlExecuter: Executing reader: SELECT ClaimRight FROM Common.Claim WHERE ClaimResource = {0} ORDER BY test1
+                    [Error] MsSqlExecuter: Unable to execute SQL query:
+                    SELECT ClaimRight FROM Common.Claim WHERE ClaimResource = @__p0 ORDER BY test1"),
+
+                ("SELECT ClaimRight FROM Common.Claim WHERE ClaimResource = {0} ORDER BY 1", "Common.Claim",
+                    @"Result: Edit, New, Read, Remove
+                    Log:
+                    [Trace] MsSqlExecuter: Executing reader: SELECT ClaimRight FROM Common.Claim WHERE ClaimResource = {0} ORDER BY 1"),
+            };
 
             foreach (var test in tests)
             {
-                string title = $"## Testing [{test.Query}], parameter [{test.Parameter}].";
-                Console.WriteLine(title);
-                msSqlExecuterReport.Add(Environment.NewLine + title);
-                baseSqlExecuterReport.Add(Environment.NewLine + title);
+                Console.WriteLine($"## Testing [{test.Query}], parameter [{test.Parameter}].");
 
                 var log = new List<string>();
                 using (var scope = TestScope.Create(builder => builder.ConfigureLogMonitor(log)))
@@ -384,24 +393,25 @@ raiserror('fff', 18, 118)"
                     Assert.IsNotNull(scope.Resolve<IPersistenceTransaction>().Connection); // Initialize transaction to avoid doing it on first test and not on second.
                     var sqlExecuter = scope.Resolve<ISqlExecuter>();
 
-                    var msSqlExecuterResult = TestSqlReader(
+                    string simpleSqlExecuterReport = TestSqlReader(
                         read => sqlExecuter.ExecuteReader(string.Format(test.Query, SqlUtility.QuoteText(test.Parameter)), read),
                         log);
-                    msSqlExecuterReport.Add(msSqlExecuterResult);
 
-                    var baseSqlExecuterResult = TestSqlReader(
+                    string parametrizedSqlExecuterReport = TestSqlReader(
                         read => sqlExecuter.ExecuteReaderRaw(test.Query, new[] { test.Parameter }, read),
                         log);
-                    baseSqlExecuterReport.Add(baseSqlExecuterResult);
 
-                    Console.WriteLine(msSqlExecuterResult);
+                    Assert.AreEqual(
+                        CleanupIndent(test.ExpectedReport),
+                        CleanupMilliseconds(parametrizedSqlExecuterReport),
+                        $"Testing expected report: '{test.Query}'");
+
+                    Assert.AreEqual(
+                        CleanupSqlExecuterLog(simpleSqlExecuterReport),
+                        CleanupSqlExecuterLog(parametrizedSqlExecuterReport),
+                        $"Testing same report: '{test.Query}'");
                 }
             }
-
-            Assert.AreEqual(
-                CleanupSqlExecuterLog(string.Join(Environment.NewLine, msSqlExecuterReport)),
-                CleanupSqlExecuterLog(string.Join(Environment.NewLine, baseSqlExecuterReport)),
-                $"{nameof(msSqlExecuterReport)} result does not match {nameof(baseSqlExecuterReport)}.");
         }
 
         private static string TestSqlReader(Action<Action<DbDataReader>> executeReader, List<string> log)
@@ -432,17 +442,21 @@ raiserror('fff', 18, 118)"
             return "Result: " + queryResult + Environment.NewLine + "Log:" + Environment.NewLine + string.Join(Environment.NewLine, log.Take(lastSizeAfterReader.Value));
         }
 
+        private static string CleanupIndent(string report) => indentRegex.Replace(report, "");
+
+        private static Regex indentRegex = new Regex(@"^\s+", RegexOptions.Multiline);
+
+        private static string CleanupMilliseconds(string report) => subSecondDigitsRegex.Replace(report, "*ms");
+
         private static string CleanupSqlExecuterLog(string report)
         {
             // Performance log includes milliseconds that are not reproducible.
             report = subSecondDigitsRegex.Replace(report, "*ms");
 
-            // MsSqlExecuter's method supports multiple SQL commands, hence the additional information in log.
-            report = report.Replace("[Trace] MsSqlExecuter: Executing 1 commands.\r\n", "");
-
             // MsSqlExecuter's method does not support parameters.
-            report = sqlStringRegex.Replace(report, "*param");
-            report = report.Replace("{0}", "*param");
+            report = sqlStringRegex.Replace(report, "*param"); // Parameters inserted as literals.
+            report = report.Replace("{0}", "*param"); // Input parameters provided to ISqlExecuer.
+            report = report.Replace("@__p0", "*param"); // DbParameters prepared by BaseSqlExecuter.
 
             return report;
         }
@@ -454,22 +468,30 @@ raiserror('fff', 18, 118)"
         [TestMethod]
         public void ConsistentExecute()
         {
-            var tests = new (string Query, string Parameter)[]
+            var tests = new (string Query, string Parameter, string ExpectedReport)[]
             {
-                ("WAITFOR DELAY '00:00:01'", ""),
-                ("PRINT test1", "test2"),
-                ("PRINT {0}", "test3"),
-            };
+                ("WAITFOR DELAY '00:00:01'", "",
+                    @"Result: 
+                    Log:
+                    [Trace] MsSqlExecuter: Executing command: WAITFOR DELAY '00:00:01'
+                    [Info] Performance.MsSqlExecuter: 00:00:01.*ms WAITFOR DELAY '00:00:01'"),
 
-            var msSqlExecuterReport = new List<string>();
-            var baseSqlExecuterReport = new List<string>();
+                ("PRINT test1", "test2",
+                    @"Result: Rhetos.FrameworkException: SqlException has occurred: Msg 128, Level 15, State 1, Line 1: The name ""test1"" is not permitted in this context. Valid expressions are constants, constant expressions, and (in some contexts) variables. Column names are not permitted.
+                        Log:
+                        [Trace] MsSqlExecuter: Executing command: PRINT test1
+                        [Error] MsSqlExecuter: Unable to execute SQL query:
+                        PRINT test1"),
+
+                ("PRINT {0}", "test3",
+                    @"Result: 
+                    Log:
+                    [Trace] MsSqlExecuter: Executing command: PRINT {0}"),
+            };
 
             foreach (var test in tests)
             {
-                string title = $"## Testing [{test.Query}], parameter [{test.Parameter}].";
-                Console.WriteLine(title);
-                msSqlExecuterReport.Add(Environment.NewLine + title);
-                baseSqlExecuterReport.Add(Environment.NewLine + title);
+                Console.WriteLine($"## Testing [{test.Query}], parameter [{test.Parameter}].");
 
                 var log = new List<string>();
                 using (var scope = TestScope.Create(builder => builder.ConfigureLogMonitor(log)))
@@ -477,24 +499,25 @@ raiserror('fff', 18, 118)"
                     Assert.IsNotNull(scope.Resolve<IPersistenceTransaction>().Connection); // Initialize transaction to avoid doing it on first test and not on second.
                     var sqlExecuter = scope.Resolve<ISqlExecuter>();
 
-                    var msSqlExecuterResult = TestSqlExecuter(
+                    var simpleSqlExecuterReport = TestSqlExecuter(
                         read => sqlExecuter.ExecuteSql(string.Format(test.Query, SqlUtility.QuoteText(test.Parameter))),
                         log);
-                    msSqlExecuterReport.Add(msSqlExecuterResult);
 
-                    var baseSqlExecuterResult = TestSqlExecuter(
+                    var parametrizedSqlExecuterReport = TestSqlExecuter(
                         read => sqlExecuter.ExecuteSqlRaw(test.Query, new[] { test.Parameter }),
                         log);
-                    baseSqlExecuterReport.Add(baseSqlExecuterResult);
 
-                    Console.WriteLine(msSqlExecuterResult);
+                    Assert.AreEqual(
+                        CleanupIndent(test.ExpectedReport),
+                        CleanupMilliseconds(parametrizedSqlExecuterReport),
+                        $"Testing expected report: '{test.Query}'");
+
+                    Assert.AreEqual(
+                        CleanupSqlExecuterLog(simpleSqlExecuterReport),
+                        CleanupSqlExecuterLog(parametrizedSqlExecuterReport),
+                        $"Testing same report: '{test.Query}'");
                 }
             }
-
-            Assert.AreEqual(
-                CleanupSqlExecuterLog(string.Join(Environment.NewLine, msSqlExecuterReport)),
-                CleanupSqlExecuterLog(string.Join(Environment.NewLine, baseSqlExecuterReport)),
-                $"{nameof(msSqlExecuterReport)} result does not match {nameof(baseSqlExecuterReport)}.");
         }
 
         private static string TestSqlExecuter(Action<Action<DbDataReader>> executeReader, List<string> log)

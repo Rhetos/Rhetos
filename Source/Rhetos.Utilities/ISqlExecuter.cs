@@ -21,6 +21,7 @@ using Rhetos.Persistence;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -45,41 +46,6 @@ namespace Rhetos.Utilities
     /// </remarks>
     public interface ISqlExecuter
     {
-        /// <remarks>
-        /// Executes the SQL command in the current scope's database transaction, if <see cref="PersistenceTransactionOptions.UseDatabaseTransaction"/> is set (default).
-        /// </remarks>
-        void ExecuteReader(string command, Action<DbDataReader> action);
-
-        /// <remarks>
-        /// Executes the SQL command in the current scope's database transaction, if <see cref="PersistenceTransactionOptions.UseDatabaseTransaction"/> is set (default).
-        /// </remarks>
-        void ExecuteSql(IEnumerable<string> commands);
-
-        /// <remarks>
-        /// Executes the SQL command in the current scope's database transaction, if <see cref="PersistenceTransactionOptions.UseDatabaseTransaction"/> is set (default).
-        /// </remarks>
-        /// <param name="beforeExecute">Intended for progress reporting. The integer argument is the index of currently executing command in <paramref name="commands"/>.</param>
-        /// <param name="afterExecute">Intended for progress reporting. The integer argument is the index of currently executed command in <paramref name="commands"/>.</param>
-        void ExecuteSql(IEnumerable<string> commands, Action<int> beforeExecute, Action<int> afterExecute);
-
-        /// <summary>
-        /// Executes a parametrized query on the database.
-        /// If you need more control on how a parameter is mapped to a database type, <see cref="DbParameter"/> can be used as a parameter.
-        /// </summary>
-        /// <remarks>
-        /// Executes the SQL command in the current scope's database transaction, if <see cref="PersistenceTransactionOptions.UseDatabaseTransaction"/> is set (default).
-        /// </remarks>
-        void ExecuteReaderRaw(string query, object[] parameters, Action<DbDataReader> read);
-
-        /// <summary>
-        /// Executes a parametrized query on the database.
-        /// If you need more control on how a parameter is mapped to a database type, <see cref="DbParameter"/> can be used as a parameter.
-        /// </summary>
-        /// <remarks>
-        /// Executes the SQL command in the current scope's database transaction, if <see cref="PersistenceTransactionOptions.UseDatabaseTransaction"/> is set (default).
-        /// </remarks>
-        Task ExecuteReaderRawAsync(string query, object[] parameters, Action<DbDataReader> read, CancellationToken cancellationToken = default);
-
         /// <summary>
         /// Executes a parametrized command on the database.
         /// If you need more control on how a parameter is mapped to a database type, <see cref="DbParameter"/> can be used as a parameter.
@@ -87,6 +53,9 @@ namespace Rhetos.Utilities
         /// <remarks>
         /// Executes the SQL command in the current scope's database transaction, if <see cref="PersistenceTransactionOptions.UseDatabaseTransaction"/> is set (default).
         /// </remarks>
+        /// <param name="parameters">
+        /// Set to <see langword="null"/> if the query does not have parameters.
+        /// </param>
         int ExecuteSqlRaw(string query, object[] parameters);
 
         /// <summary>
@@ -96,7 +65,34 @@ namespace Rhetos.Utilities
         /// <remarks>
         /// Executes the SQL command in the current scope's database transaction, if <see cref="PersistenceTransactionOptions.UseDatabaseTransaction"/> is set (default).
         /// </remarks>
+        /// <param name="parameters">
+        /// Set to <see langword="null"/> if the query does not have parameters.
+        /// </param>
         Task<int> ExecuteSqlRawAsync(string query, object[] parameters, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Executes a parametrized query on the database.
+        /// If you need more control on how a parameter is mapped to a database type, <see cref="DbParameter"/> can be used as a parameter.
+        /// </summary>
+        /// <remarks>
+        /// Executes the SQL command in the current scope's database transaction, if <see cref="PersistenceTransactionOptions.UseDatabaseTransaction"/> is set (default).
+        /// </remarks>
+        /// <param name="parameters">
+        /// Set to <see langword="null"/> if the query does not have parameters.
+        /// </param>
+        void ExecuteReaderRaw(string query, object[] parameters, Action<DbDataReader> read);
+
+        /// <summary>
+        /// Executes a parametrized query on the database.
+        /// If you need more control on how a parameter is mapped to a database type, <see cref="DbParameter"/> can be used as a parameter.
+        /// </summary>
+        /// <remarks>
+        /// Executes the SQL command in the current scope's database transaction, if <see cref="PersistenceTransactionOptions.UseDatabaseTransaction"/> is set (default).
+        /// </remarks>
+        /// <param name="parameters">
+        /// Set to <see langword="null"/> if the query does not have parameters.
+        /// </param>
+        Task ExecuteReaderRawAsync(string query, object[] parameters, Action<DbDataReader> read, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Returns open transaction count for the current SQL connection.
@@ -115,32 +111,69 @@ namespace Rhetos.Utilities
 
     public static class SqlExecuterExtensions
     {
-        /// <summary>
-        /// Executes the SQL queries in a transaction.
-        /// </summary>
+        /// <remarks>
+        /// Executes the SQL command in the current scope's database transaction, if <see cref="PersistenceTransactionOptions.UseDatabaseTransaction"/> is set (default).
+        /// </remarks>
+        /// <param name="beforeExecute">Intended for progress reporting. The integer argument is the index of currently executing command in <paramref name="commands"/>.</param>
+        /// <param name="afterExecute">Intended for progress reporting. The integer argument is the index of currently executed command in <paramref name="commands"/>.</param>
+        public static void ExecuteSql(this ISqlExecuter sqlExecuter, IEnumerable<string> commands, Action<int> beforeExecute, Action<int> afterExecute)
+        {
+            CsUtility.Materialize(ref commands);
+            if (commands.Any(sql => sql == null))
+                throw new FrameworkException("SQL script is null.");
+
+            int count = 0;
+            foreach (string sql in commands)
+            {
+                if (string.IsNullOrWhiteSpace(sql))
+                    continue;
+
+                beforeExecute?.Invoke(count);
+                sqlExecuter.ExecuteSqlRaw(sql, null);
+                afterExecute?.Invoke(count);
+
+                count++;
+            }
+        }
+
+        /// <remarks>
+        /// Executes the SQL command in the current scope's database transaction, if <see cref="PersistenceTransactionOptions.UseDatabaseTransaction"/> is set (default).
+        /// </remarks>
+        public static void ExecuteSql(this ISqlExecuter sqlExecuter, IEnumerable<string> commands)
+            => sqlExecuter.ExecuteSql(commands, null, null);
+
+        /// <remarks>
+        /// Executes the SQL command in the current scope's database transaction, if <see cref="PersistenceTransactionOptions.UseDatabaseTransaction"/> is set (default).
+        /// </remarks>
         public static void ExecuteSql(this ISqlExecuter sqlExecuter, params string[] commands)
-            => sqlExecuter.ExecuteSql(commands);
+            => sqlExecuter.ExecuteSql(commands, null, null);
 
         /// <summary>
-        /// Uses interpolated string to execute a parametrized command on the database
+        /// Uses interpolated string to execute a parametrized command on the database.
         /// </summary>
         public static int ExecuteSqlInterpolated(this ISqlExecuter sqlExecuter, FormattableString query)
             => sqlExecuter.ExecuteSqlRaw(query.Format, query.GetArguments());
 
         /// <summary>
-        /// Uses interpolated string to execute a parametrized command on the database
+        /// Uses interpolated string to execute a parametrized command on the database.
         /// </summary>
         public static Task<int> ExecuteSqlInterpolatedAsync(this ISqlExecuter sqlExecuter, FormattableString query)
             => sqlExecuter.ExecuteSqlRawAsync(query.Format, query.GetArguments());
 
+        /// <remarks>
+        /// Executes the SQL command in the current scope's database transaction, if <see cref="PersistenceTransactionOptions.UseDatabaseTransaction"/> is set (default).
+        /// </remarks>
+        public static void ExecuteReader(this ISqlExecuter sqlExecuter, string query, Action<DbDataReader> read)
+            => sqlExecuter.ExecuteReaderRaw(query, null, read);
+
         /// <summary>
-        /// Uses interpolated string to execute a parametrized query on the database
+        /// Uses interpolated string to execute a parametrized query on the database.
         /// </summary>
         public static void ExecuteReaderInterpolated(this ISqlExecuter sqlExecuter, FormattableString query, Action<DbDataReader> read)
             => sqlExecuter.ExecuteReaderRaw(query.Format, query.GetArguments(), read);
 
         /// <summary>
-        /// Uses interpolated string to execute a parametrized query on the database
+        /// Uses interpolated string to execute a parametrized query on the database.
         /// </summary>
         public static Task ExecuteReaderInterpolatedAsync(this ISqlExecuter sqlExecuter, FormattableString query, Action<DbDataReader> read)
             => sqlExecuter.ExecuteReaderRawAsync(query.Format, query.GetArguments(), read);

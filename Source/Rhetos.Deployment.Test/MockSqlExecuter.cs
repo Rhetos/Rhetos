@@ -62,7 +62,7 @@ namespace Rhetos.Deployment.Test
             }
         }
 
-        public void ExecuteReader(string command, Action<System.Data.Common.DbDataReader> action)
+        public void ExecuteReaderRaw(string command, object[] parameters, Action<DbDataReader> read)
         {
             var options = new Dictionary<string, DataTable>
                 {
@@ -76,7 +76,7 @@ namespace Rhetos.Deployment.Test
             using (var reader = new DataTableReader(dataTable))
             {
                 while (reader.Read())
-                    action(reader);
+                    read(reader);
             }
         }
 
@@ -88,53 +88,35 @@ namespace Rhetos.Deployment.Test
         public List<string> DroppedTables = new List<string>();
         public List<string> DroppedSchemas = new List<string>();
 
-        public void ExecuteSql(IEnumerable<string> commands)
+        public int ExecuteSqlRaw(string command, object[] parameters)
         {
-            ExecuteSql(commands, null, null);
-        }
+            Console.WriteLine("[SQL] " + command);
 
-        public void ExecuteSql(IEnumerable<string> commands, Action<int> beforeExecute, Action<int> afterExecute)
-        {
-            foreach (var command in commands)
+            var match = DropColumn.Match(command);
+            if (match.Success)
             {
-                Console.WriteLine("[SQL] " + command);
-
-                var match = DropColumn.Match(command);
-                if (match.Success)
-                {
-                    DroppedColumns.Add(match.Groups[1] + "." + match.Groups[2] + "." + match.Groups[3]);
-                    continue;
-                }
-
-                match = DropTable.Match(command);
-                if (match.Success)
-                {
-                    DroppedTables.Add(match.Groups[1] + "." + match.Groups[2]);
-                    continue;
-                }
-
-                match = DropSchema.Match(command);
-                if (match.Success)
-                {
-                    DroppedSchemas.Add(match.Groups[1].ToString());
-                    continue;
-                }
-
-                throw new ArgumentException("Unexpected SQL command in MockSqlExecuter.");
+                DroppedColumns.Add(match.Groups[1] + "." + match.Groups[2] + "." + match.Groups[3]);
+                return 1;
             }
-        }
 
-        public void ExecuteReaderRaw(string query, object[] parameters, Action<DbDataReader> read)
-        {
-            throw new NotImplementedException();
+            match = DropTable.Match(command);
+            if (match.Success)
+            {
+                DroppedTables.Add(match.Groups[1] + "." + match.Groups[2]);
+                return 1;
+            }
+
+            match = DropSchema.Match(command);
+            if (match.Success)
+            {
+                DroppedSchemas.Add(match.Groups[1].ToString());
+                return 1;
+            }
+
+            throw new ArgumentException("Unexpected SQL command in MockSqlExecuter.");
         }
 
         public Task ExecuteReaderRawAsync(string query, object[] parameters, Action<DbDataReader> read, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int ExecuteSqlRaw(string query, object[] parameters)
         {
             throw new NotImplementedException();
         }

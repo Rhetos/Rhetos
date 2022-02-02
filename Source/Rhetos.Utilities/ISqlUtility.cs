@@ -17,16 +17,25 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Persistence;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Data.Common;
 
 namespace Rhetos.Utilities
 {
+    /// <remarks>
+    /// The main difference between <see cref="ISqlUtility"/> and <see cref="ISqlExecuter"/>
+    /// is that <see cref="ISqlUtility"/> implementations do now require <see cref="IPersistenceTransaction"/>
+    /// or an active database connection.
+    /// <see cref="ISqlUtility"/> can be used at build-time, or to initialize a new database connection.
+    /// </remarks>
     public interface ISqlUtility
     {
+        /// <summary>
+        /// Created database connection and initializes it with used information and settings.
+        /// </summary>
+        DbConnection CreateConnection(string connectionString, IUserInfo _userInfo);
+
         /// <summary>
         /// Checks the exception for database errors and attempts to transform it to a RhetosException.
         /// It the function returns null, the original exception should be used.

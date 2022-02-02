@@ -20,7 +20,6 @@
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
-using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
@@ -44,89 +43,18 @@ namespace Rhetos.Persistence
         {
         }
 
-        public void ExecuteSql(IEnumerable<string> commands)
+        protected override string ReportSqlErrors(DbException exception)
         {
-            ExecuteSql(commands, null, null);
-        }
-
-        public void ExecuteSql(IEnumerable<string> commands, Action<int> beforeExecute, Action<int> afterExecute)
-        {
-            CsUtility.Materialize(ref commands);
-
-            _logger.Trace(() => "Executing " + commands.Count() + " commands.");
-
-            SafeExecuteCommand(
-                com =>
-                {
-                    int count = 0;
-                    foreach (var sql in commands)
-                    {
-                        count++;
-                        if (sql == null)
-                            throw new FrameworkException("SQL script is null.");
-
-                        _logger.Trace(() => "Executing command: " + sql);
-
-                        if (string.IsNullOrWhiteSpace(sql))
-                            continue;
-
-                        com.CommandText = sql;
-                        beforeExecute?.Invoke(count - 1);
-                        ExecuteSql(com);
-                        afterExecute?.Invoke(count - 1);
-                    }
-                });
-        }
-
-
-        public void ExecuteReader(string commandText, Action<DbDataReader> action)
-        {
-            _logger.Trace(() => "Executing reader: " + commandText);
-
-            SafeExecuteCommand(
-                sqlCommand =>
-                {
-                    sqlCommand.CommandText = commandText;
-                    ExecuteReader(sqlCommand, action);
-                });
-        }
-
-        private void SafeExecuteCommand(Action<DbCommand> action)
-        {
-            DbCommand command = _persistenceTransaction.Connection.CreateCommand();
-            command.Transaction = _persistenceTransaction.Transaction;
-            command.CommandTimeout = _databaseOptions.SqlCommandTimeout;
-
-            try
+            if (exception is SqlException sqlException)
             {
-                action(command);
+                SqlError[] errors = new SqlError[sqlException.Errors.Count];
+                sqlException.Errors.CopyTo(errors, 0);
+                // If there is only one simple error, it will be reported in a single line (most likely)
+                // to improve integration with Visual Studio.
+                return string.Join(Environment.NewLine, errors.Select(ReportSqlError));
             }
-            catch (SqlException ex)
-            {
-                if (command != null && !string.IsNullOrWhiteSpace(command.CommandText))
-                    _logger.Error("Unable to execute SQL query:\r\n" + command.CommandText.Limit(1_000_000));
-
-                string msg = $"{ex.GetType().Name} has occurred{ReportSqlName(command)}: {ReportSqlErrors(ex)}";
-                throw new FrameworkException(msg, ex);
-            }
-        }
-
-        private string ReportSqlName(DbCommand command)
-        {
-            const string namePrefix = "--Name: ";
-            if (command?.CommandText?.StartsWith(namePrefix) == true)
-                return " in '" + CsUtility.FirstLine(command.CommandText).Substring(namePrefix.Length).Limit(1000, "...") + "'";
             else
-                return "";
-        }
-
-        private static string ReportSqlErrors(SqlException exception)
-        {
-            SqlError[] errors = new SqlError[exception.Errors.Count];
-            exception.Errors.CopyTo(errors, 0);
-            // If there is only one simple error, it will be reported in a single line (most likely)
-            // to improve integration with Visual Studio.
-            return string.Join(Environment.NewLine, errors.Select(ReportSqlError));
+                return null;
         }
 
         private static string ReportSqlError(SqlError e)

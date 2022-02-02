@@ -111,12 +111,12 @@ namespace Rhetos.DatabaseGenerator.Test
             // Report changes in mock database:
 
             TestUtility.Dump(
-                sqlExecuterReport,
+                sqlExecuterReport.GetBatches(),
                 script => (script.UseTransaction ? "tran" : "notran")
                     + string.Concat(script.Scripts.Select(sql => "\r\n  - " + sql.Replace('\r', ' ').Replace('\n', ' '))));
 
             return
-                (Report: string.Join(", ", sqlExecuterReport.SelectMany(script => RemoveName(script.Scripts))),
+                (Report: string.Join(", ", sqlExecuterReport.GetBatches().SelectMany(script => RemoveName(script.Scripts))),
                 SqlExecuterReport: sqlExecuterReport,
                 RemovedConcepts: conceptApplicationRepository.DeletedLog,
                 InsertedConcepts: conceptApplicationRepository.InsertedLog.ToList());
@@ -358,7 +358,7 @@ namespace Rhetos.DatabaseGenerator.Test
             var dbUpdate = DatabaseGeneratorUpdateDatabase(oldApplications, newApplications);
 
             string executedSqlReport = string.Concat(
-                dbUpdate.SqlExecuterReport
+                dbUpdate.SqlExecuterReport.GetBatches()
                     .Select(scripts => (scripts.UseTransaction ? "TRAN" : "NOTRAN") + ": " + string.Join(", ", RemoveName(scripts.Scripts)) + ". "))
                     .Replace(SqlUtility.NoTransactionTag, "")
                     .Trim();
