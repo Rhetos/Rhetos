@@ -3,7 +3,7 @@ SETLOCAL
 @SET Config=%1%
 @IF [%1] == [] SET Config=Debug
 
-IF NOT EXIST Install\ MD Install
+IF NOT EXIST Install MD Install
 DEL /F /S /Q Install\* || GOTO Error0
 
 NuGet.exe pack Source\Rhetos.nuspec -OutputDirectory Install -Exclude "**.pdb" || GOTO Error0

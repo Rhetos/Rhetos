@@ -5,7 +5,7 @@ SET Prerelease=auto
 @SET Config=%1%
 @IF [%1] == [] SET Config=Debug
 
-REM Updating the build version of all projects.
+REM Updating the build version.
 PowerShell -ExecutionPolicy ByPass .\Tools\Build\ChangeVersion.ps1 %Version% %Prerelease% || GOTO Error0
 
 dotnet build "Rhetos.sln" --configuration %Config% || GOTO Error1
