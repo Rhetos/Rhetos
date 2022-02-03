@@ -357,7 +357,7 @@ namespace Rhetos.Utilities
         /// <summary>
         /// Add this tag to the beginning of the DatabaseGenerator SQL script to execute it without transaction.
         /// Used for special database changes that must be executed without transaction, for example
-        /// creating full-text search index.
+        /// creating a full-text search index.
         /// </summary>
         public const string NoTransactionTag = "/*DatabaseGenerator:NoTransaction*/";
 

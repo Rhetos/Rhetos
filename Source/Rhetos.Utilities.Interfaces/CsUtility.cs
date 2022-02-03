@@ -506,5 +506,12 @@ namespace Rhetos.Utilities
             foreach (var action in actions)
                 action.Invoke(target);
         }
+
+        private static MethodInfo CloneMethod = typeof(object).GetMethod("MemberwiseClone", BindingFlags.NonPublic | BindingFlags.Instance);
+
+        public static T ShallowCopy<T>(T o)
+        {
+            return (T)CloneMethod.Invoke(o, null);
+        }
     }
 }

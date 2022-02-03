@@ -34,7 +34,7 @@ namespace CommonConcepts.Test
     [TestClass]
     public class AutoCodeCachedTest
     {
-        private static void DeleteOldData(UnitOfWorkScope scope)
+        private static void DeleteOldData(IUnitOfWorkScope scope)
         {
             scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                 {
@@ -580,7 +580,7 @@ namespace CommonConcepts.Test
             using (var scope = TestScope.Create())
             {
                 DeleteOldData(scope);
-                ConcurrencyUtility.CheckForParallelism(scope.Resolve<ISqlExecuter>(), threadCount);
+                ConcurrencyUtility.CheckForParallelism(scope, threadCount);
                 scope.CommitAndClose();
             }
 

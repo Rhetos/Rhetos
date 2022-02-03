@@ -28,7 +28,8 @@ namespace Rhetos.Deployment
     public class DatabaseDeployment
     {
         private readonly ILogger _logger;
-        private readonly ISqlExecuter _sqlExecuter;
+        private readonly ISqlTransactionBatches _sqlTransactionBatches;
+        private readonly ConnectionTesting _connectionTesting;
         private readonly DatabaseCleaner _databaseCleaner;
         private readonly DataMigrationScriptsExecuter _dataMigrationScriptsExecuter;
         private readonly IDatabaseGenerator _databaseGenerator;
@@ -37,7 +38,8 @@ namespace Rhetos.Deployment
 
         public DatabaseDeployment(
             ILogProvider logProvider,
-            ISqlExecuter sqlExecuter,
+            ISqlTransactionBatches sqlTransactionBatches,
+            ConnectionTesting connectionTesting,
             DatabaseCleaner databaseCleaner,
             DataMigrationScriptsExecuter dataMigrationScriptsExecuter,
             IDatabaseGenerator databaseGenerator,
@@ -45,7 +47,8 @@ namespace Rhetos.Deployment
             DbUpdateOptions options)
         {
             _logger = logProvider.GetLogger(GetType().Name);
-            _sqlExecuter = sqlExecuter;
+            _sqlTransactionBatches = sqlTransactionBatches;
+            _connectionTesting = connectionTesting;
             _databaseCleaner = databaseCleaner;
             _dataMigrationScriptsExecuter = dataMigrationScriptsExecuter;
             _databaseGenerator = databaseGenerator;
@@ -56,7 +59,7 @@ namespace Rhetos.Deployment
         public void UpdateDatabase()
         {
             _logger.Info("SQL connection: " + SqlUtility.SqlConnectionInfo(SqlUtility.ConnectionString));
-            ConnectionTesting.ValidateDbConnection(SqlUtility.ConnectionString, _sqlExecuter);
+            _connectionTesting.ValidateDbConnection();
 
             _logger.Info("Preparing Rhetos database.");
             PrepareRhetosDatabase();
@@ -115,8 +118,8 @@ namespace Rhetos.Deployment
                 sql = reader.ReadToEnd();
             }
 
-            var sqlScripts = SqlUtility.SplitBatches(sql);
-            _sqlExecuter.ExecuteSql(sqlScripts);
+            var batchScript = new SqlBatchScript { Sql = sql, IsBatch = true };
+            _sqlTransactionBatches.Execute(new[] { batchScript });
         }
     }
 }

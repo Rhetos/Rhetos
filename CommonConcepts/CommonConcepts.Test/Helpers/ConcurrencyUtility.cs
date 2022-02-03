@@ -18,8 +18,10 @@
 */
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos;
 using Rhetos.Utilities;
 using System;
+using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
@@ -29,16 +31,18 @@ namespace CommonConcepts.Test
     {
         private static int _checkedForParallelismThreadCount = 0;
 
-        public static void CheckForParallelism(ISqlExecuter sqlExecuter, int requiredNumberOfThreads)
+        public static void CheckForParallelism(IUnitOfWorkScope scope, int requiredNumberOfThreads)
         {
             if (_checkedForParallelismThreadCount >= requiredNumberOfThreads)
                 return;
 
-            sqlExecuter.ExecuteSql("WAITFOR DELAY '00:00:00.000'"); // Possible cold start.
+            string connectionString = scope.Resolve<ConnectionString>();
+
+            ExecuteSqlCommand(connectionString, "WAITFOR DELAY '00:00:00.000'"); // Possible cold start.
 
             var sw = Stopwatch.StartNew();
-            var queries = new[] { "WAITFOR DELAY '00:00:00.100'" };
-            Parallel.For(0, requiredNumberOfThreads, x => { sqlExecuter.ExecuteSql(queries, false); });
+            Parallel.For(0, requiredNumberOfThreads,
+                x => { ExecuteSqlCommand(connectionString, "WAITFOR DELAY '00:00:00.100'"); });
             sw.Stop();
 
             Console.WriteLine($"CheckForParallelism: {sw.ElapsedMilliseconds} ms.");
@@ -50,6 +54,15 @@ namespace CommonConcepts.Test
                 Assert.Inconclusive($"This test requires {requiredNumberOfThreads} parallel SQL queries. {requiredNumberOfThreads} parallel delays for 100 ms are executed in {sw.ElapsedMilliseconds} ms.");
 
             _checkedForParallelismThreadCount = requiredNumberOfThreads;
+        }
+
+        private static void ExecuteSqlCommand(string connectionString, string sql)
+        {
+            using var connection = new SqlConnection(connectionString);
+            connection.Open();
+            using var command = new SqlCommand(sql, connection);
+            command.ExecuteNonQuery();
+            connection.Close();
         }
     }
 }

@@ -18,6 +18,7 @@
 */
 
 using Rhetos.Persistence;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -33,14 +34,17 @@ namespace Rhetos.Dom.DefaultConcepts
 	{
 		private readonly IPersistenceTransaction _persistenceTransaction;
 		private readonly IPersistenceStorageObjectMappings _persistenceMappingConfiguration;
+        private readonly DatabaseOptions _databaseOptions;
 
-		public SqlCommandBatch(
+        public SqlCommandBatch(
 			IPersistenceTransaction persistenceTransaction,
-			IPersistenceStorageObjectMappings persistenceMappingConfiguration)
+			IPersistenceStorageObjectMappings persistenceMappingConfiguration,
+			DatabaseOptions databaseOptions)
 		{
 			_persistenceTransaction = persistenceTransaction;
 			_persistenceMappingConfiguration = persistenceMappingConfiguration;
-		}
+            _databaseOptions = databaseOptions;
+        }
 
 		public int Execute(IList<PersistenceStorageCommand> commands)
 		{
@@ -55,7 +59,7 @@ namespace Rhetos.Dom.DefaultConcepts
 			using (var dbCommand = _persistenceTransaction.Connection.CreateCommand())
 			{
 				dbCommand.Transaction = _persistenceTransaction.Transaction;
-
+				dbCommand.CommandTimeout = _databaseOptions.SqlCommandTimeout;
 				dbCommand.CommandText = commandTextBuilder.ToString();
 				foreach (var parameter in commandParameters)
 					dbCommand.Parameters.Add(parameter);

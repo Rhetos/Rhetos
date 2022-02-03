@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Rhetos.Persistence\Rhetos.Persistence.csproj" />
     <ProjectReference Include="..\Rhetos.TestCommon\Rhetos.TestCommon.csproj" />
     <ProjectReference Include="..\Rhetos.Utilities\Rhetos.Utilities.csproj" />
   </ItemGroup>

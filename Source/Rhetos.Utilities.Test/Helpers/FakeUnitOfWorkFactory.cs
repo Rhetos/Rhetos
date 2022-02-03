@@ -17,20 +17,27 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.Data.Common;
+using Autofac;
+using System;
 
-namespace Rhetos.Utilities
+namespace Rhetos.Utilities.Test.Helpers
 {
-    /// <summary>
-    /// Runtime options, to be used when connecting to a database.
-    /// </summary>
-    [Options("Rhetos:Database")]
-    public class DatabaseOptions
+    public class FakeUnitOfWorkFactory : IUnitOfWorkFactory
     {
-        /// <summary>
-        /// The time to wait (in seconds) for each SQL command to execute, <see cref="DbCommand.CommandTimeout"/>.
-        /// After the timeout, the command will be terminated and an error returned.
-        /// </summary>
-        public int SqlCommandTimeout { get; set; } = 30;
+        private readonly IContainer container;
+
+        public FakeUnitOfWorkFactory(Action<ContainerBuilder> registerScopeComponentsAction = null)
+        {
+            var builder = new ContainerBuilder();
+            registerScopeComponentsAction?.Invoke(builder);
+            container = builder.Build();
+        }
+
+        public IUnitOfWorkScope CreateScope(Action<ContainerBuilder> registerScopeComponentsAction = null)
+        {
+            registerScopeComponentsAction ??= builder => { };
+            var scope = container.BeginLifetimeScope(registerScopeComponentsAction);
+            return new FakeUnitOfWorkScope(scope);
+        }
     }
 }

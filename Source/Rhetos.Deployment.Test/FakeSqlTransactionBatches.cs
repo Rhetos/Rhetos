@@ -17,20 +17,30 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.Data.Common;
+using Rhetos.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace Rhetos.Utilities
+namespace Rhetos.Deployment.Test
 {
-    /// <summary>
-    /// Runtime options, to be used when connecting to a database.
-    /// </summary>
-    [Options("Rhetos:Database")]
-    public class DatabaseOptions
+    public class FakeSqlTransactionBatches : ISqlTransactionBatches
     {
-        /// <summary>
-        /// The time to wait (in seconds) for each SQL command to execute, <see cref="DbCommand.CommandTimeout"/>.
-        /// After the timeout, the command will be terminated and an error returned.
-        /// </summary>
-        public int SqlCommandTimeout { get; set; } = 30;
+        private MockSqlExecuter _mockSqlExecuter;
+
+        public FakeSqlTransactionBatches(MockSqlExecuter mockSqlExecuter)
+        {
+            _mockSqlExecuter = mockSqlExecuter;
+        }
+
+        public void Execute(IEnumerable<SqlBatchScript> sqlScripts)
+        {
+            _mockSqlExecuter.ExecuteSql(sqlScripts.Select(script => script.Sql));
+        }
+
+        public List<string> JoinScripts(IEnumerable<string> scripts)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

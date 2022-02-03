@@ -32,13 +32,13 @@ namespace CommonConcepts.Test
         /// <summary>
         /// Creates a thread-safe lifetime scope DI container (service provider)
         /// to isolate unit of work with a <b>separate database transaction</b>.
-        /// To commit changes to database, call <see cref="UnitOfWorkScope.CommitAndClose"/> at the end of the 'using' block.
+        /// To commit changes to database, call <see cref="IUnitOfWork.CommitAndClose"/> at the end of the 'using' block.
         /// </summary>
         /// <remarks>
         /// Use helper methods in <see cref="TestScopeContainerBuilderExtensions"/> to configuring components
         /// from the <paramref name="registerCustomComponents"/> delegate.
         /// </remarks>
-        public static UnitOfWorkScope Create(Action<ContainerBuilder> registerCustomComponents = null)
+        public static IUnitOfWorkScope Create(Action<ContainerBuilder> registerCustomComponents = null)
         {
             return RhetosHost.CreateScope(registerCustomComponents);
         }

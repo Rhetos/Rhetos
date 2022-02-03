@@ -28,17 +28,17 @@ namespace Rhetos.DatabaseGenerator
     public class ConceptDataMigrationExecuter : IConceptDataMigrationExecuter
     {
         private readonly ILogger _logger;
-        private readonly SqlTransactionBatches _sqlExecuter;
+        private readonly ISqlTransactionBatches _sqlTransactionBatches;
         private readonly Lazy<GeneratedDataMigrationScripts> _scripts;
         private readonly RhetosAppOptions _rhetosAppOptions;
 
         public ConceptDataMigrationExecuter(
             ILogProvider logProvider,
-            SqlTransactionBatches sqlExecuter,
+            ISqlTransactionBatches sqlTransactionBatches,
             RhetosAppOptions rhetosAppOptions)
         {
             _logger = logProvider.GetLogger("ConceptDataMigration");
-            _sqlExecuter = sqlExecuter;
+            _sqlTransactionBatches = sqlTransactionBatches;
             _scripts = new Lazy<GeneratedDataMigrationScripts>(LoadScripts);
             _rhetosAppOptions = rhetosAppOptions;
         }
@@ -46,7 +46,7 @@ namespace Rhetos.DatabaseGenerator
         public void ExecuteBeforeDataMigrationScripts()
         {
             _logger.Info(() => $"Executing {_scripts.Value.BeforeDataMigration.Count()} before-data-migration scripts.");
-            _sqlExecuter.Execute(_scripts.Value.BeforeDataMigration.Select(x => 
+            _sqlTransactionBatches.Execute(_scripts.Value.BeforeDataMigration.Select(x => 
                 new SqlBatchScript
                 {
                     Sql = x,
@@ -57,7 +57,7 @@ namespace Rhetos.DatabaseGenerator
         public void ExecuteAfterDataMigrationScripts()
         {
             _logger.Info(() => $"Executing {_scripts.Value.AfterDataMigration.Count()} after-data-migration scripts.");
-            _sqlExecuter.Execute(_scripts.Value.AfterDataMigration.Reverse().Select(x =>
+            _sqlTransactionBatches.Execute(_scripts.Value.AfterDataMigration.Reverse().Select(x =>
                 new SqlBatchScript
                 {
                     Sql = x,

@@ -376,7 +376,7 @@ Dictionary`2<List`1<InnerClass[]>, InnerClass>";
             string report(string text, int limit, string result) => $"{text}, {limit} => {result}";
 
             var expectedReport = string.Join(Environment.NewLine,
-                tests.Select(test  => report(test.Text, test.Limit, test.Expected)));
+                tests.Select(test => report(test.Text, test.Limit, test.Expected)));
 
             var actualReport = string.Join(Environment.NewLine,
                 tests.Select(test => report(test.Text, test.Limit, Try(() => test.Text.LimitWithHash(test.Limit)))));
@@ -412,5 +412,25 @@ Dictionary`2<List`1<InnerClass[]>, InnerClass>";
 
         public class UnderlyingGenericTypeTestClass2<T> : List<T>
         { }
+
+        [TestMethod]
+        public void ShallowCopyTest()
+        {
+            var orig = new C { S = "test1", I = 123 };
+            string origReport = orig.ToString();
+
+            var copy = CsUtility.ShallowCopy(orig);
+            Assert.AreEqual(orig.ToString(), copy.ToString());
+
+            copy.I = 456;
+            Assert.AreNotEqual(orig.ToString(), copy.ToString());
+        }
+
+        class C
+        {
+            public string S { get; set; }
+            public int I { get; set; }
+            public override string ToString() => $"{S}/{I}";
+        }
     }
 }

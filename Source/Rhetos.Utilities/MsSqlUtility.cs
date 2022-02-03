@@ -28,6 +28,31 @@ namespace Rhetos.Utilities
 {
     public class MsSqlUtility : ISqlUtility
     {
+        public DbConnection CreateConnection(string connectionString, IUserInfo userInfo)
+        {
+            var connection = new SqlConnection(connectionString);
+
+            try
+            {
+                connection.Open();
+                if (userInfo.IsUserRecognized)
+                {
+                    using var sqlCommand = CreateUserContextInfoCommand(userInfo);
+                    sqlCommand.Connection = connection;
+                    sqlCommand.ExecuteNonQuery();
+                }
+            }
+            catch (SqlException ex)
+            {
+                var csb = new SqlConnectionStringBuilder(connectionString);
+                string secutiryInfo = csb.IntegratedSecurity ? $"integrated security account '{Environment.UserName}'" : $"SQL login '{csb.UserID}'";
+                string msg = $"Could not connect to server '{csb.DataSource}', database '{csb.InitialCatalog}' using {secutiryInfo}.";
+                throw new FrameworkException(msg, ex);
+            }
+
+            return connection;
+        }
+
         /// <summary>
         /// Creates an SQL command that sets context_info connection variable to contain data about the user.
         /// The context_info variable can be used in SQL server to extract user info in certain situations such as logging trigger.
@@ -35,7 +60,7 @@ namespace Rhetos.Utilities
         /// <returns>
         /// Returns null is the user is not recognized.
         /// </returns>
-        public static DbCommand SetUserContextInfoQuery(IUserInfo userInfo)
+        public static DbCommand CreateUserContextInfoCommand(IUserInfo userInfo)
         {
             if (!userInfo.IsUserRecognized)
                 return null;

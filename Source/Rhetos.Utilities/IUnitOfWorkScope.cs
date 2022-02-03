@@ -17,7 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-namespace Rhetos.Persistence
+using Rhetos.Persistence;
+using System;
+
+namespace Rhetos
 {
     /// <summary>
     /// Represents an atomic "unit of work" pattern where all operations are executed in a single database transaction.
@@ -26,24 +29,8 @@ namespace Rhetos.Persistence
     /// <remarks>
     /// See also <see cref="IPersistenceTransaction"/> interface for low-level control of the database transaction.
     /// </remarks>
-    public interface IUnitOfWork
+    public interface IUnitOfWorkScope : IUnitOfWork, IDisposable
     {
-        /// <summary>
-        /// Commits and closes the database transaction for the current unit of work (lifetime scope).
-        /// It is a good practice to put the call as the last statement in the using block.
-        /// </summary>
-        /// <remarks>
-        /// After calling this method, any later database operation in the current scope might result with an error.
-        /// The transaction will be rolled back, instead of committed, if <see cref="IPersistenceTransaction.DiscardOnDispose"/> method was called earlier.
-        /// </remarks>
-        void CommitAndClose();
-
-        /// <summary>
-        /// Discards and closes the database transaction for the current unit of work (lifetime scope).
-        /// </summary>
-        /// <remarks>
-        /// After calling this method, any later database operation in the current scope might result with an error.
-        /// </remarks>
-        void RollbackAndClose();
+        T Resolve<T>();
     }
 }

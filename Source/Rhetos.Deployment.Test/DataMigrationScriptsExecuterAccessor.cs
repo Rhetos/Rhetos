@@ -26,7 +26,7 @@ namespace Rhetos.Deployment.Test
     class DataMigrationScriptsExecuterAccessor : DataMigrationScriptsExecuter, ITestAccessor
     {
         public DataMigrationScriptsExecuterAccessor()
-            : base(null, new ConsoleLogProvider(), null, null, null)
+            : base(new ConsoleLogProvider(), null, null, null, null)
         {
         }
 

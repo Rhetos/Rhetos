@@ -39,7 +39,7 @@ namespace CommonConcepts.Test
     [TestClass]
     public class ReadCommandTest
     {
-        private static void InitializeData(UnitOfWorkScope scope)
+        private static void InitializeData(IUnitOfWorkScope scope)
         {
             scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
                 {
@@ -52,7 +52,7 @@ namespace CommonConcepts.Test
                 });
         }
 
-        private static string ReportCommandResult(UnitOfWorkScope scope, ReadCommandInfo info, bool sort = false)
+        private static string ReportCommandResult(IUnitOfWorkScope scope, ReadCommandInfo info, bool sort = false)
         {
             var commands = scope.Resolve<IIndex<Type, IEnumerable<ICommandImplementation>>>();
             var readCommand = (ReadCommand)commands[typeof(ReadCommandInfo)].Single();
@@ -177,7 +177,7 @@ namespace CommonConcepts.Test
 
         //====================================================================
 
-        private static string ReportCommandResult2(UnitOfWorkScope scope, ReadCommandInfo info, bool sort = false)
+        private static string ReportCommandResult2(IUnitOfWorkScope scope, ReadCommandInfo info, bool sort = false)
         {
             var commands = scope.Resolve<IIndex<Type, IEnumerable<ICommandImplementation>>>();
             var readCommand = (ReadCommand)commands[typeof(ReadCommandInfo)].Single();

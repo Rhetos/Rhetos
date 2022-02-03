@@ -76,6 +76,12 @@ Changes in behavior:
       For example, before modifying the data, read the records with Load() instead of Query(),
       or call ToSimple() on a query before ToList().
 19. Updated dependencies to a newer version: Autofac v6.3.0, Newtonsoft.Json v13.0.1, NLog v4.7.11.
+20. ISqlExecuter.ExecuteSql method no longer has bool parameter useTransaction.
+    * Where ExecuteSql was called as runtime with useTransaction set to *true*, simply remove the parameter.
+    * If useTransaction needs to be *false* (executing SQL command out of transaction),
+      manually create a new SqlConnection and SqlCommand from Rhetos.Utilities.ConnectionString (from DI).
+      Alternatively, create a new [unit-of-work scope](https://github.com/Rhetos/Rhetos/wiki/Unit-of-work#manual-control-over-unit-of-work)
+      with PersistenceTransactionOptions.UseDatabaseTransaction disabled and IUserInfo added, and resolve ISqlExecuter from that scope.
 
 Changes in Rhetos libraries API:
 
@@ -127,14 +133,14 @@ Changes in Rhetos libraries API:
     * ContainerBuilderExtensions.GetPluginRegistration: Use GetRhetosPluginRegistration instead.
     * ContainerBuilderExtensions.AddPluginModules: Use AddRhetosPluginModules instead.
     * ProcessContainer.CreateTransactionScopeContainer: Use CreateScope instead.
-    * TransactionScopeContainer: Use UnitOfWorkScope instead.
+    * TransactionScopeContainer: Use IUnitOfWorkScope instead.
     * ConceptImplementationVersionAttribute: This feature is no longer used by Rhetos. Database upgrade relies solely on SQL scripts generated from DSL concepts.
     * IInstalledPackages: Use InstalledPackages class instead.
     * DslSyntaxException.DslScript: Use FilePosition instead.
     * DslSyntaxException.Position: Use FilePosition instead.
     * IValidationConcept: Use IValidatedConcept instead of IValidationConcept.
     * IPersistenceTransaction.CommitAndReconnect: It is not longer needed for IServerInitializer plugins, because each plugin is executed in a separate connection.
-    * SqlTransactionBatch: Use SqlTransactionBatches instead.
+    * SqlTransactionBatch: Use ISqlTransactionBatches instead.
     * Function\<T\>.Create: Use an explicit Func type for the result variable, instead of 'var'.
 15. Removed support for the following concepts:
     * UseExecutionContext: Use repository member \_executionContext instead.
@@ -155,6 +161,10 @@ Changes in Rhetos libraries API:
 21. Removed second generic parameter from ConfigurationProvider.GetKey method.
 22. Renamed namespace `_Helper` to `Repositories`.
 23. Renamed class `_ModuleRepository` to `ModuleRepository`.
+24. UnitOfWorkScope type is replaced with IUnitOfWorkScope on various methods.
+25. SqlTransactionBatches is replaced with ISqlTransactionBatches in DI container.
+26. Redundant ISqlExecuter helper methods moved from interface to extension methods.
+    In case of compiler error on `context.SqlExecuter` or similar code, add `using Rhetos.Utilities;`.
 
 ### New features
 
@@ -169,6 +179,8 @@ Changes in Rhetos libraries API:
 * `Rhetos:AppSecurity:AllClaimsForUsers` option does not require the server machine name to be specified.
   Instead of *username@servername* it is possible just to use *username*,
   but the old format *username@servername* is still recommended for increased security.
+* Bugfix: [AfterDeploy](https://github.com/Rhetos/AfterDeploy) SQL scripts sometimes failed with a deadlock
+  when using `/*DatabaseGenerator:NoTransaction*/` (SqlTransactionBatches no longer uses parent scope transaction).
 
 ## 4.3.0 (2021-03-05)
 

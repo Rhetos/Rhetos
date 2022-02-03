@@ -31,7 +31,7 @@ namespace Rhetos
     /// Note that the changes in database will be rolled back by default.
     /// To commit changes to database, call <see cref="CommitAndClose"/> at the end of the 'using' block.
     /// </summary>
-    public class UnitOfWorkScope : IDisposable, IUnitOfWork
+    public class UnitOfWorkScope : IUnitOfWorkScope
     {
         /// <summary>
         /// A "lifetime scope tag" that prevents developers from accidentally resolving "scope-critical" components from a scope other than
@@ -40,7 +40,7 @@ namespace Rhetos
         /// or user authentication leaking into different scopes.
         /// The basic scope-critical components (such as <see cref="IUserInfo"/> or <see cref="IPersistenceTransaction"/>
         /// are registered to Autofac IoC container with "InstancePerMatchingLifetimeScope",
-        /// using <see cref="UnitOfWorkScope.ScopeName"/> as a lifetime scope tag.
+        /// using <see cref="ScopeName"/> as a lifetime scope tag.
         /// </summary>
         public static readonly string ScopeName = "UnitOfWork";
 

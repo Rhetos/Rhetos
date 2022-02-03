@@ -48,7 +48,7 @@ namespace Rhetos
 
         /// <summary>
         /// This method creates a thread-safe lifetime scope DI container to isolate unit of work in a separate database transaction.
-        /// To commit changes to database, call <see cref="UnitOfWorkScope.CommitAndClose"/> at the end of the 'using' block.
+        /// To commit changes to database, call <see cref="IUnitOfWork.CommitAndClose"/> at the end of the 'using' block.
         /// </summary>
         /// <remarks>
         /// In most cases it is preferred to use a <see cref="RhetosHost"/> instance, instead of this static method, for better control over the DI container.
@@ -69,7 +69,7 @@ namespace Rhetos
         /// /// <param name="configureServices">
         /// Configures host application's dependency injection components and configuration.
         /// </param>
-        public static UnitOfWorkScope CreateScope(
+        public static IUnitOfWorkScope CreateScope(
             string rhetosAppAssemblyPath,
             Action<ContainerBuilder> registerCustomComponents = null,
             Action<HostBuilderContext, IServiceCollection> configureServices = null)

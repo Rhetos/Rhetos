@@ -66,6 +66,7 @@
       <Project>{43BA178B-7642-473C-A43A-DBF58294635A}</Project>
       <Name>Rhetos.TestCommon</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rhetos.Utilities.Test\Rhetos.Utilities.Test.csproj" />
   </ItemGroup>
 
 </Project>

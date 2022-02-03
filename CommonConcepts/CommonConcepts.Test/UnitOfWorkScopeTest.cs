@@ -115,7 +115,7 @@ namespace CommonConcepts.Test
         }
 
         /// <summary>
-        /// This is not an intended usage of UnitOfWorkScope because CommitOnDispose should be called at the end of the using block.
+        /// This is not an intended usage of IUnitOfWorkScope because CommitOnDispose should be called at the end of the using block.
         /// Here an unhandled exception incorrectly commits the transaction, but currently the framework allows it.
         /// </summary>
         [TestMethod]
@@ -149,7 +149,7 @@ namespace CommonConcepts.Test
         }
 
         /// <summary>
-        /// This is not an intended usage of UnitOfWorkScope because CommitAndClose should be called at the end of the using block.
+        /// This is not an intended usage of IUnitOfWorkScope because CommitAndClose should be called at the end of the using block.
         /// Here an unhandled exception incorrectly commits the transaction, but currently the framework allows it.
         /// </summary>
         [TestMethod]
@@ -266,7 +266,7 @@ namespace CommonConcepts.Test
             int initialCount;
             using (var scope = TestScope.Create())
             {
-                ConcurrencyUtility.CheckForParallelism(scope.Resolve<ISqlExecuter>(), threadCount);
+                ConcurrencyUtility.CheckForParallelism(scope, threadCount);
 
                 var context = scope.Resolve<Common.ExecutionContext>();
                 initialCount = context.Repository.TestEntity.BaseEntity.Query().Count();

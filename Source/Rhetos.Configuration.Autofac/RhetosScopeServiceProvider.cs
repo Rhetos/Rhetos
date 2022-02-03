@@ -28,7 +28,7 @@ namespace Rhetos
     /// </summary>
     internal sealed class RhetosScopeServiceProvider : IDisposable
     {
-        private readonly UnitOfWorkScope unitOfWorkScope;
+        private readonly IUnitOfWorkScope unitOfWorkScope;
 
         public RhetosScopeServiceProvider(RhetosHost rhetosHost, IUserInfo rhetosUser)
         {

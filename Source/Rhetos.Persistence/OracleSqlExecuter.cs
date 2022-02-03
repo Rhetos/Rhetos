@@ -20,159 +20,53 @@
 using Oracle.ManagedDataAccess.Client;
 using Rhetos.Logging;
 using Rhetos.Utilities;
-using System;
-using System.Collections.Generic;
 using System.Data.Common;
-using System.Globalization;
-using System.Linq;
 using System.Text;
 
 namespace Rhetos.Persistence
 {
     public class OracleSqlExecuter : BaseSqlExecuter, ISqlExecuter
     {
-        private readonly string _connectionString;
-
-        public OracleSqlExecuter(ConnectionString connectionString, 
+        public OracleSqlExecuter(
             ILogProvider logProvider, 
-            IUserInfo userInfo, 
-            IPersistenceTransaction persistenceTransaction) 
-            : base(logProvider, userInfo, persistenceTransaction)
+            IPersistenceTransaction persistenceTransaction,
+            DatabaseOptions databaseOptions) 
+            : base(logProvider, persistenceTransaction, databaseOptions)
         {
-            _connectionString = connectionString;
         }
 
-        public void ExecuteSql(IEnumerable<string> commands, bool useTransaction)
+        protected override string ReportSqlErrors(DbException exception)
         {
-            ExecuteSql(commands, useTransaction, null, null);
-        }
-
-        public void ExecuteSql(IEnumerable<string> commands, bool useTransaction, Action<int> beforeExecute, Action<int> afterExecute)
-        {
-            _logger.Trace("Executing {0} commands.", commands.Count());
-
-            if (commands.Any(sql => sql == null))
-                throw new FrameworkException("SQL script object is null.");
-
-            SafeExecuteCommand(
-                com =>
-                {
-                    foreach (var sql in commands)
-                    {
-                        _logger.Trace("Executing command: {0}", sql);
-
-                        com.CommandText = sql;
-                        com.ExecuteNonQuery();
-                    }
-                });
-        }
-
-        public void ExecuteReader(string command, Action<DbDataReader> action)
-        {
-            _logger.Trace("Executing reader: {0}", command);
-
-            SafeExecuteCommand(
-                com =>
-                {
-                    com.CommandText = command;
-                    ExecuteReader(com, action);
-                });
-        }
-
-        private void SafeExecuteCommand(Action<OracleCommand> action)
-        {
-            using (var connection = new OracleConnection(_connectionString))
+            if (exception is OracleException ex)
             {
-                OracleTransaction transaction = null;
-                OracleCommand com;
+                StringBuilder sb = new StringBuilder();
 
-                try
+                if (ex.Number == 911)
+                    sb.AppendLine("Check that you are not using ';' at the end of the command's SQL query.");
+
+                OracleError[] errors = new OracleError[ex.Errors.Count];
+                ex.Errors.CopyTo(errors, 0);
+                foreach (var err in errors)
                 {
-                    connection.Open();
-                    OracleSqlUtility.SetSqlUserInfo(connection, _userInfo);
-
-                    transaction = connection.BeginTransaction();
-                    com = connection.CreateCommand();
-                    com.CommandTimeout = SqlUtility.SqlCommandTimeout;
-                    com.Transaction = transaction;
-                }
-                catch (OracleException ex)
-                {
-                    if (transaction != null)
-                        transaction.Rollback();
-
-                    var csb = new OracleConnectionStringBuilder(_connectionString);
-                    string msg = string.Format(CultureInfo.InvariantCulture, "Could not connect to data source '{0}', userID '{1}'.", csb.DataSource, csb.UserID);
-                    _logger.Error(msg);
-                    _logger.Error(ex.ToString());
-                    throw new FrameworkException(msg, ex);
+                    sb.Append(err.Message);
+                    sb.Append(", ErrorNumber ").Append(err.Number);
+                    if (!string.IsNullOrEmpty(err.Procedure))
+                        sb.Append(", Procedure ").Append(err.Procedure);
+                    if (!string.IsNullOrEmpty(err.Source))
+                        sb.Append(", Source: ").Append(err.Source);
+                    sb.AppendLine();
                 }
 
-                try
-                {
-                    var setNationalLanguage = OracleSqlUtility.SetNationalLanguageQuery();
-                    if (!string.IsNullOrEmpty(setNationalLanguage))
-                    {
-                        _logger.Trace("Setting national language: {0}", SqlUtility.NationalLanguage);
-                        com.CommandText = setNationalLanguage;
-                        com.ExecuteNonQuery();
-                    }
-
-                    action(com);
-                    transaction.Commit();
-                }
-                catch (OracleException ex)
-                {
-                    if (com != null && !string.IsNullOrWhiteSpace(com.CommandText))
-                        _logger.Error("Unable to execute SQL query:\r\n" + com.CommandText);
-
-                    string msg = "OracleException has occurred:\r\n" + ReportSqlErrors(ex);
-                    if (ex.Number == 911)
-                        msg += "\r\nCheck that you are not using ';' at the end of the command's SQL query.";
-                    _logger.Error(msg);
-                    _logger.Error(ex.ToString());
-                    throw new FrameworkException(msg, ex);
-                }
-                finally
-                {
-                    TryRollback(transaction);
-                }
+                return sb.ToString();
             }
+            else
+                return null;
         }
 
-        private static void TryRollback(OracleTransaction transaction)
+        public int GetTransactionCount()
         {
-            try
-            {
-                if (transaction != null)
-                    transaction.Rollback();
-            }
-            catch
-            {
-                // Error on rollback can be ignored.
-                // It would probably result from another earlier error that closed the transaction,
-                // so any exception here would just add noise to the original exception report.
-            }
-        }
-
-        private static string ReportSqlErrors(OracleException ex)
-        {
-            StringBuilder sb = new StringBuilder();
-
-            OracleError[] errors = new OracleError[ex.Errors.Count];
-            ex.Errors.CopyTo(errors, 0);
-            foreach (var err in errors)
-            {
-                sb.Append(err.Message);
-                sb.Append(", ErrorNumber ").Append(err.Number);
-                if (!string.IsNullOrEmpty(err.Procedure))
-                    sb.Append(", Procedure ").Append(err.Procedure);
-                if (!string.IsNullOrEmpty(err.Source))
-                    sb.Append(", Source: ").Append(err.Source);
-                sb.AppendLine();
-            }
-
-            return sb.ToString();
+            // Currently not implemented; returning expected value.
+            return _persistenceTransaction.Transaction != null ? 1 : 0;
         }
     }
 }

@@ -45,7 +45,7 @@ namespace CommonConcepts.Test
         static string _rowPermissionsReadFilter = "Common.RowPermissionsReadItems";
         static string _rowPermissionsWriteFilter = "Common.RowPermissionsWriteItems";
 
-        private static ReadCommandResult ExecuteReadCommand(ReadCommandInfo commandInfo, UnitOfWorkScope scope)
+        private static ReadCommandResult ExecuteReadCommand(ReadCommandInfo commandInfo, IUnitOfWorkScope scope)
         {
             var commands = scope.Resolve<IIndex<Type, IEnumerable<ICommandImplementation>>>();
             var readCommand = (ReadCommand)commands[typeof(ReadCommandInfo)].Single();
@@ -518,7 +518,7 @@ namespace CommonConcepts.Test
             }
         }
 
-        string ReadErrorData(UnitOfWorkScope scope, string testName)
+        string ReadErrorData(IUnitOfWorkScope scope, string testName)
         {
             Console.WriteLine("Test: " + testName);
             var readCommand = new ReadCommandInfo() { DataSource = "TestRowPermissions.ErrorData", ReadRecords = true, Filters = new[] { new FilterCriteria(testName) } };
@@ -574,7 +574,7 @@ namespace CommonConcepts.Test
             }
         }
 
-        private void ExecuteSaveCommand(SaveEntityCommandInfo saveInfo, UnitOfWorkScope scope)
+        private void ExecuteSaveCommand(SaveEntityCommandInfo saveInfo, IUnitOfWorkScope scope)
         {
             var commandImplementations = scope.Resolve<IPluginsContainer<ICommandImplementation>>();
             var saveCommand = commandImplementations.GetImplementations(saveInfo.GetType()).Single();

@@ -22,7 +22,6 @@ using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
 
@@ -33,6 +32,8 @@ namespace Rhetos.Persistence
         private readonly ILogger _logger;
         private readonly string _connectionString;
         private readonly IUserInfo _userInfo;
+        private readonly PersistenceTransactionOptions _persistenceTransactionOptions;
+        private readonly ISqlUtility _sqlUtility;
         private readonly int _persistenceTransactionId;
 
         private DbConnection _connection;
@@ -42,11 +43,18 @@ namespace Rhetos.Persistence
         private bool _commitOnDispose;
         static int _counter = 0;
 
-        public PersistenceTransaction(ILogProvider logProvider, ConnectionString connectionString, IUserInfo userInfo)
+        public PersistenceTransaction(
+            ILogProvider logProvider,
+            ConnectionString connectionString,
+            IUserInfo userInfo,
+            PersistenceTransactionOptions persistenceTransactionOptions,
+            ISqlUtility sqlUtility)
         {
             _logger = logProvider.GetLogger(GetType().Name);
             _connectionString = connectionString;
             _userInfo = userInfo;
+            _persistenceTransactionOptions = persistenceTransactionOptions;
+            _sqlUtility = sqlUtility;
             _persistenceTransactionId = Interlocked.Increment(ref _counter);
         }
 
@@ -174,6 +182,7 @@ namespace Rhetos.Persistence
                 _transaction.Dispose();
             }
         }
+
         private void CloseConnection()
         {
             if (_connection != null)
@@ -193,18 +202,12 @@ namespace Rhetos.Persistence
                 if (_connection == null)
                 {
                     _logger.Trace(() => "Opening connection (" + _persistenceTransactionId + ").");
-                    _connection = new SqlConnection(_connectionString);
-                    _connection.Open();
 
-                    if (_userInfo.IsUserRecognized)
-                    {
-                        var sqlCommand = MsSqlUtility.SetUserContextInfoQuery(_userInfo);
-                        sqlCommand.Connection = _connection;
-                        sqlCommand.ExecuteNonQuery();
-                    }
+                    _connection = _sqlUtility.CreateConnection(_connectionString, _userInfo);
 
                     _logger.Trace(() => "Beginning transaction (" + _persistenceTransactionId + ").");
-                    _transaction = _connection.BeginTransaction();
+                    if (_persistenceTransactionOptions.UseDatabaseTransaction)
+                        _transaction = _connection.BeginTransaction();
                 }
 
                 return _connection;

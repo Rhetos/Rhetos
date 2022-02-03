@@ -23,15 +23,24 @@ using System.Data.Common;
 
 namespace Rhetos.Deployment
 {
-    public static class ConnectionTesting
+    public class ConnectionTesting
     {
         private const string _checkDboMembershipMsSql = "SELECT IS_MEMBER('db_owner')";
 
-        public static void ValidateDbConnection(string connectionString, ISqlExecuter sqlExecuter)
+        private readonly ConnectionString _connectionString;
+        private readonly ISqlExecuter _sqlExecuter;
+
+        public ConnectionTesting(ConnectionString connectionString, ISqlExecuter sqlExecuter)
+        {
+            _connectionString = connectionString;
+            _sqlExecuter = sqlExecuter;
+        }
+
+        public void ValidateDbConnection()
         {
             try
             {
-                new DbConnectionStringBuilder().ConnectionString = connectionString;
+                new DbConnectionStringBuilder().ConnectionString = _connectionString;
             }
             catch (Exception e)
             {
@@ -42,12 +51,17 @@ namespace Rhetos.Deployment
             if (SqlUtility.DatabaseLanguage == "MsSql")
             {
                 bool isDbo = false;
-                sqlExecuter.ExecuteReader(_checkDboMembershipMsSql, reader =>
-                {
-                    if (!reader.IsDBNull(0) && ((int)reader[0] == 1)) isDbo = true;
-                });
+                _sqlExecuter.ExecuteReader(
+                    // PersistenceTransactionOptions.UseDatabaseTransaction is disable on dbupdate.
+                    _checkDboMembershipMsSql,
+                    reader =>
+                    {
+                        if (!reader.IsDBNull(0) && ((int)reader[0] == 1))
+                            isDbo = true;
+                    });
+
                 if (!isDbo)
-                    throw (new FrameworkException("Current user does not have db_owner role for the database."));
+                    throw new FrameworkException("Current user does not have db_owner role for the database.");
             }
         }
     }

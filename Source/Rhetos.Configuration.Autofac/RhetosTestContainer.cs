@@ -24,7 +24,7 @@ using System;
 namespace Rhetos.Configuration.Autofac
 {
     /// <summary>
-    /// RhetosTestContainer is a legacy wrapper around <see cref="RhetosHost"/> and <see cref="UnitOfWorkScope"/>.
+    /// RhetosTestContainer is a legacy wrapper around <see cref="RhetosHost"/> and <see cref="IUnitOfWorkScope"/>.
     /// For new projects use those classes directly.
     /// Inherit this class and override virtual functions to customize it.
     /// </summary>
@@ -38,7 +38,7 @@ namespace Rhetos.Configuration.Autofac
         // Instance per test or session:
         protected bool _commitChanges;
         protected string _rhetosAppAssemblyPath;
-        protected UnitOfWorkScope _transactionScope;
+        protected IUnitOfWorkScope _transactionScope;
         public event Action<ContainerBuilder> InitializeSession;
 
         /// <param name="commitChanges">

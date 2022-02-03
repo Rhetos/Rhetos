@@ -17,41 +17,47 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Autofac;
 using Rhetos.Logging;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
+using System.Text;
 
 namespace Rhetos.Utilities
 {
-
-
     /// <summary>
-    /// This class adds additional functionality over ISqlExecuter for executing a batch SQL scripts (custom transaction handling and reporting),
+    /// This class adds additional functionality over ISqlExecuter for executing batches of SQL scripts with custom transaction handling and reporting,
     /// while allowing ISqlExecuter implementations to focus on the database technology.
     /// </summary>
-    public class SqlTransactionBatches
+    public class SqlTransactionBatches : ISqlTransactionBatches
     {
-        private readonly ISqlExecuter _sqlExecuter;
         private readonly SqlTransactionBatchesOptions _options;
+        private readonly IUnitOfWorkFactory _unitOfWorkFactory;
+        private readonly Lazy<ISqlExecuter> _sqlExecuter;
+        private readonly PersistenceTransactionOptions _persistenceTransactionOptions;
+        private readonly IUserInfo _userInfo;
         private readonly ILogger _logger;
         private readonly IDelayedLogger _delayedLogger;
 
-        public SqlTransactionBatches(ISqlExecuter sqlExecuter, SqlTransactionBatchesOptions options, ILogProvider logProvider, IDelayedLogProvider delayedLogProvider)
+        public SqlTransactionBatches(
+            SqlTransactionBatchesOptions options,
+            IUnitOfWorkFactory unitOfWorkFactory,
+            Lazy<ISqlExecuter> sqlExecuter,
+            PersistenceTransactionOptions persistenceTransactionOptions,
+            IUserInfo userInfo,
+            ILogProvider logProvider,
+            IDelayedLogProvider delayedLogProvider)
         {
-            _sqlExecuter = sqlExecuter;
             _options = options;
+            _unitOfWorkFactory = unitOfWorkFactory;
+            _sqlExecuter = sqlExecuter;
+            _persistenceTransactionOptions = persistenceTransactionOptions;
+            _userInfo = userInfo;
             _logger = logProvider.GetLogger(nameof(SqlTransactionBatches));
             _delayedLogger = delayedLogProvider.GetLogger(nameof(SqlTransactionBatches));
         }
 
-        /// <summary>
-        /// 1. Splits the scripts by the SQL batch delimiter ("GO", for Microsoft SQL Server). See <see cref="SqlUtility.SplitBatches(string)"/>.
-        /// 2. Detects and applies the transaction usage tag. See <see cref="SqlUtility.NoTransactionTag"/> and <see cref="SqlUtility.ScriptSupportsTransaction(string)"/>.
-        /// 3. Reports progress (Info level) after each minute.
-        /// 4. Prefixes each SQL script with a comment containing the script's name.
-        /// </summary>
         public void Execute(IEnumerable<SqlBatchScript> sqlScripts)
         {
             var scriptParts = sqlScripts
@@ -112,7 +118,7 @@ namespace Rhetos.Utilities
                     {
                         double estimatedTotalMs = now.Subtract(startTime).TotalMilliseconds / executedCount * totalCount;
                         var remainingTime = startTime.AddMilliseconds(estimatedTotalMs).Subtract(now);
-                        _logger.Info($"Executed {executedCount} / {totalCount} SQL scripts. {(remainingTime.TotalMinutes).ToString("f2")} minutes remaining.");
+                        _logger.Info($"Executed {executedCount} / {totalCount} SQL scripts. {remainingTime.TotalMinutes:f2} minutes remaining.");
                         lastReportTime = now;
                     }
                 };
@@ -122,18 +128,74 @@ namespace Rhetos.Utilities
                         ? script.Sql
                         : "--Name: " + script.Name.Replace("\r", " ").Replace("\n", " ") + "\r\n" + script.Sql);
 
-                _sqlExecuter.ExecuteSql(scriptsWithName, sqlBatch.UseTransaction, initializeProgress, reportProgress);
+                Execute(
+                    (ISqlExecuter sqlExecuter) => sqlExecuter.ExecuteSql(scriptsWithName, initializeProgress, reportProgress),
+                    sqlBatch.UseTransaction,
+                    sqlBatch.Scripts);
 
                 previousBatchesCount += sqlBatch.Scripts.Count;
             }
         }
 
-        /// <summary>
-        /// Combines multiple SQL scripts to a single one.
-        /// Use only for DML SQL scripts to avoid SQL syntax errors on DDL commands that need to stay in a separate scripts.
-        /// Scripts are joined to groups, respecting the configuration settings for the limit on total joined script size and count.
-        /// </summary>
-        /// <returns></returns>
+        private void Execute(Action<ISqlExecuter> sqlExecuterAction, bool useTransaction, IList<SqlBatchScript> errorContext)
+        {
+            if (_options.ExecuteOnNewConnection || !useTransaction)
+            {
+                using (var scope = CreateUnitOfWorkScope(useTransaction))
+                {
+                    var scopeSqlExecuter = scope.Resolve<ISqlExecuter>();
+                    sqlExecuterAction.Invoke(scopeSqlExecuter);
+                    CheckTransactionCount(scopeSqlExecuter, useTransaction ? 1 : 0, errorContext);
+                    scope.CommitAndClose();
+                }
+            }
+            else
+            {
+                sqlExecuterAction.Invoke(_sqlExecuter.Value);
+            }
+        }
+
+        private IUnitOfWorkScope CreateUnitOfWorkScope(bool useTransaction)
+        {
+            var scopeTransactionOptions = CsUtility.ShallowCopy(_persistenceTransactionOptions);
+            scopeTransactionOptions.UseDatabaseTransaction = useTransaction;
+
+            return _unitOfWorkFactory.CreateScope(builder =>
+            {
+                builder.RegisterInstance(scopeTransactionOptions);
+                builder.RegisterInstance(_userInfo);
+            });
+        }
+
+        private void CheckTransactionCount(ISqlExecuter scopeSqlExecuter, int expectedTranCount, IList<SqlBatchScript> errorContext)
+        {
+            var tranCount = scopeSqlExecuter.GetTransactionCount();
+            if (tranCount != expectedTranCount)
+            {
+                string msg = "Database transaction state has been unexpectedly modified in SQL commands."
+                    + $" Transaction count is {tranCount}, expected value is {expectedTranCount}.";
+
+                if (errorContext != null)
+                {
+                    var log = new StringBuilder(msg);
+                    msg += " See error log for more information.";
+
+                    log.AppendLine($" Executed {errorContext.Count} commands:");
+                    for (int i = 0; i < Math.Min(errorContext.Count, _options.ErrorReportCommandsLimit); i++)
+                    {
+                        var c = errorContext[i];
+                        log.AppendLine($"{i}: {(!string.IsNullOrEmpty(c.Name) ? c.Name : c.Sql.Limit(_options.ErrorReportScriptSizeLimit, appendTotalLengthInfo: true))}");
+                    }
+                    if (errorContext.Count > _options.ErrorReportCommandsLimit)
+                        log.AppendLine($"... (total {errorContext.Count} scripts)");
+
+                    _logger.Error(() => log.ToString());
+                }
+
+                throw new FrameworkException(msg);
+            }
+        }
+
         public List<string> JoinScripts(IEnumerable<string> scripts)
         {
             var joinedScripts = new List<string>();

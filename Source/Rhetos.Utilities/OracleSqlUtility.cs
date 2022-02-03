@@ -17,13 +17,40 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using Oracle.ManagedDataAccess.Client;
+using System;
+using System.Data.Common;
+using System.Globalization;
 
 namespace Rhetos.Utilities
 {
     public class OracleSqlUtility : ISqlUtility
     {
+        public DbConnection CreateConnection(string connectionString, IUserInfo userInfo)
+        {
+            var connection = new OracleConnection(connectionString);
+            try
+            {
+                connection.Open();
+                SetSqlUserInfo(connection, userInfo);
+
+                var setNationalLanguage = SetNationalLanguageQuery();
+                if (!string.IsNullOrEmpty(setNationalLanguage))
+                {
+                    var com = connection.CreateCommand();
+                    com.CommandText = setNationalLanguage;
+                    com.ExecuteNonQuery();
+                }
+            }
+            catch (OracleException ex)
+            {
+                var csb = new OracleConnectionStringBuilder(connectionString);
+                string msg = string.Format(CultureInfo.InvariantCulture, "Could not connect to data source '{0}', userID '{1}'.", csb.DataSource, csb.UserID);
+                throw new FrameworkException(msg, ex);
+            }
+            return connection;
+        }
+
         public static string LimitIdentifierLength(string name)
         {
             const int MaxLength = 30;
@@ -36,7 +63,6 @@ namespace Rhetos.Utilities
         }
 
         public static readonly string OracleNationalLanguageKey = "Rhetos:DatabaseOracle:NationalLanguage";
-
         private static string _setNationalLanguageQuery;
 
         /// <summary>

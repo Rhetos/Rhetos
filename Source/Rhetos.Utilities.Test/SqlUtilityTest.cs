@@ -129,9 +129,11 @@ namespace Rhetos.Utilities.Test
 
         class MockSqlExecuter : ISqlExecuter
         {
-            public void ExecuteReader(string command, Action<System.Data.Common.DbDataReader> action)
+            public int GetTransactionCount() => 1;
+
+            public void ExecuteReaderRaw(string query, object[] parameters, Action<DbDataReader> read)
             {
-                if (command == "SELECT SYSDATETIME()")
+                if (query == "SELECT SYSDATETIME()")
                 {
                     using var dataTable = new DataTable("mocktable");
                     dataTable.Columns.Add("column0", typeof(DateTime));
@@ -139,29 +141,14 @@ namespace Rhetos.Utilities.Test
 
                     using var dataReader = new DataTableReader(dataTable);
                     while (dataReader.Read())
-                        action(dataReader);
+                        read(dataReader);
                     dataReader.Close();
                 }
                 else
                     throw new NotImplementedException();
             }
 
-            public void ExecuteReaderRaw(string query, object[] parameters, Action<DbDataReader> read)
-            {
-                throw new NotImplementedException();
-            }
-
             public Task ExecuteReaderRawAsync(string query, object[] parameters, Action<DbDataReader> read, CancellationToken cancellationToken = default)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void ExecuteSql(IEnumerable<string> commands, bool useTransaction)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void ExecuteSql(IEnumerable<string> commands, bool useTransaction, Action<int> beforeExecute, Action<int> afterExecute)
             {
                 throw new NotImplementedException();
             }

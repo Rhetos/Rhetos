@@ -70,21 +70,22 @@ namespace CommonConcepts.Test
             sqlLog = sqlExecuterLog;
 
             using (var scope = TestScope.Create(builder => builder
+                .ConfigureOptions<SqlTransactionBatchesOptions>(o => o.ExecuteOnNewConnection = false)
                 .ConfigureLogMonitor(systemLog)
                 .ConfigureSqlExecuterMonitor(sqlExecuterLog)))
             {
                 var sqlExecuter = scope.Resolve<ISqlExecuter>();
                 sqlExecuter.ExecuteSql("DELETE FROM Rhetos.DataMigrationScript");
 
-                var sqlBatches = scope.Resolve<SqlTransactionBatches>();
+                var sqlBatches = scope.Resolve<ISqlTransactionBatches>();
 
                 int deployment = 0;
                 foreach (string scriptsDescription in scriptsDescriptions)
                 {
                     sqlExecuter.ExecuteSql($"--DBUpdate: {++deployment}");
                     var dbUpdateOptions = new DbUpdateOptions() { DataMigrationSkipScriptsWithWrongOrder = skipScriptsWithWrongOrder };
-                    var dataMigration = new DataMigrationScriptsExecuter(sqlExecuter, scope.Resolve<ILogProvider>(),
-                            ParseDataMigrationScriptsFromScriptsDescription(scriptsDescription), dbUpdateOptions, sqlBatches);
+                    var dataMigration = new DataMigrationScriptsExecuter(scope.Resolve<ILogProvider>(),
+                        ParseDataMigrationScriptsFromScriptsDescription(scriptsDescription), dbUpdateOptions, sqlBatches, sqlExecuter);
                     dataMigration.Execute();
                 }
 

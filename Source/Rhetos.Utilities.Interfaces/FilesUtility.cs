@@ -178,6 +178,16 @@ namespace Rhetos.Utilities
                 return Array.Empty<string>();
         }
 
+        /// <summary>
+        /// Reads the file with UTF-8 encoding.
+        /// If invalid characters are detected, it will show a warning and read the file again with the system's default local codepage.
+        /// </summary>
+        /// <remarks>
+        /// This method is intended to warn developers for non-English text files that are accidentally saved
+        /// in ANSI encoding (with default local codepage) instead of UTF-8.
+        /// Such file will be loaded correctly, but warning is displayed because the application's behavior could change
+        /// if the same operation is executed on another machine with different default codepage.
+        /// </remarks>
         public string ReadAllText(string path)
         {
             var text = File.ReadAllText(path, Encoding.UTF8);

@@ -19,6 +19,7 @@
 
 using Rhetos.Utilities;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
@@ -27,14 +28,44 @@ using System.Threading.Tasks;
 
 namespace Rhetos.DatabaseGenerator.Test
 {
+    public class MockSqlExecuterReport
+    {
+        public ConcurrentDictionary<int, List<(string Script, bool UseTransaction)>> Executed = new();
+
+        public List<(List<string> Scripts, bool UseTransaction)> GetBatches()
+            => Executed
+                .OrderBy(batch => batch.Key)
+                .Select(batch => new
+                {
+                    Scripts = batch.Value.Select(s => s.Script).ToList(),
+                    UseTransaction = batch.Value.Min(s => s.UseTransaction),
+                    UseTransaction2 = batch.Value.Max(s => s.UseTransaction),
+                })
+                .Select(batch =>
+                (
+                    batch.Scripts,
+                    batch.UseTransaction == batch.UseTransaction2
+                        ? batch.UseTransaction
+                        : throw new InvalidOperationException("Unexpected different transaction models in same batch.")
+                ))
+                .ToList();
+    }
+
     public class MockSqlExecuter : ISqlExecuter
     {
-        public List<(List<string> Scripts, bool UseTransaction)> ExecutedScriptsWithTransaction { get; private set; } = new List<(List<string> Scripts, bool UseTransaction)>();
+        private readonly PersistenceTransactionOptions _persistenceTransactionOptions;
+        private readonly MockSqlExecuterReport _mockSqlExecuterReport;
 
-        public void ExecuteReader(string command, Action<DbDataReader> action)
+        private static int NextId;
+        private readonly int id = Interlocked.Increment(ref NextId);
+
+        public MockSqlExecuter(PersistenceTransactionOptions persistenceTransactionOptions, MockSqlExecuterReport mockSqlExecuterReport)
         {
-            throw new NotImplementedException();
+            _persistenceTransactionOptions = persistenceTransactionOptions;
+            _mockSqlExecuterReport = mockSqlExecuterReport;
         }
+
+        public int GetTransactionCount() => _persistenceTransactionOptions.UseDatabaseTransaction ? 1 : 0;
 
         public void ExecuteReaderRaw(string query, object[] parameters, Action<DbDataReader> read)
         {
@@ -46,20 +77,11 @@ namespace Rhetos.DatabaseGenerator.Test
             throw new NotImplementedException();
         }
 
-        public void ExecuteSql(IEnumerable<string> commands, bool useTransaction)
-        {
-            ExecuteSql(commands, useTransaction, null, null);
-        }
-
-        public void ExecuteSql(IEnumerable<string> commands, bool useTransaction,
-            Action<int> beforeExecute, Action<int> afterExecute)
-        {
-            ExecutedScriptsWithTransaction.Add((commands.ToList(), useTransaction));
-        }
-
         public int ExecuteSqlRaw(string query, object[] parameters)
         {
-            throw new NotImplementedException();
+            var batch = _mockSqlExecuterReport.Executed.GetOrAdd(id, id => new List<(string Script, bool UseTransaction)>());
+            batch.Add((query, _persistenceTransactionOptions.UseDatabaseTransaction));
+            return 1;
         }
 
         public Task<int> ExecuteSqlRawAsync(string query, object[] parameters, CancellationToken cancellationToken = default)
