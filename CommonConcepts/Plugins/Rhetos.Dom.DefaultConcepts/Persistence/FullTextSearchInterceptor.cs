@@ -132,10 +132,10 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
                     string optionalRankTop = !string.IsNullOrEmpty(rankTop) ? $", {rankTop}" : "";
                     string ftsSql = $"{itemId} IN (SELECT [KEY] FROM CONTAINSTABLE({tableNameUnquoted}, {searchColumnsUnquoted}, {pattern}{optionalRankTop}))";
 
-                    cmd.CommandText =
-                        cmd.CommandText.Substring(0, ftsQuery.Index)
-                        + ftsSql
-                        + cmd.CommandText.Substring(ftsQuery.Index + ftsQuery.Length);
+                    cmd.CommandText = string.Concat(
+                        cmd.CommandText.AsSpan(0, ftsQuery.Index),
+                        ftsSql,
+                        cmd.CommandText.AsSpan(ftsQuery.Index + ftsQuery.Length));
                 }
             }
 

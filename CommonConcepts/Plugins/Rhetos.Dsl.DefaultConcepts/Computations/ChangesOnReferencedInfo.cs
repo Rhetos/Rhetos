@@ -89,7 +89,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             if (referencePath == "ID" || referencePath.EndsWith(".ID"))
                 return referencePath;
             else if (referencePath == "Base" || referencePath.EndsWith(".Base"))
-                return referencePath.Substring(0, referencePath.Length - 4) + "ID";
+                return string.Concat(referencePath.AsSpan(0, referencePath.Length - 4), "ID");
             else
                 return referencePath + "ID";
         }

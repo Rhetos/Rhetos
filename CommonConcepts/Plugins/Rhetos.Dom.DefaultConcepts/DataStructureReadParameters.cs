@@ -124,7 +124,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var removablePrefix = removablePrefixes.FirstOrDefault(prefix => filterName.AsSpan(index, length).StartsWith(prefix));
             if (removablePrefix != null)
-                return filterName.Substring(0, index) + filterName.Substring(index + removablePrefix.Length);
+                return string.Concat(filterName.AsSpan(0, index), filterName.AsSpan(index + removablePrefix.Length));
             return filterName;
         }
     }

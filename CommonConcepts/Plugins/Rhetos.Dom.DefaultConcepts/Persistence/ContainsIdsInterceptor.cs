@@ -100,10 +100,10 @@ namespace Rhetos.Dom.DefaultConcepts
                         containsIdsSql = $"{id} {operation} ({idsList})";
                     }
 
-                    cmd.CommandText =
-                        cmd.CommandText.Substring(0, containsIdsQuery.Index)
-                        + containsIdsSql
-                        + cmd.CommandText.Substring(containsIdsQuery.Index + containsIdsQuery.Length);
+                    cmd.CommandText = string.Concat(
+                        cmd.CommandText.AsSpan(0, containsIdsQuery.Index),
+                        containsIdsSql,
+                        cmd.CommandText.AsSpan(containsIdsQuery.Index + containsIdsQuery.Length));
 
                     replacedVariablesIndices.Add(indexOfConcatenatedIdsParameter);
                 }

@@ -57,7 +57,7 @@ namespace Rhetos.Utilities
             if (name.Length > MaxLength)
             {
                 var hashErasedPart = CsUtility.GetStableHashCode(name.Substring(MaxLength - 9)).ToString("X").PadLeft(8, '0');
-                return name.Substring(0, MaxLength - 9) + "_" + hashErasedPart;
+                return string.Concat(name.AsSpan(0, MaxLength - 9), "_", hashErasedPart);
             }
             return name;
         }

@@ -19,6 +19,7 @@
 
 using Rhetos.Compiler;
 using Rhetos.Dsl.DefaultConcepts;
+using System;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -57,7 +58,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var source = info.Source;
             var target = info.RowPermissionsFilters.DataStructure;
-            string parameterName = target.Name.Substring(0, 1).ToLower() + target.Name.Substring(1) + "Item";
+            string parameterName = string.Concat(target.Name.Substring(0, 1).ToLower(), target.Name.AsSpan(1), "Item");
 
             return
             $@"{{

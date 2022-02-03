@@ -19,6 +19,7 @@
 
 using Rhetos.Dsl;
 using Rhetos.Utilities;
+using System;
 
 namespace Rhetos.DatabaseGenerator.Test
 {
@@ -113,7 +114,7 @@ namespace Rhetos.DatabaseGenerator.Test
         public static string RemoveQuery(string createQuery)
         {
             if (!SqlUtility.ScriptSupportsTransaction(createQuery))
-                return SqlUtility.NoTransactionTag + "drop-" + createQuery.Substring(SqlUtility.NoTransactionTag.Length);
+                return string.Concat(SqlUtility.NoTransactionTag, "drop-", createQuery.AsSpan(SqlUtility.NoTransactionTag.Length));
             else
                 return "drop-" + createQuery;
         }

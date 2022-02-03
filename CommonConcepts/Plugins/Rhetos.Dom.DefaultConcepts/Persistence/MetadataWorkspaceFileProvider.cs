@@ -94,9 +94,10 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
                     _logger.Warning($@"Changing ProviderManifestToken from {existingManifestToken.Value} to {expectedManifestToken}.");
 
                 var lines = File.ReadAllLines(ssdlFile, Encoding.UTF8);
-                lines[0] = ssdlFirstLine.Substring(0, existingManifestToken.Index)
-                    + expectedManifestToken
-                    + ssdlFirstLine.Substring(existingManifestToken.Index + existingManifestToken.Length);
+                lines[0] = string.Concat(
+                    ssdlFirstLine.AsSpan(0, existingManifestToken.Index),
+                    expectedManifestToken,
+                    ssdlFirstLine.AsSpan(existingManifestToken.Index + existingManifestToken.Length));
                 File.WriteAllLines(ssdlFile, lines, Encoding.UTF8);
 
                 _performanceLogger.Write(sw, $"Initialized {Path.GetFileName(ssdlFile)}.");
