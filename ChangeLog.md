@@ -78,7 +78,7 @@ Changes in behavior:
 19. Updated dependencies to a newer version: Autofac v6.3.0, Newtonsoft.Json v13.0.1, NLog v4.7.11.
 20. ISqlExecuter.ExecuteSql method no longer has bool parameter useTransaction.
     * Where ExecuteSql was called as runtime with useTransaction set to *true*, simply remove the parameter.
-    * If useTransaction was set to *false* (executing SQL command out of transaction),
+    * If useTransaction needs to be *false* (executing SQL command out of transaction),
       manually create a new SqlConnection and SqlCommand from Rhetos.Utilities.ConnectionString (from DI).
       Alternatively, create a new [unit-of-work scope](https://github.com/Rhetos/Rhetos/wiki/Unit-of-work#manual-control-over-unit-of-work)
       with PersistenceTransactionOptions.UseDatabaseTransaction disabled and IUserInfo added, and resolve ISqlExecuter from that scope.
@@ -163,6 +163,8 @@ Changes in Rhetos libraries API:
 23. Renamed class `_ModuleRepository` to `ModuleRepository`.
 24. UnitOfWorkScope type is replaced with IUnitOfWorkScope on various methods.
 25. SqlTransactionBatches is replaced with ISqlTransactionBatches in DI container.
+26. Redundant ISqlExecuter helper methods moved from interface to extension methods.
+    In case of compiler error on `context.SqlExecuter` or similar code, add `using Rhetos.Utilities;`.
 
 ### New features
 
