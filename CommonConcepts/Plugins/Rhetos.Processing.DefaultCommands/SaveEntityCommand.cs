@@ -17,25 +17,16 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Autofac.Features.Indexed;
-using Rhetos.Persistence;
-using Rhetos.Utilities;
-using System.Diagnostics.Contracts;
-using Rhetos.Dom;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Persistence;
+using System;
 using System.ComponentModel.Composition;
-using Rhetos.Extensibility;
-using Rhetos.Dsl.DefaultConcepts;
+using System.Linq;
 
 namespace Rhetos.Processing.DefaultCommands
 {
     [Export(typeof(ICommandImplementation))]
-    [ExportMetadata(MefProvider.Implements, typeof(SaveEntityCommandInfo))]
-    public class SaveEntityCommand : ICommandImplementation
+    public class SaveEntityCommand : ICommandImplementation<SaveEntityCommandInfo, object>
     {
         private readonly GenericRepositories _genericRepositories;
         private readonly IPersistenceTransaction _persistenceTransaction;
@@ -51,10 +42,8 @@ namespace Rhetos.Processing.DefaultCommands
             _serverCommandsUtility = serverCommandsUtility;
         }
 
-        public CommandResult Execute(ICommandInfo commandInfo)
+        public object Execute(SaveEntityCommandInfo saveInfo)
         {
-            var saveInfo = (SaveEntityCommandInfo)commandInfo;
-
             if (saveInfo.Entity == null)
                 throw new ClientException("Invalid SaveEntityCommand argument: Entity is not set.");
 
@@ -87,11 +76,7 @@ namespace Rhetos.Processing.DefaultCommands
                     throw new UserException("You are not authorized to write some or all of the provided data. Insufficient permissions to apply the new data.", $"DataStructure:{saveInfo.Entity}.");
                 }
 
-            return new CommandResult
-            {
-                Message = "Command executed",
-                Success = true
-            };
+            return null;
         }
 
         private static IEntity[] ConcatenateNullable(IEntity[] a, IEntity[] b)

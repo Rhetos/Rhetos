@@ -18,29 +18,15 @@
 */
 
 using System.ComponentModel.Composition;
-using Rhetos.Extensibility;
 
 namespace Rhetos.Processing.DefaultCommands
 {
     [Export(typeof(ICommandImplementation))]
-    [ExportMetadata(MefProvider.Implements, typeof(PingCommandInfo))]
-    public class PingCommand : ICommandImplementation
+    public class PingCommand : ICommandImplementation<PingCommandInfo, PingCommandInfo>
     {
-        private readonly IDataTypeProvider _dataTypeProvider;
-
-        public PingCommand(IDataTypeProvider dataTypeProvider)
+        public PingCommandInfo Execute(PingCommandInfo info)
         {
-            _dataTypeProvider = dataTypeProvider;
-        }
-
-        public CommandResult Execute(ICommandInfo info)
-        {
-            return new CommandResult
-            {
-                Data = _dataTypeProvider.CreateBasicData(((PingCommandInfo)info).Data),
-                Message = "",
-                Success = true
-            };
+            return info;
         }
     }
 }

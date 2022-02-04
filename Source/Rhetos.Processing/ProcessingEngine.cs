@@ -81,7 +81,7 @@ namespace Rhetos.Processing
 
         public ProcessingResult Execute(IList<ICommandInfo> commands)
         {
-            _requestLogger.Trace(() => $"User: {ReportUserNameOrAnonymous(_userInfo)}, Commands({commands.Count}): {string.Join(", ", commands.Select(c => c.ToString()))}.");
+            _requestLogger.Trace(() => $"User: {ReportUserNameOrAnonymous(_userInfo)}, Commands({commands.Count}): {string.Join(", ", commands.Select(c => c.Summary()))}.");
             var executionId = Guid.NewGuid();
             _commandsLogger.Trace(() => _xmlUtility.SerializeToXml(new ExecutionCommandsLogEntry { ExecutionId = executionId, UserInfo = _userInfo.Report(), Commands = commands }));
 
@@ -119,30 +119,29 @@ namespace Rhetos.Processing
                     Success = false
                 };
 
-            var commandResults = new List<CommandResult>();
-            var stopwatch = Stopwatch.StartNew();
+            var commandResults = new List<object>();
 
             foreach (var commandInfo in commands)
             {
                 try
                 {
-                    _logger.Trace("Executing command {0}.", commandInfo);
+                    _logger.Trace("Executing command {0}.", commandInfo.Summary());
 
                     var implementations = _commandRepository.GetImplementations(commandInfo.GetType());
 
                     if (!implementations.Any())
                         throw new FrameworkException(string.Format(CultureInfo.InvariantCulture,
-                            "Cannot execute command \"{0}\". There are no command implementations loaded that implement the command.", commandInfo));
+                            "Cannot execute command \"{0}\". There are no command implementations loaded that implement the command.", commandInfo.Summary()));
 
                     if (implementations.Count() > 1)
                         throw new FrameworkException(string.Format(CultureInfo.InvariantCulture, 
-                            "Cannot execute command \"{0}\". It has more than one implementation registered: {1}.", commandInfo, String.Join(", ", implementations.Select(i => i.GetType().Name))));
+                            "Cannot execute command \"{0}\". It has more than one implementation registered: {1}.", commandInfo.Summary(), string.Join(", ", implementations.Select(i => i.GetType().Name))));
 
                     var commandImplementation = implementations.Single();
                     _logger.Trace("Executing implementation {0}.", commandImplementation.GetType().Name);
 
                     var commandObserversForThisCommand = _commandObservers.GetImplementations(commandInfo.GetType());
-                    stopwatch.Restart();
+                    var stopwatch = Stopwatch.StartNew();
 
                     foreach (var commandObeserver in commandObserversForThisCommand)
                     {
@@ -150,33 +149,23 @@ namespace Rhetos.Processing
                         _performanceLogger.Write(stopwatch, () => "CommandObeserver.BeforeExecute " + commandObeserver.GetType().FullName);
                     }
 
-                    CommandResult commandResult;
+                    object commandResult;
                     try
                     {
                         commandResult = commandImplementation.Execute(commandInfo);
                     }
                     finally
                     {
-                        _performanceLogger.Write(stopwatch, () => "Command executed (" + commandImplementation + ": " + commandInfo + ").");
+                        _performanceLogger.Write(stopwatch, () => "Command executed (" + commandImplementation + ": " + commandInfo.Summary() + ").");
                     }
-                    _logger.Trace("Execution result message: {0}", commandResult.Message);
 
-                    if (commandResult.Success)
-                        foreach (var commandObeserver in commandObserversForThisCommand)
-                        {
-                            commandObeserver.AfterExecute(commandInfo, commandResult);
-                            _performanceLogger.Write(stopwatch, () => "CommandObeserver.AfterExecute " + commandObeserver.GetType().FullName);
-                        }
+                    foreach (var commandObeserver in commandObserversForThisCommand)
+                    {
+                        commandObeserver.AfterExecute(commandInfo, commandResult);
+                        _performanceLogger.Write(stopwatch, () => "CommandObeserver.AfterExecute " + commandObeserver.GetType().FullName);
+                    }
 
                     commandResults.Add(commandResult);
-
-                    if (!commandResult.Success)
-                    {
-                        _persistenceTransaction.DiscardOnDispose();
-
-                        var systemMessage = "Command failed: " + commandImplementation + ", " + commandInfo + ".";
-                        return LogAndReturnError(commandResults, systemMessage + " " + commandResult.Message, systemMessage, commandResult.Message, null, commands, executionId);
-                    }
                 }
                 catch (Exception ex)
                 {
@@ -209,19 +198,18 @@ namespace Rhetos.Processing
                         systemMessage = ErrorReporting.GetInternalServerErrorMessage(_localizer, ex);
                     }
 
-                    return LogAndReturnError(commandResults, "Command failed: " + commandInfo + ".", systemMessage, userMessage, ex, commands, executionId);
+                    return LogAndReturnError(commandResults, "Command failed: " + commandInfo.Summary() + ".", systemMessage, userMessage, ex, commands, executionId);
                 }
             }
 
             return new ProcessingResult
             {
-                CommandResults = commandResults.ToArray(),
-                Success = true,
-                SystemMessage = null
+                CommandResults = commandResults,
+                Success = true
             };
         }
 
-        private ProcessingResult LogAndReturnError(List<CommandResult> commandResults, string logError, string systemMessage, string userMessage, Exception logException, IList<ICommandInfo> commands, Guid executionId)
+        private ProcessingResult LogAndReturnError(List<object> commandResults, string logError, string systemMessage, string userMessage, Exception logException, IList<ICommandInfo> commands, Guid executionId)
         {
             var errorSeverity = logException == null ? EventType.Error
                 : logException is UserException ? EventType.Trace
@@ -232,7 +220,7 @@ namespace Rhetos.Processing
 
             var result = new ProcessingResult
             {
-                CommandResults = commandResults.ToArray(),
+                CommandResults = commandResults,
                 Success = false,
                 SystemMessage = systemMessage,
                 UserMessage = userMessage

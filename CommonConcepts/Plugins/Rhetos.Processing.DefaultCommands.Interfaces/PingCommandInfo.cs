@@ -17,10 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using Rhetos.Utilities;
 using System.ComponentModel.Composition;
 
 namespace Rhetos.Processing.DefaultCommands
@@ -29,5 +26,8 @@ namespace Rhetos.Processing.DefaultCommands
     public class PingCommandInfo : ICommandInfo
     {
         public string Data { get; set; }
+
+        public string Summary() => GetType().Name
+            + (!string.IsNullOrEmpty(Data) ? " " + CsUtility.Limit(Data, 50, appendTotalLengthInfo: true) : "");
     }
 }

@@ -17,21 +17,18 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos;
+using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Extensibility;
+using Rhetos.Processing;
+using Rhetos.Processing.DefaultCommands;
+using Rhetos.TestCommon;
+using Rhetos.Utilities;
 using System;
-using System.Text;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos.Dom.DefaultConcepts;
-using Rhetos.TestCommon;
-using Rhetos.Processing.DefaultCommands;
-using Rhetos.Configuration.Autofac;
-using Rhetos.Utilities;
-using Rhetos.Processing;
-using System.Linq.Expressions;
-using Autofac.Features.Indexed;
-using Rhetos;
-using CommonConcepts.Test.Helpers;
+using System.Text;
 
 namespace CommonConcepts.Test
 {
@@ -40,9 +37,9 @@ namespace CommonConcepts.Test
     {
         private static ReadCommandResult ExecuteCommand(ReadCommandInfo commandInfo, IUnitOfWorkScope scope)
         {
-            var commands = scope.Resolve<IIndex<Type, IEnumerable<ICommandImplementation>>>();
-            var readCommand = (ReadCommand)commands[typeof(ReadCommandInfo)].Single();
-            return (ReadCommandResult)readCommand.Execute(commandInfo).Data.Value;
+            var commands = scope.Resolve<IPluginsContainer<ICommandImplementation>>();
+            var readCommand = (ReadCommand)commands.GetImplementations(typeof(ReadCommandInfo)).Single();
+            return readCommand.Execute(commandInfo);
         }
 
         [TestMethod]

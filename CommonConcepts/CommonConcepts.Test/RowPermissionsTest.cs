@@ -17,23 +17,18 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using CommonConcepts.Test.Helpers;
-using Rhetos.TestCommon;
-using Rhetos.Configuration.Autofac;
-using Rhetos.Utilities;
-using Rhetos.Processing;
-using System.Collections.Generic;
-using Rhetos.Processing.DefaultCommands;
+using Rhetos;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Extensibility;
+using Rhetos.Processing;
+using Rhetos.Processing.DefaultCommands;
+using Rhetos.TestCommon;
+using Rhetos.Utilities;
+using System;
+using System.Diagnostics;
 using System.Linq;
 using TestRowPermissions;
-using Rhetos.Dsl.DefaultConcepts;
-using Rhetos;
-using Autofac.Features.Indexed;
-using Rhetos.Extensibility;
-using System.Diagnostics;
 
 namespace CommonConcepts.Test
 {
@@ -47,9 +42,9 @@ namespace CommonConcepts.Test
 
         private static ReadCommandResult ExecuteReadCommand(ReadCommandInfo commandInfo, IUnitOfWorkScope scope)
         {
-            var commands = scope.Resolve<IIndex<Type, IEnumerable<ICommandImplementation>>>();
-            var readCommand = (ReadCommand)commands[typeof(ReadCommandInfo)].Single();
-            return (ReadCommandResult)readCommand.Execute(commandInfo).Data.Value;
+            var commands = scope.Resolve<IPluginsContainer<ICommandImplementation>>();
+            var readCommand = (ReadCommand)commands.GetImplementations(typeof(ReadCommandInfo)).Single();
+            return (ReadCommandResult)readCommand.Execute(commandInfo);
         }
 
         /// <summary>
@@ -550,7 +545,8 @@ namespace CommonConcepts.Test
             using (var scope = TestScope.Create(builder => builder.ConfigureIgnoreClaims()))
             {
                 var repository = scope.Resolve<Common.DomRepository>();
-                var readCommand = scope.Resolve<IPluginsContainer<ICommandImplementation>>().GetPlugins().OfType<ReadCommand>().Single();
+                var commands = scope.Resolve<IPluginsContainer<ICommandImplementation>>();
+                var readCommand = (ReadCommand)commands.GetImplementations(typeof(ReadCommandInfo)).Single();
                 Guid testRun = Guid.NewGuid();
 
                 // The following DuplicateIdViewID GUIDs are hard-coded in SqlQueryable DuplicateIdView.
@@ -576,8 +572,8 @@ namespace CommonConcepts.Test
 
         private void ExecuteSaveCommand(SaveEntityCommandInfo saveInfo, IUnitOfWorkScope scope)
         {
-            var commandImplementations = scope.Resolve<IPluginsContainer<ICommandImplementation>>();
-            var saveCommand = commandImplementations.GetImplementations(saveInfo.GetType()).Single();
+            var commands = scope.Resolve<IPluginsContainer<ICommandImplementation>>();
+            var saveCommand = commands.GetImplementations(saveInfo.GetType()).Single();
             saveCommand.Execute(saveInfo);
         }
 

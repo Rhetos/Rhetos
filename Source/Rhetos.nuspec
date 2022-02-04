@@ -78,9 +78,6 @@
     <file src="Rhetos.Utilities\bin\Debug\net5.0\Rhetos.Utilities.dll" target="lib\net5.0" />
     <file src="Rhetos.Utilities\bin\Debug\net5.0\Rhetos.Utilities.pdb" target="lib\net5.0" />
     <file src="Rhetos.Utilities\bin\Debug\net5.0\Rhetos.Utilities.xml" target="lib\net5.0" />
-    <file src="Rhetos.XmlSerialization\bin\Debug\net5.0\Rhetos.XmlSerialization.dll" target="lib\net5.0" />
-    <file src="Rhetos.XmlSerialization\bin\Debug\net5.0\Rhetos.XmlSerialization.pdb" target="lib\net5.0" />
-    <file src="Rhetos.XmlSerialization\bin\Debug\net5.0\Rhetos.XmlSerialization.xml" target="lib\net5.0" />
     <file src="Rhetos.Configuration.Autofac\bin\Debug\net5.0\Rhetos.Configuration.Autofac.dll" target="lib\net5.0" />
     <file src="Rhetos.Configuration.Autofac\bin\Debug\net5.0\Rhetos.Configuration.Autofac.pdb" target="lib\net5.0" />
     <file src="Rhetos.Configuration.Autofac\bin\Debug\net5.0\Rhetos.Configuration.Autofac.xml" target="lib\net5.0" />

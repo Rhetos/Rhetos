@@ -18,6 +18,7 @@
 */
 
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Rhetos.Extensibility
 {
@@ -32,5 +33,22 @@ namespace Rhetos.Extensibility
     public interface INamedPlugins<TPlugin>
     {
         IEnumerable<TPlugin> GetPlugins(string name);
+    }
+
+    public static class NamedPluginsExtensions
+    {
+        public static TPlugin GetPlugin<TPlugin>(this INamedPlugins<TPlugin> namedPlugins, string name)
+        {
+            var plugins = namedPlugins.GetPlugins(name);
+
+            if (!plugins.Any())
+                throw new FrameworkException("There is no " + typeof(TPlugin).Name + " plugin named '" + name + "'.");
+
+            if (plugins.Count() > 1)
+                throw new FrameworkException("There is more than one " + typeof(TPlugin).Name + " plugin named '" + name
+                    + "': " + plugins.First().GetType().FullName + ", " + plugins.Last().GetType().FullName + ".");
+
+            return plugins.First();
+        }
     }
 }

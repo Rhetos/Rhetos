@@ -17,22 +17,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
-using Autofac.Features.Indexed;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Extensibility;
 using Rhetos.Processing;
 using Rhetos.Processing.DefaultCommands;
-using Rhetos.XmlSerialization;
-using Rhetos.Configuration.Autofac;
-using Rhetos.Utilities;
 using Rhetos.TestCommon;
-using Rhetos.Logging;
-using Rhetos;
-using CommonConcepts.Test.Helpers;
+using Rhetos.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace CommonConcepts.Test
 {
@@ -54,10 +49,10 @@ namespace CommonConcepts.Test
 
         private static string ReportCommandResult(IUnitOfWorkScope scope, ReadCommandInfo info, bool sort = false)
         {
-            var commands = scope.Resolve<IIndex<Type, IEnumerable<ICommandImplementation>>>();
-            var readCommand = (ReadCommand)commands[typeof(ReadCommandInfo)].Single();
+            var commands = scope.Resolve<IPluginsContainer<ICommandImplementation>>();
+            var readCommand = (ReadCommand)commands.GetImplementations(typeof(ReadCommandInfo)).Single();
 
-            var result = (ReadCommandResult)readCommand.Execute(info).Data.Value;
+            var result = readCommand.Execute(info);
             var items = ((IEnumerable<TestQueryDataStructureCommand.E>)result.Records).Select(item => item.Name);
             if (sort)
                 items = items.OrderBy(x => x);
@@ -179,10 +174,10 @@ namespace CommonConcepts.Test
 
         private static string ReportCommandResult2(IUnitOfWorkScope scope, ReadCommandInfo info, bool sort = false)
         {
-            var commands = scope.Resolve<IIndex<Type, IEnumerable<ICommandImplementation>>>();
-            var readCommand = (ReadCommand)commands[typeof(ReadCommandInfo)].Single();
+            var commands = scope.Resolve<IPluginsContainer<ICommandImplementation>>();
+            var readCommand = (ReadCommand)commands.GetImplementations(typeof(ReadCommandInfo)).Single();
 
-            var result = (ReadCommandResult)readCommand.Execute(info).Data.Value;
+            var result = readCommand.Execute(info);
             var items = ((IEnumerable<TestQueryDataStructureCommand.Source>)result.Records).Select(item => item.Name);
             if (sort)
                 items = items.OrderBy(x => x);
@@ -241,26 +236,6 @@ namespace CommonConcepts.Test
                 Console.WriteLine("TotalCount: " + readResult.TotalCount);
                 Assert.IsTrue(readResult.Records.Length < readResult.TotalCount);
             }
-        }
-    }
-
-    //====================================================================
-
-    class SimpleDataTypeProvider : IDataTypeProvider
-    {
-        public IBasicData<T> CreateBasicData<T>(T value)
-        {
-            return new XmlBasicData<T> { Data = value };
-        }
-
-        public IDataArray CreateDataArray<T>(Type type, T[] data) where T : class
-        {
-            throw new NotImplementedException();
-        }
-
-        public IDataArray CreateDomainDataArray(string domainType)
-        {
-            throw new NotImplementedException();
         }
     }
 }

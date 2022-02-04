@@ -17,15 +17,26 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
 namespace Rhetos.Processing
 {
+    /// <summary>
+    /// Represents a processing engine command.
+    /// A Rhetos app will usually exposed the commands through some web API implementation.
+    /// </summary>
     public interface ICommandImplementation
     {
-        CommandResult Execute(ICommandInfo info);
+        object Execute(object parameter);
+    }
+
+    public interface ICommandImplementation<in TCommandParameter, out TCommandResult> : ICommandImplementation
+        where TCommandParameter : class, ICommandInfo // Arguments and results are classes to avoid edge cases in serialization.
+        where TCommandResult : class
+    {
+        TCommandResult Execute(TCommandParameter parameter);
+
+        object ICommandImplementation.Execute(object parameter)
+        {
+            return Execute((TCommandParameter)parameter);
+        }
     }
 }

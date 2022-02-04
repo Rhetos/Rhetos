@@ -74,7 +74,6 @@ namespace Rhetos.Extensibility
             "Rhetos.Utilities.dll",
             "Rhetos.Utilities.Interfaces.dll",
             "Rhetos.Web.dll",
-            "Rhetos.XmlSerialization.dll",
             "RhetosVSIntegration.dll",
         };
     }

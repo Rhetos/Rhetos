@@ -17,16 +17,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
 namespace Rhetos.Processing
 {
     public interface ICommandObserver
     {
         void BeforeExecute(ICommandInfo commandInfo);
-        void AfterExecute(ICommandInfo commandInfo, CommandResult commandResult);
+
+        /// <summary>
+        /// This method is called only if the command executed successfully.
+        /// </summary>
+        void AfterExecute(ICommandInfo commandInfo, object commandResult);
     }
 }

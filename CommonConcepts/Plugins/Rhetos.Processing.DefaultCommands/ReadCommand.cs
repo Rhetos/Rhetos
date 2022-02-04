@@ -19,42 +19,35 @@
 
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Extensibility;
 using Rhetos.Logging;
 using System.ComponentModel.Composition;
 
 namespace Rhetos.Processing.DefaultCommands
 {
     [Export(typeof(ICommandImplementation))]
-    [ExportMetadata(MefProvider.Implements, typeof(ReadCommandInfo))]
-    public class ReadCommand : ICommandImplementation
+    public class ReadCommand : ICommandImplementation<ReadCommandInfo, ReadCommandResult>
     {
-        private readonly IDataTypeProvider _dataTypeProvider;
         private readonly GenericRepositories _repositories;
         private readonly ILogger _logger;
         private readonly ServerCommandsUtility _serverCommandsUtility;
 
         public ReadCommand(
-            IDataTypeProvider dataTypeProvider,
             GenericRepositories repositories,
             ILogProvider logProvider,
             ServerCommandsUtility serverCommandsUtility)
         {
-            _dataTypeProvider = dataTypeProvider;
             _repositories = repositories;
             _logger = logProvider.GetLogger(GetType().Name);
             _serverCommandsUtility = serverCommandsUtility;
         }
 
-        public CommandResult Execute(ICommandInfo commandInfo)
+        public ReadCommandResult Execute(ReadCommandInfo readInfo)
         {
-            var readInfo = (ReadCommandInfo)commandInfo;
-
             if (readInfo.DataSource == null)
                 throw new ClientException("Invalid ReadCommand argument: Data source is not set.");
             
             var genericRepository = _repositories.GetGenericRepository(readInfo.DataSource);
-            ReadCommandResult result = _serverCommandsUtility.ExecuteReadCommand(readInfo, genericRepository);
+            var result = _serverCommandsUtility.ExecuteReadCommand(readInfo, genericRepository);
 
             if (result.Records != null && !AlreadyFilteredByRowPermissions(readInfo))
             {
@@ -63,12 +56,7 @@ namespace Rhetos.Processing.DefaultCommands
                     throw new UserException("You are not authorized to access some or all of the data requested.", $"DataStructure:{readInfo.DataSource},Validation:RowPermissionsRead");
             }
 
-            return new CommandResult
-            {
-                Data = _dataTypeProvider.CreateBasicData(result),
-                Message = (result.Records != null ? result.Records.Length.ToString() : result.TotalCount.ToString()) + " row(s) found",
-                Success = true
-            };
+            return result;
         }
 
         private bool AlreadyFilteredByRowPermissions(ReadCommandInfo readCommand)

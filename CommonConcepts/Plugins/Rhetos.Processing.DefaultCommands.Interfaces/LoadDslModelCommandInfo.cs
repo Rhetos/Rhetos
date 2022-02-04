@@ -17,10 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.ComponentModel.Composition;
 
 namespace Rhetos.Processing.DefaultCommands
@@ -28,5 +24,6 @@ namespace Rhetos.Processing.DefaultCommands
     [Export(typeof(ICommandInfo))]
     public class LoadDslModelCommandInfo : ICommandInfo
     {
+        public string Summary() => GetType().Name;
     }
 }

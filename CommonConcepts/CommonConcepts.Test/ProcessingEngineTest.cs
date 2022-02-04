@@ -17,18 +17,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Dom.DefaultConcepts;
-using Rhetos.TestCommon;
-using Rhetos.Configuration.Autofac;
-using Rhetos.Utilities;
 using Rhetos.Processing;
 using Rhetos.Processing.DefaultCommands;
-using CommonConcepts.Test.Helpers;
+using Rhetos.TestCommon;
+using Rhetos.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace CommonConcepts.Test
 {
@@ -94,7 +91,7 @@ namespace CommonConcepts.Test
                 Assert.IsFalse(processingEngineResult.Success);
                 TestUtility.AssertContains(processingEngineResult.UserMessage, "duplicate");
 
-                var excected = new ListOfTuples<string, IEnumerable<string>>()
+                var expected = new ListOfTuples<string, IEnumerable<string>>()
                 {
                     { "request info", new[] { "ProcessingEngine Request", "SaveEntityCommandInfo TestUnique.E, insert 2" } },
                     { "command xml", new[] { "ProcessingEngine Commands", "<DataToInsert", ">abc</S>" } },
@@ -103,7 +100,7 @@ namespace CommonConcepts.Test
                     { "CommandsWithClientError result", new[] { "ProcessingEngine CommandsWithClientError", "<UserMessage>", "It is not allowed" } },
                 };
 
-                foreach (var test in excected)
+                foreach (var test in expected)
                     Assert.IsTrue(log.Any(line => test.Item2.All(pattern => line.Contains(pattern))), "Missing a log entry for test '" + test.Item1 + "'.");
 
                 var notExpected = new[] { "CommandsWithServerError" };
@@ -212,7 +209,7 @@ namespace CommonConcepts.Test
                 var result = processingEngine.Execute(new[] { command });
                 if (!result.Success)
                     throw new ApplicationException(result.UserMessage + ", " + result.SystemMessage);
-                var results = (TResult)result.CommandResults.Single().Data?.Value;
+                var results = (TResult)result.CommandResults.Single();
 
                 scope.CommitAndClose();
                 return results;

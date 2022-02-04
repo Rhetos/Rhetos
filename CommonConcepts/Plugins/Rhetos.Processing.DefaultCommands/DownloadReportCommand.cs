@@ -17,21 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.IO;
-using System.Linq;
-using System.Text;
 using Autofac.Features.Indexed;
 using Rhetos.Dom.DefaultConcepts;
-using Rhetos.Extensibility;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.Processing.DefaultCommands
 {
     [Export(typeof(ICommandImplementation))]
-    [ExportMetadata(MefProvider.Implements, typeof(DownloadReportCommandInfo))]
-    public class DownloadReportCommand : ICommandImplementation
+    public class DownloadReportCommand : ICommandImplementation<DownloadReportCommandInfo, DownloadReportCommandResult>
     {
         private readonly IIndex<string, IReportRepository> _reportIndex;
 
@@ -40,23 +33,16 @@ namespace Rhetos.Processing.DefaultCommands
             _reportIndex = reportIndex;
         }
 
-        public CommandResult Execute(ICommandInfo commandInfo)
+        public DownloadReportCommandResult Execute(DownloadReportCommandInfo info)
         {
-            var info = (DownloadReportCommandInfo)commandInfo;
-
             string reportName = info.Report.GetType().FullName;
             IReportRepository reportRepository = _reportIndex[reportName];
             var generatedReportFile = reportRepository.GenerateReport(info.Report, info.ConvertFormat);
 
-            return new CommandResult
+            return new DownloadReportCommandResult
             {
-                Data = new DownloadReportCommandResult
-                {
-                    ReportFile =  generatedReportFile.Content,
-                    SuggestedFileName = generatedReportFile.Name
-                },
-                Message = "Report generated: " + reportName + " to " + generatedReportFile.Name,
-                Success = true
+                ReportFile = generatedReportFile.Content,
+                SuggestedFileName = generatedReportFile.Name
             };
         }
     }

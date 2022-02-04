@@ -17,16 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Diagnostics.Contracts;
-using System.ComponentModel.Composition;
-using Rhetos.Utilities;
-using System.Xml.Serialization;
 using Rhetos.Dom.DefaultConcepts;
-using Rhetos.XmlSerialization;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.Processing.DefaultCommands
 {
@@ -38,7 +30,7 @@ namespace Rhetos.Processing.DefaultCommands
         public IEntity[] DataToUpdate { get; set; }
         public IEntity[] DataToDelete { get; set; }
 
-        public override string ToString()
+        public string Summary()
         {
             return GetType().Name
                 + " " + Entity

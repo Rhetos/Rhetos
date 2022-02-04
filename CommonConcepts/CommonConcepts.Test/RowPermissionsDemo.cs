@@ -17,9 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using CommonConcepts.Test.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos.Configuration.Autofac;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Processing;
 using Rhetos.Processing.DefaultCommands;
@@ -397,25 +395,21 @@ namespace CommonConcepts.Test
                 return "ERROR: " + (processingResult.UserMessage ?? processingResult.SystemMessage);
 
             var commandResult = processingResult.CommandResults.Single();
-            if (commandResult.Data == null || commandResult.Data.Value == null)
-                return commandResult.Message;
+            if (commandResult == null)
+                return "Command executed";
 
-            if (commandResult.Data.Value is ReadCommandResult)
+            if (commandResult is ReadCommandResult readResult)
             {
-                var records = (IEnumerable<object>)((ReadCommandResult)commandResult.Data.Value).Records;
-
-                if (records is IEnumerable<DemoRowPermissions1.Document>)
+                if (readResult.Records is IEnumerable<DemoRowPermissions1.Document> documents1)
                 {
-                    var documents = (IEnumerable<DemoRowPermissions1.Document>)records;
-                    return string.Join(", ", documents.Select(document => document.Title).OrderBy(x => x));
+                    return string.Join(", ", documents1.Select(document => document.Title).OrderBy(x => x));
                 }
-                else if (records is IEnumerable<DemoRowPermissions2.Document>)
+                else if (readResult.Records is IEnumerable<DemoRowPermissions2.Document> documents2)
                 {
-                    var documents = (IEnumerable<DemoRowPermissions2.Document>)records;
-                    return string.Join(", ", documents.Select(document => document.Title).OrderBy(x => x));
+                    return string.Join(", ", documents2.Select(document => document.Title).OrderBy(x => x));
                 }
                 else
-                    return records.Count() + " records.";
+                    return readResult.Records.Length + " records.";
             }
             else
                 return "Command result data type " + commandResult.GetType().Name + ".";

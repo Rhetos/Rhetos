@@ -12,7 +12,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\Source\Rhetos.Processing.Interfaces\Rhetos.Processing.Interfaces.csproj" />
     <ProjectReference Include="..\..\..\Source\Rhetos.Utilities\Rhetos.Utilities.csproj" />
-    <ProjectReference Include="..\..\..\Source\Rhetos.XmlSerialization\Rhetos.XmlSerialization.csproj" />
     <ProjectReference Include="..\Rhetos.Dom.DefaultConcepts.Interfaces\Rhetos.Dom.DefaultConcepts.Interfaces.csproj" />
   </ItemGroup>
 

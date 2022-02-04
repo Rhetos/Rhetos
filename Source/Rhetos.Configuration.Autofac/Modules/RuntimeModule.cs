@@ -27,7 +27,6 @@ using Rhetos.Persistence;
 using Rhetos.Processing;
 using Rhetos.Security;
 using Rhetos.Utilities;
-using Rhetos.XmlSerialization;
 
 namespace Rhetos.Configuration.Autofac.Modules
 {
@@ -84,10 +83,8 @@ namespace Rhetos.Configuration.Autofac.Modules
 
         private static void AddCommandsProcessing(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
         {
-            builder.RegisterType<XmlDataTypeProvider>().As<IDataTypeProvider>().SingleInstance();
             builder.RegisterType<ProcessingEngine>().As<IProcessingEngine>();
-            pluginRegistration.FindAndRegisterPlugins<ICommandData>();
-            pluginRegistration.FindAndRegisterPlugins<ICommandImplementation>();
+            pluginRegistration.FindAndRegisterPlugins<ICommandImplementation>(typeof(ICommandImplementation<,>));
             pluginRegistration.FindAndRegisterPlugins<ICommandObserver>();
             pluginRegistration.FindAndRegisterPlugins<ICommandInfo>();
         }

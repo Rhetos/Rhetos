@@ -17,10 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.ComponentModel.Composition;
 
 namespace Rhetos.Processing.DefaultCommands
@@ -37,7 +33,7 @@ namespace Rhetos.Processing.DefaultCommands
         /// </summary>
         public string ConvertFormat { get; set; }
 
-        public override string ToString()
+        public string Summary()
         {
             return GetType().Name
                 + (Report != null ? " " + Report.GetType().FullName : "")
@@ -45,15 +41,10 @@ namespace Rhetos.Processing.DefaultCommands
         }
     }
 
-    public class DownloadReportCommandResult : ICommandData
+    public class DownloadReportCommandResult
     {
         public byte[] ReportFile { get; set; }
-        public string SuggestedFileName { get; set; }
 
-        [Obsolete("Other properties in " + nameof(DownloadReportCommandResult) + " class contain the complete response data.")]
-        public object Value
-        {
-            get { return this; }
-        }
+        public string SuggestedFileName { get; set; }
     }
 }

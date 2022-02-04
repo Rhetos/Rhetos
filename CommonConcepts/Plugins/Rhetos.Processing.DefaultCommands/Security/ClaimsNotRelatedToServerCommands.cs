@@ -41,7 +41,7 @@ namespace Rhetos.Processing.DefaultCommands
         {
             var claims = new List<Claim>();
 
-            claims.AddRange(dslModel.Concepts.OfType<CustomClaimInfo>()
+            claims.AddRange(dslModel.FindByType<CustomClaimInfo>()
                 .Select(item => new Claim(item.ClaimResource, item.ClaimRight)));
 
             return claims;
@@ -51,5 +51,6 @@ namespace Rhetos.Processing.DefaultCommands
     [Export(typeof(ICommandInfo))]
     public class DummyCommandInfo : ICommandInfo
     {
+        public string Summary() => GetType().Name;
     }
 }

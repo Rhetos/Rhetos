@@ -69,7 +69,6 @@
   <Reference Relative="..\Rhetos.Security.Interfaces.dll">..\Rhetos.Security.Interfaces.dll</Reference>
   <Reference Relative="..\Rhetos.Utilities.dll">..\Rhetos.Utilities.dll</Reference>
   <Reference Relative="..\Rhetos.Utilities.Interfaces.dll">..\Rhetos.Utilities.Interfaces.dll</Reference>
-  <Reference Relative="..\Rhetos.XmlSerialization.dll">..\Rhetos.XmlSerialization.dll</Reference>
   <Namespace>Autofac</Namespace>
   <Namespace>Oracle.ManagedDataAccess.Client</Namespace>
   <Namespace>Rhetos</Namespace>
@@ -80,6 +79,8 @@
   <Namespace>Rhetos.Dsl.DefaultConcepts</Namespace>
   <Namespace>Rhetos.Logging</Namespace>
   <Namespace>Rhetos.Persistence</Namespace>
+  <Namespace>Rhetos.Processing</Namespace>
+  <Namespace>Rhetos.Processing.DefaultCommands</Namespace>
   <Namespace>Rhetos.Security</Namespace>
   <Namespace>Rhetos.Utilities</Namespace>
   <Namespace>System.Data.Entity</Namespace>

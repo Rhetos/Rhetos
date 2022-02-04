@@ -17,12 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.ComponentModel.Composition;
 using Rhetos.Dom.DefaultConcepts;
+using System.ComponentModel.Composition;
+using System.Linq;
 
 namespace Rhetos.Processing.DefaultCommands
 {
@@ -61,7 +58,7 @@ namespace Rhetos.Processing.DefaultCommands
 
         public OrderByProperty[] OrderByProperties { get; set; }
 
-        public override string ToString()
+        public string Summary()
         {
             // This function is intended for a short preview, not a complete data serialization.
             return GetType().Name

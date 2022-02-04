@@ -17,6 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System.Collections.Generic;
+
 namespace Rhetos.Processing
 {
     public class ProcessingResult
@@ -25,6 +27,6 @@ namespace Rhetos.Processing
         public string UserMessage { get; set; }
         public bool Success { get; set; }
 
-        public CommandResult [] CommandResults { get; set; }
+        public IList<object> CommandResults { get; set; }
     }
 }

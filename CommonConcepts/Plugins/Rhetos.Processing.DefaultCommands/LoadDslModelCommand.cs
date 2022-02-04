@@ -17,44 +17,26 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rhetos.Persistence;
-using System.ComponentModel.Composition;
-using Rhetos.Utilities;
-using Rhetos.Extensibility;
-using System.Diagnostics.Contracts;
-using Rhetos.Dom;
 using Rhetos.Dsl;
+using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.Linq;
 
 namespace Rhetos.Processing.DefaultCommands
 {
-
     [Export(typeof(ICommandImplementation))]
-    [ExportMetadata(MefProvider.Implements, typeof(LoadDslModelCommandInfo))]
-    public class LoadDslModelCommand : ICommandImplementation
+    public class LoadDslModelCommand : ICommandImplementation<LoadDslModelCommandInfo, ICollection<IConceptInfo>>
     {
-        private readonly IDslModel DslModel;
-        private readonly IDataTypeProvider DataTypeProvider;
+        private readonly IDslModel _dslModel;
 
-        public LoadDslModelCommand(
-            IDslModel dslModel,
-            IDataTypeProvider dataTypeProvider)
+        public LoadDslModelCommand(IDslModel dslModel)
         {
-            this.DslModel = dslModel;
-            this.DataTypeProvider = dataTypeProvider;
+            _dslModel = dslModel;
         }
 
-        public CommandResult Execute(ICommandInfo info)
+        public ICollection<IConceptInfo> Execute(LoadDslModelCommandInfo info)
         {
-            return new CommandResult
-            {
-                Data = DataTypeProvider.CreateBasicData(DslModel.Concepts),
-                Message = "Model loaded",
-                Success = true
-            };
+            return _dslModel.Concepts.ToList();
         }
     }
 }

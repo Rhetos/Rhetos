@@ -17,42 +17,28 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
-using Autofac.Features.Indexed;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Extensibility;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.Processing.DefaultCommands
 {
     [Export(typeof(ICommandImplementation))]
-    [ExportMetadata(MefProvider.Implements, typeof(ExecuteActionCommandInfo))]
-    public class ExecuteActionCommand : ICommandImplementation
+    public class ExecuteActionCommand : ICommandImplementation<ExecuteActionCommandInfo, object>
     {
-        private readonly IIndex<string, IActionRepository> _actionIndex;
+        private readonly INamedPlugins<IActionRepository> _actionIndex;
 
-        public ExecuteActionCommand(IIndex<string, IActionRepository> actionIndex)
+        public ExecuteActionCommand(INamedPlugins<IActionRepository> actionIndex)
         {
             _actionIndex = actionIndex;
         }
 
-        public CommandResult Execute(ICommandInfo commandInfo)
+        public object Execute(ExecuteActionCommandInfo info)
         {
-            var info = (ExecuteActionCommandInfo)commandInfo;
-
             string actionName = info.Action.GetType().FullName;
-            IActionRepository actionRepository = _actionIndex[actionName];
+            IActionRepository actionRepository = _actionIndex.GetPlugin(actionName);
             actionRepository.Execute(info.Action);
-
-            return new CommandResult
-            {
-                Data = null,
-                Message = "Command executed",
-                Success = true
-            };
+            return null;
         }
     }
 }

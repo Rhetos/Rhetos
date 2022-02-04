@@ -22,7 +22,6 @@
     <ProjectReference Include="..\Rhetos.Persistence\Rhetos.Persistence.csproj" />
     <ProjectReference Include="..\Rhetos.Processing\Rhetos.Processing.csproj" />
     <ProjectReference Include="..\Rhetos.Security\Rhetos.Security.csproj" />
-    <ProjectReference Include="..\Rhetos.XmlSerialization\Rhetos.XmlSerialization.csproj" />
   </ItemGroup>
 
 </Project>

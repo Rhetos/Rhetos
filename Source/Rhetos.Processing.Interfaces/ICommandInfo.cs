@@ -17,14 +17,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
 namespace Rhetos.Processing
 {
+    /// <summary>
+    /// An input parameter for commands that implement <see cref="ICommandImplementation"/>.
+    /// </summary>
     public interface ICommandInfo
     {
+        /// <summary>
+        /// Short report for logging and basic debugging, not a complete data serialization.
+        /// The result should start with <c>GetType().Name</c>.
+        /// </summary>
+        string Summary();
     }
 }
