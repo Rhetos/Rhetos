@@ -18,10 +18,10 @@
       <_RhetosHostAppAssemblies Include="@(ReferencePath)" Condition="'%(ReferencePath.MSBuildSourceProjectFile)' != ''" />
     </ItemGroup>  
     <PropertyGroup>
-      <_RhetosServerDomLinqPadScriptPath>$(BaseIntermediateOutputPath)Rhetos\LinqPad\Rhetos DOM.linq</_RhetosServerDomLinqPadScriptPath>
+      <_RhetosDomLinqPadScriptPath>$(BaseIntermediateOutputPath)Rhetos\LinqPad\Rhetos DOM.linq</_RhetosDomLinqPadScriptPath>
       <_RhetosHostAppLinqPadReferences>@(_RhetosHostAppAssemblies -> '&lt;Reference Relative="..\%(Filename)%(Extension)"&gt;%(Filename)%(Extension)&lt;/Reference&gt;', '
   ')</_RhetosHostAppLinqPadReferences>
-      <_RhetosServerDomLinqPadScript>
+      <_RhetosDomLinqPadScript>
 <![CDATA[
 <Query Kind="Program">
   <Reference Relative="..\$(AssemblyName).dll">$(AssemblyName).dll</Reference>
@@ -125,12 +125,12 @@ void Main()
     }
 }
 ]]>
-      </_RhetosServerDomLinqPadScript>
+      </_RhetosDomLinqPadScript>
     </PropertyGroup>
-    <WriteLinesToFile Lines="$(_RhetosServerDomLinqPadScript)" Overwrite="True" WriteOnlyWhenDifferent="True"
-        File="$(_RhetosServerDomLinqPadScriptPath)" />
+    <WriteLinesToFile Lines="$(_RhetosDomLinqPadScript)" Overwrite="True" WriteOnlyWhenDifferent="True"
+        File="$(_RhetosDomLinqPadScriptPath)" />
     <ItemGroup>
-      <_RhetosLinqPad Include="$(_RhetosServerDomLinqPadScriptPath)" />
+      <_RhetosLinqPad Include="$(_RhetosDomLinqPadScriptPath)" />
       <None Include="@(_RhetosLinqPad)" CopyToOutputDirectory="PreserveNewest" Link="LinqPad\%(Filename)%(Extension)" />
     </ItemGroup>
   </Target>
