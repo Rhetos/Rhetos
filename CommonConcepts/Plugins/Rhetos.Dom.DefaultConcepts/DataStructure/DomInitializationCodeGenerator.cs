@@ -302,7 +302,7 @@ namespace Common
         }}
 
         // This constructor is used for manual context creation (unit testing)
-        public ExecutionContext()
+        protected ExecutionContext()
         {{
         }}
     }}

@@ -166,6 +166,8 @@ Changes in Rhetos libraries API:
 25. SqlTransactionBatches is replaced with ISqlTransactionBatches in DI container.
 26. Redundant ISqlExecuter helper methods moved from interface to extension methods.
     In case of compiler error on `context.SqlExecuter` or similar code, add `using Rhetos.Utilities;`.
+27. Default constructor for ExecutionContext is now protected.
+    Create a derived class from ExecutionContext to use the default constructor in unit tests.
 
 ### New features
 
