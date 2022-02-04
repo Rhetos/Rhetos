@@ -42,7 +42,7 @@ namespace CommonConcepts.Test
             {
                 var context = scope.Resolve<Common.ExecutionContext>();
                 context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id1, Name = TestNamePrefix + Guid.NewGuid() });
-                scope.Resolve<IPersistenceTransaction>().CommitOnDispose();
+                scope.Resolve<IUnitOfWork>().CommitAndClose();
             }
 
             using (var scope = TestScope.Create())
@@ -101,7 +101,7 @@ namespace CommonConcepts.Test
                         context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id1, Name = TestNamePrefix + Guid.NewGuid() });
                         throw new FrameworkException(nameof(RollbackByDefault)); // The exception that is not handled within transaction scope.
 #pragma warning disable CS0162 // Unreachable code detected
-                        scope.Resolve<IPersistenceTransaction>().CommitOnDispose();
+                        scope.Resolve<IUnitOfWork>().CommitAndClose();
 #pragma warning restore CS0162 // Unreachable code detected
                     }
                 },
@@ -115,42 +115,8 @@ namespace CommonConcepts.Test
         }
 
         /// <summary>
-        /// This is not an intended usage of IUnitOfWorkScope because CommitOnDispose should be called at the end of the using block.
-        /// Here an unhandled exception incorrectly commits the transaction, but currently the framework allows it.
-        /// </summary>
-        [TestMethod]
-        public void EarlyCommitOnDispose()
-        {
-            var id1 = Guid.NewGuid();
-            var id2 = Guid.NewGuid();
-
-            TestUtility.ShouldFail<FrameworkException>(() =>
-                {
-                    using (var scope = TestScope.Create())
-                    {
-                        var context = scope.Resolve<Common.ExecutionContext>();
-                        context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id1, Name = TestNamePrefix + Guid.NewGuid() });
-                        scope.Resolve<IPersistenceTransaction>().CommitOnDispose(); // Commit-on-dispose is incorrectly placed at this position.
-                        context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id2, Name = TestNamePrefix + Guid.NewGuid() });
-                        throw new FrameworkException(nameof(EarlyCommitOnDispose)); // The exception is not handled within transaction scope to discard the transaction.
-                    }
-                },
-                nameof(EarlyCommitOnDispose));
-
-            using (var scope = TestScope.Create())
-            {
-                var context = scope.Resolve<Common.ExecutionContext>();
-                // The transaction is committed because of incorrect implementation pattern above.
-                var ids = new[] { id1, id2 };
-                Assert.AreEqual(
-                    TestUtility.DumpSorted(ids),
-                    TestUtility.DumpSorted(context.Repository.TestEntity.BaseEntity.Load(ids), item => item.ID));
-            }
-        }
-
-        /// <summary>
         /// This is not an intended usage of IUnitOfWorkScope because CommitAndClose should be called at the end of the using block.
-        /// Here an unhandled exception incorrectly commits the transaction, but currently the framework allows it.
+        /// Any database operation in the unit-of-work scope after CommitAndClose will throw an exception.
         /// </summary>
         [TestMethod]
         public void EarlyCommitAndClose()
@@ -221,23 +187,23 @@ namespace CommonConcepts.Test
                 var context = scope.Resolve<Common.ExecutionContext>();
                 context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = ids[0], Name = TestNamePrefix + Guid.NewGuid() });
                 scope.Resolve<IPersistenceTransaction>().DiscardOnDispose();
-                scope.Resolve<IPersistenceTransaction>().CommitOnDispose();
+                scope.Resolve<IUnitOfWork>().CommitAndClose();
             }
 
             using (var scope = TestScope.Create())
             {
                 var context = scope.Resolve<Common.ExecutionContext>();
                 context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = ids[1], Name = TestNamePrefix + Guid.NewGuid() });
-                scope.Resolve<IPersistenceTransaction>().CommitOnDispose();
                 scope.Resolve<IPersistenceTransaction>().DiscardOnDispose();
+                scope.CommitAndClose();
             }
 
             using (var scope = TestScope.Create())
             {
                 var context = scope.Resolve<Common.ExecutionContext>();
                 context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = ids[2], Name = TestNamePrefix + Guid.NewGuid() });
+                scope.Resolve<IPersistenceTransaction>().CommitAndClose(); // This commit is immediate, so discard will have no effect.
                 scope.Resolve<IPersistenceTransaction>().DiscardOnDispose();
-                scope.CommitAndClose();
             }
 
             using (var scope = TestScope.Create())
@@ -252,9 +218,8 @@ namespace CommonConcepts.Test
             {
                 var context = scope.Resolve<Common.ExecutionContext>();
                 Assert.AreEqual(
-                    ids[3].ToString(),
-                    TestUtility.Dump(context.Repository.TestEntity.BaseEntity.Query(ids), item => item.ID),
-                    $"Only last case should be committed: {TestUtility.Dump(ids)}.");
+                    TestUtility.DumpSorted(new[] { ids[2], ids[3] }),
+                    TestUtility.DumpSorted(context.Repository.TestEntity.BaseEntity.Query(ids), item => item.ID));
             }
         }
 

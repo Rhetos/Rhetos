@@ -110,13 +110,13 @@ Changes in Rhetos libraries API:
 10. The interface IMacroConcept now requires the implementation of the method CreateNewConcepts without any parameters.
     If an implementation of IMacroConcept requires access to the IDslModel, use the IConceptMacro\<T\> interface instead.
 11. Removed support for QueryDataSourceCommand. Use the ReadCommand instead.
-12. Renamed IPersistenceTransaction methods: `CommitChanges` to `CommitOnDispose`, `DiscardChanges` to `DiscardOnDispose`.
+12. Renamed IPersistenceTransaction method `DiscardChanges` to `DiscardOnDispose`.
 13. Removed `ProcessContainer` class:
     * Instead of `new ProcessContainer(rhetosAppAssemblyPath)`, use `RhetosHost.CreateFrom(rhetosAppAssemblyPath)`.
     * Instead of static `ProcessContainer.CreateScope(rhetosAppAssemblyPath)`, use `LinqPadRhetosHost.CreateScope(rhetosAppAssemblyPath)`.
     * Instead of static `ProcessContainer.CreateTransactionScopeContainer`, use `LinqPadRhetosHost.CreateScope(rhetosAppAssemblyPath)`.
     * Instead of `ProcessContainer.Configuration`, use `IConfiguration` from dependency injection.
-14. Removed support for the following methods or classes:
+14. Removed support for the following obsolete methods or classes:
     * IDatabaseColumnType.GetColumnType : This method will not support concepts with configurable types. Use GetColumnType with PropertyInfo argument instead.
     * PropertyHelper.GenerateCodeForType: Use the GenerateCodeForType function without the 'serializable' argument. All regular properties are serializable.
     * DatabaseExtensionFunctions.SqlLike: Use the Like() method instead.
@@ -139,10 +139,11 @@ Changes in Rhetos libraries API:
     * DslSyntaxException.DslScript: Use FilePosition instead.
     * DslSyntaxException.Position: Use FilePosition instead.
     * IValidationConcept: Use IValidatedConcept instead of IValidationConcept.
+    * IPersistenceTransaction.CommitChanges and CommitOnDispose: Use IUnitOfWork.CommitAndClose instead.
     * IPersistenceTransaction.CommitAndReconnect: It is not longer needed for IServerInitializer plugins, because each plugin is executed in a separate connection.
     * SqlTransactionBatch: Use ISqlTransactionBatches instead.
     * Function\<T\>.Create: Use an explicit Func type for the result variable, instead of 'var'.
-15. Removed support for the following concepts:
+15. Removed support for the following obsolete concepts:
     * UseExecutionContext: Use repository member \_executionContext instead.
     * DenySave: Use InvalidData instead.
     * Snowflake: Use Browse concept instead.

@@ -36,7 +36,9 @@ namespace Rhetos
         /// </summary>
         /// <remarks>
         /// After calling this method, any later database operation in the current scope might result with an error.
+        /// <para>
         /// The transaction will be rolled back, instead of committed, if <see cref="IPersistenceTransaction.DiscardOnDispose"/> method was called earlier.
+        /// </para>
         /// </remarks>
         void CommitAndClose();
 

@@ -44,12 +44,13 @@ namespace CommonConcepts.Test
             using (var scope = TestScope.Create())
             {
                 var transaction = scope.Resolve<IPersistenceTransaction>();
-                transaction.CommitOnDispose();
                 transaction.BeforeClose += () => log.Add("before");
                 transaction.AfterClose += () => log.Add("after");
 
                 var repository = scope.Resolve<Common.DomRepository>();
                 repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id1, Name = TestNamePrefix + Guid.NewGuid() });
+
+                transaction.CommitAndClose();
             }
 
             Assert.AreEqual("before, after", TestUtility.Dump(log));

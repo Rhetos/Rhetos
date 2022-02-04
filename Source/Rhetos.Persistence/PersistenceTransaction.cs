@@ -27,7 +27,7 @@ using System.Threading;
 
 namespace Rhetos.Persistence
 {
-    public class PersistenceTransaction : IPersistenceTransaction, IUnitOfWork
+    public class PersistenceTransaction : IPersistenceTransaction
     {
         private readonly ILogger _logger;
         private readonly string _connectionString;
@@ -58,11 +58,6 @@ namespace Rhetos.Persistence
             _persistenceTransactionId = Interlocked.Increment(ref _counter);
         }
 
-        public void CommitOnDispose()
-        {
-            _commitOnDispose = true;
-        }
-
         public void DiscardOnDispose()
         {
             _discardOnDispose = true;
@@ -70,7 +65,7 @@ namespace Rhetos.Persistence
 
         public void CommitAndClose()
         {
-            CommitOnDispose();
+            _commitOnDispose = true;
             Dispose();
         }
 

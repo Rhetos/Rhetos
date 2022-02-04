@@ -36,18 +36,17 @@ namespace Rhetos.Persistence
     /// See <see cref="PersistenceTransactionOptions"/> for additional transaction configuration.
     /// </para>
     /// </remarks>
-    public interface IPersistenceTransaction : IDisposable
+    public interface IPersistenceTransaction : IDisposable, IUnitOfWork
     {
         /// <summary>
-        /// Marks the transaction as valid, to be committed at the end of the lifetime scope (on Dispose).
-        /// If <see cref="CommitOnDispose"/> is not called, the transaction will be rolled back by default.
-        /// If <see cref="DiscardOnDispose"/> is also called, it will override any earlier or later call to <see cref="CommitOnDispose"/>.
+        /// Marks the transaction as invalid. The transaction remains operational, but it will be <b>rolled back</b> on Dispose.
         /// </summary>
-        void CommitOnDispose();
-
-        /// <summary>
-        /// Marks the transaction as invalid. The transaction remains operational, but it will be <b>rolled back on Dispose</b>.
-        /// </summary>
+        /// <remarks>
+        /// Note that the transaction is discarded by default, unless the main component that controls the unit of work
+        /// calls <see cref="IUnitOfWork.CommitAndClose"/> (for example, a web controller).
+        /// If <see cref="DiscardOnDispose"/> is called, it will override the behavior of <see cref="IUnitOfWork.CommitAndClose"/>,
+        /// and rollback the transaction anyway.
+        /// </remarks>
         void DiscardOnDispose();
 
 #pragma warning disable CA1713 // Events should not have 'Before' or 'After' prefix
@@ -57,7 +56,7 @@ namespace Rhetos.Persistence
         /// </summary>
         /// <remarks>
         /// Use for cleanup code, such as deleting temporary data that may be used until the transaction is closed.
-        /// This event will not be invoked if the transaction rollback was executed (see <see cref="CommitOnDispose"/> and <see cref="DiscardOnDispose"/>).
+        /// This event will not be invoked if the transaction rollback was executed <see cref="DiscardOnDispose"/>).
         /// </remarks>
         event Action BeforeClose;
 

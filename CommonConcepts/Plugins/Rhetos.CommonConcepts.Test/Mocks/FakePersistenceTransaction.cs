@@ -38,9 +38,16 @@ namespace Rhetos.CommonConcepts.Test.Mocks
         bool _discardOnDispose;
         private bool disposedValue;
 
-        public void CommitOnDispose()
+        public void CommitAndClose()
         {
             _commitOnDispose = true;
+            Dispose();
+        }
+
+        public void RollbackAndClose()
+        {
+            DiscardOnDispose();
+            Dispose();
         }
 
         public void DiscardOnDispose()

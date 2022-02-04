@@ -79,7 +79,7 @@ namespace Rhetos
                 performanceLogger.Write(stopwatch, "Modules and plugins registered.");
                 ((UnitOfWorkScope)scope).LogRegistrationStatistics("UpdateDatabase component registrations", _logProvider);
                 scope.Resolve<DatabaseDeployment>().UpdateDatabase();
-                // No need to call scope.CommitOnDispose() here, since DbUpdate has its own transaction management.
+                // No need to call scope.CommitAndClose() here, since DbUpdate has its own transaction management.
                 // See UseDatabaseTransaction set to false in configuration above.
             }
         }

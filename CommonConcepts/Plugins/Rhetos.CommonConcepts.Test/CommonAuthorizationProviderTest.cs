@@ -222,8 +222,9 @@ namespace Rhetos.CommonConcepts.Test
             public void Close(bool commit)
             {
                 if (commit)
-                    PersistenceTransaction?.CommitOnDispose();
-                PersistenceTransaction?.Dispose();
+                    PersistenceTransaction?.CommitAndClose();
+                else
+                    PersistenceTransaction?.Dispose();
             }
         };
 
