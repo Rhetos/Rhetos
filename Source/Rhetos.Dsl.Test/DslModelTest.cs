@@ -484,7 +484,7 @@ namespace Rhetos.Dsl.Test
         {
             public IEnumerable<IConceptInfo> CreateNewConcepts(MultiplePassMacroConceptInfo1 conceptInfo, IDslModel existingConcepts)
             {
-                return existingConcepts.Concepts.OfType<SimpleConceptInfo>().Where(c => !c.Name.StartsWith("dup"))
+                return existingConcepts.FindByType<SimpleConceptInfo>().Where(c => !c.Name.StartsWith("dup"))
                     .Select(c => new SimpleConceptInfo { Name = "dup" + c.Name, Data = "" });
             }
         }
@@ -500,7 +500,7 @@ namespace Rhetos.Dsl.Test
         {
             public IEnumerable<IConceptInfo> CreateNewConcepts(MultiplePassMacroConceptInfo2 conceptInfo, IDslModel existingConcepts)
             {
-                int count = existingConcepts.Concepts.OfType<SimpleConceptInfo>().Count(c => !c.Name.StartsWith("dup"));
+                int count = existingConcepts.FindByType<SimpleConceptInfo>().Count(c => !c.Name.StartsWith("dup"));
                 if (count < 3)
                     return new List<IConceptInfo> { new SimpleConceptInfo { Name = count.ToString(), Data = "" } };
                 return null;

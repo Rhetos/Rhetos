@@ -41,7 +41,7 @@ namespace Rhetos.Processing.DefaultCommands
 
         public IList<Claim> GetAllClaims(IDslModel dslModel)
         {
-            return dslModel.Concepts.OfType<ActionInfo>()
+            return dslModel.FindByType<ActionInfo>()
                 .Select(actionInfo => new Claim(actionInfo.Module.Name + "." + actionInfo.Name, "Execute")).ToList();
         }
     }

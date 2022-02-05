@@ -45,7 +45,7 @@ namespace Rhetos.Processing.DefaultCommands
 
         public IList<Claim> GetAllClaims(IDslModel dslModel)
         {
-            var allReports = dslModel.Concepts.OfType<ReportDataInfo>(); // TODO: Change ReportDataInfo to ReportFileInfo, after modifying TemplaterReportInfo to inherit ReportFileInfo.
+            var allReports = dslModel.FindByType<ReportDataInfo>(); // TODO: Change ReportDataInfo to ReportFileInfo, after modifying TemplaterReportInfo to inherit ReportFileInfo.
             return allReports.Select(report => new Claim(report.Module.Name + "." + report.Name, "DownloadReport")).ToArray();
         }
     }
