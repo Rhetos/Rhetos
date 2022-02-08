@@ -83,6 +83,10 @@ Changes in behavior:
       Alternatively, create a new [unit-of-work scope](https://github.com/Rhetos/Rhetos/wiki/Unit-of-work#manual-control-over-unit-of-work)
       with PersistenceTransactionOptions.UseDatabaseTransaction disabled and IUserInfo added, and resolve ISqlExecuter from that scope.
 21. Simplified IProcessingEngine.Execute result: In case of an error, the method will throw an exception, instead of setting Success=false in the result object.
+    * If an existing application code verifies the result `Success` property in order to throw UserException, ClientException or FrameworkException,
+      in most cases this code can simply be removed, since the Execute method already throws this exception.
+      In other cases, see [CreateResponseFromException](https://github.com/Rhetos/RestGenerator/blob/b3e2b46eba119f9acaa54e1dca9d94947011fea7/src/Rhetos.Host.AspNet.RestApi/Utilities/JsonErrorHandler.cs#L49)
+      method for IProcessingEngine exception handling by REST API.
 
 Changes in Rhetos libraries API:
 
