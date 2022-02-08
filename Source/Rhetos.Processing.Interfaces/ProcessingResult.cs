@@ -23,10 +23,9 @@ namespace Rhetos.Processing
 {
     public class ProcessingResult
     {
-        public string SystemMessage { get; set; }
-        public string UserMessage { get; set; }
-        public bool Success { get; set; }
-
+        /// <summary>
+        /// The list will always contain the same number of result objects as there are commands given to the <see cref="IProcessingEngine"/>
+        /// </summary>
         public IList<object> CommandResults { get; set; }
     }
 }

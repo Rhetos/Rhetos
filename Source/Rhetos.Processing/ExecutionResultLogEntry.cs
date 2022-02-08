@@ -18,9 +18,6 @@
 */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Rhetos.Processing
 {
@@ -28,5 +25,6 @@ namespace Rhetos.Processing
     {
         public Guid ExecutionId { get; set; }
         public ProcessingResult Result { get; set; }
+        public string Error { get; set; }
     }
 }

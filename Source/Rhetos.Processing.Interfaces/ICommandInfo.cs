@@ -30,4 +30,11 @@ namespace Rhetos.Processing
         /// </summary>
         string Summary();
     }
+
+    /// <summary>
+    /// A helper interface for type-safe command execution with <see cref="ProcessingEngineExtensions.Execute{TCommandResult}(IProcessingEngine, ICommandInfo{TCommandResult})"/>.
+    /// </summary>
+    public interface ICommandInfo<TCommandResult> : ICommandInfo
+    {
+    }
 }

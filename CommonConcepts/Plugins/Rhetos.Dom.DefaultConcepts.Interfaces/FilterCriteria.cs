@@ -88,13 +88,15 @@ namespace Rhetos.Dom.DefaultConcepts
         {
         }
 
-        public override string ToString()
+        public string Summary()
         {
             var valueDescription = ValueDescription(Value);
 
             return (FilterDescription(Filter) ?? (Property + " " + Operation))
                 + (valueDescription != null ? " " + valueDescription : "");
         }
+
+        public override string ToString() => Summary();
 
         public string FilterDescription(string filter)
         {

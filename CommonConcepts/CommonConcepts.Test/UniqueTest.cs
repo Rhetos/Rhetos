@@ -231,9 +231,9 @@ namespace CommonConcepts.Test
                         new TestUnique.E { I = 123, S = "abc" },
                     }
                 };
-                var processingEngineResult = processingEngine.Execute(new[] { saveDuplicates });
-                Assert.IsFalse(processingEngineResult.Success);
-                TestUtility.AssertContains(processingEngineResult.UserMessage, "duplicate");
+                var e = TestUtility.ShouldFail<UserException>(
+                    () => processingEngine.Execute(new[] { saveDuplicates }),
+                    "It is not allowed to enter a duplicate record.");
             }
         }
 

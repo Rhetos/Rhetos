@@ -17,19 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Rhetos
 {
     /// <summary>
     /// An internal error of the Rhetos application occurred. Usually a result of incorrect configuration/setup or a platform bug.
-    /// Web response HTTP status code on this exception is 500.
     /// </summary>
-    [global::System.Serializable]
+    [Serializable]
     public class FrameworkException : RhetosException
     {
         public FrameworkException() { }

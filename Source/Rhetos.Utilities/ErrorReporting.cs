@@ -23,6 +23,15 @@ namespace Rhetos.Utilities
 {
     public static class ErrorReporting
     {
+        /// <summary>
+        /// The recommended error message to be returned to end user in case of a <see cref="ClientException"/>.
+        /// The response should additionally include the <see cref="ClientException"/>'s <see cref="Exception.Message"/>.
+        /// </summary>
+        public static readonly string ClientExceptionUserMessage = "Operation could not be completed because the request sent to the server was not valid or not properly formatted.";
+
+        /// <summary>
+        /// The recommended error message to be returned to end user in case of any exception except <see cref="UserException"/> and <see cref="ClientException"/>.
+        /// </summary>
         public static string GetInternalServerErrorMessage(ILocalizer localizer, Exception exception)
         {
             return localizer[

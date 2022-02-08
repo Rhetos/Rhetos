@@ -28,6 +28,10 @@ namespace Rhetos.Security
     /// </summary>
     public interface IAuthorizationManager
     {
+        /// <summary>
+        /// If the user is authorized to execute the commands, the method returns <see langword="null"/>.
+        /// Otherwise it returns the authorization error message.
+        /// </summary>
         string Authorize(IList<ICommandInfo> commandInfos);
 
         IList<bool> GetAuthorizations(IList<Claim> requiredClaims);

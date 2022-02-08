@@ -47,9 +47,6 @@ namespace Rhetos.Processing
         private readonly XmlUtility _xmlUtility;
         private readonly IUserInfo _userInfo;
         private readonly ISqlUtility _sqlUtility;
-        private readonly ILocalizer _localizer;
-
-        private static string _clientExceptionUserMessage = "Operation could not be completed because the request sent to the server was not valid or not properly formatted.";
 
         public ProcessingEngine(
             IPluginsContainer<ICommandImplementation> commandRepository,
@@ -59,8 +56,7 @@ namespace Rhetos.Processing
             IAuthorizationManager authorizationManager,
             XmlUtility xmlUtility,
             IUserInfo userInfo,
-            ISqlUtility sqlUtility,
-            ILocalizer localizer)
+            ISqlUtility sqlUtility)
         {
             _commandRepository = commandRepository;
             _commandObservers = commandObservers;
@@ -76,22 +72,27 @@ namespace Rhetos.Processing
             _xmlUtility = xmlUtility;
             _userInfo = userInfo;
             _sqlUtility = sqlUtility;
-            _localizer = localizer;
         }
 
         public ProcessingResult Execute(IList<ICommandInfo> commands)
         {
-            _requestLogger.Trace(() => $"User: {ReportUserNameOrAnonymous(_userInfo)}, Commands({commands.Count}): {string.Join(", ", commands.Select(c => c.Summary()))}.");
             var executionId = Guid.NewGuid();
+
+            _requestLogger.Trace(() => $"User: {ReportUserNameOrAnonymous(_userInfo)}, Commands({commands.Count}): {string.Join(", ", commands.Select(c => c.Summary()))}.");
+
             _commandsLogger.Trace(() => _xmlUtility.SerializeToXml(new ExecutionCommandsLogEntry { ExecutionId = executionId, UserInfo = _userInfo.Report(), Commands = commands }));
 
-            var result = ExecuteInner(commands, executionId);
+            ProcessingResult result = null;
+            try
+            {
+                result = ExecuteInner(commands, executionId);
+            }
+            catch (Exception e)
+            {
+                _commandsResultLogger.Trace(() => _xmlUtility.SerializeToXml(new ExecutionResultLogEntry { ExecutionId = executionId, Error = e.ToString() }));
+                ExceptionsUtility.Rethrow(e);
+            }
             _commandsResultLogger.Trace(() => SafeSerialize(new ExecutionResultLogEntry { ExecutionId = executionId, Result = result }));
-
-            // On error, the CommandResults will contain partial results of the commands executed before the failed one, and should be cleared.
-            if (!result.Success)
-                result.CommandResults = null;
-
             return result;
         }
 
@@ -109,15 +110,9 @@ namespace Rhetos.Processing
 
         public ProcessingResult ExecuteInner(IList<ICommandInfo> commands, Guid executionId)
         {
-            var authorizationMessage = _authorizationManager.Authorize(commands);
-
-            if (!string.IsNullOrEmpty(authorizationMessage))
-                return new ProcessingResult
-                {
-                    UserMessage = authorizationMessage,
-                    SystemMessage = authorizationMessage,
-                    Success = false
-                };
+            var authorizationErrorMessage = _authorizationManager.Authorize(commands);
+            if (!string.IsNullOrEmpty(authorizationErrorMessage))
+                throw new UserException(authorizationErrorMessage, authorizationErrorMessage); // Setting both messages for backward compatibility.
 
             var commandResults = new List<object>();
 
@@ -169,7 +164,7 @@ namespace Rhetos.Processing
                 }
                 catch (Exception ex)
                 {
-                    _persistenceTransaction.DiscardOnDispose();
+                    _persistenceTransaction.DiscardOnDispose(); // This is not needed since Rhetos v5 because the transaction should be disposed by default. Review if needed for backward compatibility.
 
                     if (ex is TargetInvocationException && ex.InnerException is RhetosException)
                     {
@@ -177,62 +172,27 @@ namespace Rhetos.Processing
                         ex = ex.InnerException;
                     }
 
-                    string userMessage = null;
-                    string systemMessage = null;
-
                     ex = _sqlUtility.InterpretSqlException(ex) ?? ex;
 
-                    if (ex is UserException userException)
-                    {
-                        userMessage = _localizer[userException.Message, userException.MessageParameters]; // TODO: Remove this code after cleaning the double layer of exceptions in the server response call stack.
-                        systemMessage = userException.SystemMessage;
-                    }
-                    else if (ex is ClientException)
-                    {
-                        userMessage = _clientExceptionUserMessage;
-                        systemMessage = ex.Message;
-                    }
-                    else
-                    {
-                        userMessage = null;
-                        systemMessage = ErrorReporting.GetInternalServerErrorMessage(_localizer, ex);
-                    }
+                    _logger.Trace(() => $"Command failed: {commandInfo.Summary()}. {ex}");
 
-                    return LogAndReturnError(commandResults, "Command failed: " + commandInfo.Summary() + ".", systemMessage, userMessage, ex, commands, executionId);
+                    var commandsErrorLogger = (ex is UserException || ex is ClientException)
+                        ? _commandsClientErrorLogger
+                        : _commandsServerErrorLogger;
+                    commandsErrorLogger.Trace(() => _xmlUtility.SerializeToXml(new ExecutionCommandsLogEntry { ExecutionId = executionId, UserInfo = _userInfo.Report(), Commands = commands }));
+                    commandsErrorLogger.Trace(() => _xmlUtility.SerializeToXml(new ExecutionResultLogEntry { ExecutionId = executionId, Error = ex.ToString() }));
+
+                    if (ex is not UserException) // Skipped as a performance optimization, since UserException is a standard app behavior. Use other ProcessingEngine loggers instead to debug a UserException.
+                        ExceptionsUtility.SetCommandSummary(ex, commandInfo.Summary());
+
+                    ExceptionsUtility.Rethrow(ex);
                 }
             }
 
-            return new ProcessingResult
-            {
-                CommandResults = commandResults,
-                Success = true
-            };
+            return new ProcessingResult { CommandResults = commandResults };
         }
 
-        private ProcessingResult LogAndReturnError(List<object> commandResults, string logError, string systemMessage, string userMessage, Exception logException, IList<ICommandInfo> commands, Guid executionId)
-        {
-            var errorSeverity = logException == null ? EventType.Error
-                : logException is UserException ? EventType.Trace
-                : logException is ClientException ? EventType.Info
-                : EventType.Error;
-            
-            _logger.Write(errorSeverity, () => logError + (string.IsNullOrEmpty(logError) ? "" : " ") + logException);
-
-            var result = new ProcessingResult
-            {
-                CommandResults = commandResults,
-                Success = false,
-                SystemMessage = systemMessage,
-                UserMessage = userMessage
-            };
-
-            var commandsErrorLogger = (errorSeverity == EventType.Error) ? _commandsServerErrorLogger : _commandsClientErrorLogger;
-            commandsErrorLogger.Trace(() => _xmlUtility.SerializeToXml(new ExecutionCommandsLogEntry { ExecutionId = executionId, UserInfo = _userInfo.Report(), Commands = commands }));
-            commandsErrorLogger.Trace(() => _xmlUtility.SerializeToXml(new ExecutionResultLogEntry { ExecutionId = executionId, Result = result }));
-
-            return result;
-        }
-
-        private static string ReportUserNameOrAnonymous(IUserInfo userInfo) => userInfo.IsUserRecognized ? userInfo.UserName : "<anonymous>";
+        private static string ReportUserNameOrAnonymous(IUserInfo userInfo)
+            => userInfo.IsUserRecognized ? userInfo.UserName : "<anonymous>";
     }
 }

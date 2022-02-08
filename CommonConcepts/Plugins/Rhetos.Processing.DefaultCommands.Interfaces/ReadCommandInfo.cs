@@ -18,6 +18,7 @@
 */
 
 using Rhetos.Dom.DefaultConcepts;
+using System;
 using System.ComponentModel.Composition;
 using System.Linq;
 
@@ -27,7 +28,7 @@ namespace Rhetos.Processing.DefaultCommands
     /// All members except DataSource are optional.
     /// </summary>
     [Export(typeof(ICommandInfo))]
-    public class ReadCommandInfo : ICommandInfo
+    public class ReadCommandInfo : ICommandInfo<ReadCommandResult>
     {
         /// <summary>
         /// Name of the entity or other readable data structure.
@@ -65,10 +66,10 @@ namespace Rhetos.Processing.DefaultCommands
                 + " " + DataSource
                 + (ReadRecords ? " records" : "")
                 + (ReadTotalCount ? " count" : "")
-                + (OrderByProperties != null && OrderByProperties.Length > 0 ? ", order by " + string.Join(" ", OrderByProperties.Select(o => o != null ? o.ToString() : "")) : "")
+                + (OrderByProperties != null && OrderByProperties.Length > 0 ? ", order by " + string.Join(" ", OrderByProperties.Select(o => o != null ? o.Summary() : "")) : "")
                 + (Skip != 0 ? ", skip " + Skip : "")
                 + (Top != 0 ? ", top " + Top : "")
-                + (Filters != null && Filters.Length > 0 ? ", filters: " + string.Join(", ", Filters.Select(f => f != null ? f.ToString() : "")) : "");
+                + (Filters != null && Filters.Length > 0 ? ", filters: " + string.Join(", ", Filters.Select(f => f != null ? f.Summary() : "")) : "");
         }
     }
 
@@ -77,9 +78,11 @@ namespace Rhetos.Processing.DefaultCommands
         public string Property { get; set; }
         public bool Descending { get; set; }
 
-        public override string ToString()
+        public string Summary()
         {
             return (Descending ? "-" : "") + Property;
         }
+
+        public override string ToString() => Summary();
     }
 }

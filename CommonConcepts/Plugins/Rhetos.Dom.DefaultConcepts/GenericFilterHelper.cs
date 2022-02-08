@@ -92,11 +92,11 @@ namespace Rhetos.Dom.DefaultConcepts
                         convertedValue = filter.Value;
 
                     // Guid object's type was not automatically recognized when deserializing from JSON:
-                    else if (propertyBasicType == typeof(Guid) && filter.Value is string)
+                    else if (propertyBasicType == typeof(Guid) && filter.Value is string) // TODO: Remove this as a breaking change in next major release.
                         convertedValue = Guid.Parse(filter.Value.ToString());
 
                     // DateTime object's type was not automatically recognized when deserializing from JSON:
-                    else if (propertyBasicType == typeof(DateTime) && filter.Value is string)
+                    else if (propertyBasicType == typeof(DateTime) && filter.Value is string) // TODO: Remove this as a breaking change in next major release.
                         convertedValue = ParseJsonDateTime((string)filter.Value, filter.Property, propertyBasicType);
 
                     else if ((propertyBasicType == typeof(decimal) || propertyBasicType == typeof(int)) && filter.Value is string)

@@ -22,7 +22,7 @@ using System.ComponentModel.Composition;
 namespace Rhetos.Processing.DefaultCommands
 {
     [Export(typeof(ICommandInfo))]
-    public class DownloadReportCommandInfo : ICommandInfo
+    public class DownloadReportCommandInfo : ICommandInfo<DownloadReportCommandResult>
     {
         /// <summary>
         /// Instance of the report type.

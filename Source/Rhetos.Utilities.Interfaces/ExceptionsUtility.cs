@@ -18,11 +18,8 @@
 */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
-using System.Text;
 
 namespace Rhetos.Utilities
 {
@@ -67,6 +64,21 @@ namespace Rhetos.Utilities
                 return rhetosException.MessageForLog();
             else
                 return ex.Message;
+        }
+
+        private const string _commandSummaryKey = "Rhetos.Command.Summary";
+
+        public static void SetCommandSummary(Exception ex, string commandSummary)
+        {
+            ex.Data[_commandSummaryKey] = commandSummary;
+        }
+
+        public static string GetCommandSummary(Exception ex)
+        {
+            if (ex.Data != null)
+                return (string)ex.Data[_commandSummaryKey];
+            else
+                return null;
         }
     }
 }

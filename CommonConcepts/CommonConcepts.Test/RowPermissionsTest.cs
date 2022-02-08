@@ -44,7 +44,7 @@ namespace CommonConcepts.Test
         {
             var commands = scope.Resolve<IPluginsContainer<ICommandImplementation>>();
             var readCommand = (ReadCommand)commands.GetImplementations(typeof(ReadCommandInfo)).Single();
-            return (ReadCommandResult)readCommand.Execute(commandInfo);
+            return readCommand.Execute(commandInfo);
         }
 
         /// <summary>
@@ -341,7 +341,8 @@ namespace CommonConcepts.Test
                         Filters = new FilterCriteria[]
                         {
                             new FilterCriteria() { Property = "value", Operation = "less", Value = 60 },
-                            new FilterCriteria() { Property = "value", Operation = "greater", Value = 50 },                        }
+                            new FilterCriteria() { Property = "value", Operation = "greater", Value = 50 },
+                        }
                     };
                     var result = ExecuteReadCommand(cValidRange, scope);
                     Assert.AreEqual(9, result.Records.Length);
@@ -840,14 +841,13 @@ namespace CommonConcepts.Test
                 var item2 = new SimpleRP { value = 1001, ID = item1.ID };
 
                 var command1 = new SaveEntityCommandInfo { Entity = item1.GetType().FullName, DataToInsert = new[] { item1 } };
-                var response1 = processingEngine.Execute(new[] { command1 });
-                Assert.IsTrue(response1.Success);
+                var _ = processingEngine.Execute(command1);
 
                 var command2 = new SaveEntityCommandInfo { Entity = item2.GetType().FullName, DataToInsert = new[] { item2 } };
-                var response2 = processingEngine.Execute(new[] { command2 });
-                Assert.IsFalse(response2.Success);
-                TestUtility.AssertContains(response2.UserMessage, new[] { "Operation could not be completed because the request sent to the server was not valid or not properly formatted." });
-                TestUtility.AssertContains(response2.SystemMessage, new[] { "Inserting a record that already exists in database.", item2.ID.ToString() });
+                TestUtility.ShouldFail<ClientException>(
+                    () => processingEngine.Execute(command2),
+                    "Inserting a record that already exists in database.",
+                    item2.ID.ToString());
             }
         }
 
@@ -861,10 +861,10 @@ namespace CommonConcepts.Test
                 var item = new SimpleRP { value = 1000, ID = Guid.NewGuid() };
                 var command = new SaveEntityCommandInfo { Entity = item.GetType().FullName, DataToUpdate = new[] { item } };
 
-                var response = processingEngine.Execute(new[] { command });
-                Assert.IsFalse(response.Success);
-                TestUtility.AssertContains(response.UserMessage, new[] { "Operation could not be completed because the request sent to the server was not valid or not properly formatted." });
-                TestUtility.AssertContains(response.SystemMessage, new[] { "Updating a record that does not exist in database.", item.ID.ToString() });
+                TestUtility.ShouldFail<ClientException>(
+                    () => processingEngine.Execute(command),
+                    "Updating a record that does not exist in database.",
+                    item.ID.ToString());
             }
         }
 
@@ -878,10 +878,10 @@ namespace CommonConcepts.Test
                 var item = new SimpleRP { value = 1000, ID = Guid.NewGuid() };
                 var command = new SaveEntityCommandInfo { Entity = item.GetType().FullName, DataToDelete = new[] { item } };
 
-                var response = processingEngine.Execute(new[] { command });
-                Assert.IsFalse(response.Success);
-                TestUtility.AssertContains(response.UserMessage, new[] { "Operation could not be completed because the request sent to the server was not valid or not properly formatted." });
-                TestUtility.AssertContains(response.SystemMessage, new[] { "Deleting a record that does not exist in database.", item.ID.ToString() });
+                TestUtility.ShouldFail<ClientException>(
+                    () => processingEngine.Execute(command),
+                    "Deleting a record that does not exist in database.",
+                    item.ID.ToString());
             }
         }
 
@@ -896,14 +896,13 @@ namespace CommonConcepts.Test
                 var item2 = new SimpleRP { value = 1, ID = item1.ID };
 
                 var command1 = new SaveEntityCommandInfo { Entity = item1.GetType().FullName, DataToInsert = new[] { item1 } };
-                var response1 = processingEngine.Execute(new[] { command1 });
-                Assert.IsTrue(response1.Success);
+                processingEngine.Execute(command1);
 
                 var command2 = new SaveEntityCommandInfo { Entity = item2.GetType().FullName, DataToInsert = new[] { item2 } };
-                var response2 = processingEngine.Execute(new[] { command2 });
-                Assert.IsFalse(response2.Success);
-                TestUtility.AssertContains(response2.UserMessage, new[] { "Operation could not be completed because the request sent to the server was not valid or not properly formatted." });
-                TestUtility.AssertContains(response2.SystemMessage, new[] { "Inserting a record that already exists in database.", item2.ID.ToString() });
+                TestUtility.ShouldFail<ClientException>(
+                    () => processingEngine.Execute(command2),
+                    "Inserting a record that already exists in database.",
+                    item2.ID.ToString());
             }
         }
 
@@ -917,10 +916,10 @@ namespace CommonConcepts.Test
                 var item = new SimpleRP { value = 1, ID = Guid.NewGuid() };
                 var command = new SaveEntityCommandInfo { Entity = item.GetType().FullName, DataToUpdate = new[] { item } };
 
-                var response = processingEngine.Execute(new[] { command });
-                Assert.IsFalse(response.Success);
-                TestUtility.AssertContains(response.UserMessage, new[] { "Operation could not be completed because the request sent to the server was not valid or not properly formatted." });
-                TestUtility.AssertContains(response.SystemMessage, new[] { "Updating a record that does not exist in database.", item.ID.ToString() });
+                TestUtility.ShouldFail<ClientException>(
+                    () => processingEngine.Execute(command),
+                    "Updating a record that does not exist in database.",
+                    item.ID.ToString());
             }
         }
 
@@ -934,10 +933,10 @@ namespace CommonConcepts.Test
                 var item = new SimpleRP { value = 1, ID = Guid.NewGuid() };
                 var command = new SaveEntityCommandInfo { Entity = item.GetType().FullName, DataToDelete = new[] { item } };
 
-                var response = processingEngine.Execute(new[] { command });
-                Assert.IsFalse(response.Success);
-                TestUtility.AssertContains(response.UserMessage, new[] { "Operation could not be completed because the request sent to the server was not valid or not properly formatted." });
-                TestUtility.AssertContains(response.SystemMessage, new[] { "Deleting a record that does not exist in database.", item.ID.ToString() });
+                TestUtility.ShouldFail<ClientException>(
+                    () => processingEngine.Execute(command),
+                    "Deleting a record that does not exist in database.",
+                    item.ID.ToString());
             }
         }
 

@@ -71,14 +71,12 @@ namespace CommonConcepts.Test
 
             using (var scope = TestScope.Create(builder => builder.ConfigureIgnoreClaims()))
             {
-                var processingEngine = scope.Resolve<IProcessingEngine>();
                 var serverCommand = new ReadCommandInfo
                 {
                     DataSource = typeof(DemoRowPermissions1.Document).FullName,
                     ReadRecords = true
                 };
-                var serverResponse = processingEngine.Execute(new[] { serverCommand });
-                var report = GenerateReport(serverResponse);
+                var report = ExecuteAndReport(scope, serverCommand);
                 Console.WriteLine("Server response: " + report);
                 Assert.IsTrue(report.Contains("You are not authorized"));
             }
@@ -87,15 +85,13 @@ namespace CommonConcepts.Test
 
             using (var scope = TestScope.Create(builder => builder.ConfigureIgnoreClaims()))
             {
-                var processingEngine = scope.Resolve<IProcessingEngine>();
                 var serverCommand = new ReadCommandInfo
                 {
                     DataSource = typeof(DemoRowPermissions1.Document).FullName,
                     ReadRecords = true,
                     Filters = new[] { new FilterCriteria(typeof(Common.RowPermissionsReadItems)) }
                 };
-                var serverResponse = processingEngine.Execute(new[] { serverCommand });
-                var report = GenerateReport(serverResponse);
+                var report = ExecuteAndReport(scope, serverCommand);
                 Console.WriteLine("Server response: " + report);
                 Assert.AreEqual("doc1", report);
             }
@@ -160,14 +156,12 @@ namespace CommonConcepts.Test
 
             using (var scope = TestScope.Create(builder => builder.ConfigureIgnoreClaims()))
             {
-                var processingEngine = scope.Resolve<IProcessingEngine>();
                 var serverCommand = new ReadCommandInfo
                 {
                     DataSource = typeof(DemoRowPermissions2.Document).FullName,
                     ReadRecords = true
                 };
-                var serverResponse = processingEngine.Execute(new[] { serverCommand });
-                var report = GenerateReport(serverResponse);
+                var report = ExecuteAndReport(scope, serverCommand);
                 Console.WriteLine("Server response: " + report);
                 Assert.IsTrue(report.Contains("You are not authorized"));
             }
@@ -176,15 +170,13 @@ namespace CommonConcepts.Test
 
             using (var scope = TestScope.Create(builder => builder.ConfigureIgnoreClaims()))
             {
-                var processingEngine = scope.Resolve<IProcessingEngine>();
                 var serverCommand = new ReadCommandInfo
                 {
                     DataSource = typeof(DemoRowPermissions2.Document).FullName,
                     ReadRecords = true,
                     Filters = new[] { new FilterCriteria(typeof(Common.RowPermissionsReadItems)) }
                 };
-                var serverResponse = processingEngine.Execute(new[] { serverCommand });
-                var report = GenerateReport(serverResponse);
+                var report = ExecuteAndReport(scope, serverCommand);
                 Console.WriteLine("Server response: " + report);
                 Assert.AreEqual("doc1, doc3, doc4", report);
             }
@@ -197,14 +189,12 @@ namespace CommonConcepts.Test
                 var doc1 = repository.DemoRowPermissions2.Document.Query().Where(d => d.Title == "doc1").Single();
                 doc1.Title += "x";
 
-                var processingEngine = scope.Resolve<IProcessingEngine>();
                 var serverCommand = new SaveEntityCommandInfo
                 {
                     Entity = typeof(DemoRowPermissions2.Document).FullName,
                     DataToUpdate = new[] { doc1 }
                 };
-                var serverResponse = processingEngine.Execute(new[] { serverCommand });
-                var report = GenerateReport(serverResponse);
+                var report = ExecuteAndReport(scope, serverCommand);
                 Console.WriteLine("Server response: " + report);
                 Assert.AreEqual("Command executed", report);
 
@@ -220,15 +210,13 @@ namespace CommonConcepts.Test
                 var doc4 = repository.DemoRowPermissions2.Document.Query().Where(d => d.Title == "doc4").Single();
                 doc4.Title += "x";
 
-                var processingEngine = scope.Resolve<IProcessingEngine>();
                 var serverCommand = new SaveEntityCommandInfo
                 {
                     Entity = typeof(DemoRowPermissions2.Document).FullName,
                     DataToUpdate = new[] { doc4 }
                 };
 
-                var serverResponse = processingEngine.Execute(new[] { serverCommand });
-                var report = GenerateReport(serverResponse);
+                var report = ExecuteAndReport(scope, serverCommand);
                 Console.WriteLine("Server response: " + report);
                 Assert.IsTrue(report.Contains("Insufficient permissions"));
             }
@@ -386,19 +374,22 @@ namespace CommonConcepts.Test
             }
         }
 
-        /// <summary>
-        /// Parse the server response and generate a simplified report.
-        /// </summary>
-        private static string GenerateReport(ProcessingResult processingResult)
+        private string ExecuteAndReport(Rhetos.IUnitOfWorkScope scope, ICommandInfo serverCommand)
         {
-            if (!processingResult.Success)
-                return "ERROR: " + (processingResult.UserMessage ?? processingResult.SystemMessage);
+            var processingEngine = scope.Resolve<IProcessingEngine>();
+            object commandResult;
+            try
+            {
+                commandResult = processingEngine.Execute(serverCommand);
+            }
+            catch (Exception e)
+            {
+                return $"ERROR: {e.GetType()}: {e.Message}";
+            }
 
-            var commandResult = processingResult.CommandResults.Single();
             if (commandResult == null)
                 return "Command executed";
-
-            if (commandResult is ReadCommandResult readResult)
+            else if (commandResult is ReadCommandResult readResult)
             {
                 if (readResult.Records is IEnumerable<DemoRowPermissions1.Document> documents1)
                 {

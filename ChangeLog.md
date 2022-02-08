@@ -82,6 +82,7 @@ Changes in behavior:
       manually create a new SqlConnection and SqlCommand from Rhetos.Utilities.ConnectionString (from DI).
       Alternatively, create a new [unit-of-work scope](https://github.com/Rhetos/Rhetos/wiki/Unit-of-work#manual-control-over-unit-of-work)
       with PersistenceTransactionOptions.UseDatabaseTransaction disabled and IUserInfo added, and resolve ISqlExecuter from that scope.
+21. Simplified IProcessingEngine.Execute result: In case of an error, the method will throw an exception, instead of setting Success=false in the result object.
 
 Changes in Rhetos libraries API:
 
@@ -184,6 +185,7 @@ Changes in Rhetos libraries API:
   but the old format *username@servername* is still recommended for increased security.
 * Bugfix: [AfterDeploy](https://github.com/Rhetos/AfterDeploy) SQL scripts sometimes failed with a deadlock
   when using `/*DatabaseGenerator:NoTransaction*/` (SqlTransactionBatches no longer uses parent scope transaction).
+* Repository classes are `partial`, to simplify integration of DSL scripts and custom C# code.
 
 ## 4.3.0 (2021-03-05)
 

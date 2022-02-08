@@ -18,6 +18,7 @@
 */
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Processing;
 using Rhetos.Processing.DefaultCommands;
@@ -47,8 +48,7 @@ namespace CommonConcepts.Test
                     ReadTotalCount = true,
                     Filters = new[] { new FilterCriteria { Filter = "System.Guid[]", Value = new[] { new Guid("546df18b-5df8-4ffa-9b08-8da909efe067") } } }
                 };
-                var processingEngineResult = processingEngine.Execute(new[] { readPrincipals });
-                Assert.IsTrue(processingEngineResult.Success);
+                var _ = processingEngine.Execute(readPrincipals);
 
                 var excected = new ListOfTuples<string, IEnumerable<string>>()
                 {
@@ -87,17 +87,19 @@ namespace CommonConcepts.Test
                         new TestUnique.E { I = 123, S = "abc" },
                     }
                 };
-                var processingEngineResult = processingEngine.Execute(new[] { saveDuplicates });
-                Assert.IsFalse(processingEngineResult.Success);
-                TestUtility.AssertContains(processingEngineResult.UserMessage, "duplicate");
+                TestUtility.ShouldFail<UserException>(
+                    () => processingEngine.Execute(saveDuplicates),
+                    "duplicate");
 
                 var expected = new ListOfTuples<string, IEnumerable<string>>()
                 {
                     { "request info", new[] { "ProcessingEngine Request", "SaveEntityCommandInfo TestUnique.E, insert 2" } },
                     { "command xml", new[] { "ProcessingEngine Commands", "<DataToInsert", ">abc</S>" } },
                     { "error info", new[] { "Command failed: SaveEntityCommandInfo TestUnique.E, insert 2. Rhetos.UserException", "duplicate", "IX_E_S_I_R", "stack trace" } },
-                    { "CommandsWithClientError xml", new[] { "ProcessingEngine CommandsWithClientError", "<DataToInsert", ">abc</S>" } },
-                    { "CommandsWithClientError result", new[] { "ProcessingEngine CommandsWithClientError", "<UserMessage>", "It is not allowed" } },
+                    { "CommandsWithClientError parameters", new[] { "ProcessingEngine CommandsWithClientError", "<DataToInsert", ">abc</S>" } },
+                    { "CommandsWithClientError result", new[] { "ProcessingEngine CommandsWithClientError",
+                        "<Error>Rhetos.UserException: It is not allowed to enter a duplicate record.",
+                        "Cannot insert duplicate key row in object 'TestUnique.E' with unique index 'IX_E_S_I_R'" } },
                 };
 
                 foreach (var test in expected)
@@ -120,22 +122,21 @@ namespace CommonConcepts.Test
             {
                 var readCommandError = new ReadCommandInfo() { DataSource = "TestRowPermissions.ErrorData", ReadRecords = true, Filters = new[] { new FilterCriteria("duplicateSecondItem") } };
                 var processingEngine = scope.Resolve<IProcessingEngine>();
-                var processingEngineResult = processingEngine.Execute(new[] { readCommandError });
-                Assert.IsFalse(processingEngineResult.Success);
-                TestUtility.AssertContains(processingEngineResult.SystemMessage, new[] { "Internal server error occurred", "IndexOutOfRangeException" });
+
+                var e = TestUtility.ShouldFail<IndexOutOfRangeException>(
+                    () => processingEngine.Execute(new[] { readCommandError }));
+                TestUtility.AssertContains(ExceptionsUtility.GetCommandSummary(e), "TestRowPermissions.ErrorData", "duplicateSecondItem");
 
                 var excected = new ListOfTuples<string, IEnumerable<string>>()
                 {
                     { "error info", new[] { "Command failed: ReadCommandInfo TestRowPermissions.ErrorData", "Index was outside the bounds of the array", "stack trace" } },
-                    { "CommandsWithServerError xml", new[] { "ProcessingEngine CommandsWithServerError", "TestRowPermissions.ErrorData</DataSource>" } },
-                    { "CommandsWithServerError result", new[] { "ProcessingEngine CommandsWithServerError", "<SystemMessage>", "Internal server error" } },
+                    { "CommandsWithServerError parameters", new[] { "ProcessingEngine CommandsWithServerError", "TestRowPermissions.ErrorData</DataSource>" } },
+                    { "CommandsWithServerError result", new[] { "ProcessingEngine CommandsWithServerError", "IndexOutOfRangeException", "Index was outside the bounds of the array" } },
                 };
-
                 foreach (var test in excected)
                     Assert.IsTrue(log.Any(line => test.Item2.All(pattern => line.Contains(pattern))), "Missing a log entry for test '" + test.Item1 + "'.");
 
                 var notExpected = new[] { "CommandsWithClientError" };
-
                 foreach (var test in notExpected)
                     Assert.IsFalse(log.Any(line => line.Contains(test)), "Unexpected log entry for test '" + test + "'.");
             }
@@ -153,7 +154,7 @@ namespace CommonConcepts.Test
 
             ExectureRollbackOnError(user1);
 
-            TestUtility.ShouldFail<ApplicationException>(
+            TestUtility.ShouldFail<UserException>(
                 () => ExectureRollbackOnError(user2),
                 "The username should not end with x.");
 
@@ -207,8 +208,6 @@ namespace CommonConcepts.Test
             {
                 var processingEngine = scope.Resolve<IProcessingEngine>();
                 var result = processingEngine.Execute(new[] { command });
-                if (!result.Success)
-                    throw new ApplicationException(result.UserMessage + ", " + result.SystemMessage);
                 var results = (TResult)result.CommandResults.Single();
 
                 scope.CommitAndClose();

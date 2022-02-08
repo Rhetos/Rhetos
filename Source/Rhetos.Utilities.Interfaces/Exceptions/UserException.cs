@@ -24,7 +24,16 @@ namespace Rhetos
     /// <summary>
     /// This exceptions denotes an error during validation of data vs business logic rules.
     /// These errors result from end user's incorrect usage of the application.
-    /// Web response HTTP status code on this exception is 400.
+    /// <para>
+    /// The <see cref="Exception.Message"/> property contains a message for the end user.
+    /// The message may contain indexed placeholders ({0}, {1}, ...) to support localization,
+    /// and it needs to be formated with provided parameters in <see cref="MessageParameters"/>,
+    /// for example by calling <c>string.Format(userException.Message, userException.MessageParameters)</c>.
+    /// </para>
+    /// <para>
+    /// The exception may also contain additional error metadata (for example a property name that caused the error)
+    /// in <see cref="SystemMessage"/>.
+    /// </para>
     /// </summary>
     [Serializable]
     public class UserException : RhetosException
