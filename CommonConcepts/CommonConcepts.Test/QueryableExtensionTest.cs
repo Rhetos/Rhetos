@@ -49,7 +49,7 @@ namespace CommonConcepts.Test
                     });
 
                 var all = repository.Test11.QE.Query().ToArray();
-                Array.Sort(all, (a, b) => string.Compare(a.Info, b.Info));
+                Array.Sort(all, (a, b) => string.Compare(a.Info, b.Info, StringComparison.Ordinal));
 
                 Assert.AreEqual(2, all.Length);
 

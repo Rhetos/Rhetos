@@ -36,7 +36,7 @@ namespace CommonConcepts.Test
                 scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestBinary.E;" });
                 var repository = scope.Resolve<Common.DomRepository>();
 
-                var rnd = System.Security.Cryptography.RandomNumberGenerator.Create();
+                using var rnd = System.Security.Cryptography.RandomNumberGenerator.Create();
                 var blob = new Byte[10];
                 rnd.GetBytes(blob);
                 
@@ -57,7 +57,7 @@ namespace CommonConcepts.Test
                 scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestBinary.E;" });
                 var repository = scope.Resolve<Common.DomRepository>();
 
-                var rnd = System.Security.Cryptography.RandomNumberGenerator.Create();
+                using var rnd = System.Security.Cryptography.RandomNumberGenerator.Create();
                 var blob = new Byte[1000000];
                 rnd.GetBytes(blob);
 
