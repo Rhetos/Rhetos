@@ -18,17 +18,17 @@
 */
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Reflection;
 using System.Globalization;
+using System.Linq;
+using System.Reflection;
 
 namespace Rhetos.Dsl
 {
     public static class ConceptMembers
     {
-        private static readonly Dictionary<Type, ConceptMember[]> _cache = new Dictionary<Type, ConceptMember[]>();
+        private static readonly ConcurrentDictionary<Type, ConceptMember[]> _cache = new();
 
         public static ConceptMember[] Get(IConceptInfo conceptInfo)
         {
@@ -42,10 +42,11 @@ namespace Rhetos.Dsl
 
         private static ConceptMember[] Get(Type conceptInfoType, IConceptInfo instance)
         {
-            ConceptMember[] cached;
-            if (_cache.TryGetValue(conceptInfoType, out cached))
-                return cached;
+            return _cache.GetOrAdd(conceptInfoType, type => Create(type, instance));
+        }
 
+        private static ConceptMember[] Create(Type conceptInfoType, IConceptInfo instance)
+        {
             HashSet<string> nonParsableMembers = null;
             if (typeof(IAlternativeInitializationConcept).IsAssignableFrom(conceptInfoType))
             {
@@ -102,7 +103,6 @@ namespace Rhetos.Dsl
                         conceptInfoType.Name, nonexistentMember));
             }
 
-            _cache.Add(conceptInfoType, conceptMembers);
             return conceptMembers;
         }
 
