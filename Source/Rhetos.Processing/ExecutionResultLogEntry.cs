@@ -18,13 +18,14 @@
 */
 
 using System;
+using System.Collections.Generic;
 
 namespace Rhetos.Processing
 {
     public class ExecutionResultLogEntry
     {
         public Guid ExecutionId { get; set; }
-        public ProcessingResult Result { get; set; }
+        public IList<object> CommandResults { get; set; }
         public string Error { get; set; }
     }
 }

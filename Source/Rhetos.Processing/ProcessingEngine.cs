@@ -79,21 +79,113 @@ namespace Rhetos.Processing
             var executionId = Guid.NewGuid();
 
             _requestLogger.Trace(() => $"User: {ReportUserNameOrAnonymous(_userInfo)}, Commands({commands.Count}): {string.Join(", ", commands.Select(c => c.Summary()))}.");
-
             _commandsLogger.Trace(() => _xmlUtility.SerializeToXml(new ExecutionCommandsLogEntry { ExecutionId = executionId, UserInfo = _userInfo.Report(), Commands = commands }));
 
-            ProcessingResult result = null;
             try
             {
-                result = ExecuteInner(commands, executionId);
+                var authorizationErrorMessage = _authorizationManager.Authorize(commands);
+                if (!string.IsNullOrEmpty(authorizationErrorMessage))
+                    throw new UserException(authorizationErrorMessage, authorizationErrorMessage); // Setting both messages for backward compatibility.
             }
             catch (Exception e)
             {
-                _commandsResultLogger.Trace(() => _xmlUtility.SerializeToXml(new ExecutionResultLogEntry { ExecutionId = executionId, Error = e.ToString() }));
+                LogError(e, commands, executionId);
                 ExceptionsUtility.Rethrow(e);
             }
-            _commandsResultLogger.Trace(() => SafeSerialize(new ExecutionResultLogEntry { ExecutionId = executionId, Result = result }));
-            return result;
+
+            var commandResults = new List<object>();
+
+            foreach (var commandInfo in commands)
+            {
+                try
+                {
+                    object commandResult = ExecuteCommand(commandInfo);
+                    commandResults.Add(commandResult);
+                }
+                catch (Exception e)
+                {
+                    _persistenceTransaction.DiscardOnDispose(); // This is not needed since Rhetos v5 because the transaction should be disposed by default. Review if needed for backward compatibility.
+                    e = SimplifyException(e);
+                    LogError(e, commands, executionId, commandInfo);
+                    ExceptionsUtility.Rethrow(e);
+                }
+            }
+
+            _commandsResultLogger.Trace(() => SafeSerialize(new ExecutionResultLogEntry { ExecutionId = executionId, CommandResults = commandResults }));
+            return new ProcessingResult { CommandResults = commandResults };
+        }
+
+        private void LogError(Exception e, IList<ICommandInfo> commands, Guid executionId, ICommandInfo commandInfo = null)
+        {
+            if (commandInfo != null)
+            {
+                _logger.Trace(() => $"Command failed: {commandInfo.Summary()}. {e}");
+                if (e is not UserException) // Skipping UserException as a performance optimization, since UserException is a standard app behavior. Use other ProcessingEngine loggers instead to debug a UserException.
+                    ExceptionsUtility.SetCommandSummary(e, commandInfo.Summary());
+
+                var commandsErrorLogger = (e is UserException || e is ClientException) ? _commandsClientErrorLogger : _commandsServerErrorLogger;
+                commandsErrorLogger.Trace(() => _xmlUtility.SerializeToXml(new ExecutionCommandsLogEntry { ExecutionId = executionId, UserInfo = _userInfo.Report(), Commands = commands }));
+                commandsErrorLogger.Trace(() => _xmlUtility.SerializeToXml(new ExecutionResultLogEntry { ExecutionId = executionId, Error = e.ToString() }));
+            }
+
+            _commandsResultLogger.Trace(() => _xmlUtility.SerializeToXml(new ExecutionResultLogEntry { ExecutionId = executionId, Error = e.ToString() }));
+        }
+
+        private Exception SimplifyException(Exception e)
+        {
+            if (e is TargetInvocationException && e.InnerException is RhetosException)
+            {
+                _logger.Trace(() => "Unwrapping exception: " + e.ToString());
+                e = e.InnerException;
+            }
+
+            e = _sqlUtility.InterpretSqlException(e) ?? e;
+            return e;
+        }
+
+        private object ExecuteCommand(ICommandInfo commandInfo)
+        {
+            _logger.Trace("Executing command {0}.", commandInfo.Summary());
+
+            var implementations = _commandRepository.GetImplementations(commandInfo.GetType());
+
+            if (!implementations.Any())
+                throw new FrameworkException(string.Format(CultureInfo.InvariantCulture,
+                    "Cannot execute command \"{0}\". There are no command implementations loaded that implement the command.", commandInfo.Summary()));
+
+            if (implementations.Count() > 1)
+                throw new FrameworkException(string.Format(CultureInfo.InvariantCulture,
+                    "Cannot execute command \"{0}\". It has more than one implementation registered: {1}.", commandInfo.Summary(), string.Join(", ", implementations.Select(i => i.GetType().Name))));
+
+            var commandImplementation = implementations.Single();
+            _logger.Trace("Executing implementation {0}.", commandImplementation.GetType().Name);
+
+            var commandObserversForThisCommand = _commandObservers.GetImplementations(commandInfo.GetType());
+            var stopwatch = Stopwatch.StartNew();
+
+            foreach (var commandObeserver in commandObserversForThisCommand)
+            {
+                commandObeserver.BeforeExecute(commandInfo);
+                _performanceLogger.Write(stopwatch, () => "CommandObeserver.BeforeExecute " + commandObeserver.GetType().FullName);
+            }
+
+            object commandResult;
+            try
+            {
+                commandResult = commandImplementation.Execute(commandInfo);
+            }
+            finally
+            {
+                _performanceLogger.Write(stopwatch, () => "Command executed (" + commandImplementation + ": " + commandInfo.Summary() + ").");
+            }
+
+            foreach (var commandObeserver in commandObserversForThisCommand)
+            {
+                commandObeserver.AfterExecute(commandInfo, commandResult);
+                _performanceLogger.Write(stopwatch, () => "CommandObeserver.AfterExecute " + commandObeserver.GetType().FullName);
+            }
+
+            return commandResult;
         }
 
         private string SafeSerialize(ExecutionResultLogEntry logEntry)
@@ -104,92 +196,9 @@ namespace Rhetos.Processing
             }
             catch (Exception e)
             {
-                return $"Cannot serialize command result '{logEntry.Result.GetType()}' for detailed logging, ExecutionId {logEntry.ExecutionId}. {e}";
+                var types = string.Join(", ", logEntry.CommandResults.Select(r => r?.GetType().ToString() ?? "null"));
+                return $"Cannot serialize command results '{types}' for detailed logging, ExecutionId {logEntry.ExecutionId}. {e}";
             }
-        }
-
-        public ProcessingResult ExecuteInner(IList<ICommandInfo> commands, Guid executionId)
-        {
-            var authorizationErrorMessage = _authorizationManager.Authorize(commands);
-            if (!string.IsNullOrEmpty(authorizationErrorMessage))
-                throw new UserException(authorizationErrorMessage, authorizationErrorMessage); // Setting both messages for backward compatibility.
-
-            var commandResults = new List<object>();
-
-            foreach (var commandInfo in commands)
-            {
-                try
-                {
-                    _logger.Trace("Executing command {0}.", commandInfo.Summary());
-
-                    var implementations = _commandRepository.GetImplementations(commandInfo.GetType());
-
-                    if (!implementations.Any())
-                        throw new FrameworkException(string.Format(CultureInfo.InvariantCulture,
-                            "Cannot execute command \"{0}\". There are no command implementations loaded that implement the command.", commandInfo.Summary()));
-
-                    if (implementations.Count() > 1)
-                        throw new FrameworkException(string.Format(CultureInfo.InvariantCulture, 
-                            "Cannot execute command \"{0}\". It has more than one implementation registered: {1}.", commandInfo.Summary(), string.Join(", ", implementations.Select(i => i.GetType().Name))));
-
-                    var commandImplementation = implementations.Single();
-                    _logger.Trace("Executing implementation {0}.", commandImplementation.GetType().Name);
-
-                    var commandObserversForThisCommand = _commandObservers.GetImplementations(commandInfo.GetType());
-                    var stopwatch = Stopwatch.StartNew();
-
-                    foreach (var commandObeserver in commandObserversForThisCommand)
-                    {
-                        commandObeserver.BeforeExecute(commandInfo);
-                        _performanceLogger.Write(stopwatch, () => "CommandObeserver.BeforeExecute " + commandObeserver.GetType().FullName);
-                    }
-
-                    object commandResult;
-                    try
-                    {
-                        commandResult = commandImplementation.Execute(commandInfo);
-                    }
-                    finally
-                    {
-                        _performanceLogger.Write(stopwatch, () => "Command executed (" + commandImplementation + ": " + commandInfo.Summary() + ").");
-                    }
-
-                    foreach (var commandObeserver in commandObserversForThisCommand)
-                    {
-                        commandObeserver.AfterExecute(commandInfo, commandResult);
-                        _performanceLogger.Write(stopwatch, () => "CommandObeserver.AfterExecute " + commandObeserver.GetType().FullName);
-                    }
-
-                    commandResults.Add(commandResult);
-                }
-                catch (Exception ex)
-                {
-                    _persistenceTransaction.DiscardOnDispose(); // This is not needed since Rhetos v5 because the transaction should be disposed by default. Review if needed for backward compatibility.
-
-                    if (ex is TargetInvocationException && ex.InnerException is RhetosException)
-                    {
-                        _logger.Trace(() => "Unwrapping exception: " + ex.ToString());
-                        ex = ex.InnerException;
-                    }
-
-                    ex = _sqlUtility.InterpretSqlException(ex) ?? ex;
-
-                    _logger.Trace(() => $"Command failed: {commandInfo.Summary()}. {ex}");
-
-                    var commandsErrorLogger = (ex is UserException || ex is ClientException)
-                        ? _commandsClientErrorLogger
-                        : _commandsServerErrorLogger;
-                    commandsErrorLogger.Trace(() => _xmlUtility.SerializeToXml(new ExecutionCommandsLogEntry { ExecutionId = executionId, UserInfo = _userInfo.Report(), Commands = commands }));
-                    commandsErrorLogger.Trace(() => _xmlUtility.SerializeToXml(new ExecutionResultLogEntry { ExecutionId = executionId, Error = ex.ToString() }));
-
-                    if (ex is not UserException) // Skipped as a performance optimization, since UserException is a standard app behavior. Use other ProcessingEngine loggers instead to debug a UserException.
-                        ExceptionsUtility.SetCommandSummary(ex, commandInfo.Summary());
-
-                    ExceptionsUtility.Rethrow(ex);
-                }
-            }
-
-            return new ProcessingResult { CommandResults = commandResults };
         }
 
         private static string ReportUserNameOrAnonymous(IUserInfo userInfo)
