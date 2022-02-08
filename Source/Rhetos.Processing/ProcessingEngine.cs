@@ -122,11 +122,11 @@ namespace Rhetos.Processing
                 _logger.Trace(() => $"Command failed: {commandInfo.Summary()}. {e}");
                 if (e is not UserException) // Skipping UserException as a performance optimization, since UserException is a standard app behavior. Use other ProcessingEngine loggers instead to debug a UserException.
                     ExceptionsUtility.SetCommandSummary(e, commandInfo.Summary());
-
-                var commandsErrorLogger = (e is UserException || e is ClientException) ? _commandsClientErrorLogger : _commandsServerErrorLogger;
-                commandsErrorLogger.Trace(() => _xmlUtility.SerializeToXml(new ExecutionCommandsLogEntry { ExecutionId = executionId, UserInfo = _userInfo.Report(), Commands = commands }));
-                commandsErrorLogger.Trace(() => _xmlUtility.SerializeToXml(new ExecutionResultLogEntry { ExecutionId = executionId, Error = e.ToString() }));
             }
+
+            var commandsErrorLogger = (e is UserException || e is ClientException) ? _commandsClientErrorLogger : _commandsServerErrorLogger;
+            commandsErrorLogger.Trace(() => _xmlUtility.SerializeToXml(new ExecutionCommandsLogEntry { ExecutionId = executionId, UserInfo = _userInfo.Report(), Commands = commands }));
+            commandsErrorLogger.Trace(() => _xmlUtility.SerializeToXml(new ExecutionResultLogEntry { ExecutionId = executionId, Error = e.ToString() }));
 
             _commandsResultLogger.Trace(() => _xmlUtility.SerializeToXml(new ExecutionResultLogEntry { ExecutionId = executionId, Error = e.ToString() }));
         }
