@@ -26,17 +26,17 @@ namespace Rhetos.Processing.DefaultCommands
     [Export(typeof(ICommandImplementation))]
     public class ExecuteActionCommand : ICommandImplementation<ExecuteActionCommandInfo, object>
     {
-        private readonly INamedPlugins<IActionRepository> _actionIndex;
+        private readonly INamedPlugins<IActionRepository> _actionRepositories;
 
         public ExecuteActionCommand(INamedPlugins<IActionRepository> actionIndex)
         {
-            _actionIndex = actionIndex;
+            _actionRepositories = actionIndex;
         }
 
         public object Execute(ExecuteActionCommandInfo info)
         {
             string actionName = info.Action.GetType().FullName;
-            IActionRepository actionRepository = _actionIndex.GetPlugin(actionName);
+            IActionRepository actionRepository = _actionRepositories.GetPlugin(actionName);
             actionRepository.Execute(info.Action);
             return null;
         }

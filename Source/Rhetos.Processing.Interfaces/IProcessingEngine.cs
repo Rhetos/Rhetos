@@ -37,7 +37,7 @@ namespace Rhetos.Processing
         /// In case of <see cref="UserException"/> or <see cref="ClientException"/>, the exception's error message
         /// should be returned to the end user or the client application.
         /// All other exception types should be considered as "internal server error", and not sent to the client.
-        /// See also <see cref="ErrorReporting"/> for recommended messages.
+        /// See also <see cref="ErrorMessages"/> for recommended messages.
         /// </para>
         /// <para>
         /// This method decorates some exceptions with the summary description of the failed command,
@@ -63,7 +63,7 @@ namespace Rhetos.Processing
         /// In case of <see cref="UserException"/> or <see cref="ClientException"/>, the exception's error message
         /// should be returned to the end user or the client application.
         /// All other exception types should be considered as "internal server error", and not sent to the client.
-        /// See also <see cref="ErrorReporting"/> for recommended messages.
+        /// See also <see cref="ErrorMessages"/> for recommended messages.
         /// </para>
         /// <para>
         /// This method decorates some exceptions with the summary description of the failed command,
@@ -89,7 +89,7 @@ namespace Rhetos.Processing
         /// In case of <see cref="UserException"/> or <see cref="ClientException"/>, the exception's error message
         /// should be returned to the end user or the client application.
         /// All other exception types should be considered as "internal server error", and not sent to the client.
-        /// See also <see cref="ErrorReporting"/> for recommended messages.
+        /// See also <see cref="ErrorMessages"/> for recommended messages.
         /// </para>
         /// <para>
         /// This method decorates some exceptions with the summary description of the failed command,

@@ -21,7 +21,7 @@ using System;
 
 namespace Rhetos.Utilities
 {
-    public static class ErrorReporting
+    public static class ErrorMessages
     {
         /// <summary>
         /// The recommended error message to be returned to end user in case of a <see cref="ClientException"/>.

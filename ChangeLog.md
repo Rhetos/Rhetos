@@ -82,9 +82,9 @@ Changes in behavior:
       manually create a new SqlConnection and SqlCommand from Rhetos.Utilities.ConnectionString (from DI).
       Alternatively, create a new [unit-of-work scope](https://github.com/Rhetos/Rhetos/wiki/Unit-of-work#manual-control-over-unit-of-work)
       with PersistenceTransactionOptions.UseDatabaseTransaction disabled and IUserInfo added, and resolve ISqlExecuter from that scope.
-21. Simplified IProcessingEngine.Execute result: In case of an error, the method will throw an exception, instead of setting Success=false in the result object.
+21. Simplified result for IProcessingEngine.Execute and ICommandImplementation interface. In case of an error, the method will throw an exception, instead of setting Success=false in the result object.
     * If an existing application code verifies the result `Success` property in order to throw UserException, ClientException or FrameworkException,
-      in most cases this code can simply be removed, since the Execute method already throws this exception.
+      in most cases this code can simply be removed, since the Execute method already throws these exceptions.
       In other cases, see [CreateResponseFromException](https://github.com/Rhetos/RestGenerator/blob/b3e2b46eba119f9acaa54e1dca9d94947011fea7/src/Rhetos.Host.AspNet.RestApi/Utilities/JsonErrorHandler.cs#L49)
       method for IProcessingEngine exception handling by REST API.
 
@@ -159,7 +159,7 @@ Changes in Rhetos libraries API:
     you should write
     `SamePropertyValue 'Base.PropertyNameOnReferencedDataStructure';`
 17. Removed `IUserInfoAdmin` interface. It was used together with the `Rhetos:AppSecurity:BuiltinAdminOverride` option to give the administrator rights as it had all claims.
-18. GetInternalServerErrorMessage method moved from FrameworkException class to Rhetos.Utilities.ErrorReporting.
+18. GetInternalServerErrorMessage method moved from FrameworkException class to Rhetos.Utilities.ErrorMessages.
 19. Removed IPersistenceCache interface and ToNavigation() methods. They where Rhetos-specific helpers for saving entities with Entity Framework.
     * If custom application code overrides repository's standard Save method, use DomHelper.WriteToDatabase to save an entity, instead of Entity Framework methods. For reference, see the new generated source code for repository Save methods.
     * Navigation properties behavior can no longer be extended with custom tags *DataStructureQueryable Getter* and *DataStructureQueryable Setter*.
