@@ -20,6 +20,7 @@
 using Autofac;
 using CommonConcepts.Test;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
@@ -28,7 +29,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Rhetos.Persistence.Test
+namespace CommonConcepts.Test.Framework
 {
     [TestClass]
     public class SqlTransactionBatchesIntegrationTest

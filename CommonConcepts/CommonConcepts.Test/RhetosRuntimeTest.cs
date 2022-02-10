@@ -25,7 +25,7 @@ using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Rhetos
+namespace CommonConcepts.Test
 {
     [TestClass]
     public class RhetosRuntimeTest

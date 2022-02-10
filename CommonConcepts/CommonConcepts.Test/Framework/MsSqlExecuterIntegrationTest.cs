@@ -20,6 +20,7 @@
 using CommonConcepts.Test;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Logging;
+using Rhetos.Persistence;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
@@ -30,7 +31,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
-namespace Rhetos.Persistence.Test
+namespace CommonConcepts.Test.Framework
 {
     [TestClass]
     public class MsSqlExecuterIntegrationTest
