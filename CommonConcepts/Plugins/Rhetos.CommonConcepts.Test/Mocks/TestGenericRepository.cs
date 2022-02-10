@@ -18,17 +18,11 @@
 */
 
 using Autofac.Features.Indexed;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos.Dom;
 using Rhetos.Dom.DefaultConcepts;
-using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 
 namespace Rhetos.CommonConcepts.Test.Mocks
 {
@@ -36,28 +30,36 @@ namespace Rhetos.CommonConcepts.Test.Mocks
         where TEntityInterface : class, IEntity
         where TEntity : class, TEntityInterface
     {
-        public TestGenericRepository(IEnumerable<TEntity> items)
+        public TestGenericRepository(IEnumerable<TEntity> items, bool dynamicTypeResolution = true)
             : base(
                 new GenericRepositoryParameters
                 {
                     DomainObjectModel = new DomainObjectModelMock(),
                     Repositories = new Lazy<IIndex<string, IRepository>>(() => new RepositoryIndexMock<TEntityInterface, TEntity>(items)),
                     LogProvider = new ConsoleLogProvider(),
-                    GenericFilterHelper = new GenericFilterHelper(new DomainObjectModelMock(), new DataStructureReadParametersStub()),
+                    GenericFilterHelper = new GenericFilterHelper(
+                        new DomainObjectModelMock(),
+                        new DataStructureReadParametersStub(),
+                        new CommonConceptsRuntimeOptions { DynamicTypeResolution = dynamicTypeResolution },
+                        new ConsoleLogProvider()),
                     DelayedLogProvider = new DelayedLogProvider(new LoggingOptions { DelayedLogTimout = 0 }, null),
-    },
-                new RegisteredInterfaceImplementations { { typeof(TEntityInterface), typeof(TEntity).FullName }})
+                },
+                new RegisteredInterfaceImplementations { { typeof(TEntityInterface), typeof(TEntity).FullName } })
         {
         }
 
-        public TestGenericRepository(IRepository repository)
+        public TestGenericRepository(IRepository repository, bool dynamicTypeResolution = true, List<string> log = null)
             : base(
                 new GenericRepositoryParameters
                 {
                     DomainObjectModel = new DomainObjectModelMock(),
                     Repositories = new Lazy<IIndex<string, IRepository>>(() => new RepositoryIndexMock(typeof(TEntity), repository)),
                     LogProvider = new ConsoleLogProvider(),
-                    GenericFilterHelper = new GenericFilterHelper(new DomainObjectModelMock(), CreateDataStructureReadParameters(repository, typeof(TEntity))),
+                    GenericFilterHelper = new GenericFilterHelper(
+                        new DomainObjectModelMock(),
+                        CreateDataStructureReadParameters(repository, typeof(TEntity)),
+                        new CommonConceptsRuntimeOptions { DynamicTypeResolution = dynamicTypeResolution },
+                        new ConsoleLogProvider((eventType, eventName, message) => log.Add($"[{eventType}] {eventName}: {message()}"))),
                     DelayedLogProvider = new DelayedLogProvider(new LoggingOptions { DelayedLogTimout = 0 }, null),
                 },
                 new RegisteredInterfaceImplementations { { typeof(TEntityInterface), typeof(TEntity).FullName } })

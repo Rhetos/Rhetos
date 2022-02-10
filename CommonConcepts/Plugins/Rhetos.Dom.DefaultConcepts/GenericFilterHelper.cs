@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Logging;
 using Rhetos.Processing.DefaultCommands;
 using Rhetos.Utilities;
 using System;
@@ -35,15 +36,21 @@ namespace Rhetos.Dom.DefaultConcepts
 {
     public class GenericFilterHelper
     {
-        readonly IDomainObjectModel _domainObjectModel;
+        private readonly IDomainObjectModel _domainObjectModel;
         private readonly IDataStructureReadParameters _dataStructureReadParameters;
+        private readonly CommonConceptsRuntimeOptions _commonConceptsRuntimeOptions;
+        private readonly ILogger _logger;
 
         public GenericFilterHelper(
             IDomainObjectModel domainObjectModel,
-            IDataStructureReadParameters dataStructureReadParameters)
+            IDataStructureReadParameters dataStructureReadParameters,
+            CommonConceptsRuntimeOptions commonConceptsRuntimeOptions,
+            ILogProvider logProvider)
         {
             _domainObjectModel = domainObjectModel;
             _dataStructureReadParameters = dataStructureReadParameters;
+            _commonConceptsRuntimeOptions = commonConceptsRuntimeOptions;
+            _logger = logProvider.GetLogger(GetType().Name);
         }
 
         //================================================================
@@ -521,9 +528,6 @@ namespace Rhetos.Dom.DefaultConcepts
 
             Type filterType = null;
 
-            // This method tries reading _dataStructureReadParameters before using Type.GetType, to support simplified names of the filters
-            // (instead of assembly qualified names only) for the filters that are specified on the given data structure in the DSL model.
-
             List<Type> matchingTypes = _dataStructureReadParameters.GetReadParameters(dataStructureFullName, true)
                 .Where(f => f.Name.Equals(filterName, StringComparison.Ordinal)).Select(f => f.Type).Distinct().ToList();
 
@@ -534,16 +538,30 @@ namespace Rhetos.Dom.DefaultConcepts
             if (matchingTypes.Count == 1)
                 filterType = matchingTypes.Single();
 
-            if (filterType == null)
-                filterType = _domainObjectModel.GetType(filterName);
+            if (_commonConceptsRuntimeOptions.DynamicTypeResolution)
+            {
+                if (filterType == null)
+                    filterType = _domainObjectModel.GetType(filterName);
+
+                if (filterType == null)
+                    filterType = Type.GetType(filterName);
+            }
 
             if (filterType == null)
-                filterType = Type.GetType(filterName);
-
-            if (filterType == null)
-                throw new ClientException($"Unknown filter type '{filterName}' on '{dataStructureFullName}'.");
+            {
+                _logger.Warning(() => $"Filter type '{filterName}' is not available. {SupportedTypesReport(dataStructureFullName)}");
+                throw new ClientException($"Filter type '{filterName}' is not available. See server log for more information. ({_logger.Name}, {DateTime.Now:s})");
+            }
 
             return filterType;
+        }
+
+        private string SupportedTypesReport(string dataStructureFullName)
+        {
+            string supportedTypesList = string.Join(", ", _dataStructureReadParameters
+                .GetReadParameters(dataStructureFullName, true)
+                .Select(p => $"'{p.Name}'"));
+            return $"Supported parameter types on '{dataStructureFullName}' are: {supportedTypesList}.";
         }
 
         public class FilterObject

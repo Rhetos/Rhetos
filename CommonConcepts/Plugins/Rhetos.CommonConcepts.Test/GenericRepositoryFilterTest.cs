@@ -60,9 +60,9 @@ namespace Rhetos.CommonConcepts.Test
         static readonly SimpleEntity[] EmptyArray = Array.Empty<SimpleEntity>();
         static readonly SimpleEntity[] AbcArray = new SimpleEntity[] { new SimpleEntity { Name = "abc" } };
 
-        GenericRepository<ISimpleEntity> NewRepos(IRepository repository)
+        GenericRepository<ISimpleEntity> NewRepos(IRepository repository, bool dynamicTypeResolution = true, List<string> log = null)
         {
-            return new TestGenericRepository<ISimpleEntity, SimpleEntity>(repository);
+            return new TestGenericRepository<ISimpleEntity, SimpleEntity>(repository, dynamicTypeResolution, log);
         }
 
         //=======================================================
@@ -716,14 +716,49 @@ namespace Rhetos.CommonConcepts.Test
                 return new[] { new SimpleEntity { Name = parameter.ToString() } }.AsQueryable();
             }
 
-            public static readonly KeyValuePair<string, Type>[] ReadParameterTypes = Array.Empty<KeyValuePair<string, Type>>();
+            public static readonly KeyValuePair<string, Type>[] ReadParameterTypes = new KeyValuePair<string, Type>[]
+            {
+                KeyValuePair.Create("System.DateTime", typeof(DateTime)),
+                KeyValuePair.Create("System.Guid", typeof(Guid)),
+                KeyValuePair.Create("System.String", typeof(string)),
+            };
+        }
+
+        [TestMethod]
+        public void FilterGenericFilter_UnsupportedParameterType()
+        {
+            var log = new List<string>();
+            var entityRepos = new SystemFilterRepository();
+            var genericRepos = NewRepos(entityRepos, false, log);
+
+            TestUtility.ShouldFail<ClientException>(
+                () => genericRepos.Filter(genericRepos.Query(), new[] { new FilterCriteria { Filter = "System.DataTimeOffset" } }),
+                "filter type", "DataTimeOffset");
+
+            string logEntry = log.Single(entry => entry.StartsWith("[Warning]") && entry.Contains("Supported parameter types on"));
+
+            TestUtility.AssertContains(logEntry, new[]
+            {
+                "SimpleEntity",
+
+                // Parameter types specified in SystemFilterRepository.ReadParameterTypes:
+                "System.DateTime",
+                "System.Guid",
+                "System.String",
+
+                // Parameter types generally available on every entity repository:
+                "System.Guid[]",
+                "Guid[]",
+                "'System.Collections.Generic.IEnumerable<System.Guid>",
+                "IEnumerable<Guid>",
+            });
         }
 
         [TestMethod]
         public void FilterGenericFilter_Errors()
         {
             var entityRepos = new SystemFilterRepository();
-            var genericRepos = NewRepos(entityRepos);
+            var genericRepos = NewRepos(entityRepos, false);
 
             TestUtility.ShouldFail(() => genericRepos.Filter(genericRepos.Query(), new[] { new FilterCriteria { Operation = "x" } }), "both property filter and predefined filter are null");
             TestUtility.ShouldFail(() => genericRepos.Filter(genericRepos.Query(), new[] { new FilterCriteria { Value = "x" } }), "both property filter and predefined filter are null");

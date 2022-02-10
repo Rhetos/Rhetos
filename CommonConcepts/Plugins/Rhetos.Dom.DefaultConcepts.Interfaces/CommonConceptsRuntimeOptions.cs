@@ -36,5 +36,11 @@ namespace Rhetos.Dom.DefaultConcepts
         /// For backward compatibility, setting this to true will automatically round the value before writing to the database.
         /// </summary>
         public bool AutoRoundMoney { get; set; }
+
+        /// <summary>
+        /// Available for backward compatibility.
+        /// Disabled by default, since <see cref="IDataStructureReadParameters.GetReadParameters"/> method should return all available parameter types.
+        /// </summary>
+        public bool DynamicTypeResolution { get; set; } = false;
     }
 }
