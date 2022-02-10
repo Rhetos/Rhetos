@@ -85,8 +85,9 @@ Changes in behavior:
 21. Simplified result for IProcessingEngine.Execute and ICommandImplementation interface. In case of an error, the method will throw an exception, instead of setting Success=false in the result object.
     * If an existing application code verifies the result `Success` property in order to throw UserException, ClientException or FrameworkException,
       in most cases this code can simply be removed, since the Execute method already throws these exceptions.
-      In other cases, see [CreateResponseFromException](https://github.com/Rhetos/RestGenerator/blob/b3e2b46eba119f9acaa54e1dca9d94947011fea7/src/Rhetos.Host.AspNet.RestApi/Utilities/JsonErrorHandler.cs#L49)
-      method for IProcessingEngine exception handling by REST API.
+      To match the web response format with RestGenerator, use its ApiExceptionFilter on the controller.
+      In other cases, see [CreateResponseFromException](https://github.com/Rhetos/RestGenerator/blob/0603e6fdafa949072766319306d51692356a08f1/src/Rhetos.Host.AspNet.RestApi/Utilities/ErrorReporting.cs#L49)
+      method for an example of IProcessingEngine exception handling by a REST API plugin.
 
 Changes in Rhetos libraries API:
 
