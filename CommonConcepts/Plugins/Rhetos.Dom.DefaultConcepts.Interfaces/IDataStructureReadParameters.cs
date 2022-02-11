@@ -19,9 +19,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -40,12 +37,16 @@ namespace Rhetos.Dom.DefaultConcepts
         /// Format "{ModuleName}.{DataStructureName}".
         /// </param>
         /// <param name="extendedSet">
-        /// If set, the result will include alternative simplified type names without default namespaces,
-        /// and alternative array parameter types for IEnumerable types.
-        /// For example "Guid[]" will be automatically added for standard filter type "System.Collections.Generic.IEnumerable&lt;System.Guid&gt;".
+        /// Read parameter types (<see cref="DataStructureReadParameter.Name"/>) are usually specified in C# format,
+        /// to be inserted in the generated C# source code.
+        /// If <paramref name="extendedSet"/> is <see langword="true"/>, the method result will additionally include alternative type names:
+        /// <list type="number">
+        /// <item>Type name as provided by <see cref="Type.ToString()"/> (for example "System.Collections.Generic.IEnumerable`1[System.Guid]")</item>
+        /// <item>Simplified type name without default namespaces. Simplified type for IEnumerable is additionally converted to array (for example "Guid[]")</item>
+        /// </list>
         /// </param>
         /// <remarks>
-        /// In the resulting list, there may be multiple occurrences of same Type.
+        /// In the resulting list, there may be multiple occurrences of same Type with different name, for example both "string" and "System.String".
         /// </remarks>
         IEnumerable<DataStructureReadParameter> GetReadParameters(string dataStuctureFullName, bool extendedSet);
     }

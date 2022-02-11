@@ -88,7 +88,7 @@ Changes in behavior:
       To match the web response format with RestGenerator, use its ApiExceptionFilter on the controller.
       In other cases, see [CreateResponseFromException](https://github.com/Rhetos/RestGenerator/blob/0603e6fdafa949072766319306d51692356a08f1/src/Rhetos.Host.AspNet.RestApi/Utilities/ErrorReporting.cs#L49)
       method for an example of IProcessingEngine exception handling by a REST API plugin.
-22. Simplified parameter type resolution since IDataStructureReadParameters.GetReadParameters is expected to return all available parameter types.
+22. Simplified parameter type resolution. In FilterCriteria, filter names should constructed by Type.ToString(), instead of Type.FullName or Type.AssemblyQualifiedName.
     * For backward compatibility on existing applications, set configuration option `CommonConcepts:DynamicTypeResolution` to true.
 
 Changes in Rhetos libraries API:

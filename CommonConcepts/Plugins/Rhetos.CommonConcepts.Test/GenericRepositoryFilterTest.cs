@@ -737,20 +737,27 @@ namespace Rhetos.CommonConcepts.Test
 
             string logEntry = log.Single(entry => entry.StartsWith("[Warning]") && entry.Contains("Supported parameter types on"));
 
-            TestUtility.AssertContains(logEntry, new[]
+            var expected = new[]
             {
-                "SimpleEntity",
-
                 // Parameter types specified in SystemFilterRepository.ReadParameterTypes:
                 "System.DateTime",
                 "System.Guid",
                 "System.String",
+                "DateTime",
+                "Guid",
+                "String",
 
                 // Parameter types generally available on every entity repository:
-                "System.Guid[]",
                 "Guid[]",
-                "'System.Collections.Generic.IEnumerable<System.Guid>",
                 "IEnumerable<Guid>",
+                "System.Collections.Generic.IEnumerable`1[System.Guid]",
+            };
+
+            TestUtility.AssertContains(logEntry, new[]
+            {
+                "System.DataTimeOffset",
+                "SimpleEntity",
+                string.Join(", ", expected.OrderBy(p => p).Select(p => $"'{p}'"))
             });
         }
 

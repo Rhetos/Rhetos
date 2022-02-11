@@ -58,7 +58,7 @@ namespace Rhetos.Processing.DefaultCommands
                         "Error while checking {2}: Loaded items have duplicate IDs ({0}:{1}).",
                         genericRepository.EntityName, duplicateId, filterType.Name));
 
-                var allowedGivenItemsFilter = new[] { new FilterCriteria { Filter = filterType.AssemblyQualifiedName }, new FilterCriteria(itemsIds) };
+                var allowedGivenItemsFilter = new[] { new FilterCriteria(filterType), new FilterCriteria(itemsIds) };
                 var allowedGivenItemsQuery = (IQueryable<IEntity>)genericRepository.Read(allowedGivenItemsFilter, preferQuery: true);
                 int allowedItemsCount = allowedGivenItemsQuery.Count();
 

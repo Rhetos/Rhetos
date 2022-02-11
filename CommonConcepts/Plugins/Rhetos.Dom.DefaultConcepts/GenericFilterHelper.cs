@@ -80,7 +80,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 {
                     var parentExpression = memberAccess ?? (Expression)parameter;
                     if (parentExpression.Type.GetProperty(property) == null)
-                        throw new ClientException("Invalid generic filter parameter: Type '" + parentExpression.Type.FullName + "' does not have property '" + property + "'.");
+                        throw new ClientException($"Invalid generic filter parameter: Type '{parentExpression.Type}' does not have property '{property}'.");
                     memberAccess = Expression.Property(parentExpression, property);
                 }
 
@@ -521,47 +521,66 @@ namespace Rhetos.Dom.DefaultConcepts
             }
         }
 
-        public Type GetFilterType(string dataStructureFullName, string filterName)
+        public Type GetFilterType(string dataStructureFullName, string filterName, object filterInstance = null)
         {
             if (string.IsNullOrEmpty(filterName))
                 throw new ArgumentNullException(nameof(filterName));
 
-            Type filterType = null;
+            var supportedTypes = _dataStructureReadParameters.GetReadParameters(dataStructureFullName, true);
 
-            List<Type> matchingTypes = _dataStructureReadParameters.GetReadParameters(dataStructureFullName, true)
-                .Where(f => f.Name.Equals(filterName, StringComparison.Ordinal)).Select(f => f.Type).Distinct().ToList();
+            // Exact type name provided:
+            {
+                List<Type> matchingTypes = supportedTypes
+                    .Where(filter => filter.Name.Equals(filterName, StringComparison.Ordinal))
+                    .Select(filter => filter.Type)
+                    .Distinct().ToList();
 
-            if (matchingTypes.Count > 1)
-                throw new ClientException($"Filter type '{filterName}' on '{dataStructureFullName}' is ambiguous ({matchingTypes.First().FullName}, {matchingTypes.Last().FullName})." +
-                    $" Please specify full filter name.");
+                if (matchingTypes.Count > 1)
+                    throw new ClientException($"Filter type '{filterName}' on '{dataStructureFullName}' is ambiguous" +
+                        $" ({matchingTypes.First()}, {matchingTypes.Last()}). Please specify exact filter name.");
 
-            if (matchingTypes.Count == 1)
-                filterType = matchingTypes.Single();
+                if (matchingTypes.Count == 1)
+                    return matchingTypes.Single();
+            }
 
+            // Runtime type from provided instance, if assignable to any supported filter type:
+            if (filterInstance != null)
+            {
+                var baseTypes = supportedTypes.Select(filter => filter.Type)
+                    .Distinct()
+                    .Where(type => type.IsInstanceOfType(filterInstance))
+                    .ToList();
+
+                if (baseTypes.Count > 1)
+                    throw new ClientException($"Filter type '{filterName}' on '{dataStructureFullName}' is ambiguous" +
+                        $" ({baseTypes.First()}, {baseTypes.Last()}). Please specify exact filter name.");
+
+                if (baseTypes.Count == 1)
+                    return baseTypes.Single();
+            }
+
+            // Backward compatibility:
             if (_commonConceptsRuntimeOptions.DynamicTypeResolution)
             {
-                if (filterType == null)
-                    filterType = _domainObjectModel.GetType(filterName);
-
-                if (filterType == null)
-                    filterType = Type.GetType(filterName);
+                Type filterType = _domainObjectModel.GetType(filterName) ?? Type.GetType(filterName);
+                if (filterType != null)
+                    return filterType;
             }
 
-            if (filterType == null)
-            {
-                _logger.Warning(() => $"Filter type '{filterName}' is not available. {SupportedTypesReport(dataStructureFullName)}");
-                throw new ClientException($"Filter type '{filterName}' is not available. See server log for more information. ({_logger.Name}, {DateTime.Now:s})");
-            }
-
-            return filterType;
+            _logger.Warning(() =>
+                $"Filter type '{filterName}' is not available."
+                + $" Supported parameter types on '{dataStructureFullName}' are: {SupportedTypesReport(dataStructureFullName)}.");
+            throw new ClientException(
+                $"Filter type '{filterName}' is not available."
+                + $" See server log for information on supported types. ({_logger.Name}, {DateTime.Now:s})");
         }
 
         private string SupportedTypesReport(string dataStructureFullName)
         {
-            string supportedTypesList = string.Join(", ", _dataStructureReadParameters
+            return string.Join(", ", _dataStructureReadParameters
                 .GetReadParameters(dataStructureFullName, true)
+                .OrderBy(p => p.Name)
                 .Select(p => $"'{p.Name}'"));
-            return $"Supported parameter types on '{dataStructureFullName}' are: {supportedTypesList}.";
         }
 
         public class FilterObject
@@ -595,7 +614,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 {
                     var filterObject = new FilterObject
                     {
-                        FilterType = GetFilterType(dataStructureFullName, filter.Filter),
+                        FilterType = GetFilterType(dataStructureFullName, filter.Filter, filter.Value),
                         Parameter = filter.Value
                     };
 
@@ -640,7 +659,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <summary>
         /// Compares only filters without parameters.
         /// Note: This method will not detected same filter types if they differ in namespace usage, since <see cref="FilterCriteria.Filter"/>
-        /// should always have full namespace declared (FullName or AssemblyQualifiedName).
+        /// should have full namespace declared as provided by <see cref="Type.ToString()"/>.
         /// </summary>
         public static bool EqualsSimpleFilter(FilterCriteria filter, string filterName)
         {

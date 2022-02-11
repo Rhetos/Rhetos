@@ -18,11 +18,11 @@
 */
 
 using Autofac.Features.Indexed;
+using Rhetos.CommonConcepts.Test.Tools;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 
 namespace Rhetos.CommonConcepts.Test.Mocks
 {
@@ -37,11 +37,7 @@ namespace Rhetos.CommonConcepts.Test.Mocks
                     DomainObjectModel = new DomainObjectModelMock(),
                     Repositories = new Lazy<IIndex<string, IRepository>>(() => new RepositoryIndexMock<TEntityInterface, TEntity>(items)),
                     LogProvider = new ConsoleLogProvider(),
-                    GenericFilterHelper = new GenericFilterHelper(
-                        new DomainObjectModelMock(),
-                        new DataStructureReadParametersStub(),
-                        new CommonConceptsRuntimeOptions { DynamicTypeResolution = dynamicTypeResolution },
-                        new ConsoleLogProvider()),
+                    GenericFilterHelper = Factory.CreateGenericFilterHelper(new DataStructureReadParametersStub(), dynamicTypeResolution),
                     DelayedLogProvider = new DelayedLogProvider(new LoggingOptions { DelayedLogTimout = 0 }, null),
                 },
                 new RegisteredInterfaceImplementations { { typeof(TEntityInterface), typeof(TEntity).FullName } })
@@ -55,11 +51,7 @@ namespace Rhetos.CommonConcepts.Test.Mocks
                     DomainObjectModel = new DomainObjectModelMock(),
                     Repositories = new Lazy<IIndex<string, IRepository>>(() => new RepositoryIndexMock(typeof(TEntity), repository)),
                     LogProvider = new ConsoleLogProvider(),
-                    GenericFilterHelper = new GenericFilterHelper(
-                        new DomainObjectModelMock(),
-                        CreateDataStructureReadParameters(repository, typeof(TEntity)),
-                        new CommonConceptsRuntimeOptions { DynamicTypeResolution = dynamicTypeResolution },
-                        new ConsoleLogProvider((eventType, eventName, message) => log.Add($"[{eventType}] {eventName}: {message()}"))),
+                    GenericFilterHelper = Factory.CreateGenericFilterHelper(Factory.CreateDataStructureReadParameters(repository, typeof(TEntity)), dynamicTypeResolution, log),
                     DelayedLogProvider = new DelayedLogProvider(new LoggingOptions { DelayedLogTimout = 0 }, null),
                 },
                 new RegisteredInterfaceImplementations { { typeof(TEntityInterface), typeof(TEntity).FullName } })
@@ -72,17 +64,6 @@ namespace Rhetos.CommonConcepts.Test.Mocks
             {
                 return (RepositoryMock<TEntityInterface, TEntity>)EntityRepository;
             }
-        }
-
-        private static DataStructureReadParameters CreateDataStructureReadParameters(IRepository repository, Type type)
-        {
-            var readParameterTypesProperty = repository.GetType().GetField("ReadParameterTypes", BindingFlags.Public | BindingFlags.Static);
-            var specificFilterTypes = readParameterTypesProperty == null ?
-                Array.Empty<KeyValuePair<string, Type>>() :
-                (KeyValuePair<string, Type>[])readParameterTypesProperty.GetValue(null);
-            return new DataStructureReadParameters(new Dictionary<string, KeyValuePair<string, Type>[]> {
-                { type.FullName, specificFilterTypes }
-            });
         }
     }
 }

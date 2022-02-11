@@ -39,7 +39,7 @@ namespace Rhetos.CommonConcepts.Test
             var expectedBasic = new[]
             {
                 "RhetosCommonConceptsTestModule.TestFilterClass: RhetosCommonConceptsTestModule.TestFilterClass",
-                "System.Collections.Generic.IEnumerable<System.Guid>: System.Collections.Generic.IEnumerable`1[System.Guid]"
+                "IEnumerable<Guid>: System.Collections.Generic.IEnumerable`1[System.Guid]"
             };
 
             Assert.AreEqual(
@@ -57,46 +57,59 @@ namespace Rhetos.CommonConcepts.Test
 
             var expectedExtended = new[]
             {
-                "RhetosCommonConceptsTestModule.TestFilterClass: RhetosCommonConceptsTestModule.TestFilterClass",
-                "TestFilterClass: RhetosCommonConceptsTestModule.TestFilterClass",
+                // Specified type:
 
-                "System.Collections.Generic.IEnumerable<System.Guid>: System.Collections.Generic.IEnumerable`1[System.Guid]",
+                "RhetosCommonConceptsTestModule.TestFilterClass: RhetosCommonConceptsTestModule.TestFilterClass",
+                // Additional type name versions:
+                "TestFilterClass: RhetosCommonConceptsTestModule.TestFilterClass", // Optional namespace since the filter is implemented within the same namespace.
+
+                // Standard entity filter types and additional name versions:
+
                 "IEnumerable<Guid>: System.Collections.Generic.IEnumerable`1[System.Guid]",
-                "System.Guid[]: System.Guid[]",
-                "Guid[]: System.Guid[]",
+                "Guid[]: System.Collections.Generic.IEnumerable`1[System.Guid]",
+                $"{typeof(IEnumerable<Guid>)}: System.Collections.Generic.IEnumerable`1[System.Guid]", // name is Type.ToString()
             };
 
+            var actualTypes = readParameters.GetReadParameters("RhetosCommonConceptsTestModule.TestDataStructure", extendedSet: true);
+
             Assert.AreEqual(
-                TestUtility.DumpSorted(expectedExtended),
-                TestUtility.DumpSorted(
-                    readParameters.GetReadParameters("RhetosCommonConceptsTestModule.TestDataStructure", extendedSet: true)));
+                string.Join(Environment.NewLine, expectedExtended.OrderBy(x => x)),
+                string.Join(Environment.NewLine, actualTypes.Select(t => t.ToString()).OrderBy(x => x)));
         }
 
         [TestMethod]
         public void ShortParameterNameHeuristics()
         {
+            // Filter name is specified in DSL script in C# format, to be inserted in the generated source code.
             Type complexType = typeof(System.Tuple<System.String, RhetosCommonConceptsTestModule.TestFilterClass, System.Collections.Generic.List<System.String>>);
             string complexTypeName = "System.Tuple<System.String, RhetosCommonConceptsTestModule.TestFilterClass, System.Collections.Generic.List<System.String>>";
 
             var readParameters = new DataStructureReadParameters(new Dictionary<string, KeyValuePair<string, Type>[]> {
-                { "RhetosCommonConceptsTestModule.TestDataStructure", new[] { new KeyValuePair<string, Type>(complexTypeName, complexType) } }
+                {
+                    "RhetosCommonConceptsTestModule.TestDataStructure",
+                    new[]
+                    {
+                        new KeyValuePair<string, Type>(complexTypeName, complexType)
+                    }
+                }
             });
 
             var expectedExtended = new[]
             {
                 "System.Tuple<System.String, RhetosCommonConceptsTestModule.TestFilterClass, System.Collections.Generic.List<System.String>>: System.Tuple`3[System.String,RhetosCommonConceptsTestModule.TestFilterClass,System.Collections.Generic.List`1[System.String]]",
                 "Tuple<String, TestFilterClass, List<String>>: System.Tuple`3[System.String,RhetosCommonConceptsTestModule.TestFilterClass,System.Collections.Generic.List`1[System.String]]",
+                $"{complexType}: {complexType}", // name is Type.ToString()
 
-                "System.Collections.Generic.IEnumerable<System.Guid>: System.Collections.Generic.IEnumerable`1[System.Guid]",
                 "IEnumerable<Guid>: System.Collections.Generic.IEnumerable`1[System.Guid]",
-                "System.Guid[]: System.Guid[]",
-                "Guid[]: System.Guid[]",
+                "Guid[]: System.Collections.Generic.IEnumerable`1[System.Guid]",
+                $"{typeof(IEnumerable<Guid>)}: System.Collections.Generic.IEnumerable`1[System.Guid]", // name is Type.ToString()
             };
 
+            var actualTypes = readParameters.GetReadParameters("RhetosCommonConceptsTestModule.TestDataStructure", extendedSet: true);
+
             Assert.AreEqual(
-                TestUtility.DumpSorted(expectedExtended),
-                TestUtility.DumpSorted(
-                    readParameters.GetReadParameters("RhetosCommonConceptsTestModule.TestDataStructure", extendedSet: true)));
+                string.Join(Environment.NewLine, expectedExtended.OrderBy(x => x)),
+                string.Join(Environment.NewLine, actualTypes.Select(t => t.ToString()).OrderBy(x => x)));
         }
 
         internal class FakeRepository : IRepository

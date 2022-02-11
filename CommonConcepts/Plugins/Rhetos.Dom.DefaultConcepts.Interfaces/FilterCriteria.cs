@@ -34,16 +34,27 @@ namespace Rhetos.Dom.DefaultConcepts
     {
         /// <summary>
         /// Property name.
-        /// Either "Property" or "Filter" member should be set.
         /// </summary>
+        /// <remarks>
+        /// Either "Property" or "Filter" member should be set.
+        /// </remarks>
         public string Property { get; set; }
 
         /// <summary>
         /// Predefined filter name (filter type).
-        /// Either "Property" or "Filter" member should be set.
-        /// May be a data structure name from DSL script (Common.Principal, e.g.), FullName of a standard type (from mscorlib),
-        /// or an AssemblyQualifiedName (optional Version, Culture and PublicKeyToken) for other types.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This property should contain the filter name as specified in the DSL model, or a type name as provided by <see cref="Type.ToString()"/> (recommended).
+        /// Namespace is optional in some cases if the filter type is implemented in the same module, or in a default namespace,
+        /// but using the complete type name is recommended.
+        /// </para>
+        /// <para>
+        /// Either <see cref="Property"/> or <see cref="Filter"/> member should be set in <see cref="FilterCriteria"/>.
+        /// </para>
+        /// See <see cref="IDataStructureReadParameters"/> and <see cref="CommonConceptsRuntimeOptions.DynamicTypeResolution"/>
+        /// for more info on supported types implementation and usage.
+        /// </remarks>
         public string Filter { get; set; }
 
         /// <summary>
@@ -68,20 +79,29 @@ namespace Rhetos.Dom.DefaultConcepts
         }
 
         /// <summary>
-        /// Create a predefined filter.
+        /// Create a predefined filter, specified by filter type, without parameters.
         /// </summary>
         public FilterCriteria(Type filterType)
         {
-            Filter = filterType.FullName;
+            Filter = filterType.ToString();
         }
 
         /// <summary>
-        /// Create a predefined filter.
+        /// Create a predefined filter, specified by an instance of filter parameters.
         /// </summary>
         public FilterCriteria(object filterValue)
         {
-            Filter = filterValue.GetType().FullName;
+            Filter = filterValue.GetType().ToString();
             Value = filterValue;
+        }
+
+        public static FilterCriteria FilterValue<T>(T filterValue)
+        {
+            return new FilterCriteria
+            {
+                Filter = typeof(T).ToString(),
+                Value = filterValue,
+            };
         }
 
         public FilterCriteria()

@@ -32,8 +32,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <summary>
         /// This cache is not static, because <see cref="DataStructureReadParameters"/> is a singleton.
         /// </summary>
-        private readonly ConcurrentDictionary<(string DataStuctureFullName, bool ExtendedSet), IEnumerable<DataStructureReadParameter>> _readParametersByDataStucture =
-            new ConcurrentDictionary<(string DataStuctureFullName, bool ExtendedSet), IEnumerable<DataStructureReadParameter>>();
+        private readonly ConcurrentDictionary<(string DataStuctureFullName, bool ExtendedSet), IEnumerable<DataStructureReadParameter>> _readParametersByDataStucture = new();
 
         public DataStructureReadParameters(Dictionary<string, KeyValuePair<string, Type>[]> repositoryReadParameters)
         {
@@ -55,74 +54,100 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static readonly DataStructureReadParameter[] _standardFilterTypes = new DataStructureReadParameter[]
         {
-            new DataStructureReadParameter("System.Collections.Generic.IEnumerable<System.Guid>", typeof(IEnumerable<Guid>)),
+            new DataStructureReadParameter(
+                "IEnumerable<Guid>", // Short type name format as specified in C# source. Exact type name with full namespace is supported by adding Type.ToString() later.
+                typeof(IEnumerable<Guid>)),
         };
+
+        /// <summary>
+        /// Reusing string instances for standard filters names for many data structures.
+        /// </summary>
+        private static readonly Lazy<DataStructureReadParameter[]> _standardFilterTypesAlternativeNames = new(CreateStandardFilterTypesExtended);
+
+        private static DataStructureReadParameter[] CreateStandardFilterTypesExtended()
+        {
+            var result = new HashSet<DataStructureReadParameter>(_standardFilterTypes);
+            AddAlternativeFilterNames(result, null);
+            return result.ToArray();
+        }
 
         private IEnumerable<DataStructureReadParameter> CreateReadParametersList((string DataStuctureFullName, bool ExtendedSet) key)
         {
             if (!_repositoryReadParameters.TryGetValue(key.DataStuctureFullName, out var specificFilterTypes))
                 return Array.Empty<DataStructureReadParameter>();
 
-            var allFilterTypes = new List<DataStructureReadParameter>(specificFilterTypes.Length + _standardFilterTypes.Length);
-            allFilterTypes.AddRange(specificFilterTypes.Select(filterType => new DataStructureReadParameter(filterType.Key, filterType.Value)));
-            allFilterTypes.AddRange(_standardFilterTypes);
+            int estimatedSize = (specificFilterTypes.Length + _standardFilterTypes.Length) * (key.ExtendedSet ? 4 : 1);
+            var allFilterTypes = new HashSet<DataStructureReadParameter>(estimatedSize);
 
+            allFilterTypes.UnionWith(specificFilterTypes.Select(filterType => new DataStructureReadParameter(filterType.Key, filterType.Value)));
             if (key.ExtendedSet)
-            {
-                AddAlternativeArrayTypesForIEnumerable(allFilterTypes);
-                AddAlternativeDefaultNamepaceTypeNames(allFilterTypes, key.DataStuctureFullName);
-            }
+                AddAlternativeFilterNames(allFilterTypes, key.DataStuctureFullName);
 
-            return allFilterTypes.Distinct().ToList();
+            allFilterTypes.UnionWith(key.ExtendedSet ? _standardFilterTypesAlternativeNames.Value : _standardFilterTypes);
+
+            return allFilterTypes.ToArray();
         }
 
-        /// <summary>
-        /// Heuristics that allows providing array instead of IEnumerable parameter (covariance).
-        /// </summary>
-        private void AddAlternativeArrayTypesForIEnumerable(List<DataStructureReadParameter> allFilterTypes)
+        private static void AddAlternativeFilterNames(ICollection<DataStructureReadParameter> allFilterTypes, string dataStuctureFullName = null)
         {
-            var enumerablePrefixes = new[] { "IEnumerable<", "System.Collections.Generic.IEnumerable<" };
-            foreach (var filterType in allFilterTypes.ToList()) // Using a copy of the list in the foreach, to avoid modifying it while enumerating.
-                if (filterType.Type.Name == "IEnumerable`1")
-                    foreach (string prefix in enumerablePrefixes)
-                        if (filterType.Name.StartsWith(prefix) && filterType.Name.EndsWith(">"))
-                        {
-                            var innerName = filterType.Name.Substring(prefix.Length, filterType.Name.Length - 1 - prefix.Length);
-                            var elementType = filterType.Type.GetGenericArguments().Single();
-                            allFilterTypes.Add(new DataStructureReadParameter(innerName + "[]", elementType.MakeArrayType()));
-                            break;
-                        }
+            AddSimplifiedTypeNames(allFilterTypes, dataStuctureFullName);
+            AddTypeNamesFromReflection(allFilterTypes);
         }
 
         /// <summary>
-        /// Heuristics that allows some common simplified type descriptions without specifying default namespaces.
+        /// Includes Type.ToString().
         /// </summary>
-        private void AddAlternativeDefaultNamepaceTypeNames(List<DataStructureReadParameter> allFilterTypes, string dataStuctureFullName)
+        private static void AddTypeNamesFromReflection(ICollection<DataStructureReadParameter> allFilterTypes)
+        {
+            var distinctTypes = allFilterTypes.Select(t => t.Type).Distinct().ToList();
+            foreach (var type in distinctTypes)
+                allFilterTypes.Add(new DataStructureReadParameter(type.ToString(), type));
+        }
+
+        /// <summary>
+        /// Heuristics that allows usage of simplified type name without default namespaces
+        /// and by using array instead of IEnumerable, for the C# source type name format.
+        /// </summary>
+        private static void AddSimplifiedTypeNames(ICollection<DataStructureReadParameter> allFilterTypes, string dataStuctureFullName = null)
         {
             var removablePrefixes = new List<string>(_defaultNamespaces.Length + 1);
             removablePrefixes.AddRange(_defaultNamespaces);
-            var moduleEnd = dataStuctureFullName.IndexOf(".");
-            if (moduleEnd > 0)
-                removablePrefixes.Add(dataStuctureFullName.Substring(0, moduleEnd + 1));
+            if (dataStuctureFullName != null)
+            {
+                var moduleEnd = dataStuctureFullName.IndexOf(".");
+                if (moduleEnd > 0)
+                    removablePrefixes.Add(dataStuctureFullName.Substring(0, moduleEnd + 1));
+            }
             removablePrefixes = removablePrefixes.OrderByDescending(p => p.Length).ToList();
 
-            foreach (var filterType in allFilterTypes.ToList()) // Using a copy of the list in the foreach, to avoid modifying it while enumerating.
+            // Namespace removal is useful only for C# type syntax (e.g., in C# code you can write "IEnumerable<Guid>" without namespace),
+            // but there is no use to shorten reflection type names (e.g. Type.ToString() will never return "IEnumerable`1[Guid]" without namespace).
+            var csFormatFilterTypes = allFilterTypes
+                .Where(filterType => filterType.Name.IndexOfAny(_refectionTypeNameIndicators) == -1)
+                .ToList();
+
+            foreach (var filterType in csFormatFilterTypes)
             {
                 string shortName = filterType.Name;
 
-                foreach (var namePart in NamePartsRegex.Matches(shortName).Reverse()) // Reverse to avoid corrupting remaining matches after removing some prefixes.
+                foreach (var namePart in _namePartsRegex.Matches(shortName).Reverse()) // Reverse to avoid corrupting remaining matches after removing some prefixes.
                     shortName = TryRemovePrefix(shortName, namePart.Index, namePart.Length, removablePrefixes);
+
+                if (shortName.StartsWith("IEnumerable<", StringComparison.Ordinal) && shortName.EndsWith(">", StringComparison.Ordinal))
+                    shortName = string.Concat(shortName.AsSpan("IEnumerable<".Length, shortName.Length - "IEnumerable<".Length - 1), "[]");
 
                 if (shortName != filterType.Name)
                     allFilterTypes.Add(new DataStructureReadParameter(shortName, filterType.Type));
             }
         }
 
-        private static readonly Regex NamePartsRegex = new Regex(@"[\w.]+");
+        private static readonly char[] _refectionTypeNameIndicators = new[] { '`', '+' };
+
+        private static readonly Regex _namePartsRegex = new Regex(@"[\w\.]+");
 
         private static string TryRemovePrefix(string filterName, int index, int length, List<string> removablePrefixes)
         {
-            var removablePrefix = removablePrefixes.FirstOrDefault(prefix => filterName.AsSpan(index, length).StartsWith(prefix));
+            var removablePrefix = removablePrefixes.FirstOrDefault(prefix => filterName.AsSpan(index, length).StartsWith(prefix, StringComparison.Ordinal));
             if (removablePrefix != null)
                 return string.Concat(filterName.AsSpan(0, index), filterName.AsSpan(index + removablePrefix.Length));
             return filterName;

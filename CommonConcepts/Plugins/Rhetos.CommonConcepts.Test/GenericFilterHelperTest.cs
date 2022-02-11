@@ -19,11 +19,13 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.CommonConcepts.Test.Mocks;
+using Rhetos.CommonConcepts.Test.Tools;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Processing.DefaultCommands;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -328,5 +330,122 @@ namespace Rhetos.CommonConcepts.Test
             Assert.IsFalse(GenericFilterHelper.EqualsSimpleFilter(new FilterCriteria { Filter = filterName, Operation = "Matches", Value = "parameter" }, filterName));
             Assert.IsFalse(GenericFilterHelper.EqualsSimpleFilter(new FilterCriteria { Property = filterName, Operation = "Equals", Value = "Value" }, filterName));
         }
+
+        [TestMethod]
+        public void GetFilterType_StandardFilters()
+        {
+            var parameters = Array.Empty<KeyValuePair<string, Type>>();
+            Dictionary<string, KeyValuePair<string, Type>[]> repositoryReadParameters = new() { { typeof(TestModule.TestEntity).FullName, parameters } };
+            var dataStructureReadParameters = new DataStructureReadParameters(repositoryReadParameters);
+            var genericFilterHelper = Factory.CreateGenericFilterHelper(dataStructureReadParameters, dynamicTypeResolution: false);
+
+            var tests = new (string FilterName, Type Expected)[]
+            {
+                ("IEnumerable<Guid>", typeof(IEnumerable<Guid>)), // Initially specified filter name (as in C# code).
+                (typeof(IEnumerable<Guid>).ToString(), typeof(IEnumerable<Guid>)), // Exact filter name.
+                ("Guid[]", typeof(IEnumerable<Guid>)), // Heuristics for default namespaces and array.
+            };
+
+            Assert.AreEqual(
+                string.Join(Environment.NewLine, tests.Select(test => test.Expected)),
+                string.Join(Environment.NewLine, tests.Select(test => genericFilterHelper.GetFilterType(
+                    typeof(TestModule.TestEntity).FullName,
+                    test.FilterName))));
+        }
+
+        [TestMethod]
+        public void GetFilterType_Specific()
+        {
+            var parameters = new KeyValuePair<string, Type>[]
+            {
+                KeyValuePair.Create("string", typeof(string)),
+                KeyValuePair.Create("System.Guid", typeof(Guid)),
+                KeyValuePair.Create("IEnumerable<string>", typeof(IEnumerable<string>)),
+                KeyValuePair.Create("IDictionary<string, object>", typeof(IDictionary<string, object>)),
+                KeyValuePair.Create("IDictionary<Guid, object>", typeof(IDictionary<Guid, object>)),
+                KeyValuePair.Create("IEnumerable<TestModule.TestParameter1>", typeof(IEnumerable<TestModule.TestParameter1>)),
+                KeyValuePair.Create("IEnumerable<TestParameter2>", typeof(IEnumerable<TestModule.TestParameter2>)),
+                KeyValuePair.Create("TestModule.TestParameter3", typeof(TestModule.TestParameter3)),
+                KeyValuePair.Create("TestParameter4", typeof(TestModule.TestParameter4)),
+            };
+            Dictionary<string, KeyValuePair<string, Type>[]> repositoryReadParameters = new() { { typeof(TestModule.TestEntity).FullName, parameters } };
+            var dataStructureReadParameters = new DataStructureReadParameters(repositoryReadParameters);
+            var genericFilterHelper = Factory.CreateGenericFilterHelper(dataStructureReadParameters, dynamicTypeResolution: false);
+
+            var tests = new (string FilterName, Type Expected)[]
+            {
+                ("string", typeof(string)), // Exact name as specified in filter parameters above.
+                ("System.String", typeof(string)), // Exact name as returned by ToString().
+
+                ("System.Guid", typeof(Guid)), // Exact name as specified in filter parameters above and as returned by ToString().
+                ("Guid", typeof(Guid)), // // Simplified name.
+
+                ("IEnumerable<string>", typeof(IEnumerable<string>)), // Exact name as specified in filter parameters above.
+                (typeof(IEnumerable<string>).ToString(), typeof(IEnumerable<string>)), // Exact name as returned by ToString().
+                ("string[]", typeof(IEnumerable<string>)), // Simplified name.
+
+                ("IDictionary<string, object>", typeof(IDictionary<string, object>)),
+                ("System.Collections.Generic.IDictionary`2[System.String,System.Object]", typeof(IDictionary<string, object>)),
+                ("System.Collections.Generic.IDictionary`2[System.Guid,System.Object]", typeof(IDictionary<Guid, object>)),
+                ("IDictionary<Guid, object>", typeof(IDictionary<Guid, object>)),
+
+                // There is asymmetry between TP1 and TP2 in "source format" versions, but at least both short version and ToString are consistent.
+
+                ("IEnumerable<TestModule.TestParameter1>", typeof(IEnumerable<TestModule.TestParameter1>)), // Exact name as specified in filter parameters above.
+                ("System.Collections.Generic.IEnumerable`1[TestModule.TestParameter1]", typeof(IEnumerable<TestModule.TestParameter1>)), // Exact name as returned by ToString().
+                ("TestParameter1[]", typeof(IEnumerable<TestModule.TestParameter1>)), // Simplified name.
+
+                ("IEnumerable<TestParameter2>", typeof(IEnumerable<TestModule.TestParameter2>)), // Exact name as specified in filter parameters above.
+                ("System.Collections.Generic.IEnumerable`1[TestModule.TestParameter2]", typeof(IEnumerable<TestModule.TestParameter2>)), // Exact name as returned by ToString().
+                ("TestParameter2[]", typeof(IEnumerable<TestModule.TestParameter2>)), // Simplified name.
+
+                // It is important that both short and long version of TP3 and TP4 are available,
+                // even though TP3 was specified by short name in source, and TP4 by long name.
+
+                ("TestModule.TestParameter3", typeof(TestModule.TestParameter3)), // Exact name as specified in filter parameters above and as returned by ToString().
+                ("TestParameter3", typeof(TestModule.TestParameter3)), // Simplified name.
+
+                ("TestModule.TestParameter4", typeof(TestModule.TestParameter4)), // Exact name as returned by ToString().
+                ("TestParameter4", typeof(TestModule.TestParameter4)), // Exact name as specified in filter parameters above.
+            };
+
+            Assert.AreEqual(
+                string.Join(Environment.NewLine, tests.Select(test => test.Expected)),
+                string.Join(Environment.NewLine, tests.Select(test => genericFilterHelper.GetFilterType(
+                    typeof(TestModule.TestEntity).FullName,
+                    test.FilterName))));
+        }
+
+        [TestMethod]
+        public void GetFilterType_Instance()
+        {
+            var parameters = Array.Empty<KeyValuePair<string, Type>>();
+            Dictionary<string, KeyValuePair<string, Type>[]> repositoryReadParameters = new() { { typeof(TestModule.TestEntity).FullName, parameters } };
+            var dataStructureReadParameters = new DataStructureReadParameters(repositoryReadParameters);
+            var genericFilterHelper = Factory.CreateGenericFilterHelper(dataStructureReadParameters, dynamicTypeResolution: false);
+
+            var instances = new object[] {
+                new ConcurrentBag<Guid>(),
+                new List<Guid>().AsQueryable(),
+                Enumerable.Range(0, 1).Select(x => new Guid())
+            };
+
+            foreach (var instance in instances)
+                Assert.AreEqual(
+                    typeof(IEnumerable<Guid>),
+                    genericFilterHelper.GetFilterType(
+                        typeof(TestModule.TestEntity).FullName,
+                        "IgnoredFilterName",
+                        instance));
+        }
     }
+}
+
+namespace TestModule
+{
+    class TestEntity { }
+    class TestParameter1 { }
+    class TestParameter2 { }
+    class TestParameter3 { }
+    class TestParameter4 { }
 }

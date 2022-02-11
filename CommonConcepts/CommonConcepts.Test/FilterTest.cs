@@ -871,7 +871,7 @@ IEnumerable<MultipleReadTypes>: System.Collections.Generic.IEnumerable`1[TestFil
 List<TestFilter.MultipleReadTypes>: System.Collections.Generic.List`1[TestFilter.MultipleReadTypes]
 QueryFilter1: TestFilter.QueryFilter1
 string[]: System.String[]
-System.Collections.Generic.IEnumerable<System.Guid>: System.Collections.Generic.IEnumerable`1[System.Guid]
+IEnumerable<Guid>: System.Collections.Generic.IEnumerable`1[System.Guid]
 System.Guid: System.Guid
 TestFilter.CommonFilter2: TestFilter.CommonFilter2
 TestFilter.FilterBy1: TestFilter.FilterBy1
@@ -894,22 +894,23 @@ TestFilter.Query1: TestFilter.Query1
                     extendedSet: true);
 
                 var expected = @"
-CommonFilter2: TestFilter.CommonFilter2
-
 IEnumerable<MultipleReadTypes>: System.Collections.Generic.IEnumerable`1[TestFilter.MultipleReadTypes]
-MultipleReadTypes[]: TestFilter.MultipleReadTypes[]
+System.Collections.Generic.IEnumerable`1[TestFilter.MultipleReadTypes]: System.Collections.Generic.IEnumerable`1[TestFilter.MultipleReadTypes]
+MultipleReadTypes[]: System.Collections.Generic.IEnumerable`1[TestFilter.MultipleReadTypes]
 
 List<TestFilter.MultipleReadTypes>: System.Collections.Generic.List`1[TestFilter.MultipleReadTypes]
 List<MultipleReadTypes>: System.Collections.Generic.List`1[TestFilter.MultipleReadTypes]
+System.Collections.Generic.List`1[TestFilter.MultipleReadTypes]: System.Collections.Generic.List`1[TestFilter.MultipleReadTypes]
 
 QueryFilter1: TestFilter.QueryFilter1
+TestFilter.QueryFilter1: TestFilter.QueryFilter1
 
 string[]: System.String[]
+System.String[]: System.String[]
 
-System.Collections.Generic.IEnumerable<System.Guid>: System.Collections.Generic.IEnumerable`1[System.Guid]
 IEnumerable<Guid>: System.Collections.Generic.IEnumerable`1[System.Guid]
-System.Guid[]: System.Guid[]
-Guid[]: System.Guid[]
+System.Collections.Generic.IEnumerable`1[System.Guid]: System.Collections.Generic.IEnumerable`1[System.Guid]
+Guid[]: System.Collections.Generic.IEnumerable`1[System.Guid]
 
 System.Guid: System.Guid
 Guid: System.Guid
@@ -927,7 +928,7 @@ TestFilter.Query1: TestFilter.Query1
 Query1: TestFilter.Query1
 ";
                 Assert.AreEqual(
-                    string.Join("\r\n", expected.Split("\r\n").Distinct().Where(line => !string.IsNullOrWhiteSpace(line)).OrderBy(x => x)),
+                    string.Join("\r\n", expected.Split("\r\n").Where(line => !string.IsNullOrWhiteSpace(line)).OrderBy(x => x)),
                     string.Join("\r\n", readParameters.Select(rp => rp.ToString()).OrderBy(x => x)));
             }
         }
