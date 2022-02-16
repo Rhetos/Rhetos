@@ -27,7 +27,6 @@ using Rhetos.TestCommon;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Utilities;
 using System.Diagnostics;
-using Rhetos.Configuration.Autofac;
 using Rhetos;
 
 namespace CommonConcepts.Test
@@ -672,6 +671,42 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("1", Dump(hr.Load(t1.Add(DatabaseDateTimeImprecision))), "At time 1");
                 Assert.AreEqual("2", Dump(hr.Load(t2.Add(DatabaseDateTimeImprecision))), "At time 2");
                 Assert.AreEqual("3", Dump(hr.Load(t3.Add(DatabaseDateTimeImprecision))), "At time 3");
+            }
+        }
+
+        [TestMethod]
+        public void ExternallyAvailableFilterAtTime()
+        {
+            using (var scope = TestScope.Create())
+            {
+                var context = scope.Resolve<Common.ExecutionContext>();
+
+                var tests = new[]
+                {
+                    ("TestHistory.Standard", new FilterCriteria(DateTime.Now)), // Type specified by instance
+                    ("TestHistory.Standard", new FilterCriteria { Filter = "System.DateTime", Value = DateTime.Now }), // Full type name.
+                    ("TestHistory.Standard", new FilterCriteria { Filter = "DateTime", Value = DateTime.Now }), // Simplified type names using default namespace.
+                    ("TestHistory.Standard_Changes", new FilterCriteria(DateTime.Now)), // Type specified by instance
+                    ("TestHistory.Standard_Changes", new FilterCriteria { Filter = "System.DateTime", Value = DateTime.Now }), // Full type name.
+                    ("TestHistory.Standard_Changes", new FilterCriteria { Filter = "DateTime", Value = DateTime.Now }), // Simplified type names using default namespace.
+                };
+
+                var report = tests.Select((test, x) =>
+                {
+                    try
+                    {
+                        context.GenericRepository(test.Item1).Load(new[] { test.Item2 });
+                        return $"{x}. OK";
+                    }
+                    catch (Exception e)
+                    {
+                        return $"{x}. {e.GetType()}: {e.Message}";
+                    }
+                }).ToList();
+
+                Assert.AreEqual(
+                    string.Join(Environment.NewLine, Enumerable.Range(0, tests.Length).Select(x => $"{x}. OK")),
+                    string.Join(Environment.NewLine, report));
             }
         }
 

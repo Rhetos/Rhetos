@@ -31,10 +31,19 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("AllProperties")]
-    public class EntityHistoryAllPropertiesInfo : IConceptInfo
+    public class EntityHistoryAllPropertiesInfo : IConceptInfo, IMacroConcept
     {
         [ConceptKey]
         public EntityHistoryInfo EntityHistory { get; set; }
+
+        public IEnumerable<IConceptInfo> CreateNewConcepts()
+        {
+            yield return new LoadInfo
+            {
+                DataStructure = EntityHistory.Entity,
+                Parameter = "System.DateTime"
+            };
+        }
     }
 
     [Export(typeof(IConceptMacro))]

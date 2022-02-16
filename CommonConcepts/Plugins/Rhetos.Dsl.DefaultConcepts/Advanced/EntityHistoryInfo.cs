@@ -72,6 +72,12 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             var newConcepts = new List<IConceptInfo>();
 
+            newConcepts.Add(new LoadInfo
+            {
+                DataStructure = conceptInfo.Dependency_ChangesEntity,
+                Parameter = "System.DateTime"
+            });
+
             var atTimeSqlFunction = new SqlFunctionInfo { Module = conceptInfo.Entity.Module, Name = conceptInfo.Entity.Name + "_AtTime", Arguments = $"@ContextTime {_dateTimeSqlColumnType}", Source = AtTimeSqlSnippet(conceptInfo) };
             newConcepts.Add(atTimeSqlFunction);
 
