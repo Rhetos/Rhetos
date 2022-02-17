@@ -13,6 +13,8 @@
         
         Deactivatable; // Inactive claims are remains of deleted entities and other objects. They are kept as a backup, and simply hidden in admin GUI to reduce clutter.
 		Implements 'Rhetos.Dom.DefaultConcepts.ICommonClaim, Rhetos.Dom.DefaultConcepts.Interfaces' { RegisteredImplementation; }
+
+		Filter DeactivateInsteadOfDelete;
 	}
     
     // For each claim, MyClaim determines whether the claim applies to the current user, i.e., whether user has the permission.

@@ -90,7 +90,7 @@ Changes in behavior:
       method for an example of IProcessingEngine exception handling by a REST API plugin.
 22. Simplified parameter type resolution. In FilterCriteria, filter names should constructed by Type.ToString(), instead of Type.FullName or Type.AssemblyQualifiedName.
     * For backward compatibility on existing applications, set configuration option `CommonConcepts:DynamicTypeResolution` to true.
-23. Code generators that generate Load, Query or Filter repository methods with parameters,
+23. Concepts that generate Load, Query or Filter repository methods with parameters,
     should also create or inherit a corresponding DSL concept (LoadInfo, QueryInfo, FilterInfo or QueryFilterInfo)
     to register the parameter type for usage in web API or FilterCriteria.
 
