@@ -21,6 +21,7 @@ using Rhetos.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -33,24 +34,24 @@ namespace Rhetos.Dom.DefaultConcepts
     public class FilterCriteria
     {
         /// <summary>
-        /// Property name.
+        /// Property name for generic property filter.
         /// </summary>
         /// <remarks>
-        /// Either "Property" or "Filter" member should be set.
+        /// <see cref="Property"/> and <see cref="Filter"/> members should not be both set.
         /// </remarks>
         public string Property { get; set; }
 
         /// <summary>
-        /// Predefined filter name (filter type).
+        /// Name of a specific filter type.
         /// </summary>
         /// <remarks>
         /// <para>
-        /// This property should contain the filter name as specified in the DSL model, or a type name as provided by <see cref="Type.ToString()"/> (recommended).
+        /// This property should contain the filter name as specified in the DSL model, or a type name as provided by <see cref="Type.ToString()"/>.
         /// Namespace is optional in some cases if the filter type is implemented in the same module, or in a default namespace,
         /// but using the complete type name is recommended.
         /// </para>
         /// <para>
-        /// Either <see cref="Property"/> or <see cref="Filter"/> member should be set in <see cref="FilterCriteria"/>.
+        /// <see cref="Property"/> and <see cref="Filter"/> members should not be both set.
         /// </para>
         /// See <see cref="IDataStructureReadParameters"/> and <see cref="CommonConceptsRuntimeOptions.DynamicTypeResolution"/>
         /// for more info on supported types implementation and usage.
@@ -63,45 +64,63 @@ namespace Rhetos.Dom.DefaultConcepts
         public string Operation { get; set; }
 
         /// <summary>
-        /// Filter parameter.
+        /// Filter parameter value.
         /// Optional when Filter is set.
         /// </summary>
         public object Value { get; set; }
 
         /// <summary>
-        /// Create a property filter.
+        /// Create a generic property filter.
         /// </summary>
         public FilterCriteria(string property, string operation, object value)
         {
+            if (property == null)
+                throw new ArgumentNullException(nameof(property));
+            if (operation == null)
+                throw new ArgumentNullException(nameof(operation));
             Property = property;
             Operation = operation;
             Value = value;
         }
 
         /// <summary>
-        /// Create a predefined filter, specified by filter type, without parameters.
+        /// Create a predefined filter, specified by the filter type, without parameters.
         /// </summary>
         public FilterCriteria(Type filterType)
         {
+            if (filterType == null)
+                throw new ArgumentNullException(nameof(filterType));
             Filter = filterType.ToString();
         }
 
         /// <summary>
-        /// Create a predefined filter, specified by an instance of filter parameters.
+        /// Create a predefined filter, specified by the filter parameter value.
         /// </summary>
+        /// <remarks>
+        /// For more strict behavior, specify the exact filter type with constructor <see cref="FilterCriteria(Type, object)"/>.
+        /// </remarks>
         public FilterCriteria(object filterValue)
         {
-            Filter = filterValue.GetType().ToString();
+            if (filterValue == null)
+                throw new ArgumentNullException(nameof(filterValue));
             Value = filterValue;
         }
 
-        public static FilterCriteria FilterValue<T>(T filterValue)
+        /// <summary>
+        /// Create a predefined filter, specified by the filter type, with a parameter value.
+        /// </summary>
+        /// <remarks>
+        /// If using FilterCriteria to execute methods other then DSL filters, and the parameter is not provided by an external API,
+        /// specify the filter by parameter only, with constructor <see cref="FilterCriteria(object)"/>.
+        /// </remarks>
+        public FilterCriteria(Type filterType, object filterValue)
         {
-            return new FilterCriteria
-            {
-                Filter = typeof(T).ToString(),
-                Value = filterValue,
-            };
+            if (filterType == null)
+                throw new ArgumentNullException(nameof(filterType));
+            if (filterValue != null && !filterType.IsInstanceOfType(filterValue))
+                throw new ArgumentException($"Provided {nameof(filterValue)} is not an instance of the {nameof(filterType)} '{filterType}'.");
+            Filter = filterType.ToString();
+            Value = filterValue;
         }
 
         public FilterCriteria()
@@ -110,33 +129,27 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public string Summary()
         {
-            var valueDescription = ValueDescription(Value);
+            var result = new StringBuilder();
 
-            return (FilterDescription(Filter) ?? (Property + " " + Operation))
-                + (valueDescription != null ? " " + valueDescription : "");
+            if (!string.IsNullOrEmpty(Property))
+                result.Append(Property);
+            else if (!string.IsNullOrEmpty(Filter))
+                result.Append(Filter);
+            else if (Value != null)
+                result.Append(Value.GetType().ToString());
+            else
+                result.Append("<null>");
+
+            if (!string.IsNullOrEmpty(Operation))
+                result.Append(' ').Append(Operation);
+
+            if (Value != null)
+                result.Append(' ').Append(ValueDescription(Value));
+
+            return result.ToString();
         }
 
         public override string ToString() => Summary();
-
-        public string FilterDescription(string filter)
-        {
-            if (filter == null)
-                return null;
-            Type filterType = null;
-            try
-            {
-                filterType = Type.GetType(filter, throwOnError: false);
-            }
-            catch
-            {
-                // Trying to get the filter type just to improve the reported description.
-                // Any errors resolving the type can be ignored.
-                // Note: Even when throwOnError is false in Type.GetType, some exceptions are thrown.
-            }
-            if (filterType != null)
-                return filterType.ToString();
-            return filter;
-        }
 
         public string ValueDescription(object value)
         {

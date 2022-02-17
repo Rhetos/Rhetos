@@ -78,7 +78,7 @@ namespace Rhetos.CommonConcepts.Test
 
             var genericFilterHelper = new GenericFilterHelper(new DomainObjectModelMock(), new DataStructureReadParametersStub(), new CommonConceptsRuntimeOptions(), new ConsoleLogProvider());
             var filterObject = genericFilterHelper.ToFilterObjects(typeof(C).FullName, new FilterCriteria[] { genericFilter }).Single();
-            Console.WriteLine("filterObject.FilterType: " + filterObject.FilterType.FullName);
+            Console.WriteLine("filterObject.FilterType: " + filterObject.FilterType.ToString());
             var filterExpression = genericFilterHelper.ToExpression<C>((IEnumerable<PropertyFilter>)filterObject.Parameter);
 
             var filteredItems = items.AsQueryable().Where(filterExpression).ToList();
@@ -202,12 +202,12 @@ namespace Rhetos.CommonConcepts.Test
             Assert.AreEqual("3", TestUtility.DumpSorted(TestFilter("RefID", "NotIn", new string[] { "", id1.ToString(), id2.ToString(), id2.ToString(), id4.ToString() }, items), item => item.Name));
         }
 
-        private static IEnumerable<T> TestFilter<T>(string property, string operation, object value, IEnumerable<T> items)
+        private static IEnumerable<TDataStructure> TestFilter<TDataStructure>(string property, string operation, object value, IEnumerable<TDataStructure> items)
         {
             var genericFilter = new FilterCriteria(property, operation, value);
             var genericFilterHelper = new GenericFilterHelper(new DomainObjectModelMock(), new DataStructureReadParametersStub(), new CommonConceptsRuntimeOptions(), new ConsoleLogProvider());
-            var filterObject = genericFilterHelper.ToFilterObjects(typeof(T).FullName, new FilterCriteria[] { genericFilter }).Single();
-            var filterExpression = genericFilterHelper.ToExpression<T>((IEnumerable<PropertyFilter>)filterObject.Parameter);
+            var filterObject = genericFilterHelper.ToFilterObjects(typeof(TDataStructure).FullName, new FilterCriteria[] { genericFilter }).Single();
+            var filterExpression = genericFilterHelper.ToExpression<TDataStructure>((IEnumerable<PropertyFilter>)filterObject.Parameter);
             var filteredItems = items.AsQueryable().Where(filterExpression).ToList();
             return filteredItems;
         }

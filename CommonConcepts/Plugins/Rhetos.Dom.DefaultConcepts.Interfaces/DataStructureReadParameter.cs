@@ -24,7 +24,10 @@ namespace Rhetos.Dom.DefaultConcepts
     public sealed class DataStructureReadParameter : IEquatable<DataStructureReadParameter>
     {
         /// <summary>
-        /// Type name as written in C# source code. It is a common parameter for filter concepts in DSL.
+        /// This property may contain the type name as written in C# source code (with or without namespace),
+        /// or the type name as provided by Type.ToString.
+        /// It is commonly created from filter names and other read concepts in DSL.
+        /// It can be used at <see cref="FilterCriteria.Filter"/>.
         /// </summary>
         public string Name { get; }
 

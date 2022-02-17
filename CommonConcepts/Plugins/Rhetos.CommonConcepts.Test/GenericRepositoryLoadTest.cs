@@ -719,9 +719,8 @@ namespace Rhetos.CommonConcepts.Test
             var entityRepos = new SystemFilterRepository();
             var genericRepos = NewRepos(entityRepos);
 
-            TestUtility.ShouldFail(() => genericRepos.Load(new[] { new FilterCriteria { Operation = "x" } }), "both property filter and predefined filter are null");
-            TestUtility.ShouldFail(() => genericRepos.Load(new[] { new FilterCriteria { Value = "x" } }), "both property filter and predefined filter are null");
-            TestUtility.ShouldFail(() => genericRepos.Load(new[] { new FilterCriteria { } }), "both property filter and predefined filter are null");
+            TestUtility.ShouldFail(() => genericRepos.Load(new[] { new FilterCriteria { Operation = "x" } }), "Property, Filter and Value are null");
+            TestUtility.ShouldFail(() => genericRepos.Load(new[] { new FilterCriteria { } }), "Property, Filter and Value are null");
             TestUtility.ShouldFail(() => genericRepos.Load(new[] { new FilterCriteria { Filter = "xx", Property = "yy" } }), "both property filter and predefined filter are set", "xx", "yy");
 
             TestUtility.ShouldFail(() => genericRepos.Load(new[] { new FilterCriteria { Filter = "System.String", Operation = "xxx" } }), "Filter", "System.String", "Operation", "xxx", "Matches", "NotMatches");

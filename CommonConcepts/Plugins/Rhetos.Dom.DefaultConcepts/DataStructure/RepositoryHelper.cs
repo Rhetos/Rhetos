@@ -26,7 +26,7 @@ namespace Rhetos.Dom.DefaultConcepts
 {
     public static class RepositoryHelper
     {
-        // Repository:
+        // Repository tags:
         public static readonly CsTag<DataStructureInfo> RepositoryAttributes = "RepositoryAttributes";
         public static readonly CsTag<DataStructureInfo> RepositoryInterfaces = new CsTag<DataStructureInfo>("RepositoryInterface", TagType.Appendable, ", {0}");
         public static readonly CsTag<DataStructureInfo> OverrideBaseTypeTag = new CsTag<DataStructureInfo>("OverrideBaseType", TagType.Reverse, " {0} //");
@@ -34,13 +34,19 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly CsTag<DataStructureInfo> RepositoryMembers = "RepositoryMembers";
         public static readonly CsTag<DataStructureInfo> ConstructorArguments = "RepositoryConstructorArguments";
         public static readonly CsTag<DataStructureInfo> ConstructorCode = "RepositoryConstructorCode";
-        public static readonly CsTag<DataStructureInfo> ReadParameterTypesTag = "ReadParameterTypes";
-        
 
-        // Readable repository:
+        /// <summary>
+        /// KeyValuePair inserted here should have the key string set to the type name as written in C# source code (with or without namespace),
+        /// often used as a filter name.
+        /// <see cref="IDataStructureReadParameters"/> will provide this data the other components, and optionally extended the
+        /// type names to including type names with removed default namespaces and also type names as returned by Type.ToString.
+        /// </summary>
+        public static readonly CsTag<DataStructureInfo> ReadParameterTypesTag = "ReadParameterTypes";
+
+        // Readable repository tags:
         public static readonly CsTag<DataStructureInfo> BeforeQueryTag = "RepositoryBeforeQuery";
 
-        // Queryable repository:
+        // Queryable repository tags:
         public static readonly CsTag<DataStructureInfo> AssignSimplePropertyTag = "AssignSimpleProperty";
 
         public static void GenerateRepository(DataStructureInfo info, ICodeBuilder codeBuilder)

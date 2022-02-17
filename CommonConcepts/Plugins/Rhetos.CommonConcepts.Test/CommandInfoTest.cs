@@ -79,7 +79,7 @@ namespace Rhetos.CommonConcepts.Test
                         new FilterCriteria(new[] { new Guid("c56d3af5-db59-4b15-bd27-f800c36dc685") }),
                         new FilterCriteria(new[] { new Guid("c56d3af5-db59-4b15-bd27-f800c36dc685"), new Guid("a378621c-b784-4005-a304-1c92e2f07d95") }) },
             }.Summary());
-            Assert.AreEqual("ReadCommandInfo , order by   test -, filters: ,  , test, test ,  test,   \"test\", test test, test  \"test\",  test \"test\"", new ReadCommandInfo
+            Assert.AreEqual("ReadCommandInfo , order by   test -, filters: , <null>, test, test, <null> test, System.String \"test\", test test, test \"test\", System.String test \"test\"", new ReadCommandInfo
             {
                 Filters = new[] {
                         null,

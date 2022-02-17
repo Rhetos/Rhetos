@@ -493,10 +493,10 @@ namespace Rhetos.Dom.DefaultConcepts
         private void ValidateAndPrepare(FilterCriteria filter)
         {
             if (!string.IsNullOrEmpty(filter.Property) && !string.IsNullOrEmpty(filter.Filter))
-                throw new ClientException("Invalid generic filter criteria: both property filter and predefined filter are set. (Property = '" + filter.Property + "', Filter = '" + filter.Filter + "')");
+                throw new ClientException($"Invalid generic filter criteria: both property filter and predefined filter are set. (Property = '{filter.Property}', Filter = '{filter.Filter}')");
 
-            if (string.IsNullOrEmpty(filter.Property) && string.IsNullOrEmpty(filter.Filter))
-                throw new ClientException("Invalid generic filter criteria: both property filter and predefined filter are null.");
+            if (string.IsNullOrEmpty(filter.Property) && string.IsNullOrEmpty(filter.Filter) && filter.Value == null)
+                throw new ClientException("Invalid generic filter criteria: Property, Filter and Value are null.");
 
             if (!string.IsNullOrEmpty(filter.Property))
             {
@@ -505,19 +505,16 @@ namespace Rhetos.Dom.DefaultConcepts
                 if (string.IsNullOrEmpty(filter.Operation))
                     throw new ClientException("Invalid generic filter criteria: Operation is not set. (Property = '" + filter.Property + "')");
             }
-
-            if (!string.IsNullOrEmpty(filter.Filter))
+            else
             {
                 // Specific filter:
 
-                if (string.IsNullOrEmpty(filter.Operation))
-                    filter.Operation = FilterOperationMatches;
-
-                if (!string.Equals(filter.Operation, FilterOperationMatches, StringComparison.OrdinalIgnoreCase)
+                if (!string.IsNullOrEmpty(filter.Operation)
+                    && !string.Equals(filter.Operation, FilterOperationMatches, StringComparison.OrdinalIgnoreCase)
                     && !string.Equals(filter.Operation, FilterOperationNotMatches, StringComparison.OrdinalIgnoreCase))
-                    throw new ClientException(string.Format(
-                        "Invalid generic filter criteria: Supported predefined filter operations are '{0}' and '{1}'. (Filter = '{2}', Operation = '{3}')",
-                        FilterOperationMatches, FilterOperationNotMatches, filter.Filter, filter.Operation));
+                    throw new ClientException($"Invalid generic filter criteria:" +
+                        $" Supported predefined filter operations are '{FilterOperationMatches}' and '{FilterOperationNotMatches}'." +
+                        $" (Filter = '{filter.Filter ?? filter.Value.GetType().ToString()}', Operation = '{filter.Operation}')");
             }
         }
 
@@ -552,7 +549,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     .ToList();
 
                 if (baseTypes.Count > 1)
-                    throw new ClientException($"Filter type '{filterName}' on '{dataStructureFullName}' is ambiguous" +
+                    throw new ClientException($"Filter type '{filterName}' with instance type '{filterInstance.GetType()}' on '{dataStructureFullName}' is ambiguous" +
                         $" ({baseTypes.First()}, {baseTypes.Last()}). Please specify exact filter name.");
 
                 if (baseTypes.Count == 1)
@@ -614,7 +611,9 @@ namespace Rhetos.Dom.DefaultConcepts
                 {
                     var filterObject = new FilterObject
                     {
-                        FilterType = GetFilterType(dataStructureFullName, filter.Filter, filter.Value),
+                        FilterType = !string.IsNullOrEmpty(filter.Filter)
+                            ? GetFilterType(dataStructureFullName, filter.Filter, filter.Value)
+                            : filter.Value.GetType(),
                         Parameter = filter.Value
                     };
 
