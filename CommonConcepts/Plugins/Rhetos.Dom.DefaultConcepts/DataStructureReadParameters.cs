@@ -76,7 +76,9 @@ namespace Rhetos.Dom.DefaultConcepts
             if (!_repositoryReadParameters.TryGetValue(key.DataStuctureFullName, out var specificFilterTypes))
                 return Array.Empty<DataStructureReadParameter>();
 
-            int estimatedSize = (specificFilterTypes.Length + _standardFilterTypes.Length) * (key.ExtendedSet ? 4 : 1);
+            int estimatedSize = !key.ExtendedSet
+                ? specificFilterTypes.Length + _standardFilterTypes.Length
+                : specificFilterTypes.Length * 3 + _standardFilterTypesAlternativeNames.Value.Length;
             var allFilterTypes = new HashSet<DataStructureReadParameter>(estimatedSize);
 
             allFilterTypes.UnionWith(specificFilterTypes.Select(filterType => new DataStructureReadParameter(filterType.Key, filterType.Value)));

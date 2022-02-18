@@ -167,7 +167,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             var query = items as IQueryable<TEntityInterface>;
             if (query == null && items != null)
-                throw new FrameworkException($"{EntityName} does not implement a query method or a filter with parameter {parameterType.FullName} that returns an IQueryable. There is an IEnumerable loader of filter implemented, so try using the Load function instead of the Query function.");
+                throw new FrameworkException($"{EntityName} does not implement a query method or a filter with parameter {parameterType} that returns an IQueryable. There is an IEnumerable loader of filter implemented, so try using the Load function instead of the Query function.");
 
             return query;
         }
@@ -211,7 +211,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     if (reader == null) return null;
                     return () =>
                     {
-                        _logger.Trace(() => "Reading using Load(" + reader.GetParameters()[0].ParameterType.FullName + ")");
+                        _logger.Trace(() => $"Reading using Load({reader.GetParameters()[0].ParameterType})");
                         return (IEnumerable<TEntityInterface>)reader.InvokeEx(_repository.Value, parameter);
                     };
                 };
@@ -222,7 +222,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     if (reader == null) return null;
                     return () =>
                     {
-                        _logger.Trace(() => "Reading using Query(" + reader.GetParameters()[0].ParameterType.FullName + ")");
+                        _logger.Trace(() => $"Reading using Query({reader.GetParameters()[0].ParameterType})");
                         return (IEnumerable<TEntityInterface>)reader.InvokeEx(_repository.Value, parameter);
                     };
                 };
@@ -234,7 +234,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     if (reader == null) return null;
                     return () =>
                     {
-                        _logger.Trace(() => "Reading using queryable Filter(Query(), " + reader.GetParameters()[1].ParameterType.FullName + ")");
+                        _logger.Trace(() => $"Reading using queryable Filter(Query(), {reader.GetParameters()[1].ParameterType})");
                         var query = Reflection.RepositoryQueryMethod.InvokeEx(_repository.Value);
                         return (IEnumerable<TEntityInterface>)reader.InvokeEx(_repository.Value, query, parameter);
                     };
@@ -367,7 +367,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 }
             }
 
-            throw new FrameworkException($"{EntityName} does not implement a load method, a query or a filter with parameter {parameterType.FullName}.");
+            throw new FrameworkException($"{EntityName} does not implement a load method, a query or a filter with parameter {parameterType}.");
         }
 
         private IEnumerable<TEntityInterface> ExecuteGenericFilter(IEnumerable<FilterCriteria> genericFilter, bool preferQuery, IEnumerable<TEntityInterface> items = null)
@@ -384,7 +384,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     items = FilterOrQuery(items, filter.Parameter, filter.FilterType);
 
                 if (items == null)
-                    throw new FrameworkException($"{EntityName}'s loader or filter result is null. ParameterType = '{filter.FilterType.FullName}', Parameter.ToString = '{filter.Parameter.ToString()}'.");
+                    throw new FrameworkException($"{EntityName}'s loader or filter result is null. ParameterType = '{filter.FilterType}', Parameter.ToString = '{filter.Parameter}'.");
             }
 
             return items ?? Read(null, typeof(FilterAll), preferQuery: preferQuery);
@@ -431,7 +431,7 @@ namespace Rhetos.Dom.DefaultConcepts
                         if (reader == null) return null;
                         return () =>
                         {
-                            _logger.Trace(() => "Filtering using enumerable Filter(items, " + reader.GetParameters()[1].ParameterType.FullName + ")");
+                            _logger.Trace(() => $"Filtering using enumerable Filter(items, {reader.GetParameters()[1].ParameterType})");
                             Reflection.MaterializeEntityList(ref items);
                             return (IEnumerable<TEntityInterface>)reader.InvokeEx(_repository.Value, items, parameter);
                         };
@@ -443,7 +443,7 @@ namespace Rhetos.Dom.DefaultConcepts
                         if (reader == null) return null;
                         return () =>
                         {
-                            _logger.Trace(() => "Filtering using queryable Filter(items, " + reader.GetParameters()[1].ParameterType.FullName + ")");
+                            _logger.Trace(() => $"Filtering using queryable Filter(items, {reader.GetParameters()[1].ParameterType})");
                             var query = Reflection.AsQueryable(items);
                             return (IEnumerable<TEntityInterface>)reader.InvokeEx(_repository.Value, query, parameter);
                         };
@@ -542,11 +542,11 @@ namespace Rhetos.Dom.DefaultConcepts
                 return items.Where(item => ((List<Guid>)parameter).Contains(item.ID));
             }
 
-            string errorMessage = $"{EntityName} does not implement a filter method with parameter {parameterType.FullName}.";
+            string errorMessage = $"{EntityName} does not implement a filter method with parameter {parameterType}.";
 
             if (Reflection.RepositoryLoadWithParameterMethod(parameterType) != null)
             {
-                errorMessage += " There is a loader method with this parameter implemented: Try reordering filters to use the " + parameterType.Name + " first.";
+                errorMessage += $" There is a loader method with this parameter implemented: Try reordering filters to use the {parameterType.Name} first.";
                 throw new ClientException(errorMessage);
             }
             else
@@ -875,7 +875,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 }
                 if (toDelete.Count() + toDeactivate.Count() != oldDeleteCount)
                     throw new FrameworkException($"Invalid number of items to deactivate for '{_genericRepositoryName}'." +
-                        $" Verify if the deactivation filter ({filterDeactivateDeleted.GetType().FullName}) on that data structure returns a valid subset of the given items." +
+                        $" Verify if the deactivation filter ({filterDeactivateDeleted.GetType()}) on that data structure returns a valid subset of the given items." +
                         $" {oldDeleteCount} items to remove: {toDeactivate.Count()} items to deactivate and {toDelete.Count()} items remaining to delete (should be {oldDeleteCount - toDeactivate.Count()}).");
 
                 // Update the items to deactivate (unless already deactivated):

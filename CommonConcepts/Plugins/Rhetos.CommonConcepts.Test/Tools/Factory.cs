@@ -50,7 +50,7 @@ namespace Rhetos.CommonConcepts.Test.Tools
                 Array.Empty<KeyValuePair<string, Type>>() :
                 (KeyValuePair<string, Type>[])readParameterTypesProperty.GetValue(null);
             return new DataStructureReadParameters(new Dictionary<string, KeyValuePair<string, Type>[]> {
-                { type.FullName, specificFilterTypes }
+                { type.ToString(), specificFilterTypes }
             });
         }
     }
