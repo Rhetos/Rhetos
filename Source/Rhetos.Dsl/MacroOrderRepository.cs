@@ -58,7 +58,7 @@ namespace Rhetos.Dsl
 
         public void Save(IEnumerable<MacroOrder> macroOrders)
         {
-            JsonUtility.SerializeToFile(macroOrders, _cacheFilePath, Formatting.Indented);
+            JsonUtility.SerializeToFile(macroOrders, _cacheFilePath);
         }
     }
 }

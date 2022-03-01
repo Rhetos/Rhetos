@@ -26,12 +26,7 @@ namespace Rhetos.Utilities
     {
         public static void SerializeToFile<T>(T data, string filePath)
         {
-            SerializeToFile<T>(data, filePath, new JsonSerializerSettings());
-        }
-
-        public static void SerializeToFile<T>(T data, string filePath, Formatting formatting)
-        {
-            SerializeToFile<T>(data, filePath, new JsonSerializerSettings { Formatting = formatting });
+            SerializeToFile<T>(data, filePath, new JsonSerializerSettings { Formatting = Formatting.Indented });
         }
 
         public static void SerializeToFile<T>(T data, string filePath, JsonSerializerSettings jsonSerializerSettings)

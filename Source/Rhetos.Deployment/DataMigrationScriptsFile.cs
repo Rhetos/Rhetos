@@ -61,7 +61,7 @@ namespace Rhetos.Deployment
         public void Save(DataMigrationScripts dataMigrationScripts)
         {
             var stopwatch = Stopwatch.StartNew();
-            JsonUtility.SerializeToFile(dataMigrationScripts, _dataMigrationScriptsFilePath, Formatting.Indented);
+            JsonUtility.SerializeToFile(dataMigrationScripts, _dataMigrationScriptsFilePath);
             _performanceLogger.Write(stopwatch, $"Saved {dataMigrationScripts.Scripts.Count} scripts to generated file.");
         }
     }
