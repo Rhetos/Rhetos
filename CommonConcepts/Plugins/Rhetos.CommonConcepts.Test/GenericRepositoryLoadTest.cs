@@ -418,7 +418,7 @@ namespace Rhetos.CommonConcepts.Test
                 return items.Select(item => new SimpleEntity { Name = item.Name + "_ef" });
             }
 
-            public static readonly KeyValuePair<string, Type>[] ReadParameterTypes = new KeyValuePair<string, Type>[]
+            public static KeyValuePair<string, Type>[] GetReadParameterTypes() => new KeyValuePair<string, Type>[]
             {
                 new KeyValuePair<string, Type>(typeof(NamedFilter).ToString(), typeof(NamedFilter)),
                 new KeyValuePair<string, Type>(typeof(ContainsFilter).ToString(), typeof(ContainsFilter)),
@@ -710,7 +710,7 @@ namespace Rhetos.CommonConcepts.Test
                 return new[] { new SimpleEntity { Name = parameter.ToString() } }.AsQueryable();
             }
 
-            public static readonly KeyValuePair<string, Type>[] ReadParameterTypes = Array.Empty<KeyValuePair<string, Type>>();
+            public static KeyValuePair<string, Type>[] GetReadParameterTypes() => Array.Empty<KeyValuePair<string, Type>>();
         }
 
         [TestMethod]

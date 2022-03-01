@@ -32,8 +32,8 @@ namespace Rhetos.CommonConcepts.Test
         [TestMethod]
         public void GetReadParameters_Basic()
         {
-            var readParameters = new DataStructureReadParameters(new Dictionary<string, KeyValuePair<string, Type>[]> {
-                { "RhetosCommonConceptsTestModule.TestDataStructure", FakeRepository.ReadParameterTypes }
+            var readParameters = new DataStructureReadParameters(new Dictionary<string, Func<KeyValuePair<string, Type>[]>> {
+                { "RhetosCommonConceptsTestModule.TestDataStructure", FakeRepository.GetReadParameterTypes }
             });
 
             var expectedBasic = new[]
@@ -51,8 +51,8 @@ namespace Rhetos.CommonConcepts.Test
         [TestMethod]
         public void GetReadParameters_Extended()
         {
-            var readParameters = new DataStructureReadParameters(new Dictionary<string, KeyValuePair<string, Type>[]> {
-                { "RhetosCommonConceptsTestModule.TestDataStructure", FakeRepository.ReadParameterTypes }
+            var readParameters = new DataStructureReadParameters(new Dictionary<string, Func<KeyValuePair<string, Type>[]>> {
+                { "RhetosCommonConceptsTestModule.TestDataStructure", FakeRepository.GetReadParameterTypes }
             });
 
             var expectedExtended = new[]
@@ -84,10 +84,10 @@ namespace Rhetos.CommonConcepts.Test
             Type complexType = typeof(System.Tuple<System.String, RhetosCommonConceptsTestModule.TestFilterClass, System.Collections.Generic.List<System.String>>);
             string complexTypeName = "System.Tuple<System.String, RhetosCommonConceptsTestModule.TestFilterClass, System.Collections.Generic.List<System.String>>";
 
-            var readParameters = new DataStructureReadParameters(new Dictionary<string, KeyValuePair<string, Type>[]> {
+            var readParameters = new DataStructureReadParameters(new Dictionary<string, Func<KeyValuePair<string, Type>[]>> {
                 {
                     "RhetosCommonConceptsTestModule.TestDataStructure",
-                    new[]
+                    () => new[]
                     {
                         new KeyValuePair<string, Type>(complexTypeName, complexType)
                     }
@@ -114,7 +114,7 @@ namespace Rhetos.CommonConcepts.Test
 
         internal class FakeRepository : IRepository
         {
-            public static readonly KeyValuePair<string, Type>[] ReadParameterTypes = new KeyValuePair<string, Type>[]
+            public static KeyValuePair<string, Type>[] GetReadParameterTypes() => new KeyValuePair<string, Type>[]
             {
                 new KeyValuePair<string, Type>("RhetosCommonConceptsTestModule.TestFilterClass", typeof(RhetosCommonConceptsTestModule.TestFilterClass)),
             };

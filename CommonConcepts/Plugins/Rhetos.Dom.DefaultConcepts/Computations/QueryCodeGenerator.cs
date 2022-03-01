@@ -35,7 +35,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var info = (QueryInfo)conceptInfo;
 
-            codeBuilder.InsertCode($"new KeyValuePair<string, Type>({CsUtility.QuotedString(info.Parameter)}, typeof({info.Parameter})),{Environment.NewLine}            ",
+            codeBuilder.InsertCode($"new KeyValuePair<string, Type>({CsUtility.QuotedString(info.Parameter)}, typeof({info.Parameter})),{Environment.NewLine}                ",
                 RepositoryHelper.ReadParameterTypesTag, info.DataStructure);
         }
     }

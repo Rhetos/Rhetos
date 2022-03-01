@@ -105,16 +105,19 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.InsertCode($"Common.ReadableRepositoryBase<{module}.{entity}>", OverrideBaseTypeTag, info);
 
             codeBuilder.InsertCode(
-        $@"public static readonly KeyValuePair<string, Type>[] ReadParameterTypes = new KeyValuePair<string, Type>[]
+        $@"public static KeyValuePair<string, Type>[] GetReadParameterTypes()
         {{
-            {ReadParameterTypesTag.Evaluate(info)}
-        }};
+            return new KeyValuePair<string, Type>[]
+            {{
+                {ReadParameterTypesTag.Evaluate(info)}
+            }};
+        }}
         
         ",
                 RepositoryMembers, info);
 
             codeBuilder.InsertCode(
-            $@"{{ ""{module}.{entity}"", {module}.Repositories.{entity}_Repository.ReadParameterTypes }},
+            $@"{{ ""{module}.{entity}"", {module}.Repositories.{entity}_Repository.GetReadParameterTypes }},
             ",
                 ModuleCodeGenerator.DataStructuresReadParameterTypesTag);
         }

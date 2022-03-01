@@ -27,14 +27,14 @@ namespace Rhetos.Dom.DefaultConcepts
 {
     public class DataStructureReadParameters : IDataStructureReadParameters
     {
-        private readonly Dictionary<string, KeyValuePair<string, Type>[]> _repositoryReadParameters;
+        private readonly Dictionary<string, Func<KeyValuePair<string, Type>[]>> _repositoryReadParameters;
 
         /// <summary>
         /// This cache is not static, because <see cref="DataStructureReadParameters"/> is a singleton.
         /// </summary>
         private readonly ConcurrentDictionary<(string DataStuctureFullName, bool ExtendedSet), IEnumerable<DataStructureReadParameter>> _readParametersByDataStucture = new();
 
-        public DataStructureReadParameters(Dictionary<string, KeyValuePair<string, Type>[]> repositoryReadParameters)
+        public DataStructureReadParameters(Dictionary<string, Func<KeyValuePair<string, Type>[]>> repositoryReadParameters)
         {
             _repositoryReadParameters = repositoryReadParameters;
         }
@@ -73,9 +73,10 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private IEnumerable<DataStructureReadParameter> CreateReadParametersList((string DataStuctureFullName, bool ExtendedSet) key)
         {
-            if (!_repositoryReadParameters.TryGetValue(key.DataStuctureFullName, out var specificFilterTypes))
+            if (!_repositoryReadParameters.TryGetValue(key.DataStuctureFullName, out var specificFilterTypesFunc))
                 return Array.Empty<DataStructureReadParameter>();
 
+            var specificFilterTypes = specificFilterTypesFunc();
             int estimatedSize = !key.ExtendedSet
                 ? specificFilterTypes.Length + _standardFilterTypes.Length
                 : specificFilterTypes.Length * 3 + _standardFilterTypesAlternativeNames.Value.Length;

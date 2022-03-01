@@ -335,7 +335,7 @@ namespace Rhetos.CommonConcepts.Test
         public void GetFilterType_StandardFilters()
         {
             var parameters = Array.Empty<KeyValuePair<string, Type>>();
-            Dictionary<string, KeyValuePair<string, Type>[]> repositoryReadParameters = new() { { typeof(TestModule.TestEntity).FullName, parameters } };
+            Dictionary<string, Func<KeyValuePair<string, Type>[]>> repositoryReadParameters = new() { { typeof(TestModule.TestEntity).FullName, () => parameters } };
             var dataStructureReadParameters = new DataStructureReadParameters(repositoryReadParameters);
             var genericFilterHelper = Factory.CreateGenericFilterHelper(dataStructureReadParameters, dynamicTypeResolution: false);
 
@@ -368,7 +368,7 @@ namespace Rhetos.CommonConcepts.Test
                 KeyValuePair.Create("TestModule.TestParameter3", typeof(TestModule.TestParameter3)),
                 KeyValuePair.Create("TestParameter4", typeof(TestModule.TestParameter4)),
             };
-            Dictionary<string, KeyValuePair<string, Type>[]> repositoryReadParameters = new() { { typeof(TestModule.TestEntity).FullName, parameters } };
+            Dictionary<string, Func<KeyValuePair<string, Type>[]>> repositoryReadParameters = new() { { typeof(TestModule.TestEntity).FullName, () => parameters } };
             var dataStructureReadParameters = new DataStructureReadParameters(repositoryReadParameters);
             var genericFilterHelper = Factory.CreateGenericFilterHelper(dataStructureReadParameters, dynamicTypeResolution: false);
 
@@ -420,7 +420,7 @@ namespace Rhetos.CommonConcepts.Test
         public void GetFilterType_Instance()
         {
             var parameters = Array.Empty<KeyValuePair<string, Type>>();
-            Dictionary<string, KeyValuePair<string, Type>[]> repositoryReadParameters = new() { { typeof(TestModule.TestEntity).FullName, parameters } };
+            Dictionary<string, Func<KeyValuePair<string, Type>[]>> repositoryReadParameters = new() { { typeof(TestModule.TestEntity).FullName, () => parameters } };
             var dataStructureReadParameters = new DataStructureReadParameters(repositoryReadParameters);
             var genericFilterHelper = Factory.CreateGenericFilterHelper(dataStructureReadParameters, dynamicTypeResolution: false);
 

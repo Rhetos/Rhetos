@@ -224,7 +224,7 @@ namespace Common
             {ModuleCodeGenerator.ApplyFiltersOnClientReadTag}
         }};
 
-        public static readonly Dictionary<string, KeyValuePair<string, Type>[]> DataStructuresReadParameterTypes = new Dictionary<string, KeyValuePair<string, Type>[]>
+        public static readonly Dictionary<string, Func<KeyValuePair<string, Type>[]>> DataStructuresReadParameterTypes = new()
         {{
             {ModuleCodeGenerator.DataStructuresReadParameterTypesTag}
         }};

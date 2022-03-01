@@ -45,12 +45,12 @@ namespace Rhetos.CommonConcepts.Test.Tools
 
         public static DataStructureReadParameters CreateDataStructureReadParameters(IRepository repository, Type type)
         {
-            var readParameterTypesProperty = repository.GetType().GetField("ReadParameterTypes", BindingFlags.Public | BindingFlags.Static);
-            var specificFilterTypes = readParameterTypesProperty == null ?
+            var readParameterTypesMethod = repository.GetType().GetMethod("GetReadParameterTypes", BindingFlags.Public | BindingFlags.Static);
+            var specificFilterTypes = readParameterTypesMethod == null ?
                 Array.Empty<KeyValuePair<string, Type>>() :
-                (KeyValuePair<string, Type>[])readParameterTypesProperty.GetValue(null);
-            return new DataStructureReadParameters(new Dictionary<string, KeyValuePair<string, Type>[]> {
-                { type.ToString(), specificFilterTypes }
+                (KeyValuePair<string, Type>[])readParameterTypesMethod.Invoke(null, null);
+            return new DataStructureReadParameters(new Dictionary<string, Func<KeyValuePair<string, Type>[]>> {
+                { type.ToString(), () => specificFilterTypes }
             });
         }
     }

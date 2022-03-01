@@ -437,7 +437,7 @@ namespace Rhetos.CommonConcepts.Test
                 return items.Select(item => new SimpleEntity { Name = item.Name + "_ef" });
             }
 
-            public static readonly KeyValuePair<string, Type>[] ReadParameterTypes = new KeyValuePair<string, Type>[]
+            public static KeyValuePair<string, Type>[] GetReadParameterTypes() => new KeyValuePair<string, Type>[]
             {
                 new KeyValuePair<string, Type>(typeof(NamedFilter).ToString(), typeof(NamedFilter)),
                 new KeyValuePair<string, Type>(typeof(ContainsFilter).ToString(), typeof(ContainsFilter)),
@@ -716,7 +716,7 @@ namespace Rhetos.CommonConcepts.Test
                 return new[] { new SimpleEntity { Name = parameter.ToString() } }.AsQueryable();
             }
 
-            public static readonly KeyValuePair<string, Type>[] ReadParameterTypes = new KeyValuePair<string, Type>[]
+            public static KeyValuePair<string, Type>[] GetReadParameterTypes() => new KeyValuePair<string, Type>[]
             {
                 KeyValuePair.Create("System.DateTime", typeof(DateTime)),
                 KeyValuePair.Create("System.Guid", typeof(Guid)),
@@ -739,7 +739,7 @@ namespace Rhetos.CommonConcepts.Test
 
             var expected = new[]
             {
-                // Parameter types specified in SystemFilterRepository.ReadParameterTypes:
+                // Parameter types specified in SystemFilterRepository.GetReadParameterTypes:
                 "System.DateTime",
                 "System.Guid",
                 "System.String",
