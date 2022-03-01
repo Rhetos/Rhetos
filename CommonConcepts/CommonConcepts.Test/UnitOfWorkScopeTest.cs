@@ -21,6 +21,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Persistence;
+using Rhetos.Processing;
+using Rhetos.Processing.DefaultCommands;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
@@ -119,7 +121,7 @@ namespace CommonConcepts.Test
         /// Any database operation in the unit-of-work scope after CommitAndClose will throw an exception.
         /// </summary>
         [TestMethod]
-        public void EarlyCommitAndClose()
+        public void EarlyCommitAndClose_Repository()
         {
             var id1 = Guid.NewGuid();
             var id2 = Guid.NewGuid();
@@ -129,9 +131,9 @@ namespace CommonConcepts.Test
                     using (var scope = TestScope.Create())
                     {
                         var context = scope.Resolve<Common.ExecutionContext>();
-                        context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id1, Name = TestNamePrefix + Guid.NewGuid() });
+                        context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id1 });
                         scope.CommitAndClose(); // CommitAndClose is incorrectly placed at this position.
-                        context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id2, Name = TestNamePrefix + Guid.NewGuid() });
+                        context.Repository.TestEntity.BaseEntity.Insert(new TestEntity.BaseEntity { ID = id2 });
                     }
                 },
                 "disposed persistence transaction");
@@ -144,6 +146,78 @@ namespace CommonConcepts.Test
                 Assert.AreEqual(
                     id1.ToString(),
                     TestUtility.DumpSorted(context.Repository.TestEntity.BaseEntity.Load(ids), item => item.ID));
+            }
+        }
+
+        /// <summary>
+        /// This is not an intended usage of IUnitOfWorkScope because CommitAndClose should be called at the end of the using block.
+        /// Any database operation in the unit-of-work scope after CommitAndClose will throw an exception.
+        /// </summary>
+        [TestMethod]
+        public void EarlyCommitAndClose_SqlExecuter()
+        {
+            var id1 = Guid.NewGuid();
+            var id2 = Guid.NewGuid();
+
+            TestUtility.ShouldFail<FrameworkException>(() =>
+            {
+                using (var scope = TestScope.Create())
+                {
+                    var sqlExecuter = scope.Resolve<ISqlExecuter>();
+                    sqlExecuter.ExecuteSqlInterpolated($"INSERT INTO TestEntity.BaseEntity (ID) SELECT {id1}");
+                    scope.CommitAndClose(); // CommitAndClose is incorrectly placed at this position.
+                    sqlExecuter.ExecuteSqlInterpolated($"INSERT INTO TestEntity.BaseEntity (ID) SELECT {id2}");
+                }
+            },
+                "disposed persistence transaction");
+
+            using (var scope = TestScope.Create())
+            {
+                var context = scope.Resolve<Common.ExecutionContext>();
+                // Only operations before CommitAndClose are committed.
+                var ids = new[] { id1, id2 };
+                Assert.AreEqual(
+                    id1.ToString(),
+                    TestUtility.DumpSorted(context.Repository.TestEntity.BaseEntity.Load(ids), item => item.ID));
+            }
+        }
+
+        /// <summary>
+        /// This is not an intended usage of IUnitOfWorkScope because CommitAndClose should be called at the end of the using block.
+        /// Any database operation in the unit-of-work scope after CommitAndClose will throw an exception.
+        /// </summary>
+        [TestMethod]
+        public void EarlyCommitAndClose_ProcessingEngine()
+        {
+            var id1 = Guid.NewGuid();
+            var id2 = Guid.NewGuid();
+
+            TestUtility.ShouldFail<FrameworkException>(() =>
+            {
+                using (var scope = TestScope.Create(b => b.ConfigureIgnoreClaims()))
+                {
+                    var processingEngine = scope.Resolve<IProcessingEngine>();
+                    var logCommand = new ExecuteActionCommandInfo { Action = new Common.AddToLog { Action = "EarlyCommitAndClose", ItemId = id1 } };
+                    processingEngine.Execute(logCommand);
+                    scope.CommitAndClose(); // CommitAndClose is incorrectly placed at this position.
+                    ((Common.AddToLog)logCommand.Action).ItemId = id2;
+                    processingEngine.Execute(logCommand);
+                }
+            },
+                "disposed persistence transaction");
+
+            using (var scope = TestScope.Create())
+            {
+                var context = scope.Resolve<Common.ExecutionContext>();
+                // Only operations before CommitAndClose are committed.
+                var ids = new[] { id1, id2 };
+                var items = context.Repository.Common.Log.Query(l => l.Action == "EarlyCommitAndClose" && l.TableName == null);
+                Assert.AreEqual(
+                    id1.ToString(),
+                    TestUtility.DumpSorted(items.Where(log => ids.Contains(log.ItemId.Value)), log => log.ItemId));
+
+                context.Repository.Common.Log.Delete(items);
+                scope.CommitAndClose();
             }
         }
 
