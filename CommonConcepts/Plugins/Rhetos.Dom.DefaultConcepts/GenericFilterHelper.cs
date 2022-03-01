@@ -145,11 +145,11 @@ namespace Rhetos.Dom.DefaultConcepts
                     var list = (IEnumerable)filter.Value;
 
                     // Guid object's type was not automatically recognized when deserializing from JSON:
-                    if (propertyBasicType == typeof(Guid) && list is IEnumerable<string>)
+                    if (propertyBasicType == typeof(Guid) && list is IEnumerable<string>) // TODO: Remove this as a breaking change in next major release.
                         list = ((IEnumerable<string>)list).Select(s => !string.IsNullOrEmpty(s) ? (Guid?)Guid.Parse(s) : null).ToList();
 
                     // DateTime object's type was not automatically recognized when deserializing from JSON:
-                    if (propertyBasicType == typeof(DateTime) && list is IEnumerable<string>)
+                    if (propertyBasicType == typeof(DateTime) && list is IEnumerable<string>) // TODO: Remove this as a breaking change in next major release.
                         list = ((IEnumerable<string>)list).Select(s => ParseJsonDateTime(s, filter.Property, propertyBasicType)).ToList();
 
                     // Adjust the list element type to exactly match the property type:
