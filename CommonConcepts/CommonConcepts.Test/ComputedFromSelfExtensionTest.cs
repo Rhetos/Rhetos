@@ -8,22 +8,6 @@ namespace CommonConcepts.Test
     public class ComputedFromSelfExtensionTest
     {
         [TestMethod]
-        public void NormalInsertArtist()
-        {
-            using (var scope = TestScope.Create())
-            {
-                var repository = scope.Resolve<Common.DomRepository>();
-                var artist = new TestComputedFromSelfExtension.Artist()
-                {
-                    Name = "a1",
-                    ToursRevenue = 10
-                };
-
-                repository.TestComputedFromSelfExtension.Artist.Insert(new[] { artist });
-            }
-        }
-
-        [TestMethod]
         public void RecomputeAfterInsert()
         {
             using (var scope = TestScope.Create())
