@@ -62,12 +62,11 @@ namespace Rhetos
             return rhetosProjectContent;
         }
 
-        public void Save(RhetosBuildEnvironment rhetosBuildEnvironment, RhetosTargetEnvironment rhetosTargetEnvironment, RhetosProjectAssets rhetosProjectAssets)
+        public void Save(RhetosBuildEnvironment rhetosBuildEnvironment, RhetosProjectAssets rhetosProjectAssets)
         {
             var rhetosProjectContent = new RhetosProjectContent
             {
                 RhetosBuildEnvironment = rhetosBuildEnvironment,
-                RhetosTargetEnvironment = rhetosTargetEnvironment,
                 RhetosProjectAssets = rhetosProjectAssets
             };
             string serialized = JsonConvert.SerializeObject(rhetosProjectContent, _serializerSettings);

@@ -24,7 +24,6 @@ namespace Rhetos
     public class RhetosProjectContent
     {
         public RhetosBuildEnvironment RhetosBuildEnvironment { get; set; }
-        public RhetosTargetEnvironment RhetosTargetEnvironment { get; set; }
         public RhetosProjectAssets RhetosProjectAssets { get; set; }
     }
 }

@@ -22,9 +22,7 @@
             Assemblies="@(ReferencePath)"
             AssemblyName="$(AssemblyName)"
             GeneratedAssetsFolder="obj\Rhetos\Assets"
-            IntermediateOutputFolder="$(BaseIntermediateOutputPath)Rhetos"
-            TargetPath="$(TargetPath)"
-            TargetAssetsFolder="$(TargetDir)RhetosAssets" />
+            IntermediateOutputFolder="$(BaseIntermediateOutputPath)Rhetos" />
         <WriteLinesToFile Lines="@(RhetosBuild);@(RhetosBuildSettings)" Overwrite="True" WriteOnlyWhenDifferent="True" File="$(RhetosBuildItemsFile)"/>
     </Target>
 

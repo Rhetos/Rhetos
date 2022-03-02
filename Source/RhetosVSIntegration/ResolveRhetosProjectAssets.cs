@@ -49,12 +49,6 @@ namespace RhetosVSIntegration
         [Required]
         public string IntermediateOutputFolder { get; set; }
 
-        [Required]
-        public string TargetPath { get; set; }
-
-        [Required]
-        public string TargetAssetsFolder { get; set; }
-
         public override bool Execute()
         {
             var assemblyResolver = CreateAssemblyResolver();
@@ -93,12 +87,6 @@ namespace RhetosVSIntegration
                 GeneratedSourceFolder = Path.GetFullPath(Path.Combine(ProjectDirectory, IntermediateOutputFolder, "Source")),
             };
 
-            var rhetosTargetEnvironment = new RhetosTargetEnvironment
-            {
-                TargetPath = Path.GetFullPath(Path.Combine(ProjectDirectory, TargetPath)),
-                TargetAssetsFolder = Path.GetFullPath(Path.Combine(ProjectDirectory, TargetAssetsFolder)),
-            };
-
             var rhetosProjectAssets = new RhetosProjectAssets
             {
                 InstalledPackages = new InstalledPackages { Packages = nuget.GetInstalledPackages() },
@@ -106,7 +94,7 @@ namespace RhetosVSIntegration
             };
 
             var rhetosProjectAssetsFileProvider = new RhetosProjectContentProvider(ProjectDirectory, new VSLogProvider(Log));
-            rhetosProjectAssetsFileProvider.Save(rhetosBuildEnvironment, rhetosTargetEnvironment, rhetosProjectAssets);
+            rhetosProjectAssetsFileProvider.Save(rhetosBuildEnvironment, rhetosProjectAssets);
             //The file touch is added to notify the language server that something has happened even if the file has not been changed.
             //This is a problem when in a referenced project we implement a new concept, the RhetosProjectAssetsFile remains the same but the language server
             //must be restarted to take into account the new concept

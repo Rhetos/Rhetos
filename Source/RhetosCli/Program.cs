@@ -173,7 +173,6 @@ namespace Rhetos
 
             var configuration = new ConfigurationBuilder(_logProvider)
                 .AddOptions(rhetosProjectContent.RhetosBuildEnvironment)
-                .AddOptions(rhetosProjectContent.RhetosTargetEnvironment)
                 .AddKeyValue(ConfigurationProvider.GetKey((ConfigurationProviderOptions o) => o.LegacyKeysWarning), true)
                 .AddKeyValue(ConfigurationProvider.GetKey((LoggingOptions o) => o.DelayedLogTimout), 60.0)
                 .AddJsonFile(Path.Combine(projectRootPath, RhetosBuildEnvironment.ConfigurationFileName), optional: true)

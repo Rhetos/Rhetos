@@ -48,11 +48,6 @@ namespace Rhetos.Configuration.Autofac.Test
                     GeneratedAssetsFolder = Path.Combine(rhetosAppRootPath, "GeneratedAssetsTest"), // Custom for testing
                     GeneratedSourceFolder = "GeneratedSourceTest",
                 })
-                .AddOptions(new RhetosTargetEnvironment
-                {
-                    TargetPath = @"TargetPathTest",
-                    TargetAssetsFolder = @"TargetAssetsTest",
-                })
                 .AddKeyValue(ConfigurationProvider.GetKey((ConfigurationProviderOptions o) => o.LegacyKeysWarning), true)
                 .AddKeyValue(ConfigurationProvider.GetKey((LoggingOptions o) => o.DelayedLogTimout), 60.0)
                 .AddJsonFile(Path.Combine(rhetosAppRootPath, RhetosBuildEnvironment.ConfigurationFileName), optional: true)
