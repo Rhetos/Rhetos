@@ -19,7 +19,7 @@ Technology and plugins:
    * CleanupOldData.exe
    * CreateIISSite.exe
 3. SOAP API implementation has been removed from Rhetos framework. Removed IServerApplication interface.
-4. Removed support for WCF, new Rhetos applications should use APS.NET Core instead.
+4. Removed support for WCF, new Rhetos applications should use APS.NET Core instead, although Rhetos 5 can be used in any type of .NET application.
    * When migrating existing Rhetos application to APS.NET Core, the configuration in web.config should also be migrated,
      see [Migrating from WCF to ASP.NET Core](https://github.com/Rhetos/Rhetos/wiki/Migrating-from-WCF-to-ASP-NET-Core).
 5. User authentication is no longer implemented by Rhetos plugins.
