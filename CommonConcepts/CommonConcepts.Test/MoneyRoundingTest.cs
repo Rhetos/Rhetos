@@ -94,7 +94,19 @@ namespace CommonConcepts.Test
 
                     Action save = () => context.Repository.TestStorage.AllProperties.Save(new[] { entity }, null, null);
 
-                    TestUtility.ShouldFail<UserException>(save, "It is not allowed to enter a money value with more than 2 decimals.");
+                    var userException = TestUtility.ShouldFail<UserException>(save, "It is not allowed to enter a money value with more than 2 decimals.");
+
+                    TestUtility.AssertContains(
+                        userException.ToString(),
+                        new[]
+                        {
+                            "UserException: It is not allowed to enter a money value with more than 2 decimals.",
+                            "Constraint=Money",
+                            "ConstraintName=CK_AllProperties_MoneyProperty_money",
+                            "Table=TestStorage.AllProperties",
+                            "Column=MoneyProperty",
+                            "SystemMessage: DataStructure:TestStorage.AllProperties,Property:MoneyProperty"
+                        });
                 }
             }
         }

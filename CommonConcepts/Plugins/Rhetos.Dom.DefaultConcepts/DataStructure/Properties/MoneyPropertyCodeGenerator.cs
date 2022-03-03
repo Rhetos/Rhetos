@@ -30,25 +30,24 @@ namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
     [ExportMetadata(MefProvider.Implements, typeof(MoneyPropertyInfo))]
-    [ExportMetadata(MefProvider.DependsOn, typeof(MoneyRoundingInfoCodeGenerator))]
     public class MoneyPropertyCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = conceptInfo as PropertyInfo;
+            var info = (MoneyPropertyInfo)conceptInfo;
             PropertyHelper.GenerateCodeForType(info, codeBuilder, "decimal?");
             PropertyHelper.GenerateStorageMapping(info, codeBuilder, "System.Data.SqlDbType.Money");
 
             if (info.DataStructure is IWritableOrmDataStructure)
             {
                 var property = $"item.{info.Name}";
-                var roundingFactor = Math.Pow(10, 2);
+                int roundingFactor = 100; // 2 decimals.
 
                 codeBuilder.InsertCode(
                     @$"{property} = {property} != null ? (long)({property}.Value * {roundingFactor}m) / {roundingFactor}m : null;
                     ",
                     MoneyRoundingInfoCodeGenerator.MoneyRoundingPropertiesTag,
-                    info.DataStructure);
+                    info.MoneyRoundingInfo_Dependency);
             }
         }
     }
@@ -70,8 +69,8 @@ namespace Rhetos.Dom.DefaultConcepts
                     new RepositoryUsesInfo
                     {
                         DataStructure = conceptInfo.DataStructure,
-                        PropertyName = "_option",
-                        PropertyType = "Rhetos.Dom.DefaultConcepts.CommonConceptsRuntimeOptions, Rhetos.Dom.DefaultConcepts.Interfaces"
+                        PropertyName = "_commonConceptsRuntimeOptions",
+                        PropertyType = "Rhetos.Dom.DefaultConcepts.CommonConceptsRuntimeOptions"
                     });
 
             return newConcepts;
@@ -82,25 +81,25 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(MoneyRoundingInfo))]
     public class MoneyRoundingInfoCodeGenerator : IConceptCodeGenerator
     {
-        public static readonly CsTag<DataStructureInfo> MoneyRoundingPropertiesTag = "MoneyRounding Properties";
+        public static readonly CsTag<MoneyRoundingInfo> MoneyRoundingPropertiesTag = "MoneyRounding Properties";
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var dataStructure = (conceptInfo as MoneyRoundingInfo).DataStructure;
+            var info = (MoneyRoundingInfo)conceptInfo;
 
-            if (dataStructure is IWritableOrmDataStructure)
+            if (info.DataStructure is IWritableOrmDataStructure)
             {
                 codeBuilder.InsertCode(
-            $@"if (_option.AutoRoundMoney)
+            $@"if (_commonConceptsRuntimeOptions.AutoRoundMoney)
             {{
                 foreach (var item in insertedNew.Concat(updatedNew))
                 {{
-                    {MoneyRoundingPropertiesTag.Evaluate(dataStructure)}
+                    {MoneyRoundingPropertiesTag.Evaluate(info)}
                 }}
             }}
             ",
                 WritableOrmDataStructureCodeGenerator.InitializationTag,
-                dataStructure);
+                info.DataStructure);
             }
         }
     }

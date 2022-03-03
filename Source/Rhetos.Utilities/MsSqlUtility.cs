@@ -144,7 +144,8 @@ namespace Rhetos.Utilities
             if (sqlException.Number == 547)
             {
                 // See the InterpretReferenceConstraint unit test for regex coverage.
-                Regex messageParser = new Regex(@"^(The )?(.+) statement conflicted with (the )?(.+) constraint [""'](.+)[""']. The conflict occurred in database [""'](.+)[""'], table [""'](.+?)[""'](, column [""'](.+?)[""'])?");
+                Regex messageParser = new Regex(@"^(The )?(.+) statement conflicted with (the )?(.+) constraint [""'](.+)[""']."
+                    + @" The conflict occurred in database [""'](.+)[""'], table [""'](.+?)[""'](, column [""'](.+?)[""'])?");
                 var parts = messageParser.Match(sqlException.Message).Groups;
                 string action = parts[2].Value ?? "";
                 string constraintType = parts[4].Value ?? "";
@@ -203,7 +204,8 @@ namespace Rhetos.Utilities
             if (sqlException.Number == 547 && moneyExceptionMessageTester.IsMatch(sqlException.Message))
             {
                 const string quote = @"[""']";
-                Regex messageParser = new Regex(@$"conflicted with the CHECK constraint {quote}(?<constraint>CK_(?<table>\w+)_(?<column>\w+)_money){quote}\. The conflict occurred in database {quote}(.+){quote}, table {quote}(?<dataStructure>\w+\.\w+){quote}, column {quote}(\w+){quote}\.");
+                Regex messageParser = new Regex(@$"conflicted with the CHECK constraint {quote}(?<constraint>CK_\w+_money){quote}\."
+                    + @$" The conflict occurred in database {quote}(.+){quote}, table {quote}(?<table>[\w\.]+){quote}, column {quote}(?<column>\w+){quote}\.");
                 var parts = messageParser.Match(sqlException.Message).Groups;
 
                 var interpretedException = new UserException("It is not allowed to enter a money value with more than 2 decimals.", exception);
@@ -215,8 +217,15 @@ namespace Rhetos.Utilities
                     interpretedException.Info["Table"] = parts["table"].Value;
                 if (parts["column"].Success)
                     interpretedException.Info["Column"] = parts["column"].Value;
-                if (parts["dataStructure"].Success)
-                    interpretedException.Info["DataStructure"] = parts["dataStructure"].Value;
+
+                var systemMessageParts = new[]
+                {
+                    (Key:"DataStructure", parts["table"].Value),
+                    (Key:"Property", parts["column"].Value)
+                };
+                interpretedException.SystemMessage = string.Join(",", systemMessageParts
+                    .Where(part => !string.IsNullOrEmpty(part.Value))
+                    .Select(part => $"{part.Key}:{part.Value}"));
 
                 return interpretedException;
             }

@@ -19,6 +19,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Reflection;
@@ -145,18 +146,22 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void InterpretMoneyConstraint()
         {
-            TestInterpretedException(new ListOfTuples<Exception, string>
+            TestInterpretedException(new List<(Exception, string, string)>
             {
-                {
+                (
                     NewSqlException(
                         "The INSERT statement conflicted with the CHECK constraint \"CK_Book_Price_money\". The conflict occurred in database \"rhetos_webapi\", table \"Bookstore.Book\", column 'Price'.",
                         547, 16, 0),
-                    "UserException: It is not allowed to enter a money value with more than 2 decimals., Column=Price, Constraint=Money, ConstraintName=CK_Book_Price_money, DataStructure=Bookstore.Book, Table=Book"
-                },
+                    "UserException: It is not allowed to enter a money value with more than 2 decimals., Column=Price, Constraint=Money, ConstraintName=CK_Book_Price_money, Table=Bookstore.Book",
+                    "DataStructure:Bookstore.Book,Property:Price"
+                ),
             });
         }
 
         private void TestInterpretedException(ListOfTuples<Exception, string> tests)
+            => TestInterpretedException(tests.Select(test => (test.Item1, test.Item2, "")).ToList());
+
+        private void TestInterpretedException(List<(Exception, string, string)> tests)
         {
             var msSqlUtility = new MsSqlUtility();
             foreach (var test in tests)
@@ -166,6 +171,8 @@ namespace Rhetos.Utilities.Test
                 var interpretedException = msSqlUtility.InterpretSqlException(test.Item1);
                 Console.WriteLine("Output: " + (interpretedException != null ? interpretedException.ToString() : "null"));
                 Assert.AreEqual(test.Item2, Report(interpretedException), reportInput);
+                if (!string.IsNullOrEmpty(test.Item3))
+                    Assert.AreEqual(test.Item3, ((UserException)interpretedException).SystemMessage);
             }
         }
 

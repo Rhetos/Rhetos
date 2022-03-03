@@ -31,9 +31,11 @@ namespace Rhetos
     {
         /// <summary>
         /// Additional error context. It will be sent to the client if the exception is UserException or ClientException.
+        /// </summary>
+        /// <remarks>
         /// The Info property is used instead of the existing "Data" dictionary to avoid security issue when sending data to the client,
         /// since other tools might use the Data for internal debugging data.
-        /// </summary>
+        /// </remarks>
         public IDictionary<string, object> Info { get; set; } = new Dictionary<string, object>();
 
         protected RhetosException() { }

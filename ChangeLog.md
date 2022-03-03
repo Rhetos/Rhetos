@@ -93,6 +93,9 @@ Changes in behavior:
 23. Concepts that generate Load, Query or Filter repository methods with parameters,
     should also create or inherit a corresponding DSL concept (LoadInfo, QueryInfo, FilterInfo or QueryFilterInfo)
     to register the parameter type for usage in web API or FilterCriteria.
+24. **Money** property rounding is disabled by default. The application will throw an exception if the value being written has more than 2 digits.
+    * For backward compatibility on existing applications, set configuration option `CommonConcepts:AutoRoundMoney` to true,
+      `CommonConcepts:MoneyPrecision` to 18 and `CommonConcepts:MoneyScale` to 2.
 
 Changes in Rhetos libraries API:
 
