@@ -28,29 +28,62 @@ namespace Rhetos.Logging
     public class NLogger : ILogger
     {
         private readonly Logger Logger;
+        private readonly bool _msBuildErrorFormat;
 
-        public NLogger(string eventName)
+        /// <summary>
+        /// This is a subjective estimate of a maximal comfortable-to-read message length in Visual Studio Error List window.
+        /// Longer messages will be trimmed, with the full message text displayed in Build Output.
+        /// </summary>
+        private static readonly int _msBuildMessageLimit = 500;
+
+        public NLogger(string eventName, bool msBuildErrorFormat)
         {
             Logger = LogManager.GetLogger(eventName);
+            _msBuildErrorFormat = msBuildErrorFormat;
         }
 
         public void Write(EventType eventType, Func<string> logMessage)
         {
+            LogLevel logLevel;
             switch (eventType)
             {
                 case EventType.Trace:
-                    Logger.Trace(() => logMessage());
+                    logLevel = LogLevel.Trace;
                     break;
                 case EventType.Info:
-                    Logger.Info(() => logMessage());
+                    logLevel = LogLevel.Info;
                     break;
                 case EventType.Warning:
-                    Logger.Warn(() => logMessage());
+                    logLevel = LogLevel.Warn;
                     break;
                 default:
-                    Logger.Error(() => logMessage());
+                    logLevel = LogLevel.Error;
                     break;
             }
+
+            if (!_msBuildErrorFormat)
+                Logger.Log(logLevel, () => logMessage());
+            else if (eventType >= EventType.Warning) // HACK: Specific logger implementation for Rhetos CLI when executed by MSBuild integration. It should be refactored to a separate ILogProvider implementation.
+            {
+                string msg = logMessage();
+                string singleLine = msg.Replace("\r\n", " ").Replace("\n", " ");
+                if (singleLine.Length <= _msBuildMessageLimit)
+                    Logger.Log(logLevel, singleLine);
+                else
+                {
+                    Logger.Log(logLevel, string.Concat(singleLine.AsSpan(0, _msBuildMessageLimit), " ... (see build output for more info)"));
+                    Logger.Info(RemoveAccidentalMsBuildErrorFormat(msg));
+                }
+            }
+            else
+                Logger.Log(logLevel, () => RemoveAccidentalMsBuildErrorFormat(logMessage()));
+                
+        }
+
+        private string RemoveAccidentalMsBuildErrorFormat(string msg)
+        {
+            // HACK: SqlException can contain a text pattern, which is misinterpreted by MSBuild as a canonical error format.
+            return msg.Replace("Error Number:", "ErrorNumber:", StringComparison.Ordinal);
         }
 
         public string Name => Logger.Name;

@@ -49,8 +49,9 @@ namespace Rhetos
         }
 
         private readonly ILogProvider _logProvider;
+        private readonly bool _msBuildErrorFormat;
 
-        private Program(VerbosityLevel verbosity, string[] traceLoggers)
+        private Program(VerbosityLevel verbosity, string[] traceLoggers, bool msBuildErrorFormat)
         {
             // NLog should automatically read the configuration from application-specific configuration file (e.g. 'rhetos.exe.nlog')
             // and if the file does not exist it should try to read it from nlog.config,
@@ -71,7 +72,8 @@ namespace Rhetos
                         NLog.LogManager.LogFactory.Configuration.AddRuleForOneLevel(NLog.LogLevel.Trace, "ConsoleLog", traceLogger);
             }
 
-            _logProvider = new NLogProvider();
+            _logProvider = new NLogProvider(msBuildErrorFormat);
+            _msBuildErrorFormat = msBuildErrorFormat;
         }
 
         private static string LoggingConfigurationPath => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "rhetos.exe.nlog");
@@ -93,15 +95,15 @@ namespace Rhetos
             var rootCommand = new RootCommand();
             rootCommand.Add(new Option<VerbosityLevel>("--verbosity", () => VerbosityLevel.Normal, "Output verbosity level. Allowed values are normal and diagnostic."));
             rootCommand.Add(new Option<string[]>("--trace", () => Array.Empty<string>(), "Output additional trace loggers specified by name."));
+            rootCommand.Add(new Option<bool>("--msbuild-format", () => false, "Adjust error output format for MSBuild integration."));
 
             var buildCommand = new Command("build", "Generates C# code, database model file and other project assets.");
             // CurrentDirectory by default, because rhetos.exe on *build* is expected to be located in NuGet package cache.
             buildCommand.Add(new Argument<DirectoryInfo>("project-root-folder", () => new DirectoryInfo(Environment.CurrentDirectory)) { Description = "Project folder where csproj file is located. If not specified, current working directory is used by default." });
-            buildCommand.Add(new Option<bool>("--msbuild-format", () => false, "Adjust error output format for MSBuild integration."));
             buildCommand.Handler = CommandHandler.Create((DirectoryInfo projectRootFolder, bool msbuildFormat, VerbosityLevel verbosity, string[] trace) =>
             {
-                var program = new Program(verbosity, trace);
-                program.SafeExecuteCommand(() => program.Build(projectRootFolder.FullName), "Build", msbuildFormat);
+                var program = new Program(verbosity, trace, msbuildFormat);
+                program.SafeExecuteCommand(() => program.Build(projectRootFolder.FullName), "Build");
             });
             rootCommand.AddCommand(buildCommand);
 
@@ -115,11 +117,11 @@ namespace Rhetos
             executeCommandInCurrentProcessOption.IsHidden = true;
             dbUpdateCommand.Add(executeCommandInCurrentProcessOption);
             dbUpdateCommand.Handler =
-                CommandHandler.Create((FileInfo startupAssembly, bool shortTransactions, bool skipRecompute, bool executeCommandInCurrentProcess, VerbosityLevel verbosity, string[] trace) =>
+                CommandHandler.Create((FileInfo startupAssembly, bool shortTransactions, bool skipRecompute, bool executeCommandInCurrentProcess, bool msbuildFormat, VerbosityLevel verbosity, string[] trace) =>
                 {
-                    var program = new Program(verbosity, trace);
+                    var program = new Program(verbosity, trace, msbuildFormat);
                     if (executeCommandInCurrentProcess)
-                        return program.SafeExecuteCommand(() => program.DbUpdate(startupAssembly.FullName, shortTransactions, skipRecompute), "DbUpdate", msBuildErrorFormat: false);
+                        return program.SafeExecuteCommand(() => program.DbUpdate(startupAssembly.FullName, shortTransactions, skipRecompute), "DbUpdate");
                     else
                         return program.InvokeDbUpdateAsExternalProcess(startupAssembly.FullName, args);
                 });
@@ -128,7 +130,7 @@ namespace Rhetos
             return rootCommand.Invoke(args);
         }
 
-        private int SafeExecuteCommand(Action action, string commandName, bool msBuildErrorFormat)
+        private int SafeExecuteCommand(Action action, string commandName)
         {
             var logger = _logProvider.GetLogger("Rhetos " + commandName);
             logger.Info(() => $"Started in {AppDomain.CurrentDomain.BaseDirectory}");
@@ -137,7 +139,7 @@ namespace Rhetos
                 action.Invoke();
                 logger.Info($"Done.");
             }
-            catch (DslSyntaxException dslException) when (msBuildErrorFormat)
+            catch (DslSyntaxException dslException) when (_msBuildErrorFormat)
             {
                 PrintCanonicalError(dslException);
 
@@ -176,6 +178,7 @@ namespace Rhetos
                 .AddOptions(rhetosProjectContent.RhetosBuildEnvironment)
                 .AddKeyValue(ConfigurationProvider.GetKey((ConfigurationProviderOptions o) => o.LegacyKeysWarning), true)
                 .AddKeyValue(ConfigurationProvider.GetKey((LoggingOptions o) => o.DelayedLogTimout), 60.0)
+                .AddKeyValue(ConfigurationProvider.GetKey((LoggingOptions o) => o.MsBuildErrorFormat), _msBuildErrorFormat)
                 .AddJsonFile(Path.Combine(projectRootPath, RhetosBuildEnvironment.ConfigurationFileName), optional: true)
                 .Build();
 
@@ -199,6 +202,7 @@ namespace Rhetos
                         configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((DatabaseOptions o) => o.SqlCommandTimeout), 0);
                         configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((ConfigurationProviderOptions o) => o.LegacyKeysWarning), true);
                         configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((LoggingOptions o) => o.DelayedLogTimout), 60.0);
+                        configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((LoggingOptions o) => o.MsBuildErrorFormat), _msBuildErrorFormat);
                         // Standard configuration files can override the default settings:
                         configurationBuilder.AddJsonFile(DbUpdateOptions.ConfigurationFileName, optional: true);
                         // CLI switches can override the settings from configuration files:
@@ -280,7 +284,7 @@ namespace Rhetos
             newArgs.Add(ExecuteCommandInCurrentProcessOptionName);
 
             logger.Trace(() => "dotnet args: " + string.Join(", ", newArgs.Select(arg => "\"" + (arg ?? "null") + "\"")));
-            return Exe.Run("dotnet", newArgs);
+            return Exe.Run("dotnet", newArgs, logger);
         }
     }
 }

@@ -18,6 +18,7 @@
 */
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos.Utilities;
 using System;
 using System.Threading.Tasks;
 
@@ -30,7 +31,7 @@ namespace Rhetos.Logging.Test
         [Timeout(1000)]
         public void GetLoggerTest_Performance()
         {
-            NLogProvider logProvider = new NLogProvider();
+            NLogProvider logProvider = new NLogProvider(new LoggingOptions());
             for (int i = 0; i < 100*1000; i++)
             {
                 var logger = logProvider.GetLogger("abc");
@@ -41,14 +42,14 @@ namespace Rhetos.Logging.Test
         [TestMethod]
         public void GetLoggerTest_ThreadSafe()
         {
-            NLogProvider logProvider = new NLogProvider();
+            NLogProvider logProvider = new NLogProvider(new LoggingOptions());
             Parallel.For(1, 20, x => Assert.IsNotNull(logProvider.GetLogger("abc")));
         }
 
         [TestMethod]
         public void LoggerName()
         {
-            NLogProvider logProvider = new NLogProvider();
+            NLogProvider logProvider = new NLogProvider(new LoggingOptions());
             string loggerName = $"Space Dot.{Guid.NewGuid().ToString()}";
             Console.WriteLine(loggerName);
             var logger = logProvider.GetLogger(loggerName);

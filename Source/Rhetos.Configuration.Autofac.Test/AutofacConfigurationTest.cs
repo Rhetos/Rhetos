@@ -58,7 +58,7 @@ namespace Rhetos.Configuration.Autofac.Test
         public void CorrectRegistrationsBuildTime()
         {
             var configuration = RhetosHostTestBuilder.GetBuildConfiguration();
-            var build = new ApplicationBuildAccessor(configuration, new NLogProvider(), PluginsFromThisAssembly(), new InstalledPackages());
+            var build = new ApplicationBuildAccessor(configuration, new NLogProvider(new LoggingOptions()), PluginsFromThisAssembly(), new InstalledPackages());
             var builder = build.CreateBuildComponentsContainer();
 
             using (var container = builder.Build())
@@ -79,7 +79,7 @@ namespace Rhetos.Configuration.Autofac.Test
             var rhetosHostBuilder = new RhetosHostTestBuilder()
                 .ConfigureConfiguration(RhetosHostTestBuilder.GetRuntimeConfiguration);
 
-            var deploymentSetup = new DatabaseUpdateAccessor(new NLogProvider());
+            var deploymentSetup = new DatabaseUpdateAccessor(new NLogProvider(new LoggingOptions()));
             deploymentSetup.ConfigureRhetosHost(rhetosHostBuilder);
 
             using (var rhetosHost = rhetosHostBuilder.Build())

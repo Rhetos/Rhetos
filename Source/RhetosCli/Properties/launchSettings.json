@@ -7,7 +7,7 @@
     "dbupdate CommonConcepts.TestApp": {
       "commandName": "Executable",
       "executablePath": "dotnet",
-      "commandLineArgs": "exec --runtimeconfig \"..\\..\\..\\..\\..\\CommonConcepts\\CommonConcepts.TestApp\\bin\\Debug\\net5.0\\CommonConcepts.TestApp.runtimeconfig.json\" --depsfile \"..\\..\\..\\..\\..\\CommonConcepts\\CommonConcepts.TestApp\\bin\\Debug\\net5.0\\CommonConcepts.TestApp.deps.json\" \"rhetos.dll\" dbupdate ..\\..\\..\\..\\..\\CommonConcepts\\CommonConcepts.TestApp\\bin\\Debug\\net5.0\\CommonConcepts.TestApp.dll --execute-command-in-current-process"
+      "commandLineArgs": "exec --runtimeconfig \"..\\..\\..\\..\\..\\CommonConcepts\\CommonConcepts.TestApp\\bin\\Debug\\net5.0\\CommonConcepts.TestApp.runtimeconfig.json\" --depsfile \"..\\..\\..\\..\\..\\CommonConcepts\\CommonConcepts.TestApp\\bin\\Debug\\net5.0\\CommonConcepts.TestApp.deps.json\" \"rhetos.dll\" --msbuild-format dbupdate ..\\..\\..\\..\\..\\CommonConcepts\\CommonConcepts.TestApp\\bin\\Debug\\net5.0\\CommonConcepts.TestApp.dll --execute-command-in-current-process"
     }
   }
 }

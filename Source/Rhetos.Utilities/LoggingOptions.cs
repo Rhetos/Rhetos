@@ -17,9 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-
 namespace Rhetos.Utilities
 {
     [Options("Rhetos:Logging")]
@@ -32,5 +29,10 @@ namespace Rhetos.Utilities
         /// For usage see <see cref="IDelayedLogger"/>.
         /// </summary>
         public double DelayedLogTimout { get; set; } = 0;
+
+        /// <summary>
+        /// Adjust error output format for Rhetos CLI MSBuild integration.
+        /// </summary>
+        public bool MsBuildErrorFormat { get; set; }
     }
 }

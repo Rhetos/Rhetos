@@ -212,7 +212,7 @@ namespace Rhetos.Utilities
             if (referencedAssembliesPaths != null)
                 report.AddRange(ReportAssemblyLoadErrors(referencedAssembliesPaths));
 
-            return string.Join("\r\n", report);
+            return string.Join(Environment.NewLine, report);
         }
 
         private static IEnumerable<string> ReportLoaderExceptions(List<Exception> distinctLoaderExceptions)

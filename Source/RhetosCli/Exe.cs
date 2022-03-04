@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -29,7 +30,8 @@ namespace Rhetos
     {
         public static int Run(
             string executable,
-            IReadOnlyList<string> args)
+            IReadOnlyList<string> args,
+            ILogger logger)
         {
             var arguments = ToArguments(args);
 
@@ -45,6 +47,8 @@ namespace Rhetos
             int processErrorCode;
             using (var process = Process.Start(start))
             {
+                logger.Info(() => $"Started '{Path.GetFileName(executable)}' process {process.Id}.");
+
                 var outputs = new[] { process.StandardOutput, process.StandardError };
                 System.Threading.Tasks.Parallel.ForEach(outputs, output =>
                 {

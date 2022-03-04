@@ -38,7 +38,7 @@
     <Target Name="BuildRhetosApp" DependsOnTargets="ResolveRhetosProjectAssets;ResolveBuildRhetosAppTargetInput" BeforeTargets="BeforeCompile" Condition="'$(RhetosBuild)'=='True' AND '$(DesignTimeBuild)'!='true' AND '$(BuildingProject)'=='true'" Inputs="@(RhetosInput);@(RhetosBuild);@(ReferencePath)" Outputs="@(RhetosOutput)">
         <Message Text="BuildRhetosApp" />
         <Delete Files="$(RhetosBuildCompleteFile)" />
-        <Exec Command="dotnet &quot;$(RhetosCliAssemblyPath)&quot; build &quot;$(ProjectDir).&quot; --msbuild-format" CustomErrorRegularExpression="\[Error\]" CustomWarningRegularExpression="\[(Warn|Warning)\]" />
+        <Exec Command="dotnet &quot;$(RhetosCliAssemblyPath)&quot; --msbuild-format build &quot;$(ProjectDir).&quot;" CustomErrorRegularExpression="\[Error\]" CustomWarningRegularExpression="\[(Warn|Warning)\]" />
         <WriteLinesToFile File="$(RhetosBuildCompleteFile)" Lines="" Overwrite="true" />
     </Target>
 

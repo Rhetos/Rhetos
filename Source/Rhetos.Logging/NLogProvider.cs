@@ -18,14 +18,27 @@
 */
 
 using NLog;
+using Rhetos.Utilities;
 
 namespace Rhetos.Logging
 {
     public class NLogProvider : ILogProvider
     {
+        private readonly bool _msBuildErrorFormat;
+
+        public NLogProvider(LoggingOptions options)
+        {
+            _msBuildErrorFormat = options.MsBuildErrorFormat;
+        }
+
+        public NLogProvider(bool msBuildErrorFormat)
+        {
+            _msBuildErrorFormat = msBuildErrorFormat;
+        }
+
         public ILogger GetLogger(string eventName)
         {
-            return new NLogger(eventName);
+            return new NLogger(eventName, _msBuildErrorFormat);
         }
 
         public static void FlushAndShutdown()
