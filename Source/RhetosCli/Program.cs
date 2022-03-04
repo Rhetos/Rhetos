@@ -18,6 +18,7 @@
 */
 
 using Autofac.Core;
+using Rhetos.Deployment;
 using Rhetos.Dsl;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
@@ -210,9 +211,11 @@ namespace Rhetos
                 });
             }
 
-            var deployment = new ApplicationDeployment(CreateRhetosHost, _logProvider);
-            deployment.UpdateDatabase();
-            deployment.InitializeGeneratedApplication();
+            var dbUpdate = new DatabaseUpdate(CreateRhetosHost, _logProvider);
+            dbUpdate.UpdateDatabase();
+
+            var appInit = new ApplicationInitialization(CreateRhetosHost, _logProvider);
+            appInit.InitializeGeneratedApplication();
         }
 
         public static void PrintErrorSummary(Exception ex)

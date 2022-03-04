@@ -76,12 +76,11 @@ namespace Rhetos.Configuration.Autofac.Test
         [TestMethod]
         public void CorrectRegistrationsDbUpdate()
         {
-            var deployment = new ApplicationDeploymentAccessor();
-
             var rhetosHostBuilder = new RhetosHostTestBuilder()
-                .ConfigureConfiguration(RhetosHostTestBuilder.GetRuntimeConfiguration)
-                .UseBuilderLogProvider(new NLogProvider())
-                .OverrideContainerConfiguration(deployment.SetDbUpdateComponents);
+                .ConfigureConfiguration(RhetosHostTestBuilder.GetRuntimeConfiguration);
+
+            var deploymentSetup = new DatabaseUpdateAccessor(new NLogProvider());
+            deploymentSetup.ConfigureRhetosHost(rhetosHostBuilder);
 
             using (var rhetosHost = rhetosHostBuilder.Build())
             {
@@ -97,11 +96,11 @@ namespace Rhetos.Configuration.Autofac.Test
         [TestMethod]
         public void CorrectRegistrationsRuntimeWithInitialization()
         {
-            // we construct the object, but need only its 'almost' static .AddAppInitilizationComponents
-            var deployment = new ApplicationDeploymentAccessor();
             var rhetosHostBuilder = new RhetosHostTestBuilder()
-                .ConfigureConfiguration(RhetosHostTestBuilder.GetRuntimeConfiguration)
-                .ConfigureContainer(deployment.AddAppInitializationComponents);
+                .ConfigureConfiguration(RhetosHostTestBuilder.GetRuntimeConfiguration);
+
+            var deploymentSetup = new ApplicationInitializationAccessor();
+            deploymentSetup.ConfigureRhetosHost(rhetosHostBuilder);
 
             using (var rhetosHost = rhetosHostBuilder.Build())
             {

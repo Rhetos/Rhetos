@@ -18,6 +18,7 @@
 */
 
 using Autofac;
+using Rhetos.Deployment;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
@@ -25,15 +26,13 @@ using System.Collections.Generic;
 
 namespace Rhetos.Configuration.Autofac.Test
 {
-    public class ApplicationDeploymentAccessor : ApplicationDeployment, ITestAccessor
+    public class ApplicationInitializationAccessor : ApplicationInitialization, ITestAccessor
     {
-        public ApplicationDeploymentAccessor() : base(null, new ConsoleLogProvider())
+        public ApplicationInitializationAccessor() : base(null, new ConsoleLogProvider())
         {
         }
 
-        public void SetDbUpdateComponents(IConfiguration configuration, ContainerBuilder builder, List<Action<ContainerBuilder>> configureActions) =>
-            this.Invoke(nameof(SetDbUpdateComponents), configuration, builder, configureActions);
-
-        public void AddAppInitializationComponents(ContainerBuilder builder) => this.Invoke(nameof(AddAppInitializationComponents), builder);
+        public void ConfigureRhetosHost(IRhetosHostBuilder hostBuilder)
+            => this.Invoke(nameof(ConfigureRhetosHost), hostBuilder);
     }
 }

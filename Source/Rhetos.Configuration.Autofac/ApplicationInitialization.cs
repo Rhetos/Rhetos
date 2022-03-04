@@ -17,21 +17,81 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Autofac;
+using Rhetos.Configuration.Autofac.Modules;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
+using Rhetos.Persistence;
+using Rhetos.Security;
 using Rhetos.Utilities;
 using System;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Rhetos.Deployment
 {
-    /// <summary>
-    /// NOTE:
-    /// This class does not conform to the standard IoC design pattern.
-    /// It uses IoC container directly because it needs to handle a special scope control (separate database connections) and error handling.
-    /// </summary>
-    public static class ApplicationInitialization
+    public class ApplicationInitialization
     {
+        private readonly Func<Action<IRhetosHostBuilder>, RhetosHost> _rhetosHostFactory;
+        private readonly ILogger _logger;
+        private readonly ILogProvider _logProvider;
+
+        public ApplicationInitialization(Func<Action<IRhetosHostBuilder>, RhetosHost> rhetosHostFactory, ILogProvider logProvider)
+        {
+            _rhetosHostFactory = rhetosHostFactory;
+            _logProvider = logProvider;
+            _logger = logProvider.GetLogger(GetType().Name);
+        }
+
+        public void InitializeGeneratedApplication()
+        {
+            // Creating a new container builder instead of using builder.Update(), because of severe performance issues with the Update method.
+
+            _logger.Info("Loading generated plugins.");
+            var stopwatch = Stopwatch.StartNew();
+
+            using (var rhetosHost = _rhetosHostFactory(ConfigureRhetosHost))
+            {
+                Type[] initializers;
+                using (var scope = rhetosHost.CreateScope())
+                {
+                    // EfMappingViewsInitializer is manually executed before other initializers because of performance issues.
+                    // It is needed for most of the initializer to run, but lazy initialization of EfMappingViews on first DbContext usage
+                    // is not a good option because of significant hash check duration (it would not be applicable in run-time).
+                    _logger.Info("Initializing EfMappingViews.");
+                    var efMappingViewsInitializer = scope.Resolve<EfMappingViewsInitializer>();
+                    efMappingViewsInitializer.Initialize();
+
+                    var performanceLogger = scope.Resolve<ILogProvider>().GetLogger("Performance." + GetType().Name);
+                    initializers = GetSortedInitializers(scope);
+
+                    performanceLogger.Write(stopwatch, "New modules and plugins registered.");
+                    ((UnitOfWorkScope)scope).LogRegistrationStatistics("InitializeApplication component registrations", _logProvider);
+                    scope.CommitAndClose();
+                }
+
+                if (!initializers.Any())
+                {
+                    _logger.Info("No server initialization plugins.");
+                }
+                else
+                {
+                    foreach (Type initializerType in initializers)
+                        ExecuteInitializer(rhetosHost, initializerType, _logProvider);
+                }
+            }
+        }
+
+        private void ConfigureRhetosHost(IRhetosHostBuilder hostBuilder)
+        {
+            hostBuilder.UseBuilderLogProvider(_logProvider);
+            hostBuilder.ConfigureContainer(containerBuilder =>
+            {
+                containerBuilder.RegisterModule(new AppInitializeModule());
+                containerBuilder.RegisterType<ProcessUserInfo>().As<IUserInfo>(); // Override runtime IUserInfo plugins. This container is intended to be used in a simple process.
+            });
+        }
+
         public static Type[] GetSortedInitializers(IUnitOfWorkScope scope)
         {
             // The plugins in the container are sorted by their dependencies defined in ExportMetadata attribute (static typed):
