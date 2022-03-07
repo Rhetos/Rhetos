@@ -28,20 +28,20 @@ namespace Rhetos
     public static class HostNetRhetosHostBuilderExtensions
     {
         /// <summary>
-        /// It configures the <see cref="IRhetosHostBuilder"/> to use the <see cref="ILoggerProvider"/> from host application
+        /// It configures the <see cref="IRhetosHostBuilder"/> to use the <see cref="ILoggerFactory"/> from host application
         /// (from <see cref="IServiceProvider"/>) during Rhetos host initialization.
         /// </summary>
         /// <remarks>
         /// This method configures logging only for Rhetos host initialization.
         /// To set the host application log provider for application run-time, use <see cref="HostNetRhetosServiceCollectionBuilderExtensions.AddHostLogging"/>
-        /// If no <see cref="ILoggerProvider"/> is registered in the host application, this method call will be ignored and
+        /// If no <see cref="ILoggerFactory"/> is registered in the host application, this method call will be ignored and
         /// <see cref="IRhetosHostBuilder"/> will use <see cref="LoggingDefaults.DefaultLogProvider"/> by default.
         /// </remarks>
         public static IRhetosHostBuilder UseBuilderLogProviderFromHost(this IRhetosHostBuilder rhetosHostBuilder, IServiceProvider serviceProvider)
         {
-            var loggerProvider = serviceProvider.GetService<ILoggerProvider>();
-            if(loggerProvider != null)
-                rhetosHostBuilder.UseBuilderLogProvider(new HostLogProvider(loggerProvider));
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+            if(loggerFactory != null)
+                rhetosHostBuilder.UseBuilderLogProvider(new HostLogProvider(loggerFactory));
             return rhetosHostBuilder;
         }
     }

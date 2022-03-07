@@ -25,16 +25,16 @@ namespace Rhetos.Host.Net
 {
     public class HostLogProvider : Rhetos.Logging.ILogProvider
     {
-        private readonly ILoggerProvider _loggerProvider;
+        private readonly ILoggerFactory _loggerFactory;
 
-        public HostLogProvider(ILoggerProvider loggerProvider)
+        public HostLogProvider(ILoggerFactory loggerFactory)
         {
-            _loggerProvider = loggerProvider;
+            _loggerFactory = loggerFactory;
         }
         
         public Rhetos.Logging.ILogger GetLogger(string eventName)
         {
-            return new HostLogger(eventName, _loggerProvider.CreateLogger(eventName));
+            return new HostLogger(eventName, _loggerFactory.CreateLogger(eventName));
         }
     }
 

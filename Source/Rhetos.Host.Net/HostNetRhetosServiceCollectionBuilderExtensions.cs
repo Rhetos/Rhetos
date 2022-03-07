@@ -59,7 +59,7 @@ namespace Rhetos
 
         private static void ConfigureLogProvider(IServiceProvider serviceProvider, IRhetosHostBuilder rhetosHostBuilder)
         {
-            rhetosHostBuilder.ConfigureContainer(builder => builder.RegisterInstance<ILogProvider>(new HostLogProvider(serviceProvider.GetRequiredService<ILoggerProvider>())));
+            rhetosHostBuilder.ConfigureContainer(builder => builder.RegisterInstance<ILogProvider>(new HostLogProvider(serviceProvider.GetRequiredService<ILoggerFactory>())));
         }
 
         private static void ConfigureLocalizer(IServiceProvider serviceProvider, IRhetosHostBuilder rhetosHostBuilder)
