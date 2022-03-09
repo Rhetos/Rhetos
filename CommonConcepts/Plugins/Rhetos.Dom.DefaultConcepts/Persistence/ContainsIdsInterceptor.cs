@@ -109,7 +109,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 }
 
                 foreach (var replacedVariableIndex in replacedVariablesIndices)
-                    cmd.Parameters[replacedVariableIndex].Value = "This parameter was replaced in SQL query with list of GUIDs (Rhetos EF optizmization)";
+                    cmd.Parameters[replacedVariableIndex].Value = "This parameter was replaced in SQL query with a list of GUIDs (Rhetos EF optimization).";
             }
 
             if (cmd.CommandText.Contains(EFExpression.ContainsIdsFunction))

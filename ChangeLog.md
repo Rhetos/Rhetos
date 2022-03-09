@@ -238,6 +238,7 @@ Changes in Rhetos libraries API:
   "Obsolete" warnings on old infrastructure (TransactionScopeContainer).
 * Simpler UserException constructor for localization (message, parameters).
 * Minor improvements in build performance and error handling.
+* This release also includes features from patch 3.2.1, that have been implemented after 4.2.0.
 
 ## 4.2.0 (2020-10-26)
 
@@ -271,6 +272,7 @@ Changes in Rhetos libraries API:
   Together they represent available filter parameters for reading data with generic filters (FilterCriteria),
   web API (ReadCommand), and GenericRepository.
 * Performance logger (NLog) configurable by class name.
+* This release also includes features from service pack 3.2.0, that have been implemented after 4.0.1.
 
 ## 4.0.1 (2020-06-19)
 
