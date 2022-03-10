@@ -98,13 +98,15 @@ Changes in behavior:
       In other cases, see [CreateResponseFromException](https://github.com/Rhetos/RestGenerator/blob/0603e6fdafa949072766319306d51692356a08f1/src/Rhetos.Host.AspNet.RestApi/Utilities/ErrorReporting.cs#L49)
       method for an example of IProcessingEngine exception handling by a REST API plugin.
 17. Simplified parameter type resolution. In FilterCriteria, filter names should constructed by Type.ToString(), instead of Type.FullName or Type.AssemblyQualifiedName.
-    * For backward compatibility on existing applications, set configuration option `CommonConcepts:DynamicTypeResolution` to true.
+    * For backward compatibility on existing applications, set configuration option `CommonConcepts:DynamicTypeResolution` to true,
+      in `appsettings.json` file.
 18. Concepts that generate Load, Query or Filter repository methods with parameters,
     should also create or inherit a corresponding DSL concept (LoadInfo, QueryInfo, FilterInfo or QueryFilterInfo)
     to register the parameter type for usage in web API or FilterCriteria.
 19. **Money** property rounding is disabled by default. The application will throw an exception if the value being written has more than 2 digits.
-    * For backward compatibility on existing applications, set configuration option `CommonConcepts:AutoRoundMoney` to true,
-      `CommonConcepts:MoneyPrecision` to 18 and `CommonConcepts:MoneyScale` to 2.
+    * For backward compatibility on existing applications, set the following configuration options:
+    * In `rhetos-build.settings.json` file, set `CommonConcepts:MoneyPrecision` to 18 and `CommonConcepts:MoneyScale` to 2.
+    * In `appsettings.json` file, set `CommonConcepts:AutoRoundMoney` to true.
 
 Changes in Rhetos libraries API:
 
