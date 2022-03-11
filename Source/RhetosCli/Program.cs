@@ -243,7 +243,7 @@ namespace Rhetos
         public static void PrintCanonicalError(DslSyntaxException dslException)
         {
             string origin = dslException.FilePosition?.CanonicalOrigin ?? "Rhetos DSL";
-            string canonicalError = $"{origin}: error {dslException.ErrorCode ?? "RH0000"}: {dslException.Message.Replace('\r', ' ').Replace('\n', ' ')}";
+            string canonicalError = $"{origin}: error {dslException.ErrorCode}: {dslException.Message.Replace('\r', ' ').Replace('\n', ' ')}";
 
             var oldColor = Console.ForegroundColor;
             Console.ForegroundColor = ConsoleColor.Red;
