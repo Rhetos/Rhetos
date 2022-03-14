@@ -119,7 +119,7 @@ namespace Rhetos.Dsl.Test
         {
             var simpleParser = new GenericParserHelper<SimpleConceptInfo>("module");
             TestUtility.ShouldFail(() => simpleParser.QuickParse("module"),
-                "Name", "SimpleConceptInfo", "past the end");
+                "Name", "SimpleConceptInfo", "Missing parameter at the end of the DSL script");
         }
 
         [TestMethod]

@@ -249,13 +249,13 @@ namespace Rhetos.Dsl.Test
             DslParserParse("simple a b;");
 
             TestUtility.ShouldFail(() => DslParserParse("simple a"), // missing second parameter
-                "simple", "end of the DSL script", MockDslScript.TestScriptName, "TestDslScript(1,1)", "Cannot read the value of Data");
+                "simple", "end of the DSL script", MockDslScript.TestScriptName, "TestDslScript(1,1,1,7)", "Cannot read the value of Data");
 
             TestUtility.ShouldFail(() => DslParserParse("simple a;"), // missing second parameter
-                "simple", "unexpected", "';'", MockDslScript.TestScriptName, "TestDslScript(1,1)", "Cannot read the value of Data");
+                "simple", "unexpected", "';'", MockDslScript.TestScriptName, "TestDslScript(1,1,1,7)", "Cannot read the value of Data");
 
             TestUtility.ShouldFail(() => DslParserParse("{"), // invalid syntax
-                MockDslScript.TestScriptName, "TestDslScript(1,1)");
+                MockDslScript.TestScriptName, "TestDslScript(1,1,1,2)");
 
             TestUtility.ShouldFail(() => DslParserParse("simple a b"), // missing semicolon
                 "simple", "Expected \";\" or \"{\"", MockDslScript.TestScriptName, "TestDslScript(1,11)");
@@ -289,7 +289,7 @@ namespace Rhetos.Dsl.Test
         public void DslParser_ConceptSplitOverFiles()
         {
             TestUtility.ShouldFail(() => DslParserParse("simple a", " b;"),
-                "past the end of the DSL script");
+                "Missing parameter at the end of the DSL script");
 
             TestUtility.ShouldFail(() => DslParserParse("simple a b", ";"),
                 "Expected \";\" or \"{\"");
