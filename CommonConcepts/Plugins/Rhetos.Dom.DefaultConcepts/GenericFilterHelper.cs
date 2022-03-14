@@ -381,7 +381,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 }
                 catch (SerializationException ex)
                 {
-                    throw new ClientException($"Invalid JSON format of {infoPropertyType.Name} property '{infoPropertyName}'. {ex.Message}", ex);
+                    throw new ClientException($"Invalid JSON format of {infoPropertyType.Name} property '{infoPropertyName}'. See server log for more information.", ex);
                 }
             }
         }
