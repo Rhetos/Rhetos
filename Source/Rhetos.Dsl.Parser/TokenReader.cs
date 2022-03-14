@@ -51,7 +51,7 @@ namespace Rhetos.Dsl
         public ValueOrError<string> ReadText()
         {
             if (PositionInTokenList >= _tokenList.Count || CurrentToken.Type == TokenType.EndOfFile)
-                return ValueOrError.CreateError("Tried to read a token past the end of the DSL script.");
+                return ValueOrError.CreateError("Missing parameter at the end of the DSL script.");
 
             if (CurrentToken.Type != TokenType.Text)
                 return ValueOrError.CreateError(string.Format(CultureInfo.InvariantCulture,
@@ -79,19 +79,22 @@ namespace Rhetos.Dsl
             return true;
         }
 
-        public (DslScript dslScript, int position) GetPositionInScript()
+        public (DslScript dslScript, int begin, int end) GetPositionInScript()
         {
             if (PositionInTokenList < _tokenList.Count)
-                return (CurrentToken.DslScript, CurrentToken.PositionInDslScript);
+                return (CurrentToken.DslScript, CurrentToken.PositionInDslScript, CurrentToken.PositionEndInDslScript);
             else if (_tokenList.Count > 0)
-                return (_tokenList[_tokenList.Count - 1].DslScript, _tokenList[_tokenList.Count - 1].DslScript.Script.Length);
+            {
+                Token lastToken = _tokenList[_tokenList.Count - 1];
+                return (lastToken.DslScript, lastToken.PositionEndInDslScript, lastToken.DslScript.Script.Length);
+            }
             else
-                return (new DslScript {Script = "", Name = "", Path = ""}, 0);
+                return (new DslScript { Script = "", Name = "", Path = "" }, 0, 0);
         }
 
         public string ReportPosition()
         {
-            var (dslScript, position) = GetPositionInScript();
+            var (dslScript, position, _) = GetPositionInScript();
 
             return ScriptPositionReporting.ReportPosition(dslScript.Script, position, dslScript.Path);
         }

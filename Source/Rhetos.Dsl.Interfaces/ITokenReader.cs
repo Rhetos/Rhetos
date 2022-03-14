@@ -38,6 +38,6 @@ namespace Rhetos.Dsl
         /// Returns the position of current token in its script
         /// </summary>
         /// <returns></returns>
-        (DslScript dslScript, int position) GetPositionInScript();
+        (DslScript dslScript, int begin, int end) GetPositionInScript();
     }
 }

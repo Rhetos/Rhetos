@@ -122,9 +122,9 @@ namespace Rhetos.Dsl
 
             if (context.Count > 0)
             {
-                var (dslScript, position) = tokenReader.GetPositionInScript();
+                var (dslScript, begin, end) = tokenReader.GetPositionInScript();
                 throw new DslSyntaxException($"Expected \"}}\" to close concept \"{context.Peek()}\".",
-                    "RH0002", dslScript, position, 0, ReportPreviousConcept(context.Peek()));
+                    "RH0002", dslScript, begin, end, ReportPreviousConcept(context.Peek()));
             }
 
             foreach (string warning in warnings)
@@ -181,7 +181,7 @@ namespace Rhetos.Dsl
 
             if (possibleInterpretations.Count == 0)
             {
-                var (dslScript, position) = tokenReader.GetPositionInScript();
+                var (dslScript, begin, end) = tokenReader.GetPositionInScript();
                 if (errorReports.Count > 0)
                 {
                     var errorReportValues = errorReports.Select(x => x.Invoke()).ToList();
@@ -189,18 +189,18 @@ namespace Rhetos.Dsl
                     var simpleErrorsReport = string.Join("\n", errorReportValues.Select(x => x.simpleError));
                     var simpleMessage = $"Invalid parameters after keyword '{keyword}'. Possible causes: {simpleErrorsReport}";
                     var possibleCauses = $"Possible causes:\r\n{errorsReport}";
-                    throw new DslSyntaxException(simpleMessage, "RH0003", dslScript, position, 0, possibleCauses);
+                    throw new DslSyntaxException(simpleMessage, "RH0003", dslScript, begin, end, possibleCauses);
                 }
                 else if (!string.IsNullOrEmpty(keyword))
                 {
                     var simpleMessage = $"Unrecognized concept keyword '{keyword}'.";
-                    throw new DslSyntaxException(simpleMessage, "RH0004", dslScript, position, 0, null);
+                    throw new DslSyntaxException(simpleMessage, "RH0004", dslScript, begin, end, null);
                 }
                 else
                 {
                     var simpleMessage = $"Invalid DSL script syntax.";
-                    throw new DslSyntaxException(simpleMessage, "RH0005", dslScript, position, 0, null);
-            }
+                    throw new DslSyntaxException(simpleMessage, "RH0005", dslScript, begin, end, null);
+                }
             }
 
             Disambiguate(possibleInterpretations);
@@ -211,9 +211,9 @@ namespace Rhetos.Dsl
                     interpretations.Add($"{i + 1}. {possibleInterpretations[i].Node.Concept.AssemblyQualifiedName}");
 
                 var simpleMessage = $"Ambiguous syntax. There are multiple possible interpretations of keyword '{keyword}': {string.Join(", ", interpretations)}.";
-                var (dslScript, position) = tokenReader.GetPositionInScript();
+                var (dslScript, begin, end) = tokenReader.GetPositionInScript();
 
-                throw new DslSyntaxException(simpleMessage, "RH0006", dslScript, position, 0, null);
+                throw new DslSyntaxException(simpleMessage, "RH0006", dslScript, begin, end, null);
             }
 
             var parsedStatement = possibleInterpretations.Single();
@@ -317,9 +317,9 @@ namespace Rhetos.Dsl
             }
             else if (!tokenReader.TryRead(";"))
             {
-                var (dslScript, position) = tokenReader.GetPositionInScript();
+                var (dslScript, begin, end) = tokenReader.GetPositionInScript();
                 throw new DslSyntaxException("Expected \";\" or \"{\".",
-                    "RH0001", dslScript, position, 0, ReportPreviousConcept(conceptInfo));
+                    "RH0001", dslScript, begin, end, ReportPreviousConcept(conceptInfo));
             }
 
             while (tokenReader.TryRead("}"))
@@ -327,8 +327,8 @@ namespace Rhetos.Dsl
                 if (context.Count == 0)
                 {
                     var simpleMessage = "Unexpected \"}\".";
-                    var (dslScript, position) = tokenReader.GetPositionInScript();
-                    throw new DslSyntaxException(simpleMessage, "RH0007", dslScript, position, 0, null);
+                    var (dslScript, begin, end) = tokenReader.GetPositionInScript();
+                    throw new DslSyntaxException(simpleMessage, "RH0007", dslScript, begin, end, null);
 
                 }
                 context.Pop();

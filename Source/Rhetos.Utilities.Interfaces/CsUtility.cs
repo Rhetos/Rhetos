@@ -113,11 +113,11 @@ namespace Rhetos.Utilities
                 return "Identifier name is empty.";
 
             if (IsNotLetterOrUnderscore(name[0]))
-                return $"Identifier name '{name}' is not valid. First character is not an English letter or underscore.";
+                return $"Identifier name '{CsUtility.Limit(name, 200, true)}' is not valid. First character is not an English letter or underscore.";
 
             foreach (char c in name)
                 if (IsNotLetterOrUnderscore(c) && (c < '0' || c > '9'))
-                    return $"Identifier name '{name}' is not valid. Character '{c}' is not an English letter or number or underscore.";
+                    return $"Identifier name '{CsUtility.Limit(name, 200, true)}' is not valid. Character '{c}' is not an English letter or number or underscore.";
 
             return null;
         }
