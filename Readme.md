@@ -43,7 +43,7 @@ may be asked to sign a Contributor Agreement.
 
 For more info see [How to Contribute](https://github.com/Rhetos/Rhetos/wiki/How-to-Contribute) on Rhetos wiki.
 
-## Building and testing the source code
+### Building and testing the source code
 
 *Rhetos.sln* contains the source for Rhetos framework and CommonConcepts plugins (a standard library).
 It also contains basic unit tests for the projects.
