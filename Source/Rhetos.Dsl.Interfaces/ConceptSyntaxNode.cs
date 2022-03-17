@@ -90,7 +90,7 @@ namespace Rhetos.Dsl
             else if (member.IsStringType)
                 ConceptMemberHelper.AppendWithQuotesIfNeeded(text, (string)memberValue);
             else
-                throw new FrameworkException(
+                throw new ArgumentException(
                     $"{nameof(ConceptSyntaxNode)} member {member.Name} of type {member.ConceptType?.TypeName} in {Concept.TypeName} is not supported.");
         }
     }
