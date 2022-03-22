@@ -6,10 +6,11 @@
 
 Technology and plugins:
 
-1. Migrated from .NET Framework to **.NET 5**. Rhetos framework no longer supports .NET Framework plugins.
+1. Migrated from .NET Framework to .NET 5. Rhetos framework no longer supports .NET Framework plugins.
    * When upgrading existing Rhetos applications to Rhetos 5.0, migrate the applications and plugin libraries to .NET 5.
-   * Hint: Review custom application code for [Behavior changes when comparing strings on .NET 5](https://docs.microsoft.com/en-us/dotnet/standard/base-types/string-comparison-net-5-plus),
-     for example, `text.IndexOf("\n")` or `items.OrderBy(item => item.Name)` may return different result on .NET 5
+   * If needed, create a new web application by following the instruction in [Rhetos.Samples.AspNet](https://github.com/Rhetos/Rhetos.Samples.AspNet/).
+   * Review the custom application code for [Behavior changes when comparing strings on .NET 5](https://docs.microsoft.com/en-us/dotnet/standard/base-types/string-comparison-net-5-plus).
+     For example, `text.IndexOf("\n")` or `items.OrderBy(item => item.Name)` may return different result on .NET 5
      (this does not affect Entity Framework queries because they are executed in SQL).
 2. Removed obsolete CLI utilities:
    * DeployPackages.exe: New version uses rhetos.exe instead of DeployPackages.exe.
@@ -19,8 +20,8 @@ Technology and plugins:
    * CleanupOldData.exe
    * CreateIISSite.exe
 3. SOAP API implementation has been removed from Rhetos framework. Removed IServerApplication interface.
-4. Removed support for WCF, new Rhetos applications should use APS.NET Core instead, although Rhetos 5 can be used in any type of .NET application.
-   * When migrating existing Rhetos application to APS.NET Core, the configuration in web.config should also be migrated,
+4. Removed dependency on WCF. New Rhetos applications can use ASP.NET Core instead. Rhetos 5 can be used in any type of .NET 5 application.
+   * When migrating existing Rhetos application to ASP.NET Core, the configuration in web.config should also be migrated,
      see [Migrating from WCF to ASP.NET Core](https://github.com/Rhetos/Rhetos/wiki/Migrating-from-WCF-to-ASP-NET-Core).
 5. User authentication is no longer implemented by Rhetos plugins.
    Rhetos apps should use standard [ASP.NET Core authentication](https://docs.microsoft.com/en-us/aspnet/core/security/authentication/?view=aspnetcore-5.0).
@@ -35,20 +36,22 @@ Changes in behavior:
 
 1. Removed IService interface from the Rhetos framework.
    * Instead of using IService, register and initialize custom services explicitly in Startup.cs (ASP.NET Core convention).
-2. Removed IHomePageSnippet interface from the Rhetos framework. The default homepage is no longer available.
+2. IHomePageSnippet interface is replaced with IDashboardSnippet. Instead of default homepage, the dashboard is available at `/rhetos` URL by default.
+   * See [Adding Rhetos dashboard](https://github.com/Rhetos/Rhetos.Samples.AspNet/blob/master/README.md#adding-rhetos-dashboard)
 3. Configuration files "rhetos-app.settings.json" and "rhetos-app.local.settings.json" are no longer automatically loaded.
    Removed RhetosAppEnvironment class and AddRhetosAppEnvironment method.
    * If you want to use the same configuration files from Rhetos v4, load them in your application in Startup.ConfigureRhetosHostBuilder method:
      `rhetosHostBuilder.ConfigureConfiguration(builder => builder.AddJsonFile("rhetos-app.settings.json").AddJsonFile("rhetos-app.local.settings.json"))`
-4.  Run-time configuration no longer depends on "rhetos-app.settings.json" file (from Rhetos v4).
-    * Rhetos:App:AssetsFolder and Rhetos:App:RhetosRuntimePath settings may be removed from this file.
-    * The file may be deleted if empty.
-5.  Database configuration option is renamed from ServerConnectionString to RhetosConnectionString, and formatting changed to a single string.
+4. Run-time configuration no longer depends on "rhetos-app.settings.json" file (from Rhetos v4).
+    * Rhetos:App:AssetsFolder and Rhetos:App:RhetosRuntimePath settings may be removed from this file, they are no longer used.
+    * Migrate the remaining settings to standard appsettings.json file, and delete the old file.
+5. Database configuration option is renamed from ServerConnectionString to RhetosConnectionString, and formatting changed to a single string.
     * Modify existing configuration in .json file
       from `{ "ConnectionStrings": { "ServerConnectionString": { "ConnectionString": "database connection string" } } }`
       to `{ "ConnectionStrings": { "RhetosConnectionString": "database connection string" } }`.
-6.  Removed NuGet package management from Rhetos framework. Removed classes PackageDownloader and PackageDownloaderOptions.
-7.  To migrate the Entity Framework configuration, first you will need to add the App.config file to the project. Add the App.config file as a plain text file in the project root. Using the App.config is required because Entity Framework 6 still uses the `ConfigurationManager` class to load its configuration. To configure Entity Framework configuration you will need to use the entityFramework section as before. An example of the config file will look like this
+6. Removed NuGet package management from Rhetos framework. Removed classes PackageDownloader and PackageDownloaderOptions.
+7. Entity Framework configuration is loaded from App.config instead of Web.config. Using the config file is required because Entity Framework 6 still uses the `ConfigurationManager` class to load its configuration.
+   * To migrate the Entity Framework configuration, add the App.config file as a plain text file in the project root and copy the `entityFramework` section from Web.config. For example, the App.config file may look like this:
     ```xml
             <?xml version="1.0" encoding="utf-8"?>
             <configuration>
@@ -60,13 +63,13 @@ Changes in behavior:
                 </entityFramework>
             </configuration>
     ```
-8.  IDomainObjectModel.GetType no longer returns types for "Common.RowPermissionsReadItems" and "Common.RowPermissionsWriteItems". For example `GetType(RowPermissionsReadInfo.FilterName)` and `GetType(RowPermissionsWriteInfo.FilterName)` will return null.
+8. IDomainObjectModel.GetType no longer returns types for "Common.RowPermissionsReadItems" and "Common.RowPermissionsWriteItems". For example `GetType(RowPermissionsReadInfo.FilterName)` and `GetType(RowPermissionsWriteInfo.FilterName)` will return null.
     * Use `typeof(Common.RowPermissionsReadItems)` and `typeof(Common.RowPermissionsWriteItems)` instead.
-9.  Upgraded Autofac from version 4.9.4 to 6.2.0
+9. Updated dependencies to a newer version: Autofac v6.3.0, Newtonsoft.Json v13.0.1, NLog v4.7.11.
 10. **DateTime** property concept now generates *datetime2* database column type by default
     instead of obsolete *datetime* column type (issue #101).
     * Legacy *datetime* type can be enabled by setting `CommonConcepts:UseLegacyMsSqlDateTime` option to `true` in `rhetos-build.settings.json` file.
-      See [Migrating an existing application from datetime to datetime2](https://github.com/Rhetos/Rhetos/wiki/Migrating-from-DateTime-to-DateTime2).
+    * To use the new *datetime2* type, see [Migrating an existing application from datetime to datetime2](https://github.com/Rhetos/Rhetos/wiki/Migrating-from-DateTime-to-DateTime2).
 11. Removed BuiltinAdminOverride configuration option, that allowed testing without configured authentication in development environment.
     Use [AllClaimsForUsers](https://github.com/Rhetos/Rhetos/wiki/Basic-permissions#suppressing-permissions-in-a-development-environment) or AllClaimsForAnonymous instead.
 12. NLog is no longer enabled by default in application runtime.
@@ -84,26 +87,25 @@ Changes in behavior:
       see [Understanding the generated object model](https://github.com/Rhetos/Rhetos/wiki/Using-the-Domain-Object-Model#understanding-the-generated-object-model).
       For example, before modifying the data, read the records with Load() instead of Query(),
       or call ToSimple() on a query before ToList().
-14. Updated dependencies to a newer version: Autofac v6.3.0, Newtonsoft.Json v13.0.1, NLog v4.7.11.
-15. ISqlExecuter.ExecuteSql method no longer has bool parameter useTransaction.
+14. ISqlExecuter.ExecuteSql method no longer has bool parameter useTransaction.
     * Where ExecuteSql was called as runtime with useTransaction set to *true*, simply remove the parameter.
     * If useTransaction needs to be *false* (executing SQL command out of transaction),
       manually create a new SqlConnection and SqlCommand from Rhetos.Utilities.ConnectionString (from DI).
       Alternatively, create a new [unit-of-work scope](https://github.com/Rhetos/Rhetos/wiki/Unit-of-work#manual-control-over-unit-of-work)
       with PersistenceTransactionOptions.UseDatabaseTransaction disabled and IUserInfo added, and resolve ISqlExecuter from that scope.
-16. Simplified result for IProcessingEngine.Execute and ICommandImplementation interface. In case of an error, the method will throw an exception, instead of setting Success=false in the result object.
+15. Simplified result for IProcessingEngine.Execute and ICommandImplementation interface. In case of an error, the method will throw an exception, instead of setting Success=false in the result object.
     * If an existing application code verifies the result `Success` property in order to throw UserException, ClientException or FrameworkException,
       in most cases this code can simply be removed, since the Execute method already throws these exceptions.
-      To match the web response format with RestGenerator, use its ApiExceptionFilter on the controller.
+      To match the web response format with RestGenerator, use its [ApiExceptionFilter](https://github.com/Rhetos/RestGenerator/tree/0603e6fdafa949072766319306d51692356a08f1/src/Rhetos.Host.AspNet.RestApi/Filters) on the controller.
       In other cases, see [CreateResponseFromException](https://github.com/Rhetos/RestGenerator/blob/0603e6fdafa949072766319306d51692356a08f1/src/Rhetos.Host.AspNet.RestApi/Utilities/ErrorReporting.cs#L49)
       method for an example of IProcessingEngine exception handling by a REST API plugin.
-17. Simplified parameter type resolution. In FilterCriteria, filter names should constructed by Type.ToString(), instead of Type.FullName or Type.AssemblyQualifiedName.
+16. Simplified parameter type resolution. In FilterCriteria, filter names should constructed by Type.ToString(), instead of Type.FullName or Type.AssemblyQualifiedName.
     * For backward compatibility on existing applications, set configuration option `CommonConcepts:DynamicTypeResolution` to true,
       in `appsettings.json` file.
-18. Concepts that generate Load, Query or Filter repository methods with parameters,
+17. Concepts that generate Load, Query or Filter repository methods with parameters,
     should also create or inherit a corresponding DSL concept (LoadInfo, QueryInfo, FilterInfo or QueryFilterInfo)
     to register the parameter type for usage in web API or FilterCriteria.
-19. **Money** property rounding is disabled by default. The application will throw an exception if the value being written has more than 2 digits.
+18. **Money** property DSL concept: Rounding on save is disabled by default. The application will throw an exception if the value being written has more than 2 digits.
     * For backward compatibility on existing applications, set the following configuration options:
     * In `rhetos-build.settings.json` file, set `CommonConcepts:MoneyPrecision` to 18 and `CommonConcepts:MoneyScale` to 2.
     * In `appsettings.json` file, set `CommonConcepts:AutoRoundMoney` to true.
@@ -131,7 +133,7 @@ Changes in Rhetos libraries API:
    * Custom code that uses Paths.RhetosServerRootPath may use RhetosAppOptions.CacheFolder or RhetosAppOptions.RhetosHostFolder instead.
 8. The property DatabaseLanguage is moved from classes BuildOptions and RhetosAppOptions to class DatabaseSettings.
 9. Removed support for ContainerBuilderPluginRegistration.CheckOverride method. This was usually used to check if the expected implementation of IUserInfo interface was used because of different load orders of Autofac modules.
-   In the new design it is up to the developer how it will setup the IServiceCollection IoC container from which the IUserInfo will be resolved.
+   In the new design it is up to the plugin developer how it will setup the IServiceCollection IoC container from which the IUserInfo will be resolved.
 10. The interface IMacroConcept now requires the implementation of the method CreateNewConcepts without any parameters.
     If an implementation of IMacroConcept requires access to the IDslModel, use the IConceptMacro\<T\> interface instead.
 11. Removed support for QueryDataSourceCommand. Use the ReadCommand instead.
@@ -142,7 +144,7 @@ Changes in Rhetos libraries API:
     * Instead of static `ProcessContainer.CreateTransactionScopeContainer`, use `LinqPadRhetosHost.CreateScope(rhetosAppAssemblyPath)`.
     * Instead of `ProcessContainer.Configuration`, use `IConfiguration` from dependency injection.
 14. Removed support for the following obsolete methods or classes:
-    * IDatabaseColumnType.GetColumnType : This method will not support concepts with configurable types. Use GetColumnType with PropertyInfo argument instead.
+    * IDatabaseColumnType.GetColumnType : Use GetColumnType with PropertyInfo argument instead.
     * PropertyHelper.GenerateCodeForType: Use the GenerateCodeForType function without the 'serializable' argument. All regular properties are serializable.
     * DatabaseExtensionFunctions.SqlLike: Use the Like() method instead.
     * ComposableFilterUseExecutionContextInfo: Use repository member \_executionContext in generated code instead.
@@ -172,12 +174,10 @@ Changes in Rhetos libraries API:
     * UseExecutionContext: Use repository member \_executionContext instead.
     * DenySave: Use InvalidData instead.
     * Snowflake: Use Browse concept instead.
-    * ExternalReference: Add a NuGet dependency or a project reference to specify Rhetos application dependency to external library.
+    * ExternalReference: Add a NuGet dependency or a project reference to specify Rhetos application's dependency to the external library, if not added already.
 16. Removed the support for SamePropertyValue concept which required two arguments. Instead use the simpler SamePropertyValue concept which requires only the path to the base property.
-    Instead of
-    `SamePropertyValue 'Base' Module.ReferencedDataStructure.PropertyNameOnReferencedDataStructure;`
-    you should write
-    `SamePropertyValue 'Base.PropertyNameOnReferencedDataStructure';`
+    * Instead of `SamePropertyValue 'Base' Module.ReferencedDataStructure.PropertyNameOnReferencedDataStructure;`
+    you should write `SamePropertyValue 'Base.PropertyNameOnReferencedDataStructure';`
 17. Removed `IUserInfoAdmin` interface. It was used together with the `Rhetos:AppSecurity:BuiltinAdminOverride` option to give the administrator rights as it had all claims.
 18. GetInternalServerErrorMessage method moved from FrameworkException class to Rhetos.Utilities.ErrorMessages.
 19. Removed IPersistenceCache interface and ToNavigation() methods. They where Rhetos-specific helpers for saving entities with Entity Framework.
@@ -193,6 +193,10 @@ Changes in Rhetos libraries API:
     In case of compiler error on `context.SqlExecuter` or similar code, add `using Rhetos.Utilities;`.
 27. Default constructor for ExecutionContext is now protected.
     Create a derived class from ExecutionContext to use the default constructor in unit tests.
+
+Changes in official Rhetos plugins:
+
+1. [RestGenerator](https://github.com/Rhetos/RestGenerator/blob/master/ChangeLog.md)
 
 ### Internal improvements
 
@@ -1448,7 +1452,7 @@ The changes from this release are not included in versions 4.0.0 - 4.0.1. They a
 
 ### New features
 
-* Rhetos is an open source software under AGPL licence!
+* Rhetos is an open source software under AGPL license!
 * New concept: **SimpleReferencePropertyInfo** simplifies writing a DSL script when a reference property name is the same as the referenced entity.
 * Improved DSL parser: IAlternativeInitializationConcept allows a DSL concept to simplify its syntax or its internal design when depending on other automatically created concepts.
 
