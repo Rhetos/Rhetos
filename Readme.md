@@ -41,10 +41,19 @@ Please see [License.txt](License.txt) for details.
 Contributions are very welcome. The easiest way is to fork this repo, and then
 make a pull request from your fork. The first time you make a pull request, you
 may be asked to sign a Contributor Agreement.
-
 For more info see [How to Contribute](https://github.com/Rhetos/Rhetos/wiki/How-to-Contribute) on Rhetos wiki.
 
 ### Building and testing the source code
+
+* Note: Rhetos NuGet packages are already available at the [NuGet.org](https://www.nuget.org/) online gallery.
+  You don't need to build it from source in order to use it in your application.
+* To build the source, run `Clean.bat`, `Build.bat` and `Test.bat`.
+* For the test script to work, you need to create an empty database and
+  a settings file `CommonConcepts\CommonConcepts.TestApp\rhetos-app.local.settings.json`
+  with the database connection string (configuration key "ConnectionStrings:RhetosConnectionString").
+* The build output are NuGet packages in the "Install" subfolder.
+
+### Visual Studio Solutions
 
 *Rhetos.sln* contains the source for Rhetos framework and CommonConcepts plugins (a standard library).
 It also contains basic unit tests for the projects.
