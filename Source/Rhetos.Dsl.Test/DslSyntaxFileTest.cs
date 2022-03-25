@@ -17,15 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.Data;
-using System.Data.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos.Logging;
+using Rhetos.TestCommon;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using Rhetos.Utilities;
-using Rhetos.DatabaseGenerator;
-using Rhetos.TestCommon;
-using Rhetos.Logging;
 using System.IO;
 
 namespace Rhetos.Dsl.Test
@@ -70,7 +67,7 @@ namespace Rhetos.Dsl.Test
             Assert.IsTrue(dslSyntax.Version > DslSyntax.CurrentVersion);
 
             TestUtility.AssertContains(string.Join(Environment.NewLine, log),
-                new[] { "newer version", "v11.2", $"v{DslSyntax.CurrentVersion}" });
+                new[] { "newer version", "version 11.2", $"version {DslSyntax.CurrentVersion}" });
         }
 
         [TestMethod]

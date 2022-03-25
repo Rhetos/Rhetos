@@ -74,8 +74,8 @@ namespace Rhetos.Dsl
                     _logger.Warning(() => $"Cannot detect the application's DSL syntax version (Rhetos {dslSyntax.RhetosVersion})." +
                     $" This utility ({Assembly.GetEntryAssembly()?.GetName()?.Name}) supports DSL version {DslSyntax.CurrentVersion}.");
                 if (dslSyntax.Version > DslSyntax.CurrentVersion)
-                    _logger.Warning(() => $"The application uses a newer version of the DSL syntax (DSL {dslSyntax.Version}, Rhetos {dslSyntax.RhetosVersion})," +
-                    $" than supported by this utility '{Assembly.GetEntryAssembly()?.GetName()?.Name}' (DSL {DslSyntax.CurrentVersion}).");
+                    _logger.Warning(() => $"The project uses a newer version of the DSL syntax: DSL version {dslSyntax.Version}, Rhetos {dslSyntax.RhetosVersion}." +
+                    $" This utility ({Assembly.GetEntryAssembly()?.GetName()?.Name}) supports DSL version {DslSyntax.CurrentVersion} or lower.");
                 return dslSyntax;
             }
         }
