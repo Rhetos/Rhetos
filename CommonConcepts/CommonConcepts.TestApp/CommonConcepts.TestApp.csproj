@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -9,11 +9,11 @@
   </PropertyGroup>
 	
   <ItemGroup>
-    <PackageReference Include="Rhetos.Host" Version="5.0.0-dev*" />
-    <PackageReference Include="Rhetos.Host.Net" Version="5.0.0-dev*" />
-    <PackageReference Include="Rhetos.MSBuild" Version="5.0.0-dev*" />
-    <PackageReference Include="Rhetos" Version="5.0.0-dev*" />
-    <PackageReference Include="Rhetos.CommonConcepts" Version="5.0.0-dev*" />
+    <PackageReference Include="Rhetos.Host" Version="5.1.0-dev*" />
+    <PackageReference Include="Rhetos.Host.Net" Version="5.1.0-dev*" />
+    <PackageReference Include="Rhetos.MSBuild" Version="5.1.0-dev*" />
+    <PackageReference Include="Rhetos" Version="5.1.0-dev*" />
+    <PackageReference Include="Rhetos.CommonConcepts" Version="5.1.0-dev*" />
   </ItemGroup>
 
   <ItemGroup>
