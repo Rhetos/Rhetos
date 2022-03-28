@@ -15,13 +15,14 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="RhetosCli\bin\Debug\net5.0\*.dll" target="tools" />
-    <file src="RhetosCli\bin\Debug\net5.0\*.pdb" target="tools" />
-    <file src="RhetosCli\bin\Debug\net5.0\rhetos.exe" target="tools" />
-    <file src="RhetosCli\bin\Debug\net5.0\rhetos.exe.nlog" target="tools" />
-    <file src="RhetosCli\bin\Debug\net5.0\rhetos.deps.json" target="tools" />
-    <file src="RhetosCli\bin\Debug\net5.0\rhetos.runtimeconfig.json" target="tools" />
-    <file src="RhetosCli\bin\Debug\net5.0\runtimes\**\*" target="tools/runtimes" />
+    <!-- Rhetos 'build' needs to be on net6, so that is can load plugins from net5 and net6 libraries. -->
+    <file src="RhetosCli\bin\Debug\net6.0\*.dll" target="tools" />
+    <file src="RhetosCli\bin\Debug\net6.0\*.pdb" target="tools" />
+    <file src="RhetosCli\bin\Debug\net6.0\rhetos.exe" target="tools" />
+    <file src="RhetosCli\bin\Debug\net6.0\rhetos.exe.nlog" target="tools" />
+    <file src="RhetosCli\bin\Debug\net6.0\rhetos.deps.json" target="tools" />
+    <file src="RhetosCli\bin\Debug\net6.0\rhetos.runtimeconfig.json" target="tools" />
+    <file src="RhetosCli\bin\Debug\net6.0\runtimes\**\*" target="tools/runtimes" />
 
     <file src="MsBuildIntegration\Rhetos.MSBuild.targets" target="build" />
     <file src="MsBuildIntegration\Rhetos.MSBuild.props" target="build" />

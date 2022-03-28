@@ -25,7 +25,8 @@
   <files>
     <file src="MsBuildIntegration\Rhetos.Host.targets" target="build" />
     <file src="MsBuildIntegration\Rhetos.Host.props" target="build" />
-    
+
+    <!-- Rhetos 'dbupdate' needs to be on net5, so that it can run in the context of net5 and net6 host applications. -->
     <file src="RhetosCli\bin\Debug\net5.0\rhetos.exe" target="contentFiles/any/any" />
     <file src="RhetosCli\bin\Debug\net5.0\rhetos.dll" target="contentFiles/any/any" />
     <file src="RhetosCli\bin\Debug\net5.0\rhetos.pdb" target="contentFiles/any/any" />
