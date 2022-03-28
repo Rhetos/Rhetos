@@ -20,7 +20,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Reflection;
 
@@ -63,10 +62,7 @@ namespace Rhetos.Dsl
                 .ToArray();
 
             if (conceptInfoType.GetFields(BindingFlags.Instance | BindingFlags.Public).Length > 0)
-                throw new FrameworkException(
-                    string.Format(CultureInfo.InvariantCulture,
-                        "IConceptInfo does not support public fields. Use public properties instead. Class: \"{0}\".",
-                            conceptInfoType.Name));
+                throw new FrameworkException($"IConceptInfo does not support public fields. Use public properties instead. Class: \"{conceptInfoType.Name}\".");
 
             Array.Sort(conceptMembers, (a, b) =>
                 {
@@ -79,28 +75,28 @@ namespace Rhetos.Dsl
             for (int i = 0; i < conceptMembers.Length; i++)
                 conceptMembers[i].Index = i;
 
+            if (!conceptMembers.Any())
+                throw new FrameworkException(
+                    $"Concept class must have at lease one public non-static property. Class: \"{conceptInfoType.Name}\".");
+
             if (!conceptMembers.Any(m => m.IsKey))
                 throw new FrameworkException(
-                    string.Format(CultureInfo.InvariantCulture,
-                        "One or more members of concept-info class must have ConceptKey attribute. Class: \"{0}\".",
-                            conceptInfoType.Name));
+                    $"One or more members of concept-info class must have ConceptKey attribute. Class: \"{conceptInfoType.Name}\".");
 
             if (typeof(IConceptInfo).IsAssignableFrom(conceptInfoType.BaseType) && conceptInfoType.BaseType.IsClass)
             {
                 string derivedKeyMember = conceptMembers.Where(m => m.IsKey && !m.IsDerived).Select(m => m.Name).FirstOrDefault();
                 if (derivedKeyMember != null)
-                    throw new FrameworkException(string.Format(
-                        "Derived concept must not contain members with ConceptKey attribute. Class: {0}, member: {1}.",
-                        conceptInfoType.Name, derivedKeyMember));
+                    throw new FrameworkException($"Derived concept must not contain members with ConceptKey attribute." +
+                        $" Class: {conceptInfoType.Name}, member: {derivedKeyMember}.");
             }
 
             if (nonParsableMembers != null)
             {
                 string nonexistentMember = nonParsableMembers.Except(conceptMembers.Select(m => m.Name)).FirstOrDefault();
                 if (nonexistentMember != null)
-                    throw new FrameworkException(string.Format(
-                        "Invalid implementation of the concept info function {0}.DeclareNonparsableProperties: it returned a property name '{1}' that does not exist.",
-                        conceptInfoType.Name, nonexistentMember));
+                    throw new FrameworkException($"Invalid implementation of the concept info function {conceptInfoType.Name}.DeclareNonparsableProperties:" +
+                        $" it returned a property name '{nonexistentMember}' that does not exist.");
             }
 
             return conceptMembers;
