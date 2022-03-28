@@ -17,11 +17,11 @@ function RegexReplace ($fileSearch, $replacePattern, $replaceWith)
     Get-ChildItem -File -Path $folders -Filter $fileSearch `
         | Select-Object -ExpandProperty FullName `
         | ForEach-Object {
-            $text = [IO.File]::ReadAllText($_, [System.Text.Encoding]::UTF8)
+            $text = [IO.File]::ReadAllText($_)
             $replaced = $text -Replace $replacePattern, $replaceWith
             if ($replaced -ne $text) {
                 Write-Output $_
-                [IO.File]::WriteAllText($_, $replaced, [System.Text.Encoding]::UTF8)
+                [IO.File]::WriteAllText($_, $replaced)
             }
         }
 }
