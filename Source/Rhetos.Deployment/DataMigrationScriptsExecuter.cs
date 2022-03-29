@@ -1,5 +1,4 @@
-﻿using System.IO;
-/*
+﻿/*
     Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
@@ -18,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System.IO;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
