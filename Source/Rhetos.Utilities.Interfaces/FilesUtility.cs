@@ -245,6 +245,7 @@ namespace Rhetos.Utilities
             var file = new FileInfo(path);
             if (file.Exists)
             {
+                // Since .NET 6, File.SetLastWriteTime sets the time, even of the file is read-only. Keeping the old code to support .NET 5. See https://docs.microsoft.com/en-us/dotnet/core/compatibility/core-libraries/6.0/set-timestamp-readonly-file
                 var isReadOnly = file.IsReadOnly;
                 file.IsReadOnly = false;
                 file.LastWriteTime = DateTime.Now;
