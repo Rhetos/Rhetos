@@ -59,6 +59,8 @@ namespace Rhetos
         /// </summary>
         public static RhetosServiceCollectionBuilder AddDashboard(this RhetosServiceCollectionBuilder rhetosBuilder)
         {
+            rhetosBuilder.Services.AddHttpContextAccessor();
+
             rhetosBuilder.Services
                 .AddControllersWithViews()
                 .AddApplicationPart(typeof(RhetosDashboardController).Assembly);
