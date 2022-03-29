@@ -427,20 +427,22 @@ namespace Rhetos.Dom.DefaultConcepts
 
             Type itemType = query.GetType().GetInterface("IQueryable`1").GetGenericArguments().Single();
 
-            if (commandInfo.Skip > 0)
+            if (commandInfo.Skip > 0 || commandInfo.Top > 0)
             {
-                // "query.Skip(commandInfo.Skip)" would convert the result IQueryable<T> and not use the actual queryable generic type.
-                var skipMethod = typeof(Queryable).GetMethod("Skip").MakeGenericMethod(itemType);
-                query = (IQueryable<T>)skipMethod.InvokeEx(null, query, commandInfo.Skip);
+                // Using MakeGenericMethod with 'itemType' instead of calling with 'T' directly, because Skip<T> or Take<T>
+                // would convert the result IQueryable<T> and not use the actual queryable generic type 'itemType'.
+                var skipAndTakeMethod = typeof(GenericFilterHelper).GetMethod("SkipAndTake").MakeGenericMethod(itemType);
+                query = (IQueryable<T>)skipAndTakeMethod.InvokeEx(null, query, commandInfo.Skip, commandInfo.Top);
             }
+            return query;
+        }
 
-            if (commandInfo.Top > 0)
-            {
-                // "query.Take(commandInfo.Top)" would convert the result IQueryable<T> and not use the actual queryable generic type.
-                var takeMethod = typeof(Queryable).GetMethod("Take").MakeGenericMethod(itemType);
-                query = (IQueryable<T>)takeMethod.InvokeEx(null, query, commandInfo.Top);
-            }
-
+        public static IQueryable<TItem> SkipAndTake<TItem>(IQueryable<TItem> query, int skip, int take)
+        {
+            if (skip > 0)
+                query = query.Skip(skip);
+            if (take > 0)
+                query = query.Take(take);
             return query;
         }
 
