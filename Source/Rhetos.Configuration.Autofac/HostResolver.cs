@@ -20,21 +20,21 @@
 using Microsoft.Extensions.Hosting;
 using Rhetos.Utilities;
 using System;
-using System.IO;
 using System.Reflection;
 using System.Runtime.Loader;
 
 namespace Rhetos
 {
+    /// <summary>
+    /// Wrapper around <see cref="HostFactoryResolver"/>.
+    /// </summary>
     public static class HostResolver
     {
-        public static readonly string HostBuilderFactoryMethodName = "CreateHostBuilder";
-
         /// <summary>
         /// Finds a standard IHostBuilder in the given Rhetos application's host assembly (the CreateHostBuilder method in the Program class).
         /// See <see href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/generic-host?view=aspnetcore-5.0">.NET Generic Host</see> for more info.
         /// </summary>
-        public static IHostBuilder FindBuilder(string rhetosHostAssemblyPath)
+        public static IHost ResolveHost(string rhetosHostAssemblyPath, string[] args, Action<IHostBuilder> configureHostBuilder)
         {
             // The Assembly.LoadFrom method would load the Assembly in the DefaultLoadContext.
             // In most cases this will work but when using LINQPad this can lead to unexpected behavior when comparing types because
@@ -51,16 +51,26 @@ namespace Rhetos
             if (entryPointType == null)
                 throw new FrameworkException($"Startup assembly '{startupAssembly.Location}' doesn't have an entry point.");
 
-            var method = entryPointType.GetMethod(HostBuilderFactoryMethodName, BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Static);
-            if (method == null)
-                throw new FrameworkException(
-                    $"Static method '{entryPointType.FullName}.{HostBuilderFactoryMethodName}' not found in entry point type in assembly {startupAssembly.Location}."
-                    + $" Method is required in entry point assembly for constructing a configured instance of {nameof(RhetosHost)}.");
+            var hostBuilderFactory = HostFactoryResolver.ResolveHostBuilderFactory<IHostBuilder>(startupAssembly);
+            if (hostBuilderFactory != null)
+            {
+                var hostBuilder = hostBuilderFactory(args);
+                configureHostBuilder(hostBuilder);
+                return hostBuilder.Build();
+            }
 
-            if (method.ReturnType != typeof(IHostBuilder))
-                throw new FrameworkException($"Static method '{entryPointType.FullName}.{HostBuilderFactoryMethodName}' has incorrect return type. Expected return type is {nameof(IRhetosHostBuilder)}.");
+            Action<object> configureHostBuilderCast = hostBuilder => configureHostBuilder((IHostBuilder)hostBuilder);
+            var hostFactory = HostFactoryResolver.ResolveHostFactory(startupAssembly, configureHostBuilder: configureHostBuilderCast);
+            if (hostFactory != null)
+            {
+                var host = CsUtility.Cast<IHost>(hostFactory(args), "IHost factory.");
+                return host;
+            }
 
-            return (IHostBuilder)method.InvokeEx(null, new object[] { Array.Empty<string>() });
+            throw new FrameworkException(
+                $"Cannot resolve {nameof(IHost)} from '{startupAssembly.Location}'." +
+                $" Make sure that the assembly's entry point contains a static method '{entryPointType.FullName}.{HostFactoryResolver.CreateHostBuilder}'" +
+                $" returning '{typeof(IHostBuilder)}', or that it uses \"minimal hosting model\" for ASP.NET 6.");
         }
     }
 }

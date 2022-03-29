@@ -91,10 +91,9 @@ namespace Rhetos
         /// of a referenced application or assembly built with Rhetos framework.
         /// <para>
         /// This method resolves <see cref="RhetosHost"/> from the referenced assembly's <see cref="IHostBuilder"/>.
-        /// The referenced assembly is expected to have an entry point (typically the Program class) with a
-        /// static method that creates and configures the <see cref="IHostBuilder"/> instance,
-        /// see <see cref="HostResolver.HostBuilderFactoryMethodName"/>
-        /// and <see href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/generic-host?view=aspnetcore-5.0">.NET Generic Host</see>.
+        /// The referenced assembly is expected to have an entry point (typically the Program class) with standard
+        /// CreateHostBuilder method (see <see href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/generic-host?view=aspnetcore-5.0">.NET Generic Host</see>),
+        /// or ASP.NET 6 minimal hosting model (<see href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis?view=aspnetcore-6.0">Overview</see>, <see href="https://docs.microsoft.com/en-us/aspnet/core/migration/50-to-60-samples?view=aspnetcore-6.0">Samples</see>).
         /// The specified application should be created with Rhetos framework, or reference an assembly that
         /// was created with Rhetos framework.
         /// </para>
@@ -134,27 +133,30 @@ namespace Rhetos
             if (!File.Exists(rhetosHostAssemblyPath))
                 throw new ArgumentException($"Please specify the host application assembly file. File '{rhetosHostAssemblyPath}' does not exist.");
 
-            var hostBuilder = HostResolver.FindBuilder(rhetosHostAssemblyPath);
-            hostBuilder.UseContentRoot(Path.GetDirectoryName(rhetosHostAssemblyPath));
-            hostBuilder.ConfigureServices((hostContext, services) =>
+            void ConfigureHostBuilder(IHostBuilder hostBuilder)
             {
-                services.AddRhetosHost((serviceProvider, rhetosHostBuilder) =>
+                hostBuilder.UseContentRoot(Path.GetDirectoryName(rhetosHostAssemblyPath));
+                hostBuilder.ConfigureServices((hostContext, services) =>
                 {
-                    // Overriding Rhetos host application's location settings, because the default values might be incorrect when the host assembly is executed
-                    // from another process with FindBuilder. For example, it could have different AppDomain.BaseDirectory, or the assembly copied in shadow directory.
-                    rhetosHostBuilder.UseRootFolder(Path.GetDirectoryName(rhetosHostAssemblyPath)); // Use host assembly directory as root for all RhetosHostBuilder operations.
-                    rhetosHostBuilder.ConfigureConfiguration(configurationBuilder => configurationBuilder.AddKeyValue(
-                        ConfigurationProvider.GetKey((RhetosAppOptions o) => o.RhetosHostFolder),
-                        Path.GetDirectoryName(rhetosHostAssemblyPath))); // Override the RhetosHostFolder to make sure it is set to the original host folder location, not a shadow copy (for applications such as LINQPad).                
+                    services.AddRhetosHost((serviceProvider, rhetosHostBuilder) =>
+                    {
+                        // Overriding Rhetos host application's location settings, because the default values might be incorrect when the host assembly is executed
+                        // from another process with FindBuilder. For example, it could have different AppDomain.BaseDirectory, or the assembly copied in shadow directory.
+                        rhetosHostBuilder.UseRootFolder(Path.GetDirectoryName(rhetosHostAssemblyPath)); // Use host assembly directory as root for all RhetosHostBuilder operations.
+                        rhetosHostBuilder.ConfigureConfiguration(configurationBuilder => configurationBuilder.AddKeyValue(
+                            ConfigurationProvider.GetKey((RhetosAppOptions o) => o.RhetosHostFolder),
+                            Path.GetDirectoryName(rhetosHostAssemblyPath))); // Override the RhetosHostFolder to make sure it is set to the original host folder location, not a shadow copy (for applications such as LINQPad).                
 
-                    configureRhetosHost?.Invoke(rhetosHostBuilder);
+                        configureRhetosHost?.Invoke(rhetosHostBuilder);
+                    });
                 });
-            });
 
-            if (configureServices != null)
-                hostBuilder.ConfigureServices(configureServices);
+                if (configureServices != null)
+                    hostBuilder.ConfigureServices(configureServices);
+            }
 
-            return hostBuilder.Build().Services;
+            IHost host = HostResolver.ResolveHost(rhetosHostAssemblyPath, Array.Empty<string>(), ConfigureHostBuilder);
+            return host.Services;
         }
 
         public void Dispose()

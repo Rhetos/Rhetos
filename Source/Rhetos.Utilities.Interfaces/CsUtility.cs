@@ -102,6 +102,22 @@ namespace Rhetos.Utilities
         }
 
         /// <summary>
+        /// Type casting with detaile error description.
+        /// </summary>
+        public static T Cast<T>(object o, string objectName) where T: class
+        {
+            if (o is null)
+                return null;
+            if (o is T t)
+                return t;
+
+            if (o.GetType().ToString() != typeof(T).ToString())
+                throw new ArgumentException($"Unexpected object type. The provided '{objectName}' is a '{o.GetType()}' instead of '{typeof(T)}'.");
+            else
+                throw new ArgumentException($"Unexpected object type. The provided '{objectName}' is a '{o.GetType().AssemblyQualifiedName}' instead of '{typeof(T).AssemblyQualifiedName}'.");
+        }
+
+        /// <summary>
         /// Returns null if the argument is a valid identifier, error message otherwise.
         /// </summary>
         public static string GetIdentifierError(string name)

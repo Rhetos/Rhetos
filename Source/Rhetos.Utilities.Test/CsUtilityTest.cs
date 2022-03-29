@@ -432,5 +432,34 @@ Dictionary`2<List`1<InnerClass[]>, InnerClass>";
             public int I { get; set; }
             public override string ToString() => $"{S}/{I}";
         }
+
+        [TestMethod]
+        public void CastSimple()
+        {
+            object o = new C2();
+            C1 c1 = CsUtility.Cast<C1>(o, "some object");
+            Assert.ReferenceEquals(o, c1);
+            Assert.AreEqual(typeof(C2).ToString(), c1.GetType().ToString());
+        }
+
+        class C1 { }
+        class C2 : C1 { }
+
+        [TestMethod]
+        public void CastNull()
+        {
+            object o = null;
+            C1 c1 = CsUtility.Cast<C1>(o, "some object");
+            Assert.IsNull(c1);
+        }
+
+        [TestMethod]
+        public void CastInvalid()
+        {
+            object o = new C1();
+            TestUtility.ShouldFail<ArgumentException>(
+                () => _ = CsUtility.Cast<C2>(o, "some object"),
+                "Unexpected object type. The provided 'some object' is a 'Rhetos.Utilities.Test.CsUtilityTest+C1' instead of 'Rhetos.Utilities.Test.CsUtilityTest+C2'.");
+        }
     }
 }
