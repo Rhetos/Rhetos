@@ -1,5 +1,15 @@
 ﻿# Rhetos release notes
 
+## 5.1.0 (TO BE RELEASED)
+
+### New features
+
+* Rhetos framework supports .NET 6 applications, along with the existing .NET 5 support.
+
+### Internal improvements
+
+* Microsoft and System and libraries updated from v5 to v6.
+
 ## 5.0.0 (2022-03-25)
 
 ### Breaking changes

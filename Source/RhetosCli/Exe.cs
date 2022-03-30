@@ -43,7 +43,7 @@ namespace Rhetos
                 RedirectStandardError = true,
             };
 
-            var processOutput = new StringBuilder();
+            var processOutputLock = new object();
             int processErrorCode;
             using (var process = Process.Start(start))
             {
@@ -56,7 +56,7 @@ namespace Rhetos
                     {
                         string line;
                         while ((line = output.ReadLine()) != null)
-                            lock (processOutput)
+                            lock (processOutputLock)
                             {
                                 Console.WriteLine(line);
                             }
