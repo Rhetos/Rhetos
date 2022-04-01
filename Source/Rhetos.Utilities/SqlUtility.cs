@@ -22,6 +22,7 @@ using System;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace Rhetos.Utilities
@@ -59,13 +60,42 @@ namespace Rhetos.Utilities
             var dbOptions = configuration.GetOptions<DatabaseOptions>();
             SqlCommandTimeout = dbOptions.SqlCommandTimeout;
 
-            
             _connectionString = configuration.GetValue<string>(Utilities.ConnectionString.ConnectionStringConfigurationKey);
 
             var databaseSettings = configuration.GetOptions<DatabaseSettings>();
             _databaseLanguage = databaseSettings.DatabaseLanguage;
             _nationalLanguage = configuration.GetValue(OracleSqlUtility.OracleNationalLanguageKey, "");
+
             InitializeProviderContext();
+
+            if (dbOptions.SetApplicationName)
+                _connectionString = TrySetApplicationName(_connectionString);
+        }
+
+        private static string TrySetApplicationName(string connectionString)
+        {
+            if (!_databaseLanguageIsMsSql)
+                 return connectionString;
+            try
+            {
+                var dbConnectionStringBuilder = new DbConnectionStringBuilder();
+                dbConnectionStringBuilder.ConnectionString = connectionString;
+                if (dbConnectionStringBuilder.ContainsKey("Application Name") || dbConnectionStringBuilder.ContainsKey("app"))
+                    return connectionString;
+
+                string hostAppName = Assembly.GetEntryAssembly()?.GetName()?.Name;
+                if (string.IsNullOrEmpty(hostAppName))
+                    return connectionString;
+
+                dbConnectionStringBuilder["Application Name"] = hostAppName;
+                return dbConnectionStringBuilder.ToString();
+            }
+#pragma warning disable CA1031 // Do not catch general exception types. This is just an optional information in connection string. It should not fail if the connection string format is not recognized.
+            catch
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                return connectionString;
+            }
         }
 
         private static void InitializeProviderContext()
@@ -333,7 +363,7 @@ namespace Rhetos.Utilities
             }
             catch
             {
-                // This is not be a blocking error, because other database providers should be supported.
+                // This is not a blocking error, because other database providers should be supported.
                 return "(cannot parse connection string)";
             }
 

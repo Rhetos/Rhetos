@@ -32,5 +32,10 @@ namespace Rhetos.Utilities
         /// After the timeout, the command will be terminated and an error returned.
         /// </summary>
         public int SqlCommandTimeout { get; set; } = 30;
+
+        /// <summary>
+        /// If the ApplicationName is not set in the provided connection string, it will be automatically set by Rhetos to the current host application name.
+        /// </summary>
+        public bool SetApplicationName { get; set; } = true;
     }
 }

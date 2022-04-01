@@ -23,6 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,6 +40,15 @@ namespace Rhetos.Utilities.Test
                 .Build();
 
             LegacyUtilities.Initialize(configuration);
+        }
+
+        [TestMethod]
+        public void ConnectionStringAddAppName()
+        {
+            Assert.AreEqual("Data Source=DummyServerName;Initial Catalog=DummyDatabaseName;Integrated Security=true;Application Name=testhost", SqlUtility.ConnectionString, ignoreCase: true);
+
+            var s = new SqlConnectionStringBuilder(SqlUtility.ConnectionString);
+            Assert.AreEqual("testhost", s.ApplicationName);
         }
 
         [TestMethod]
