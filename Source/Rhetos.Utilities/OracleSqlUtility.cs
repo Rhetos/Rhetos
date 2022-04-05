@@ -101,8 +101,7 @@ END;", SqlUtility.NationalLanguage);
         /// </summary>
         public static void SetSqlUserInfo(OracleConnection connection, IUserInfo userInfo)
         {
-            if (userInfo.IsUserRecognized)
-                connection.ClientInfo = SqlUtility.UserContextInfoText(userInfo);
+            connection.ClientInfo = SqlUtility.UserContextInfoText(userInfo);
         }
 
         /// <summary>

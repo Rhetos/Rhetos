@@ -95,9 +95,15 @@ namespace CommonConcepts.Test
             }
         }
 
+        /// <summary>
+        /// Set <paramref name="username"/> to <see langword="null"/> for anonymous user.
+        /// </summary>
         public static ContainerBuilder ConfigureFakeUser(this ContainerBuilder builder, string username)
         {
-            builder.RegisterInstance(new TestUserInfo(username)).As<IUserInfo>();
+            if (username != null)
+                builder.RegisterInstance(new TestUserInfo(username)).As<IUserInfo>();
+            else
+                builder.RegisterInstance(new TestUserInfo(null, "", isUserRecognized: false)).As<IUserInfo>();
             return builder;
         }
 

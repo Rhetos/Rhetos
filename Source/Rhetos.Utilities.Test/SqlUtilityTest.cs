@@ -217,18 +217,18 @@ namespace Rhetos.Utilities.Test
                 { @"Rhetos:asdf", @"asdf|null" },
                 { @"Rhetos:1,2,3", @"1|2,3" },
                 { @"Rhetos:1 1 , 2 2 ", @"1 1|2 2" },
-                { "<null>", @"null|null" },
-                { @"", @"null|null" },
-                { @"Rhetos:", @"null|null" },
-                { @"Rhetos:   ", @"null|null" },
-                { @"Rhetos:  , ", @"null|null" },
-                { @"1:2,3", @"null|null" }
+                { "<null>", @"null|null(unrecognized)" },
+                { @"", @"null|null(unrecognized)" },
+                { @"Rhetos:", @"null|null(unrecognized)" },
+                { @"Rhetos:   ", @"null|null(unrecognized)" },
+                { @"Rhetos:  , ", @"null|null(unrecognized)" },
+                { @"1:2,3", @"null|null(unrecognized)" }
             };
 
             foreach (var test in tests)
             {
                 var result = SqlUtility.ExtractUserInfo(test.Key == "<null>" ? null : test.Key);
-                Assert.AreEqual(test.Value, (result.UserName ?? "null") + "|" + (result.Workstation ?? "null"), "Input: " + test.Key);
+                Assert.AreEqual(test.Value, (result.UserName ?? "null") + "|" + (result.Workstation ?? "null") + (result.IsUserRecognized ? "" : "(unrecognized)"), "Input: " + test.Key);
             }
         }
 

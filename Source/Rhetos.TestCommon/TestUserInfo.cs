@@ -27,6 +27,8 @@ namespace Rhetos.TestCommon
 {
     public class TestUserInfo : IUserInfo
     {
+        private string _userName;
+
         public TestUserInfo(string userName = "Bob", string userWorkstation = "Some workstation", bool isUserRecognized = true)
         {
             IsUserRecognized = isUserRecognized;
@@ -35,7 +37,11 @@ namespace Rhetos.TestCommon
         }
 
         public bool IsUserRecognized { get; private set; }
-        public string UserName { get; private set; }
+        public string UserName
+        {
+            get => IsUserRecognized ? _userName : throw new ClientException("This operation is not supported for anonymous user.");
+            private set => _userName = value;
+        }
         public string Workstation { get; private set; }
         public string Report() { return UserName + "," + Workstation; }
     }

@@ -35,12 +35,9 @@ namespace Rhetos.Utilities
             try
             {
                 connection.Open();
-                if (userInfo.IsUserRecognized)
-                {
-                    using var sqlCommand = CreateUserContextInfoCommand(userInfo);
-                    sqlCommand.Connection = connection;
-                    sqlCommand.ExecuteNonQuery();
-                }
+                using var sqlCommand = CreateUserContextInfoCommand(userInfo);
+                sqlCommand.Connection = connection;
+                sqlCommand.ExecuteNonQuery();
             }
             catch (SqlException ex)
             {
@@ -62,9 +59,6 @@ namespace Rhetos.Utilities
         /// </returns>
         public static DbCommand CreateUserContextInfoCommand(IUserInfo userInfo)
         {
-            if (!userInfo.IsUserRecognized)
-                return null;
-
             string userInfoText = SqlUtility.UserContextInfoText(userInfo);
             byte[] encodedUserInfo = userInfoText.Take(128).Select(c => (byte)(c < 256 ? c : '?')).ToArray();
 

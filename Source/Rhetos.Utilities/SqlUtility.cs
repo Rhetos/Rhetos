@@ -113,10 +113,8 @@ namespace Rhetos.Utilities
 
         public static string UserContextInfoText(IUserInfo userInfo)
         {
-            if (!userInfo.IsUserRecognized)
-                return "";
-
-            return "Rhetos:" + userInfo.Report();
+            string userReport = userInfo.IsUserRecognized ? userInfo.Report() : "";
+            return "Rhetos:" + userReport;
         }
 
         public static IUserInfo ExtractUserInfo(string contextInfo)

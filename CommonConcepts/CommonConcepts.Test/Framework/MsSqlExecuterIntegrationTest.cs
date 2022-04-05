@@ -300,10 +300,10 @@ raiserror('fff', 18, 118)"
         {
             var testUser = new TestUserInfo(null, null, false);
             var result = new List<object>();
-            ExecuteReader("SELECT context_info()", reader => result.Add(reader[0]), SqlUtility.ConnectionString, testUser);
+            ExecuteReader($"SELECT {contextInfoToText}", reader => result.Add(reader[0]), SqlUtility.ConnectionString, testUser);
 
             Console.WriteLine(result.Single());
-            Assert.AreEqual(typeof(DBNull), result.Single().GetType());
+            Assert.AreEqual("Rhetos:", (string)result.Single());
         }
 
         private const string contextInfoToText = "(CONVERT([varchar](128),left(context_info(),isnull(nullif(charindex(0x00,context_info())-(1),(-1)),(128))),(0)))";
