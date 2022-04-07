@@ -4,7 +4,9 @@
 
 ### New features
 
-* Rhetos framework supports .NET 6 applications, along with the existing .NET 5 support.
+* Rhetos framework supports **.NET 6** applications, along with the existing .NET 5 support.
+  Updating an existing application from .NET 5 to .NET 6 is not required, but it is recommended for Microsoft's long-term support.
+  See [Migrate from ASP.NET Core 5.0 to 6.0](https://docs.microsoft.com/en-us/aspnet/core/migration/50-to-60?view=aspnetcore-6.0&tabs=visual-studio) for instructions.
 
 ### Internal improvements
 
@@ -16,7 +18,7 @@
 
 Technology and plugins:
 
-1. Migrated from .NET Framework to .NET 5. Rhetos framework no longer supports .NET Framework plugins.
+1. Migrated from .NET Framework to **.NET 5**. Rhetos framework no longer supports .NET Framework plugins.
    * When upgrading existing Rhetos applications to Rhetos 5.0, migrate the applications and plugin libraries to .NET 5.
    * If needed, create a new web application by following the instruction in [Rhetos.Samples.AspNet](https://github.com/Rhetos/Rhetos.Samples.AspNet/).
    * Review the custom application code for [Behavior changes when comparing strings on .NET 5](https://docs.microsoft.com/en-us/dotnet/standard/base-types/string-comparison-net-5-plus).
