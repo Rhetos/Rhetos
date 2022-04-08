@@ -17,18 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos;
+using Rhetos.Dom.DefaultConcepts;
+using Rhetos.TestCommon;
+using Rhetos.Utilities;
 using System;
-using System.Text;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos.Utilities;
-using Rhetos.TestCommon;
-using Rhetos;
-using Rhetos.Configuration.Autofac;
-using Rhetos.Dom.DefaultConcepts;
-using Rhetos.Dsl;
-using CommonConcepts.Test.Helpers;
 
 namespace CommonConcepts.Test
 {
@@ -327,7 +323,7 @@ namespace CommonConcepts.Test
                 "SELECT ID FROM Rhetos.AppliedConcept WHERE ConceptInfoKey = " + SqlUtility.QuoteText(conceptInfoKey),
                 reader => id = reader.GetGuid(0));
             if (id == Guid.Empty)
-                throw new ApplicationException("Cannot find applied concept '" + conceptInfoKey + "'.");
+                throw new InvalidOperationException("Cannot find applied concept '" + conceptInfoKey + "'.");
             return id;
         }
 

@@ -18,17 +18,13 @@
 */
 
 using Autofac;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos;
 using Rhetos.Logging;
 using Rhetos.Security;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace CommonConcepts.Test
 {

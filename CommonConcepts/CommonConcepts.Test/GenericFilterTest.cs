@@ -17,19 +17,16 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.TestCommon;
-using System.Linq.Expressions;
-using Rhetos.Configuration.Autofac;
 using Rhetos.Utilities;
-using Rhetos;
-using System.Runtime.InteropServices;
-using CommonConcepts.Test.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Text;
 
 namespace CommonConcepts.Test
 {
@@ -531,7 +528,7 @@ namespace CommonConcepts.Test
                 FilterCriteria filter;
 
                 filter = new FilterCriteria { Property = "Parentt", Operation = "equal", Value = null };
-                TestUtility.ShouldFail<ClientException>(() => GenericFilterHelperFilter(childQuery, new[] { filter }).ToList(),
+                TestUtility.ShouldFail<ClientException>(() => _ = GenericFilterHelperFilter(childQuery, new[] { filter }).ToList(),
                     "generic filter", "property 'Parentt'", "TestGenericFilter", "Child'");
             }
         }

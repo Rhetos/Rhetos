@@ -17,19 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.TestCommon;
-using System.Text.RegularExpressions;
-using Rhetos.Configuration.Autofac;
-using Rhetos.Utilities;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Dsl;
-using CommonConcepts.Test.Helpers;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.TestCommon;
+using Rhetos.Utilities;
+using System;
+using System.Linq;
 
 namespace CommonConcepts.Test
 {
@@ -43,7 +38,7 @@ namespace CommonConcepts.Test
             {
                 var dslModel = scope.Resolve<IDslModel>();
 
-                var persisted = (PersistedDataStructureInfo)dslModel.FindByKey("DataStructureInfo TestAllProperties.TestAllPropertiesCopyAllFeatures");
+                var persisted = (DataStructureInfo)dslModel.FindByKey("DataStructureInfo TestAllProperties.TestAllPropertiesCopyAllFeatures");
 
                 var extends = dslModel.FindByReference<DataStructureExtendsInfo>(e => e.Extension, persisted);
                 Assert.AreEqual(

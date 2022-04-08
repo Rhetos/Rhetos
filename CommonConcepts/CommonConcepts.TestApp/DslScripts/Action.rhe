@@ -9,7 +9,7 @@ Module TestAction
         '(parameters, repository, userInfo) =>
             { 
                 repository.TestAction.ToInsert.Insert(new TestAction.ToInsert { ID = parameters.ItmemID.Value, Name = "Test" });
-                throw new ApplicationException("TestAction exception " + parameters.Message);
+                throw new Rhetos.UserException("TestAction exception " + parameters.Message);
             }'            
     {
         ShortString Message;
@@ -18,7 +18,7 @@ Module TestAction
 
     Action UEC
         '(parameters, repository, userInfo) =>
-            { throw new ApplicationException("User " + _executionContext.UserInfo.UserName); }'
+            { throw new Rhetos.UserException("User " + _executionContext.UserInfo.UserName); }'
     {
     }
     

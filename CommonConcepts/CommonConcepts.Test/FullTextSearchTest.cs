@@ -17,9 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using CommonConcepts.Test.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos.Configuration.Autofac;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
@@ -107,6 +105,7 @@ namespace CommonConcepts.Test
                                     ftsStatus2 = reader.GetInt32(1);
                                 });
 
+#pragma warning disable CA1508 // Avoid dead conditional code. The warning here is false negative.
                                 if (ftsStatus1 != 0 || ftsStatus2 != 0)
                                 {
                                     const int timeoutSeconds = 20;
@@ -121,6 +120,7 @@ namespace CommonConcepts.Test
                                     Console.WriteLine($"Full-text search index populated in {stopwatch.Elapsed}.");
                                     break;
                                 }
+#pragma warning restore CA1508 // Avoid dead conditional code
                             }
 
                             scope.CommitAndClose();
@@ -140,7 +140,7 @@ namespace CommonConcepts.Test
         private static Func<T, T, bool> GenericEquality<T>(Func<T, object> keySelector)
         {
             // Not perfect, but good enough for this test set.
-            return (a, b) => keySelector(a).ToString().Equals(keySelector(b).ToString());
+            return (a, b) => keySelector(a).ToString().Equals(keySelector(b).ToString(), StringComparison.Ordinal);
         }
 
         private static object DataPreparedLock = new object();
@@ -371,7 +371,7 @@ namespace CommonConcepts.Test
             {
                 var repository = scope.Resolve<Common.DomRepository>();
                 var ex = TestUtility.ShouldFail(
-                    () => repository.TestFullTextSearch.SimpleFTS.Query()
+                    () => _ = repository.TestFullTextSearch.SimpleFTS.Query()
                         .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, null, "TestFullTextSearch.SimpleFTS", "*"))
                         .Select(item => item.Base.Name).ToList());
                 TestUtility.AssertContains(ex.ToString(), "Search pattern must not be NULL.");
@@ -388,7 +388,7 @@ namespace CommonConcepts.Test
                 var repository = scope.Resolve<Common.DomRepository>();
                 string table = "TestFullTextSearch.SimpleFTS";
                 var ex = TestUtility.ShouldFail(
-                    () => repository.TestFullTextSearch.SimpleFTS.Query()
+                    () => _ = repository.TestFullTextSearch.SimpleFTS.Query()
                         .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, "a", table, "*"))
                         .Select(item => item.Base.Name).ToList());
                 TestUtility.AssertContains(ex.ToString(), new[] { "Please use a string literal", "tableName" });
@@ -405,7 +405,7 @@ namespace CommonConcepts.Test
                 var repository = scope.Resolve<Common.DomRepository>();
                 string columns = "*";
                 var ex = TestUtility.ShouldFail(
-                    () => repository.TestFullTextSearch.SimpleFTS.Query()
+                    () => _ = repository.TestFullTextSearch.SimpleFTS.Query()
                         .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, "a", "TestFullTextSearch.SimpleFTS", columns))
                         .Select(item => item.Base.Name).ToList());
                 TestUtility.AssertContains(ex.ToString(), new[] { "Please use a string literal", "searchColumns" });
@@ -422,7 +422,7 @@ namespace CommonConcepts.Test
                 var repository = scope.Resolve<Common.DomRepository>();
                 int topValue = 10;
                 var ex = TestUtility.ShouldFail(
-                    () => repository.TestFullTextSearch.SimpleFTS.Query()
+                    () => _ = repository.TestFullTextSearch.SimpleFTS.Query()
                         .Where(item => DatabaseExtensionFunctions.FullTextSearch(item.ID, "a", "TestFullTextSearch.SimpleFTS", "*", topValue + 1))
                         .Select(item => item.Base.Name).ToList());
                 TestUtility.AssertContains(ex.ToString(), new[] { "Please use a simple integer variable", "rankTop" });

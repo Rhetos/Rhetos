@@ -17,16 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos.TestCommon;
-using Rhetos.Configuration.Autofac;
-using Rhetos.Utilities;
 using Rhetos.Dom.DefaultConcepts;
-using CommonConcepts.Test.Helpers;
+using Rhetos.TestCommon;
+using Rhetos.Utilities;
+using System;
+using System.Linq;
 
 namespace CommonConcepts.Test
 {
@@ -43,7 +39,7 @@ namespace CommonConcepts.Test
                 var repository = scope.Resolve<Common.DomRepository>();
                 repository.TestAction.ToInsert.Insert(new TestAction.ToInsert { ID = item1ID });
 
-                var exception = TestUtility.ShouldFail<ApplicationException>(
+                var exception = TestUtility.ShouldFail<Rhetos.UserException>(
                     () => repository.TestAction.InsertAndThrowException.Execute(new TestAction.InsertAndThrowException { Message = "abcd", ItmemID = item2ID }),
                     "abcd");
                 var exceptionOrigin = exception.StackTrace.Substring(0, exception.StackTrace.IndexOf(Environment.NewLine));

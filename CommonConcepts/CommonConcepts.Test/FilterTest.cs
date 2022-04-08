@@ -30,6 +30,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+#pragma warning disable CS0618 // Type or member is obsolete. Testing obsolete Filter methods. TODO: Replace Filter with Load after removing the Filter method.
+
 namespace CommonConcepts.Test
 {
     [TestClass]
@@ -130,7 +132,7 @@ namespace CommonConcepts.Test
                         ex = ex.InnerException;
                     } while (ex != null);
 
-                    throw new Exception(limitedLengthReport.ToString());
+                    throw new InvalidOperationException(limitedLengthReport.ToString());
                 }
 
                 context.EntityFrameworkContext.Database.ExecuteSqlCommand("DELETE FROM Test10.Simple");
