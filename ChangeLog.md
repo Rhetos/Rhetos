@@ -1,16 +1,19 @@
 ﻿# Rhetos release notes
 
-## 5.1.0 (TO BE RELEASED)
+## 5.1.0 (2022-04-08)
 
 ### New features
 
 * Rhetos framework supports **.NET 6** applications, along with the existing .NET 5 support.
-  Updating an existing application from .NET 5 to .NET 6 is not required, but it is recommended for Microsoft's long-term support.
-  See [Migrate from ASP.NET Core 5.0 to 6.0](https://docs.microsoft.com/en-us/aspnet/core/migration/50-to-60?view=aspnetcore-6.0&tabs=visual-studio) for instructions.
+  * Updating an existing application from .NET 5 to .NET 6 is not required, but it is recommended for Microsoft's long-term support.
+    See [Migrate from ASP.NET Core 5.0 to 6.0](https://docs.microsoft.com/en-us/aspnet/core/migration/50-to-60?view=aspnetcore-6.0&tabs=visual-studio) for instructions.
+* Support for "minimal hosting model" in ASP.NET 6.
 
 ### Internal improvements
 
-* Microsoft and System and libraries updated from v5 to v6.
+* Microsoft and System libraries updated from v5 to v6.
+* Application name is included in database connection string, to help with database debugging (configurable).
+* Anonymous user is visible in database ContextInfo as empty user data "Rhetos:", to differentiate between database operations executed in anonymous context from operations not executed by the application.
 
 ## 5.0.0 (2022-03-25)
 
