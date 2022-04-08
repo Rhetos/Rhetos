@@ -17,9 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Dsl;
-using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Utilities;
+using System;
 using System.Collections.Generic;
 
 namespace Rhetos.Dsl.DefaultConcepts
@@ -48,17 +47,17 @@ namespace Rhetos.Dsl.DefaultConcepts
             }
 
             if (dataStructure is PolymorphicInfo)
-                return dataStructure.GetKeyProperties() + "_Materialized";
+                return dataStructure.FullName + "_Materialized";
 
             return null;
         }
 
         public static IEnumerable<IConceptInfo> GetAdditionalForeignKeyDependencies(DataStructureInfo dataStructure)
         {
-            if (dataStructure is PolymorphicInfo)
-                return new IConceptInfo[] { new PersistedDataStructureInfo { Module = dataStructure.Module, Name = dataStructure.Name + "_Materialized" } };
+            if (dataStructure is PolymorphicInfo polymorphicInfo)
+                return new IConceptInfo[] { polymorphicInfo.GetMaterializedEntity() };
 
-            return System.Array.Empty<IConceptInfo>();
+            return Array.Empty<IConceptInfo>();
         }
     }
 }

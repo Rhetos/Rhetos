@@ -34,7 +34,9 @@ namespace Rhetos.Dsl.DefaultConcepts
     public class PersistedKeyPropertiesInfo : IMacroConcept
     {
         [ConceptKey]
+#pragma warning disable CS0618 // Type or member is obsolete. Available for backward compatibility. See PersistedDataStructureInfo.
         public PersistedDataStructureInfo Persisted { get; set; }
+#pragma warning restore CS0618 // Type or member is obsolete
 
         public string KeyProperties { get; set; }
 

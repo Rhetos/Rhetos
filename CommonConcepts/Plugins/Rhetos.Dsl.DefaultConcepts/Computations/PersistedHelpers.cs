@@ -17,29 +17,23 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
-
 namespace Rhetos.Dsl.DefaultConcepts
 {
-    /// <summary>
-    /// A more flexible version of Persisted.
-    /// It allows a property-level recomputing instead of entity-level. 
-    /// It is intended to be used as an internal concept for building simpler macro concepts.
-    /// </summary>
-    [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("ComputedFrom")]
-    public class EntityComputedFromInfo : IConceptInfo
+    public static class PersistedHelpers
     {
-        [ConceptKey]
-        public EntityInfo Target { get; set; }
+        /// <summary>
+        /// Simplified "Recompute" method, without source data structure name, for entity that can have only one source data structure.
+        /// </summary>
+        public static string RecomputeMethodImplementation(EntityComputedFromInfo computedFrom)
+        {
+            string target = computedFrom.Target.FullName;
 
-        [ConceptKey]
-        public DataStructureInfo Source { get; set; }
+            return $@"public IEnumerable<{target}> Recompute(object filterLoad = null, Func<IEnumerable<{target}>, IEnumerable<{target}>> filterSave = null)
+        {{
+            return {computedFrom.RecomputeFunctionName()}(filterLoad, filterSave);
+        }}
 
-        public string RecomputeFunctionName() => "RecomputeFrom" + DslUtility.NameOptionalModule(Source, Target.Module);
+        ";
+        }
     }
 }

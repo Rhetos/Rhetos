@@ -8,6 +8,8 @@ The source is written for TargetFramework "netstandard2.0".
 It is used in Rhetos to support both "CreateHostBuilder" model and "minimal hosting model" (new from .NET 6).
 See https://andrewlock.net/exploring-dotnet-6-part-5-supporting-ef-core-tools-with-webapplicationbuilder/ for more info.
 */
+#pragma warning disable CA1032 // Implement standard exception constructors
+#pragma warning disable CA1064 // Exceptions should be public
 
 using System;
 using System.Collections.Generic;

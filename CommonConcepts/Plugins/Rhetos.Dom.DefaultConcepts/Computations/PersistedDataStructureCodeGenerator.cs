@@ -21,26 +21,22 @@ using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
+using System;
 using System.ComponentModel.Composition;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
     [ExportMetadata(MefProvider.Implements, typeof(PersistedDataStructureInfo))]
+    [Obsolete("Available for backward compatibility. See PersistedDataStructureInfo.")]
     public class PersistedDataStructureCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (PersistedDataStructureInfo)conceptInfo;
 
-            string recomputeFunctionName = EntityComputedFromCodeGenerator.RecomputeFunctionName(new EntityComputedFromInfo { Source = info.Source, Target = info });
-
-            string snippet = $@"public IEnumerable<{info.FullName}> Recompute(object filterLoad = null, Func<IEnumerable<{info.FullName}>, IEnumerable<{info.FullName}>> filterSave = null)
-        {{
-            return {recomputeFunctionName}(filterLoad, filterSave);
-        }}
-
-        ";
+            var computedFrom = new EntityComputedFromInfo { Source = info.Source, Target = info };
+            string snippet = PersistedHelpers.RecomputeMethodImplementation(computedFrom);
 
             codeBuilder.InsertCode(snippet, RepositoryHelper.RepositoryMembers, info);
         }

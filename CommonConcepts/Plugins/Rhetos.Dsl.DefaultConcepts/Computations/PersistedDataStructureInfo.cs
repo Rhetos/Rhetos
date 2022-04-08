@@ -31,6 +31,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Persisted")]
+    [Obsolete("Use Entity with ComputedFrom instead. The Persisted concept is available for backward compatibility, but it may cause performance issues on deployment by sometimes unnecessarily refreshing the persisted table.")]
     public class PersistedDataStructureInfo : EntityInfo, IMacroConcept
     {
         public DataStructureInfo Source { get; set; }

@@ -66,16 +66,14 @@ namespace Rhetos.Dsl.DefaultConcepts
             };
         }
 
-        public PersistedDataStructureInfo GetPersistedDataStructure()
+        public EntityInfo GetPersistedDataStructure()
         {
-            return new PersistedDataStructureInfo
+            return new EntityInfo
             {
                 Module = DataStructure.Module,
                 Name = DataStructure.Name + Name + "Hierarchy",
-                Source = GetComputedDataStructure()
             };
         }
-
         protected virtual string ComputedDataStructureExpression()
         {
             return string.Format(@"repository =>
@@ -156,7 +154,10 @@ namespace Rhetos.Dsl.DefaultConcepts
         public IEnumerable<IConceptInfo> CreateNewConcepts(HierarchyInfo conceptInfo, IDslModel existingConcepts)
         {
             ComputedInfo computedDataStructure = conceptInfo.GetComputedDataStructure();
-            PersistedDataStructureInfo persistedDataStructure = conceptInfo.GetPersistedDataStructure();
+
+            var persistedDataStructure = conceptInfo.GetPersistedDataStructure();
+            var persistedComputedFrom = new EntityComputedFromInfo { Target = persistedDataStructure, Source = computedDataStructure };
+
             var persistedLeftIndexProperty = new IntegerPropertyInfo { DataStructure = persistedDataStructure, Name = "LeftIndex" };
 
             var dependencies = GetDependsOnWriteableDataStructure(conceptInfo.DataStructure, existingConcepts, conceptInfo);
@@ -184,8 +185,10 @@ namespace Rhetos.Dsl.DefaultConcepts
 
                 // Persisting the hierarchy information:
                 persistedDataStructure,
-                new PersistedAllPropertiesInfo { Persisted = persistedDataStructure }, // This will copy all properties from computedDataStructure.
-                new PersistedKeepSynchronizedInfo { Persisted = persistedDataStructure },
+                persistedComputedFrom,
+                new RepositoryMemberInfo { DataStructure = persistedDataStructure, Name = "Recompute", Implementation = PersistedHelpers.RecomputeMethodImplementation(persistedComputedFrom) },
+                new EntityComputedFromAllPropertiesInfo { EntityComputedFrom = persistedComputedFrom }, // This will copy all properties from computedDataStructure.
+                new KeepSynchronizedInfo { EntityComputedFrom = persistedComputedFrom, FilterSaveExpression = "" },
                 persistedLeftIndexProperty,
                 new SqlIndexMultipleInfo { DataStructure = persistedLeftIndexProperty.DataStructure, PropertyNames = persistedLeftIndexProperty.Name },
 

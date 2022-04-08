@@ -87,9 +87,6 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.InsertCode(recomputeFunctionSnippet, RepositoryHelper.RepositoryMembers, info.Target);
         }
 
-        public static string RecomputeFunctionName(EntityComputedFromInfo info)
-        {
-            return "RecomputeFrom" + DslUtility.NameOptionalModule(info.Source, info.Target.Module);
-        }
+        public static string RecomputeFunctionName(EntityComputedFromInfo info) => info.RecomputeFunctionName(); // Keeping this method for backward compatibility.
     }
 }
