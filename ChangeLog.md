@@ -209,10 +209,6 @@ Changes in Rhetos libraries API:
 27. Default constructor for ExecutionContext is now protected.
     Create a derived class from ExecutionContext to use the default constructor in unit tests.
 
-Changes in official Rhetos plugins:
-
-1. [RestGenerator](https://github.com/Rhetos/RestGenerator/blob/master/ChangeLog.md)
-
 ### Internal improvements
 
 * Rhetos CLI supports configurable output verbosity:
