@@ -46,16 +46,21 @@ namespace Rhetos.CommonConcepts.Test.Mocks
 
         public TestGenericRepository(IRepository repository, bool dynamicTypeResolution = true, List<string> log = null)
             : base(
-                new GenericRepositoryParameters
-                {
-                    DomainObjectModel = new DomainObjectModelMock(),
-                    Repositories = new Lazy<IIndex<string, IRepository>>(() => new RepositoryIndexMock(typeof(TEntity), repository)),
-                    LogProvider = new ConsoleLogProvider(),
-                    GenericFilterHelper = Factory.CreateGenericFilterHelper(Factory.CreateDataStructureReadParameters(repository, typeof(TEntity)), dynamicTypeResolution, log),
-                    DelayedLogProvider = new DelayedLogProvider(new LoggingOptions { DelayedLogTimout = 0 }, null),
-                },
+                NewParameters(repository, dynamicTypeResolution, log),
                 new RegisteredInterfaceImplementations { { typeof(TEntityInterface), typeof(TEntity).FullName } })
         {
+        }
+
+        public static GenericRepositoryParameters NewParameters(IRepository repository, bool dynamicTypeResolution = true, List<string> log = null)
+        {
+            return new GenericRepositoryParameters
+            {
+                DomainObjectModel = new DomainObjectModelMock(),
+                Repositories = new Lazy<IIndex<string, IRepository>>(() => new RepositoryIndexMock(typeof(TEntity), repository)),
+                LogProvider = new ConsoleLogProvider(),
+                GenericFilterHelper = Factory.CreateGenericFilterHelper(Factory.CreateDataStructureReadParameters(repository, typeof(TEntity)), dynamicTypeResolution, log),
+                DelayedLogProvider = new DelayedLogProvider(new LoggingOptions { DelayedLogTimout = 0 }, null),
+            };
         }
 
         public RepositoryMock<TEntityInterface, TEntity> RepositoryMock

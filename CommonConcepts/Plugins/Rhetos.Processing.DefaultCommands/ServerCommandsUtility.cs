@@ -19,7 +19,6 @@
 
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Logging;
-using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,14 +28,11 @@ namespace Rhetos.Processing.DefaultCommands
     public class ServerCommandsUtility
     {
         private readonly ILogger _logger;
-        private readonly ApplyFiltersOnClientRead _applyFiltersOnClientRead;
 
         public ServerCommandsUtility(
-            ILogProvider logProvider,
-            ApplyFiltersOnClientRead applyFiltersOnClientRead)
+            ILogProvider logProvider)
         {
             _logger = logProvider.GetLogger(GetType().Name);
-            _applyFiltersOnClientRead = applyFiltersOnClientRead;
         }
 
         /// <summary>
@@ -91,87 +87,7 @@ namespace Rhetos.Processing.DefaultCommands
 
             return missingId != null;
         }
-
-        public ReadCommandResult ExecuteReadCommand(ReadCommandInfo commandInfo, GenericRepository<IEntity> genericRepository)
-        {
-            if (!commandInfo.ReadRecords && !commandInfo.ReadTotalCount)
-                throw new ClientException("Invalid ReadCommand argument: At least one of the properties ReadRecords or ReadTotalCount should be set to true.");
-
-            if (commandInfo.Top < 0)
-                throw new ClientException("Invalid ReadCommand argument: Top parameter must not be negative.");
-
-            if (commandInfo.Skip < 0)
-                throw new ClientException("Invalid ReadCommand argument: Skip parameter must not be negative.");
-
-            if (commandInfo.DataSource != genericRepository.EntityName)
-                throw new FrameworkException(string.Format(
-                    "Invalid ExecuteReadCommand arguments: The given ReadCommandInfo ('{0}') does not match the GenericRepository ('{1}').",
-                    commandInfo.DataSource, genericRepository.EntityName));
-
-            AutoApplyFilters(commandInfo);
-
-            ReadCommandResult result;
-
-            var specificMethod = genericRepository.Reflection.RepositoryReadCommandMethod;
-            if (specificMethod != null)
-                result = (ReadCommandResult)specificMethod.InvokeEx(genericRepository.EntityRepository, commandInfo);
-            else
-            {
-                bool pagingIsUsed = commandInfo.Top > 0 || commandInfo.Skip > 0;
-
-                object filter = commandInfo.Filters != null && commandInfo.Filters.Any() ? (object)commandInfo.Filters : new FilterAll();
-                IEnumerable <IEntity> filtered = genericRepository.Read(filter, filter.GetType(), preferQuery: pagingIsUsed || !commandInfo.ReadRecords);
-
-                IEntity[] resultRecords = null;
-                int? totalCount = null;
-
-                if (commandInfo.ReadRecords)
-                {
-                    var sortedAndPaginated = GenericFilterHelper.SortAndPaginate(genericRepository.Reflection.AsQueryable(filtered), commandInfo);
-                    resultRecords = (IEntity[])genericRepository.Reflection.ToArrayOfEntity(sortedAndPaginated);
-                }
-
-                if (commandInfo.ReadTotalCount)
-                    if (pagingIsUsed)
-                        totalCount = SmartCount(filtered);
-                    else
-                        totalCount = resultRecords != null ? resultRecords.Length : SmartCount(filtered);
-
-                result = new ReadCommandResult
-                {
-                    Records = resultRecords,
-                    TotalCount = totalCount
-                };
-            }
-
-            return result;
-        }
-
-        private void AutoApplyFilters(ReadCommandInfo commandInfo)
-        {
-            if (_applyFiltersOnClientRead.TryGetValue(commandInfo.DataSource, out List<ApplyFilterWhere> applyFilters))
-            {
-                commandInfo.Filters ??= Array.Empty<FilterCriteria>();
-
-                var newFilters = applyFilters
-                    .Where(applyFilter => applyFilter.Where == null || applyFilter.Where(commandInfo))
-                    .Where(applyFilter => !commandInfo.Filters.Any(existingFilter => GenericFilterHelper.EqualsSimpleFilter(existingFilter, applyFilter.FilterName)))
-                    .Select(applyFilter => new FilterCriteria { Filter = applyFilter.FilterName })
-                    .ToList();
-
-                _logger.Trace(() => "AutoApplyFilters: " + string.Join(", ", newFilters.Select(f => f.Filter)));
-
-                commandInfo.Filters = commandInfo.Filters.Concat(newFilters).ToArray();
-            }
-        }
-
-        private static int SmartCount(IEnumerable<IEntity> items)
-        {
-            return items is IQueryable<IEntity> query
-                ? query.Count()
-                : items.Count();
-        }
-
+        
         private static Guid? FindDuplicate(List<Guid> ids)
         {
             if (ids.Distinct().Count() != ids.Count)

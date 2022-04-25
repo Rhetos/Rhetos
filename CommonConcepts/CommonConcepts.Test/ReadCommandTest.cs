@@ -218,9 +218,7 @@ namespace CommonConcepts.Test
         {
             using (var scope = TestScope.Create())
             {
-                var genericRepos = scope.Resolve<GenericRepositories>().GetGenericRepository("Common.Claim");
-
-                var readCommand = new ReadCommandInfo
+                var readCommandInfo = new ReadCommandInfo
                 {
                     DataSource = "Common.Claim",
                     Top = 3,
@@ -229,9 +227,10 @@ namespace CommonConcepts.Test
                     ReadTotalCount = true,
                 };
 
-                var serverCommandsUtility = scope.Resolve<ServerCommandsUtility>();
+                var commandPlugins = scope.Resolve<IPluginsContainer<ICommandImplementation>>();
+                var readCommand = (ReadCommand)commandPlugins.GetImplementations(readCommandInfo.GetType()).Single();
 
-                var readResult = serverCommandsUtility.ExecuteReadCommand(readCommand, genericRepos);
+                var readResult = readCommand.Execute(readCommandInfo);
                 Console.WriteLine("Records.Length: " + readResult.Records.Length);
                 Console.WriteLine("TotalCount: " + readResult.TotalCount);
                 Assert.IsTrue(readResult.Records.Length < readResult.TotalCount);

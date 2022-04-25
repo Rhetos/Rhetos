@@ -32,19 +32,6 @@ using System.Text;
 
 namespace Rhetos.CommonConcepts.Test
 {
-    static class LegacyExtension
-    {
-        public static ReadCommandResult ExecuteReadCommand(
-            this GenericRepository<IEntity> genericRepository,
-            ReadCommandInfo readCommandInfo)
-        {
-            readCommandInfo.DataSource = typeof(ServerCommandsUtilityTest.SimpleEntity).FullName;
-            var serverCommandsUtility = new ServerCommandsUtility(new ConsoleLogProvider(), new ApplyFiltersOnClientRead());
-            var commandResult = serverCommandsUtility.ExecuteReadCommand(readCommandInfo, genericRepository);
-            return commandResult;
-        }
-    }
-
     [TestClass]
     public class ServerCommandsUtilityTest
     {
@@ -71,9 +58,23 @@ namespace Rhetos.CommonConcepts.Test
             public void Add(string name) { Add(new SimpleEntity { Name = name, ID = new Guid(idCounter++, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) }); }
         }
 
-        GenericRepository<IEntity> NewRepos(IRepository repository)
+        GenericRepositories NewRepos(IRepository repository)
         {
-            return new TestGenericRepository<IEntity, SimpleEntity>(repository);
+            var parameters = TestGenericRepository<IEntity, SimpleEntity>.NewParameters(repository);
+            var rie = new RegisteredInterfaceImplementations { { typeof(IEntity), typeof(SimpleEntity).FullName } };
+            return new GenericRepositories(parameters, rie);
+        }
+
+        public static ReadCommandResult ExecuteReadCommand(
+            GenericRepositories genericRepositories,
+            ReadCommandInfo readCommandInfo)
+        {
+            readCommandInfo.DataSource = typeof(ServerCommandsUtilityTest.SimpleEntity).FullName;
+
+            var serverCommandsUtility = new ServerCommandsUtility(new ConsoleLogProvider());
+            var readCommand = new ReadCommand(genericRepositories, new ConsoleLogProvider(), serverCommandsUtility, new ApplyFiltersOnClientRead());
+            var commandResult = readCommand.Execute(readCommandInfo);
+            return commandResult;
         }
 
         class ImplicitReadCommandRepository : IRepository
@@ -120,7 +121,7 @@ namespace Rhetos.CommonConcepts.Test
         public void ReadCommand()
         {
             var entityRepos = new ImplicitReadCommandRepository();
-            var genericRepos = NewRepos(entityRepos);
+            var genericRepositories = NewRepos(entityRepos);
 
             var command = new ReadCommandInfo
             {
@@ -131,29 +132,29 @@ namespace Rhetos.CommonConcepts.Test
                 ReadRecords = true,
                 ReadTotalCount = true,
             };
-            Assert.AreEqual("a1, b1, b2 / 10", Dump(NewRepos(new ExplicitReadCommandRepository()).ExecuteReadCommand(command)));
+            Assert.AreEqual("a1, b1, b2 / 10", Dump(ExecuteReadCommand(NewRepos(new ExplicitReadCommandRepository()), command)));
             Assert.AreEqual(0, entityRepos.DropQueryCount());
-            Assert.AreEqual("b4, b5 / 5", Dump(genericRepos.ExecuteReadCommand(command)));
+            Assert.AreEqual("b4, b5 / 5", Dump(ExecuteReadCommand(genericRepositories, command)));
             Assert.AreEqual(2, entityRepos.DropQueryCount()); // Paging should result with two queries: selecting items and count.
 
             command = new ReadCommandInfo { ReadRecords = true, ReadTotalCount = true };
-            Assert.AreEqual("a1, b1, b2, b3, b4, b5 / 6", Dump(genericRepos.ExecuteReadCommand(command)));
+            Assert.AreEqual("a1, b1, b2, b3, b4, b5 / 6", Dump(ExecuteReadCommand(genericRepositories, command)));
             Assert.AreEqual(1, entityRepos.DropQueryCount()); // Without paging, there is no need for two queries.
 
             command = new ReadCommandInfo { Filters = new[] { new FilterCriteria("1") }, ReadRecords = true, ReadTotalCount = true };
-            Assert.AreEqual("a1, b1 / 2", Dump(genericRepos.ExecuteReadCommand(command)));
+            Assert.AreEqual("a1, b1 / 2", Dump(ExecuteReadCommand(genericRepositories, command)));
             Assert.AreEqual(1, entityRepos.DropQueryCount()); // Without paging, there is no need for two queries.
 
             command = new ReadCommandInfo { Filters = new[] { new FilterCriteria("1"), new FilterCriteria { Property = "Name", Operation = "StartsWith", Value = "b" } }, ReadRecords = true, ReadTotalCount = true };
-            Assert.AreEqual("b1 / 1", Dump(genericRepos.ExecuteReadCommand(command)));
+            Assert.AreEqual("b1 / 1", Dump(ExecuteReadCommand(genericRepositories, command)));
             Assert.AreEqual(1, entityRepos.DropQueryCount()); // Without paging, there is no need for two queries.
 
             command = new ReadCommandInfo { Filters = new[] { new FilterCriteria("1"), new FilterCriteria { Filter = "System.String", Value = "b" } }, ReadRecords = true, ReadTotalCount = true };
-            Assert.AreEqual("b1 / 1", Dump(genericRepos.ExecuteReadCommand(command)));
+            Assert.AreEqual("b1 / 1", Dump(ExecuteReadCommand(genericRepositories, command)));
             Assert.AreEqual(1, entityRepos.DropQueryCount()); // Without paging, there is no need for two queries.
 
             command = new ReadCommandInfo { Filters = new[] { new FilterCriteria("b") }, Top = 2, Skip = 2, OrderByProperties = new[] { new OrderByProperty { Property = "Name" } }, ReadRecords = true, ReadTotalCount = true };
-            Assert.AreEqual("b3, b4 / 5", Dump(genericRepos.ExecuteReadCommand(command)));
+            Assert.AreEqual("b3, b4 / 5", Dump(ExecuteReadCommand(genericRepositories, command)));
             Assert.AreEqual(1, entityRepos.DropQueryCount()); // Enumerable filter will cause GenericRepository to materialize of the query, so it will be executed only once even though the paging is used.
         }
 
@@ -161,7 +162,7 @@ namespace Rhetos.CommonConcepts.Test
         public void ReadCommand_OutsideInterface()
         {
             var entityRepos = new ImplicitReadCommandRepository();
-            var genericRepos = NewRepos(entityRepos);
+            var genericRepositories = NewRepos(entityRepos);
 
             var command = new ReadCommandInfo
             {
@@ -172,7 +173,7 @@ namespace Rhetos.CommonConcepts.Test
                 ReadRecords = true,
                 ReadTotalCount = true,
             };
-            Assert.AreEqual("b4, b5 / 5", Dump(genericRepos.ExecuteReadCommand(command)));
+            Assert.AreEqual("b4, b5 / 5", Dump(ExecuteReadCommand(genericRepositories, command)));
 
             command = new ReadCommandInfo
             {
@@ -183,14 +184,14 @@ namespace Rhetos.CommonConcepts.Test
                 ReadRecords = true,
                 ReadTotalCount = true,
             };
-            Assert.AreEqual(" / 0", Dump(genericRepos.ExecuteReadCommand(command)));
+            Assert.AreEqual(" / 0", Dump(ExecuteReadCommand(genericRepositories, command)));
         }
 
         [TestMethod]
         public void ReadCommand_Null()
         {
             var entityRepos = new ImplicitReadCommandRepository();
-            var genericRepos = NewRepos(entityRepos);
+            var genericRepositories = NewRepos(entityRepos);
 
             var command = new ReadCommandInfo
             {
@@ -201,7 +202,7 @@ namespace Rhetos.CommonConcepts.Test
                 ReadRecords = true,
                 ReadTotalCount = true,
             };
-            Assert.AreEqual("b3, b4, b5 / 6", Dump(genericRepos.ExecuteReadCommand(command)));
+            Assert.AreEqual("b3, b4, b5 / 6", Dump(ExecuteReadCommand(genericRepositories, command)));
         }
     }
 }
