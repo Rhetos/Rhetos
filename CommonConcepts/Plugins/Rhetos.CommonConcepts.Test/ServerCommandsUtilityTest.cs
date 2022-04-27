@@ -71,8 +71,8 @@ namespace Rhetos.CommonConcepts.Test
         {
             readCommandInfo.DataSource = typeof(ServerCommandsUtilityTest.SimpleEntity).FullName;
 
-            var serverCommandsUtility = new ServerCommandsUtility(new ConsoleLogProvider());
-            var readCommand = new ReadCommand(genericRepositories, new ConsoleLogProvider(), serverCommandsUtility, new ApplyFiltersOnClientRead());
+            var serverCommandsUtility = new ServerCommandsUtility(new ConsoleLogProvider(), genericRepositories);
+            var readCommand = new ReadCommand(new ConsoleLogProvider(), serverCommandsUtility, new ApplyFiltersOnClientRead());
             var commandResult = readCommand.Execute(readCommandInfo);
             return commandResult;
         }

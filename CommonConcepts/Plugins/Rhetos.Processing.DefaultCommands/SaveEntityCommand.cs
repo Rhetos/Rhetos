@@ -17,27 +17,21 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Persistence;
-using System;
 using System.ComponentModel.Composition;
-using System.Linq;
 
 namespace Rhetos.Processing.DefaultCommands
 {
     [Export(typeof(ICommandImplementation))]
     public class SaveEntityCommand : ICommandImplementation<SaveEntityCommandInfo, object>
     {
-        private readonly GenericRepositories _genericRepositories;
         private readonly IPersistenceTransaction _persistenceTransaction;
         private readonly ServerCommandsUtility _serverCommandsUtility;
 
         public SaveEntityCommand(
-            GenericRepositories genericRepositories,
             IPersistenceTransaction persistenceTransaction,
             ServerCommandsUtility serverCommandsUtility)
         {
-            _genericRepositories = genericRepositories;
             _persistenceTransaction = persistenceTransaction;
             _serverCommandsUtility = serverCommandsUtility;
         }
@@ -47,50 +41,27 @@ namespace Rhetos.Processing.DefaultCommands
             if (saveInfo.Entity == null)
                 throw new ClientException("Invalid SaveEntityCommand argument: Entity is not set.");
 
-            // We need to check delete permissions before actually deleting items 
-            // and update items before AND after they are updated.
-            var genericRepository = _genericRepositories.GetGenericRepository(saveInfo.Entity);
+            var entityUtility = _serverCommandsUtility.ForEntity(saveInfo.Entity);
 
-            var updateDeleteItems = ConcatenateNullable(saveInfo.DataToDelete, saveInfo.DataToUpdate);
-            if (updateDeleteItems != null)
-                if (!_serverCommandsUtility.CheckAllItemsWithinFilter(updateDeleteItems, typeof(Common.RowPermissionsWriteItems), genericRepository))
-                {
-                    _persistenceTransaction.DiscardOnDispose();
-                    Guid? missingId;
-                    if (_serverCommandsUtility.MissingItemId(saveInfo.DataToDelete, genericRepository, out missingId))
-                        throw new ClientException($"Deleting a record that does not exist in database. DataStructure={saveInfo.Entity}, ID={missingId}");
-                    else if (_serverCommandsUtility.MissingItemId(saveInfo.DataToUpdate, genericRepository, out missingId))
-                        throw new ClientException($"Updating a record that does not exist in database. DataStructure={saveInfo.Entity}, ID={missingId}");
-                    else
-                        throw new UserException("You are not authorized to write some or all of the provided data. Insufficient permissions to modify the existing data.", $"DataStructure:{saveInfo.Entity},Validation:RowPermissionsWrite");
-                }
+            // We need to check permissions for *deleted* items before actually deleting them,
+            // *updated* items both before AND after they are updated,
+            // and *insert* items after the insert.
 
-            genericRepository.Save(saveInfo.DataToInsert, saveInfo.DataToUpdate, saveInfo.DataToDelete, true);
+            if (!entityUtility.UserHasWriteRowPermissionsBeforeSave(saveInfo.DataToDelete, saveInfo.DataToUpdate))
+            {
+                _persistenceTransaction.DiscardOnDispose();
+                throw new UserException("You are not authorized to write some or all of the provided data. Insufficient permissions to modify the existing data.", $"DataStructure:{saveInfo.Entity},Validation:RowPermissionsWrite");
+            }
 
-            var insertUpdateItems = ConcatenateNullable(saveInfo.DataToInsert, saveInfo.DataToUpdate);
-            // We rely that this call will only use IDs of the items, because other data might be dirty.
-            if (insertUpdateItems != null)
-                if (!_serverCommandsUtility.CheckAllItemsWithinFilter(insertUpdateItems, typeof(Common.RowPermissionsWriteItems), genericRepository))
-                {
-                    _persistenceTransaction.DiscardOnDispose();
-                    throw new UserException("You are not authorized to write some or all of the provided data. Insufficient permissions to apply the new data.", $"DataStructure:{saveInfo.Entity}.");
-                }
+            entityUtility.GenericRepository.Save(saveInfo.DataToInsert, saveInfo.DataToUpdate, saveInfo.DataToDelete, true);
+
+            if (!entityUtility.UserHasWriteRowPermissionsAfterSave(saveInfo.DataToInsert, saveInfo.DataToUpdate))
+            {
+                _persistenceTransaction.DiscardOnDispose();
+                throw new UserException("You are not authorized to write some or all of the provided data. Insufficient permissions to apply the new data.", $"DataStructure:{saveInfo.Entity}.");
+            }
 
             return null;
-        }
-
-        private static IEntity[] ConcatenateNullable(IEntity[] a, IEntity[] b)
-        {
-            if (a != null && a.Length > 0)
-                if (b != null && b.Length > 0)
-                    return a.Concat(b).ToArray();
-                else
-                    return a;
-            else
-                if (b != null && b.Length > 0)
-                    return b;
-                else
-                    return null;
         }
     }
 }

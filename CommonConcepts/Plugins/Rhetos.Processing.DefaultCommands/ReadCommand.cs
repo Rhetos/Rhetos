@@ -31,18 +31,15 @@ namespace Rhetos.Processing.DefaultCommands
     [Export(typeof(ICommandImplementation))]
     public class ReadCommand : ICommandImplementation<ReadCommandInfo, ReadCommandResult>
     {
-        private readonly GenericRepositories _repositories;
         private readonly ILogger _logger;
         private readonly ServerCommandsUtility _serverCommandsUtility;
         private readonly ApplyFiltersOnClientRead _applyFiltersOnClientRead;
 
         public ReadCommand(
-            GenericRepositories repositories,
             ILogProvider logProvider,
             ServerCommandsUtility serverCommandsUtility,
             ApplyFiltersOnClientRead applyFiltersOnClientRead)
         {
-            _repositories = repositories;
             _logger = logProvider.GetLogger(GetType().Name);
             _serverCommandsUtility = serverCommandsUtility;
             _applyFiltersOnClientRead = applyFiltersOnClientRead;
@@ -52,21 +49,26 @@ namespace Rhetos.Processing.DefaultCommands
         {
             if (readInfo.DataSource == null)
                 throw new ClientException("Invalid ReadCommand argument: Data source is not set.");
-            
-            var genericRepository = _repositories.GetGenericRepository(readInfo.DataSource);
-            var result = ExecuteReadCommand(readInfo, genericRepository);
+
+            var entityCommandsUtility = _serverCommandsUtility.ForEntity(readInfo.DataSource);
+
+            var result = ReadData(readInfo, entityCommandsUtility.GenericRepository);
 
             if (result.Records != null && !AlreadyFilteredByRowPermissions(readInfo))
             {
-                var valid = _serverCommandsUtility.CheckAllItemsWithinFilter(result.Records, typeof(Common.RowPermissionsReadItems), genericRepository);
-                if (!valid)
-                    throw new UserException("You are not authorized to access some or all of the data requested.", $"DataStructure:{readInfo.DataSource},Validation:RowPermissionsRead");
+                if (!entityCommandsUtility.UserHasReadRowPermissions(result.Records))
+                    throw new UserException(
+                        "You are not authorized to access some or all of the data requested.",
+                        $"DataStructure:{readInfo.DataSource},Validation:RowPermissionsRead");
             }
 
             return result;
         }
 
-        private ReadCommandResult ExecuteReadCommand(ReadCommandInfo commandInfo, GenericRepository<IEntity> genericRepository)
+        /// <summary>
+        /// Reads data without row permissions verification.
+        /// </summary>
+        public ReadCommandResult ReadData(ReadCommandInfo commandInfo, GenericRepository<IEntity> genericRepository)
         {
             if (!commandInfo.ReadRecords && !commandInfo.ReadTotalCount)
                 throw new ClientException("Invalid ReadCommand argument: At least one of the properties ReadRecords or ReadTotalCount should be set to true.");
