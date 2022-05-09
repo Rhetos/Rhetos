@@ -52,7 +52,8 @@ namespace Rhetos.Processing.DefaultCommands
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if the current user has the read row permissions allowed for the given items.
+        /// Returns <see langword="true"/> if the current user has the read row permissions allowed for the given items,
+        /// or if the row permissions are not implemented on the given data structure.
         /// </summary>
         /// <remarks>
         /// The method uses only provided items' IDs to check the permissions with a database query.
@@ -64,10 +65,10 @@ namespace Rhetos.Processing.DefaultCommands
 
         /// <summary>
         /// Returns <see langword="true"/> if the current user has the write row permissions allowed for the given items,
-        /// *before* saving them to the database.
+        /// or if the row permissions are not implemented on the given data structure.
         /// <para>
         /// Call both methods: <see cref="UserHasWriteRowPermissionsBeforeSave"/> before saving the data
-        /// (to verify the old data) and <see cref="UserHasWriteRowPermissionsAfterSave"/> after saving.
+        /// (to verify the old data) and <see cref="UserHasWriteRowPermissionsAfterSave"/> after saving (to verify the new data).
         /// </para>
         /// </summary>
         /// <remarks>
@@ -77,6 +78,8 @@ namespace Rhetos.Processing.DefaultCommands
         /// because the given records do not exist in the database.
         /// </para>
         /// </remarks>
+        /// <param name="itemsToDelete">The value may be null if there is nothing to delete.</param>
+        /// <param name="itemsToUpdate">The value may be null if there is nothing to update.</param>
         public bool UserHasWriteRowPermissionsBeforeSave(IEntity[] itemsToDelete, IEntity[] itemsToUpdate)
         {
             var updateDeleteItems = ConcatenateNullable(itemsToDelete, itemsToUpdate);
@@ -97,10 +100,10 @@ namespace Rhetos.Processing.DefaultCommands
 
         /// <summary>
         /// Returns <see langword="true"/> if the current user has the write row permissions allowed for the given items,
-        /// *after* saving them to the database.
+        /// or if the row permissions are not implemented on the given data structure.
         /// <para>
         /// Call both methods: <see cref="UserHasWriteRowPermissionsBeforeSave"/> before saving the data
-        /// (to verify the old data) and <see cref="UserHasWriteRowPermissionsAfterSave"/> after saving.
+        /// (to verify the old data) and <see cref="UserHasWriteRowPermissionsAfterSave"/> after saving (to verify the new data).
         /// </para>
         /// </summary>
         /// <remarks>
@@ -110,6 +113,8 @@ namespace Rhetos.Processing.DefaultCommands
         /// because the given records do not exist in the database.
         /// </para>
         /// </remarks>
+        /// <param name="itemsToInsert">The value may be null if there is nothing to insert.</param>
+        /// <param name="itemsToUpdate">The value may be null if there is nothing to update.</param>
         public bool UserHasWriteRowPermissionsAfterSave(IEntity[] itemsToInsert, IEntity[] itemsToUpdate)
         {
             var insertUpdateItems = ConcatenateNullable(itemsToInsert, itemsToUpdate);
@@ -136,7 +141,9 @@ namespace Rhetos.Processing.DefaultCommands
         }
 
         /// <summary>
-        /// Checks if all items are within the given filter. Works with materialized items.
+        /// Checks if all items are within the given filter.
+        /// Works with materialized items.
+        /// It the filter is not implemented on the given data structure, returns true.
         /// </summary>
         public bool CheckAllItemsWithinFilter(object[] validateObjects, Type filterType)
         {
