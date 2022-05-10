@@ -256,6 +256,16 @@ namespace Rhetos.Dom.DefaultConcepts
                 .Select(acItem =>
                 {
                     int numberOfPluses = GetNumberOfPluses(acItem.Code, acItem.Item.ID, entityName, propertyName);
+                    if (numberOfPluses > 9)
+                        return new
+                        {
+                            acItem.Item,
+                            acItem.GroupValue,
+                            // The code generating for large sufixes is simplified to only generate last 9 digits, and assume the leading ones are zeros.
+                            Prefix = acItem.Code.Substring(0, acItem.Code.Length - numberOfPluses) + new string('0', numberOfPluses - 9),
+                            MinDigits = 9,
+                            ProvidedCodeValue = (int?)null
+                        };
                     if (numberOfPluses > 0)
                         return new
                         {
@@ -267,7 +277,7 @@ namespace Rhetos.Dom.DefaultConcepts
                         };
 
                     int suffixDigitsCount = GetSuffixDigitsCount(acItem.Code);
-                    if (suffixDigitsCount > 0)
+                    if (suffixDigitsCount > 0 && suffixDigitsCount <= 9) // Larger then 'int' numbers are not supported, and not detected as a pattern: prefix + number.
                         return new
                         {
                             acItem.Item,

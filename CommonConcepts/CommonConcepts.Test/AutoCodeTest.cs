@@ -191,6 +191,135 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
+        public void SimpleLargeLengthSpecifiedCode()
+        {
+            using (var scope = TestScope.Create())
+            {
+                DeleteOldData(scope);
+                var repository = scope.Resolve<Common.DomRepository>();
+
+                string code1 = new string('1', 40);
+                TestSimple(repository, code1, code1); // No automatic code generation should be involved here.
+
+                string code2 = new string('2', 40);
+                TestSimple(repository, code2, code2); // No automatic code generation should be involved here.
+            }
+        }
+
+        [TestMethod]
+        public void SimpleLargeLengthPlusZeros()
+        {
+            using (var scope = TestScope.Create())
+            {
+                DeleteOldData(scope);
+                var repository = scope.Resolve<Common.DomRepository>();
+
+                string pattern = new string('+', 40);
+                string code1 = new string('0', 39) + "1";
+                TestSimple(repository, pattern, code1);
+                string code2 = new string('0', 39) + "2";
+                TestSimple(repository, pattern, code2);
+            }
+        }
+
+        [TestMethod]
+        public void SimpleLargeLengthPlusExisting()
+        {
+            using (var scope = TestScope.Create())
+            {
+                DeleteOldData(scope);
+                var repository = scope.Resolve<Common.DomRepository>();
+
+                string code = new string('5', 40);
+                TestSimple(repository, code, code); // Insert existing data.
+
+                // The code generating for large sufixes is simplified to only generate last 9 digits, and assume the leading ones are zeros.
+                string pattern = new string('+', 40);
+                string code1 = new string('0', 39) + "1";
+                TestSimple(repository, pattern, code1);
+                string code2 = new string('0', 39) + "2";
+                TestSimple(repository, pattern, code2);
+            }
+        }
+
+        [TestMethod]
+        public void SimpleLargeLengthDigitsPrefix()
+        {
+            using (var scope = TestScope.Create())
+            {
+                DeleteOldData(scope);
+                var repository = scope.Resolve<Common.DomRepository>();
+
+                string digits39 = "123456789112233445566778899111222333444";
+                Assert.AreEqual(39, digits39.Length);
+
+                string code1 = digits39 + "1";
+                TestSimple(repository, code1, code1);
+
+                string pattern = digits39 + "+";
+                string code2 = digits39 + "2";
+                TestSimple(repository, pattern, code2);
+            }
+        }
+
+        [TestMethod]
+        public void SimpleLargeLengthMultipleWithoutExisting()
+        {
+            using (var scope = TestScope.Create())
+            {
+                DeleteOldData(scope);
+                var repository = scope.Resolve<Common.DomRepository>();
+
+                string digits39 = "123456789112233445566778899111222333444";
+
+                var code5Item = new TestAutoCode.Simple { Code = digits39 + "5" };
+                var nextItem = new TestAutoCode.Simple { Code = digits39 + "+" };
+                repository.TestAutoCode.Simple.Insert(new[] { code5Item, nextItem });
+                Assert.AreEqual(
+                    digits39 + "1", // Unfortunately AutoCode does not detect matching prefixes within the inserted batch for larger number of digits (should insert "6"), but at least it does not fail with an integer overflow.
+                    repository.TestAutoCode.Simple.Load(new[] { nextItem.ID }).Single().Code);
+            }
+        }
+
+        [TestMethod]
+        public void SimpleLargeLengthMultipleWithExisting()
+        {
+            using (var scope = TestScope.Create())
+            {
+                DeleteOldData(scope);
+                var repository = scope.Resolve<Common.DomRepository>();
+
+                string digits39 = "123456789112233445566778899111222333444";
+
+                string code1 = digits39 + "1";
+                TestSimple(repository, code1, code1); // Insert existing data.
+
+                var code5Item = new TestAutoCode.Simple { Code = digits39 + "5" };
+                var nextItem = new TestAutoCode.Simple { Code = digits39 + "+" };
+                repository.TestAutoCode.Simple.Insert(new[] { code5Item, nextItem });
+                Assert.AreEqual(
+                    digits39 + "2", // Unfortunately AutoCode does not detect matching prefixes within the inserted batch for larger number of digits (should insert "6"), but at least it does not fail with an integer overflow.
+                    repository.TestAutoCode.Simple.Load(new[] { nextItem.ID }).Single().Code);
+            }
+        }
+
+        [TestMethod]
+        public void SimpleStressGuid()
+        {
+            using (var scope = TestScope.Create())
+            {
+                DeleteOldData(scope);
+                var repository = scope.Resolve<Common.DomRepository>();
+
+                for (int test = 0; test < 200; test++)
+                {
+                    string specified = Guid.NewGuid().ToString();
+                    TestSimple(repository, specified, specified);
+                }
+            }
+        }
+
+        [TestMethod]
         public void DoubleAutoCode()
         {
             using (var scope = TestScope.Create())
