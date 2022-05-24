@@ -38,6 +38,9 @@ namespace Rhetos.Deployment
 
         public void ValidateDbConnection()
         {
+            if (string.IsNullOrEmpty(_connectionString))
+                throw new ArgumentException($"Database connection string is not specified. Please review the application's configuration ({ConnectionString.ConnectionStringConfigurationKey}).");
+
             try
             {
                 new DbConnectionStringBuilder().ConnectionString = _connectionString;

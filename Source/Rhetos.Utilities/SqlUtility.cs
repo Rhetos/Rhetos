@@ -74,8 +74,11 @@ namespace Rhetos.Utilities
 
         private static string TrySetApplicationName(string connectionString)
         {
+            if (string.IsNullOrEmpty(connectionString))
+                return connectionString;
             if (!_databaseLanguageIsMsSql)
-                 return connectionString;
+                return connectionString;
+
             try
             {
                 var dbConnectionStringBuilder = new DbConnectionStringBuilder();
