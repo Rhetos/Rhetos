@@ -20,7 +20,7 @@
 using Microsoft.Extensions.Hosting;
 using Rhetos.Utilities;
 using System;
-using System.Reflection;
+using System.IO;
 using System.Runtime.Loader;
 
 namespace Rhetos
@@ -50,6 +50,9 @@ namespace Rhetos
             var entryPointType = startupAssembly.EntryPoint?.DeclaringType;
             if (entryPointType == null)
                 throw new FrameworkException($"Startup assembly '{startupAssembly.Location}' doesn't have an entry point.");
+
+            if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_CONTENTROOT")))
+                Environment.SetEnvironmentVariable("ASPNETCORE_CONTENTROOT", Path.GetDirectoryName(rhetosHostAssemblyPath));
 
             var hostBuilderFactory = HostFactoryResolver.ResolveHostBuilderFactory<IHostBuilder>(startupAssembly);
             if (hostBuilderFactory != null)

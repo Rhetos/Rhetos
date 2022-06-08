@@ -135,7 +135,6 @@ namespace Rhetos
 
             void ConfigureHostBuilder(IHostBuilder hostBuilder)
             {
-                hostBuilder.UseContentRoot(Path.GetDirectoryName(rhetosHostAssemblyPath));
                 hostBuilder.ConfigureServices((hostContext, services) =>
                 {
                     services.AddRhetosHost((serviceProvider, rhetosHostBuilder) =>
