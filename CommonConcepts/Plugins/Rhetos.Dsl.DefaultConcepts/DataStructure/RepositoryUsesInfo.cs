@@ -33,7 +33,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// The type will be resolved from IoC container.
     /// </summary>
     /// <remarks>
-    /// For application that uses DeployPackages build process, instead of Rhetos CLI, the property value should be the assembly qualified name,
+    /// For older application that uses DeployPackages build process, instead of Rhetos CLI, the property value should be the assembly qualified name,
     /// but it does not need to contain Version, Culture or PublicKeyToken if you are referencing a local assembly in the application's folder.
     /// </remarks>
     [Export(typeof(IConceptInfo))]
