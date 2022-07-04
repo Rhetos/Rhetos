@@ -15,21 +15,36 @@
       <dependency id="System.CommandLine" version="2.0.0-beta1.21308.1" /> <!-- For RhetosCli. -->
     </dependencies>
     <contentFiles>
-      <files include="any/any/rhetos.exe" buildAction="None" copyToOutput="true" />
-      <files include="any/any/rhetos.dll" buildAction="None" copyToOutput="true" />
-      <files include="any/any/rhetos.pdb" buildAction="None" copyToOutput="true" />
-      <files include="any/any/rhetos.runtimeconfig.json" buildAction="None" copyToOutput="true" />
-      <files include="any/any/rhetos.exe.nlog" buildAction="None" copyToOutput="true" />
+      <files include="any/net5.0/RhetosTools/rhetos.exe" buildAction="None" copyToOutput="true" flatten="true" />
+      <files include="any/net5.0/RhetosTools/rhetos.dll" buildAction="None" copyToOutput="true" flatten="true" />
+      <files include="any/net5.0/RhetosTools/rhetos.pdb" buildAction="None" copyToOutput="true" flatten="true" />
+      <files include="any/net5.0/RhetosTools/rhetos.runtimeconfig.json" buildAction="None" copyToOutput="true" flatten="true" />
+      <files include="any/net5.0/RhetosTools/rhetos.exe.nlog" buildAction="None" copyToOutput="true" flatten="true" />
+
+      <files include="any/net6.0/RhetosTools/rhetos.exe" buildAction="None" copyToOutput="true" flatten="true" />
+      <files include="any/net6.0/RhetosTools/rhetos.dll" buildAction="None" copyToOutput="true" flatten="true" />
+      <files include="any/net6.0/RhetosTools/rhetos.pdb" buildAction="None" copyToOutput="true" flatten="true" />
+      <files include="any/net6.0/RhetosTools/rhetos.runtimeconfig.json" buildAction="None" copyToOutput="true" flatten="true" />
+      <files include="any/net6.0/RhetosTools/rhetos.exe.nlog" buildAction="None" copyToOutput="true" flatten="true" />
     </contentFiles>
   </metadata>
   <files>
     <file src="MsBuildIntegration\Rhetos.Host.targets" target="build" />
     <file src="MsBuildIntegration\Rhetos.Host.props" target="build" />
 
-    <!-- Rhetos 'dbupdate' needs to be on net5, so that it can run in the context of net5 and net6 host applications. -->
-    <file src="RhetosCli\bin\Debug\net5.0\rhetos.exe" target="contentFiles/any/any" />
-    <file src="RhetosCli\bin\Debug\net5.0\rhetos.dll" target="contentFiles/any/any" />
-    <file src="RhetosCli\bin\Debug\net5.0\rhetos.pdb" target="contentFiles/any/any" />
+    <!-- Rhetos 'dbupdate' needs to be on net5, so that it can run in the context of the net5 host applications. -->
+    <file src="RhetosCli\bin\Debug\net5.0\rhetos.exe" target="contentFiles/any/net5.0/RhetosTools" />
+    <file src="RhetosCli\bin\Debug\net5.0\rhetos.dll" target="contentFiles/any/net5.0/RhetosTools" />
+    <file src="RhetosCli\bin\Debug\net5.0\rhetos.pdb" target="contentFiles/any/net5.0/RhetosTools" />
+    <file src="RhetosCli\bin\Debug\net5.0\rhetos.runtimeconfig.json" target="contentFiles/any/net5.0/RhetosTools" />
+    <file src="RhetosCli\bin\Debug\net5.0\rhetos.exe.nlog" target="contentFiles/any/net5.0/RhetosTools" />
+
+    <file src="RhetosCli\bin\Debug\net6.0\rhetos.exe" target="contentFiles/any/net6.0/RhetosTools" />
+    <file src="RhetosCli\bin\Debug\net6.0\rhetos.dll" target="contentFiles/any/net6.0/RhetosTools" />
+    <file src="RhetosCli\bin\Debug\net6.0\rhetos.pdb" target="contentFiles/any/net6.0/RhetosTools" />
+    <file src="RhetosCli\bin\Debug\net6.0\rhetos.runtimeconfig.json" target="contentFiles/any/net6.0/RhetosTools" />
+    <file src="RhetosCli\bin\Debug\net6.0\rhetos.exe.nlog" target="contentFiles/any/net6.0/RhetosTools" />
+
     <!-- When invoking rhetos.exe, dotnet will search for the Microsoft.Win32.SystemEvents.dll in the output folder because the DLL is specified in the rhetos.deps.json file
     but an ASP.NET project will not have it because this DLL is located in Microsoft.AspNetCore.App runtime folder and will throw an error.
     As the Microsoft.Win32.SystemEvents.dll is not used when calling the "rhetos dbupdate" command
@@ -38,7 +53,5 @@
     we are omitting the rhetos.deps.json file as a workaround so that dotnet will not try to search for this dependency
     instead it will load only assemblies when needed that are located inside the bin folder (for the other assemblies would throw an error). -->
     <!-- <file src="RhetosCli\bin\Debug\net5.0\rhetos.deps.json" target="contentFiles/any/any" /> -->
-    <file src="RhetosCli\bin\Debug\net5.0\rhetos.runtimeconfig.json" target="contentFiles/any/any" />
-    <file src="RhetosCli\bin\Debug\net5.0\rhetos.exe.nlog" target="contentFiles/any/any" />
   </files>
 </package>
