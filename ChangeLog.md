@@ -1,5 +1,15 @@
 ﻿# Rhetos release notes
 
+## 5.2.0 (TO BE RELEASED)
+
+### Internal improvements
+
+* Bugfix: LINQPad script Rhetos DOM.linq fails with a database connection error
+  on application that uses minimal hosting model (issue #465).
+* Bugfix: AutoCode throws an integer overflow exception on more than 9 digits used in the code suffix.
+* Bugfix: Better error message for missing connection string (issue since 5.1.0).
+* ServerCommandsUtility provides EntityCommandsUtility as a helper for Read and Write Row Permissions.
+
 ## 5.1.0 (2022-04-08)
 
 ### New features
