@@ -262,7 +262,7 @@ namespace Rhetos.Dom.DefaultConcepts
                             acItem.Item,
                             acItem.GroupValue,
                             // The code generating for large sufixes is simplified to only generate last 9 digits, and assume the leading ones are zeros.
-                            Prefix = acItem.Code.Substring(0, acItem.Code.Length - numberOfPluses) + new string('0', numberOfPluses - 9),
+                            Prefix = acItem.Code[..^numberOfPluses] + new string('0', numberOfPluses - 9),
                             MinDigits = 9,
                             ProvidedCodeValue = (int?)null
                         };
@@ -271,7 +271,7 @@ namespace Rhetos.Dom.DefaultConcepts
                         {
                             acItem.Item,
                             acItem.GroupValue,
-                            Prefix = acItem.Code.Substring(0, acItem.Code.Length - numberOfPluses),
+                            Prefix = acItem.Code[..^numberOfPluses],
                             MinDigits = numberOfPluses,
                             ProvidedCodeValue = (int?)null
                         };
@@ -282,9 +282,9 @@ namespace Rhetos.Dom.DefaultConcepts
                         {
                             acItem.Item,
                             acItem.GroupValue,
-                            Prefix = acItem.Code.Substring(0, acItem.Code.Length - suffixDigitsCount),
+                            Prefix = acItem.Code[..^suffixDigitsCount],
                             MinDigits = suffixDigitsCount,
-                            ProvidedCodeValue = (int?)int.Parse(acItem.Code.Substring(acItem.Code.Length - suffixDigitsCount))
+                            ProvidedCodeValue = (int?)int.Parse(acItem.Code[^suffixDigitsCount..])
                         };
 
                     return null;
