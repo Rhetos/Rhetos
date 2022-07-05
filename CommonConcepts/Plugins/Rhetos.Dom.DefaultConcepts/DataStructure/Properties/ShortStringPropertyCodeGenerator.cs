@@ -37,8 +37,6 @@ namespace Rhetos.Dom.DefaultConcepts
 
             if (info.DataStructure is IWritableOrmDataStructure)
                 codeBuilder.InsertCode(LimitStringLengthOnSaveSnippet(info), WritableOrmDataStructureCodeGenerator.OldDataLoadedTag, info.DataStructure);
-
-            // TODO: Implement error handling of the maximum length for filter parameters and any other data (sent from client) that is used in a way other than Save function.
         }
 
         private string LimitStringLengthOnSaveSnippet(PropertyInfo info)

@@ -35,7 +35,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private static string RepositoryFunctionsSnippet(ReportFileInfo info)
         {
-            // TODO: Implement UseExecutionContext concept for reports, then remove the predefined parameter executionContext from _ReportFile_FileGenerator.
+            // TODO: GenerateReport should not be static, to allow code snippet to use other repository members, then remove the predefined parameter executionContext from _ReportFile_FileGenerator.
             return string.Format(
         @"protected static Func<object[][], string, Common.ExecutionContext, Rhetos.Dom.DefaultConcepts.ReportFile> _ReportFile_FileGenerator = {2};
 
