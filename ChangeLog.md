@@ -219,8 +219,20 @@ Changes in Rhetos libraries API:
 27. Default constructor for ExecutionContext is now protected.
     Create a derived class from ExecutionContext to use the default constructor in unit tests.
 
+### New features
+
+* New concept **DataStructureLocalizer**, that adds a standard `_localizer` property to the repository class.
+  It is a typed localizer `ILocalizer<TDataStructure>` that allows custom property name localization in the context of the given data structure,
+  see `msgctxt` in the [GetText example](https://github.com/Rhetos/Rhetos/wiki/Recommended-application-setup#adding-localization).
+
 ### Internal improvements
 
+* Localizing entity names and property names in standard user error messages.
+  Entity name's default text is 'module.entity'.
+  Property names default text is simple property name, but it is localized within the context of the full entity name.
+  For example, in .po files with [GetText localization](https://github.com/Rhetos/Rhetos/wiki/Recommended-application-setup#adding-localization),
+  property names can be localized globally with standard `msgid` entry,
+  or specifically for one entity by adding `msgctxt "SomeModuleName.SomeEntityName"` in the previous line.
 * Rhetos CLI supports configurable output verbosity:
   * `--verbosity diagnostic` option: Console output includes all trace loggers.
     Example: `rhetos --verbosity diagnostic build .`
