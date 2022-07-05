@@ -3,4 +3,7 @@
         <RhetosDeploy Condition=" '$(RhetosDeploy)'=='' ">True</RhetosDeploy>
         <RhetosDatabaseUpdated>$(BaseIntermediateOutputPath)Rhetos\Rhetos.DatabaseUpdated</RhetosDatabaseUpdated>
     </PropertyGroup>
+    <ItemGroup>
+        <None Update="/**/rhetos.host/**/contentFiles/**/RhetosTools/*" Visible="False" />
+    </ItemGroup>
 </Project>
