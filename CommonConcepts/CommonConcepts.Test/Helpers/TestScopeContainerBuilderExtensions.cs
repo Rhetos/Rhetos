@@ -56,7 +56,7 @@ namespace CommonConcepts.Test
         /// It supports <paramref name="configure"/> action that directly modifies properties of the options class.
         /// </summary>
         /// <remarks>
-        /// Since options classes are usually singletons, the action must not modify an object that is references
+        /// Since options classes are usually singletons, the action must not modify an object that is referenced
         /// by the options class, without modifying the options class property,
         /// because it might affect configuration of other unit tests.
         /// </remarks>

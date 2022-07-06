@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>Rhetos.Host.Net</id>
-    <version>5.2.0-dev</version>
+    <version>5.3.0-dev</version>
     <authors>Omega software</authors>
     <owners>Omega software</owners>
     <licenseUrl>http://opensource.org/licenses/AGPL-3.0</licenseUrl>
@@ -11,7 +11,7 @@
     <copyright>Copyright Omega software 2013</copyright>
     <tags>Rhetos</tags>
     <dependencies>
-      <dependency id="Rhetos" version="[5.2.0-dev,5.3.0)" />
+      <dependency id="Rhetos" version="[5.3.0-dev,5.4.0)" />
       <dependency id="Microsoft.Extensions.Logging" version="6.0.0" />
       <dependency id="Microsoft.Extensions.Logging.Console" version="6.0.0" />
       <dependency id="Microsoft.Extensions.Logging.Debug" version="6.0.0" />
