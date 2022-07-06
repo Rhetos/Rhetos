@@ -1,13 +1,15 @@
 ﻿# Rhetos release notes
 
-## 5.2.0 (TO BE RELEASED)
+## 5.2.0 (2022-07-06)
 
 ### Internal improvements
 
+* Bugfix: `rhetos.exe dbupdate` command on a .NET 6 app requires .NET 5 runtime (issue #466).
 * Bugfix: LINQPad script Rhetos DOM.linq fails with a database connection error
   on application that uses minimal hosting model (issue #465).
 * Bugfix: AutoCode throws an integer overflow exception on more than 9 digits used in the code suffix.
 * Bugfix: Better error message for missing connection string (issue since 5.1.0).
+* Runtime assets (rhetos.exe and other files) hidden in Visual Studio Solution Explorer to reduce clutter.
 * ServerCommandsUtility provides EntityCommandsUtility as a helper for Read and Write Row Permissions.
 
 ## 5.1.0 (2022-04-08)
