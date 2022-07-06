@@ -24,7 +24,8 @@ namespace Rhetos.Utilities
     public static class ErrorMessages
     {
         /// <summary>
-        /// The recommended error message to be returned to end user in case of a <see cref="ClientException"/>.
+        /// The recommended error message to be returned to end user in case of a <see cref="ClientException"/>,
+        /// when the error has the default HTTP status code 400.
         /// The response should additionally include the <see cref="ClientException"/>'s <see cref="Exception.Message"/>.
         /// </summary>
         public static readonly string ClientExceptionUserMessage = "Operation could not be completed because the request sent to the server was not valid or not properly formatted.";
