@@ -26,19 +26,15 @@ using System.ComponentModel.Composition;
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(QueryFilterExpressionInfo))]
-    public class QueryExpressionFilterCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(FilterPrototypeInfo))]
+    public class FilterPrototypeCodeGenerator : IConceptCodeGenerator
     {
-        public static readonly CsTag<QueryFilterExpressionInfo> BeforeFilterTag = "BeforeFilter"; // TODO: Can we use this?
-
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (QueryFilterExpressionInfo)conceptInfo;
-            string queryableType = $"IQueryable<Common.Queryable.{info.Source.Module.Name}_{info.Source.Name}>";
-
-            var parsedExpression = new ParsedExpression(info.Expression, new[] { queryableType, info.Parameter }, info, BeforeFilterTag.Evaluate(info));
+            var info = (FilterPrototypeInfo)conceptInfo;
+            string enumerableType = $"IEnumerable<{info.Source.FullName}>";
             string filterMethod =
-        $@"public {queryableType} Filter{parsedExpression.MethodParametersAndBody}
+        $@"public partial {enumerableType} Filter({enumerableType} items, {info.Parameter} parameter);
 
         ";
 

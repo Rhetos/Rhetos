@@ -18,20 +18,23 @@
 */
 
 using System.ComponentModel.Composition;
-using System.Linq;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// A read method that returns a LINQ query for the given parameter value.
-    /// The code snippet should be a lambda expression that returns the query:
-    /// <c>parameter => IQueryable&lt;DataStructureType&gt;</c>.
+    /// A read method that returns an IEnumerable of the given data structure type, for the specified input parameter.
+    /// The lambda expression returns the loaded data,
+    /// for example: <c>parameter => this.Query.Where(...).ToSimple().ToList()</c>.
     /// The parameter type also represents the filter name.
     /// </summary>
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("Query")]
-    public class QueryExpressionInfo : QueryInfo
+    [ConceptKeyword("Load")]
+    public class LoadExpressionInfo : LoadInfo
     {
-        public string QueryImplementation { get; set; }
+        /// <summary>
+        /// A lambda expression that returns a subset of a given query with parameter, for example:
+        /// <c>parameter => this.Query.Where(...).ToSimple().ToList()</c>.
+        /// </summary>
+        public string Expression { get; set; }
     }
 }

@@ -17,21 +17,29 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Compiler;
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Extensibility;
+using Rhetos.Utilities;
+using System;
 using System.ComponentModel.Composition;
-using System.Linq;
 
-namespace Rhetos.Dsl.DefaultConcepts
+namespace Rhetos.Dom.DefaultConcepts
 {
-    /// <summary>
-    /// A read method that returns a LINQ query for the given parameter value.
-    /// The code snippet should be a lambda expression that returns the query:
-    /// <c>parameter => IQueryable&lt;DataStructureType&gt;</c>.
-    /// The parameter type also represents the filter name.
-    /// </summary>
-    [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("Query")]
-    public class QueryExpressionInfo : QueryInfo
+    [Export(typeof(IConceptCodeGenerator))]
+    [ExportMetadata(MefProvider.Implements, typeof(LoadPrototypeInfo))]
+    public class LoadPrototypeCodeGenerator : IConceptCodeGenerator
     {
-        public string QueryImplementation { get; set; }
+        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
+        {
+            var info = (LoadPrototypeInfo)conceptInfo;
+            string filterMethod =
+        $@"public partial IEnumerable<{info.DataStructure.FullName}> Load({info.Parameter} parameter);
+
+        ";
+
+            codeBuilder.InsertCode(filterMethod, RepositoryHelper.RepositoryMembers, info.DataStructure);
+        }
     }
 }

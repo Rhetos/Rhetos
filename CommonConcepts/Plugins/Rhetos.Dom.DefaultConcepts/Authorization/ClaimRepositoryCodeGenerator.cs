@@ -36,7 +36,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             return string.Format(
         @"// Claims in use should be deactivated instead of deleted.
-        public IEnumerable<Claim> Filter(IEnumerable<Claim> deleted, Rhetos.Dom.DefaultConcepts.DeactivateInsteadOfDelete parameter)
+        public partial IEnumerable<Claim> Filter(IEnumerable<Claim> deleted, Rhetos.Dom.DefaultConcepts.DeactivateInsteadOfDelete parameter)
         {{
             var deactivateClaimsId = new List<Guid>();
             var deletedClaimsId = new Lazy<List<Guid>>(() => deleted.Select(c => c.ID).ToList());

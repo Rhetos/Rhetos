@@ -1,5 +1,37 @@
 Module TestReading
 {
+    Entity Basic
+    {
+        ShortString Name;
+
+        // Testing 4 basic read methods.
+
+        Load ParameterLoadPrototype;
+        Load ParameterLoadExpression 'parameter =>
+            this.Query().Where(item => item.Name.StartsWith(parameter.Pattern)).ToSimple().ToList()';
+
+        Query ParameterQueryPrototype;
+        Query ParameterQueryExpression 'parameter =>
+            this.Query().Where(item => item.Name.StartsWith(parameter.Pattern))';
+
+        Filter ParameterFilterPrototype;
+        Filter ParameterFilterExpression '(items, parameter) =>
+            items.Where(item => item.Name.StartsWith(parameter.Pattern)).ToList()';
+
+        QueryFilter ParameterQueryFilterPrototype;
+        QueryFilter ParameterQueryFilterExpression '(query, parameter) =>
+            query.Where(item => item.Name.StartsWith(parameter.Pattern))';
+    }
+
+    Parameter ParameterLoadPrototype { ShortString Pattern; }
+    Parameter ParameterLoadExpression { ShortString Pattern; }
+    Parameter ParameterQueryPrototype { ShortString Pattern; }
+    Parameter ParameterQueryExpression { ShortString Pattern; }
+    Parameter ParameterFilterPrototype { ShortString Pattern; }
+    Parameter ParameterFilterExpression { ShortString Pattern; }
+    Parameter ParameterQueryFilterPrototype { ShortString Pattern; }
+    Parameter ParameterQueryFilterExpression { ShortString Pattern; }
+
     Entity Simple
     {
         ShortString Name;

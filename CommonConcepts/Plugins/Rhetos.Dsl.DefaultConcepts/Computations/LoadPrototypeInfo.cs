@@ -18,20 +18,21 @@
 */
 
 using System.ComponentModel.Composition;
-using System.Linq;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
-    /// A read method that returns a LINQ query for the given parameter value.
-    /// The code snippet should be a lambda expression that returns the query:
-    /// <c>parameter => IQueryable&lt;DataStructureType&gt;</c>.
-    /// The parameter type also represents the filter name.
+    /// Declares a method for loading data on the given data structure.
+    /// The <see cref="LoadInfo.Parameter"/> property is the input parameter type; it also of represents the filter name.
     /// </summary>
+    /// <remarks>
+    /// This concept generates a partial method 'Load' on the repository class, in order to specify the method's inputs and outputs.
+    /// This partial method should be implemented by developer on another partial class implementation for the repository class.
+    /// The method must return the IEnumerable of the <see cref="LoadInfo.DataStructure"/> type.
+    /// </remarks>
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("Query")]
-    public class QueryExpressionInfo : QueryInfo
+    [ConceptKeyword("Load")]
+    public class LoadPrototypeInfo : LoadInfo
     {
-        public string QueryImplementation { get; set; }
     }
 }

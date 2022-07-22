@@ -29,7 +29,6 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// The <see cref="Parameter"/> property also of represents the filter name.
     /// </summary>
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("Query")]
     public class QueryInfo : IConceptInfo
     {
         [ConceptKey]

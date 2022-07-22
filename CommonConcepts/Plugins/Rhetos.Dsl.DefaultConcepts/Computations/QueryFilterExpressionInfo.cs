@@ -32,7 +32,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     public class QueryFilterExpressionInfo : QueryFilterInfo
     {
         /// <summary>
-        /// A lambda expression that returns a subset of a given query with parameter, for example:
+        /// A lambda expression that returns a subset of the given query with parameter, for example:
         /// <c>(query, parameter) => query.Where(...)</c>.
         /// </summary>
         public string Expression { get; set; }

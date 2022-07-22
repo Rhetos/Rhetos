@@ -1,5 +1,25 @@
 ﻿# Rhetos release notes
 
+## 5.3.0 (TO BE RELEASED)
+
+### New features
+
+* New set of four basic concepts for reading and filtering data on entities and other data structures:
+  **Load**, **Query**, **Filter** and **QueryFilter** provide methods for loading and querying data with filter parameters.
+  Each comes in three forms:
+  1. Load/Query/Filter method can be implemented *inline* in the DSL script, with a C# expression.
+  2. If the filter expression is omitted, the concept will create a *partial* Load/Query/Filter method
+     on the repository class. Developer can implement the method manually in another partial class implementation.
+     Note that the IntelliSense in Visual Studio will autocomplete the partial method parameters
+     and result type, after writing the `partial` keyword.
+  3. Base concept (LoadInfo, QueryInfo, ...) for usage in custom concepts development.
+  * Remarks:
+    * These new concepts are an alternative to the old FilterBy and ComposableFilterBy concepts.
+    * **ItemFilter** is a helper that generates the QueryFilter concept.
+    * There are changes compared to the early draft of Load and QueryFilter prototype concepts
+      (without the expression in DSL script): the read methods are now *partial*,
+      and the Load method returns IEnumerable instead of an array.
+
 ## 5.2.0 (2022-07-06)
 
 ### Internal improvements

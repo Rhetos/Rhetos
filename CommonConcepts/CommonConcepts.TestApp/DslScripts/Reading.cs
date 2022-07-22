@@ -25,9 +25,33 @@ using System.Linq.Expressions;
 using System.Runtime.Serialization;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Utilities;
+using Common.Queryable;
 
 namespace TestReading.Repositories
 {
+    public partial class Basic_Repository
+    {
+        public partial IEnumerable<Basic> Load(ParameterLoadPrototype parameter)
+        {
+            return this.Query().Where(item => item.Name.StartsWith(parameter.Pattern)).ToSimple().ToList();
+        }
+
+        public partial IQueryable<TestReading_Basic> Query(ParameterQueryPrototype parameter)
+        {
+            return this.Query().Where(item => item.Name.StartsWith(parameter.Pattern));
+        }
+
+        public partial IEnumerable<Basic> Filter(IEnumerable<Basic> items, ParameterFilterPrototype parameter)
+        {
+            return items.Where(item => item.Name.StartsWith(parameter.Pattern)).ToList();
+        }
+
+        public partial IQueryable<TestReading_Basic> Filter(IQueryable<TestReading_Basic> query, ParameterQueryFilterPrototype parameter)
+        {
+            return query.Where(item => item.Name.StartsWith(parameter.Pattern));
+        }
+    }
+
     public partial class Simple_Repository
     {
         public Simple[] CustomFilterA()
@@ -48,14 +72,13 @@ namespace TestReading.Repositories
             return query.Where(item => item.Name.StartsWith("B"));
         }
 
-        public Simple[] Load(string[] names)
+        public partial IEnumerable<Simple> Load(string[] names)
         {
             return names.Select(name => new Simple { Name = name }).ToArray();
         }
 
-        public IQueryable<Common.Queryable.TestReading_Simple> Filter(
-            IQueryable<Common.Queryable.TestReading_Simple> query,
-            Prefix prefix)
+        public partial IQueryable<TestReading_Simple> Filter(
+            IQueryable<TestReading_Simple> query, Prefix prefix)
         {
             return query.Where(item => item.Name.StartsWith(prefix.Pattern));
         }

@@ -30,7 +30,6 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// it also of represents the filter name.
     /// </summary>
     [Export(typeof(IConceptInfo))]
-    [ConceptKeyword("QueryFilter")]
     public class QueryFilterInfo : IConceptInfo
     {
         [ConceptKey]
