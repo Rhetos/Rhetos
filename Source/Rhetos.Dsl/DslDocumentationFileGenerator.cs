@@ -23,6 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Xml.Linq;
 
 namespace Rhetos.Dsl
@@ -93,8 +94,40 @@ namespace Rhetos.Dsl
 
         private static string GetValue(XElement typeInfo, string descendantName)
         {
+            var element = typeInfo?.Descendants(XName.Get(descendantName)).SingleOrDefault();
+            if (element == null)
+                return null;
+
+            var result = new List<string>();
+            AddText(result, element);
+
             string value = typeInfo?.Descendants(XName.Get(descendantName)).SingleOrDefault()?.Value?.Trim();
-            return string.IsNullOrWhiteSpace(value) ? null : value;
+
+            string text = string.Join(" ", result
+                .SelectMany(part => part.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
+                .Select(part => part.Trim())
+                .Where(part => !string.IsNullOrEmpty(part)));
+            return string.IsNullOrWhiteSpace(text) ? null : text;
+        }
+
+        private static void AddText(List<string> result, XNode node)
+        {
+            if (node is XElement element)
+            {
+                foreach (var attribute in element.Attributes())
+                    result.Add(SimplifyAttribute(attribute.Value));
+                foreach (var childNode in element.Nodes())
+                    AddText(result, childNode);
+            }
+            else if (node is XText textNode)
+                result.Add(textNode.Value);
+            else
+                result.Add(node.ToString());
+        }
+
+        private static string SimplifyAttribute(string value)
+        {
+            return value.Split('.').Last();
         }
 
         private XDocument LoadXmlDocumentForAssembly(string codeBasePath)
