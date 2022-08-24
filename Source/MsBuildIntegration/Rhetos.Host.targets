@@ -87,6 +87,7 @@
   <Namespace>System.DirectoryServices</Namespace>
   <Namespace>System.Runtime.Serialization.Json</Namespace>
   <Namespace>System.Xml.Serialization</Namespace>
+  <IncludeAspNet>true</IncludeAspNet>
 </Query>
 
 void Main()
