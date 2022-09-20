@@ -35,6 +35,7 @@ namespace Rhetos.Deployment
     {
         private const string DataMigrationSubfolder = "DataMigration";
         private static readonly string DataMigrationSubfolderPrefix = DataMigrationSubfolder + Path.DirectorySeparatorChar;
+        private static readonly string DataMigrationSubfolderPattern = Path.DirectorySeparatorChar + DataMigrationSubfolder + Path.DirectorySeparatorChar;
 
         private readonly InstalledPackages _installedPackages;
         private readonly FilesUtility _filesUtility;
@@ -58,21 +59,17 @@ namespace Rhetos.Deployment
             // The packages are sorted by their dependencies, so the data migration scripts from one module may use the data that was prepared by the module it depends on.
             foreach (var package in _installedPackages.Packages)
             {
-                var files = package.ContentFiles.Where(file => file.InPackagePath.StartsWith(DataMigrationSubfolderPrefix, StringComparison.OrdinalIgnoreCase));
-
-                const string expectedExtension = ".sql";
-                var badFile = files.FirstOrDefault(file => !string.Equals(Path.GetExtension(file.InPackagePath), expectedExtension, StringComparison.OrdinalIgnoreCase));
-                if (badFile != null)
-                    throw new FrameworkException($"Data migration script '{badFile.PhysicalPath}' does not have expected extension '{expectedExtension}'.");
-
                 var packageSqlFiles =
-                    (from file in files
+                    (from file in package.ContentFiles
+                     let dataMigrationSimplifiedPath = GetDataMigrationScriptSimplifiedPath(file)
+                     where dataMigrationSimplifiedPath != null // Use only files in DataMigration subfolder.
+                     where CheckFileExtension(file)
                      let scriptContent = _filesUtility.ReadAllText(file.PhysicalPath)
                      select new
                      {
                          Header = ParseScriptHeader(scriptContent, file.PhysicalPath),
-                         // Using package.Id instead of full package subfolder name, in order to keep the same script path between different versions of the package (the folder name will contain the version number).
-                         Path = Path.Combine(package.Id, file.InPackagePath.Substring(DataMigrationSubfolderPrefix.Length)),
+                         // Using package.Id and a simplified script path, instead of full package subfolder name, in order to keep the same script path between different versions of the package (the folder name will contain the version number).
+                         Path = Path.Combine(package.Id, dataMigrationSimplifiedPath),
                          Content = scriptContent
                      }).ToList();
 
@@ -115,6 +112,32 @@ namespace Rhetos.Deployment
             CheckDuplicateTags(allScripts.Select(s => (s.Tag, s.Path)));
 
             _dataMigrationScriptsFile.Save(new DataMigrationScripts { Scripts = allScripts });
+        }
+
+        /// <summary>
+        /// If file is located in a DataMigration folder, returns the simplified file path, otherwise returns <see langword="null"/>.
+        /// </summary>
+        private string GetDataMigrationScriptSimplifiedPath(ContentFile file)
+        {
+            if (file.InPackagePath.StartsWith(DataMigrationSubfolderPrefix, StringComparison.OrdinalIgnoreCase))
+                return file.InPackagePath[DataMigrationSubfolderPrefix.Length..];
+             
+            var startPostion = file.InPackagePath.IndexOf(DataMigrationSubfolderPattern, StringComparison.OrdinalIgnoreCase);
+            if (startPostion != -1)
+                return file.InPackagePath[..startPostion] + file.InPackagePath[(startPostion + DataMigrationSubfolderPattern.Length - 1)..];
+            
+            return null;
+        }
+
+        /// <summary>
+        /// Throws an exception if the DataMigration file does not have '.sql' extension.
+        /// </summary>
+        private bool CheckFileExtension(ContentFile file)
+        {
+            const string expectedExtension = ".sql";
+            if (!string.Equals(Path.GetExtension(file.InPackagePath), expectedExtension, StringComparison.OrdinalIgnoreCase))
+                throw new FrameworkException($"Data migration script '{file.PhysicalPath}' does not have expected extension '{expectedExtension}'.");
+            return true;
         }
 
         private void CheckDuplicateTags(IEnumerable<(string Tag, string Path)> scripts)

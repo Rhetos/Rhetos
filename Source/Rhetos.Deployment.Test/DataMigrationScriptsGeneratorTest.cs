@@ -155,6 +155,48 @@ namespace Rhetos.Deployment.Test
             return sql.Substring(sql.IndexOf('\n') + 1).Trim();
         }
 
+        [TestMethod]
+        public void DataMigrationSubfolder()
+        {
+            var tests = new[]
+            {
+                Path.Combine("DataMigration", "a.sql"),
+                Path.Combine("DataMigration a.sql"),
+                Path.Combine("DataMigration", "f", "b.sql"),
+                Path.Combine("ff", "DataMigration", "i.sql"),
+                Path.Combine("ff", "DataMigration a.sql"),
+                Path.Combine("ff", "fff", "DataMigration", "f", "j.sql"),
+                Path.Combine("ff", " DataMigration", "a.sql"),
+            };
+
+            var contentFiles = tests.Select(filePath => new ContentFile
+            {
+                PhysicalPath = Path.Combine("TestScripts", Path.GetFileName(filePath)),
+                InPackagePath = filePath
+            }).ToList();
+            var installedPackages = new InstalledPackages
+            {
+                Packages = new List<InstalledPackage>
+                {
+                    new InstalledPackage("TestPackage", null, null, null, contentFiles)
+                }
+            };
+            var filesUtility = new FilesUtility(new ConsoleLogProvider());
+            var dataMigrationScriptsFile = new DataMigrationScriptsFileMock();
+            var dmsGenerator = new DataMigrationScriptsGenerator(installedPackages, filesUtility, dataMigrationScriptsFile);
+            dmsGenerator.Generate();
+
+            Assert.AreEqual(
+                TestUtility.DumpSorted(new[] // Testing simplified script path. For example, it should contain the package name and file name, if there are no extra subfolders.
+                {
+                    Path.Combine("TestPackage", "a.sql"),
+                    Path.Combine("TestPackage", "f", "b.sql"),
+                    Path.Combine("TestPackage", "ff", "i.sql"),
+                    Path.Combine("TestPackage", "ff", "fff", "f", "j.sql"),
+                }),
+                TestUtility.DumpSorted(dataMigrationScriptsFile.DataMigrationScripts.Scripts, s => s.Path));
+        }
+
         //=========================================================================================
 
         [TestMethod]

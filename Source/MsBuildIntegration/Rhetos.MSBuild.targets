@@ -4,8 +4,8 @@
     <Target Name="ResolveRhetosBuildItems" BeforeTargets="ResolveRhetosProjectAssets;CollectUpToDateCheckInputDesignTime">
         <Message Text="ResolveRhetosBuildItems" />
         <ItemGroup>
-            <RhetosBuild Include="DslScripts\**\*" />
-            <RhetosBuild Include="DataMigration\**\*" />
+            <RhetosBuild Include="**\*.rhe" />
+            <RhetosBuild Include="**\DataMigration\**\*" />
             <RhetosBuild Include="Resources\Rhetos\**\*" />
             <RhetosBuildSettings Include="$(RhetosBuildSettingsFile)" Condition="Exists('$(RhetosBuildSettingsFile)')" />
         </ItemGroup>
