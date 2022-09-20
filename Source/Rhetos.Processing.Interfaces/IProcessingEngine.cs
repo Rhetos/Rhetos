@@ -56,7 +56,7 @@ namespace Rhetos.Processing
         /// Executes given commands withing a unit of work (atomic transaction).
         /// </summary>
         /// <remarks>
-        /// If the command have been completed successfully, the methods returns <see cref="ProcessingResult"/>.
+        /// If the command have been completed successfully, the methods returns the command result.
         /// In case of any error, the unit of work will be discarded (transaction rollback for all commands),
         /// and an exception thrown.
         /// <para>
@@ -82,7 +82,7 @@ namespace Rhetos.Processing
         /// Executes given commands withing a unit of work (atomic transaction).
         /// </summary>
         /// <remarks>
-        /// If the command have been completed successfully, the methods returns <see cref="ProcessingResult"/>.
+        /// If the command have been completed successfully, the methods returns the command result.
         /// In case of any error, the unit of work will be discarded (transaction rollback for all commands),
         /// and an exception thrown.
         /// <para>
