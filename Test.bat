@@ -13,7 +13,7 @@ dotnet build CommonConceptsTest.sln /t:restore /p:RestoreForce=True /t:rebuild -
 dotnet CommonConcepts\CommonConcepts.TestApp\bin\Debug\net5.0\rhetos.dll dbupdate CommonConcepts\CommonConcepts.TestApp\bin\Debug\net5.0\CommonConcepts.TestApp.dll
 dotnet test CommonConceptsTest.sln --no-build || GOTO Error0
 
-IF EXIST "%ProgramFiles%\LINQPad6\LPRun6-net5.exe" "%ProgramFiles%\LINQPad6\LPRun6-net5.exe" "CommonConcepts\CommonConcepts.TestApp\bin\Debug\net5.0\LinqPad\Rhetos DOM.linq" > nul || GOTO Error0
+IF EXIST "%ProgramFiles%\LINQPad7\LPRun7.exe" "%ProgramFiles%\LINQPad7\LPRun7.exe" "CommonConcepts\CommonConcepts.TestApp\bin\Debug\net5.0\LinqPad\Rhetos DOM.linq" > nul || GOTO Error0
 
 @REM ================================================
 

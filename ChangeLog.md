@@ -1,6 +1,6 @@
 ﻿# Rhetos release notes
 
-## 5.3.0 (TO BE RELEASED)
+## 5.3.0 (2022-09-21)
 
 ### New features
 
@@ -12,13 +12,23 @@
      on the repository class. Developer can implement the method manually in another partial class implementation.
      Note that the IntelliSense in Visual Studio will autocomplete the partial method parameters
      and result type, after writing the `partial` keyword.
-  3. Base concept (LoadInfo, QueryInfo, ...) for usage in custom concepts development.
+  3. Base concept classes (LoadInfo, QueryInfo, ...) for usage in custom concepts development.
   * Remarks:
     * These new concepts are an alternative to the old FilterBy and ComposableFilterBy concepts.
-    * **ItemFilter** is a helper that generates the QueryFilter concept.
+    * *ItemFilter* concept is a helper that generates the QueryFilter concept.
     * There are changes compared to the early draft of Load and QueryFilter prototype concepts
       (without the expression in DSL script): the read methods are now *partial*,
       and the Load method returns IEnumerable instead of an array.
+* More flexible **DslScripts** and **DataMigration** folder locations, to allow simpler code organization within a project:
+  * DslScripts folder is no longer needed in a Rhetos app; the .rhe files can be placed anywhere in the project.
+    This change does not affect referenced projects and NuGet packages, they need to have DslScripts folder in the root folder.
+  * DataMigration folder no longer needs to be in the project root, and a single project can have multiple DataMigration folders.
+
+### Internal improvements
+
+* Bugfix: Latest LINQPad 7 version requires an explicit reference to ASP.NET Core assemblies.
+  Enabled by default in `Rhetos DOM.linq`, since most Rhetos apps are web apps.
+* Bugfix: DSL documentation was generated without any tags other than simple text.
 
 ## 5.2.0 (2022-07-06)
 
