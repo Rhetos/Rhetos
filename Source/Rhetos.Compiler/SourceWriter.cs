@@ -83,6 +83,11 @@ namespace Rhetos.Compiler
 
         private static void WriteFile(string content, string filePath)
         {
+            // Remove read-only attribute to allow write.
+            FileAttributes? attributes = File.Exists(filePath) ? File.GetAttributes(filePath) : null;
+            if (attributes != null && (attributes.Value & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
+                File.SetAttributes(filePath, attributes.Value & ~FileAttributes.ReadOnly);
+
             // This method tries to keep and update an existing file instead of deleting it and creating a new one,
             // in order to lessen the effect to any file monitoring service such as Visual Studio.
             // The previous version of this method, that always created new source files, caused instability in Visual Studio while the generated project was open.
@@ -94,6 +99,10 @@ namespace Rhetos.Compiler
                     fs.SetLength(fs.Position); // Truncates rest of the file, if the previous file version was larger.
                 }
             }
+
+            // The generated files are marked as read-only, as a hint that they are not indended to be manually edited.
+            attributes ??= File.GetAttributes(filePath);
+            File.SetAttributes(filePath, attributes.Value | FileAttributes.ReadOnly);
         }
 
         public void CleanUp()
