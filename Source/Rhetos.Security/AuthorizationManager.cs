@@ -66,10 +66,7 @@ namespace Rhetos.Security
             try
             {
                 var setting = _appSecurityOptions.AllClaimsForUsers;
-                var users = setting.Split(',').Select(u => u.Trim()).Where(u => !string.IsNullOrEmpty(u))
-                    .Select(u => u.Split('@'))
-                    .Select(u => new { UserName = u[0], HostName = u.Length == 1 ? Environment.MachineName : u[1] })
-                    .ToList();
+                var users = SplitUserList(setting);
                 var thisMachineUserNames = users
                     .Where(u => string.Equals(u.HostName, Environment.MachineName, StringComparison.OrdinalIgnoreCase))
                     .Select(u => u.UserName)
@@ -81,6 +78,21 @@ namespace Rhetos.Security
             {
                 throw new FrameworkException($"Invalid '{OptionsAttribute.GetConfigurationPath<AppSecurityOptions>()}:{nameof(AppSecurityOptions.AllClaimsForUsers)}' in configuration files. Expected comma-separated list of entries formatted as username@servername.", ex);
             }
+        }
+
+        private static List<(string UserName, string HostName)> SplitUserList(string users)
+        {
+            return users.Split(',').Select(u => u.Trim()).Where(u => !string.IsNullOrEmpty(u))
+                .SelectMany(SplitUserName)
+                .ToList();
+        }
+
+        private static IEnumerable<(string UserName, string HostName)> SplitUserName(string u)
+        {
+            yield return (UserName: u, HostName: Environment.MachineName);
+            int at = u.LastIndexOf('@');
+            if (at > 0 && at < u.Length - 1)
+                yield return (UserName: u[..at], HostName: u[(at + 1)..]);
         }
 
         public IList<bool> GetAuthorizations(IList<Claim> requiredClaims)

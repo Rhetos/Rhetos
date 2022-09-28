@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29519.87
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32901.215
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Deployment", "Deployment", "{2D001517-CE8E-4902-8C0A-0EA13C134830}"
 EndProject
@@ -116,6 +116,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Dsl.Parser", "Source\Rhetos.Dsl.Parser\Rhetos.Dsl.Parser.csproj", "{81D96B00-031E-495C-947F-D9542AE77533}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Utilities.Interfaces", "Source\Rhetos.Utilities.Interfaces\Rhetos.Utilities.Interfaces.csproj", "{F9F094B6-A872-4B84-B2F3-0A1FA3C0672A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.Security.Test", "Source\Rhetos.Security.Test\Rhetos.Security.Test.csproj", "{E1A1F7DF-415B-4534-8432-EE1F4D178656}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -303,6 +305,10 @@ Global
 		{F9F094B6-A872-4B84-B2F3-0A1FA3C0672A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F9F094B6-A872-4B84-B2F3-0A1FA3C0672A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F9F094B6-A872-4B84-B2F3-0A1FA3C0672A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1A1F7DF-415B-4534-8432-EE1F4D178656}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1A1F7DF-415B-4534-8432-EE1F4D178656}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1A1F7DF-415B-4534-8432-EE1F4D178656}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1A1F7DF-415B-4534-8432-EE1F4D178656}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -353,6 +359,7 @@ Global
 		{5F24785B-47E3-487B-AF38-889EF440A97C} = {56257C0A-67DA-452F-BB55-EC51FD6107A9}
 		{81D96B00-031E-495C-947F-D9542AE77533} = {0124322E-2731-48E8-910C-957E37181628}
 		{F9F094B6-A872-4B84-B2F3-0A1FA3C0672A} = {0124322E-2731-48E8-910C-957E37181628}
+		{E1A1F7DF-415B-4534-8432-EE1F4D178656} = {0124322E-2731-48E8-910C-957E37181628}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4B8D1BEA-EAAA-484D-B00D-1D23226A5A90}
