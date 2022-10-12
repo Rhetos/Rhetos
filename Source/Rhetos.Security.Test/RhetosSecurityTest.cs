@@ -30,7 +30,7 @@ using System.Threading.Tasks;
 
 namespace Rhetos.CommonConcepts.Test
 {
-    public class AuthorizationManagerAccessor
+    public static class AuthorizationManagerAccessor
     {
         public static List<(string UserName, string HostName)> SplitUserList(string users)
         {
