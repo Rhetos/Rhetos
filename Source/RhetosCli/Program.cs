@@ -284,7 +284,10 @@ namespace Rhetos
             newArgs.Add(ExecuteCommandInCurrentProcessOptionName);
 
             logger.Trace(() => "dotnet args: " + string.Join(", ", newArgs.Select(arg => "\"" + (arg ?? "null") + "\"")));
-            return Exe.Run("dotnet", newArgs, logger);
+
+            NLogProvider.FlushAndShutdown(); // Closing log files to avoid an edge case of the log files being locked by the current process while the new process tries to write to the same log files, since they use the same NLog configuration.
+
+            return Exe.Run("dotnet", newArgs, new ConsoleLogger(logger.Name));
         }
     }
 }
