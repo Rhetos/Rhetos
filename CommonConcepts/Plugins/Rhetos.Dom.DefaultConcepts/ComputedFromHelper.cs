@@ -41,6 +41,11 @@ namespace Rhetos.Dom.DefaultConcepts
         /// Comparison may also include key properties with stricter constraints (such as case sensitivity).
         /// Typical implementation:
         /// <code>(x, y) =&gt; x.Name == y.Name &amp;&amp; x.SomeValue == y.SomeValue;</code></param>
+        /// <remarks>
+        /// The diff result in <see cref="DiffResult{T}.ToUpdate"/> should be processed before saving to the database:
+        /// 1. If the comparison key was not the ID property, then the saved item should have ID from the Old item and other properties from the New item.
+        /// 2. Some properties may not be included in the ComputedFrom mapping, they should keep the old values instead of the new ones.
+        /// </remarks>
         public static DiffResult<TEntity> Diff<TEntity, TSourceEntity>(
             IReadableRepository<TEntity> destinationRepository,
             IReadableRepository<TSourceEntity> sourceRepository,
@@ -63,12 +68,16 @@ namespace Rhetos.Dom.DefaultConcepts
             IEnumerable<TEntity> oldItems = destinationRepository.Load(filterLoad);
             performanceLogger.Write(stopwatch, () => $"DiffFrom{sourceShortName}: Load old items ({oldItems.Count()})");
 
-            Diff(oldItems, newItems, sameRecord, sameValue, out var toInsert, out var toUpdate, out var toDelete);
+            var result = Diff(oldItems, newItems, sameRecord, sameValue);
+            performanceLogger.Write(stopwatch, () => $"DiffFrom{sourceShortName}: {newItems.Count} new items, {oldItems.Count()} old items," +
+                $" {result.ToInsert.Count} to insert, {result.ToUpdate.Count} to update, {result.ToDelete.Count} to delete.");
 
-            performanceLogger.Write(stopwatch, () => $"DiffFrom{sourceShortName}: {newItems.Count} new items, {oldItems.Count()} old items, {toInsert.Count} to insert, {toUpdate.Count} to update, {toDelete.Count} to delete.");
-            return new DiffResult<TEntity>(newItems, oldItems, toInsert, toUpdate, toDelete);
+            return result;
         }
 
+        /// <summary>
+        /// Compares the old dataset with the new dataset, and returns a list of changes that need to be applied to the old dataset to match the new one.
+        /// </summary>
         /// <param name="sameRecord">Compare key properties, determining the records that should be inserted or deleted.
         /// If set to null, the items will be compared by the ID property.
         /// Typical implementation:
@@ -82,21 +91,23 @@ namespace Rhetos.Dom.DefaultConcepts
         /// Comparison may also include key properties with stricter constraints (such as case sensitivity).
         /// Typical implementation:
         /// <code>(x, y) =&gt; x.Name == y.Name &amp;&amp; x.SomeValue == y.SomeValue;</code></param>
-        public static void Diff<TEntity>(
+        /// <remarks>
+        /// The diff result in <see cref="DiffResult{T}.ToUpdate"/> should be processed before saving to the database:
+        /// 1. If the comparison key was not the ID property, then the saved item should have ID from the Old item and other properties from the New item.
+        /// 2. Some properties may not be included in the ComputedFrom mapping, they should keep the old values instead of the new ones.
+        /// </remarks>
+        public static DiffResult<TEntity> Diff<TEntity>(
             IEnumerable<TEntity> oldItems,
             IEnumerable<TEntity> newItems,
             IComparer<TEntity> sameRecord,
-            Func<TEntity, TEntity, bool> sameValue,
-            out List<TEntity> toInsert,
-            out List<(TEntity Old, TEntity New)> toUpdate,
-            out List<TEntity> toDelete)
+            Func<TEntity, TEntity, bool> sameValue)
             where TEntity : class, IEntity
         {
             sameRecord ??= new EntityIdComparer();
 
-            toDelete = new List<TEntity>();
-            toInsert = new List<TEntity>();
-            toUpdate = new List<(TEntity Old, TEntity New)>();
+            var toDelete = new List<TEntity>();
+            var toInsert = new List<TEntity>();
+            var toUpdate = new List<(TEntity Old, TEntity New)>();
 
             List<TEntity> newItemsList = newItems.OrderBy(item => item, sameRecord).ToList();
             List<TEntity> oldItemsList = oldItems.OrderBy(item => item, sameRecord).ToList();
@@ -149,6 +160,8 @@ namespace Rhetos.Dom.DefaultConcepts
                 newEnum.Dispose();
                 oldEnum.Dispose();
             }
+
+            return new DiffResult<TEntity>(newItems, oldItems, toInsert, toUpdate, toDelete);
         }
 
         /// <param name="assign">Typical implementation:
@@ -169,14 +182,7 @@ namespace Rhetos.Dom.DefaultConcepts
             var stopwatch = Stopwatch.StartNew();
             var performanceLogger = logProvider.GetLogger("Performance." + typeof(TEntity).FullName);
 
-            IEnumerable<TEntity> toInsert = diff.ToInsert;
-            IEnumerable<TEntity> toDelete = diff.ToDelete;
-
-            // Not all properties from the New instance are applied when updating records in the database.
-            // The ComputedFrom mapping may cover only some of the properties, while other properties will keep the old values.
-            foreach (var update in diff.ToUpdate)
-                assign(update.Old, update.New);
-            IEnumerable<TEntity> toUpdate = diff.ToUpdate.Select(update => update.Old).ToList();
+            (IEnumerable<TEntity> toInsert, IEnumerable<TEntity> toUpdate, IEnumerable<TEntity> toDelete) = diff.PrepareForSaving(assign);
 
             if (filterSave != null)
             {

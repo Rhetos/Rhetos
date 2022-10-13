@@ -672,7 +672,8 @@ namespace Rhetos.Dom.DefaultConcepts
         ///     destination.Property2 = source.Property2; }</code></param>
         /// <remarks>
         /// This method updates the <paramref name="oldItems"/> instances that are returned in the <paramref name="toUpdate"/> list.
-        /// To avoid this behavior, use the Diff method from <see cref="ComputedFromHelper"/>.
+        /// To avoid this behavior, use one of the Diff methods from <see cref="ComputedFromHelper"/>, but note that it requires
+        /// processing the result before saving it to the database by calling <see cref="DiffResult{T}.PrepareForSaving"/>.
         /// </remarks>
         public void Diff(
             IEnumerable<TEntityInterface> oldItems, IEnumerable<TEntityInterface> newItems,

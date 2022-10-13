@@ -69,8 +69,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             bool skipRecomputeDeployParameter = _dbUpdateOptions.SkipRecompute;
 
-            ComputedFromHelper.Diff(oldItems, _currentKeepSynchronizedMetadata, new SameRecord(), SameValue, out var toInsert, out var toUpdatePairs, out var toDelete);
-            var toUpdate = toUpdatePairs.Select(u => u.New).ToList();
+            var (toInsert, toUpdate, toDelete) = ComputedFromHelper.Diff(oldItems, _currentKeepSynchronizedMetadata, new SameRecord(), SameValue).PrepareForSaving();
 
             _performanceLogger.Write(sw, () => "Load metadata.");
 
