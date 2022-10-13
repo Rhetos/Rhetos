@@ -42,20 +42,24 @@ namespace Rhetos.Dom.DefaultConcepts
                 codeBuilder.InsertCode(Snippet(info), AlternativeKeyComparerCodeGenerator.CompareKeyPropertyTag, info.Dependency_AlternativeKeyComparer);
         }
 
+        private const string SimpleValueComparer = "x.{0} == null ? (y.{0} == null ? 0 : -1) : (y.{0} == null ? 1 : x.{0}.Value.CompareTo(y.{0}.Value))";
+        private const string ReferenceComparer = "x.{0}ID == null ? (y.{0}ID == null ? 0 : -1) : (y.{0}ID == null ? 1 : x.{0}ID.Value.CompareTo(y.{0}ID.Value))";
+        private const string StringComparer = "string.Compare(x.{0}, y.{0}, StringComparison.InvariantCultureIgnoreCase)"; // Handles null values well.
+
         private static readonly Dictionary<Type, string> _supportedSnippets = new Dictionary<Type, string>
         {
-            { typeof(BoolPropertyInfo), "x.{0} == null ? (y.{0} == null ? 0 : -1) : x.{0}.Value.CompareTo(y.{0})" },
-            { typeof(DatePropertyInfo), "x.{0} == null ? (y.{0} == null ? 0 : -1) : x.{0}.Value.CompareTo(y.{0})" },
-            { typeof(DateTimePropertyInfo), "x.{0} == null ? (y.{0} == null ? 0 : -1) : x.{0}.Value.CompareTo(y.{0})" },
-            { typeof(DecimalPropertyInfo), "x.{0} == null ? (y.{0} == null ? 0 : -1) : x.{0}.Value.CompareTo(y.{0})" },
-            { typeof(GuidPropertyInfo), "x.{0} == null ? (y.{0} == null ? 0 : -1) : x.{0}.Value.CompareTo(y.{0})" },
-            { typeof(IntegerPropertyInfo), "x.{0} == null ? (y.{0} == null ? 0 : -1) : x.{0}.Value.CompareTo(y.{0})" },
-            { typeof(MoneyPropertyInfo), "x.{0} == null ? (y.{0} == null ? 0 : -1) : x.{0}.Value.CompareTo(y.{0})" },
+            { typeof(BoolPropertyInfo), SimpleValueComparer },
+            { typeof(DatePropertyInfo), SimpleValueComparer },
+            { typeof(DateTimePropertyInfo), SimpleValueComparer },
+            { typeof(DecimalPropertyInfo), SimpleValueComparer },
+            { typeof(GuidPropertyInfo), SimpleValueComparer },
+            { typeof(IntegerPropertyInfo), SimpleValueComparer },
+            { typeof(MoneyPropertyInfo), SimpleValueComparer },
 
-            { typeof(ReferencePropertyInfo), "x.{0}ID == null ? (y.{0}ID == null ? 0 : -1) : x.{0}ID.Value.CompareTo(y.{0}ID)" },
+            { typeof(ReferencePropertyInfo), ReferenceComparer },
 
-            { typeof(LongStringPropertyInfo), "string.Compare(x.{0}, y.{0}, StringComparison.InvariantCultureIgnoreCase)" }, // Handles null values well.
-            { typeof(ShortStringPropertyInfo), "string.Compare(x.{0}, y.{0}, StringComparison.InvariantCultureIgnoreCase)" }, // Handles null values well.
+            { typeof(LongStringPropertyInfo), StringComparer },
+            { typeof(ShortStringPropertyInfo), StringComparer },
 
             //{ typeof(BinaryPropertyInfo), "x.{0}.CompareTo(y.{0})" },
             //{ typeof(LinkedItemsInfo), "x.{0}.CompareTo(y.{0})" },

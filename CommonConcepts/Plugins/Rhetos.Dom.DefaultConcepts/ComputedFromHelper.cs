@@ -23,6 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -109,8 +110,19 @@ namespace Rhetos.Dom.DefaultConcepts
             var toInsert = new List<TEntity>();
             var toUpdate = new List<(TEntity Old, TEntity New)>();
 
-            List<TEntity> newItemsList = newItems.OrderBy(item => item, sameRecord).ToList();
-            List<TEntity> oldItemsList = oldItems.OrderBy(item => item, sameRecord).ToList();
+            List<TEntity> newItemsList = newItems.ToList();
+            List<TEntity> oldItemsList = oldItems.ToList();
+            if (newItemsList.Count > 50000 && oldItemsList.Count > 50000)
+            {
+                Parallel.Invoke(
+                    () => newItemsList.Sort(sameRecord),
+                    () => oldItemsList.Sort(sameRecord));
+            }
+            else
+            {
+                newItemsList.Sort(sameRecord);
+                oldItemsList.Sort(sameRecord);
+            }
 
             IEnumerator<TEntity> newEnum = newItemsList.GetEnumerator();
             IEnumerator<TEntity> oldEnum = oldItemsList.GetEnumerator();
