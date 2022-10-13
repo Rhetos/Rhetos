@@ -39,54 +39,59 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly CsTag<EntityComputedFromInfo> CompareValuePropertyTag = "CompareValueProperty";
         public static readonly CsTag<EntityComputedFromInfo> ClonePropertyTag = "CloneProperty";
         public static readonly CsTag<EntityComputedFromInfo> AssignPropertyTag = "AssignProperty";
-        public static readonly CsTag<EntityComputedFromInfo> OverrideDefaultFiltersTag = new CsTag<EntityComputedFromInfo>("OverrideDefaultFilters", TagType.Reverse);
+        public static readonly CsTag<EntityComputedFromInfo> OverrideDefaultLoadFilterTag = new CsTag<EntityComputedFromInfo>("OverrideDefaultLoadFilter", TagType.Reverse);
+        public static readonly CsTag<EntityComputedFromInfo> OverrideDefaultSaveFilterTag = new CsTag<EntityComputedFromInfo>("OverrideDefaultSaveFilter", TagType.Reverse);
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (EntityComputedFromInfo)conceptInfo;
 
-            string targetEntity = info.Target.GetKeyProperties();
-            string recomputeFunctionName = RecomputeFunctionName(info);
-            string recomputeFunctionSnippet =
-        $@"public IEnumerable<{targetEntity}> {recomputeFunctionName}(object filterLoad = null, Func<IEnumerable<{targetEntity}>, IEnumerable<{targetEntity}>> filterSave = null)
+            string diffFunctionName = info.DiffFunctionName();
+            string recomputeFunctionName = info.RecomputeFunctionName();
+
+            string repositoryMethods =
+        $@"public DiffResult<{info.Target.FullName}> {diffFunctionName}(object filterLoad = null)
         {{
-            {OverrideDefaultFiltersTag.Evaluate(info)}
+            {OverrideDefaultLoadFilterTag.Evaluate(info)}
             filterLoad = filterLoad ?? new FilterAll();
-            filterSave = filterSave ?? (x => x);
 
-            var sourceRepository = _executionContext.GenericRepositories.GetGenericRepository<{info.Source.GetKeyProperties()}>();
-            var sourceItems = sourceRepository.Load(filterLoad);
-            var newItems = sourceItems.Select(sourceItem => new {targetEntity} {{
-                ID = sourceItem.ID,
-                {ClonePropertyTag.Evaluate(info)} }}).ToList();
-
-            var destinationRepository = _executionContext.GenericRepositories.GetGenericRepository<{targetEntity}>();
-            destinationRepository.InsertOrUpdateOrDelete(
-                newItems,
+            return ComputedFromHelper.Diff(
+                this, _domRepository.{info.Source.FullName}, _executionContext.LogProvider,
+                filterLoad,
+                mapping: sourceItem => new {info.Target.FullName}
+                {{
+                    ID = sourceItem.ID,
+                    {ClonePropertyTag.Evaluate(info)}
+                }},
                 sameRecord: {OverrideKeyComparerTag.Evaluate(info)} null, // Default is comparison by ID.
                 sameValue: (x, y) =>
                 {{
                     {CompareValuePropertyTag.Evaluate(info)}
                     return true;
-                }},
-                filterLoad: filterLoad,
+                }});
+        }}
+
+        public IEnumerable<{info.Target.FullName}> {recomputeFunctionName}(object filterLoad = null, Func<IEnumerable<{info.Target.FullName}>, IEnumerable<{info.Target.FullName}>> filterSave = null)
+        {{
+            {OverrideDefaultSaveFilterTag.Evaluate(info)}
+
+            var diff = {diffFunctionName}(filterLoad);
+            ComputedFromHelper.InsertOrUpdateOrDelete(
+                this, _executionContext.LogProvider, diff,
                 assign: (destination, source) =>
                 {{
                     {AssignPropertyTag.Evaluate(info)}
                 }},
-                beforeSave: (ref IEnumerable<{targetEntity}> toInsert, ref IEnumerable<{targetEntity}> toUpdate, ref IEnumerable<{targetEntity}> toDelete) =>
-                {{
-                    toInsert = filterSave(toInsert);
-                    toUpdate = filterSave(toUpdate);
-                    toDelete = filterSave(toDelete);
-                }});
-            return newItems;
+                filterSave);
+
+            return diff.NewItems;
         }}
         
         ";
-            codeBuilder.InsertCode(recomputeFunctionSnippet, RepositoryHelper.RepositoryMembers, info.Target);
+            codeBuilder.InsertCode(repositoryMethods, RepositoryHelper.RepositoryMembers, info.Target);
         }
 
-        public static string RecomputeFunctionName(EntityComputedFromInfo info) => info.RecomputeFunctionName(); // Keeping this method for backward compatibility.
+        [Obsolete("Use EntityComputedFromInfo.RecomputeFunctionName() instead.")]
+        public static string RecomputeFunctionName(EntityComputedFromInfo info) => info.RecomputeFunctionName();
     }
 }

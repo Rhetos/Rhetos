@@ -1,5 +1,15 @@
 ﻿# Rhetos release notes
 
+## 5.4.0 (TO BE RELEASED)
+
+### Breaking changed
+
+There are no changes that affect Rhetos app's business features, but some internal implementation details might impact
+custom DSL code generators and tests related to **ComputedFrom** concept:
+
+* Instead of EntityComputedFromCodeGenerator.OverrideDefaultFiltersTag, code generator uses separate tags for load and save filters.
+* Some system log entries that previously contained text `InsertOrUpdateOrDelete` have different formatting. This might affect unit tests.
+
 ## 5.3.0 (2022-09-21)
 
 ### New features

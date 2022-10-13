@@ -81,7 +81,7 @@ namespace Rhetos.Dom.DefaultConcepts
             string recomputeMethodName =
                 info.KeepSynchronized.EntityComputedFrom.Target.Module.Name
                 + "." + info.KeepSynchronized.EntityComputedFrom.Target.Name
-                + "." + EntityComputedFromCodeGenerator.RecomputeFunctionName(info.KeepSynchronized.EntityComputedFrom);
+                + "." + info.KeepSynchronized.EntityComputedFrom.RecomputeFunctionName();
 
             return
                 $@"{OverrideRecomputeTag(info)}

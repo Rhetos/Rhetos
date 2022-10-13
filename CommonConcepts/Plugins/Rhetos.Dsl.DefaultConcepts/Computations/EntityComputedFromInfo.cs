@@ -40,6 +40,8 @@ namespace Rhetos.Dsl.DefaultConcepts
         [ConceptKey]
         public DataStructureInfo Source { get; set; }
 
+        public string DiffFunctionName() => "DiffFrom" + DslUtility.NameOptionalModule(Source, Target.Module);
+
         public string RecomputeFunctionName() => "RecomputeFrom" + DslUtility.NameOptionalModule(Source, Target.Module);
     }
 }

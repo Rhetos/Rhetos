@@ -541,6 +541,46 @@ namespace Rhetos.Dom.DefaultConcepts
             }
         }
 
+        #region Diff
+
+        private Dictionary<string, MethodInfo> _repositoryDiffFromMethod = null;
+
+        public MethodInfo RepositoryDiffFromMethod(string sourceDataStructure)
+        {
+            MethodInfo method = null;
+            bool exists = false;
+
+            if (_repositoryDiffFromMethod == null)
+                _repositoryDiffFromMethod = new Dictionary<string, MethodInfo>();
+            else
+                exists = _repositoryDiffFromMethod.TryGetValue(sourceDataStructure, out method);
+
+            if (!exists)
+            {
+                string methodName = RepositoryDiffFromMethodName(sourceDataStructure);
+                method = RepositoryType.GetMethod(methodName);
+                _repositoryDiffFromMethod.Add(sourceDataStructure, method);
+            }
+
+            return method;
+        }
+
+        public string RepositoryDiffFromMethodName(string sourceDataStructure)
+        {
+            var entityModuleName = DataStructureUtility.SplitModuleName(_entityName);
+            var sourceModuleName = DataStructureUtility.SplitModuleName(sourceDataStructure);
+            var computedConcept = new EntityComputedFromInfo
+            {
+                Source = new DataStructureInfo { Module = new ModuleInfo { Name = sourceModuleName.Item1 }, Name = sourceModuleName.Item2 },
+                Target = new EntityInfo { Module = new ModuleInfo { Name = entityModuleName.Item1 }, Name = entityModuleName.Item2 }
+            };
+            return computedConcept.DiffFunctionName();
+        }
+
+        #endregion Diff
+
+        #region Recompute
+
         private Dictionary<string, MethodInfo> _repositoryRecomputeFromMethod = null;
 
         public MethodInfo RepositoryRecomputeFromMethod(string sourceDataStructure)
@@ -572,8 +612,10 @@ namespace Rhetos.Dom.DefaultConcepts
                 Source = new DataStructureInfo { Module = new ModuleInfo { Name = sourceModuleName.Item1 }, Name = sourceModuleName.Item2 },
                 Target = new EntityInfo { Module = new ModuleInfo { Name = entityModuleName.Item1 }, Name = entityModuleName.Item2 }
             };
-            return EntityComputedFromCodeGenerator.RecomputeFunctionName(computedConcept);
+            return computedConcept.RecomputeFunctionName();
         }
+
+        #endregion Recompute
 
         private MethodInfo _loadSimpleObjectsMethod = null;
 

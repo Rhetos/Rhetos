@@ -254,7 +254,7 @@ namespace CommonConcepts.Test
 
         private string ReportRecompute(List<string> log)
         {
-            var simplifyLog = new Regex(@"GenericRepository\(\w+.(\w+)\).*InsertOrUpdateOrDelete: Save \(\d+ new items, \d+ old items, (\d+) to insert, (\d+) to update, (\d+) to delete\)");
+            var simplifyLog = new Regex(@"Performance\.\w+\.(\w+).*InsertOrUpdateOrDelete: Save \(\d+ new items, \d+ old items, (\d+) to insert, (\d+) to update, (\d+) to delete\)");
 
             return TestUtility.DumpSorted(log
                 .Select(entry => simplifyLog.Match(entry))

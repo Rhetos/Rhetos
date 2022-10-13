@@ -42,7 +42,7 @@ namespace Rhetos.Dom.DefaultConcepts
             var info = (AlternativeKeyComparerInfo)conceptInfo;
 
             string targetEntity = info.EntityComputedFrom.Target.GetKeyProperties();
-            string recomputeFunctionName = EntityComputedFromCodeGenerator.RecomputeFunctionName(info.EntityComputedFrom);
+            string recomputeFunctionName = info.EntityComputedFrom.RecomputeFunctionName();
             string keyComparerName = recomputeFunctionName + "_KeyComparer";
             string keyComparerSnippet =
         $@"private class {keyComparerName} : IComparer<{targetEntity}>

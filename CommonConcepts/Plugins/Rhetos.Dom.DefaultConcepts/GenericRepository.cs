@@ -670,12 +670,18 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <code>(destination, source) =&gt; {
         ///     destination.Property1 = source.Property1;
         ///     destination.Property2 = source.Property2; }</code></param>
+        /// <remarks>
+        /// This method updates the <paramref name="oldItems"/> instances that are returned in the <paramref name="toUpdate"/> list.
+        /// To avoid this behavior, use the Diff method from <see cref="ComputedFromHelper"/>.
+        /// </remarks>
         public void Diff(
             IEnumerable<TEntityInterface> oldItems, IEnumerable<TEntityInterface> newItems,
             IComparer<TEntityInterface> sameRecord, Func<TEntityInterface, TEntityInterface, bool> sameValue,
             Action<TEntityInterface, TEntityInterface> assign,
             out IEnumerable<TEntityInterface> toInsert, out IEnumerable<TEntityInterface> toUpdate, out IEnumerable<TEntityInterface> toDelete)
         {
+            // TODO: Remove this method and use ComputedFromHelper.Diff instead, after refactoring GenericRepository class into a set of base repository class helpers. This legacy method is currently still needed because of usage of reflection to manage entity instances in GenericRepository methods.
+
             if (sameRecord == null)
                 sameRecord = new EntityIdComparer();
 
@@ -790,7 +796,7 @@ namespace Rhetos.Dom.DefaultConcepts
             Diff(oldItems, newItems, sameRecord, sameValue, assign, out toInsert, out toUpdate, out toDelete);
             _performanceLogger.Write(stopwatch, () => $"InsertOrUpdateOrDelete: Diff ({newItems.Count()} new items, {oldItems.Count()} old items, {toInsert.Count()} to insert, {toUpdate.Count()} to update, {toDelete.Count()} to delete)");
 
-            // Modify old items to match new items:
+            // Save the new items, delete or update old items:
 
             if (beforeSave != null)
             {
@@ -900,6 +906,19 @@ namespace Rhetos.Dom.DefaultConcepts
             _performanceLogger.Write(stopwatch, () => $"InsertOrUpdateOrDeleteOrDeactivate: Save ({newItems.Count()} new items, {oldItems.Count()} old items, {toInsert.Count()} to insert, {toUpdate.Count()} to update, {toDelete.Count()} to delete)");
         }
 
+        public DiffResult<TEntityInterface> DiffFrom(
+            string source,
+            object filterLoad = null)
+        {
+            var diffMethod = Reflection.RepositoryDiffFromMethod(source);
+
+            if (diffMethod == null)
+                throw new FrameworkException($"{EntityName}'s repository does not implement a ComputedFrom mapping from '{source}' ({Reflection.RepositoryDiffFromMethodName(source)}).");
+
+            object newItems = diffMethod.InvokeEx(_repository.Value, filterLoad, null);
+            return (DiffResult<TEntityInterface>)newItems;
+        }
+
         public IEnumerable<TEntityInterface> RecomputeFrom(
             string source,
             object filterLoad = null)
@@ -907,7 +926,7 @@ namespace Rhetos.Dom.DefaultConcepts
             var recomputeMethod = Reflection.RepositoryRecomputeFromMethod(source);
 
             if (recomputeMethod == null)
-                throw new FrameworkException($"{EntityName}'s repository does not implement the method to recompute from {source} ({Reflection.RepositoryRecomputeFromMethodName(source)}).");
+                throw new FrameworkException($"{EntityName}'s repository does not implement a ComputedFrom mapping from '{source}' ({Reflection.RepositoryRecomputeFromMethodName(source)}).");
 
             object newItems = recomputeMethod.InvokeEx(_repository.Value, filterLoad, null);
             return (IEnumerable<TEntityInterface>)newItems;

@@ -38,7 +38,7 @@ namespace Rhetos.Dom.DefaultConcepts
             var info = (EntityComputedFromDefaultLoadFilterInfo)conceptInfo;
             codeBuilder.InsertCode(
                 "\r\n            filterLoad = filterLoad ?? new " + info.LoadFilter + "();",
-                EntityComputedFromCodeGenerator.OverrideDefaultFiltersTag,
+                EntityComputedFromCodeGenerator.OverrideDefaultLoadFilterTag,
                 info.EntityComputedFrom);
         }
     }

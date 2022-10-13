@@ -58,7 +58,7 @@ namespace Rhetos.Dom.DefaultConcepts
             string callRecomputeOnSave = $@"if (insertedNew.Any())
                 {{
                     Guid[] insertedIds = insertedNew.Select(item => item.ID).ToArray();
-                    _domRepository.{info.EntityComputedFrom.Target.FullName}.{EntityComputedFromCodeGenerator.RecomputeFunctionName(info.EntityComputedFrom)}(insertedIds{saveFilterArgument});
+                    _domRepository.{info.EntityComputedFrom.Target.FullName}.{info.EntityComputedFrom.RecomputeFunctionName()}(insertedIds{saveFilterArgument});
                 }}
                 ";
 

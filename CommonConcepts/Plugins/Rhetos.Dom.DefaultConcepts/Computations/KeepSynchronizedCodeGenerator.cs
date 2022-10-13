@@ -36,34 +36,33 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (KeepSynchronizedInfo)conceptInfo;
-            var source = info.EntityComputedFrom.Source;
-            var target = info.EntityComputedFrom.Target;
 
-            string filterSaveFunctionName = $"FilterSaveKeepSynchronizedOnChangedItems_{source.Module.Name}_{source.Name}";
+            if (!string.IsNullOrWhiteSpace(info.FilterSaveExpression))
+            {
+                var source = info.EntityComputedFrom.Source;
+                var target = info.EntityComputedFrom.Target;
 
-            string filterSaveFunctionBody;
-            if (string.IsNullOrWhiteSpace(info.FilterSaveExpression))
-                filterSaveFunctionBody = $@"return filterSave_items;";
-            else
-                filterSaveFunctionBody =
-            $@"Func<IEnumerable<{target.FullName}>, Common.DomRepository, IEnumerable<{target.FullName}>> filterSaveKeepSynchronizedOnChangedItems =
+                string filterSaveFunctionName = $"FilterSaveKeepSynchronizedOnChangedItems_{DslUtility.NameOptionalModule(source, target.Module)}";
+
+                // This could be simplified to a method that directly contains the FilterSaveExpression (transformed into a function syntax)
+                // without the repository parameter (using _domReporitory member instead), but that will break backward compatibility.
+                string filterSaveFunction = $@"public IEnumerable<{target.FullName}> {filterSaveFunctionName}(IEnumerable<{target.FullName}> filterSave_items)
+        {{
+            Func<IEnumerable<{target.FullName}>, Common.DomRepository, IEnumerable<{target.FullName}>> filterSaveKeepSynchronizedOnChangedItems =
                 {info.FilterSaveExpression};
 
-            return filterSaveKeepSynchronizedOnChangedItems(filterSave_items, _domRepository);";
-
-            string filterSaveFunction = $@"public IEnumerable<{target.Module.Name}.{target.Name}> {filterSaveFunctionName}(IEnumerable<{target.Module.Name}.{target.Name}> filterSave_items)
-        {{
-            {filterSaveFunctionBody}
+            return filterSaveKeepSynchronizedOnChangedItems(filterSave_items, _domRepository);
         }}
 
         ";
 
-            codeBuilder.InsertCode(filterSaveFunction, RepositoryHelper.RepositoryMembers, target);
+                codeBuilder.InsertCode(filterSaveFunction, RepositoryHelper.RepositoryMembers, target);
 
-            string overrideDefaultFilters = $@"
+                string overrideDefaultFilters = $@"
             filterSave = filterSave ?? {filterSaveFunctionName};";
 
-            codeBuilder.InsertCode(overrideDefaultFilters, EntityComputedFromCodeGenerator.OverrideDefaultFiltersTag, info.EntityComputedFrom);
+                codeBuilder.InsertCode(overrideDefaultFilters, EntityComputedFromCodeGenerator.OverrideDefaultSaveFilterTag, info.EntityComputedFrom);
+            }
         }
     }
 }

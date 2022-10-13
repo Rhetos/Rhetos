@@ -53,7 +53,7 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string RecomputeForNewItemsSnippet(ComputeForNewItemsInfo info, string uniqueSuffix)
         {
             string optionalFilterSaveFunctionName = !string.IsNullOrWhiteSpace(info.FilterSaveExpression) ? $", _filterSaveComputeForNewItems_{uniqueSuffix}" : "";
-            string recomputeMethodName = EntityComputedFromCodeGenerator.RecomputeFunctionName(info.EntityComputedFrom);
+            string recomputeMethodName = info.EntityComputedFrom.RecomputeFunctionName();
 
             return $@"if (inserted.Count() > 0)
             {{

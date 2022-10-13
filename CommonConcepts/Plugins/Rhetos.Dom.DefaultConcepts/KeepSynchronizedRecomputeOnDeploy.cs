@@ -69,8 +69,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
             bool skipRecomputeDeployParameter = _dbUpdateOptions.SkipRecompute;
 
-            IEnumerable<IKeepSynchronizedMetadata> toInsert, toUpdate, toDelete;
-            keepSyncRepos.Diff(oldItems, _currentKeepSynchronizedMetadata, new SameRecord(), SameValue, Assign, out toInsert, out toUpdate, out toDelete);
+            ComputedFromHelper.Diff(oldItems, _currentKeepSynchronizedMetadata, new SameRecord(), SameValue, out var toInsert, out var toUpdatePairs, out var toDelete);
+            var toUpdate = toUpdatePairs.Select(u => u.New).ToList();
 
             _performanceLogger.Write(sw, () => "Load metadata.");
 
@@ -111,13 +111,6 @@ namespace Rhetos.Dom.DefaultConcepts
         private bool SameValue(IKeepSynchronizedMetadata x, IKeepSynchronizedMetadata y)
         {
             return x.Source == y.Source && x.Target == y.Target && x.Context == y.Context;
-        }
-
-        private void Assign(IKeepSynchronizedMetadata destination, IKeepSynchronizedMetadata source)
-        {
-            destination.Source = source.Source;
-            destination.Target = source.Target;
-            destination.Context = source.Context;
         }
 
         public IEnumerable<string> Dependencies
