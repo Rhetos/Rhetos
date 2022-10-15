@@ -2,7 +2,16 @@
 
 ## 5.4.0 (TO BE RELEASED)
 
-### Breaking changed
+### Internal improvements
+
+* The generated source files are marked as read-only, as a hint that they are not intended to be manually edited.
+* Bugfix: Option *AllClaimsForUsers* did not support usernames with '@' character (email as username).
+* Bugfix: In some cases, `rhetos dbupdate` log is not written to `Logs\RhetosCli.log`.
+* **ComputedFrom** concept generates new repository method `DiffFrom`, to allow simpler diff analysis without running `RecomputeFrom` method. A generic version of the method is also added to `GenericRepository`.
+* Minor optimizations in ComputedFrom diff algorithm.
+* Optimized dbupdate for changes in the money property when updating from Rhetos v4 or earlier to Rhetos v5 or later.
+
+### Breaking changes
 
 There are no changes that affect Rhetos app's business features, but some internal implementation details might impact
 custom DSL code generators and tests related to **ComputedFrom** concept:
