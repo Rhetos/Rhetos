@@ -26,6 +26,10 @@ using System.Text;
 
 namespace Rhetos
 {
+    /// <summary>
+    /// Used at Rhetos-MSBuild integration to save the list of project files (including referenced packages).
+    /// Used at build-time to load the list of project files.
+    /// </summary>
     public class RhetosProjectContentProvider
     {
         private const string ProjectAssetsFileName = "rhetos-project.assets.json";

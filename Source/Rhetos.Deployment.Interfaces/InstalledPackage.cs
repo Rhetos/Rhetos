@@ -63,18 +63,7 @@ namespace Rhetos.Deployment
 
         public List<ContentFile> ContentFiles { get; private set; }
 
-        public string Report() => $"{Id}, version {Version}, build folder '{Folder}'.";
-
-        /// <summary>
-        /// Removing folder and file paths that were available at build-time, to avoid accidentally using them at run-time.
-        /// This includes <see cref="Folder"/> and <see cref="ContentFile.PhysicalPath"/>.
-        /// </summary>
-        public void RemoveBuildTimePaths()
-        {
-            Folder = null;
-            foreach (var file in ContentFiles)
-                file.PhysicalPath = null;
-        }
+        public string Report() => $"{Id}, version {Version}" + (string.IsNullOrEmpty(Folder) ? "" : $", build folder '{Folder}'") + ".";
 
         /// <summary>
         /// Replace "/" or "\" in package paths to Path.DirectorySeparatorChar, to locate correctly package
