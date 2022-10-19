@@ -270,6 +270,36 @@ namespace Rhetos.Utilities.Test
         }
 
         [TestMethod]
+        public void CorrectlyBindsComplexTypes()
+        {
+            var provider = new ConfigurationBuilder(new ConsoleLogProvider())
+                .AddKeyValue("App:Complex:Code", "mycode")
+                .AddKeyValue("App:Complex:Name", "myname")
+                .AddKeyValue("App:Array:0:Code", "mycode0")
+                .AddKeyValue("App:Array:0:Name", "myname0")
+                .AddKeyValue("App:Array:1:Code", "mycode1")
+                .AddKeyValue("App:Array:1:Name", "myname1")
+                .Build();
+
+            var options = provider.GetOptions<ComplexAppOptions>("App");
+            Assert.AreEqual("mycode-myname", options.Complex.ToString());
+            Assert.AreEqual("mycode0-myname0, mycode1-myname1", TestUtility.Dump(options.Array));
+        }
+
+        private class ComplexAppOptions
+        {
+            public Complex Complex { get; set; }
+            public Complex[] Array { get; set; } 
+        }
+
+        private class Complex
+        {
+            public string Code { get; set; }
+            public string Name { get; set; }
+            public override string ToString() => $"{Code}-{Name}";
+        }
+
+        [TestMethod]
         public void FailsBindOnConversion()
         {
             {

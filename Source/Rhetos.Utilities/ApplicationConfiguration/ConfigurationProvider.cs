@@ -22,6 +22,7 @@ using Rhetos.Utilities;
 using Rhetos.Utilities.ApplicationConfiguration;
 using Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -79,44 +80,51 @@ namespace Rhetos
         public T GetOptions<T>(string configurationPath = "", bool requireAllMembers = false) where T : class
         {
             var optionsType = typeof(T);
-            var optionsInstance = Activator.CreateInstance(optionsType);
             if (string.IsNullOrEmpty(configurationPath))
                 configurationPath = OptionsAttribute.GetConfigurationPath<T>();
 
-            var props = optionsType.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(prop => prop.CanWrite);
-            var fields = optionsType.GetFields(BindingFlags.Public | BindingFlags.Instance).Where(field => !field.IsInitOnly);
-            var members = props.Cast<MemberInfo>().Concat(fields.Cast<MemberInfo>()).ToList();
+            object optionsInstance = GetOptions(optionsType, configurationPath, requireAllMembers);
+
+            return (T)optionsInstance;
+        }
+
+        private object GetOptions(Type optionsType, string configurationPath, bool requireAllMembers)
+        {
+            var optionsInstance = Activator.CreateInstance(optionsType);
+            var props = optionsType.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(prop => prop.CanWrite).Select(prop => new { Type = prop.PropertyType, Info = (MemberInfo)prop });
+            var fields = optionsType.GetFields(BindingFlags.Public | BindingFlags.Instance).Where(field => !field.IsInitOnly).Select(field => new { Type = field.FieldType, Info = (MemberInfo)field });
+            var members = props.Concat(fields).ToList();
 
             var membersBound = new List<MemberInfo>();
             foreach (var member in members)
             {
-                bool convertRelativePath = member.GetCustomAttribute<AbsolutePathOptionAttribute>() != null;
-                if (TryGetConfigurationValueForMemberName(member.Name, out var memberValue, configurationPath, convertRelativePath))
+                bool convertRelativePath = member.Info.GetCustomAttribute<AbsolutePathOptionAttribute>() != null;
+                if (TryGetConfigurationValueForMemberName(member.Type, member.Info.Name, out var memberValue, configurationPath, convertRelativePath))
                 {
-                    SetMemberValue(optionsInstance, member, memberValue);
+                    SetMemberValue(optionsInstance, member.Info, memberValue);
 
                     if (requireAllMembers)
-                        membersBound.Add(member);
+                        membersBound.Add(member.Info);
                 }
             }
 
             if (requireAllMembers && membersBound.Count != members.Count)
             {
-                var missing = members.Where(member => !membersBound.Contains(member)).Select(member => member.Name);
+                var missing = members.Where(member => !membersBound.Contains(member.Info)).Select(member => member.Info.Name);
                 throw new FrameworkException($"Binding requires all members to be present in configuration, but some are missing: {string.Join(",", missing)}.");
             }
 
-            return (T)optionsInstance;
+            return optionsInstance;
         }
 
         private const string _memberMappingSeparator = "__";
 
-        private bool TryGetConfigurationValueForMemberName(string memberName, out object value, string configurationPath, bool convertRelativePath)
+        private bool TryGetConfigurationValueForMemberName(Type optionsType, string memberName, out object value, string configurationPath, bool convertRelativePath)
         {
             value = null;
             var matchCount = 0;
             
-            if (TryGetConfigurationValue(memberName, out var memberNameLiteral, configurationPath, convertRelativePath))
+            if (TryGetConfigurationValue(optionsType, memberName, out var memberNameLiteral, configurationPath, convertRelativePath))
             {
                 value = memberNameLiteral;
                 matchCount++;
@@ -124,7 +132,7 @@ namespace Rhetos
 
             if (memberName.Contains(_memberMappingSeparator))
             {
-                if (TryGetConfigurationValue(memberName.Replace(_memberMappingSeparator, ConfigurationProviderOptions.ConfigurationPathSeparator), out var memberNameColon, configurationPath, convertRelativePath))
+                if (TryGetConfigurationValue(optionsType, memberName.Replace(_memberMappingSeparator, ConfigurationProviderOptions.ConfigurationPathSeparator), out var memberNameColon, configurationPath, convertRelativePath))
                 {
                     value = memberNameColon;
                     matchCount++;
@@ -143,7 +151,7 @@ namespace Rhetos
 
         public T GetValue<T>(string configurationKey, T defaultValue = default(T), string configurationPath = "")
         {
-            if (!TryGetConfigurationValue(configurationKey, out var value, configurationPath, convertRelativePath: false))
+            if (!TryGetConfigurationValue(typeof(T), configurationKey, out var value, configurationPath, convertRelativePath: false))
                 return defaultValue;
 
             return Convert<T>(value, configurationKey);
@@ -159,7 +167,7 @@ namespace Rhetos
                 throw new FrameworkException($"Unhandled member type {member.GetType()}.");
         }
 
-        private bool TryGetConfigurationValue(string configurationKey, out object result, string configurationPath, bool convertRelativePath)
+        private bool TryGetConfigurationValue(Type optionsType, string configurationKey, out object result, string configurationPath, bool convertRelativePath)
         {
             if (!string.IsNullOrEmpty(configurationPath))
                 configurationKey = $"{configurationPath}{ConfigurationProviderOptions.ConfigurationPathSeparator}{configurationKey}";
@@ -176,16 +184,25 @@ namespace Rhetos
                 result = GetConfigurationEntryValue(convertRelativePath, legacyKeyEntry);
                 return true;
             }
-            else if (_configurationValues.ContainsKey($"{configurationKey}:0"))
+            else if ((optionsType.IsArray || optionsType.Name == "IEnumerable`1") && _configurationValues.Any(c => c.Key.StartsWith($"{configurationKey}:0")))
             {
-                var entries = new List<string>();
+                var elementType = optionsType.IsArray ? optionsType.GetElementType() : optionsType.GetGenericArguments().Single();
+                var entries = new List<object>();
                 int index = 0;
-                while (TryGetConfigurationValue(index.ToString(), out var arrayElement, configurationKey, convertRelativePath))
+                while (TryGetConfigurationValue(elementType, index.ToString(), out object arrayElement, configurationKey, convertRelativePath))
                 {
-                    entries.Add((string)arrayElement);
+                    entries.Add(arrayElement);
                     index++;
                 }
-                result = entries.ToArray();
+                var array = Array.CreateInstance(elementType, entries.Count);
+                for (int i = 0; i < entries.Count; i++)
+                    array.SetValue(entries[i], i);
+                result = array;
+                return true;
+            }
+            else if (_configurationValues.Any(c => c.Key.StartsWith($"{configurationKey}:")))
+            {
+                result = GetOptions(optionsType, configurationKey, false);
                 return true;
             }
             else
