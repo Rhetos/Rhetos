@@ -21,6 +21,8 @@ using System.IO;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using System;
+using System.Linq;
 
 namespace Rhetos.Deployment
 {
@@ -75,6 +77,51 @@ namespace Rhetos.Deployment
                 file.InPackagePath = file.InPackagePath
                     .Replace('/', Path.DirectorySeparatorChar)
                     .Replace('\\', Path.DirectorySeparatorChar);
+        }
+
+        const string DslScriptsSubfolder = "DslScripts";
+        private static readonly string DslScriptsSubfolderPrefix = DslScriptsSubfolder + Path.DirectorySeparatorChar;
+
+        /// <summary>
+        /// Extracts all files from a given subfolder into a new (virtual) package, and removes them from the current package.
+        /// </summary>
+        internal InstalledPackage ExtractSubpackage(Subpackage subpackage)
+        {
+            string subpackageFolder = Path.GetFullPath(Path.Combine(Folder, subpackage.Folder));
+
+            subpackage.Dependencies ??= Array.Empty<string>();
+
+            var virtualPackage = new InstalledPackage(
+                Id + "." + subpackage.Name,
+                "",
+                Dependencies.Concat(subpackage.Dependencies.Select(dependency => new PackageRequest { Id = Id + "." + dependency, VersionsRange = "" })).ToList(),
+                subpackageFolder,
+                ContentFiles.Where(f => f.PhysicalPath.StartsWith(subpackageFolder, StringComparison.OrdinalIgnoreCase)).ToList());
+
+            ContentFiles.RemoveAll(f => f.PhysicalPath.StartsWith(subpackageFolder, StringComparison.OrdinalIgnoreCase));
+
+            foreach (var file in virtualPackage.ContentFiles)
+            {
+                // Files in the new packages should have paths relative to the package's folder, instead of the project's root folder.
+                if (file.InPackagePath.Length <= subpackage.Folder.Length
+                    || (file.InPackagePath[subpackage.Folder.Length] != Path.DirectorySeparatorChar
+                    && file.InPackagePath[subpackage.Folder.Length] != Path.AltDirectorySeparatorChar))
+                    throw new FrameworkException($"Unexpected InPackagePath of a file '{file.InPackagePath}'." +
+                        $" It should start with the subpackage Folder name '{subpackage.Folder}' followed by a directory separator.");
+                file.InPackagePath = file.InPackagePath.Substring(subpackage.Folder.Length + 1);
+
+                // DSL scripts in the referenced packages need to be in the DslScripts folder, to match the behavior of DiskDslScriptLoader.LoadPackageScripts.
+                if (Path.GetExtension(file.InPackagePath).Equals(".rhe", StringComparison.OrdinalIgnoreCase))
+                    if (!file.InPackagePath.StartsWith(DslScriptsSubfolderPrefix, StringComparison.OrdinalIgnoreCase))
+                        file.InPackagePath = Path.Combine(DslScriptsSubfolder, file.InPackagePath);
+            }
+
+            return virtualPackage;
+        }
+
+        internal void AddDependencies(List<InstalledPackage> createdPackages)
+        {
+            Dependencies = Dependencies.Concat(createdPackages.Select(p => new PackageRequest { Id = p.Id, VersionsRange = "" })).ToList();
         }
     }
 }

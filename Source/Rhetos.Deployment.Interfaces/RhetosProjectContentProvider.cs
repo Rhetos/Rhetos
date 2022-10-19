@@ -18,8 +18,11 @@
 */
 
 using Newtonsoft.Json;
+using Rhetos.Deployment;
 using Rhetos.Logging;
 using Rhetos.Utilities;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -64,6 +67,34 @@ namespace Rhetos
             string serialized = File.ReadAllText(ProjectAssetsFilePath, Encoding.UTF8);
             var rhetosProjectContent = JsonConvert.DeserializeObject<RhetosProjectContent>(serialized, _serializerSettings);
             return rhetosProjectContent;
+        }
+
+        /// <summary>
+        /// At build-time, the list of packages may be modified to split the current project into multiple "virtual" packages,
+        /// if the "Subpackages" configuration option is used.
+        /// This feature can be used to control the execution order of DataMigrations scripts within the project,
+        /// by specifying dependencies between the subfolders (subpackages).
+        /// </summary>
+        public static void SplitProjectToSubpackages(List<InstalledPackage> packages, string projectFolder, SubpackagesOptions subpackagesOptions)
+        {
+            if (subpackagesOptions.Subpackages == null || !subpackagesOptions.Subpackages.Any())
+                return;
+
+            // Make sure that the created subpackages are ordered by their dependencies.
+            var subpackagesNames = subpackagesOptions.Subpackages.Select(p => p.Name).ToList();
+            var dependencies = subpackagesOptions.Subpackages.Where(p => p.Dependencies != null).SelectMany(p => p.Dependencies.Select(d => Tuple.Create(d, p.Name))).ToList();
+            Graph.TopologicalSort(subpackagesNames, dependencies);
+            var subpackagesSorted = subpackagesOptions.Subpackages.ToList(); // Clone.
+            Graph.SortByGivenOrder(subpackagesSorted, subpackagesNames, p => p.Name);
+
+            // Extract files from the main project into the subpackages.
+            var projectPackage = packages.Where(p => p.Folder.StartsWith(projectFolder, StringComparison.OrdinalIgnoreCase)).Single();
+            var createdPackages = subpackagesSorted.Select(subpackage => projectPackage.ExtractSubpackage(subpackage)).ToList();
+            projectPackage.AddDependencies(createdPackages);
+
+            // Add the subpackages before the main project, because any other remaining files in the main project are assumed to depend on the subpackages
+            // (as if the subpackages were implemented in separate libraries, referenced by the main project).
+            packages.InsertRange(packages.IndexOf(projectPackage), createdPackages);
         }
 
         public void Save(RhetosBuildEnvironment rhetosBuildEnvironment, RhetosProjectAssets rhetosProjectAssets)

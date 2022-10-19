@@ -182,6 +182,11 @@ namespace Rhetos
                 .AddJsonFile(Path.Combine(projectRootPath, RhetosBuildEnvironment.ConfigurationFileName), optional: true)
                 .Build();
 
+            RhetosProjectContentProvider.SplitProjectToSubpackages(
+                rhetosProjectContent.RhetosProjectAssets.InstalledPackages.Packages,
+                rhetosProjectContent.RhetosBuildEnvironment.ProjectFolder,
+                configuration.GetOptions<SubpackagesOptions>());
+
             var projectAssets = rhetosProjectContent.RhetosProjectAssets;
             AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolver.GetResolveEventHandler(projectAssets.Assemblies, _logProvider, true);
 
