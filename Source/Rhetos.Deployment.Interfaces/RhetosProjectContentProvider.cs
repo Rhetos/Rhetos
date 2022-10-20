@@ -47,7 +47,7 @@ namespace Rhetos
         {
             ProjectAssetsFilePath = Path.Combine(projectRootFolder, "obj", "Rhetos", ProjectAssetsFileName);
             _filesUtility = new FilesUtility(logProvider);
-            _logger = logProvider.GetLogger(GetType().ToString());
+            _logger = logProvider.GetLogger(GetType().Name);
             _projectRootFolder = projectRootFolder;
         }
 
@@ -75,7 +75,7 @@ namespace Rhetos
         /// This feature can be used to control the execution order of DataMigrations scripts within the project,
         /// by specifying dependencies between the subfolders (subpackages).
         /// </summary>
-        public static void SplitProjectToSubpackages(List<InstalledPackage> packages, string projectFolder, SubpackagesOptions subpackagesOptions)
+        public void SplitProjectToSubpackages(List<InstalledPackage> packages, SubpackagesOptions subpackagesOptions)
         {
             if (subpackagesOptions.Subpackages == null || !subpackagesOptions.Subpackages.Any())
                 return;
@@ -88,8 +88,10 @@ namespace Rhetos
             Graph.SortByGivenOrder(subpackagesSorted, subpackagesNames, p => p.Name);
 
             // Extract files from the main project into the subpackages.
-            var projectPackage = packages.Where(p => p.Folder.StartsWith(projectFolder, StringComparison.OrdinalIgnoreCase)).Single();
+            var projectPackage = packages.Where(p => p.Folder.StartsWith(_projectRootFolder, StringComparison.OrdinalIgnoreCase)).Single();
             var createdPackages = subpackagesSorted.Select(subpackage => projectPackage.ExtractSubpackage(subpackage)).ToList();
+            foreach (var createdPackage in createdPackages)
+                _logger.Trace(() => $"Project files moved to virtual subpackage '{createdPackage.Id}':{string.Concat(createdPackage.ContentFiles.Select(f => $"{Environment.NewLine}  {f.InPackagePath}"))}");
             projectPackage.AddDependencies(createdPackages);
 
             // Add the subpackages before the main project, because any other remaining files in the main project are assumed to depend on the subpackages

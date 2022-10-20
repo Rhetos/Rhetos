@@ -167,7 +167,8 @@ namespace Rhetos
 
         private void Build(string projectRootPath)
         {
-            var rhetosProjectContent = new RhetosProjectContentProvider(projectRootPath, _logProvider).Load();
+            var rhetosProjectContentProvider = new RhetosProjectContentProvider(projectRootPath, _logProvider);
+            var rhetosProjectContent = rhetosProjectContentProvider.Load();
 
             if (FilesUtility.IsInsideDirectory(AppDomain.CurrentDomain.BaseDirectory, Path.Combine(projectRootPath, "bin")))
                 throw new FrameworkException($"Rhetos build command cannot be run from the generated application folder." +
@@ -182,9 +183,8 @@ namespace Rhetos
                 .AddJsonFile(Path.Combine(projectRootPath, RhetosBuildEnvironment.ConfigurationFileName), optional: true)
                 .Build();
 
-            RhetosProjectContentProvider.SplitProjectToSubpackages(
+            rhetosProjectContentProvider.SplitProjectToSubpackages(
                 rhetosProjectContent.RhetosProjectAssets.InstalledPackages.Packages,
-                rhetosProjectContent.RhetosBuildEnvironment.ProjectFolder,
                 configuration.GetOptions<SubpackagesOptions>());
 
             var projectAssets = rhetosProjectContent.RhetosProjectAssets;
