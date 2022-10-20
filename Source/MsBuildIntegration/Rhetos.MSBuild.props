@@ -20,4 +20,9 @@
         the FastUpToDateCheck will determine that it needs to run MSBuild. -->
         <UpToDateCheckBuilt Include="$(RhetosBuildCompleteFile)" Set="RhetosBuild"/>
     </ItemGroup>
+    <ItemGroup>
+        <RhetosBuild Include="**\*.rhe" />
+        <RhetosBuild Include="**\DataMigration\**\*" />
+        <RhetosBuild Include="Resources\Rhetos\**\*" />
+    </ItemGroup>
 </Project>

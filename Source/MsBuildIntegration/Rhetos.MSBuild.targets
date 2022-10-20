@@ -4,12 +4,7 @@
     <Target Name="ResolveRhetosBuildItems" BeforeTargets="ResolveRhetosProjectAssets;CollectUpToDateCheckInputDesignTime">
         <Message Text="ResolveRhetosBuildItems" />
         <ItemGroup>
-            <RhetosBuild Include="**\*.rhe" />
-            <RhetosBuild Include="**\DataMigration\**\*" />
-            <RhetosBuild Include="Resources\Rhetos\**\*" />
             <RhetosBuildSettings Include="$(RhetosBuildSettingsFile)" Condition="Exists('$(RhetosBuildSettingsFile)')" />
-        </ItemGroup>
-        <ItemGroup>
             <UpToDateCheckInput Include="@(RhetosBuild);@(RhetosBuildSettings)" Set="RhetosBuild"/>
         </ItemGroup>
     </Target>
