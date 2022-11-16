@@ -20,6 +20,7 @@
 using Autofac;
 using CommonConcepts.Test.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Security;
 using Rhetos.TestCommon;
@@ -107,6 +108,21 @@ namespace CommonConcepts.Test
         }
 
         private const string TestUserPrefix = "TestAuthorizationProvider.";
+
+        [TestMethod]
+        public void UnregisteredPrincipalsError()
+        {
+            string testUserName = TestUserPrefix + Guid.NewGuid();
+
+            using (var scope = TestScope.Create(builder => builder.ConfigureOptions<RhetosAppOptions>(o => o.AuthorizationAddUnregisteredPrincipals = false)))
+            {
+                IAuthorizationData authorizationData = scope.Resolve<AuthorizationDataLoader>();
+
+                TestUtility.ShouldFail<UserException>(
+                    () => _ = authorizationData.GetPrincipal(testUserName),
+                    $"Your account '{testUserName}' is not registered in the system. Please contact the system administrator.");
+            }
+        }
 
         [TestMethod]
         public void AddUnregisteredPrincipalsParallel()

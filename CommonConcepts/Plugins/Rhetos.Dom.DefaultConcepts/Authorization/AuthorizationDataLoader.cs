@@ -82,7 +82,7 @@ namespace Rhetos.Dom.DefaultConcepts
             else
             {
                 _logger.Warning($"There is no principal with the username '{username}' in Common.Principal.");
-                throw new UserException($"Your account '{username}' is not registered in the system. Please contact the system administrator.");
+                throw new UserException("Your account '{0}' is not registered in the system. Please contact the system administrator.", new object[] { username });
             }
         }
 
