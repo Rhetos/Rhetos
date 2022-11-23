@@ -1,5 +1,10 @@
 ﻿# Rhetos release notes
 
+## 2.13.0 (2022-11-23)
+
+* Using TLS 1.2 for NuGet download to avoid exception "An existing connection was forcibly closed by the remote host".
+  See <https://devblogs.microsoft.com/nuget/deprecating-tls-1-0-and-1-1-on-nuget-org/>.
+
 ## 2.12.0 (2019-09-09)
 
 ### New features
