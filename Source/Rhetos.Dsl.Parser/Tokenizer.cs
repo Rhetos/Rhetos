@@ -133,6 +133,12 @@ namespace Rhetos.Dsl
                     Value = ReadSingleLineComment(script, ref position),
                     Type = TokenType.Comment
                 };
+            else if (IsBlockCommentStart(script, position))
+                return new Token
+                {
+                    Value = ReadBlockComment(dslScript, ref position),
+                    Type = TokenType.Comment
+                };
             else
                 return new Token
                 {
@@ -154,6 +160,38 @@ namespace Rhetos.Dsl
             while (end < dsl.Length && dsl[end] != '\r' && dsl[end] != '\n')
                 end++;
             return dsl.Substring(begin, end - begin);
+        }
+
+        private static bool IsBlockCommentStart(string dsl, int position)
+        {
+            return position + 1 < dsl.Length && dsl[position] == '/' && dsl[position + 1] == '*';
+        }
+
+        private static string ReadBlockComment(DslScript dslScript, ref int end)
+        {
+            string dsl = dslScript.Script;
+            end += 2;
+            int begin = end;
+            while (true)
+            {
+                if (end >= dsl.Length)
+                {
+                    var errorMessage = $"Unexpected end of file within a block comment. Expected '*/'.";
+                    throw new DslSyntaxException(errorMessage, "RH0013", dslScript, begin, dsl.Length, null);
+                }
+                if (IsBlockCommentEnd(dsl, end))
+                {
+                    end += 2;
+                    break;
+                }
+                end++;
+            }
+            return dsl.Substring(begin, end - 2 - begin);
+        }
+
+        private static bool IsBlockCommentEnd(string dsl, int position)
+        {
+            return position + 1 < dsl.Length && dsl[position] == '*' && dsl[position + 1] == '/';
         }
 
         private static string ReadSpecialCharacter(string dsl, ref int end)
