@@ -231,7 +231,7 @@ namespace Rhetos.Dsl
                     end++;
                 if (end >= script.Length)
                 {
-                    var errorMessage = $"Unexpected end of script within quoted string. Missing closing character: {quote}.";
+                    var errorMessage = $"Unexpected end of file within a quoted string. Missing closing character: {quote}.";
                     throw new DslSyntaxException(errorMessage, "RH0008", dslScript, begin, script.Length, null);
                 }
                 if (end + 1 < script.Length && script[end + 1] == quote)

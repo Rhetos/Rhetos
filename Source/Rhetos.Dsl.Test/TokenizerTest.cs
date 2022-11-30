@@ -17,13 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Dsl;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
+using Rhetos.TestCommon;
 using System.Collections.Generic;
 using System.Linq;
-using Rhetos.TestCommon;
-using Rhetos.Utilities;
+using System.Security.Cryptography;
 
 namespace Rhetos.Dsl.Test
 {
@@ -134,6 +132,23 @@ namespace Rhetos.Dsl.Test
             CheckSingle(TokenType.Text, "//", "'//'");
         }
 
+        [TestMethod]
+        public void GetNextToken_BlockComment()
+        {
+            CheckSingle(TokenType.Comment, "simple", "/*simple*/");
+            CheckSingle(TokenType.Comment, " whitespace\r\n ", "/* whitespace\r\n */ other */");
+            CheckSingle(TokenType.Comment, "'\";", "/*'\";*/ other */");
+            CheckSingle(TokenType.Comment, "***", "/*****/");
+            CheckSingle(TokenType.Comment, "*", "/***/");
+            CheckSingle(TokenType.Comment, "", "/**/");
+        }
+
+        [TestMethod]
+        public void GetNextToken_NotBlockComment()
+        {
+            CheckSingle(TokenType.Text, "/*", "'/*' */");
+            CheckSingle(TokenType.Comment, " /* */", "// /* */");
+        }
 
         //===========================================================================================
 
@@ -238,13 +253,43 @@ namespace Rhetos.Dsl.Test
             CheckTokens("one,two,", "one //comment \t until end of line unix\ntwo");
         }
 
+        [TestMethod]
+        public void GetTokens_RemoveBlockComments()
+        {
+            CheckTokens("", "/*comment*/");
+            CheckTokens("before,after,", "before/**/after");
+        }
 
+        //===========================================================================================
+
+        [TestMethod]
+        public void GetNextToken_ErrorUnclosedQuotes()
+        {
+            string dsl = "'a";
+            int position = 0;
+            TestUtility.ShouldFail<DslSyntaxException>(
+                () => TestGetNextToken_ValueType(dsl, ref position),
+                "Unexpected end of file within a quoted string. Missing closing character: '.");
+        }
+
+        [TestMethod]
+        public void GetNextToken_ErrorUnclosedBlockComment()
+        {
+            foreach (string dsl in new[] { "/*a", "/*", "/*/" })
+            {
+                int position = 0;
+                TestUtility.ShouldFail<DslSyntaxException>(
+                    () => TestGetNextToken_ValueType(dsl, ref position),
+                    "Unexpected end of file within a block comment. Expected '*/'.");
+            }
+        }
+        
         //===========================================================================================
 
         [TestMethod]
         public void GetTokens_ReferenceContextData()
         {
-            string dsl = "11 '22' //00\r\n 33";
+            string dsl = "11 '22' //00\r\n 33 /*x*/";
             foreach (Token t in TestGetTokens(dsl))
                 Assert.AreEqual(dsl, t.DslScript.Script, t.Value);
         }
