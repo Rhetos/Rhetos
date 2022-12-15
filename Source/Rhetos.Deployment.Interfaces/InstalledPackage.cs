@@ -88,6 +88,8 @@ namespace Rhetos.Deployment
         internal InstalledPackage ExtractSubpackage(Subpackage subpackage)
         {
             string subpackageFolder = Path.GetFullPath(Path.Combine(Folder, subpackage.Folder));
+            if (subpackageFolder.Last() != Path.DirectorySeparatorChar)
+                subpackageFolder += Path.DirectorySeparatorChar; // Makes sure to avoid selecting files from a subfolder which Name begins with the wanted subfolder name.
 
             subpackage.Dependencies ??= Array.Empty<string>();
 
