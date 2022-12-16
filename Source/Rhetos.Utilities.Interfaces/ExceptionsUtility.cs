@@ -55,8 +55,8 @@ namespace Rhetos.Utilities
         }
 
         /// <summary>
-        /// If the exception is a UserException, this function evaluates the message parameters using string.Format, without localization.
-        /// Use this method in error logging to make sure every error is logged even if it's message format is not valid.
+        /// Returns the exception's message without the stack trace, with some basic additional info for certain Rhetos exceptions.
+        /// If the exception is a UserException, it returns the user message without localization, using a simple string.Format to evaluate the message parameters.
         /// </summary>
         public static string MessageForLog(Exception ex)
         {

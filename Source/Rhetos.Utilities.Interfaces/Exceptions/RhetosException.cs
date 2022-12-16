@@ -57,6 +57,10 @@ namespace Rhetos
             return base.ToString() + infoReport;
         }
 
+        /// <summary>
+        /// Returns the exception's message without the stack trace, with some basic additional info for certain Rhetos exceptions.
+        /// If the exception is a UserException, it returns the user message without localization, using a simple string.Format to evaluate the message parameters.
+        /// </summary>
         public virtual string MessageForLog()
         {
             return Message;

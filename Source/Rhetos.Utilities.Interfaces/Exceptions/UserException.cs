@@ -22,76 +22,172 @@ using System;
 namespace Rhetos
 {
     /// <summary>
-    /// This exceptions denotes an error during validation of data vs business logic rules.
+    /// This exception denotes an error during validation of data vs business logic rules.
     /// These errors result from end user's incorrect usage of the application.
-    /// <para>
-    /// The <see cref="Exception.Message"/> property contains a message for the end user.
-    /// The message may contain indexed placeholders ({0}, {1}, ...) to support localization,
-    /// and it needs to be formated with provided parameters in <see cref="MessageParameters"/>,
-    /// for example by calling <c>string.Format(userException.Message, userException.MessageParameters)</c>.
-    /// </para>
-    /// <para>
-    /// The exception may also contain additional error metadata (for example a property name that caused the error)
-    /// in <see cref="SystemMessage"/>.
-    /// </para>
+    /// It supports message localization with message parameters, and custom error metadata.
     /// </summary>
     [Serializable]
     public class UserException : RhetosException
     {
+        private string _userMessage;
+
+        /// <summary>
+        /// Exception message for localization.
+        /// It contains the original message from the <see cref="UserException(string, object[])"/> constructor.
+        /// <para>
+        /// The message may contain indexed placeholders ({0}, {1}, ...) to support localization,
+        /// and it needs to be formated with the message parameters provided in <see cref="UserException(string, object[])"/> constructor,
+        /// see <see cref="MessageParameters"/> property.
+        /// For example, by calling <c>string.Format(userException.UserMessage, userException.MessageParameters)</c>.
+        /// </para>
+        /// <para>
+        /// The base <see cref="Exception.Message"/> property contains the formatted string from <see cref="UserMessage"/>
+        /// with the placeholders replaced with <see cref="MessageParameters"/>.
+        /// </para>
+        /// </summary>
+        public string UserMessage { get => _userMessage ?? Message; set => _userMessage = value; } // This custom getter handles an edge case when the base Exception automatically sets the Message property if not explicitly provided.
+
+        /// <summary>
+        /// Additional error metadata, for example a property name that caused the error.
+        /// </summary>
         public string SystemMessage { get; set; } // TODO: Remove this property and switch to RhetosException.Info property for error metadata.
 
         /// <summary>
-        /// The MessageParameters are used with the Message property, matching the arguments of the string.Format(Message, MessageParameters) method.
+        /// The <see cref="MessageParameters"/> are used with the <see cref="UserMessage"/> property, matching the arguments of the <c>string.Format(Message, MessageParameters)</c> method.
         /// </summary>
         public object[] MessageParameters { get; }
 
+        /// <summary>
+        /// An error during validation of data vs business logic rules. It supports localization with message parameters, and custom error metadata.
+        /// </summary>
         public UserException() { }
 
-        public UserException(string message) : base(message) { }
-
-        public UserException(string message, string systemMessage) : base(message)
-        {
-            SystemMessage = systemMessage;
-        }
-
-        public UserException(string message, Exception inner) : base(message, inner) { }
-
-        public UserException(string message, string systemMessage, Exception inner) : base(message, inner)
-        {
-            SystemMessage = systemMessage;
-        }
-
         /// <summary>
-        /// User error message localization with parameters.
+        /// An error during validation of data vs business logic rules. It supports localization with message parameters, and custom error metadata.
         /// </summary>
         /// <param name="message">
         /// Error message for the end user.
         /// Use parameters similar to <see cref="string.Format(string, object[])"/> to simplify localization, for example "Value of {0} should be less than {1}.".
-        /// Single message translation can be used in multiple scenarios with different parameter values.
+        /// Separating message parameters from the message allows a single translation to be used with different parameter values.
         /// </param>
-        /// <param name="messageParameters">
-        /// Parameters for string <paramref name="message"/>, similar to <see cref="string.Format(string, object[])"/>.
-        /// </param>
-        public UserException(string message, object[] messageParameters) : base(message)
-        {
-            MessageParameters = messageParameters;
-        }
+        public UserException(string message) : this(message, null, null, null) { }
 
         /// <summary>
-        /// User error message localization with parameters, error metadata and inner exception.
+        /// An error during validation of data vs business logic rules. It supports localization with message parameters, and custom error metadata.
         /// </summary>
         /// <param name="message">
         /// Error message for the end user.
         /// Use parameters similar to <see cref="string.Format(string, object[])"/> to simplify localization, for example "Value of {0} should be less than {1}.".
-        /// Single message translation can be used in multiple scenarios with different parameter values.
+        /// Separating message parameters from the message allows a single translation to be used with different parameter values.
+        /// </param>
+        /// <param name="systemMessage">
+        /// Additional error metadata for example a property name that caused the error.
+        /// </param>
+        public UserException(string message, string systemMessage) : this(message, null, systemMessage, null) { }
+
+        /// <summary>
+        /// An error during validation of data vs business logic rules. It supports localization with message parameters, and custom error metadata.
+        /// </summary>
+        /// <param name="message">
+        /// Error message for the end user.
+        /// Use parameters similar to <see cref="string.Format(string, object[])"/> to simplify localization, for example "Value of {0} should be less than {1}.".
+        /// Separating message parameters from the message allows a single translation to be used with different parameter values.
+        /// </param>
+        /// <param name="inner">
+        /// The exception that is the cause of the current exception.
+        /// </param>
+        public UserException(string message, Exception inner) : this(message, null, null, inner) { }
+
+        /// <summary>
+        /// An error during validation of data vs business logic rules. It supports localization with message parameters, and custom error metadata.
+        /// </summary>
+        /// <param name="message">
+        /// Error message for the end user.
+        /// Use parameters similar to <see cref="string.Format(string, object[])"/> to simplify localization, for example "Value of {0} should be less than {1}.".
+        /// Separating message parameters from the message allows a single translation to be used with different parameter values.
+        /// </param>
+        /// <param name="systemMessage">
+        /// Additional error metadata for example a property name that caused the error.
+        /// </param>
+        /// <param name="inner">
+        /// The exception that is the cause of the current exception.
+        /// </param>
+        public UserException(string message, string systemMessage, Exception inner) : this(message, null, systemMessage, inner) { }
+
+        /// <summary>
+        /// An error during validation of data vs business logic rules. It supports localization with message parameters, and custom error metadata.
+        /// </summary>
+        /// <remarks>
+        /// This constructor enables user error message localization with parameters.
+        /// The provided original message will be saved to <see cref="UserMessage"/> property,
+        /// while the formatted message with replaced parameters will be saved to <see cref="Exception.Message"/> property.
+        /// </remarks>
+        /// <param name="message">
+        /// Error message for the end user.
+        /// Use parameters similar to <see cref="string.Format(string, object[])"/> to simplify localization, for example "Value of {0} should be less than {1}.".
+        /// Separating message parameters from the message allows a single translation to be used with different parameter values.
         /// </param>
         /// <param name="messageParameters">
         /// Parameters for string <paramref name="message"/>, similar to <see cref="string.Format(string, object[])"/>.
         /// </param>
-        public UserException(string message, object[] messageParameters, string systemMessage, Exception inner) : base(message, inner)
+        public UserException(string message, object[] messageParameters) : this(message, messageParameters, null, null) { }
+
+        /// <summary>
+        /// An error during validation of data vs business logic rules. It supports localization with message parameters, and custom error metadata.
+        /// </summary>
+        /// <remarks>
+        /// This constructor enables user error message localization with parameters.
+        /// The provided original message will be saved to <see cref="UserMessage"/> property,
+        /// while the formatted message with replaced parameters will be saved to <see cref="Exception.Message"/> property.
+        /// </remarks>
+        /// <param name="message">
+        /// Error message for the end user.
+        /// Use parameters similar to <see cref="string.Format(string, object[])"/> to simplify localization, for example "Value of {0} should be less than {1}.".
+        /// Separating message parameters from the message allows a single translation to be used with different parameter values.
+        /// </param>
+        /// <param name="messageParameters">
+        /// Parameters for string <paramref name="message"/>, similar to <see cref="string.Format(string, object[])"/>.
+        /// </param>
+        /// <param name="systemMessage">
+        /// Additional error metadata for example a property name that caused the error.
+        /// </param>
+        /// <param name="inner">
+        /// The exception that is the cause of the current exception.
+        /// </param>
+        public UserException(string message, object[] messageParameters, string systemMessage, Exception inner) : base(SimpleFormat(message, messageParameters), inner)
         {
+            UserMessage = message;
             MessageParameters = messageParameters;
             SystemMessage = systemMessage;
+        }
+
+        private static string SimpleFormat(string message, object[] messageParameters)
+        {
+            if (message == null && messageParameters == null)
+                return null; // Null value results with a standard default exception message.
+
+            try
+            {
+                return string.Format(message, messageParameters ?? Array.Empty<object>());
+            }
+            catch (Exception e)
+            {
+                string messageReport = message != null ? $"\"{message}\"" : "null";
+
+                string parametersReport;
+                if (messageParameters == null)
+                    parametersReport = "null";
+                else if (messageParameters.Length == 0)
+                    parametersReport = "no parameters";
+                else
+                    parametersReport = "\"" + string.Join(", ", messageParameters) + "\"";
+
+                string error = $"Invalid error message format. Message: {messageReport}, Parameters: {parametersReport}.";
+                if (e is FormatException formatException)
+                    throw new ArgumentException(error + " " + formatException.Message);
+                else
+                    throw new ArgumentException(error, e);
+            }
         }
 
         protected UserException(
@@ -101,36 +197,10 @@ namespace Rhetos
 
         public override string ToString()
         {
-            return base.ToString()
-                + "\r\nMessageParameters: " + (MessageParameters != null ? string.Join(", ", MessageParameters) : "null")
-                + "\r\nSystemMessage: " + SystemMessage;
-        }
-
-        /// <summary>
-        /// Evaluates the message parameters with string.Format, without localization.
-        /// Use this method in error logging to make sure every error is logged even if it's message format is not valid.
-        /// </summary>
-        public override string MessageForLog()
-        {
-            try
-            {
-                return string.Format(Message, MessageParameters ?? Array.Empty<object>());
-            }
-            catch (Exception e)
-            {
-
-                string parametersReport;
-                if (MessageParameters == null)
-                    parametersReport = "null";
-                else if (MessageParameters.Length == 0)
-                    parametersReport = "no parameters";
-                else
-                    parametersReport = "\"" + string.Join(", ", MessageParameters) + "\"";
-
-                return $"Invalid error message format. Message: \"{Message ?? "null"}\"," +
-                    $" Parameters: {parametersReport}," +
-                    $" {e.GetType().Name}: {e.Message}";
-            }
+            if (string.IsNullOrEmpty(SystemMessage))
+                return base.ToString();
+            else
+                return $"{base.ToString()}{Environment.NewLine}SystemMessage: {SystemMessage}";
         }
     }
 }
