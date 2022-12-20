@@ -64,10 +64,14 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <summary>
         /// Converts code snippets from Expression format to Method format.
         /// </summary>
+        /// <param name="expression">Lambda expression that will be parsed and converted to a method.</param>
         /// <param name="argumentTypes">
         /// If null, the generated method parameters will not be available.
         /// The <paramref name="argumentTypes"/> parameter will be ignored it the <paramref name="expression"/> has explicitly specified argument types.
         /// </param>
+        /// <param name="errorContext">Concept that is referenced in the generated exception, in case of an error.</param>
+        /// <param name="insertCode">Additional code that will be inserted before the code from the lambda expression body.</param>
+        /// <param name="additionalParameters">Additional method arguments that will be added at the end of the generated method parameters.</param>
         public ParsedExpression(string expression, string[] argumentTypes, IConceptInfo errorContext, string insertCode = null, string additionalParameters = null)
         {
             _expression = expression;

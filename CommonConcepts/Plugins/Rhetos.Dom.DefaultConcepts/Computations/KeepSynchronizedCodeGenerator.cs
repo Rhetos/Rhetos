@@ -42,11 +42,21 @@ namespace Rhetos.Dom.DefaultConcepts
                 var source = info.EntityComputedFrom.Source;
                 var target = info.EntityComputedFrom.Target;
 
-                string filterSaveFunctionName = $"FilterSaveKeepSynchronizedOnChangedItems_{DslUtility.NameOptionalModule(source, target.Module)}";
+                string saveFilterMethodName = $"FilterSaveKeepSynchronizedOnChangedItems_{DslUtility.NameOptionalModule(source, target.Module)}";
 
-                // This could be simplified to a method that directly contains the FilterSaveExpression (transformed into a function syntax)
-                // without the repository parameter (using _domReporitory member instead), but that will break backward compatibility.
-                string filterSaveFunction = $@"public IEnumerable<{target.FullName}> {filterSaveFunctionName}(IEnumerable<{target.FullName}> filterSave_items)
+                var parsedExpression = new ParsedExpression(info.FilterSaveExpression, null, info);
+
+                string filterSaveMethod;
+                if (parsedExpression.ExpressionParameters.Length == 1)
+                {
+                    filterSaveMethod = $@"public IEnumerable<{target.FullName}> {saveFilterMethodName}(IEnumerable<{target.FullName}> {parsedExpression.ExpressionParameters.Single().Name}){parsedExpression.MethodBody}
+
+        ";
+                }
+                else
+                {
+                    // Backward compatible FilterSaveExpression with second 'repository' parameter:
+                    filterSaveMethod = $@"public IEnumerable<{target.FullName}> {saveFilterMethodName}(IEnumerable<{target.FullName}> filterSave_items)
         {{
             Func<IEnumerable<{target.FullName}>, Common.DomRepository, IEnumerable<{target.FullName}>> filterSaveKeepSynchronizedOnChangedItems =
                 {info.FilterSaveExpression};
@@ -55,11 +65,12 @@ namespace Rhetos.Dom.DefaultConcepts
         }}
 
         ";
+                }
 
-                codeBuilder.InsertCode(filterSaveFunction, RepositoryHelper.RepositoryMembers, target);
+                codeBuilder.InsertCode(filterSaveMethod, RepositoryHelper.RepositoryMembers, target);
 
                 string overrideDefaultFilters = $@"
-            filterSave = filterSave ?? {filterSaveFunctionName};";
+            filterSave = filterSave ?? {saveFilterMethodName};";
 
                 codeBuilder.InsertCode(overrideDefaultFilters, EntityComputedFromCodeGenerator.OverrideDefaultSaveFilterTag, info.EntityComputedFrom);
             }
