@@ -89,7 +89,7 @@ namespace CommonConcepts.Test
             {
                 scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestSqlWorkarounds.Person" });
                 scope.Resolve<ISqlExecuter>().ExecuteSql(Enumerable.Range(1, 100).Select(x =>
-                    "INSERT INTO TestSqlWorkarounds.Person (Name) VALUES ('User" + x.ToString() +"')"));
+                    "INSERT INTO TestSqlWorkarounds.Person (Name) VALUES ('User" + x.ToString() + "')"));
 
                 var repository = scope.Resolve<Common.DomRepository>();
                 TestUtility.ShouldFail(() => repository.TestSqlWorkarounds.PersonInfo.Load(), "filter", "PersonFilter", "must be used");
@@ -422,6 +422,16 @@ namespace CommonConcepts.Test
                     repos.LongBrowse00000000020000000003000000000400000000050000000006000000000700000000080000000009000000000C.Query(),
                     item => item.ParentName + " " + item.ChildName));
             }
+        }
+
+        [TestMethod]
+        public void SingleScriptProcedure()
+        {
+            using var scope = TestScope.Create();
+            var context = scope.Resolve<Common.ExecutionContext>();
+            string result = null;
+            context.SqlExecuter.ExecuteReader("EXEC TestSqlWorkarounds.SingleScriptProcedure", reader => result = reader.GetString(0));
+            Assert.AreEqual("TestResult", result);
         }
     }
 }

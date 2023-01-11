@@ -68,6 +68,12 @@ Module TestSqlWorkarounds
 			}';
 	}
 
+	SqlProcedure
+	"CREATE OR ALTER PROCEDURE TestSqlWorkarounds.SingleScriptProcedure
+	AS
+	SELECT 'TestResult'
+	";
+
     Entity DependencyBase
     {
         Integer A;

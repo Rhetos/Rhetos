@@ -23,6 +23,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 {
     /// <summary>
     /// Stored procedure in database.
+    /// The procedure is specified with separate parameters for name, arguments and body source.
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SqlProcedure")]
