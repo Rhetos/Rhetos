@@ -56,7 +56,7 @@ namespace Rhetos.Utilities
 
         /// <summary>
         /// The destinationSubfolder parameter is separated from destinationFolder because
-        /// all obsolete files in the destinationFolder must be deleted.
+        /// all obsolete files in the destinationFolder will be deleted.
         /// </summary>
         public void AddFolderContent(string sourceFolder, string destinationFolder, string destinationSubfolder, bool recursive)
         {
@@ -112,16 +112,16 @@ namespace Rhetos.Utilities
             int countCopied = 0;
             int countDeleted = 0;
 
-            var ignoreFiles = CheckSourceForDuplicates();
+            var ignoreDuplicates = CheckSourceForDuplicates();
 
             foreach (var destination in _filesByDestination)
             {
-                if(emptyDestinationFolder)
+                if (emptyDestinationFolder)
                     _filesUtility.EmptyDirectory(destination.Key);
                 countDestination++;
 
                 foreach (var copyFile in destination.Value)
-                    if (!ignoreFiles.Contains(copyFile.File))
+                    if (!ignoreDuplicates.Contains(copyFile)) // Reference equality.
                     {
                         if (deleteSource)
                         {
@@ -158,35 +158,40 @@ namespace Rhetos.Utilities
             _performanceLogger.Write(sw, () => report.ToString());
         }
 
-        private HashSet<string> CheckSourceForDuplicates()
+        private HashSet<CopyFile> CheckSourceForDuplicates()
         {
-            Dictionary<string, List<string>> duplicatesByTarget =_filesByDestination
+            var duplicatesByTarget = _filesByDestination
                 .SelectMany(destination => destination.Value)
-                .GroupBy(copyFile => Path.GetFullPath(copyFile.Target).ToLower())
+                .GroupBy(copyFile => Path.GetFullPath(copyFile.Target), StringComparer.OrdinalIgnoreCase)
                 .Where(group => group.Count() > 1)
-                .ToDictionary(group => group.First().Target, group => group.Select(copyFile => copyFile.File).ToList());
+                .Select(group => group.ToList())
+                .ToList();
 
-            var ignoreFiles = new HashSet<string>();
+            var ignoreFiles = new HashSet<CopyFile>();
             foreach (var group in duplicatesByTarget)
             {
-                var newestInGroup = new FileInfo(group.Value.First());
-                foreach (var otherFile in group.Value.Skip(1).Select(path => new FileInfo(path)))
+                var newestInGroupCopy = group.First();
+                var newestInGroup = new FileInfo(newestInGroupCopy.File);
+                foreach (var otherFileCopy in group.Skip(1))
                 {
-                    if (newestInGroup.Length != otherFile.Length)
+                    var otherFile = new FileInfo(otherFileCopy.File);
+                    if (newestInGroup.FullName == otherFile.FullName)
+                        _logger.Warning("Duplicate copy commands for '{0}' => '{1}'.", otherFileCopy.File, otherFileCopy.Target);
+                    else if (newestInGroup.Length != otherFile.Length)
                         _logger.Error("Conflicting source files with different file size: '{0}' and '{1}'.", newestInGroup.FullName, otherFile.FullName);
                     else if (newestInGroup.LastWriteTime != otherFile.LastWriteTime)
                         _logger.Warning("Duplicate source files with different modification time: '{0}' and '{1}'.", newestInGroup.FullName, otherFile.FullName);
                     else
-                        _logger.Info("Duplicate source files: '{0}' and '{1}'.", newestInGroup.FullName, otherFile.FullName);
+                        _logger.Warning("Duplicate source files: '{0}' and '{1}'.", newestInGroup.FullName, otherFile.FullName);
 
                     if (otherFile.LastWriteTime > newestInGroup.LastWriteTime
                         || otherFile.LastWriteTime == newestInGroup.LastWriteTime && otherFile.Length > newestInGroup.Length)
                         newestInGroup = otherFile;
                 }
 
-                foreach (string file in group.Value)
-                    if (file != newestInGroup.FullName)
-                        ignoreFiles.Add(file);
+                foreach (var copyFile in group)
+                    if (copyFile != newestInGroupCopy) // Reference equality.
+                        ignoreFiles.Add(copyFile);
             }
 
             return ignoreFiles;
