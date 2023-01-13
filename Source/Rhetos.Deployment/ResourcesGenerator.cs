@@ -30,7 +30,7 @@ namespace Rhetos.Deployment
 {
     /// <summary>
     /// "Resources" is a legacy assets folder.
-    /// This IGenerator copies all legacy assets files from installed packages to the generated application's assets folder.
+    /// This IGenerator copies all legacy assets files from installed packages (Resources subfolder) to the generated application's assets folder.
     /// It also included files from the current project's folder 'Resources\Rhetos', to avoid conflicts with other usages of the Resources folder.
     /// </summary>
     public class ResourcesGenerator : IGenerator
@@ -41,6 +41,10 @@ namespace Rhetos.Deployment
         private readonly RhetosBuildEnvironment _rhetosBuildEnvironment;
         private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
+
+        private static readonly string ResourcesPathPrefix = "Resources" + Path.DirectorySeparatorChar;
+        private static readonly string HostApplicationResourcesPathPrefix = ResourcesPathPrefix + "Rhetos" + Path.DirectorySeparatorChar;
+        private readonly Lazy<string> _currentProjectResourcesFolder;
 
         public ResourcesGenerator(
             InstalledPackages installedPackages,
@@ -54,6 +58,9 @@ namespace Rhetos.Deployment
             _rhetosBuildEnvironment = rhetosBuildEnvironment;
             _logger = logProvider.GetLogger(GetType().Name);
             _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
+
+            // Using Lazy to avoid errors with any missing configuration, if there is no need to build the Resources.
+            _currentProjectResourcesFolder = new Lazy<string>(() => Path.Combine(_rhetosBuildEnvironment.ProjectFolder, ResourcesPathPrefix), false);
         }
 
         public void Generate()
@@ -68,33 +75,16 @@ namespace Rhetos.Deployment
             var _fileSyncer = new FileSyncer(_logProvider);
             _fileSyncer.AddDestinations(_rhetosBuildEnvironment.GeneratedAssetsFolder); // Even if there are no packages, the old folder content must be emptied.
 
-            string ResourcesPathPrefix = "Resources" + Path.DirectorySeparatorChar;
-            string HostApplicationResourcesPathPrefix = ResourcesPathPrefix + "Rhetos" + Path.DirectorySeparatorChar;
-
             var resourceFiles = _installedPackages.Packages
                 .SelectMany(package => package.ContentFiles
-                    .Where(file => file.InPackagePath.StartsWith(ResourcesPathPrefix))
-                    .Where(file => !file.PhysicalPath.StartsWith(_rhetosBuildEnvironment.ProjectFolder)) // Prevent from including the generated output folder as in input.
+                    .Select(file => (file.InPackagePath, file.PhysicalPath, Subpath: GetResourcesFileSubpath(file)))
+                    .Where(file => file.Subpath != null)
                     .Select(file => new
                     {
                         Package = package,
                         Source = file.PhysicalPath,
-                        Target = Path.Combine(SimplifyPackageName(package.Id), file.InPackagePath.Substring(ResourcesPathPrefix.Length))
+                        Target = Path.Combine(SimplifyPackageName(package.Id), file.Subpath)
                     }))
-                //The resource files that are used by Rhetos are located in the Resources folder of a NuGet package.
-                //We also want to add the possibility that a Rhetos resource file can be added in the current project by the application developer.
-                //The Resources folder can be used as in any other NuGet Rhetos package but this way unwanted files could be copied in the RhetosAssets folder
-                //because the Resources folder in a project is usually used to store other resource files.
-                .Union(_installedPackages.Packages
-                    .SelectMany(package => package.ContentFiles
-                        .Where(file => file.PhysicalPath.StartsWith(_rhetosBuildEnvironment.ProjectFolder)) // Prevent from including the generated output folder as in input.
-                        .Where(file => file.InPackagePath.StartsWith(HostApplicationResourcesPathPrefix))
-                        .Select(file => new
-                        {
-                            Package = package,
-                            Source = file.PhysicalPath,
-                            Target = Path.Combine(SimplifyPackageName(package.Id), file.InPackagePath.Substring(HostApplicationResourcesPathPrefix.Length))
-                        })))
                 .ToList();
 
             var similarPackages = resourceFiles.Select(file => file.Package).Distinct()
@@ -112,6 +102,31 @@ namespace Rhetos.Deployment
             _fileSyncer.UpdateDestination(false, false);
 
             _performanceLogger.Write(stopwatch, "Resources generated.");
+        }
+
+        /// <summary>
+        /// For Resources files returns the relative path within the Resources folder, otherwise returns <see langword="null"/>.
+        /// </summary>
+        private string GetResourcesFileSubpath(ContentFile file)
+        {
+            if (!file.PhysicalPath.StartsWith(_currentProjectResourcesFolder.Value))
+            {
+                // The resource files in referenced project or package are located in the Resources subfolder.
+                // This also includes subpackages placed withing the current project with PhysicalPath "currentProject\subpackage\Resources\file".
+                if (file.InPackagePath.StartsWith(ResourcesPathPrefix))
+                    return file.InPackagePath.Substring(ResourcesPathPrefix.Length);
+                else
+                    return null;
+            }
+            else
+            {
+                // We also want to add the possibility that a Rhetos resource file can be added directly in the current project by the application developer,
+                // but files in current project's "Resources" folder must be placed in "Resources\Rhetos" instead, to avoid conflicts with other usages of the Resources folder.
+                if (file.InPackagePath.StartsWith(HostApplicationResourcesPathPrefix))
+                    return file.InPackagePath.Substring(HostApplicationResourcesPathPrefix.Length);
+                else
+                    return null;
+            }
         }
 
         private string SimplifyPackageName(string packageId)

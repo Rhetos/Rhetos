@@ -7,6 +7,7 @@
             <RhetosBuild Include="**\*.rhe" />
             <RhetosBuild Include="**\DataMigration\**\*" />
             <RhetosBuild Include="Resources\Rhetos\**\*" />
+            <RhetosBuild Include="*\**\Resources\**\*" /> <!-- Adding resource files from subpackages while avoiding other non-Rhetos files from the main Resources folder. -->
             <RhetosBuildSettings Include="$(RhetosBuildSettingsFile)" Condition="Exists('$(RhetosBuildSettingsFile)')" />
         </ItemGroup>
         <ItemGroup>
