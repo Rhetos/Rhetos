@@ -118,6 +118,9 @@ namespace Rhetos.Deployment
                         file.InPackagePath = Path.Combine(DslScriptsSubfolder, file.InPackagePath);
             }
 
+            if (!virtualPackage.ContentFiles.Any() && !Directory.Exists(subpackageFolder))
+                throw new ArgumentException($"Subpackage '{subpackage.Name}' directory '{subpackageFolder}' does not exist. Review the Rhetos build settings.");
+
             return virtualPackage;
         }
 
