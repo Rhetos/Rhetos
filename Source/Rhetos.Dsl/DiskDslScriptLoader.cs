@@ -18,6 +18,7 @@
 */
 
 using Rhetos.Deployment;
+using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
@@ -30,12 +31,14 @@ namespace Rhetos.Dsl
     {
         private readonly Lazy<List<DslScript>> _scripts;
         private readonly FilesUtility _filesUtility;
+        private readonly ILogger _logger;
         private readonly string _projectFolderPrefix;
 
-        public DiskDslScriptLoader(InstalledPackages installedPackages, FilesUtility filesUtility, RhetosBuildEnvironment rhetosBuildEnvironment)
+        public DiskDslScriptLoader(InstalledPackages installedPackages, FilesUtility filesUtility, RhetosBuildEnvironment rhetosBuildEnvironment, ILogProvider logProvider)
         {
             _scripts = new Lazy<List<DslScript>>(() => LoadScripts(installedPackages));
             _filesUtility = filesUtility;
+            _logger = logProvider.GetLogger(GetType().Name);
 
             _projectFolderPrefix = rhetosBuildEnvironment?.ProjectFolder;
             if (_projectFolderPrefix != null && !_projectFolderPrefix.EndsWith(Path.DirectorySeparatorChar) && !_projectFolderPrefix.EndsWith(Path.AltDirectorySeparatorChar))
@@ -49,7 +52,9 @@ namespace Rhetos.Dsl
 
         private List<DslScript> LoadScripts(InstalledPackages installedPackages)
         {
-            return installedPackages.Packages.SelectMany(LoadPackageScripts).ToList();
+            var scripts = installedPackages.Packages.SelectMany(LoadPackageScripts).ToList();
+            _logger.Trace(() => $"Loaded {scripts.Count} DSL scripts:" + string.Concat(scripts.Select(s => $"{Environment.NewLine}{s.Path}: {s.Name}")));
+            return scripts;
         }
 
         private IEnumerable<DslScript> LoadPackageScripts(InstalledPackage package)
