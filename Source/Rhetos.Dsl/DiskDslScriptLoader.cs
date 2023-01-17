@@ -23,7 +23,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace Rhetos.Dsl
 {
@@ -31,13 +30,16 @@ namespace Rhetos.Dsl
     {
         private readonly Lazy<List<DslScript>> _scripts;
         private readonly FilesUtility _filesUtility;
-        private readonly RhetosBuildEnvironment _rhetosBuildEnvironment;
+        private readonly string _projectFolderPrefix;
 
         public DiskDslScriptLoader(InstalledPackages installedPackages, FilesUtility filesUtility, RhetosBuildEnvironment rhetosBuildEnvironment)
         {
             _scripts = new Lazy<List<DslScript>>(() => LoadScripts(installedPackages));
             _filesUtility = filesUtility;
-            this._rhetosBuildEnvironment = rhetosBuildEnvironment;
+
+            _projectFolderPrefix = rhetosBuildEnvironment?.ProjectFolder;
+            if (_projectFolderPrefix != null && !_projectFolderPrefix.EndsWith(Path.DirectorySeparatorChar) && !_projectFolderPrefix.EndsWith(Path.AltDirectorySeparatorChar))
+                _projectFolderPrefix += Path.DirectorySeparatorChar;
         }
 
         public IEnumerable<DslScript> DslScripts => _scripts.Value;
@@ -52,23 +54,32 @@ namespace Rhetos.Dsl
 
         private IEnumerable<DslScript> LoadPackageScripts(InstalledPackage package)
         {
-            return package.ContentFiles
-                .Where(file =>
-                    (
-                        // DSL scripts in current project don't need to be in the specific subfolder.
-                        file.InPackagePath.StartsWith(DslScriptsSubfolderPrefix, StringComparison.OrdinalIgnoreCase)
-                        || file.PhysicalPath.StartsWith(_rhetosBuildEnvironment.ProjectFolder, StringComparison.OrdinalIgnoreCase)
-                    )
-                    && string.Equals(Path.GetExtension(file.InPackagePath), ".rhe", StringComparison.OrdinalIgnoreCase))
-                .OrderBy(file => file.InPackagePath)
-                .Select(file =>
-                    new DslScript
-                    {
-                        // Using package.Id instead of full package folder name, in order to keep the same script path between different versions of the package (the folder name will contain the version number).
-                        Name = Path.Combine(package.Id, file.InPackagePath.Substring(DslScriptsSubfolderPrefix.Length)),
-                        Script = _filesUtility.ReadAllText(file.PhysicalPath),
-                        Path = file.PhysicalPath
-                    });
+            return from file in package.ContentFiles
+                   let dslScriptSubpath = TryGetDslScriptSubpath(file)
+                   where dslScriptSubpath != null
+                   orderby file.InPackagePath
+                   select new DslScript
+                   {
+                       // Using package.Id instead of full package folder name, in order to keep the same script path between different versions of the package (the folder name will contain the version number).
+                       Name = Path.Combine(package.Id, dslScriptSubpath),
+                       Script = _filesUtility.ReadAllText(file.PhysicalPath),
+                       Path = file.PhysicalPath
+                   };
+        }
+
+        private string TryGetDslScriptSubpath(ContentFile file)
+        {
+            if (!string.Equals(Path.GetExtension(file.InPackagePath), ".rhe", StringComparison.OrdinalIgnoreCase))
+                return null;
+
+            if (file.InPackagePath.StartsWith(DslScriptsSubfolderPrefix, StringComparison.OrdinalIgnoreCase))
+                return file.InPackagePath.Substring(DslScriptsSubfolderPrefix.Length);
+
+            // DSL scripts in current project don't need to be in the specific subfolder.
+            if (file.PhysicalPath.StartsWith(_projectFolderPrefix, StringComparison.OrdinalIgnoreCase))
+                return file.PhysicalPath.Substring(_projectFolderPrefix.Length);
+
+            return null;
         }
     }
 }
