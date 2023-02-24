@@ -39,7 +39,12 @@
     <Target Name="BuildRhetosApp" DependsOnTargets="ResolveRhetosProjectAssets;ResolveBuildRhetosAppTargetInput" BeforeTargets="BeforeCompile" Condition="'$(RhetosBuild)'=='True' AND '$(DesignTimeBuild)'!='true' AND '$(BuildingProject)'=='true'" Inputs="@(RhetosInput);@(RhetosBuild);@(ReferencePath)" Outputs="@(RhetosOutput)">
         <Message Text="BuildRhetosApp" />
         <Delete Files="$(RhetosBuildCompleteFile)" />
-        <Exec Command="dotnet &quot;$(RhetosCliAssemblyPath)&quot; --msbuild-format build &quot;$(ProjectDir).&quot;" CustomErrorRegularExpression="\[Error\]" CustomWarningRegularExpression="\[(Warn|Warning)\]" />
+        <PropertyGroup>
+            <_RhetosBuildDotNet>dotnet</_RhetosBuildDotNet>
+            <_RhetosBuildDotNet Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(RhetosBuildDotNetFxVersion), `^[\w\.]+%24`))">$(_RhetosBuildDotNet) --fx-version $(RhetosBuildDotNetFxVersion)</_RhetosBuildDotNet>
+            <_RhetosBuildDotNet Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(RhetosBuildDotNetRollForward), `^[\w\.]+%24`))">$(_RhetosBuildDotNet) --roll-forward $(RhetosBuildDotNetRollForward)</_RhetosBuildDotNet>
+        </PropertyGroup>
+        <Exec Command="$(_RhetosBuildDotNet) &quot;$(RhetosCliAssemblyPath)&quot; --msbuild-format build &quot;$(ProjectDir).&quot;" CustomErrorRegularExpression="\[Error\]" CustomWarningRegularExpression="\[(Warn|Warning)\]" />
         <WriteLinesToFile File="$(RhetosBuildCompleteFile)" Lines="" Overwrite="true" />
     </Target>
 
