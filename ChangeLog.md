@@ -1,23 +1,40 @@
 ﻿# Rhetos release notes
 
-## 5.4.0 (TO BE RELEASED)
+## 5.4.0 (2023-03-16)
+
+### New features
+
+* *Block comment* support in DSL scripts: `/* ... */`.
+* Rhetos *subpackages*: A Rhetos application can contain multiple "virtual" packages in subfolders. By specifying the subpackages folders and their dependencies in rhetos-build.settings.json,
+  you can control the order in which the supbackages are deployed, for example the execution order of DataMigration and AfterDeploy scripts.
+* New overload of **SqlProcedure** concept with a complete `CREATE` statement.
+  Instead of separately specifying the stored procedure's name, arguments and body with three parameters, you can specify the procedure with a single SQL script, starting with "CREATE OR ALTER PROCEDURE".
+  This simplifies the development process by developing the procedure in a separate SQL script with SSMS or a similar tool, and directly referencing the SQL script from a DSL script.
+* KeepSynchronized FilterSaveExpression supports simplified form with one parameter (items) without the additional legacy parameter 'repository'.
 
 ### Internal improvements
 
 * The generated source files are marked as read-only, as a hint that they are not intended to be manually edited.
+* Bugfix: LINQPad script "Rhetos DOM.linq" throws PlatformNotSupportedException "System.Data.SqlClient is not supported on this platform" on some environments.
 * Bugfix: Option *AllClaimsForUsers* did not support usernames with '@' character (email as username).
 * Bugfix: In some cases, `rhetos dbupdate` log is not written to `Logs\RhetosCli.log`.
-* **ComputedFrom** concept generates new repository method `DiffFrom`, to allow simpler diff analysis without running `RecomputeFrom` method. A generic version of the method is also added to `GenericRepository`.
-* Minor optimizations in ComputedFrom diff algorithm.
-* Optimized dbupdate for changes in the money property when updating from Rhetos v4 or earlier to Rhetos v5 or later.
+* Bugfix: Build fails with "ArgumentOutOfRangeException: startIndex cannot be larger than length of string" if a Rhetos app contains a .rhe file in the root folder. This fixes #472.
+* UserException.Message contains formatted error text for easier debugging, instead of a localization string template.
+* **ComputedFrom** concept generates new repository method `DiffFrom`, to allow simpler diff analysis without running `RecomputeFrom` method. A generic version of the method is also added to `GenericRepository` class.
+* Added MSBuild parameters RhetosBuildDotNetRollForward and RhetosBuildDotNetFxVersion for future-compatibility of Rhetos CLI in MSBuild integration.
+  Setting RhetosBuildDotNetRollForward MSBuild property to 'LatestMajor' should allow the rhetos build tool to load referenced libraries for newer versions of .NET.
+* ConfigurationProvider (IConfiguration) now supports options classes with complex properties and arrays.
+* Enabled localization for the unregistered account error message.
+* Updated System.Data.SqlClient from 4.8.3 to 4.8.5.
+* Minor optimizations in ComputedFrom diff algorithm and dbupdate (money property).
 
 ### Breaking changes
 
 There are no changes that affect Rhetos app's business features, but some internal implementation details might impact
 custom DSL code generators and tests related to **ComputedFrom** concept:
 
-* Instead of EntityComputedFromCodeGenerator.OverrideDefaultFiltersTag, code generator uses separate tags for load and save filters.
-* Some system log entries that previously contained text `InsertOrUpdateOrDelete` have different formatting. This might affect unit tests.
+* Instead of `EntityComputedFromCodeGenerator.OverrideDefaultFiltersTag`, code generator uses separate tags for load and save filters.
+* Some system log entries that previously contained text `InsertOrUpdateOrDelete` now have different formatting. This might affect unit tests.
 
 ## 5.3.0 (2022-09-21)
 
