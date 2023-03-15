@@ -19,14 +19,14 @@
     </ItemGroup>  
     <PropertyGroup>
       <_RhetosDomLinqPadScriptPath>$(BaseIntermediateOutputPath)Rhetos\LinqPad\Rhetos DOM.linq</_RhetosDomLinqPadScriptPath>
-      <_RhetosHostAppLinqPadReferences>@(_RhetosHostAppAssemblies -> '&lt;Reference Relative="..\%(Filename)%(Extension)"&gt;%(Filename)%(Extension)&lt;/Reference&gt;', '
+      <_RhetosHostAppLinqPadReferences>@(_RhetosHostAppAssemblies -> '&lt;Reference Relative="..\%(Filename)%(Extension)"&gt;..\%(Filename)%(Extension)&lt;/Reference&gt;', '
   ')</_RhetosHostAppLinqPadReferences>
       <_RhetosDomLinqPadScript>
 <![CDATA[
 <Query Kind="Program">
-  <Reference Relative="..\$(AssemblyName).dll">$(AssemblyName).dll</Reference>
-  <Reference Relative="..\$(AssemblyName).deps.json">$(AssemblyName).deps.json</Reference>
-  <Reference Relative="..\$(AssemblyName).runtimeconfig.json">$(AssemblyName).runtimeconfig.json</Reference>
+  <Reference Relative="..\$(AssemblyName).dll">..\$(AssemblyName).dll</Reference>
+  <Reference Relative="..\$(AssemblyName).deps.json">..\$(AssemblyName).deps.json</Reference>
+  <Reference Relative="..\$(AssemblyName).runtimeconfig.json">..\$(AssemblyName).runtimeconfig.json</Reference>
   $(_RhetosHostAppLinqPadReferences)
   <Reference Relative="..\Autofac.dll">..\Autofac.dll</Reference>
   <Reference Relative="..\EntityFramework.dll">..\EntityFramework.dll</Reference>
@@ -34,7 +34,6 @@
   <Reference Relative="..\Microsoft.CodeAnalysis.CSharp.dll">..\Microsoft.CodeAnalysis.CSharp.dll</Reference>
   <Reference Relative="..\Microsoft.CodeAnalysis.dll">..\Microsoft.CodeAnalysis.dll</Reference>
   <Reference Relative="..\Microsoft.Extensions.Localization.Abstractions.dll">..\Microsoft.Extensions.Localization.Abstractions.dll</Reference>
-  <Reference Relative="..\Microsoft.Win32.SystemEvents.dll">..\Microsoft.Win32.SystemEvents.dll</Reference>
   <Reference Relative="..\Newtonsoft.Json.dll">..\Newtonsoft.Json.dll</Reference>
   <Reference Relative="..\NLog.dll">..\NLog.dll</Reference>
   <Reference Relative="..\Oracle.ManagedDataAccess.dll">..\Oracle.ManagedDataAccess.dll</Reference>
@@ -69,6 +68,20 @@
   <Reference Relative="..\Rhetos.Security.Interfaces.dll">..\Rhetos.Security.Interfaces.dll</Reference>
   <Reference Relative="..\Rhetos.Utilities.dll">..\Rhetos.Utilities.dll</Reference>
   <Reference Relative="..\Rhetos.Utilities.Interfaces.dll">..\Rhetos.Utilities.Interfaces.dll</Reference>
+  <Reference Relative="..\runtimes\win\lib\netcoreapp2.0\System.DirectoryServices.dll">..\runtimes\win\lib\netcoreapp2.0\System.DirectoryServices.dll</Reference>
+  <Reference Relative="..\runtimes\win\lib\netcoreapp2.0\System.DirectoryServices.Protocols.dll">..\runtimes\win\lib\netcoreapp2.0\System.DirectoryServices.Protocols.dll</Reference>
+  <Reference Relative="..\runtimes\win\lib\netcoreapp2.1\System.Data.SqlClient.dll">..\runtimes\win\lib\netcoreapp2.1\System.Data.SqlClient.dll</Reference>
+  <Reference Relative="..\runtimes\win\lib\netcoreapp3.1\Microsoft.Win32.SystemEvents.dll">..\runtimes\win\lib\netcoreapp3.1\Microsoft.Win32.SystemEvents.dll</Reference>
+  <Reference Relative="..\runtimes\win\lib\netcoreapp3.1\System.Diagnostics.EventLog.dll">..\runtimes\win\lib\netcoreapp3.1\System.Diagnostics.EventLog.dll</Reference>
+  <Reference Relative="..\runtimes\win\lib\netcoreapp3.1\System.Diagnostics.EventLog.Messages.dll">..\runtimes\win\lib\netcoreapp3.1\System.Diagnostics.EventLog.Messages.dll</Reference>
+  <Reference Relative="..\runtimes\win\lib\netcoreapp3.1\System.Diagnostics.PerformanceCounter.dll">..\runtimes\win\lib\netcoreapp3.1\System.Diagnostics.PerformanceCounter.dll</Reference>
+  <Reference Relative="..\runtimes\win\lib\netcoreapp3.1\System.Drawing.Common.dll">..\runtimes\win\lib\netcoreapp3.1\System.Drawing.Common.dll</Reference>
+  <Reference Relative="..\runtimes\win\lib\netcoreapp3.1\System.Runtime.Caching.dll">..\runtimes\win\lib\netcoreapp3.1\System.Runtime.Caching.dll</Reference>
+  <Reference Relative="..\runtimes\win\lib\netcoreapp3.1\System.Text.Encoding.CodePages.dll">..\runtimes\win\lib\netcoreapp3.1\System.Text.Encoding.CodePages.dll</Reference>
+  <Reference Relative="..\runtimes\win\lib\netcoreapp3.1\System.Windows.Extensions.dll">..\runtimes\win\lib\netcoreapp3.1\System.Windows.Extensions.dll</Reference>
+  <Reference Relative="..\runtimes\win\lib\netstandard2.0\System.Security.AccessControl.dll">..\runtimes\win\lib\netstandard2.0\System.Security.AccessControl.dll</Reference>
+  <Reference Relative="..\runtimes\win\lib\netstandard2.0\System.Security.Cryptography.ProtectedData.dll">..\runtimes\win\lib\netstandard2.0\System.Security.Cryptography.ProtectedData.dll</Reference>
+  <Reference Relative="..\runtimes\win-x64\native\sni.dll">..\runtimes\win-x64\native\sni.dll</Reference>
   <Namespace>Autofac</Namespace>
   <Namespace>Oracle.ManagedDataAccess.Client</Namespace>
   <Namespace>Rhetos</Namespace>
