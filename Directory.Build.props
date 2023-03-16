@@ -3,9 +3,9 @@
     <LangVersion>9.0</LangVersion>
     <Company>Omega software</Company>
     <Copyright>Copyright (C) Omega software 2017</Copyright>
-    <AssemblyVersion>5.4.0</AssemblyVersion>
-    <FileVersion>5.4.0</FileVersion>
-    <InformationalVersion>5.4.0-dev</InformationalVersion>
+    <AssemblyVersion>5.5.0</AssemblyVersion>
+    <FileVersion>5.5.0</FileVersion>
+    <InformationalVersion>5.5.0-dev</InformationalVersion>
     <!-- The warning CA1014 is a project level warning that is not tied to a specific file so it can not be suppressed in .editorconfig -->
     <NoWarn>CA1014</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

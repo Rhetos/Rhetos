@@ -11,7 +11,7 @@
     <PackageReference Include="MSTest.TestAdapter" Version="2.2.7" />
     <PackageReference Include="MSTest.TestFramework" Version="2.2.7" />
     <PackageReference Include="coverlet.collector" Version="3.1.0" />
-    <PackageReference Include="Rhetos.TestCommon" Version="5.4.0-dev*" />
+    <PackageReference Include="Rhetos.TestCommon" Version="5.5.0-dev*" />
   </ItemGroup>
   
   <ItemGroup>
