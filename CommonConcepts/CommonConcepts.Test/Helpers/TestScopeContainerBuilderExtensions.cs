@@ -56,22 +56,17 @@ namespace CommonConcepts.Test
         /// It supports <paramref name="configure"/> action that directly modifies properties of the options class.
         /// </summary>
         /// <remarks>
-        /// Since options classes are usually singletons, the action must not modify an object that is referenced
-        /// by the options class, without modifying the options class property,
-        /// because it might affect configuration of other unit tests.
+        /// Since options classes are usually singletons, the <paramref name="configure"/> action should not modify any object that is referenced
+        /// by the options class instance, because it might affect configuration of other unit tests.
         /// </remarks>
         public static ContainerBuilder ConfigureOptions<TOptions>(this ContainerBuilder builder, Action<TOptions> configure) where TOptions : class
         {
-            TOptions copy;
-            using (var scope = TestScope.Create())
+            builder.RegisterDecorator<TOptions>((context, parameters, originalOptions) =>
             {
-                var options = scope.Resolve<TOptions>();
-                // Options classes as usually singleton, so we are making a copy to avoid affecting configuration of other tests.
-                copy = CsUtility.ShallowCopy(options);
-            }
-
-            configure.Invoke(copy);
-            builder.RegisterInstance(copy);
+                TOptions modifiedOptions = CsUtility.ShallowCopy(originalOptions);
+                configure.Invoke(modifiedOptions);
+                return modifiedOptions;
+            });
             return builder;
         }
 
