@@ -30,6 +30,7 @@ namespace Rhetos.Utilities
     // TODO: Move most of the methods to ISqlUtility.
     public static class SqlUtility
     {
+        [Obsolete("Use DatabaseOptions.SqlCommandTimeout for dependency injection instead.")]
         public static int SqlCommandTimeout { get; private set; } = 30;
         public static string DatabaseLanguage => CheckIfInitialized(_databaseLanguage, "database language");
         public static string NationalLanguage => CheckIfInitialized(_nationalLanguage, "national language");
@@ -58,7 +59,9 @@ namespace Rhetos.Utilities
             _initialized = true;
 
             var dbOptions = configuration.GetOptions<DatabaseOptions>();
+#pragma warning disable CS0618 // Type or member is obsolete. Initialization of the legacy property for backward compatibility.
             SqlCommandTimeout = dbOptions.SqlCommandTimeout;
+#pragma warning restore CS0618 // Type or member is obsolete
 
             _connectionString = configuration.GetValue<string>(Utilities.ConnectionString.ConnectionStringConfigurationKey);
 

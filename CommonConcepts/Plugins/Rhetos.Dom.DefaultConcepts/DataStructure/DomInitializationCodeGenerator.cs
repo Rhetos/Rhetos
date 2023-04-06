@@ -153,15 +153,18 @@ namespace Common
     public class EntityFrameworkContext : System.Data.Entity.DbContext
     {{
         private readonly Rhetos.Utilities.RhetosAppOptions _rhetosAppOptions;
+        private readonly Rhetos.Utilities.DatabaseOptions _databaseOptions;
 
         public EntityFrameworkContext(
             Rhetos.Persistence.IPersistenceTransaction persistenceTransaction,
             Rhetos.Dom.DefaultConcepts.Persistence.EntityFrameworkMetadata metadata,
             System.Data.Entity.DbConfiguration entityFrameworkConfiguration, // EntityFrameworkConfiguration is provided as an IoC dependency for EntityFrameworkContext in order to initialize the global DbConfiguration before using DbContext.
-            Rhetos.Utilities.RhetosAppOptions rhetosAppOptions)
+            Rhetos.Utilities.RhetosAppOptions rhetosAppOptions,
+            Rhetos.Utilities.DatabaseOptions databaseOptions)
             : base(new System.Data.Entity.Core.EntityClient.EntityConnection(metadata.MetadataWorkspace, persistenceTransaction.Connection), false)
         {{
             _rhetosAppOptions = rhetosAppOptions;
+            _databaseOptions = databaseOptions;
             Initialize();
             Database.UseTransaction(persistenceTransaction.Transaction);
         }}
@@ -172,7 +175,7 @@ namespace Common
 
             {EntityFrameworkContextInitializeTag}
 
-            this.Database.CommandTimeout = Rhetos.Utilities.SqlUtility.SqlCommandTimeout;
+            this.Database.CommandTimeout = _databaseOptions.SqlCommandTimeout;
         }}
 
         {EntityFrameworkContextMembersTag}
