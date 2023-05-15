@@ -1,4 +1,4 @@
-Module TestHardcodedEntity
+﻿Module TestHardcodedEntity
 {
     Hardcoded SimpleHardcodedEntity
     {
@@ -22,6 +22,11 @@ Module TestHardcodedEntity
         Entry SpecialDescription
         {
             Value Description <SpecialDescription.txt>;
+        }
+
+        Entry Unicode
+        {
+            Value Description 'To infinity ∞';
         }
     }
 

@@ -149,5 +149,18 @@ namespace CommonConcepts.Test
                 Assert.AreEqual(new Guid("F138A49A-9CEF-8D2D-64FF-4AD929C85327"), entry3Id);
             }
         }
+
+        [TestMethod]
+        public void HardcodedUnicodeTest()
+        {
+            using (var scope = TestScope.Create())
+            {
+                var repository = scope.Resolve<Common.DomRepository>();
+
+                var q = repository.TestHardcodedEntity.SimpleHardcodedEntity.Query().Where(x => x.Description == "To infinity ∞");
+                Console.WriteLine(q.ToString());
+                Assert.IsNotNull(q.SingleOrDefault());
+            }
+        }
     }
 }

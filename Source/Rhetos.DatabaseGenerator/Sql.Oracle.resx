@@ -137,11 +137,11 @@ END;</value>
 	CreateQuery NCLOB;
 	RemoveQuery NCLOB;
 BEGIN
-	InfoType := N{1};
-	ConceptInfoKey := N{2};
-	ImplementationType := N{3};
-	CreateQuery := N{4};
-	RemoveQuery := N{5};
+	InfoType := {1};
+	ConceptInfoKey := {2};
+	ImplementationType := {3};
+	CreateQuery := {4};
+	RemoveQuery := {5};
 	
 	INSERT INTO Rhetos.AppliedConcept (ID, InfoType, ConceptInfoKey, ImplementationType, CreateQuery, RemoveQuery)
 	VALUES ({0}, InfoType, ConceptInfoKey, ImplementationType, CreateQuery, RemoveQuery);
@@ -155,11 +155,11 @@ END;</value>
 	vCreateQuery NCLOB;
 	vRemoveQuery NCLOB;
 BEGIN
-	vInfoType := N{1};
-	vConceptInfoKey := N{2};
-	vImplementationType := N{3};
-	vCreateQuery := N{4};
-	vRemoveQuery := N{5};
+	vInfoType := {1};
+	vConceptInfoKey := {2};
+	vImplementationType := {3};
+	vCreateQuery := {4};
+	vRemoveQuery := {5};
 	
 	UPDATE Rhetos.AppliedConcept
 	SET

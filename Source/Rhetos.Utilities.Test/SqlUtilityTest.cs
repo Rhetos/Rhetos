@@ -72,13 +72,13 @@ namespace Rhetos.Utilities.Test
         [TestMethod]
         public void SingleQuote_SimpleTest()
         {
-            Assert.AreEqual("'abc'", SqlUtility.QuoteText("abc"));
+            Assert.AreEqual("N'abc'", SqlUtility.QuoteText("abc"));
         }
 
         [TestMethod]
         public void SingleQuote_EscapeSequenceTest()
         {
-            Assert.AreEqual("'ab''c'", SqlUtility.QuoteText("ab'c"));
+            Assert.AreEqual("N'ab''c'", SqlUtility.QuoteText("ab'c"));
         }
 
         [TestMethod]

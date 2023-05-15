@@ -192,7 +192,7 @@ namespace Rhetos.Utilities
         public static string QuoteText(string value)
         {
             return value != null
-                ? "'" + value.Replace("'", "''") + "'"
+                ? "N'" + value.Replace("'", "''") + "'"
                 : "NULL";
         }
 

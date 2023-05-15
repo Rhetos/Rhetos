@@ -464,7 +464,7 @@ raiserror('fff', 18, 118)"
 
         private static Regex subSecondDigitsRegex = new Regex(@"\b\d{7}\b");
 
-        private static Regex sqlStringRegex = new Regex(@"'.*?'");
+        private static Regex sqlStringRegex = new Regex(@"N?'.*?'");
 
         [TestMethod]
         public void ConsistentExecute()

@@ -310,19 +310,19 @@ namespace CommonConcepts.Test
 
             var expectedSqlLog = @"
                 --DBUpdate: 1
-                --Name: p1\s1.sql /*p1\s1*/ PRINT 'p1\s1'
-                --Name: p1\s2.sql /*p1\s2*/ PRINT 'p1\s2'
-                --Name: p2\s1.sql /*p2\s1*/ PRINT 'p2\s1'
-                --Name: p2\s2.sql /*p2\s2*/ PRINT 'p2\s2'
+                --Name: p1\s1.sql /*p1\s1*/ PRINT N'p1\s1'
+                --Name: p1\s2.sql /*p1\s2*/ PRINT N'p1\s2'
+                --Name: p2\s1.sql /*p2\s1*/ PRINT N'p2\s1'
+                --Name: p2\s2.sql /*p2\s2*/ PRINT N'p2\s2'
 
                 --DBUpdate: 2
-                --Name: p2\s2.sql /*p2\s2-DOWN*/ PRINT 'p2\s2' + '-DOWN'
-                --Name: p2\s1.sql /*p2\s1-DOWN*/ PRINT 'p2\s1' + '-DOWN'
-                --Name: p1\s3.sql /*p1\s3*/ PRINT 'p1\s3'
+                --Name: p2\s2.sql /*p2\s2-DOWN*/ PRINT N'p2\s2' + '-DOWN'
+                --Name: p2\s1.sql /*p2\s1-DOWN*/ PRINT N'p2\s1' + '-DOWN'
+                --Name: p1\s3.sql /*p1\s3*/ PRINT N'p1\s3'
 
                 --DBUpdate: 3
-                --Name: p1\s3.sql /*p1\s3-DOWN*/ PRINT 'p1\s3' + '-DOWN'
-                --Name: p1\s2.sql /*p1\s2-DOWN*/ PRINT 'p1\s2' + '-DOWN'";
+                --Name: p1\s3.sql /*p1\s3-DOWN*/ PRINT N'p1\s3' + '-DOWN'
+                --Name: p1\s2.sql /*p1\s2-DOWN*/ PRINT N'p1\s2' + '-DOWN'";
 
             Assert.AreEqual(
                 RemoveIndentation(expectedSqlLog),
@@ -373,10 +373,10 @@ namespace CommonConcepts.Test
 
             var expectedSqlLog = @"
                 --DBUpdate: 1
-                --Name: p1\s1.sql /*p1\s1*/ PRINT 'p1\s1'
+                --Name: p1\s1.sql /*p1\s1*/ PRINT N'p1\s1'
                 --DBUpdate: 2
                 --DBUpdate: 3
-                --Name: p1\s1.sql /*p1\s1-DOWN*/ PRINT 'p1\s1' + '-DOWN'";
+                --Name: p1\s1.sql /*p1\s1-DOWN*/ PRINT N'p1\s1' + '-DOWN'";
 
             Assert.AreEqual(
                 RemoveIndentation(expectedSqlLog),
@@ -419,7 +419,7 @@ namespace CommonConcepts.Test
 
             var expectedSqlLog = @"
                 --DBUpdate: 1
-                --Name: p1\s1.sql /*p1\s1*/ PRINT 'p1\s1'
+                --Name: p1\s1.sql /*p1\s1*/ PRINT N'p1\s1'
                 --DBUpdate: 2
                 --DBUpdate: 3";
 
