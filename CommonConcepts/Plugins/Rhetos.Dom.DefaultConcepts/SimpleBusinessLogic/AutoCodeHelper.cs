@@ -381,12 +381,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 sqlExecuter.ExecuteSql(
                     $@"DECLARE @lockResult int;
                     EXEC @lockResult = sp_getapplock {SqlUtility.QuoteText(key)}, 'Exclusive';
-                    IF @lockResult < 0
-                    BEGIN
-                        RAISERROR('AutoCode lock.', 16, 10);
-                        ROLLBACK;
-                        RETURN;
-                    END");
+                    IF @lockResult < 0 RAISERROR('AutoCode lock.', 16, 10);");
             }
             catch (FrameworkException ex)
             {

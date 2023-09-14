@@ -121,12 +121,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 _sqlExecuter.ExecuteSql(
                     $@"DECLARE @lockResult int;
                     EXEC @lockResult = sp_getapplock {SqlUtility.QuoteText(key)}, 'Exclusive';
-                    IF @lockResult < 0
-                    BEGIN
-                        RAISERROR('AuthorizationDataLoader lock.', 16, 10);
-                        ROLLBACK;
-                        RETURN;
-                    END");
+                    IF @lockResult < 0 RAISERROR('AuthorizationDataLoader lock.', 16, 10);");
                 return new CustomLockInfo(key);
             }
             catch (FrameworkException ex) when (ex.Message.TrimEnd().EndsWith("AuthorizationDataLoader lock."))
