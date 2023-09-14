@@ -358,6 +358,83 @@ Dictionary`2<List`1<InnerClass[]>, InnerClass>";
         }
 
         [TestMethod]
+        public void LimitSimple()
+        {
+            var tests = new (string Text, int Limit, string Expected)[]
+            {
+                ("", 0, ""),
+                ("", 1, ""),
+                ("", 2, ""),
+                ("ab", 0, ""),
+                ("ab", 1, "a"),
+                ("ab", 2, "ab"),
+                ("ab", 3, "ab"),
+            };
+
+            var expectedReport = string.Join(Environment.NewLine, tests.Select(test => $"{test.Text}, {test.Limit} => {test.Expected}"));
+            var actualReport = string.Join(Environment.NewLine, tests.Select(test => $"{test.Text}, {test.Limit} => {Try(() => test.Text.Limit(test.Limit))}"));
+            Assert.AreEqual(expectedReport, actualReport);
+        }
+
+        [TestMethod]
+        public void LimitWithTrimMark()
+        {
+            var tests = new (string Text, int Limit, string Expected)[]
+            {
+                ("abcd", 0, ""),
+                ("abcd", 1, "1"),
+                ("abcd", 2, "12"),
+                ("abcd", 3, "a12"),
+                ("abcd", 4, "abcd"),
+                ("", 0, ""),
+                ("", 1, ""),
+                ("", 2, ""),
+                ("", 3, ""),
+                ("a", 0, ""),
+                ("a", 1, "a"),
+                ("a", 2, "a"),
+                ("a", 3, "a"),
+                ("aa", 0, ""),
+                ("aa", 1, "1"),
+                ("aa", 2, "aa"),
+                ("aaa", 0, ""),
+                ("aaa", 1, "1"),
+                ("aaa", 2, "12"),
+                ("aaa", 3, "aaa"),
+            };
+
+            var expectedReport = string.Join(Environment.NewLine, tests.Select(test => $"{test.Text}, {test.Limit} => {test.Expected}"));
+            var actualReport = string.Join(Environment.NewLine, tests.Select(test => $"{test.Text}, {test.Limit} => {Try(() => test.Text.Limit(test.Limit, "12"))}"));
+            Assert.AreEqual(expectedReport, actualReport);
+        }
+
+        [TestMethod]
+        public void LimitWithLengthInfo()
+        {
+            var tests = new (string Text, int Limit, string Expected)[]
+            {
+                (new string('a', 50), 51, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"),
+                (new string('a', 50), 50, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"),
+                (new string('a', 50), 49, "aaaaaaaaaaaaaaaaaaaaaaaaaaaa... (total length 50)"),
+                (new string('a', 50), 40, "aaaaaaaaaaaaaaaaaaa... (total length 50)"),
+                (new string('a', 50), 20, "... (total length 50"),
+                (new string('a', 50),  6, "... (t"),
+                ("", 0, ""),
+                ("", 1, ""),
+                ("a", 0, ""),
+                ("a", 1, "a"),
+                ("a", 2, "a"),
+                ("aa", 0, ""),
+                ("aa", 1, "."),
+                ("aa", 2, "aa"),
+            };
+
+            var expectedReport = string.Join(Environment.NewLine, tests.Select(test => $"{test.Text}, {test.Limit} => {test.Expected}"));
+            var actualReport = string.Join(Environment.NewLine, tests.Select(test => $"{test.Text}, {test.Limit} => {Try(() => test.Text.Limit(test.Limit, true))}"));
+            Assert.AreEqual(expectedReport, actualReport);
+        }
+
+        [TestMethod]
         public void LimitWithHash()
         {
             var tests = new (string Text, int Limit, string Expected)[]

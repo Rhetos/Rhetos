@@ -190,7 +190,7 @@ namespace Rhetos.Persistence
         protected void LogPerformanceIssue(Stopwatch sw, string sql)
         {
             if (sw.Elapsed >= LoggerHelper.SlowEvent) // Avoid flooding the performance trace log.
-                _performanceLogger.Write(sw, () => sql.Limit(50000, true));
+                _performanceLogger.Write(sw, () => sql.Limit(50_000, true));
             else
                 sw.Restart(); // _performanceLogger.Write would restart the stopwatch.
         }
@@ -198,7 +198,7 @@ namespace Rhetos.Persistence
         private FrameworkException ReportError(DbCommand command, DbException e)
         {
             if (command != null && !string.IsNullOrWhiteSpace(command.CommandText))
-                _logger.Error("Unable to execute SQL query:\r\n" + command.CommandText.Limit(1_000_000));
+                _logger.Error("Unable to execute SQL query:\r\n" + command.CommandText.Limit(1_000_000, true));
 
             string msg = $"{e.GetType().Name} has occurred{ReportScriptName(command)}";
 

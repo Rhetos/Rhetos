@@ -25,6 +25,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Rhetos.Utilities
 {
@@ -129,11 +130,11 @@ namespace Rhetos.Utilities
                 return "Identifier name is empty.";
 
             if (IsNotLetterOrUnderscore(name[0]))
-                return $"Identifier name '{CsUtility.Limit(name, 200, true)}' is not valid. First character is not an English letter or underscore.";
+                return $"Identifier name '{CsUtility.Limit(name, 256, true)}' is not valid. First character is not an English letter or underscore.";
 
             foreach (char c in name)
                 if (IsNotLetterOrUnderscore(c) && (c < '0' || c > '9'))
-                    return $"Identifier name '{CsUtility.Limit(name, 200, true)}' is not valid. Character '{c}' is not an English letter or number or underscore.";
+                    return $"Identifier name '{CsUtility.Limit(name, 256, true)}' is not valid. Character '{c}' is not an English letter or number or underscore.";
 
             return null;
         }
@@ -366,30 +367,30 @@ namespace Rhetos.Utilities
             return batches;
         }
 
+        /// <summary>The resulting text length, including the total length info, will not exceed <paramref name="maxLength"/>.</summary>
+        /// <remarks>If <paramref name="appendTotalLengthInfo"/> is true, set <paramref name="maxLength"/> to 29 or more,
+        /// to allow the complete total length info to be reported.</remarks>
         public static string Limit(this string text, int maxLength, bool appendTotalLengthInfo = false)
         {
-            if (text.Length > maxLength)
-            {
-                if (!appendTotalLengthInfo)
-                    return text.Substring(0, maxLength);
-                else
-                    return text.Substring(0, maxLength) + "... (total length " + text.Length + ")";
-            }
-            else
+            if (text.Length <= maxLength)
                 return text;
+            else if (!appendTotalLengthInfo)
+                return text.Substring(0, maxLength);
+            else
+                return Limit(text, maxLength, "... (total length " + text.Length + ")");
         }
 
-        /// <param name="trimMark">The suffix that will be appended if the text is trimmed (for example: "...").
-        /// The resulting text length with the suffix included will be maxLength.</param>
+        /// <summary>The resulting text length, including the <paramref name="trimMark"/>, will not exceed <paramref name="maxLength"/>.</summary>
+        /// <param name="trimMark">The suffix that will be appended if the text is trimmed (for example: "...").</param>
         public static string Limit(this string text, int maxLength, string trimMark)
         {
-            if (text.Length > maxLength)
+            if (text.Length <= maxLength)
+                return text;
+            else
             {
-                trimMark = trimMark.Limit(maxLength);
+                trimMark = trimMark.Length > maxLength ? trimMark.Substring(0, maxLength) : trimMark;
                 return text.Substring(0, maxLength - trimMark.Length) + trimMark;
             }
-            else
-                return text;
         }
 
         /// <summary>
