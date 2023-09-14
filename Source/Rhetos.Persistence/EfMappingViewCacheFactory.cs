@@ -21,6 +21,7 @@ using System;
 using System.Data.Entity.Core.Mapping;
 using System.Data.Entity.Core.Metadata.Edm;
 using System.Data.Entity.Infrastructure.MappingViews;
+using System.Threading.Tasks;
 using Rhetos.Logging;
 
 namespace Rhetos.Persistence
@@ -29,11 +30,15 @@ namespace Rhetos.Persistence
     {
         private readonly ILogger _logger;
         private readonly EfMappingViewsFileStore _mappingViewsFileStore;
+        private readonly Lazy<EfMappingViewsInitializer> _efMappingViewsInitializer;
+        private readonly object _buildCacheLock = new object();
+        private bool _buildCacheExecuted = false;
         private readonly Lazy<EfMappingViewCache> _viewCache;
 
-        public EfMappingViewCacheFactory(EfMappingViewsFileStore mappingViewsFileStore, ILogProvider logProvider)
+        public EfMappingViewCacheFactory(EfMappingViewsFileStore mappingViewsFileStore, ILogProvider logProvider, Lazy<EfMappingViewsInitializer> efMappingViewsInitializer)
         {
             _mappingViewsFileStore = mappingViewsFileStore;
+            _efMappingViewsInitializer = efMappingViewsInitializer;
             _logger = logProvider.GetLogger(nameof(EfMappingViewCacheFactory));
             _viewCache = new Lazy<EfMappingViewCache>(CreateEfMappingViewCache);
         }
@@ -49,10 +54,34 @@ namespace Rhetos.Persistence
             if (views == null)
             {
                 _logger.Warning(() => $"Pre-generated mapping views not found. This will result in slower startup performance.");
-                return null;
+                Task.Run(() => BuildViewCache()); // Generate cached mapping views in backgound, to optimize the next startup.
+                return null; // Returing 'null' since the cached mapping views are not found. It will result with a slower initial startup of Entity Framework.
             }
 
             return new EfMappingViewCache(views);
+        }
+
+        void BuildViewCache()
+        {
+            if (!_buildCacheExecuted)
+                lock (_buildCacheLock)
+                {
+                    if (!_buildCacheExecuted)
+                    {
+                        _logger.Warning(() => $"Building the mapping views cache in background.");
+                        try
+                        {
+                            _efMappingViewsInitializer.Value.Initialize();
+                        }
+                        catch (Exception ex)
+                        {
+                            // There might be some issues with file write permissions.
+                            // The error can be ignored, since the application can run successfully without the cache (with slower starup).
+                            _logger.Warning(() => $"Error while building the mapping views cache. {ex.GetType()}: {ex.Message}");
+                        }
+                    }
+                    _buildCacheExecuted = true;
+                }
         }
 
         public void RegisterFactoryForWorkspace(MetadataWorkspace metadataWorkspace)

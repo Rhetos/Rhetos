@@ -18,7 +18,6 @@
 */
 
 using Autofac;
-using CommonConcepts.Test;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
 using System;
@@ -96,6 +95,7 @@ Activator = DummyCommandInfo (ReflectionActivator), Services = [Rhetos.Processin
 Activator = EfMappingViewCacheFactory (ReflectionActivator), Services = [Rhetos.Persistence.EfMappingViewCacheFactory], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = EfMappingViewsFileStore (ReflectionActivator), Services = [Rhetos.Persistence.EfMappingViewsFileStore], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = EfMappingViewsHash (ReflectionActivator), Services = [Rhetos.Persistence.IEfMappingViewsHash], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
+Activator = EfMappingViewsInitializer (ReflectionActivator), Services = [Rhetos.Persistence.EfMappingViewsInitializer], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = EntityFrameworkConfiguration (ReflectionActivator), Services = [System.Data.Entity.DbConfiguration], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = EntityFrameworkContext (ReflectionActivator), Services = [Common.EntityFrameworkContext, System.Data.Entity.DbContext], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = EntityFrameworkMetadata (ReflectionActivator), Services = [Rhetos.Dom.DefaultConcepts.Persistence.EntityFrameworkMetadata], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
