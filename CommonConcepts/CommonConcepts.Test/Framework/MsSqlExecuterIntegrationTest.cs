@@ -51,7 +51,7 @@ namespace CommonConcepts.Test.Framework
                 connectionString,
                 testUser,
                 new PersistenceTransactionOptions(),
-                new MsSqlUtility()))
+                new MsSqlUtility(new NoLocalizer())))
             {
                 var sqlExecuter = new MsSqlExecuter(new ConsoleLogProvider(), persistenceTransaction, new DatabaseOptions());
                 sqlExecuterAction.Invoke(sqlExecuter);

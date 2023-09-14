@@ -50,7 +50,6 @@ namespace Rhetos.Configuration.Autofac.Modules
             var pluginRegistration = builder.GetRhetosPluginRegistration();
             AddDsl(builder, pluginRegistration);
             AddSecurity(builder, pluginRegistration);
-            AddUtilities(builder);
             AddCommandsProcessing(builder, pluginRegistration);
 
             base.Load(builder);
@@ -74,12 +73,6 @@ namespace Rhetos.Configuration.Autofac.Modules
             // Cannot use FindAndRegisterPlugins on IUserInfo because each type should be manually registered with InstancePerLifetimeScope.
             pluginRegistration.FindAndRegisterPlugins<IAuthorizationProvider>();
             pluginRegistration.FindAndRegisterPlugins<IClaimProvider>();
-        }
-
-        private void AddUtilities(ContainerBuilder builder)
-        {
-            builder.RegisterType<NoLocalizer>().As<ILocalizer>().SingleInstance();
-            builder.RegisterGeneric(typeof(NoLocalizer<>)).As(typeof(ILocalizer<>)).SingleInstance();
         }
 
         private static void AddCommandsProcessing(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)

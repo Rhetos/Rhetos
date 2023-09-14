@@ -36,6 +36,8 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.RegisterType<FilesUtility>().SingleInstance();
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<DatabaseSettings>()).SingleInstance();
             builder.RegisterType(DatabaseTypes.GetSqlUtilityType(SqlUtility.DatabaseLanguage)).As<ISqlUtility>().InstancePerLifetimeScope();
+            builder.RegisterType<NoLocalizer>().As<ILocalizer>().SingleInstance();
+            builder.RegisterGeneric(typeof(NoLocalizer<>)).As(typeof(ILocalizer<>)).SingleInstance();
 
             base.Load(builder);
         }

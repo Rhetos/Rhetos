@@ -28,6 +28,13 @@ namespace Rhetos.Utilities
 {
     public class MsSqlUtility : ISqlUtility
     {
+        private readonly ILocalizer _localizer;
+
+        public MsSqlUtility(ILocalizer localizer)
+        {
+            _localizer = localizer;
+        }
+
         public DbConnection CreateConnection(string connectionString, IUserInfo userInfo)
         {
             var connection = new SqlConnection(connectionString);
@@ -148,11 +155,11 @@ namespace Rhetos.Utilities
                 {
                     UserException interpretedException = null;
                     if (action == "DELETE")
-                        interpretedException = new UserException("It is not allowed to delete a record that is referenced by other records.", new string[] { parts[7].Value, parts[9].Value }, null, exception);
+                        interpretedException = new UserException("It is not allowed to delete a record that is referenced by other records.", new string[] { _localizer[parts[7].Value], parts[9].Value }, null, exception);
                     else if (action == "INSERT")
-                        interpretedException = new UserException("It is not allowed to enter the record. The entered value references nonexistent record.", new string[] { parts[7].Value, parts[9].Value }, null, exception);
+                        interpretedException = new UserException("It is not allowed to enter the record. The entered value references nonexistent record.", new string[] { _localizer[parts[7].Value], parts[9].Value }, null, exception);
                     else if (action == "UPDATE")
-                        interpretedException = new UserException("It is not allowed to edit the record. The entered value references nonexistent record.", new string[] { parts[7].Value, parts[9].Value }, null, exception);
+                        interpretedException = new UserException("It is not allowed to edit the record. The entered value references nonexistent record.", new string[] { _localizer[parts[7].Value], parts[9].Value }, null, exception);
 
                     if (interpretedException != null)
                     {
