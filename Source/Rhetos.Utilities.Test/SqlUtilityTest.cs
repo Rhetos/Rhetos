@@ -172,6 +172,16 @@ namespace Rhetos.Utilities.Test
             {
                 throw new NotImplementedException();
             }
+
+            public void GetDbLock(IEnumerable<string> resources, bool wait = true)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void ReleaseDbLock(IEnumerable<string> resources)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         [TestMethod]

@@ -19,6 +19,7 @@
 
 using CommonConcepts.Test;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos;
 using Rhetos.Logging;
 using Rhetos.Persistence;
 using Rhetos.TestCommon;
@@ -27,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -547,6 +549,131 @@ raiserror('fff', 18, 118)"
 
             lastSizeAfterReader = lastSizeAfterReader ?? log.Count;
             return "Result: " + queryResult + Environment.NewLine + "Log:" + Environment.NewLine + string.Join(Environment.NewLine, log.Take(lastSizeAfterReader.Value));
+        }
+
+        [TestMethod]
+        public void LockWait()
+        {
+            using var scope1 = TestScope.Create();
+            using var scope2 = TestScope.Create();
+
+            var sqlExecuter1 = scope1.Resolve<ISqlExecuter>();
+            var sqlExecuter2 = scope2.Resolve<ISqlExecuter>();
+
+            sqlExecuter1.GetDbLock("a");
+            sqlExecuter2.GetDbLock("b");
+
+            sqlExecuter2.ExecuteSql("SET LOCK_TIMEOUT 1000");
+
+            var stopwatch = Stopwatch.StartNew();
+            TestUtility.ShouldFail<UserException>(() => sqlExecuter2.GetDbLock("A"), "The resource you are trying to access is currently unavailable");
+            stopwatch.Stop();
+            Assert.IsTrue(stopwatch.Elapsed.TotalSeconds > 0.95 && stopwatch.Elapsed.TotalSeconds < 2, stopwatch.Elapsed.TotalSeconds.ToString());
+        }
+
+        [TestMethod]
+        public void LockNoWait()
+        {
+            using var scope1 = TestScope.Create();
+            using var scope2 = TestScope.Create();
+
+            var sqlExecuter1 = scope1.Resolve<ISqlExecuter>();
+            var sqlExecuter2 = scope2.Resolve<ISqlExecuter>();
+
+            sqlExecuter1.GetDbLock("a");
+            sqlExecuter2.GetDbLock("b");
+
+            var stopwatch = Stopwatch.StartNew();
+            TestUtility.ShouldFail<UserException>(() => sqlExecuter2.GetDbLock("A", wait: false), "The resource you are trying to access is currently unavailable");
+            stopwatch.Stop();
+            Assert.IsTrue(stopwatch.Elapsed.TotalSeconds < 0.5, stopwatch.Elapsed.TotalSeconds.ToString());
+        }
+
+        [TestMethod]
+        public void LockRelease()
+        {
+            using var scope1 = TestScope.Create();
+            using var scope2 = TestScope.Create();
+
+            var sqlExecuter1 = scope1.Resolve<ISqlExecuter>();
+            var sqlExecuter2 = scope2.Resolve<ISqlExecuter>();
+
+            sqlExecuter1.GetDbLock("a");
+            sqlExecuter1.GetDbLock("b");
+            TestUtility.ShouldFail<UserException>(() => sqlExecuter2.GetDbLock("A", wait: false), "The resource you are trying to access is currently unavailable");
+            sqlExecuter1.ReleaseDbLock("a");
+            sqlExecuter2.GetDbLock("A");
+            TestUtility.ShouldFail<UserException>(() => sqlExecuter2.GetDbLock("B", wait: false), "The resource you are trying to access is currently unavailable");
+        }
+
+        [TestMethod]
+        public void LockMany()
+        {
+            using var scope1 = TestScope.Create();
+            using var scope2 = TestScope.Create();
+
+            var sqlExecuter1 = scope1.Resolve<ISqlExecuter>();
+            var sqlExecuter2 = scope2.Resolve<ISqlExecuter>();
+
+            sqlExecuter1.GetDbLock(new[] { "a", "b", "c" });
+            sqlExecuter1.ReleaseDbLock("c");
+
+            sqlExecuter2.GetDbLock(new[] { "c", "d" });
+            TestUtility.ShouldFail<UserException>(() => sqlExecuter2.GetDbLock(new[] { "a", "b", "c" }, wait: false), "The resource you are trying to access is currently unavailable");
+        }
+
+        [TestMethod]
+        public void LockMany2()
+        {
+            using var scope1 = TestScope.Create();
+            using var scope2 = TestScope.Create();
+
+            var sqlExecuter1 = scope1.Resolve<ISqlExecuter>();
+            var sqlExecuter2 = scope2.Resolve<ISqlExecuter>();
+
+            string[] resources = new[] { "a", "b", "c" };
+            sqlExecuter1.GetDbLock(resources);
+            sqlExecuter1.ReleaseDbLock("c");
+
+            var report = new List<string>();
+            foreach (var resource in resources)
+            {
+                try
+                {
+                    sqlExecuter2.GetDbLock(resource, wait: false);
+                    report.Add(resource + " not locked");
+                }
+                catch
+                {
+                    report.Add(resource + " locked");
+                }
+            }
+            Assert.AreEqual("a locked, b locked, c not locked", string.Join(", ", report));
+
+            var stopwatch = Stopwatch.StartNew();
+            TestUtility.ShouldFail<UserException>(() => sqlExecuter2.GetDbLock(resources, wait: false), "The resource you are trying to access is currently unavailable");
+            stopwatch.Stop();
+            Assert.IsTrue(stopwatch.Elapsed.TotalSeconds < 0.5, stopwatch.Elapsed.TotalSeconds.ToString());
+        }
+
+        [TestMethod]
+        public void LockManyWait()
+        {
+            using var scope1 = TestScope.Create();
+            using var scope2 = TestScope.Create();
+
+            var sqlExecuter1 = scope1.Resolve<ISqlExecuter>();
+            var sqlExecuter2 = scope2.Resolve<ISqlExecuter>();
+
+            sqlExecuter1.GetDbLock(new[] { "b", "c" });
+            sqlExecuter1.ReleaseDbLock("c");
+
+            sqlExecuter2.ExecuteSql("SET LOCK_TIMEOUT 1000");
+
+            var stopwatch = Stopwatch.StartNew();
+            TestUtility.ShouldFail<UserException>(() => sqlExecuter2.GetDbLock(new[] { "a", "b", "c" }), "The resource you are trying to access is currently unavailable");
+            stopwatch.Stop();
+            Assert.IsTrue(stopwatch.Elapsed.TotalSeconds > 0.95 && stopwatch.Elapsed.TotalSeconds < 2, stopwatch.Elapsed.TotalSeconds.ToString());
         }
     }
 }

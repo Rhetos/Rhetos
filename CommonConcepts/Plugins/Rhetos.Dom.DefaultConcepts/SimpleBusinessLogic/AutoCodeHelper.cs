@@ -374,26 +374,7 @@ namespace Rhetos.Dom.DefaultConcepts
         private static void Lock(ISqlExecuter sqlExecuter, string entityName, string groupColumnName, string groupValue)
         {
             string key = $"AutoCode {entityName}{groupColumnName ?? ""}{groupValue ?? ""}";
-            key = key.Limit(200);
-
-            try
-            {
-                sqlExecuter.ExecuteSql(
-                    $@"DECLARE @lockResult int;
-                    EXEC @lockResult = sp_getapplock {SqlUtility.QuoteText(key)}, 'Exclusive';
-                    IF @lockResult < 0 RAISERROR('AutoCode lock.', 16, 10);");
-            }
-            catch (FrameworkException ex)
-            {
-                if (ex.Message.TrimEnd().EndsWith("AutoCode lock."))
-                    throw new UserException(
-                        "Cannot insert the record in {0} because another user's insert command is still running.",
-                        new object[] { entityName },
-                        null,
-                        ex);
-                else
-                    throw;
-            }
+            sqlExecuter.GetDbLock(key);
         }
     }
 }

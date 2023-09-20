@@ -20,6 +20,7 @@
 using Oracle.ManagedDataAccess.Client;
 using Rhetos.Logging;
 using Rhetos.Utilities;
+using System.Collections.Generic;
 using System.Data.Common;
 using System.Text;
 
@@ -67,6 +68,16 @@ namespace Rhetos.Persistence
         {
             // Currently not implemented; returning expected value.
             return _persistenceTransaction.Transaction != null ? 1 : 0;
+        }
+
+        public void GetDbLock(IEnumerable<string> resources, bool wait = true)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void ReleaseDbLock(IEnumerable<string> resources)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

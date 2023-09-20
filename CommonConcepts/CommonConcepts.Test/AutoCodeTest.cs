@@ -890,10 +890,10 @@ namespace CommonConcepts.Test
             Assert.IsNull(exceptions[3]); // sql3 should be allowed to read the record with code '1'. sql0 has exclusive lock on code '2'. autocode should not put exclusive lock on other records.
 
             // Query sql1 may generate next autocode, but it should wait for the entity's table exclusive lock to be released (from sql0).
-            TestUtility.AssertContains(exceptions[1].ToString(), new[] { "Cannot insert", "another user's insert command is still running", "TestAutoCode.Simple" });
+            TestUtility.AssertContains(exceptions[1].ToString(), new[] { "The resource you are trying to access is currently unavailable. Please try again later." });
 
             // Query sql2 may not generate next autocode until sql1 releases the lock.
-            TestUtility.AssertContains(exceptions[2].ToString(), new[] { "Cannot insert", "another user's insert command is still running", "TestAutoCode.Simple" });
+            TestUtility.AssertContains(exceptions[2].ToString(), new[] { "The resource you are trying to access is currently unavailable. Please try again later." });
         }
 
         private Exception[] ExecuteParallel(Action<Common.ExecutionContext>[] actions, Action<Common.ExecutionContext> coldStartInsert, Action<Common.ExecutionContext> coldStartQuery)

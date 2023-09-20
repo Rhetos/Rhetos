@@ -201,6 +201,16 @@ namespace Rhetos.DatabaseGenerator.Test
             }
 
             public int GetTransactionCount() => 1;
+
+            public void GetDbLock(IEnumerable<string> resources, bool wait = true)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void ReleaseDbLock(IEnumerable<string> resources)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         private static string Dump(IEnumerable<ConceptApplication> appliedConcepts)

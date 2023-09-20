@@ -80,6 +80,16 @@ namespace CommonConcepts.Test
             _log.Add(query);
             return _decorated.ExecuteSqlRawAsync(query, parameters, cancellationToken);
         }
+
+        public void GetDbLock(IEnumerable<string> resources, bool wait = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ReleaseDbLock(IEnumerable<string> resources)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class SqlExecuterLog : List<string>

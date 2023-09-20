@@ -66,10 +66,14 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             string username = principal.Name; // Copy to be used for asynchronous logging.
             _logger.Info(() => $"Adding unregistered principal '{username}'. See {OptionsAttribute.GetConfigurationPath<RhetosAppOptions>()}:{nameof(RhetosAppOptions.AuthorizationAddUnregisteredPrincipals)} in configuration files.");
-            var userLock = CreteCustomLock(username.ToUpper());
+
+            // Manual database locking is used here in order to avoid deadlocks (may depend on usage of READ_COMMITTED_SNAPSHOT), see integration test AddUnregisteredPrincipalsParallel.
+            string userLock = $"AuthorizationDataLoader.{username}";
+            _sqlExecuter.GetDbLock(userLock);
+
             bool newCreated = InsertPrincipalOrGetExisting(ref principal);
-            if (!newCreated) // If new principal is created, other requests should wait for current transaction to be committed in order to read the new principal.
-                ReleaseCustomLock(userLock);
+            if (!newCreated) // If new principal is created, other requests should wait for current transaction to be committed in order to read the new principal. This is a performance optimization for situations when no data was written to database.
+                _sqlExecuter.ReleaseDbLock(userLock);
         }
 
         /// <summary>Populates ID property of provided <paramref name="principal"/>.</summary>
@@ -102,50 +106,6 @@ namespace Rhetos.Dom.DefaultConcepts
         private bool DuplicateNameInDatabase(Exception ex)
         {
             return _sqlUtility.ExtractSqlException(ex)?.Message?.StartsWith("Cannot insert duplicate key row in object 'Common.Principal' with unique index 'IX_Principal_Name'") == true;
-        }
-
-        /// <summary>
-        /// Manual database locking is used here in order to avoid deadlocks (may depend on usage of READ_COMMITTED_SNAPSHOT),
-        /// see integration test AddUnregisteredPrincipalsParallel.
-        /// </summary>
-        /// <remarks>
-        /// Note that lock resource name is case-sensitive in SQL Server.
-        /// </remarks>
-        private CustomLockInfo CreteCustomLock(string userName)
-        {
-            string key = $"AuthorizationDataLoader.{userName}";
-            key = CsUtility.LimitWithHash(key, 255); // SQL Server limits key length to 255.
-
-            try
-            {
-                _sqlExecuter.ExecuteSql(
-                    $@"DECLARE @lockResult int;
-                    EXEC @lockResult = sp_getapplock {SqlUtility.QuoteText(key)}, 'Exclusive';
-                    IF @lockResult < 0 RAISERROR('AuthorizationDataLoader lock.', 16, 10);");
-                return new CustomLockInfo(key);
-            }
-            catch (FrameworkException ex) when (ex.Message.TrimEnd().EndsWith("AuthorizationDataLoader lock."))
-            {
-                throw new UserException(
-                    "Cannot initialize the new user, because the user record is locked by another command that is still running.",
-                    ex);
-            }
-        }
-
-        class CustomLockInfo
-        {
-            public string Key { get; }
-
-            public CustomLockInfo(string key) => Key = key;
-        };
-
-        /// <summary>
-        /// Performance optimization for situations when no data was written to database,
-        /// so other requests don't need to wait for the current transaction to finish.
-        /// </summary>
-        private void ReleaseCustomLock(CustomLockInfo lockInfo)
-        {
-            _sqlExecuter.ExecuteSql($@"EXEC sp_releaseapplock {SqlUtility.QuoteText(lockInfo.Key)};");
         }
     }
 }

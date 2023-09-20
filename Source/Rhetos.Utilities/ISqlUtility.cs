@@ -25,7 +25,7 @@ namespace Rhetos.Utilities
 {
     /// <remarks>
     /// The main difference between <see cref="ISqlUtility"/> and <see cref="ISqlExecuter"/>
-    /// is that <see cref="ISqlUtility"/> implementations do now require <see cref="IPersistenceTransaction"/>
+    /// is that <see cref="ISqlUtility"/> implementations do not require <see cref="IPersistenceTransaction"/>
     /// or an active database connection.
     /// <see cref="ISqlUtility"/> can be used at build-time, or to initialize a new database connection.
     /// </remarks>

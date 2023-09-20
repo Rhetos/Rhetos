@@ -107,6 +107,23 @@ namespace Rhetos.Utilities
         /// would only reduce transaction count, but not actually commit the transaction.
         /// </remarks>
         int GetTransactionCount();
+
+        /// <summary>
+        /// Creates a custom lock in database. It blocks other parallel connectinos from creating a lock with the same resource name.
+        /// This is often use to reduce deadlocks is database when parallel users (or even parallel web requests from one user)
+        /// execute complex data modifications.
+        /// The lock is automatically closed when the SQL transaction is commited or rolledback (e.g. when the web request return the response).
+        /// </summary>
+        /// <param name="resources">Custom string that represents a unique lock identifier. It is case insensitive.
+        /// It is *not* related to any actual database object such as table name.</param>
+        /// <param name="wait">If set to <see langword="false"/>, this method will fail immediately if the resource
+        /// is locked by another process, instead of waiting for the lock to be removed.</param>
+        void GetDbLock(IEnumerable<string> resources, bool wait = true);
+
+        /// <summary>
+        /// Releases a custom lock in database, created by <see cref="GetDbLock"/>.
+        /// </summary>
+        void ReleaseDbLock(IEnumerable<string> resources);
     }
 
     public static class SqlExecuterExtensions
@@ -176,6 +193,30 @@ namespace Rhetos.Utilities
         /// Uses interpolated string to execute a parametrized query on the database.
         /// </summary>
         public static Task ExecuteReaderInterpolatedAsync(this ISqlExecuter sqlExecuter, FormattableString query, Action<DbDataReader> read)
+
             => sqlExecuter.ExecuteReaderRawAsync(query.Format, query.GetArguments(), read);
+
+        /// <summary>
+        /// Creates a custom lock in database. It blocks other parallel connections from creating a lock with the same resource name.
+        /// This is often use to reduce deadlocks is database when parallel users (or even parallel web requests from one user)
+        /// execute complex data modifications.
+        /// The lock is automatically closed when the SQL transaction is commited or rolledback (e.g. when the web request return the response).
+        /// </summary>
+        /// <param name="resource">Custom string that represents a unique lock identifier. It is case insensitive.
+        /// It is *not* related to any actual database object such as table name.</param>
+        /// <param name="wait">If set to <see langword="false"/>, this method will fail immediately if the resource
+        /// is locked by another process, instead of waiting for the lock to be removed.</param>
+        public static void GetDbLock(this ISqlExecuter sqlExecuter, string resource, bool wait = true)
+        {
+            sqlExecuter.GetDbLock(new[] { resource }, wait);
+        }
+
+        /// <summary>
+        /// Releases a custom lock in database, created by <see cref="GetDbLock"/>.
+        /// </summary>
+        public static void ReleaseDbLock(this ISqlExecuter sqlExecuter, string resource)
+        {
+            sqlExecuter.ReleaseDbLock(new[] { resource });
+        }
     }
 }
