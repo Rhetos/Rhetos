@@ -678,6 +678,34 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
+        public void SortBySelfReferencingDependenciesUpdate()
+        {
+            using (var scope = TestScope.Create())
+            {
+                var repository = scope.Resolve<Common.DomRepository>();
+
+                var items = new List<TestStorage.SelfReferencing>
+                {
+                    new TestStorage.SelfReferencing { ID = Guid.NewGuid(), Name = "a" },
+                    new TestStorage.SelfReferencing { ID = Guid.NewGuid(), Name = "b" }
+                };
+
+                var query = repository.TestStorage.SelfReferencing.Query(items.Select(item => item.ID).ToList())
+                    .Select(item => new { item.Name, ParentName = item.Parent.Name });
+
+                repository.TestStorage.SelfReferencing.Insert(items);
+                Assert.AreEqual("a:, b:", TestUtility.DumpSorted(query.ToList(), item => $"{item.Name}:{item.ParentName}"));
+
+                items[0].ParentID = items[1].ID;
+                items[1].ParentID = items[0].ID;
+                repository.TestStorage.SelfReferencing.Update(items);
+                Assert.AreEqual("a:b, b:a", TestUtility.DumpSorted(query.ToList(), item => $"{item.Name}:{item.ParentName}"));
+
+                TestUtility.ShouldFail(() => repository.TestStorage.SelfReferencing.Delete(items), "circular");
+            }
+        }
+
+        [TestMethod]
         public void SortBySelfReferencingDependenciesWithMock()
         {
             // NOTE:

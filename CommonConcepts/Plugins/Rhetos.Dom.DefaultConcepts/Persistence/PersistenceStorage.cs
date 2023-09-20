@@ -43,10 +43,10 @@ namespace Rhetos.Dom.DefaultConcepts
         public void Save<TEntity>(IEnumerable<TEntity> toInsert, IEnumerable<TEntity> toUpdate, IEnumerable<TEntity> toDelete) where TEntity : class, IEntity
         {
             if (toDelete != null && toDelete.Any())
-                ExecuteInBatches(GetSortedReverse(toDelete), PersistenceStorageCommandType.Delete);
+                ExecuteInBatches(GetSorted(toDelete, reverse: true), PersistenceStorageCommandType.Delete);
 
             if (toUpdate != null && toUpdate.Any())
-                ExecuteInBatches(GetSorted(toUpdate), PersistenceStorageCommandType.Update);
+                ExecuteInBatches(new List<TEntity>(toUpdate), PersistenceStorageCommandType.Update);
 
             if (toInsert != null && toInsert.Any())
                 ExecuteInBatches(GetSorted(toInsert), PersistenceStorageCommandType.Insert);
@@ -82,7 +82,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 throw new FrameworkException($"Unexpected number of rows affected on insert of '{entityType}'. Row count {numberOfAffectedRows}, expected {commands.Count}.");
         }
 
-        private List<TEntity> GetSorted<TEntity>(IEnumerable<TEntity> entities) where TEntity : IEntity
+        private List<TEntity> GetSorted<TEntity>(IEnumerable<TEntity> entities, bool reverse = false) where TEntity : IEntity
         {
             var entitiesCopy = new List<TEntity>(entities);
             var mapper = _persistenceMappings.GetMapping(typeof(TEntity));
@@ -90,13 +90,8 @@ namespace Rhetos.Dom.DefaultConcepts
             var ids = entitiesCopy.Select(x => x.ID).ToList();
             Graph.TopologicalSort(ids, dependencies);
             Graph.SortByGivenOrder(entitiesCopy, ids, plugin => plugin.ID);
-            return entitiesCopy;
-        }
-
-        private List<TEntity> GetSortedReverse<TEntity>(IEnumerable<TEntity> entities) where TEntity : IEntity
-        {
-            var entitiesCopy = GetSorted(entities);
-            entitiesCopy.Reverse();
+            if (reverse)
+                entitiesCopy.Reverse();
             return entitiesCopy;
         }
     }
