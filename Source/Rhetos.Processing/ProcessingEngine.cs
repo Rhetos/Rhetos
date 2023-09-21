@@ -83,9 +83,9 @@ namespace Rhetos.Processing
 
             try
             {
-                var authorizationErrorMessage = _authorizationManager.Authorize(commands);
+                _authorizationManager.Authorize(commands, out var authorizationErrorMessage, out var authorizationErrorParameters);
                 if (!string.IsNullOrEmpty(authorizationErrorMessage))
-                    throw new UserException(authorizationErrorMessage, authorizationErrorMessage); // Setting both messages for backward compatibility.
+                    throw new UserException(authorizationErrorMessage, authorizationErrorParameters, authorizationErrorMessage, null); // Setting both messages for backward compatibility.
             }
             catch (Exception e)
             {

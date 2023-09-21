@@ -17,9 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.Collections.Generic;
 using Rhetos.Processing;
-using System;
+using System.Collections.Generic;
 
 namespace Rhetos.Security
 {
@@ -32,7 +31,19 @@ namespace Rhetos.Security
         /// If the user is authorized to execute the commands, the method returns <see langword="null"/>.
         /// Otherwise it returns the authorization error message.
         /// </summary>
+        /// <remarks>
+        /// This method returns localized error message.
+        /// </remarks>
         string Authorize(IList<ICommandInfo> commandInfos);
+
+        /// <summary>
+        /// If the user is authorized to execute the commands, the method returns <see langword="null"/>.
+        /// Otherwise it returns the authorization error message.
+        /// </summary>
+        /// <remarks>
+        /// Error is separated to <paramref name="message"/> and <paramref name="messageParameters"/> for localization.
+        /// </remarks>
+        void Authorize(IList<ICommandInfo> commandInfos, out string message, out string[] messageParameters);
 
         IList<bool> GetAuthorizations(IList<Claim> requiredClaims);
     }

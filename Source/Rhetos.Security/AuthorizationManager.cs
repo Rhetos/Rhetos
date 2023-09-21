@@ -123,6 +123,15 @@ namespace Rhetos.Security
 
         public string Authorize(IList<ICommandInfo> commandInfos)
         {
+            Authorize(commandInfos, out string message, out string[] messageParameters);
+            if (message != null)
+                return _localizer[message, messageParameters];
+            else
+                return null;
+        }
+
+        public void Authorize(IList<ICommandInfo> commandInfos, out string message, out string[] messageParameters)
+        {
             var sw = Stopwatch.StartNew();
 
             IList<Claim> requiredClaims = GetRequiredClaims(commandInfos);
@@ -134,18 +143,21 @@ namespace Rhetos.Security
 
             if (unauthorized != null)
             {
-                _logger.Trace(() => $"User {ReportUserNameOrAnonymous(_userInfo)} does not have claim {unauthorized.claim.FullName}.");
+                _logger.Trace(() => $"User {ReportUserNameOrAnonymous(_userInfo)} does not have claim {unauthorized.claim.FullName}. ({SafeGet(() => _userInfo.Report())})");
 
                 // If user is unauthenticated, assume that the cause is not lack of permissions, but missing authentication.
                 // Throwing HttpStatusCode.Unauthorized to direct the user to the standard login process.
                 if (!_userInfo.IsUserRecognized)
                     throw new ClientException("User is not authenticated.") { HttpStatusCode = HttpStatusCode.Unauthorized };
 
-                return _localizer["You are not authorized for action '{0}' on resource '{1}', user '{2}'.",
-                    unauthorized.claim.Right, unauthorized.claim.Resource, ReportUserNameOrAnonymous(_userInfo)];
+                message = "You are not authorized for action '{0}' on resource '{1}', user '{2}'.";
+                messageParameters = new[] { unauthorized.claim.Right, unauthorized.claim.Resource, ReportUserNameOrAnonymous(_userInfo) };
             }
-
-            return null;
+            else
+            {
+                message = null;
+                messageParameters = null;
+            }
         }
 
         private IList<Claim> GetRequiredClaims(IEnumerable<ICommandInfo> commandInfos)
@@ -161,5 +173,17 @@ namespace Rhetos.Security
         }
 
         private static string ReportUserNameOrAnonymous(IUserInfo userInfo) => userInfo.IsUserRecognized ? userInfo.UserName : "<anonymous>";
+
+        private static string SafeGet(Func<string> func)
+        {
+            try
+            {
+                return func();
+            }
+            catch (Exception e)
+            {
+                return e.ToString();
+            }
+        }
     }
 }
