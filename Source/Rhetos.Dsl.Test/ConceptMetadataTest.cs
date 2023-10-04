@@ -18,6 +18,7 @@
 */
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos.Logging;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
@@ -69,7 +70,7 @@ namespace Rhetos.Dsl.Test
                 new SimpleConceptMetadataImplementation1(),
                 new SimpleConceptMetadataImplementation2(),
                 new DerivationConceptMetadataImplementation1()
-            }));
+            }), new ConsoleLogProvider());
 
             Assert.AreEqual("SimpleConcept1", metadataProvider.Get<ISimpleConceptMetadata<IConceptInfo>>(typeof(SimpleConcept1)).ExtensionForType);
             Assert.AreEqual("SimpleConcept2", metadataProvider.Get<ISimpleConceptMetadata<IConceptInfo>>(typeof(SimpleConcept2)).ExtensionForType);
@@ -83,7 +84,7 @@ namespace Rhetos.Dsl.Test
                 var metadataProvider = new ConceptMetadata(new MockPluginsContainer<IConceptMetadataExtension>(new IConceptMetadataExtension[] {
                     new SimpleConceptMetadataImplementation1(),
                     new SimpleConceptMetadataImplementation12()
-                }));
+                }), new ConsoleLogProvider());
 
                 metadataProvider.Get<ISimpleConceptMetadata<IConceptInfo>>(typeof(SimpleConcept1));
             },
@@ -96,7 +97,7 @@ namespace Rhetos.Dsl.Test
         {
             var metadataProvider = new ConceptMetadata(new MockPluginsContainer<IConceptMetadataExtension>(new IConceptMetadataExtension[] {
                 new SimpleConceptMetadataImplementation1()
-            }));
+            }), new ConsoleLogProvider());
             
             Assert.AreEqual("SimpleConcept1", metadataProvider.Get<ISimpleConceptMetadata<IConceptInfo>>(typeof(DerivationConcept1)).ExtensionForType);
         }
@@ -104,11 +105,16 @@ namespace Rhetos.Dsl.Test
         [TestMethod]
         public void NoConceptMetadataTest()
         {
-            var metadataProvider = new ConceptMetadata(new MockPluginsContainer<IConceptMetadataExtension>(Array.Empty<IConceptMetadataExtension>()));
+            var log = new List<string>();
+            var metadataProvider = new ConceptMetadata(new MockPluginsContainer<IConceptMetadataExtension>(Array.Empty<IConceptMetadataExtension>()),
+                new ConsoleLogProvider((EventType eventType, string eventName, Func<string> message) => log.Add($"{eventType} {eventName} {message()}")));
 
-            TestUtility.ShouldFail(() => {
-                metadataProvider.Get<ISimpleConceptMetadata<IConceptInfo>>(typeof(SimpleConcept1));
-            }, $"There is no {nameof(IConceptMetadataExtension)} plugin", "SimpleConceptMetadata", "SimpleConcept1");
+            Assert.IsNull(metadataProvider.Get<ISimpleConceptMetadata<IConceptInfo>>(typeof(SimpleConcept1)));
+
+            Assert.IsTrue(log.Any(entry =>
+                entry.Contains($"There is no {nameof(IConceptMetadataExtension)} plugin")
+                && entry.Contains("SimpleConceptMetadata")
+                && entry.Contains("SimpleConcept1")));
         }
     }
 }

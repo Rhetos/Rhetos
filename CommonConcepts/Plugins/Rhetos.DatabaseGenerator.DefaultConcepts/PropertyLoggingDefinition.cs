@@ -17,15 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Compiler;
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Extensibility;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using Rhetos.Utilities;
-using Rhetos.Extensibility;
-using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Dsl;
-using System.Globalization;
-using Rhetos.Compiler;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
@@ -33,18 +31,25 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(PropertyLoggingInfo))]
     public class PropertyLoggingDefinition : IConceptDatabaseDefinitionExtension
     {
-        private static string GetColumnName(PropertyInfo property)
-        {
-            if (property is ReferencePropertyInfo)
-                return SqlUtility.Identifier(property.Name + "ID");
+        private readonly ConceptMetadata _conceptMetadata;
 
-            return SqlUtility.Identifier(property.Name);
+        public PropertyLoggingDefinition(ConceptMetadata conceptMetadata)
+        {
+            _conceptMetadata = conceptMetadata;
         }
 
         public void ExtendDatabaseStructure(IConceptInfo conceptInfo, ICodeBuilder codeBuilder, out IEnumerable<Tuple<IConceptInfo, IConceptInfo>> createdDependencies)
         {
             var info = (PropertyLoggingInfo)conceptInfo;
-            var column = GetColumnName(info.Property);
+
+            var column = _conceptMetadata.GetColumnName(info.Property);
+            var columnType = _conceptMetadata.GetColumnType(info.Property);
+
+            if (column == null || columnType == null)
+            {
+                createdDependencies = null;
+                return; // Only simple database columns are logged by this concept.
+            }
 
             string propertyTypeKeyword = info.Property.GetKeywordOrTypeName();
             string propertyToStringSnippet = Sql.TryGet("PropertyLoggingDefinition_TextValue_" + propertyTypeKeyword);

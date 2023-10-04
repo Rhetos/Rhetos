@@ -18,6 +18,7 @@
 */
 
 using Rhetos.Extensibility;
+using Rhetos.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -28,6 +29,7 @@ namespace Rhetos.Dsl
     public class ConceptMetadata
     {
         private readonly IPluginsContainer<IConceptMetadataExtension> _plugins;
+        private readonly ILogger _logger;
 
         /// <summary>First key is the metadata interface type (inherits <see cref="IConceptMetadataExtension"/>), second key is the concept type (inherits <see cref="IConceptInfo"/>).</summary>
         private readonly ConcurrentDictionary<Type, Dictionary<Type, IConceptMetadataExtension>> _pluginsByType = new ConcurrentDictionary<Type, Dictionary<Type, IConceptMetadataExtension>>();
@@ -35,9 +37,10 @@ namespace Rhetos.Dsl
         /// <summary>First key is the metadata interface type (inherits <see cref="IConceptMetadataExtension"/>), second key is the concept type (inherits <see cref="IConceptInfo"/>).</summary>
         private readonly ConcurrentDictionary<(Type, Type), IConceptMetadataExtension> _pluginsByTypeOrDerivedConcept = new ConcurrentDictionary<(Type, Type), IConceptMetadataExtension>();
 
-        public ConceptMetadata(IPluginsContainer<IConceptMetadataExtension> plugins)
+        public ConceptMetadata(IPluginsContainer<IConceptMetadataExtension> plugins, ILogProvider logProvider)
         {
             _plugins = plugins;
+            _logger = logProvider.GetLogger(nameof(ConceptMetadata));
         }
 
         public TMetadata Get<TMetadata>(Type conceptType)
@@ -59,8 +62,10 @@ namespace Rhetos.Dsl
 
             var pluginsByConcept = _pluginsByType.GetOrAdd(key.MetadataInterface, GetAllPluginsForMetadataInterface);
 
-            return FindBaseConceptPlugin(key.ConceptType, pluginsByConcept)
-                ?? throw new FrameworkException($@"There is no {nameof(IConceptMetadataExtension)} plugin of type {key.MetadataInterface} for concept {key.ConceptType}.");
+            var plugin = FindBaseConceptPlugin(key.ConceptType, pluginsByConcept);
+            if (plugin == null)
+                _logger.Trace(() => $@"There is no {nameof(IConceptMetadataExtension)} plugin of type {key.MetadataInterface} for concept {key.ConceptType}.");
+            return plugin;
         }
 
         private Dictionary<Type, IConceptMetadataExtension> GetAllPluginsForMetadataInterface(Type metadataInterface)

@@ -155,6 +155,13 @@ Module TestLogging
         Reference r TestLogging.Simple { Detail; }
         Reference r2 TestLogging.Simple;
         Reference r3 TestLogging.Simple;
+
+        LinkedItems Details TestLogging.ComplexDetail.Complex;
+    }
+
+    Entity ComplexDetail
+    {
+        Reference Complex { Detail; }
     }
     
     Entity Base
