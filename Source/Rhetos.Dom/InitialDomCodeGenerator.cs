@@ -73,7 +73,7 @@ namespace Rhetos
         /// The following defaults are applied:
         /// <list type=""bullet"">
         /// <item>Build-time configuration settings that are hard-coded in runtime environment:
-        ///     <see cref=""RhetosAppOptions.RhetosAppAssemblyName""/>, <see cref=""RhetosAppOptions.RhetosHostFolder""/> and <see cref=""DatabaseSettings""/></item>.
+        ///     <see cref=""RhetosAppOptions.RhetosAppAssemblyName""/>, <see cref=""RhetosAppOptions.RhetosAppAssemblyFileName""/>, <see cref=""RhetosAppOptions.RhetosHostFolder""/> and <see cref=""DatabaseSettings""/></item>.
         /// <item>Registers plugin types from referenced libraries, and the current assembly for additional plugin discovery.</item>
         /// <item>Various plugin packages may add additional configuration settings and components registration.</item>
         /// </list>
@@ -85,6 +85,9 @@ namespace Rhetos
                     .AddKeyValue(
                         ConfigurationProvider.GetKey((RhetosAppOptions o) => o.RhetosAppAssemblyName),
                         typeof(RhetosHostBuilderAppConfiguration).Assembly.GetName().Name)
+                    .AddKeyValue(
+                        ConfigurationProvider.GetKey((RhetosAppOptions o) => o.RhetosAppAssemblyFileName),
+                        System.IO.Path.GetFileName(typeof(RhetosHostBuilderAppConfiguration).Assembly.Location))
                     .AddKeyValue(
                         ConfigurationProvider.GetKey((RhetosAppOptions o) => o.RhetosHostFolder),
                         AppContext.BaseDirectory)

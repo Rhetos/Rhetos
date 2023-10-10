@@ -45,6 +45,14 @@ namespace Rhetos.Utilities
         /// </remarks>
         public string RhetosAppAssemblyName { get; set; }
 
+        /// <summary>
+        /// Rhetos application's assembly file name where the generated code is located including the Domain Object Model.
+        /// </summary>
+        /// <remarks>
+        /// The value is automatically set by generated application code. It may be customized by standard runtime configuration.
+        /// </remarks>
+        public string RhetosAppAssemblyFileName { get; set; }
+
         private string _assetsFolder;
 
         /// <summary>

@@ -58,12 +58,13 @@ namespace Rhetos.Persistence
             string additionalHash = _efMappingViewsHash.GetAdditionalHash();
             _performanceLogger.Write(sw, () => $"Calculated additional hash.");
 
-            var currentViewCache = _efMappingViewsFileStore.Load();
+            var currentViewCache = _efMappingViewsFileStore.Load(onlyIfNewerThanApp: false);
             if (!string.IsNullOrEmpty(currentViewCache?.Hash)
                 && currentViewCache.Hash == hash
                 && currentViewCache.AdditionalHash == additionalHash)
             {
                 _logger.Trace(() => $"Hash not changed. View cache is valid. Skipping generation.");
+                _efMappingViewsFileStore.Touch();
                 return;
             }
 

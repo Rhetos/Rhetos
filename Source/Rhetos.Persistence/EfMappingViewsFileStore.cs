@@ -19,6 +19,7 @@
 
 using Rhetos.Logging;
 using Rhetos.Utilities;
+using System;
 using System.Diagnostics;
 using System.IO;
 
@@ -29,16 +30,22 @@ namespace Rhetos.Persistence
         const string _cacheFilename = "EfMappingGeneratedViews.json";
         private readonly ILogger _performanceLogger;
         private readonly string _cacheFilePath;
+        private readonly RhetosAppOptions _rhetosAppOptions;
 
         public EfMappingViewsFileStore(RhetosAppOptions rhetosAppOptions, ILogProvider logProvider)
         {
             _performanceLogger = logProvider.GetLogger("Performance." + nameof(EfMappingViewsFileStore));
             _cacheFilePath = Path.GetFullPath(Path.Combine(rhetosAppOptions.CacheFolder, _cacheFilename));
+            _rhetosAppOptions = rhetosAppOptions;
         }
 
-        public EfMappingViews Load()
+        public EfMappingViews Load(bool onlyIfNewerThanApp)
         {
             if (!File.Exists(_cacheFilePath))
+                return null;
+
+            string appPath = Path.Combine(_rhetosAppOptions.RhetosHostFolder, _rhetosAppOptions.RhetosAppAssemblyFileName);
+            if (onlyIfNewerThanApp && File.GetLastWriteTime(_cacheFilePath) < File.GetLastWriteTime(appPath))
                 return null;
 
             var sw = Stopwatch.StartNew();
@@ -53,6 +60,15 @@ namespace Rhetos.Persistence
             var sw = Stopwatch.StartNew();
             JsonUtility.SerializeToFile(views, _cacheFilePath);
             _performanceLogger.Write(sw, () => $"Serialized and saved views to '{_cacheFilePath}'.");
+        }
+
+        /// <summary>
+        /// Updated the file's last modification time, to mark that the file is up to date.
+        /// This is important for <see cref="Load(bool)"/> method when 'onlyIfNewerThanApp' parameter is set to true.
+        /// </summary>
+        public void Touch()
+        {
+            FilesUtility.SafeTouch(_cacheFilePath);
         }
     }
 }

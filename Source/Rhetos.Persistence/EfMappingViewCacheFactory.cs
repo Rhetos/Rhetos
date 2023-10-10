@@ -50,10 +50,10 @@ namespace Rhetos.Persistence
 
         private EfMappingViewCache CreateEfMappingViewCache()
         {
-            var views = _mappingViewsFileStore.Load();
+            var views = _mappingViewsFileStore.Load(onlyIfNewerThanApp: true);
             if (views == null)
             {
-                _logger.Warning(() => $"Pre-generated mapping views not found. This will result in slower startup performance.");
+                _logger.Info(() => $"Pre-generated mapping views not found or older then the app.");
                 Task.Run(() => BuildViewCache()); // Generate cached mapping views in backgound, to optimize the next startup.
                 return null; // Returing 'null' since the cached mapping views are not found. It will result with a slower initial startup of Entity Framework.
             }
@@ -68,7 +68,7 @@ namespace Rhetos.Persistence
                 {
                     if (!_buildCacheExecuted)
                     {
-                        _logger.Warning(() => $"Building the mapping views cache in background.");
+                        _logger.Info(() => $"Building the mapping views cache in background.");
                         try
                         {
                             _efMappingViewsInitializer.Value.Initialize();

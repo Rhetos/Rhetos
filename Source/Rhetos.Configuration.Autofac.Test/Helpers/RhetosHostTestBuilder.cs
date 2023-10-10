@@ -79,7 +79,8 @@ namespace Rhetos.Configuration.Autofac.Test
                 .AddOptions(new RhetosAppOptions
                 {
                     RhetosHostFolder = Path.GetDirectoryName(currentAssemblyPath),
-                    RhetosAppAssemblyName = Path.GetFileNameWithoutExtension(currentAssemblyPath)
+                    RhetosAppAssemblyName = Path.GetFileNameWithoutExtension(currentAssemblyPath),
+                    RhetosAppAssemblyFileName = Path.GetFileName(currentAssemblyPath),
                 })
                 .AddOptions(new PluginScannerOptions
                 {
