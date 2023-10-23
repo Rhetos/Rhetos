@@ -158,7 +158,7 @@ Changes in behavior:
     ```
 8. IDomainObjectModel.GetType no longer returns types for "Common.RowPermissionsReadItems" and "Common.RowPermissionsWriteItems". For example `GetType(RowPermissionsReadInfo.FilterName)` and `GetType(RowPermissionsWriteInfo.FilterName)` will return null.
     * Use `typeof(Common.RowPermissionsReadItems)` and `typeof(Common.RowPermissionsWriteItems)` instead.
-9. Updated dependencies to a newer version: Autofac v6.3.0, Newtonsoft.Json v13.0.1, NLog v4.7.11.
+9. Updated dependencies to a newer version: Autofac v6.3.0, Newtonsoft.Json v13.0.3, NLog v4.7.11.
 10. **DateTime** property concept now generates *datetime2* database column type by default
     instead of obsolete *datetime* column type (issue #101).
     * Legacy *datetime* type can be enabled by setting `CommonConcepts:UseLegacyMsSqlDateTime` option to `true` in `rhetos-build.settings.json` file.
