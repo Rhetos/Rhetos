@@ -37,7 +37,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                     new RepositoryUsesInfo
                     {
                         DataStructure = conceptInfo,
-                        PropertyType = "Rhetos.Utilities.ISqlUtility, Rhetos.Utilities",
+                        PropertyType = "Rhetos.Utilities.ISqlUtility",
                         PropertyName = "_sqlUtility"
                     }
                 };

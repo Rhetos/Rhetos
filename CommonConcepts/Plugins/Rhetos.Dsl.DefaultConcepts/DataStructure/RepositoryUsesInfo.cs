@@ -17,7 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Text.RegularExpressions;
 
@@ -32,13 +31,10 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// It may require using the full name with namespace, if the namespace is not available from repository class or default 'using' statements.
     /// The type will be resolved from IoC container.
     /// </summary>
-    /// <remarks>
-    /// For older application that uses DeployPackages build process, instead of Rhetos CLI, the property value should be the assembly qualified name,
-    /// but it does not need to contain Version, Culture or PublicKeyToken if you are referencing a local assembly in the application's folder.
-    /// </remarks>
+
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("RepositoryUses")]
-    public class RepositoryUsesInfo : IConceptInfo
+    public class RepositoryUsesInfo : IConceptInfo, IValidatedConcept
     {
         [ConceptKey]
         public DataStructureInfo DataStructure { get; set; }
@@ -51,12 +47,21 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public string PropertyType { get; set; }
 
-        /// <summary>
-        /// Simple heuristics for legacy feature activation (DeployPackages build references).
-        /// It does not need to detect all cases, since any new code should use C# type syntax.
-        /// </summary>
-        public bool HasAssemblyQualifiedName() => _isAssemblyQualifiedNameRegex.IsMatch(PropertyType);
+        public void CheckSemantics(IDslModel existingConcepts)
+        {
+            var assemblyQualifiedName = _isAssemblyQualifiedNameRegex.Match(PropertyType);
+            if (assemblyQualifiedName.Success)
+            {
+                string fullName = assemblyQualifiedName.Groups["fullname"].Value;
+                throw new DslSyntaxException(this, $"Use a full class name with namespace, instead of the assembly qualified name. Please remove the assembly name from the RepositoryUses type name: try '{fullName}' instead of '{PropertyType}'.");
+            }
+        }
 
-        private static readonly Regex _isAssemblyQualifiedNameRegex = new Regex(@",[^\>\)\]]*$");
+        /// <summary>
+        /// Simple heuristics for legacy feature (DeployPackages build references).
+        /// For older applications that used DeployPackages build process instead of Rhetos CLI, the <see cref="PropertyType"/> was an assembly qualified name,
+        /// but it did not need to contain Version, Culture or PublicKeyToken if referencing a local assembly in the application's folder.
+        /// </summary>
+        private static readonly Regex _isAssemblyQualifiedNameRegex = new Regex(@"(?<fullname>.*?),[^\>\)\]]*$");
     }
 }

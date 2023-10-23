@@ -65,7 +65,7 @@
 		ShortString ResourceType;
 		Guid ResourceID;
 
-        RepositoryUses '_localizer' 'Rhetos.Utilities.ILocalizer, Rhetos.Utilities';
+        RepositoryUses '_localizer' 'Rhetos.Utilities.ILocalizer';
     }
     
     Action ReleaseLock '(parameters, repository, userInfo) =>

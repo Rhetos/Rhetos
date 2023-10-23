@@ -19,6 +19,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.TestCommon;
 
@@ -62,7 +63,7 @@ namespace Rhetos.CommonConcepts.Test
             foreach (var test in tests)
             {
                 var repositoryUses = new RepositoryUsesInfo { PropertyType = test };
-                Assert.IsFalse(repositoryUses.HasAssemblyQualifiedName(), $"Test input: {test}");
+                repositoryUses.CheckSemantics(null); // This should not throw an error.
             }
         }
 
@@ -92,7 +93,9 @@ namespace Rhetos.CommonConcepts.Test
             foreach (var test in tests)
             {
                 var repositoryUses = new RepositoryUsesInfo { PropertyType = test };
-                Assert.IsTrue(repositoryUses.HasAssemblyQualifiedName(), $"Test input: {test}");
+                TestUtility.ShouldFail<DslSyntaxException>(
+                    () => repositoryUses.CheckSemantics(null),
+                    "Use a full class name with namespace, instead of the assembly qualified name");
             }
         }
     }

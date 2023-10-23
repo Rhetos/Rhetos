@@ -97,7 +97,7 @@ namespace Rhetos.Dom.DefaultConcepts
             var usesAuthorizationDataCache = new RepositoryUsesInfo
             {
                 DataStructure = entity,
-                PropertyType = "Rhetos.Dom.DefaultConcepts.AuthorizationDataCache, Rhetos.Dom.DefaultConcepts",
+                PropertyType = "Rhetos.Dom.DefaultConcepts.AuthorizationDataCache",
                 PropertyName = "_authorizationDataCache"
             };
             var saveMethod = new SaveMethodInfo { Entity = entity };

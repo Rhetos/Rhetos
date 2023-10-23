@@ -47,7 +47,7 @@
 			';
 		}
 
-		RepositoryUses _logProvider 'Rhetos.Logging.ILogProvider, Rhetos.Logging.Interfaces';
+		RepositoryUses _logProvider 'Rhetos.Logging.ILogProvider';
 	}
 	
 	Browse ChildBrowse TestEntity.Child

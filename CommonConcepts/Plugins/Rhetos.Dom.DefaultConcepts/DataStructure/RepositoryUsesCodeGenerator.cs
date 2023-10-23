@@ -34,22 +34,8 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var info = (RepositoryUsesInfo)conceptInfo;
 
-            string typeName;
-
-            if (info.HasAssemblyQualifiedName())
-            {
-                // Support for legacy PropertyType format that includes assembly name.
-                // It supports only types that are available at build-time, not including types from current project or generated code.
-                Type type = Type.GetType(info.PropertyType);
-                if (type == null)
-                    throw new DslSyntaxException(info, "Could not find type '" + info.PropertyType + "'. Use a simple type name as written in C# code, with namespace included.");
-                typeName = type.ToString();
-            }
-            else
-                typeName = info.PropertyType;
-
-            codeBuilder.InsertCode($"private readonly {typeName} {info.PropertyName};\r\n        ", RepositoryHelper.RepositoryPrivateMembers, info.DataStructure);
-            codeBuilder.InsertCode($", {typeName} {info.PropertyName}", RepositoryHelper.ConstructorArguments, info.DataStructure);
+            codeBuilder.InsertCode($"private readonly {info.PropertyType} {info.PropertyName};\r\n        ", RepositoryHelper.RepositoryPrivateMembers, info.DataStructure);
+            codeBuilder.InsertCode($", {info.PropertyType} {info.PropertyName}", RepositoryHelper.ConstructorArguments, info.DataStructure);
             codeBuilder.InsertCode($"this.{info.PropertyName} = {info.PropertyName};\r\n            ", RepositoryHelper.ConstructorCode, info.DataStructure);
         }
     }

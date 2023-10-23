@@ -409,7 +409,7 @@ Module TestDataStructure
 			';
 		}
 
-		RepositoryUses '_logProvider' 'Rhetos.Logging.ILogProvider, Rhetos.Logging.Interfaces';
+		RepositoryUses '_logProvider' 'Rhetos.Logging.ILogProvider';
 	}
 
 	Computed RepositoryWithDependencyInjection 'repository => new[]
@@ -424,8 +424,8 @@ Module TestDataStructure
 		LongString Report;
 		Integer CommandsCount;
 
-		RepositoryUses '_logProvider' 'Rhetos.Logging.ILogProvider, Rhetos.Logging.Interfaces'; // Simplified AssemblyQualifiedName, for DeployPackages build that requires ExternalReference to the assembly.
-		RepositoryUses '_logProviderFactory' 'Func<Rhetos.Logging.ILogProvider>'; // C# syntax, for Rhetos CLI or DeployPackages application that have predefined references to the required assembly.
+		RepositoryUses '_logProvider' 'Rhetos.Logging.ILogProvider';
+		RepositoryUses '_logProviderFactory' 'Func<Rhetos.Logging.ILogProvider>'; // C# syntax.
 		RepositoryUses '_domRepository2' 'Common.DomRepository'; // Using a type from the generated source code.
 		RepositoryUses '_commands' 'IEnumerable<Rhetos.Processing.ICommandInfo>'; // Using special resolvers from DI container.
 	}
