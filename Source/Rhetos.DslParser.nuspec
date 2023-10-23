@@ -23,6 +23,10 @@
     <file src="Rhetos.Dsl.Parser\bin\Debug\netstandard2.1\Rhetos.Dsl.Parser.dll" target="lib\netstandard2.1" />
     <file src="Rhetos.Dsl.Parser\bin\Debug\netstandard2.1\Rhetos.Dsl.Parser.pdb" target="lib\netstandard2.1" />
     <file src="Rhetos.Dsl.Parser\bin\Debug\netstandard2.1\Rhetos.Dsl.Parser.xml" target="lib\netstandard2.1" />
+
+    <!-- The following libraries are netstandard2.0, to support Rhetos project "RhetosVSIntegration",
+    because RhetosVSIntegration is executed by Visual Studio and runs on .NET Framework. -->
+
     <file src="Rhetos.Extensibility.Interfaces\bin\Debug\netstandard2.0\Rhetos.Extensibility.Interfaces.dll" target="lib\netstandard2.1" />
     <file src="Rhetos.Extensibility.Interfaces\bin\Debug\netstandard2.0\Rhetos.Extensibility.Interfaces.pdb" target="lib\netstandard2.1" />
     <file src="Rhetos.Extensibility.Interfaces\bin\Debug\netstandard2.0\Rhetos.Extensibility.Interfaces.xml" target="lib\netstandard2.1" />
