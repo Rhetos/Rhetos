@@ -54,6 +54,9 @@
     <file src="Rhetos.Extensibility\bin\Debug\net5.0\Rhetos.Extensibility.dll" target="lib\net5.0" />
     <file src="Rhetos.Extensibility\bin\Debug\net5.0\Rhetos.Extensibility.pdb" target="lib\net5.0" />
     <file src="Rhetos.Extensibility\bin\Debug\net5.0\Rhetos.Extensibility.xml" target="lib\net5.0" />
+    <file src="Rhetos.Extensibility.Interfaces\bin\Debug\netstandard2.0\Rhetos.Extensibility.Interfaces.dll" target="lib\net5.0" />
+    <file src="Rhetos.Extensibility.Interfaces\bin\Debug\netstandard2.0\Rhetos.Extensibility.Interfaces.pdb" target="lib\net5.0" />
+    <file src="Rhetos.Extensibility.Interfaces\bin\Debug\netstandard2.0\Rhetos.Extensibility.Interfaces.xml" target="lib\net5.0" />
     <file src="Rhetos.Logging\bin\Debug\net5.0\Rhetos.Logging.dll" target="lib\net5.0" />
     <file src="Rhetos.Logging\bin\Debug\net5.0\Rhetos.Logging.pdb" target="lib\net5.0" />
     <file src="Rhetos.Logging\bin\Debug\net5.0\Rhetos.Logging.xml" target="lib\net5.0" />
@@ -84,8 +87,8 @@
     <file src="Rhetos.Deployment\bin\Debug\net5.0\Rhetos.Deployment.dll" target="lib\net5.0" />
     <file src="Rhetos.Deployment\bin\Debug\net5.0\Rhetos.Deployment.pdb" target="lib\net5.0" />
     <file src="Rhetos.Deployment\bin\Debug\net5.0\Rhetos.Deployment.xml" target="lib\net5.0" />
-    <file src="Rhetos.Integration\bin\Debug\netstandard2.0\Rhetos.Integration.dll" target="lib\net5.0" />
-    <file src="Rhetos.Integration\bin\Debug\netstandard2.0\Rhetos.Integration.pdb" target="lib\net5.0" />
-    <file src="Rhetos.Integration\bin\Debug\netstandard2.0\Rhetos.Integration.xml" target="lib\net5.0" />
+    <file src="..\src\Rhetos.Integration\bin\Debug\netstandard2.0\Rhetos.Integration.dll" target="lib\net5.0" />
+    <file src="..\src\Rhetos.Integration\bin\Debug\netstandard2.0\Rhetos.Integration.pdb" target="lib\net5.0" />
+    <file src="..\src\Rhetos.Integration\bin\Debug\netstandard2.0\Rhetos.Integration.xml" target="lib\net5.0" />
   </files>
 </package>

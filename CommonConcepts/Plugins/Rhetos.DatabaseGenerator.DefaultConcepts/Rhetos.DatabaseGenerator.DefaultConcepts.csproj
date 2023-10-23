@@ -8,7 +8,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\Source\Rhetos.Compiler.Interfaces\Rhetos.Compiler.Interfaces.csproj" />
     <ProjectReference Include="..\..\..\Source\Rhetos.DatabaseGenerator.Interfaces\Rhetos.DatabaseGenerator.Interfaces.csproj" />
-    <ProjectReference Include="..\..\..\Source\Rhetos.Dsl.Interfaces\Rhetos.Dsl.Interfaces.csproj" />
+    <ProjectReference Include="..\..\..\Source\Rhetos.Dsl\Rhetos.Dsl.csproj" />
+    <ProjectReference Include="..\..\..\src\Rhetos.DslParser\Rhetos.DslParser.csproj" />
     <ProjectReference Include="..\..\..\Source\Rhetos.Utilities\Rhetos.Utilities.csproj" />
     <ProjectReference Include="..\Rhetos.Dsl.DefaultConcepts\Rhetos.Dsl.DefaultConcepts.csproj" />
   </ItemGroup>

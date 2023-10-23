@@ -11,9 +11,9 @@
     <copyright>Copyright Omega software 2013</copyright>
     <tags>Rhetos</tags>
     <dependencies>
-      <dependency id="System.Text.Encoding.CodePages" version="6.0.0" />
-      <dependency id="Newtonsoft.Json" version="13.0.1" />
       <dependency id="System.ComponentModel.Composition" version="6.0.0" />
+      <dependency id="System.Text.Encoding.CodePages" version="6.0.0" />
+      <dependency id="Newtonsoft.Json" version="13.0.3" />
     </dependencies>
   </metadata>
   <files>
@@ -21,12 +21,9 @@
     <!-- The following libraries are netstandard2.1, to support a wider range of custom DSL syntax editors and plugins,
     that might be developed by using the libraries from this NuGet package. -->
 
-    <file src="Rhetos.Dsl.Interfaces\bin\Debug\netstandard2.1\Rhetos.Dsl.Interfaces.dll" target="lib\netstandard2.1" />
-    <file src="Rhetos.Dsl.Interfaces\bin\Debug\netstandard2.1\Rhetos.Dsl.Interfaces.pdb" target="lib\netstandard2.1" />
-    <file src="Rhetos.Dsl.Interfaces\bin\Debug\netstandard2.1\Rhetos.Dsl.Interfaces.xml" target="lib\netstandard2.1" />
-    <file src="Rhetos.Dsl.Parser\bin\Debug\netstandard2.1\Rhetos.Dsl.Parser.dll" target="lib\netstandard2.1" />
-    <file src="Rhetos.Dsl.Parser\bin\Debug\netstandard2.1\Rhetos.Dsl.Parser.pdb" target="lib\netstandard2.1" />
-    <file src="Rhetos.Dsl.Parser\bin\Debug\netstandard2.1\Rhetos.Dsl.Parser.xml" target="lib\netstandard2.1" />
+    <file src="..\src\Rhetos.DslParser\bin\Debug\netstandard2.1\Rhetos.DslParser.dll" target="lib\netstandard2.1" />
+    <file src="..\src\Rhetos.DslParser\bin\Debug\netstandard2.1\Rhetos.DslParser.pdb" target="lib\netstandard2.1" />
+    <file src="..\src\Rhetos.DslParser\bin\Debug\netstandard2.1\Rhetos.DslParser.xml" target="lib\netstandard2.1" />
 
     <!-- The following libraries are netstandard2.0, to support a core Rhetos project "RhetosVSIntegration",
     because RhetosVSIntegration is executed by Visual Studio and runs on .NET Framework. -->

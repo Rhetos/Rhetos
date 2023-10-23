@@ -9,7 +9,7 @@
     <ProjectReference Include="..\Rhetos.Compiler.Interfaces\Rhetos.Compiler.Interfaces.csproj" />
     <ProjectReference Include="..\Rhetos.Compiler\Rhetos.Compiler.csproj" />
     <ProjectReference Include="..\Rhetos.Dom.Interfaces\Rhetos.Dom.Interfaces.csproj" />
-    <ProjectReference Include="..\Rhetos.Dsl.Interfaces\Rhetos.Dsl.Interfaces.csproj" />
+    <ProjectReference Include="..\..\src\Rhetos.DslParser\Rhetos.DslParser.csproj" />
     <ProjectReference Include="..\Rhetos.Extensibility\Rhetos.Extensibility.csproj" />
     <ProjectReference Include="..\Rhetos.Utilities\Rhetos.Utilities.csproj" />
   </ItemGroup>

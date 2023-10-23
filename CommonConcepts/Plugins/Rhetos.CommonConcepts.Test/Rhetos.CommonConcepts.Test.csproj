@@ -14,7 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Source\Rhetos.Dom.Interfaces\Rhetos.Dom.Interfaces.csproj" />
-    <ProjectReference Include="..\..\..\Source\Rhetos.Dsl.Interfaces\Rhetos.Dsl.Interfaces.csproj" />
+    <ProjectReference Include="..\..\..\src\Rhetos.DslParser\Rhetos.DslParser.csproj" />
     <ProjectReference Include="..\..\..\Source\Rhetos.Extensibility.Interfaces\Rhetos.Extensibility.Interfaces.csproj" />
     <ProjectReference Include="..\..\..\src\Rhetos.Integration\Rhetos.Integration.csproj" />
     <ProjectReference Include="..\..\..\Source\Rhetos.Persistence.Interfaces\Rhetos.Persistence.Interfaces.csproj" />

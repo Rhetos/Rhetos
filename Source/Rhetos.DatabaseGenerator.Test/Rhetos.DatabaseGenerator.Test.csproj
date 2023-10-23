@@ -16,7 +16,7 @@
     <ProjectReference Include="..\..\Source\Rhetos.Utilities\Rhetos.Utilities.csproj" />
     <ProjectReference Include="..\..\Source\Rhetos.DatabaseGenerator.Interfaces\Rhetos.DatabaseGenerator.Interfaces.csproj" />
     <ProjectReference Include="..\..\Source\Rhetos.DatabaseGenerator\Rhetos.DatabaseGenerator.csproj" />
-    <ProjectReference Include="..\..\Source\Rhetos.Dsl.Interfaces\Rhetos.Dsl.Interfaces.csproj" />
+    <ProjectReference Include="..\..\src\Rhetos.DslParser\Rhetos.DslParser.csproj" />
     <ProjectReference Include="..\..\Source\Rhetos.Extensibility\Rhetos.Extensibility.csproj" />
     <ProjectReference Include="..\Rhetos.Compiler.Interfaces\Rhetos.Compiler.Interfaces.csproj" />
     <ProjectReference Include="..\Rhetos.Compiler\Rhetos.Compiler.csproj" />
