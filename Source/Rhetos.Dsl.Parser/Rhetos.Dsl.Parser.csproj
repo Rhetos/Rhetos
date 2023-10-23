@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Rhetos.Dsl.Interfaces\Rhetos.Dsl.Interfaces.csproj" />
-    <ProjectReference Include="..\Rhetos.Logging.Interfaces\Rhetos.Logging.Interfaces.csproj" />
+    <ProjectReference Include="..\..\src\Rhetos.Integration\Rhetos.Integration.csproj" />
   </ItemGroup>
 
 </Project>

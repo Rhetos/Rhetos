@@ -44,7 +44,6 @@
   <Reference Relative="..\Rhetos.DatabaseGenerator.dll">..\Rhetos.DatabaseGenerator.dll</Reference>
   <Reference Relative="..\Rhetos.DatabaseGenerator.Interfaces.dll">..\Rhetos.DatabaseGenerator.Interfaces.dll</Reference>
   <Reference Relative="..\Rhetos.Deployment.dll">..\Rhetos.Deployment.dll</Reference>
-  <Reference Relative="..\Rhetos.Deployment.Interfaces.dll">..\Rhetos.Deployment.Interfaces.dll</Reference>
   <Reference Relative="..\Rhetos.Dom.DefaultConcepts.dll">..\Rhetos.Dom.DefaultConcepts.dll</Reference>
   <Reference Relative="..\Rhetos.Dom.DefaultConcepts.Interfaces.dll">..\Rhetos.Dom.DefaultConcepts.Interfaces.dll</Reference>
   <Reference Relative="..\Rhetos.Dom.dll">..\Rhetos.Dom.dll</Reference>
@@ -56,8 +55,8 @@
   <Reference Relative="..\Rhetos.Extensibility.dll">..\Rhetos.Extensibility.dll</Reference>
   <Reference Relative="..\Rhetos.Extensibility.Interfaces.dll">..\Rhetos.Extensibility.Interfaces.dll</Reference>
   <Reference Relative="..\Rhetos.Host.Net.dll">..\Rhetos.Host.Net.dll</Reference>
+  <Reference Relative="..\Rhetos.Integration.dll">..\Rhetos.Integration.dll</Reference>
   <Reference Relative="..\Rhetos.Logging.dll">..\Rhetos.Logging.dll</Reference>
-  <Reference Relative="..\Rhetos.Logging.Interfaces.dll">..\Rhetos.Logging.Interfaces.dll</Reference>
   <Reference Relative="..\Rhetos.Persistence.dll">..\Rhetos.Persistence.dll</Reference>
   <Reference Relative="..\Rhetos.Persistence.Interfaces.dll">..\Rhetos.Persistence.Interfaces.dll</Reference>
   <Reference Relative="..\Rhetos.Processing.DefaultCommands.dll">..\Rhetos.Processing.DefaultCommands.dll</Reference>
@@ -67,7 +66,6 @@
   <Reference Relative="..\Rhetos.Security.dll">..\Rhetos.Security.dll</Reference>
   <Reference Relative="..\Rhetos.Security.Interfaces.dll">..\Rhetos.Security.Interfaces.dll</Reference>
   <Reference Relative="..\Rhetos.Utilities.dll">..\Rhetos.Utilities.dll</Reference>
-  <Reference Relative="..\Rhetos.Utilities.Interfaces.dll">..\Rhetos.Utilities.Interfaces.dll</Reference>
   <Reference Relative="..\runtimes\win\lib\netcoreapp2.0\System.DirectoryServices.dll">..\runtimes\win\lib\netcoreapp2.0\System.DirectoryServices.dll</Reference>
   <Reference Relative="..\runtimes\win\lib\netcoreapp2.0\System.DirectoryServices.Protocols.dll">..\runtimes\win\lib\netcoreapp2.0\System.DirectoryServices.Protocols.dll</Reference>
   <Reference Relative="..\runtimes\win\lib\netcoreapp2.1\System.Data.SqlClient.dll">..\runtimes\win\lib\netcoreapp2.1\System.Data.SqlClient.dll</Reference>

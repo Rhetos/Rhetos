@@ -13,62 +13,20 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Source\Rhetos.Dom.Interfaces\Rhetos.Dom.Interfaces.csproj">
-      <Project>{91bdf488-0921-4969-8a53-32169338d8db}</Project>
-      <Name>Rhetos.Dom.Interfaces</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\Source\Rhetos.Dsl.Interfaces\Rhetos.Dsl.Interfaces.csproj">
-      <Project>{f4acd412-2782-4191-8708-c7ae99b0cee9}</Project>
-      <Name>Rhetos.Dsl.Interfaces</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\Source\Rhetos.Extensibility.Interfaces\Rhetos.Extensibility.Interfaces.csproj">
-      <Project>{ddc73f5f-bb0e-4944-92cc-4ac937398499}</Project>
-      <Name>Rhetos.Extensibility.Interfaces</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\Source\Rhetos.Logging.Interfaces\Rhetos.Logging.Interfaces.csproj">
-      <Project>{bb7e5668-1b43-4fce-a832-444cc57fee80}</Project>
-      <Name>Rhetos.Logging.Interfaces</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\Source\Rhetos.Persistence.Interfaces\Rhetos.Persistence.Interfaces.csproj">
-      <Project>{5e3bbd83-91cb-4fba-81b2-79a81ec94d70}</Project>
-      <Name>Rhetos.Persistence.Interfaces</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\Source\Rhetos.Processing.Interfaces\Rhetos.Processing.Interfaces.csproj">
-      <Project>{4d2fcd7f-d9bb-4e55-b9c6-fdf352f6dcf3}</Project>
-      <Name>Rhetos.Processing.Interfaces</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\Source\Rhetos.Security.Interfaces\Rhetos.Security.Interfaces.csproj">
-      <Project>{8e1d4acd-b1aa-433f-9e52-fa50d4a1c9dc}</Project>
-      <Name>Rhetos.Security.Interfaces</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\Source\Rhetos.TestCommon\Rhetos.TestCommon.csproj">
-      <Project>{43ba178b-7642-473c-a43a-dbf58294635a}</Project>
-      <Name>Rhetos.TestCommon</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\Source\Rhetos.Utilities\Rhetos.Utilities.csproj">
-      <Project>{71e63722-57bc-41df-9ff5-57ecc67e4bc1}</Project>
-      <Name>Rhetos.Utilities</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rhetos.Dom.DefaultConcepts.Interfaces\Rhetos.Dom.DefaultConcepts.Interfaces.csproj">
-      <Project>{32d57085-6113-43f9-a505-d8b311bd6204}</Project>
-      <Name>Rhetos.Dom.DefaultConcepts.Interfaces</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rhetos.Dom.DefaultConcepts\Rhetos.Dom.DefaultConcepts.csproj">
-      <Project>{6fa98d51-a0b6-4e5f-8c78-0d369ddd6dcc}</Project>
-      <Name>Rhetos.Dom.DefaultConcepts</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rhetos.Dsl.DefaultConcepts\Rhetos.Dsl.DefaultConcepts.csproj">
-      <Project>{24bc6b74-703a-4aaf-99c3-b5cd760f3d22}</Project>
-      <Name>Rhetos.Dsl.DefaultConcepts</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rhetos.Processing.DefaultCommands.Interfaces\Rhetos.Processing.DefaultCommands.Interfaces.csproj">
-      <Project>{98f36936-5842-49cf-bacf-61119ac7bf3e}</Project>
-      <Name>Rhetos.Processing.DefaultCommands.Interfaces</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rhetos.Processing.DefaultCommands\Rhetos.Processing.DefaultCommands.csproj">
-      <Project>{de021676-a95f-4f64-9fc3-f23c1bb946b5}</Project>
-      <Name>Rhetos.Processing.DefaultCommands</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\..\..\Source\Rhetos.Dom.Interfaces\Rhetos.Dom.Interfaces.csproj" />
+    <ProjectReference Include="..\..\..\Source\Rhetos.Dsl.Interfaces\Rhetos.Dsl.Interfaces.csproj" />
+    <ProjectReference Include="..\..\..\Source\Rhetos.Extensibility.Interfaces\Rhetos.Extensibility.Interfaces.csproj" />
+    <ProjectReference Include="..\..\..\src\Rhetos.Integration\Rhetos.Integration.csproj" />
+    <ProjectReference Include="..\..\..\Source\Rhetos.Persistence.Interfaces\Rhetos.Persistence.Interfaces.csproj" />
+    <ProjectReference Include="..\..\..\Source\Rhetos.Processing.Interfaces\Rhetos.Processing.Interfaces.csproj" />
+    <ProjectReference Include="..\..\..\Source\Rhetos.Security.Interfaces\Rhetos.Security.Interfaces.csproj" />
+    <ProjectReference Include="..\..\..\Source\Rhetos.TestCommon\Rhetos.TestCommon.csproj" />
+    <ProjectReference Include="..\..\..\Source\Rhetos.Utilities\Rhetos.Utilities.csproj" />
+    <ProjectReference Include="..\Rhetos.Dom.DefaultConcepts.Interfaces\Rhetos.Dom.DefaultConcepts.Interfaces.csproj" />
+    <ProjectReference Include="..\Rhetos.Dom.DefaultConcepts\Rhetos.Dom.DefaultConcepts.csproj" />
+    <ProjectReference Include="..\Rhetos.Dsl.DefaultConcepts\Rhetos.Dsl.DefaultConcepts.csproj" />
+    <ProjectReference Include="..\Rhetos.Processing.DefaultCommands.Interfaces\Rhetos.Processing.DefaultCommands.Interfaces.csproj" />
+    <ProjectReference Include="..\Rhetos.Processing.DefaultCommands\Rhetos.Processing.DefaultCommands.csproj" />
   </ItemGroup>
 
 </Project>
