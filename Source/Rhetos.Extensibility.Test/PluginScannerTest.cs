@@ -22,7 +22,6 @@ using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
 using System.IO;
-using System.Linq;
 
 namespace Rhetos.Extensibility.Test
 {
@@ -45,11 +44,13 @@ namespace Rhetos.Extensibility.Test
 
             // Searching for plugins in the "TestReference" assembly should fail because is references dependency that is not available.
             var pluginsScanner = new PluginScanner(new[] { incompatibleAssemblyPath }, new RhetosBuildEnvironment { CacheFolder = "." }, new ConsoleLogProvider(), new PluginScannerOptions());
+
             TestUtility.ShouldFail<FrameworkException>(
                 () => pluginsScanner.FindPlugins(typeof(ICloneable)),
                 "Please check if the assembly is missing or has a different version.",
-                // The error shout report: (1) the assembly that causes the error, and (2) the missing assembly that is required for the first one to load.
-                "'Rhetos.Extensibility.TestReference.dll' throws FileNotFoundException: Could not load file or assembly 'Microsoft.Extensions.Primitives, Version=5.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60'. The system cannot find the file specified.");
+                // The error should report: (1) the assembly that causes the error, and (2) the missing assembly that is required for the first one to load.
+                "'Rhetos.Extensibility.TestReference.dll' throws FileNotFoundException: Could not load file or assembly 'Rhetos.Host.Net, Version=",
+                "The system cannot find the file specified.");
         }
 
         private static string FindIncompatibleAssemblyPath(string testReferenceProject)

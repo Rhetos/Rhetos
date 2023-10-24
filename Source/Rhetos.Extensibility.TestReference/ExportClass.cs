@@ -17,7 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Microsoft.Extensions.Primitives;
+using Rhetos.Host.Net;
 using System;
 using System.ComponentModel.Composition;
 
@@ -26,12 +26,12 @@ namespace Rhetos.Extensibility.TestReference
     /// <summary>
     /// This class is used in test project "Rhetos.Extensibility.Test", to test Rhetos PluginsScanner error handling
     /// when loading plugins with incorrectly configured dependencies.
-    /// 1. The class depends on "Microsoft.Extensions.Primitives" assembly because it implements <see cref="Microsoft.Extensions.Primitives.IChangeToken"/>,
-    /// but the referenced assembly is not available the main test project "Rhetos.Extensibility.Test".
+    /// 1. The class depends on "Rhetos.Host.Net" assembly because it implements <see cref="HostLocalizerOptions"/>,
+    /// but the referenced assembly is not available in the test project "Rhetos.Extensibility.Test".
     /// 2. The class is registered as a plugin for commonly available interface <see cref="System.ICloneable"/>.
     /// </summary>
     [Export(typeof(ICloneable))]
-    public class ExportClass : IChangeToken, ICloneable
+    public class ExportClass : HostLocalizerOptions, ICloneable
     {
         public bool HasChanged => throw new NotImplementedException();
 
