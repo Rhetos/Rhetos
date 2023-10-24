@@ -12,11 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Rhetos.Configuration.Autofac\Rhetos.Configuration.Autofac.csproj" />
-    <ProjectReference Include="..\Rhetos.Dsl\Rhetos.Dsl.csproj" />
-    <ProjectReference Include="..\Rhetos.Extensibility\Rhetos.Extensibility.csproj" />
-    <ProjectReference Include="..\Rhetos.Logging\Rhetos.Logging.csproj" />
-    <ProjectReference Include="..\Rhetos.Utilities\Rhetos.Utilities.csproj" />
+    <ProjectReference Include="..\..\src\Rhetos.Core\Rhetos.Core.csproj" />
   </ItemGroup>
 
   <!--TODO: The reference to the Microsoft.AspNetCore.App framework is added as a workaround for building application that are based on Microsoft.AspNetCore.App.
@@ -24,8 +20,8 @@
   -->
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>  
-  
+  </ItemGroup>
+
   <ItemGroup>
     <None Update="rhetos.exe.nlog">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

@@ -13,16 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Source\Rhetos.Utilities\Rhetos.Utilities.csproj" />
-    <ProjectReference Include="..\..\Source\Rhetos.DatabaseGenerator.Interfaces\Rhetos.DatabaseGenerator.Interfaces.csproj" />
-    <ProjectReference Include="..\..\Source\Rhetos.DatabaseGenerator\Rhetos.DatabaseGenerator.csproj" />
     <ProjectReference Include="..\..\src\Rhetos.DslParser\Rhetos.DslParser.csproj" />
-    <ProjectReference Include="..\..\Source\Rhetos.Extensibility\Rhetos.Extensibility.csproj" />
-    <ProjectReference Include="..\Rhetos.Compiler.Interfaces\Rhetos.Compiler.Interfaces.csproj" />
-    <ProjectReference Include="..\Rhetos.Compiler\Rhetos.Compiler.csproj" />
-    <ProjectReference Include="..\Rhetos.Configuration.Autofac\Rhetos.Configuration.Autofac.csproj" />
-    <ProjectReference Include="..\Rhetos.Dom.Interfaces\Rhetos.Dom.Interfaces.csproj" />
-    <ProjectReference Include="..\Rhetos.Extensibility.Interfaces\Rhetos.Extensibility.Interfaces.csproj" />
     <ProjectReference Include="..\Rhetos.Extensibility.Test\Rhetos.Extensibility.Test.csproj" />
     <ProjectReference Include="..\..\src\Rhetos.Integration\Rhetos.Integration.csproj" />
     <ProjectReference Include="..\Rhetos.TestCommon\Rhetos.TestCommon.csproj" />

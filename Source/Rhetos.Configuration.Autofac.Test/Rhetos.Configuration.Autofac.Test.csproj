@@ -14,15 +14,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Rhetos.Integration\Rhetos.Integration.csproj" />
-    <ProjectReference Include="..\Rhetos.Configuration.Autofac\Rhetos.Configuration.Autofac.csproj" />
-    <ProjectReference Include="..\Rhetos.Deployment\Rhetos.Deployment.csproj" />
     <ProjectReference Include="..\..\src\Rhetos.DslParser\Rhetos.DslParser.csproj" />
-    <ProjectReference Include="..\Rhetos.Dsl\Rhetos.Dsl.csproj" />
-    <ProjectReference Include="..\Rhetos.Extensibility\Rhetos.Extensibility.csproj" />
-    <ProjectReference Include="..\Rhetos.Logging\Rhetos.Logging.csproj" />
-    <ProjectReference Include="..\Rhetos.Security\Rhetos.Security.csproj" />
     <ProjectReference Include="..\Rhetos.TestCommon\Rhetos.TestCommon.csproj" />
-    <ProjectReference Include="..\Rhetos.Utilities\Rhetos.Utilities.csproj" />
   </ItemGroup>
 
   <ItemGroup>
