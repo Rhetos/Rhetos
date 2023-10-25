@@ -7,6 +7,6 @@
 		SqlIndexMultiple 'Handle Value' { Clustered; }
 		
 		// TODO: KeepEmpty;
-		Implements 'Rhetos.Dom.DefaultConcepts.ICommonFilterId, Rhetos.Dom.DefaultConcepts.Interfaces' { RegisteredImplementation; }
+		Implements 'Rhetos.Dom.DefaultConcepts.ICommonFilterId, Rhetos.CommonConcepts' { RegisteredImplementation; }
 	}
 }

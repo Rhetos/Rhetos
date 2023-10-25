@@ -17,13 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using Rhetos.Utilities;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
@@ -279,5 +278,34 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             return newConcepts;
         }
+
+        /// <summary>
+        /// Simple heuristics for better error detection in legacy features (DeployPackages build references).
+        /// Older applications, that used DeployPackages build process instead of Rhetos CLI, needed to use the assembly qualified names,
+        /// but it may cause compatibility issues in new code generators where we only need the type name as written in the C# code.
+        /// In older applications the <paramref name="typeName"/> was an assembly qualified name,
+        /// sometimes without the Version, Culture or PublicKeyToken if referencing a local assembly in the application's folder.
+        /// </summary>
+        public static void ThrowExceptionIfAssemblyQualifiedName(string typeName, IConceptInfo errorContext)
+        {
+            var assemblyQualifiedName = _isAssemblyQualifiedNameRegex.Match(typeName);
+            if (assemblyQualifiedName.Success)
+            {
+                string fullName = assemblyQualifiedName.Groups["fullname"].Value;
+                fullName = fullName.Replace("+", ".");
+                throw new DslSyntaxException(errorContext,
+                    "Use a full type name with namespace, as written in C# source, instead of the assembly qualified name." +
+                    $" To remove the assembly name from the type name, try '{fullName}' instead of '{typeName}'.");
+            }
+        }
+
+        /// <summary>
+        /// This regex detects if the text uses an assembly qualified name instead of the full type name as written in C# source.
+        /// </summary>
+        /// <remarks>
+        /// False negatives are OK, since its purpose is to provide a more meaningful error to the developer.
+        /// It should not have false positives, since it might block a feature implementation.
+        /// </remarks>
+        private static readonly Regex _isAssemblyQualifiedNameRegex = new Regex(@"(?<fullname>.*?),[^\>\)\]]*$");
     }
 }

@@ -13,27 +13,17 @@
     <tags>Rhetos plugin</tags>
     <dependencies>
       <group targetFramework="net5.0">
-        <dependency id="Rhetos" version="[5.5.0-dev,5.6.0)" />
-        <dependency id="System.Runtime.Caching" version="6.0.0" />
-        <dependency id="Microsoft.CodeAnalysis.CSharp" version="3.11.0" />
+      <dependency id="Rhetos" version="[5.5.0-dev,5.6.0)" />
+      <dependency id="Microsoft.CodeAnalysis.CSharp" version="3.11.0" />
+      <dependency id="System.Runtime.Caching" version="6.0.0" />
       </group>
     </dependencies>
   </metadata>
   <files>
     <file src="Readme.md" target="" />
-    <file src="DataMigration\**\*" target="DataMigration" />
-    <file src="DslScripts\**\*" target="DslScripts" />
-    <file src="Plugins\Rhetos.Dsl.DefaultConcepts\bin\Debug\net5.0\Rhetos.Dsl.DefaultConcepts.dll" target="lib\net5.0" />
-    <file src="Plugins\Rhetos.Dsl.DefaultConcepts\bin\Debug\net5.0\Rhetos.Dsl.DefaultConcepts.xml" target="lib\net5.0" />
-    <file src="Plugins\Rhetos.Dom.DefaultConcepts\bin\Debug\net5.0\Rhetos.Dom.DefaultConcepts.dll" target="lib\net5.0" />
-    <file src="Plugins\Rhetos.Dom.DefaultConcepts\bin\Debug\net5.0\Rhetos.Dom.DefaultConcepts.xml" target="lib\net5.0" />
-    <file src="Plugins\Rhetos.Dom.DefaultConcepts.Interfaces\bin\Debug\net5.0\Rhetos.Dom.DefaultConcepts.Interfaces.dll" target="lib\net5.0" />
-    <file src="Plugins\Rhetos.Dom.DefaultConcepts.Interfaces\bin\Debug\net5.0\Rhetos.Dom.DefaultConcepts.Interfaces.xml" target="lib\net5.0" />
-    <file src="Plugins\Rhetos.DatabaseGenerator.DefaultConcepts\bin\Debug\net5.0\Rhetos.DatabaseGenerator.DefaultConcepts.dll" target="lib\net5.0" />
-    <file src="Plugins\Rhetos.DatabaseGenerator.DefaultConcepts\bin\Debug\net5.0\Rhetos.DatabaseGenerator.DefaultConcepts.xml" target="lib\net5.0" />
-    <file src="Plugins\Rhetos.Processing.DefaultCommands\bin\Debug\net5.0\Rhetos.Processing.DefaultCommands.dll" target="lib\net5.0" />
-    <file src="Plugins\Rhetos.Processing.DefaultCommands\bin\Debug\net5.0\Rhetos.Processing.DefaultCommands.xml" target="lib\net5.0" />
-    <file src="Plugins\Rhetos.Processing.DefaultCommands.Interfaces\bin\Debug\net5.0\Rhetos.Processing.DefaultCommands.Interfaces.dll" target="lib\net5.0" />
-    <file src="Plugins\Rhetos.Processing.DefaultCommands.Interfaces\bin\Debug\net5.0\Rhetos.Processing.DefaultCommands.Interfaces.xml" target="lib\net5.0" />
+    <file src="..\src\Rhetos.CommonConcepts\DataMigration\**\*" target="DataMigration" />
+    <file src="..\src\Rhetos.CommonConcepts\DslScripts\**\*" target="DslScripts" />
+    <file src="..\src\Rhetos.CommonConcepts\bin\Debug\net5.0\Rhetos.CommonConcepts.dll" target="lib\net5.0" />
+    <file src="..\src\Rhetos.CommonConcepts\bin\Debug\net5.0\Rhetos.CommonConcepts.xml" target="lib\net5.0" />
   </files>
 </package>

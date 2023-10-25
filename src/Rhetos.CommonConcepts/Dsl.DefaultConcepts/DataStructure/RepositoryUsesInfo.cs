@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Utilities;
 using System.ComponentModel.Composition;
 using System.Text.RegularExpressions;
 
@@ -49,19 +50,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public void CheckSemantics(IDslModel existingConcepts)
         {
-            var assemblyQualifiedName = _isAssemblyQualifiedNameRegex.Match(PropertyType);
-            if (assemblyQualifiedName.Success)
-            {
-                string fullName = assemblyQualifiedName.Groups["fullname"].Value;
-                throw new DslSyntaxException(this, $"Use a full class name with namespace, instead of the assembly qualified name. Please remove the assembly name from the RepositoryUses type name: try '{fullName}' instead of '{PropertyType}'.");
-            }
+            DslUtility.ThrowExceptionIfAssemblyQualifiedName(PropertyType, this);
         }
-
-        /// <summary>
-        /// Simple heuristics for legacy feature (DeployPackages build references).
-        /// For older applications that used DeployPackages build process instead of Rhetos CLI, the <see cref="PropertyType"/> was an assembly qualified name,
-        /// but it did not need to contain Version, Culture or PublicKeyToken if referencing a local assembly in the application's folder.
-        /// </summary>
-        private static readonly Regex _isAssemblyQualifiedNameRegex = new Regex(@"(?<fullname>.*?),[^\>\)\]]*$");
     }
 }

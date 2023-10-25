@@ -3,12 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32901.215
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Deployment", "Deployment", "{2D001517-CE8E-4902-8C0A-0EA13C134830}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CommonConcepts", "CommonConcepts", "{2212BF93-7EC1-447E-BF78-8C845E257E88}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{0124322E-2731-48E8-910C-957E37181628}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D3CC17A8-D557-44D9-8D3D-3D425ED09838}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
@@ -24,15 +18,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Tools\Configuration\Template.rhetos-app.local.settings.json = Tools\Configuration\Template.rhetos-app.local.settings.json
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.CommonConcepts.Test", "CommonConcepts\Plugins\Rhetos.CommonConcepts.Test\Rhetos.CommonConcepts.Test.csproj", "{ED46FC75-BF87-4F74-B1D6-91C1CF20BC46}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Dom.DefaultConcepts.Interfaces", "CommonConcepts\Plugins\Rhetos.Dom.DefaultConcepts.Interfaces\Rhetos.Dom.DefaultConcepts.Interfaces.csproj", "{30BEAFED-C063-4A36-AF1D-703AF4ACBE96}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Dsl.DefaultConcepts", "CommonConcepts\Plugins\Rhetos.Dsl.DefaultConcepts\Rhetos.Dsl.DefaultConcepts.csproj", "{2D883452-0968-462E-BD74-04623A6C3D63}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Processing.DefaultCommands", "CommonConcepts\Plugins\Rhetos.Processing.DefaultCommands\Rhetos.Processing.DefaultCommands.csproj", "{5D60229B-DEBA-465C-9691-26F2BCC511D6}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Processing.DefaultCommands.Interfaces", "CommonConcepts\Plugins\Rhetos.Processing.DefaultCommands.Interfaces\Rhetos.Processing.DefaultCommands.Interfaces.csproj", "{C7C7D877-9063-4BD7-A5EC-A7104C424588}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.CommonConcepts.Test", "test\Rhetos.CommonConcepts.Test\Rhetos.CommonConcepts.Test.csproj", "{ED46FC75-BF87-4F74-B1D6-91C1CF20BC46}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.TestCommon", "Source\Rhetos.TestCommon\Rhetos.TestCommon.csproj", "{E5D9981A-2380-456D-A98D-442989C63A07}"
 EndProject
@@ -40,13 +26,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RhetosCli", "Source\RhetosC
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RhetosVSIntegration", "Source\RhetosVSIntegration\RhetosVSIntegration.csproj", "{683A3344-852E-473A-A2FA-5B1F56F9FE1C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Dom.DefaultConcepts", "CommonConcepts\Plugins\Rhetos.Dom.DefaultConcepts\Rhetos.Dom.DefaultConcepts.csproj", "{A3C49552-6DB1-46D0-A390-ADD212E7235C}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.DatabaseGenerator.DefaultConcepts", "CommonConcepts\Plugins\Rhetos.DatabaseGenerator.DefaultConcepts\Rhetos.DatabaseGenerator.DefaultConcepts.csproj", "{1E878DA9-9848-4F9B-8AF6-ED958E2EC7F1}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Core.Test.Reference", "test\Rhetos.Core.Test.Reference\Rhetos.Core.Test.Reference.csproj", "{18F12C46-AC7B-4E86-9BBE-953EB4BA7BD2}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Host", "Host", "{56257C0A-67DA-452F-BB55-EC51FD6107A9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Host.AspNet", "Source\Rhetos.Host.AspNet\Rhetos.Host.AspNet.csproj", "{10E35BC5-FD35-4FCF-8511-1EF0E5B847A6}"
 EndProject
@@ -60,6 +40,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Core", "src\Rhetos.C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Core.Test", "test\Rhetos.Core.Test\Rhetos.Core.Test.csproj", "{5DABDB1B-CBA3-4882-BA67-064C0BED4F03}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.CommonConcepts", "src\Rhetos.CommonConcepts\Rhetos.CommonConcepts.csproj", "{A157A278-7590-475E-A418-48E776867A5D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -70,22 +52,6 @@ Global
 		{ED46FC75-BF87-4F74-B1D6-91C1CF20BC46}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ED46FC75-BF87-4F74-B1D6-91C1CF20BC46}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ED46FC75-BF87-4F74-B1D6-91C1CF20BC46}.Release|Any CPU.Build.0 = Release|Any CPU
-		{30BEAFED-C063-4A36-AF1D-703AF4ACBE96}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{30BEAFED-C063-4A36-AF1D-703AF4ACBE96}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{30BEAFED-C063-4A36-AF1D-703AF4ACBE96}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{30BEAFED-C063-4A36-AF1D-703AF4ACBE96}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2D883452-0968-462E-BD74-04623A6C3D63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2D883452-0968-462E-BD74-04623A6C3D63}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2D883452-0968-462E-BD74-04623A6C3D63}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2D883452-0968-462E-BD74-04623A6C3D63}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5D60229B-DEBA-465C-9691-26F2BCC511D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5D60229B-DEBA-465C-9691-26F2BCC511D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5D60229B-DEBA-465C-9691-26F2BCC511D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5D60229B-DEBA-465C-9691-26F2BCC511D6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C7C7D877-9063-4BD7-A5EC-A7104C424588}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C7C7D877-9063-4BD7-A5EC-A7104C424588}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C7C7D877-9063-4BD7-A5EC-A7104C424588}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C7C7D877-9063-4BD7-A5EC-A7104C424588}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E5D9981A-2380-456D-A98D-442989C63A07}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E5D9981A-2380-456D-A98D-442989C63A07}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E5D9981A-2380-456D-A98D-442989C63A07}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -98,14 +64,6 @@ Global
 		{683A3344-852E-473A-A2FA-5B1F56F9FE1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{683A3344-852E-473A-A2FA-5B1F56F9FE1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{683A3344-852E-473A-A2FA-5B1F56F9FE1C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A3C49552-6DB1-46D0-A390-ADD212E7235C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A3C49552-6DB1-46D0-A390-ADD212E7235C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A3C49552-6DB1-46D0-A390-ADD212E7235C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A3C49552-6DB1-46D0-A390-ADD212E7235C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1E878DA9-9848-4F9B-8AF6-ED958E2EC7F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1E878DA9-9848-4F9B-8AF6-ED958E2EC7F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1E878DA9-9848-4F9B-8AF6-ED958E2EC7F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1E878DA9-9848-4F9B-8AF6-ED958E2EC7F1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{18F12C46-AC7B-4E86-9BBE-953EB4BA7BD2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{18F12C46-AC7B-4E86-9BBE-953EB4BA7BD2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{18F12C46-AC7B-4E86-9BBE-953EB4BA7BD2}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -134,23 +92,13 @@ Global
 		{5DABDB1B-CBA3-4882-BA67-064C0BED4F03}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5DABDB1B-CBA3-4882-BA67-064C0BED4F03}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5DABDB1B-CBA3-4882-BA67-064C0BED4F03}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A157A278-7590-475E-A418-48E776867A5D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A157A278-7590-475E-A418-48E776867A5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A157A278-7590-475E-A418-48E776867A5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A157A278-7590-475E-A418-48E776867A5D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{ED46FC75-BF87-4F74-B1D6-91C1CF20BC46} = {2212BF93-7EC1-447E-BF78-8C845E257E88}
-		{30BEAFED-C063-4A36-AF1D-703AF4ACBE96} = {2212BF93-7EC1-447E-BF78-8C845E257E88}
-		{2D883452-0968-462E-BD74-04623A6C3D63} = {2212BF93-7EC1-447E-BF78-8C845E257E88}
-		{5D60229B-DEBA-465C-9691-26F2BCC511D6} = {2212BF93-7EC1-447E-BF78-8C845E257E88}
-		{C7C7D877-9063-4BD7-A5EC-A7104C424588} = {2212BF93-7EC1-447E-BF78-8C845E257E88}
-		{E5D9981A-2380-456D-A98D-442989C63A07} = {0124322E-2731-48E8-910C-957E37181628}
-		{08CE59E2-D1E1-4C68-8FC5-E585B53B2A8F} = {2D001517-CE8E-4902-8C0A-0EA13C134830}
-		{683A3344-852E-473A-A2FA-5B1F56F9FE1C} = {2D001517-CE8E-4902-8C0A-0EA13C134830}
-		{A3C49552-6DB1-46D0-A390-ADD212E7235C} = {2212BF93-7EC1-447E-BF78-8C845E257E88}
-		{1E878DA9-9848-4F9B-8AF6-ED958E2EC7F1} = {2212BF93-7EC1-447E-BF78-8C845E257E88}
-		{10E35BC5-FD35-4FCF-8511-1EF0E5B847A6} = {56257C0A-67DA-452F-BB55-EC51FD6107A9}
-		{5F24785B-47E3-487B-AF38-889EF440A97C} = {56257C0A-67DA-452F-BB55-EC51FD6107A9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4B8D1BEA-EAAA-484D-B00D-1D23226A5A90}

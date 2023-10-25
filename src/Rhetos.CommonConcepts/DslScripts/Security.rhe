@@ -12,7 +12,7 @@
 		Logging { AllProperties; }
         
         Deactivatable; // Inactive claims are remains of deleted entities and other objects. They are kept as a backup, and simply hidden in admin GUI to reduce clutter.
-		Implements 'Rhetos.Dom.DefaultConcepts.ICommonClaim, Rhetos.Dom.DefaultConcepts.Interfaces' { RegisteredImplementation; }
+		Implements 'Rhetos.Dom.DefaultConcepts.ICommonClaim, Rhetos.CommonConcepts' { RegisteredImplementation; }
 
 		Filter DeactivateInsteadOfDelete;
 	}
@@ -53,7 +53,7 @@
 	{
 		ShortString Name { Required; Unique; }
 		
-		Implements 'Rhetos.Dom.DefaultConcepts.IPrincipal, Rhetos.Dom.DefaultConcepts.Interfaces' { RegisteredImplementation; }
+		Implements 'Rhetos.Dom.DefaultConcepts.IPrincipal, Rhetos.CommonConcepts' { RegisteredImplementation; }
 		Logging { AllProperties; }
 	}
 	
@@ -65,7 +65,7 @@
         Reference Principal { Required; Detail; }
         Reference Role { Required; }
         
-        Implements 'Rhetos.Dom.DefaultConcepts.IPrincipalHasRole, Rhetos.Dom.DefaultConcepts.Interfaces' { RegisteredImplementation; }
+        Implements 'Rhetos.Dom.DefaultConcepts.IPrincipalHasRole, Rhetos.CommonConcepts' { RegisteredImplementation; }
         UniqueMultiple 'Principal Role' { Clustered; }
         Logging { AllProperties; }
 		
@@ -79,7 +79,7 @@
     {
         ShortString Name { Required; Unique; }
         
-        Implements 'Rhetos.Dom.DefaultConcepts.IRole, Rhetos.Dom.DefaultConcepts.Interfaces' { RegisteredImplementation; }
+        Implements 'Rhetos.Dom.DefaultConcepts.IRole, Rhetos.CommonConcepts' { RegisteredImplementation; }
         Logging { AllProperties; }
     }
     
@@ -91,7 +91,7 @@
 		Reference UsersFrom Common.Role { Required; Detail; }
         Reference PermissionsFrom Common.Role { Required; }
         
-        Implements 'Rhetos.Dom.DefaultConcepts.IRoleInheritsRole, Rhetos.Dom.DefaultConcepts.Interfaces' { RegisteredImplementation; }
+        Implements 'Rhetos.Dom.DefaultConcepts.IRoleInheritsRole, Rhetos.CommonConcepts' { RegisteredImplementation; }
         UniqueMultiple 'UsersFrom PermissionsFrom' { Clustered; }
         Logging { AllProperties; }
     }
@@ -105,7 +105,7 @@
 		Reference Claim Common.Claim { Required; Detail; }
 		Bool IsAuthorized { Required; } // If IsAuthorized is false then the autorization is explicitly denied.
 		
-		Implements 'Rhetos.Dom.DefaultConcepts.IPrincipalPermission, Rhetos.Dom.DefaultConcepts.Interfaces' { RegisteredImplementation; }
+		Implements 'Rhetos.Dom.DefaultConcepts.IPrincipalPermission, Rhetos.CommonConcepts' { RegisteredImplementation; }
 		UniqueMultiple 'Principal Claim' { Clustered; }
 		Logging { AllProperties; }
 	}
@@ -116,7 +116,7 @@
         Reference Claim { Required; Detail; }
         Bool IsAuthorized { Required; } // If IsAuthorized is false then the autorization is explicitly denied.
         
-        Implements 'Rhetos.Dom.DefaultConcepts.IRolePermission, Rhetos.Dom.DefaultConcepts.Interfaces' { RegisteredImplementation; }
+        Implements 'Rhetos.Dom.DefaultConcepts.IRolePermission, Rhetos.CommonConcepts' { RegisteredImplementation; }
         UniqueMultiple 'Role Claim' { Clustered; }
         Logging { AllProperties; }
     }

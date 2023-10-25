@@ -95,7 +95,7 @@ namespace Rhetos.CommonConcepts.Test
                 var repositoryUses = new RepositoryUsesInfo { PropertyType = test };
                 TestUtility.ShouldFail<DslSyntaxException>(
                     () => repositoryUses.CheckSemantics(null),
-                    "Use a full class name with namespace, instead of the assembly qualified name");
+                    "Use a full type name with namespace, as written in C# source, instead of the assembly qualified name");
             }
         }
     }

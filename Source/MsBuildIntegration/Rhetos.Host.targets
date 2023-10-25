@@ -38,14 +38,9 @@
   <Reference Relative="..\NLog.dll">..\NLog.dll</Reference>
   <Reference Relative="..\Oracle.ManagedDataAccess.dll">..\Oracle.ManagedDataAccess.dll</Reference>
   <Reference Relative="..\Rhetos.Core.dll">..\Rhetos.Core.dll</Reference>
-  <Reference Relative="..\Rhetos.DatabaseGenerator.DefaultConcepts.dll">..\Rhetos.DatabaseGenerator.DefaultConcepts.dll</Reference>
-  <Reference Relative="..\Rhetos.Dom.DefaultConcepts.dll">..\Rhetos.Dom.DefaultConcepts.dll</Reference>
-  <Reference Relative="..\Rhetos.Dom.DefaultConcepts.Interfaces.dll">..\Rhetos.Dom.DefaultConcepts.Interfaces.dll</Reference>
-  <Reference Relative="..\Rhetos.Dsl.DefaultConcepts.dll">..\Rhetos.Dsl.DefaultConcepts.dll</Reference>
+  <Reference Relative="..\Rhetos.CommonConcepts.dll">..\Rhetos.CommonConcepts.dll</Reference>
   <Reference Relative="..\Rhetos.DslParser.dll">..\Rhetos.DslParser.dll</Reference>
   <Reference Relative="..\Rhetos.Integration.dll">..\Rhetos.Integration.dll</Reference>
-  <Reference Relative="..\Rhetos.Processing.DefaultCommands.dll">..\Rhetos.Processing.DefaultCommands.dll</Reference>
-  <Reference Relative="..\Rhetos.Processing.DefaultCommands.Interfaces.dll">..\Rhetos.Processing.DefaultCommands.Interfaces.dll</Reference>
   <Reference Relative="..\runtimes\win\lib\netcoreapp2.0\System.DirectoryServices.dll">..\runtimes\win\lib\netcoreapp2.0\System.DirectoryServices.dll</Reference>
   <Reference Relative="..\runtimes\win\lib\netcoreapp2.0\System.DirectoryServices.Protocols.dll">..\runtimes\win\lib\netcoreapp2.0\System.DirectoryServices.Protocols.dll</Reference>
   <Reference Relative="..\runtimes\win\lib\netcoreapp2.1\System.Data.SqlClient.dll">..\runtimes\win\lib\netcoreapp2.1\System.Data.SqlClient.dll</Reference>
