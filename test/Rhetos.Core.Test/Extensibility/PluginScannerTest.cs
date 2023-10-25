@@ -49,7 +49,7 @@ namespace Rhetos.Extensibility.Test
                 () => pluginsScanner.FindPlugins(typeof(ICloneable)),
                 "Please check if the assembly is missing or has a different version.",
                 // The error should report: (1) the assembly that causes the error, and (2) the missing assembly that is required for the first one to load.
-                "'Rhetos.Core.Test.Reference.dll' throws FileNotFoundException: Could not load file or assembly 'Rhetos.Host.Net, Version=",
+                "'Rhetos.Core.Test.Reference.dll' throws FileNotFoundException: Could not load file or assembly 'Rhetos.Host.AspNet, Version=",
                 "The system cannot find the file specified.");
         }
 

@@ -8,9 +8,9 @@
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
-  
+
   <ItemGroup>
-    <ProjectReference Include="..\Rhetos.Host.Net\Rhetos.Host.Net.csproj" />
+    <ProjectReference Include="..\..\src\Rhetos.Core\Rhetos.Core.csproj" />
   </ItemGroup>
 
 </Project>

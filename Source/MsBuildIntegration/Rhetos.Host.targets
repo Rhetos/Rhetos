@@ -43,7 +43,6 @@
   <Reference Relative="..\Rhetos.Dom.DefaultConcepts.Interfaces.dll">..\Rhetos.Dom.DefaultConcepts.Interfaces.dll</Reference>
   <Reference Relative="..\Rhetos.Dsl.DefaultConcepts.dll">..\Rhetos.Dsl.DefaultConcepts.dll</Reference>
   <Reference Relative="..\Rhetos.DslParser.dll">..\Rhetos.DslParser.dll</Reference>
-  <Reference Relative="..\Rhetos.Host.Net.dll">..\Rhetos.Host.Net.dll</Reference>
   <Reference Relative="..\Rhetos.Integration.dll">..\Rhetos.Integration.dll</Reference>
   <Reference Relative="..\Rhetos.Processing.DefaultCommands.dll">..\Rhetos.Processing.DefaultCommands.dll</Reference>
   <Reference Relative="..\Rhetos.Processing.DefaultCommands.Interfaces.dll">..\Rhetos.Processing.DefaultCommands.Interfaces.dll</Reference>

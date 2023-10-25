@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <PackageReference Include="Rhetos.Host" Version="5.5.0-dev*" />
-    <PackageReference Include="Rhetos.Host.Net" Version="5.5.0-dev*" />
     <PackageReference Include="Rhetos.MSBuild" Version="5.5.0-dev*" />
     <PackageReference Include="Rhetos" Version="5.5.0-dev*" />
     <PackageReference Include="Rhetos.CommonConcepts" Version="5.5.0-dev*" />

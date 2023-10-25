@@ -17,7 +17,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Readme.md = Readme.md
 		Source\Rhetos.DslParser.nuspec = Source\Rhetos.DslParser.nuspec
 		Source\Rhetos.Host.AspNet.nuspec = Source\Rhetos.Host.AspNet.nuspec
-		Source\Rhetos.Host.Net.nuspec = Source\Rhetos.Host.Net.nuspec
 		Source\Rhetos.Host.nuspec = Source\Rhetos.Host.nuspec
 		Source\Rhetos.MSBuild.nuspec = Source\Rhetos.MSBuild.nuspec
 		Source\Rhetos.nuspec = Source\Rhetos.nuspec
@@ -48,8 +47,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Core.Test.Reference", "test\Rhetos.Core.Test.Reference\Rhetos.Core.Test.Reference.csproj", "{18F12C46-AC7B-4E86-9BBE-953EB4BA7BD2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Host", "Host", "{56257C0A-67DA-452F-BB55-EC51FD6107A9}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Host.Net", "Source\Rhetos.Host.Net\Rhetos.Host.Net.csproj", "{029BB710-9BEC-412D-BB05-0ED3E3EA3C6A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Host.AspNet", "Source\Rhetos.Host.AspNet\Rhetos.Host.AspNet.csproj", "{10E35BC5-FD35-4FCF-8511-1EF0E5B847A6}"
 EndProject
@@ -113,10 +110,6 @@ Global
 		{18F12C46-AC7B-4E86-9BBE-953EB4BA7BD2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{18F12C46-AC7B-4E86-9BBE-953EB4BA7BD2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{18F12C46-AC7B-4E86-9BBE-953EB4BA7BD2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{029BB710-9BEC-412D-BB05-0ED3E3EA3C6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{029BB710-9BEC-412D-BB05-0ED3E3EA3C6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{029BB710-9BEC-412D-BB05-0ED3E3EA3C6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{029BB710-9BEC-412D-BB05-0ED3E3EA3C6A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{10E35BC5-FD35-4FCF-8511-1EF0E5B847A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{10E35BC5-FD35-4FCF-8511-1EF0E5B847A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{10E35BC5-FD35-4FCF-8511-1EF0E5B847A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -156,7 +149,6 @@ Global
 		{683A3344-852E-473A-A2FA-5B1F56F9FE1C} = {2D001517-CE8E-4902-8C0A-0EA13C134830}
 		{A3C49552-6DB1-46D0-A390-ADD212E7235C} = {2212BF93-7EC1-447E-BF78-8C845E257E88}
 		{1E878DA9-9848-4F9B-8AF6-ED958E2EC7F1} = {2212BF93-7EC1-447E-BF78-8C845E257E88}
-		{029BB710-9BEC-412D-BB05-0ED3E3EA3C6A} = {56257C0A-67DA-452F-BB55-EC51FD6107A9}
 		{10E35BC5-FD35-4FCF-8511-1EF0E5B847A6} = {56257C0A-67DA-452F-BB55-EC51FD6107A9}
 		{5F24785B-47E3-487B-AF38-889EF440A97C} = {56257C0A-67DA-452F-BB55-EC51FD6107A9}
 	EndGlobalSection

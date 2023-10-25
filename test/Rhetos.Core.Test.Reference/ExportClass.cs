@@ -17,7 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Host.Net;
+using Rhetos.Host.AspNet.Dashboard;
 using System;
 using System.ComponentModel.Composition;
 
@@ -26,19 +26,19 @@ namespace Rhetos.Core.Test.Reference
     /// <summary>
     /// This class is used in test project "Rhetos.Extensibility.Test", to test Rhetos PluginsScanner error handling
     /// when loading plugins with incorrectly configured dependencies.
-    /// 1. The class depends on "Rhetos.Host.Net" assembly because it implements <see cref="HostLocalizerOptions"/>,
+    /// 1. The class depends on "Rhetos.Host.AspNet" assembly because it implements <see cref="IDashboardSnippet"/>,
     /// but the referenced assembly is not available in the test project "Rhetos.Extensibility.Test".
-    /// 2. The class is registered as a plugin for commonly available interface <see cref="System.ICloneable"/>.
+    /// 2. The class is registered as a plugin for commonly available interface <see cref="ICloneable"/>.
     /// </summary>
     [Export(typeof(ICloneable))]
-    public class ExportClass : HostLocalizerOptions, ICloneable
+    public class ExportClass : IDashboardSnippet, ICloneable
     {
-        public bool HasChanged => throw new NotImplementedException();
+        public string DisplayName => throw new NotImplementedException();
 
-        public bool ActiveChangeCallbacks => throw new NotImplementedException();
-
-        public IDisposable RegisterChangeCallback(Action<object> callback, object state) => throw new NotImplementedException();
+        public int Order => throw new NotImplementedException();
 
         public object Clone() => throw new NotImplementedException();
+
+        public string RenderHtml() => throw new NotImplementedException();
     }
 }
