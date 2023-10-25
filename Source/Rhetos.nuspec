@@ -35,8 +35,5 @@
     <file src="..\src\Rhetos.Core\bin\Debug\net5.0\Rhetos.Core.dll" target="lib\net5.0" />
     <file src="..\src\Rhetos.Core\bin\Debug\net5.0\Rhetos.Core.pdb" target="lib\net5.0" />
     <file src="..\src\Rhetos.Core\bin\Debug\net5.0\Rhetos.Core.xml" target="lib\net5.0" />
-    <file src="..\src\Rhetos.Integration\bin\Debug\netstandard2.0\Rhetos.Integration.dll" target="lib\net5.0" />
-    <file src="..\src\Rhetos.Integration\bin\Debug\netstandard2.0\Rhetos.Integration.pdb" target="lib\net5.0" />
-    <file src="..\src\Rhetos.Integration\bin\Debug\netstandard2.0\Rhetos.Integration.xml" target="lib\net5.0" />
   </files>
 </package>
