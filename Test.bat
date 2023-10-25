@@ -7,13 +7,13 @@ SETLOCAL
 dotnet test Rhetos.sln --no-build || GOTO Error0
 
 @REM Using "RestoreForce" to make sure that the new version of local Rhetos NuGet packages are included in build.
-IF NOT EXIST CommonConcepts\CommonConcepts.TestApp\rhetos-app.local.settings.json COPY Tools\Configuration\Template.rhetos-app.local.settings.json CommonConcepts\CommonConcepts.TestApp\rhetos-app.local.settings.json
+IF NOT EXIST test\CommonConcepts.TestApp\rhetos-app.local.settings.json COPY Tools\Configuration\Template.rhetos-app.local.settings.json test\CommonConcepts.TestApp\rhetos-app.local.settings.json
 dotnet build CommonConceptsTest.sln /t:restore /p:RestoreForce=True /t:rebuild --configuration %Config% || GOTO Error0
 @REM Running dbupdate again to test the CLI (it was executed in the build above).
-dotnet CommonConcepts\CommonConcepts.TestApp\bin\Debug\net5.0\rhetos.dll dbupdate CommonConcepts\CommonConcepts.TestApp\bin\Debug\net5.0\CommonConcepts.TestApp.dll
+dotnet test\CommonConcepts.TestApp\bin\Debug\net5.0\rhetos.dll dbupdate test\CommonConcepts.TestApp\bin\Debug\net5.0\CommonConcepts.TestApp.dll
 dotnet test CommonConceptsTest.sln --no-build || GOTO Error0
 
-IF EXIST "%ProgramFiles%\LINQPad7\LPRun7.exe" "%ProgramFiles%\LINQPad7\LPRun7.exe" "CommonConcepts\CommonConcepts.TestApp\bin\Debug\net5.0\LinqPad\Rhetos DOM.linq" > nul || GOTO Error0
+IF EXIST "%ProgramFiles%\LINQPad7\LPRun7.exe" "%ProgramFiles%\LINQPad7\LPRun7.exe" "test\CommonConcepts.TestApp\bin\Debug\net5.0\LinqPad\Rhetos DOM.linq" > nul || GOTO Error0
 
 @REM ================================================
 

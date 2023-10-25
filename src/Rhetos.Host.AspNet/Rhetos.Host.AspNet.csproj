@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Rhetos.Core\Rhetos.Core.csproj" />
+    <ProjectReference Include="..\Rhetos.Core\Rhetos.Core.csproj" />
   </ItemGroup>
 
 </Project>

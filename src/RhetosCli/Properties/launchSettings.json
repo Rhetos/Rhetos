@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "build CommonConcepts.TestApp": {
+      "commandName": "Project",
+      "commandLineArgs": "build \"..\\..\\..\\..\\..\\test\\CommonConcepts.TestApp\""
+    },
+    "dbupdate CommonConcepts.TestApp": {
+      "commandName": "Executable",
+      "executablePath": "dotnet",
+      "commandLineArgs": "exec --runtimeconfig \"..\\..\\..\\..\\..\\test\\CommonConcepts.TestApp\\bin\\Debug\\net5.0\\CommonConcepts.TestApp.runtimeconfig.json\" --depsfile \"..\\..\\..\\..\\..\\test\\CommonConcepts.TestApp\\bin\\Debug\\net5.0\\CommonConcepts.TestApp.deps.json\" \"rhetos.dll\" --msbuild-format dbupdate ..\\..\\..\\..\\..\\test\\CommonConcepts.TestApp\\bin\\Debug\\net5.0\\CommonConcepts.TestApp.dll --execute-command-in-current-process"
+    }
+  }
+}

@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Rhetos.Core\Rhetos.Core.csproj" />
+    <ProjectReference Include="..\Rhetos.Core\Rhetos.Core.csproj" />
   </ItemGroup>
 
   <!--TODO: The reference to the Microsoft.AspNetCore.App framework is added as a workaround for building application that are based on Microsoft.AspNetCore.App.

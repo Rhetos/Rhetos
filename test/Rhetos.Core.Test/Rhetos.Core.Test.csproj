@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Source\Rhetos.TestCommon\Rhetos.TestCommon.csproj" />
+    <ProjectReference Include="..\..\src\Rhetos.TestCommon\Rhetos.TestCommon.csproj" />
     <ProjectReference Include="..\..\src\Rhetos.Core\Rhetos.Core.csproj" />
   </ItemGroup>
 

@@ -49,7 +49,7 @@ For more info see [How to Contribute](https://github.com/Rhetos/Rhetos/wiki/How-
   You don't need to build it from source in order to use it in your application.
 * To build the source, run `Clean.bat`, `Build.bat` and `Test.bat`.
 * For the test script to work, you need to create an empty database and
-  a settings file `CommonConcepts\CommonConcepts.TestApp\rhetos-app.local.settings.json`
+  a settings file `test\CommonConcepts.TestApp\rhetos-app.local.settings.json`
   with the database connection string (configuration key "ConnectionStrings:RhetosConnectionString").
 * The build output are NuGet packages in the "Install" subfolder.
 

@@ -9,28 +9,28 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		ChangeLog.md = ChangeLog.md
 		Directory.Build.props = Directory.Build.props
 		Readme.md = Readme.md
-		Source\Rhetos.DslParser.nuspec = Source\Rhetos.DslParser.nuspec
-		Source\Rhetos.Host.AspNet.nuspec = Source\Rhetos.Host.AspNet.nuspec
-		Source\Rhetos.Host.nuspec = Source\Rhetos.Host.nuspec
-		Source\Rhetos.MSBuild.nuspec = Source\Rhetos.MSBuild.nuspec
-		Source\Rhetos.nuspec = Source\Rhetos.nuspec
-		Source\Rhetos.TestCommon.nuspec = Source\Rhetos.TestCommon.nuspec
+		src\Rhetos.DslParser.nuspec = src\Rhetos.DslParser.nuspec
+		src\Rhetos.Host.AspNet.nuspec = src\Rhetos.Host.AspNet.nuspec
+		src\Rhetos.Host.nuspec = src\Rhetos.Host.nuspec
+		src\Rhetos.MSBuild.nuspec = src\Rhetos.MSBuild.nuspec
+		src\Rhetos.nuspec = src\Rhetos.nuspec
+		src\Rhetos.TestCommon.nuspec = src\Rhetos.TestCommon.nuspec
 		Tools\Configuration\Template.rhetos-app.local.settings.json = Tools\Configuration\Template.rhetos-app.local.settings.json
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.CommonConcepts.Test", "test\Rhetos.CommonConcepts.Test\Rhetos.CommonConcepts.Test.csproj", "{ED46FC75-BF87-4F74-B1D6-91C1CF20BC46}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.TestCommon", "Source\Rhetos.TestCommon\Rhetos.TestCommon.csproj", "{E5D9981A-2380-456D-A98D-442989C63A07}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.TestCommon", "src\Rhetos.TestCommon\Rhetos.TestCommon.csproj", "{E5D9981A-2380-456D-A98D-442989C63A07}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RhetosCli", "Source\RhetosCli\RhetosCli.csproj", "{08CE59E2-D1E1-4C68-8FC5-E585B53B2A8F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RhetosCli", "src\RhetosCli\RhetosCli.csproj", "{08CE59E2-D1E1-4C68-8FC5-E585B53B2A8F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RhetosVSIntegration", "Source\RhetosVSIntegration\RhetosVSIntegration.csproj", "{683A3344-852E-473A-A2FA-5B1F56F9FE1C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RhetosVSIntegration", "src\RhetosVSIntegration\RhetosVSIntegration.csproj", "{683A3344-852E-473A-A2FA-5B1F56F9FE1C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Core.Test.Reference", "test\Rhetos.Core.Test.Reference\Rhetos.Core.Test.Reference.csproj", "{18F12C46-AC7B-4E86-9BBE-953EB4BA7BD2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Host.AspNet", "Source\Rhetos.Host.AspNet\Rhetos.Host.AspNet.csproj", "{10E35BC5-FD35-4FCF-8511-1EF0E5B847A6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Host.AspNet", "src\Rhetos.Host.AspNet\Rhetos.Host.AspNet.csproj", "{10E35BC5-FD35-4FCF-8511-1EF0E5B847A6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Host.AspNet.Test", "Source\Rhetos.Host.AspNet.Test\Rhetos.Host.AspNet.Test.csproj", "{5F24785B-47E3-487B-AF38-889EF440A97C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Host.AspNet.Test", "test\Rhetos.Host.AspNet.Test\Rhetos.Host.AspNet.Test.csproj", "{5F24785B-47E3-487B-AF38-889EF440A97C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Integration", "src\Rhetos.Integration\Rhetos.Integration.csproj", "{F7251D15-70C5-474B-A95A-07056347EFCD}"
 EndProject

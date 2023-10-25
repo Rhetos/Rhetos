@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Rhetos.Host.AspNet\Rhetos.Host.AspNet.csproj" />
+    <ProjectReference Include="..\..\src\Rhetos.Host.AspNet\Rhetos.Host.AspNet.csproj" />
   </ItemGroup>
 
 </Project>
