@@ -36,7 +36,7 @@ namespace Rhetos.Extensibility.Test
         public void AnalyzeAndReportTypeLoadException()
         {
             // The "TestReference" project is used because it has dependencies to libraries that are not available in the current project.
-            string incompatibleAssemblyPath = FindIncompatibleAssemblyPath("Rhetos.Extensibility.TestReference");
+            string incompatibleAssemblyPath = FindIncompatibleAssemblyPath("Rhetos.Core.Test.Reference");
 
             // Copying the "TestReference" assembly to local folder, to avoid automatic detection of dependency libraries that exist in its original location.
             // The goal is to try loading the test assembly without dependencies available.
@@ -49,7 +49,7 @@ namespace Rhetos.Extensibility.Test
                 () => pluginsScanner.FindPlugins(typeof(ICloneable)),
                 "Please check if the assembly is missing or has a different version.",
                 // The error should report: (1) the assembly that causes the error, and (2) the missing assembly that is required for the first one to load.
-                "'Rhetos.Extensibility.TestReference.dll' throws FileNotFoundException: Could not load file or assembly 'Rhetos.Host.Net, Version=",
+                "'Rhetos.Core.Test.Reference.dll' throws FileNotFoundException: Could not load file or assembly 'Rhetos.Host.Net, Version=",
                 "The system cannot find the file specified.");
         }
 

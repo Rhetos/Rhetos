@@ -38,7 +38,7 @@ namespace Rhetos.Utilities.Test
             // This ensures that our '.config' file is attached to the correct one.
             // It is required for testing ConfigurationManagerSource class
             // that uses System.Configuration.ConfigurationManager.
-            var source = Path.Combine(context.DeploymentDirectory, "TestRunner.config");
+            var source = Path.Combine(context.DeploymentDirectory, @"Utilities\TestRunner.config");
             var destination = Path.Combine(context.DeploymentDirectory, Path.GetFileName(Assembly.GetEntryAssembly().Location) + ".config");
             File.Copy(source, destination, true);
         }
@@ -380,7 +380,7 @@ namespace Rhetos.Utilities.Test
         public void ConfigurationFileSource()
         {
             var provider = new ConfigurationBuilder(new ConsoleLogProvider())
-                .AddConfigurationFile("TestCfg.config")
+                .AddConfigurationFile("Utilities\\TestCfg.config")
                 .Build();
 
             Assert.IsTrue(provider.AllKeys.Contains("ConnectionStrings:TestConnectionString"));
@@ -607,7 +607,7 @@ namespace Rhetos.Utilities.Test
         public void JsonConfigurationCorrect()
         {
             var provider = new ConfigurationBuilder(new ConsoleLogProvider())
-                .Add(new JsonFileSource("JsonConfigurationFile.json"))
+                .Add(new JsonFileSource(@"Utilities\JsonConfigurationFile.json"))
                 .Build();
 
             Assert.AreEqual(3, provider.GetValue("Prop", 0));
@@ -628,9 +628,9 @@ namespace Rhetos.Utilities.Test
         public void InvalidJsonFileThrows()
         {
             var builder = new ConfigurationBuilder(new ConsoleLogProvider())
-                .Add(new JsonFileSource("JsonConfigurationFile_Invalid.json"));
+                .Add(new JsonFileSource("Utilities\\JsonConfigurationFile_Invalid.json"));
 
-            TestUtility.ShouldFail<FrameworkException>(() => builder.Build(), "Error parsing JSON contents", "JsonConfigurationFile_Invalid.json");
+            TestUtility.ShouldFail<FrameworkException>(() => builder.Build(), "Error parsing JSON contents", "Utilities\\JsonConfigurationFile_Invalid.json");
         }
 
         [TestMethod]
@@ -739,15 +739,15 @@ namespace Rhetos.Utilities.Test
         public void KeyValueSourceConvertingPaths()
         {
             var configuration = new ConfigurationBuilder(new ConsoleLogProvider())
-                .AddKeyValue("Path", "relative\\test.json")
-                .AddKeyValue("PathConvert", "relative\\testc.json")
+                .AddKeyValue("Path", "Utilities\\relative\\test.json")
+                .AddKeyValue("PathConvert", "Utilities\\relative\\testc.json")
                 .Build();
 
             var options = configuration.GetOptions<TestPathOptions>();
 
-            Assert.AreEqual("relative\\test.json", options.Path);
+            Assert.AreEqual("Utilities\\relative\\test.json", options.Path);
 
-            var expectedConverted = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "relative\\testc.json");
+            var expectedConverted = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Utilities\\relative\\testc.json");
             Assert.AreEqual(expectedConverted, options.PathConvert);
         }
 
@@ -755,14 +755,14 @@ namespace Rhetos.Utilities.Test
         public void JsonFileSourceConvertsPaths()
         {
             var configuration = new ConfigurationBuilder(new ConsoleLogProvider())
-                .AddJsonFile("JsonConfigurationFile.json")
+                .AddJsonFile(@"Utilities\JsonConfigurationFile.json")
                 .Build();
 
             var options = configuration.GetOptions<TestPathOptions>();
 
             Assert.AreEqual("relative\\test.json", options.Path);
 
-            var expectedConverted = Path.Combine(Environment.CurrentDirectory, "relative\\testc.json");
+            var expectedConverted = Path.Combine(Environment.CurrentDirectory, "Utilities\\relative\\testc.json");
             Assert.AreEqual(expectedConverted, options.PathConvert);
         }
 
@@ -775,9 +775,9 @@ namespace Rhetos.Utilities.Test
 
             var options = configuration.GetOptions<TestPathOptions>();
 
-            Assert.AreEqual("relative\\apptest.json", options.Path);
+            Assert.AreEqual("Utilities\\relative\\apptest.json", options.Path);
 
-            var expectedConverted = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "relative\\apptestc.json");
+            var expectedConverted = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Utilities\\relative\\apptestc.json");
             Assert.AreEqual(expectedConverted, options.PathConvert);
         }
 

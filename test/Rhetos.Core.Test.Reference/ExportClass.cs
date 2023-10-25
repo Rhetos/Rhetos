@@ -21,7 +21,7 @@ using Rhetos.Host.Net;
 using System;
 using System.ComponentModel.Composition;
 
-namespace Rhetos.Extensibility.TestReference
+namespace Rhetos.Core.Test.Reference
 {
     /// <summary>
     /// This class is used in test project "Rhetos.Extensibility.Test", to test Rhetos PluginsScanner error handling

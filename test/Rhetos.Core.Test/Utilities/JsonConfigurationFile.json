@@ -6,5 +6,5 @@
   },
   "Path": "relative\\test.json",
   "PathConvert": "relative\\testc.json",
-  "Array": ["One", "Two"]
+  "Array": [ "One", "Two" ]
 }

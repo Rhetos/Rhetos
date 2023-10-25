@@ -31,6 +31,8 @@ namespace Rhetos.Deployment.Test
     [TestClass]
     public class DataMigrationScriptsGeneratorTest
     {
+        private const string TestScriptsPath = @"Deployment\TestScripts";
+
         [TestMethod]
         public void UpDown()
         {
@@ -130,7 +132,7 @@ namespace Rhetos.Deployment.Test
         {
             var contentFiles = files.Select(file => new ContentFile
             {
-                PhysicalPath = Path.Combine("TestScripts", file),
+                PhysicalPath = Path.Combine(TestScriptsPath, file),
                 InPackagePath = Path.Combine("DataMigration", file)
             }).ToList();
             var installedPackages = new InstalledPackages
@@ -171,7 +173,7 @@ namespace Rhetos.Deployment.Test
 
             var contentFiles = tests.Select(filePath => new ContentFile
             {
-                PhysicalPath = Path.Combine("TestScripts", Path.GetFileName(filePath)),
+                PhysicalPath = Path.Combine(TestScriptsPath, Path.GetFileName(filePath)),
                 InPackagePath = filePath
             }).ToList();
             var installedPackages = new InstalledPackages
