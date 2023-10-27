@@ -375,3 +375,4 @@ FodyWeavers.xsd
 # Rhetos user-specific files
 /.vscode/settings.json
 /CommonConcepts/CommonConcepts.TestApp/rhetos-app.local.settings.json
+/test/CommonConcepts.TestApp/local.settings.json

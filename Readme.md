@@ -43,26 +43,37 @@ make a pull request from your fork. The first time you make a pull request, you
 may be asked to sign a Contributor Agreement.
 For more info see [How to Contribute](https://github.com/Rhetos/Rhetos/wiki/How-to-Contribute) on Rhetos wiki.
 
-### Building and testing the source code
+### Building the source code
 
-* Note: Rhetos NuGet packages are already available at the [NuGet.org](https://www.nuget.org/) online gallery.
-  You don't need to build it from source in order to use it in your application.
-* To build the source, run `Clean.bat`, `Build.bat` and `Test.bat`.
-* For the test script to work, you need to create an empty database and
-  a settings file `test\CommonConcepts.TestApp\rhetos-app.local.settings.json`
-  with the database connection string (configuration key "ConnectionStrings:RhetosConnectionString").
-* The build output are NuGet packages in the "dist" subfolder.
+Note: Rhetos NuGet packages are already available at the [NuGet.org](https://www.nuget.org/) online gallery.
+You don't need to build it from source in order to use it in your application.
+
+To build the source, run `Clean.bat` and `Build.bat`.
+The build output files are NuGet packages in the `dist` subfolder.
+
+### Testing
+
+Initial setup (required for integration tests):
+
+* Create an empty database (for example, "Rhetos" database on "localhost" SQL Server instance).
+* Create a local setting file `test\CommonConcepts.TestApp\local.settings.json` with the following content,
+   and modify the connection string to match your server instance and database:
+    ```json
+    {
+      "ConnectionStrings": {
+        "RhetosConnectionString": "Data Source=ENTER_SQL_SERVER_NAME;Initial Catalog=ENTER_RHETOS_DATABASE_NAME;Integrated Security=true;"
+      }
+    }
+    ```
+
+To execute the unit tests and the integration tests, run `Test.bat`.
 
 ### Visual Studio Solutions
 
-*Rhetos.sln* contains the source for Rhetos framework and CommonConcepts plugins (a standard library).
-It also contains basic unit tests for the projects.
+**Rhetos.sln** contains the source for Rhetos framework and CommonConcepts plugins (a standard library for Rhetos DSL).
+It also contains unit tests for the projects.
 
-*CommonConceptsTest.sln* contains the *integration* tests for DSL concepts in CommonConcepts.
-For example, see "Entity SimpleMaxLength" in Validation.rhe and the related tests in MaxLengthTest.cs.
-
-After changing framework code in Rhetos.sln, you will need to run Build.bat
-(to build Rhetos NuGet packages) and Test.bat (to use these packages in CommonConceptsTest).
-After that, you can develop tests in CommonConceptsTest.sln.
-Note that Test.bat will report an error if you need to complete the initial setup:
-create an empty database and enter the connection string in 'rhetos-app.local.settings.json' file.
+**CommonConceptsTest.sln** contains the integration tests for DSL concepts in CommonConcepts.
+After changing the framework code in Rhetos.sln, you will need to run Build.bat and Test.bat,
+*before* you can develop the related integration tests in CommonConceptsTest.sln.
+CommonConceptsTest depends on Rhetos NuGet packages that are created and provide by those scripts.
