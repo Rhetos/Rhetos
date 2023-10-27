@@ -49,8 +49,8 @@ namespace Rhetos.Extensibility
             "Oracle.ManagedDataAccess.dll",
             "rhetos.dll",
             "Rhetos.Core.dll",
-            "Rhetos.DslParser.dll",
-            "Rhetos.Integration.dll",
+            "Rhetos.Core.DslParser.dll",
+            "Rhetos.Core.Integration.dll",
             "Rhetos.TestCommon.dll",
             "RhetosVSIntegration.dll",
         };

@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Rhetos.DslParser\Rhetos.DslParser.csproj" />
+    <ProjectReference Include="..\Rhetos.Core.DslParser\Rhetos.Core.DslParser.csproj" />
   </ItemGroup>
 
   <ItemGroup>

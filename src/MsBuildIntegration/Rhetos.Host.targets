@@ -39,8 +39,8 @@
   <Reference Relative="..\Oracle.ManagedDataAccess.dll">..\Oracle.ManagedDataAccess.dll</Reference>
   <Reference Relative="..\Rhetos.Core.dll">..\Rhetos.Core.dll</Reference>
   <Reference Relative="..\Rhetos.CommonConcepts.dll">..\Rhetos.CommonConcepts.dll</Reference>
-  <Reference Relative="..\Rhetos.DslParser.dll">..\Rhetos.DslParser.dll</Reference>
-  <Reference Relative="..\Rhetos.Integration.dll">..\Rhetos.Integration.dll</Reference>
+  <Reference Relative="..\Rhetos.Core.DslParser.dll">..\Rhetos.Core.DslParser.dll</Reference>
+  <Reference Relative="..\Rhetos.Core.Integration.dll">..\Rhetos.Core.Integration.dll</Reference>
   <Reference Relative="..\runtimes\win\lib\netcoreapp2.0\System.DirectoryServices.dll">..\runtimes\win\lib\netcoreapp2.0\System.DirectoryServices.dll</Reference>
   <Reference Relative="..\runtimes\win\lib\netcoreapp2.0\System.DirectoryServices.Protocols.dll">..\runtimes\win\lib\netcoreapp2.0\System.DirectoryServices.Protocols.dll</Reference>
   <Reference Relative="..\runtimes\win\lib\netcoreapp2.1\System.Data.SqlClient.dll">..\runtimes\win\lib\netcoreapp2.1\System.Data.SqlClient.dll</Reference>

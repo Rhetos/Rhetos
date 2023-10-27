@@ -32,9 +32,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Host.AspNet", "src\R
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Host.AspNet.Test", "test\Rhetos.Host.AspNet.Test\Rhetos.Host.AspNet.Test.csproj", "{5F24785B-47E3-487B-AF38-889EF440A97C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Integration", "src\Rhetos.Integration\Rhetos.Integration.csproj", "{F7251D15-70C5-474B-A95A-07056347EFCD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Core.Integration", "src\Rhetos.Core.Integration\Rhetos.Core.Integration.csproj", "{F7251D15-70C5-474B-A95A-07056347EFCD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.DslParser", "src\Rhetos.DslParser\Rhetos.DslParser.csproj", "{DE5E180B-2E96-42A4-B36D-403BE0922153}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Core.DslParser", "src\Rhetos.Core.DslParser\Rhetos.Core.DslParser.csproj", "{DE5E180B-2E96-42A4-B36D-403BE0922153}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Core", "src\Rhetos.Core\Rhetos.Core.csproj", "{7BF4A1CA-18AA-44F7-A6F9-B3AB3FD2E882}"
 EndProject

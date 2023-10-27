@@ -14,8 +14,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Rhetos.CommonConcepts\Rhetos.CommonConcepts.csproj" />
-    <ProjectReference Include="..\..\src\Rhetos.DslParser\Rhetos.DslParser.csproj" />
-    <ProjectReference Include="..\..\src\Rhetos.Integration\Rhetos.Integration.csproj" />
+    <ProjectReference Include="..\..\src\Rhetos.Core.DslParser\Rhetos.Core.DslParser.csproj" />
+    <ProjectReference Include="..\..\src\Rhetos.Core.Integration\Rhetos.Core.Integration.csproj" />
     <ProjectReference Include="..\..\src\Rhetos.TestCommon\Rhetos.TestCommon.csproj" />
   </ItemGroup>
 

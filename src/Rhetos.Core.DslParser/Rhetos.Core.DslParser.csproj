@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Rhetos.Integration\Rhetos.Integration.csproj" />
+    <ProjectReference Include="..\Rhetos.Core.Integration\Rhetos.Core.Integration.csproj" />
   </ItemGroup>
 
 </Project>
