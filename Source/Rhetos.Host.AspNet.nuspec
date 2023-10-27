@@ -5,13 +5,15 @@
     <version>5.5.0-dev</version>
     <authors>Omega software</authors>
     <owners>Omega software</owners>
-    <licenseUrl>http://opensource.org/licenses/AGPL-3.0</licenseUrl>
+    <license type="expression">AGPL-3.0-only</license>
     <projectUrl>https://github.com/rhetos/rhetos</projectUrl>
     <description>Rhetos extensions for ASP.NET Core host applications.</description>
     <copyright>Copyright Omega software 2013</copyright>
     <tags>Rhetos</tags>
     <dependencies>
-      <dependency id="Rhetos.Host.Net" version="[5.5.0-dev,5.6.0)" />
+      <group targetFramework="net5.0">
+        <dependency id="Rhetos.Host.Net" version="[5.5.0-dev,5.6.0)" />
+      </group>
     </dependencies>
     <frameworkReferences>
       <group targetFramework="net5.0">

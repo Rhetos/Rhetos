@@ -5,14 +5,16 @@
     <version>5.5.0-dev</version>
     <authors>Omega software</authors>
     <owners>Omega software</owners>
-    <licenseUrl>http://opensource.org/licenses/AGPL-3.0</licenseUrl>
+    <license type="expression">AGPL-3.0-only</license>
     <projectUrl>https://github.com/rhetos/rhetos</projectUrl>
     <description>CommonConcepts is a DSL plugin package for Rhetos development platform.
       It provides an implementation of domain-specific programming language for business applications.</description>
     <copyright>Copyright Omega software 2015</copyright>
     <tags>Rhetos plugin</tags>
     <dependencies>
-      <dependency id="Rhetos" version="[5.5.0-dev,5.6.0)" />
+      <group targetFramework="net5.0">
+        <dependency id="Rhetos" version="[5.5.0-dev,5.6.0)" />
+      </group>
     </dependencies>
   </metadata>
   <files>

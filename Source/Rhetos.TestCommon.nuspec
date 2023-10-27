@@ -5,14 +5,16 @@
     <version>5.5.0-dev</version>
     <authors>Omega software</authors>
     <owners>Omega software</owners>
-    <licenseUrl>http://opensource.org/licenses/AGPL-3.0</licenseUrl>
+    <license type="expression">AGPL-3.0-only</license>
     <projectUrl>https://github.com/rhetos/rhetos</projectUrl>
     <description>Utility clases for unit testing. Part of Rhetos development platform.</description>
     <copyright>Copyright Omega software 2013</copyright>
     <tags>Rhetos</tags>
     <dependencies>
-      <dependency id="Rhetos" version="[5.5.0-dev,5.6.0)" />
-      <dependency id="MSTest.TestFramework" version="2.1.0" />
+      <group targetFramework="net5.0">
+        <dependency id="Rhetos" version="[5.5.0-dev,5.6.0)" />
+        <dependency id="MSTest.TestFramework" version="2.1.0" />
+      </group>
     </dependencies>
   </metadata>
   <files>
