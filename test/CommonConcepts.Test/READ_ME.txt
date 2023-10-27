@@ -5,7 +5,7 @@ Initial setup:
 
 1. Create an empty database (for example, "Rhetos" database on "localhost" SQL Server instance).
 2. Make sure test\CommonConcepts.TestApp contains the file "rhetos-app.local.settings.json" with connection string:
-   Copy the file from Tools\Configuration\Template.rhetos-app.local.settings.json,
+   Copy the file from tools\Configuration\Template.rhetos-app.local.settings.json,
    and edit SQL Server instance name (localhost, e.g.) and database name (Rhetos, e.g.).
 
 To build and run this project's tests:

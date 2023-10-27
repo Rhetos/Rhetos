@@ -15,7 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		src\Rhetos.MSBuild.nuspec = src\Rhetos.MSBuild.nuspec
 		src\Rhetos.nuspec = src\Rhetos.nuspec
 		src\Rhetos.TestCommon.nuspec = src\Rhetos.TestCommon.nuspec
-		Tools\Configuration\Template.rhetos-app.local.settings.json = Tools\Configuration\Template.rhetos-app.local.settings.json
+		tools\Configuration\Template.rhetos-app.local.settings.json = tools\Configuration\Template.rhetos-app.local.settings.json
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.CommonConcepts.Test", "test\Rhetos.CommonConcepts.Test\Rhetos.CommonConcepts.Test.csproj", "{ED46FC75-BF87-4F74-B1D6-91C1CF20BC46}"
