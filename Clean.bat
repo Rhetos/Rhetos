@@ -6,6 +6,10 @@ powershell "Get-ChildItem -Path '%~dp0' -Recurse -Directory -Filter 'TestResults
 @REM Delete build log:
 IF EXIST msbuild.log DEL msbuild.log
 
-@REM Delete build installation result:
+@REM Delete build installation result from an old version:
 IF EXIST Install DEL /F/S/Q Install\*.* >nul
-IF NOT EXIST Install MD Install
+IF EXIST Install RD Install
+
+@REM Delete build installation result:
+IF EXIST dist DEL /F/S/Q dist\*.* >nul
+IF NOT EXIST dist MD dist

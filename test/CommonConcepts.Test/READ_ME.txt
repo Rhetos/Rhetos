@@ -1,4 +1,4 @@
-﻿This project (CommonConcepts.Test) cannot be built unless the Rhetos NuGet packages are built that are located in the Install folder (result of Build.bat)
+﻿This project (CommonConcepts.Test) cannot be built unless the Rhetos NuGet packages are built that are located in the dist folder (result of Build.bat)
 and database connection string configured. See instructions below.
 
 Initial setup:

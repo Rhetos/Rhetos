@@ -1,16 +1,16 @@
 $ErrorActionPreference = 'Stop'
 
-New-Item -ItemType Directory -Path "Install" -Force > $null
-Remove-Item -Path 'Install\*' -Force -Recurse
+New-Item -ItemType Directory -Path "dist" -Force > $null
+Remove-Item -Path 'dist\*' -Force -Recurse
 
-$packages = Get-ChildItem Source\*.nuspec, CommonConcepts\*.nuspec | ForEach-Object { $_.FullName.Substring((Get-Location).Path.Length + 1) }
+$packages = Get-ChildItem src\*.nuspec | ForEach-Object { $_.FullName.Substring((Get-Location).Path.Length + 1) }
 
 # Running nuget pack jobs in parallel to save 10 seconds in total execution time.
 $jobs = $packages | ForEach-Object {
     Start-Job -ScriptBlock {
         param($package)
         Set-Location $using:PWD
-        NuGet.exe pack $package -OutputDirectory Install
+        NuGet.exe pack $package -OutputDirectory dist
     } -ArgumentList $_
 }
 

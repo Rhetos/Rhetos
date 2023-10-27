@@ -2,7 +2,7 @@ param([version]$version, [string]$prerelease)
 
 $ErrorActionPreference = 'Stop'
 
-[string[]]$exclude = @('bin', 'obj', 'packages', 'TestResults', 'PackagesCache', 'Install', '.*', 'Logs')
+[string[]]$exclude = @('bin', 'obj', 'packages', 'TestResults', 'PackagesCache', 'dist', 'Install', '.*', 'Logs')
 [string[]]$folders = @()
 [string[]]$foldersNew = Get-Location
 while ($foldersNew.Count -gt 0)

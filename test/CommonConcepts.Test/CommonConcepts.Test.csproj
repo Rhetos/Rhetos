@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <IsPackable>false</IsPackable>
-    <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);..\..\Install</RestoreAdditionalProjectSources>
+    <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);..\..\dist</RestoreAdditionalProjectSources>
   </PropertyGroup>
   
   <ItemGroup>
