@@ -9,6 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		ChangeLog.md = ChangeLog.md
 		Directory.Build.props = Directory.Build.props
 		Readme.md = Readme.md
+		src\Rhetos.CommonConcepts.nuspec = src\Rhetos.CommonConcepts.nuspec
 		src\Rhetos.DslParser.nuspec = src\Rhetos.DslParser.nuspec
 		src\Rhetos.Host.AspNet.nuspec = src\Rhetos.Host.AspNet.nuspec
 		src\Rhetos.Host.nuspec = src\Rhetos.Host.nuspec
@@ -39,7 +40,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Core", "src\Rhetos.C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Core.Test", "test\Rhetos.Core.Test\Rhetos.Core.Test.csproj", "{5DABDB1B-CBA3-4882-BA67-064C0BED4F03}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.CommonConcepts", "src\Rhetos.CommonConcepts\Rhetos.CommonConcepts.csproj", "{A157A278-7590-475E-A418-48E776867A5D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.CommonConcepts", "src\Rhetos.CommonConcepts\Rhetos.CommonConcepts.csproj", "{A157A278-7590-475E-A418-48E776867A5D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -23,8 +23,8 @@
     <file src="RhetosCli\bin\Debug\net6.0\rhetos.runtimeconfig.json" target="tools" />
     <file src="RhetosCli\bin\Debug\net6.0\runtimes\**\*" target="tools/runtimes" />
 
-    <file src="MsBuildIntegration\Rhetos.MSBuild.targets" target="build" />
-    <file src="MsBuildIntegration\Rhetos.MSBuild.props" target="build" />
+    <file src="RhetosVSIntegration\MsBuildIntegration\Rhetos.MSBuild.targets" target="build" />
+    <file src="RhetosVSIntegration\MsBuildIntegration\Rhetos.MSBuild.props" target="build" />
 
     <file src="RhetosVSIntegration\bin\Debug\netstandard2.0\*.dll" target="build" />
     <file src="RhetosVSIntegration\bin\Debug\netstandard2.0\*.json" target="build" />

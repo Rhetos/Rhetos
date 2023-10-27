@@ -27,8 +27,8 @@
     </contentFiles>
   </metadata>
   <files>
-    <file src="MsBuildIntegration\Rhetos.Host.targets" target="build" />
-    <file src="MsBuildIntegration\Rhetos.Host.props" target="build" />
+    <file src="RhetosVSIntegration\MsBuildIntegration\Rhetos.Host.targets" target="build" />
+    <file src="RhetosVSIntegration\MsBuildIntegration\Rhetos.Host.props" target="build" />
 
     <!-- Rhetos 'dbupdate' needs to be on net5, so that it can run in the context of the net5 host applications. -->
     <file src="RhetosCli\bin\Debug\net5.0\rhetos.exe" target="contentFiles/any/net5.0/RhetosTools" />
