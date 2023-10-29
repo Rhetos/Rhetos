@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Rhetos.Ef6</id>
+    <version>6.0.0-dev</version>
+    <authors>Omega software</authors>
+    <owners>Omega software</owners>
+    <license type="expression">AGPL-3.0-only</license>
+    <projectUrl>https://github.com/rhetos/rhetos</projectUrl>
+    <description>Rhetos support for Microsoft SQL Server with EF6.</description>
+    <copyright>Copyright Omega software 2013</copyright>
+    <tags>Rhetos</tags>
+    <dependencies>
+      <group targetFramework="net5.0">
+        <dependency id="EntityFramework" version="6.4.4" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="Rhetos.Ef6\bin\Debug\net5.0\Rhetos.Ef6.dll" target="lib\net5.0" />
+    <file src="Rhetos.Ef6\bin\Debug\net5.0\Rhetos.Ef6.pdb" target="lib\net5.0" />
+    <file src="Rhetos.Ef6\bin\Debug\net5.0\Rhetos.Ef6.xml" target="lib\net5.0" />
+  </files>
+</package>

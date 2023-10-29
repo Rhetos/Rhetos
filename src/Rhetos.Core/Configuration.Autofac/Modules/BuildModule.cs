@@ -101,7 +101,6 @@ namespace Rhetos.Configuration.Autofac.Modules
 
         private void AddPersistence(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
         {
-            builder.RegisterType<EntityFrameworkMappingGenerator>().As<IGenerator>();
             pluginRegistration.FindAndRegisterPlugins<IConceptMapping>(typeof(ConceptMapping<>));
         }
 

@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Rhetos.OracleEf6</id>
+    <version>6.0.0-dev</version>
+    <authors>Omega software</authors>
+    <owners>Omega software</owners>
+    <license type="expression">AGPL-3.0-only</license>
+    <projectUrl>https://github.com/rhetos/rhetos</projectUrl>
+    <description>Rhetos support for Oracle Database with EF6.</description>
+    <copyright>Copyright Omega software 2013</copyright>
+    <tags>Rhetos</tags>
+    <dependencies>
+      <group targetFramework="net5.0">
+        <dependency id="Rhetos.Ef6" version="[6.0.0-dev,6.1.0)" />
+        <dependency id="Oracle.ManagedDataAccess.Core" version="3.21.50" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="Rhetos.OracleEf6\bin\Debug\net5.0\Rhetos.OracleEf6.dll" target="lib\net5.0" />
+    <file src="Rhetos.OracleEf6\bin\Debug\net5.0\Rhetos.OracleEf6.pdb" target="lib\net5.0" />
+    <file src="Rhetos.OracleEf6\bin\Debug\net5.0\Rhetos.OracleEf6.xml" target="lib\net5.0" />
+  </files>
+</package>

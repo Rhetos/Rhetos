@@ -1,4 +1,4 @@
-﻿/*
+/*
     Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
@@ -18,25 +18,22 @@
 */
 
 using Autofac;
-using Rhetos.Logging;
+using Rhetos.Persistence;
 using Rhetos.Utilities;
+using System.ComponentModel.Composition;
 
-namespace Rhetos.Configuration.Autofac.Modules
+namespace Rhetos.OracleEf6
 {
-    /// <summary>
-    /// Common components for all contexts (rhetos build, dbupdate, application runtime).
-    /// </summary>
-    public class CoreModule : Module
+    [Export(typeof(Module))]
+    public class AutofacModuleConfigurationOracleEf6 : Module
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterType<DelayedLogProvider>().As<IDelayedLogProvider>().SingleInstance();
-            builder.Register(context => context.Resolve<IConfiguration>().GetOptions<LoggingOptions>()).SingleInstance().PreserveExistingDefaults();
-            builder.RegisterType<XmlUtility>().SingleInstance();
-            builder.RegisterType<FilesUtility>().SingleInstance();
-            builder.Register(context => context.Resolve<IConfiguration>().GetOptions<DatabaseSettings>()).SingleInstance();
-            builder.RegisterType<NoLocalizer>().As<ILocalizer>().SingleInstance();
-            builder.RegisterGeneric(typeof(NoLocalizer<>)).As(typeof(ILocalizer<>)).SingleInstance();
+            // Components for all contexts (rhetos build, dbupdate, application runtime):
+            builder.RegisterType<OracleSqlUtility>().As<ISqlUtility>().InstancePerLifetimeScope();
+
+            // Run-time and DbUpdate:
+            builder.RegisterType<OracleSqlExecuter>().As<ISqlExecuter>().InstancePerLifetimeScope();
 
             base.Load(builder);
         }

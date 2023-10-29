@@ -17,7 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Data.Common;
 using System.Data.SqlClient;

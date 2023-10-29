@@ -1,4 +1,4 @@
-﻿/*
+/*
     Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
@@ -18,25 +18,28 @@
 */
 
 using Autofac;
-using Rhetos.Logging;
+using Rhetos.Persistence;
 using Rhetos.Utilities;
+using System.Collections.Generic;
+using System;
+using System.ComponentModel.Composition;
 
-namespace Rhetos.Configuration.Autofac.Modules
+namespace Rhetos.MsSqlEf6
 {
-    /// <summary>
-    /// Common components for all contexts (rhetos build, dbupdate, application runtime).
-    /// </summary>
-    public class CoreModule : Module
+    [Export(typeof(Module))]
+    public class AutofacModuleConfigurationMsSqlEf6 : Module
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterType<DelayedLogProvider>().As<IDelayedLogProvider>().SingleInstance();
-            builder.Register(context => context.Resolve<IConfiguration>().GetOptions<LoggingOptions>()).SingleInstance().PreserveExistingDefaults();
-            builder.RegisterType<XmlUtility>().SingleInstance();
-            builder.RegisterType<FilesUtility>().SingleInstance();
-            builder.Register(context => context.Resolve<IConfiguration>().GetOptions<DatabaseSettings>()).SingleInstance();
-            builder.RegisterType<NoLocalizer>().As<ILocalizer>().SingleInstance();
-            builder.RegisterGeneric(typeof(NoLocalizer<>)).As(typeof(ILocalizer<>)).SingleInstance();
+            // Components for all contexts (rhetos build, dbupdate, application runtime):
+            builder.RegisterType<MsSqlUtility>().As<ISqlUtility>().InstancePerLifetimeScope();
+
+            // Run-time and DbUpdate:
+            builder.RegisterType<MsSqlExecuter>().As<ISqlExecuter>().InstancePerLifetimeScope();
+
+            const string dbLanguage = "MsSql";
+            if (SqlUtility.DatabaseLanguage != dbLanguage)
+                throw new FrameworkException($"Unsupported database language '{SqlUtility.DatabaseLanguage}'. {GetType().Assembly.GetName()} expects database language {dbLanguage}.");
 
             base.Load(builder);
         }

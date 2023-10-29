@@ -21,10 +21,10 @@ using Autofac;
 using Rhetos.Configuration.Autofac.Modules;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
-using Rhetos.Persistence;
 using Rhetos.Security;
 using Rhetos.Utilities;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
@@ -43,6 +43,11 @@ namespace Rhetos.Deployment
             _logger = logProvider.GetLogger(GetType().Name);
         }
 
+        /// <summary>
+        /// Note:
+        /// This method does not conform to the standard IoC design pattern.
+        /// It uses IoC container directly because it needs to handle a special scope control (separate database connections) and error handling.
+        /// </summary>
         public void InitializeGeneratedApplication()
         {
             // Creating a new container builder instead of using builder.Update(), because of severe performance issues with the Update method.
@@ -55,15 +60,8 @@ namespace Rhetos.Deployment
                 Type[] initializers;
                 using (var scope = rhetosHost.CreateScope())
                 {
-                    // EfMappingViewsInitializer is manually executed before other initializers because of performance issues.
-                    // It is needed for most of the initializer to run, but lazy initialization of EfMappingViews on first DbContext usage
-                    // is not a good option because of significant hash check duration (it would not be applicable in run-time).
-                    _logger.Info("Initializing EfMappingViews.");
-                    var efMappingViewsInitializer = scope.Resolve<EfMappingViewsInitializer>();
-                    efMappingViewsInitializer.Initialize();
-
                     var performanceLogger = scope.Resolve<ILogProvider>().GetLogger("Performance." + GetType().Name);
-                    initializers = GetSortedInitializers(scope);
+                    initializers = GetSortedInitializers(scope, _logger);
 
                     performanceLogger.Write(stopwatch, "New modules and plugins registered.");
                     ((UnitOfWorkScope)scope).LogRegistrationStatistics("InitializeApplication component registrations", _logProvider);
@@ -71,14 +69,14 @@ namespace Rhetos.Deployment
                 }
 
                 if (!initializers.Any())
-                {
                     _logger.Info("No server initialization plugins.");
-                }
-                else
-                {
-                    foreach (Type initializerType in initializers)
-                        ExecuteInitializer(rhetosHost, initializerType, _logProvider);
-                }
+
+                foreach (Type initializerType in initializers)
+                    using (var scope = rhetosHost.CreateScope())
+                    {
+                        ExecuteInitializer(scope, initializerType, _logger);
+                        scope.CommitAndClose();
+                    }
             }
         }
 
@@ -92,7 +90,7 @@ namespace Rhetos.Deployment
             });
         }
 
-        public static Type[] GetSortedInitializers(IUnitOfWorkScope scope)
+        public static Type[] GetSortedInitializers(IUnitOfWorkScope scope, ILogger logger)
         {
             // The plugins in the container are sorted by their dependencies defined in ExportMetadata attribute (static typed):
             var initializers = scope.Resolve<IPluginsContainer<IServerInitializer>>().GetPlugins();
@@ -102,28 +100,27 @@ namespace Rhetos.Deployment
             var initDependencies = initializers.SelectMany(init => (init.Dependencies ?? Array.Empty<string>()).Select(x => Tuple.Create(x, init.GetType().FullName)));
             Graph.TopologicalSort(initNames, initDependencies);
 
-            var sortedInitializers = initializers.ToArray();
+            var sortedInitializers = initializers.ToList();
             Graph.SortByGivenOrder(sortedInitializers, initNames.ToArray(), init => init.GetType().FullName);
+
+            // Additional sorting by priority specified in DbUpdateOptions.OverrideServerInitializerOrdering, if specified.
+            var dbUpdateOptions = scope.Resolve<DbUpdateOptions>();
+            foreach (var order in dbUpdateOptions.OverrideServerInitializerOrdering)
+                logger.Trace(() => $"{nameof(DbUpdateOptions.OverrideServerInitializerOrdering)} {order.Key} {order.Value}");
+            sortedInitializers = sortedInitializers
+                // This method performs a stable sort; that is, if the keys of two elements are equal, the order of the elements is preserved.
+                .OrderBy(init => dbUpdateOptions.OverrideServerInitializerOrdering.GetValueOrDefault(init.GetType().FullName))
+                .ToList();
+
             return sortedInitializers.Select(initializer => initializer.GetType()).ToArray();
         }
 
-        /// <summary>
-        /// Note:
-        /// This method does not conform to the standard IoC design pattern.
-        /// It uses IoC container directly because it needs to handle a special scope control (separate database connections) and error handling.
-        /// </summary>
-        public static void ExecuteInitializer(RhetosHost container, Type initializerType, ILogProvider logProvider)
+        public static void ExecuteInitializer(IUnitOfWorkScope scope, Type initializerType, ILogger logger)
         {
-            var logger = logProvider.GetLogger(nameof(ApplicationInitialization));
-            
-            using (var scope = container.CreateScope())
-            {
-                logger.Info($"Initialization {initializerType.Name}.");
-                var initializers = scope.Resolve<IPluginsContainer<IServerInitializer>>().GetPlugins();
-                IServerInitializer initializer = initializers.Single(i => i.GetType() == initializerType);
-                initializer.Initialize();
-                scope.CommitAndClose();
-            }
+            logger.Info($"Initialization {initializerType.Name}.");
+            var initializers = scope.Resolve<IPluginsContainer<IServerInitializer>>().GetPlugins();
+            IServerInitializer initializer = initializers.Single(i => i.GetType() == initializerType);
+            initializer.Initialize();
         }
     }
 }

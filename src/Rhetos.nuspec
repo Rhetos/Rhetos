@@ -14,7 +14,6 @@
       <group targetFramework="net5.0">
         <dependency id="Rhetos.DslParser" version="[6.0.0-dev,6.1.0)" />
         <dependency id="Autofac" version="6.3.0" />
-        <dependency id="EntityFramework" version="6.4.4" />
         <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="6.0.0" />
         <dependency id="Microsoft.Extensions.Hosting" version="6.0.1" />
         <dependency id="Microsoft.Extensions.Hosting.Abstractions" version="6.0.0" />
@@ -28,8 +27,6 @@
         <dependency id="NLog" version="4.7.11" />
         <dependency id="System.ComponentModel.Composition" version="6.0.0" /> <!-- Rhetos plugins use MEF. -->
         <dependency id="System.Configuration.ConfigurationManager" version="6.0.0" />
-        <dependency id="System.Data.SqlClient" version="4.8.5" />
-        <dependency id="Oracle.ManagedDataAccess.Core" version="3.21.50" />
       </group>
     </dependencies>
   </metadata>

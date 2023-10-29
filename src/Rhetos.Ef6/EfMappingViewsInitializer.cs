@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Extensibility;
 using Rhetos.Logging;
 using System.Collections.Generic;
 using System.Data.Entity.Core.Mapping;
@@ -26,7 +27,7 @@ using System.Linq;
 
 namespace Rhetos.Persistence
 {
-    public class EfMappingViewsInitializer
+    public class EfMappingViewsInitializer : IServerInitializer
     {
         private readonly EfMappingViewsFileStore _efMappingViewsFileStore;
         private readonly ILogger _logger;
@@ -42,6 +43,8 @@ namespace Rhetos.Persistence
             _metadataWorkspaceFileProvider = metadataWorkspaceFileProvider;
             _efMappingViewsHash = efMappingViewsHash;
         }
+
+        public IEnumerable<string> Dependencies => null;
 
         public void Initialize()
         {

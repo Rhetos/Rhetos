@@ -17,6 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Extensibility;
+using System.Collections.Generic;
+
 namespace Rhetos.Utilities
 {
     [Options("Rhetos:DbUpdate")]
@@ -49,5 +52,14 @@ namespace Rhetos.Utilities
         /// </para>
         /// </remarks>
         public bool RepeatDataMigrationsAfterFailedUpdate { get; set; } = true;
+
+        /// <summary>
+        /// Overrides ordering of <see cref="IServerInitializer"/> plugins.
+        /// The default ordering is specified by <see cref="IServerInitializer.Dependencies"/>.
+        /// This option is only for exceptional cases.
+        /// The key is a full type name of the <see cref="IServerInitializer"/> plugin.
+        /// Default value for all plugins is 0.
+        /// </summary>
+        public Dictionary<string, decimal> OverrideServerInitializerOrdering { get; set; } = new();
     }
 }

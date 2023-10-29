@@ -33,8 +33,6 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.RegisterInstance(new ConnectionString(SqlUtility.ConnectionString));
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<DatabaseOptions>()).SingleInstance().PreserveExistingDefaults();
 
-            builder.RegisterType(DatabaseTypes.GetSqlExecuterType(SqlUtility.DatabaseLanguage)).As<ISqlExecuter>().InstancePerLifetimeScope();
-
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<SqlTransactionBatchesOptions>()).InstancePerLifetimeScope();
             builder.RegisterType<SqlTransactionBatches>().As<ISqlTransactionBatches>().InstancePerLifetimeScope();
 
