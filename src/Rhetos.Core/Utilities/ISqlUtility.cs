@@ -31,6 +31,10 @@ namespace Rhetos.Utilities
     /// </remarks>
     public interface ISqlUtility
     {
+        string ProviderName { get; }
+
+        string TrySetApplicationName(string connectionString);
+
         /// <summary>
         /// Created database connection and initializes it with used information and settings.
         /// </summary>
@@ -46,5 +50,56 @@ namespace Rhetos.Utilities
         /// Simplifies ORM exception by detecting the SQL exception that caused it.
         /// </summary>
         Exception ExtractSqlException(Exception exception);
+
+        /// <summary>
+        /// Throws an exception if 'name' is not a valid SQL database object name.
+        /// Function returns given argument so it can be used as fluent interface.
+        /// In some cases the function may change the identifier (limit identifier length to 30 on Oracle database, e.g.).
+        /// </summary>
+        string Identifier(string name);
+
+        string QuoteText(string value);
+
+        string QuoteIdentifier(string sqlIdentifier);
+
+        string GetSchemaName(string fullObjectName);
+
+        string GetShortName(string fullObjectName);
+
+        string GetFullName(string objectName);
+
+        /// <summary>
+        /// Vendor-independent database reader.
+        /// </summary>
+        Guid ReadGuid(DbDataReader dataReader, int column);
+
+        /// <summary>
+        /// Vendor-independent database reader.
+        /// </summary>
+        int ReadInt(DbDataReader dataReader, int column);
+
+        Guid StringToGuid(string guid);
+
+        string QuoteGuid(Guid? guid);
+
+        string GuidToString(Guid? guid);
+
+        string QuoteDateTime(DateTime? dateTime);
+
+        string DateTimeToString(DateTime? dateTime);
+
+        string QuoteBool(bool? b);
+
+        string BoolToString(bool? b);
+
+        /// <summary>
+        /// Returns empty string if the string value is null.
+        /// This function is used for compatibility between MsSql and Oracle string behavior.
+        /// </summary>
+        string EmptyNullString(DbDataReader dataReader, int column);
+
+        DateTime GetDatabaseTime(ISqlExecuter sqlExecuter);
+
+        string SqlConnectionInfo(string connectionString);
     }
 }

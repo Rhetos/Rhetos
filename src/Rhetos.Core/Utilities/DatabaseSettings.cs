@@ -28,5 +28,7 @@ namespace Rhetos.Utilities
     public class DatabaseSettings
     {
         public string DatabaseLanguage { get; set; } = "MsSql";
+
+        public string DatabaseNationalLanguage { get; set; } = "";
     }
 }

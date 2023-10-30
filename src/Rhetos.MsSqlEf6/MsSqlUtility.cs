@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace Rhetos.Utilities
@@ -33,6 +34,35 @@ namespace Rhetos.Utilities
         public MsSqlUtility(ILocalizer localizer)
         {
             _localizer = localizer;
+        }
+
+        public string ProviderName => "System.Data.SqlClient";
+
+        public string TrySetApplicationName(string connectionString)
+        {
+            if (string.IsNullOrEmpty(connectionString))
+                return connectionString;
+
+            try
+            {
+                var dbConnectionStringBuilder = new DbConnectionStringBuilder();
+                dbConnectionStringBuilder.ConnectionString = connectionString;
+                if (dbConnectionStringBuilder.ContainsKey("Application Name") || dbConnectionStringBuilder.ContainsKey("app"))
+                    return connectionString;
+
+                string hostAppName = Assembly.GetEntryAssembly()?.GetName()?.Name;
+                if (string.IsNullOrEmpty(hostAppName))
+                    return connectionString;
+
+                dbConnectionStringBuilder["Application Name"] = hostAppName;
+                return dbConnectionStringBuilder.ToString();
+            }
+#pragma warning disable CA1031 // Do not catch general exception types. This is just an optional information in connection string. It should not fail if the connection string format is not recognized.
+            catch
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                return connectionString;
+            }
         }
 
         public DbConnection CreateConnection(string connectionString, IUserInfo userInfo)
@@ -73,16 +103,6 @@ namespace Rhetos.Utilities
             var command = new SqlCommand("SET CONTEXT_INFO @userInfo");
             command.Parameters.AddWithValue("@userInfo", encodedUserInfo);
             return command;
-        }
-
-        public static DateTime GetDatabaseTime(ISqlExecuter sqlExecuter)
-        {
-            DateTime databaseTime = DateTime.MinValue;
-            sqlExecuter.ExecuteReader("SELECT SYSDATETIME()",
-                reader => databaseTime = reader.GetDateTime(0));
-            if (databaseTime == DateTime.MinValue)
-                throw new FrameworkException("Cannot read database server time.");
-            return databaseTime;
         }
 
         /// <summary>
@@ -318,7 +338,7 @@ namespace Rhetos.Utilities
             return dictionary.TryGetValue(key, out object value) ? value as string : null;
         }
 
-        public static string GetSchemaName(string fullObjectName)
+        public string GetSchemaName(string fullObjectName)
         {
             int dotPosition = fullObjectName.IndexOf('.');
             if (dotPosition == -1)
@@ -326,6 +346,152 @@ namespace Rhetos.Utilities
 
             var schema = fullObjectName.Substring(0, dotPosition);
             return SqlUtility.Identifier(schema);
+        }
+
+        public string Identifier(string name)
+        {
+            string error = CsUtility.GetIdentifierError(name);
+            if (error != null)
+                throw new FrameworkException("Invalid database object name: " + error);
+
+            return LimitIdentifierLength(name);
+        }
+
+        public string QuoteText(string value)
+        {
+            return value != null
+                ? "N'" + value.Replace("'", "''") + "'"
+                : "NULL";
+        }
+
+        public string QuoteIdentifier(string sqlIdentifier)
+        {
+            sqlIdentifier = sqlIdentifier.Replace("]", "]]");
+            return "[" + sqlIdentifier + "]";
+        }
+
+        public string GetShortName(string fullObjectName)
+        {
+            int dotPosition = fullObjectName.IndexOf('.');
+            if (dotPosition == -1)
+                return fullObjectName;
+
+            var shortName = fullObjectName.Substring(dotPosition + 1);
+
+            int secondDot = shortName.IndexOf('.');
+            if (secondDot != -1 || string.IsNullOrEmpty(shortName))
+                throw new FrameworkException("Invalid database object name: '" + fullObjectName + "'. Expected format is 'schema.name' or 'name'.");
+            return Identifier(shortName);
+        }
+
+        public string GetFullName(string objectName)
+        {
+            var schema = GetSchemaName(objectName);
+            var name = GetShortName(objectName);
+            return schema + "." + name;
+        }
+
+        /// <summary>
+        /// Vendor-independent database reader.
+        /// </summary>
+        public Guid ReadGuid(DbDataReader dataReader, int column)
+        {
+            return dataReader.GetGuid(column);
+        }
+
+        /// <summary>
+        /// Vendor-independent database reader.
+        /// </summary>
+        public int ReadInt(DbDataReader dataReader, int column)
+        {
+            return dataReader.GetInt32(column);
+        }
+
+        public Guid StringToGuid(string guid)
+        {
+            return Guid.Parse(guid);
+        }
+
+        public string QuoteGuid(Guid? guid)
+        {
+            return guid.HasValue
+                ? "'" + GuidToString(guid.Value) + "'"
+                : "NULL";
+        }
+
+        public string GuidToString(Guid? guid)
+        {
+            return guid.HasValue ? guid.Value.ToString().ToUpper() : null;
+        }
+
+        public string QuoteDateTime(DateTime? dateTime)
+        {
+            return dateTime.HasValue
+                ? "'" + DateTimeToString(dateTime.Value) + "'"
+                : "NULL";
+        }
+
+        public string DateTimeToString(DateTime? dateTime)
+        {
+            return dateTime.HasValue ? dateTime.Value.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff") : null;
+        }
+
+        public string QuoteBool(bool? b)
+        {
+            return b.HasValue ? BoolToString(b.Value) : "NULL";
+        }
+
+        public string BoolToString(bool? b)
+        {
+            return b switch { null => null, true => "1", false => "0" };
+        }
+
+        /// <summary>
+        /// Returns empty string if the string value is null.
+        /// This function is used for compatibility between MsSql and Oracle string behavior.
+        /// </summary>
+        public string EmptyNullString(DbDataReader dataReader, int column)
+        {
+            return dataReader.GetString(column) ?? "";
+        }
+
+        public DateTime GetDatabaseTime(ISqlExecuter sqlExecuter)
+        {
+            return DatabaseTimeCache.GetDatabaseTimeCached(() =>
+            {
+                DateTime databaseTime = DateTime.MinValue;
+                sqlExecuter.ExecuteReader("SELECT SYSDATETIME()",
+                    reader => databaseTime = reader.GetDateTime(0));
+                if (databaseTime == DateTime.MinValue)
+                    throw new FrameworkException("Cannot read database server time.");
+
+                return DateTime.SpecifyKind(databaseTime, DateTimeKind.Local);
+            }, () => DateTime.Now);
+        }
+
+        public string SqlConnectionInfo(string connectionString)
+        {
+            SqlConnectionStringBuilder cs;
+            try
+            {
+                cs = new SqlConnectionStringBuilder(connectionString);
+            }
+            catch
+            {
+                // This is not a blocking error, because other database providers should be supported.
+                return "(cannot parse connection string)";
+            }
+
+            var elements = new ListOfTuples<string, string>
+            {
+                { "DataSource", cs.DataSource },
+                { "InitialCatalog", cs.InitialCatalog },
+            };
+
+            return
+                string.Join(", ", elements
+                    .Where(e => !string.IsNullOrWhiteSpace(e.Item2))
+                    .Select(e => e.Item1 + "=" + e.Item2));
         }
     }
 }

@@ -46,6 +46,17 @@ namespace Rhetos.Utilities
 
         private readonly string _value;
 
+        public ConnectionString(IConfiguration configuration, ISqlUtility sqlUtility)
+        {
+            var connectionString = configuration.GetValue<string>(ConnectionStringConfigurationKey);
+
+            var dbOptions = configuration.GetOptions<DatabaseOptions>();
+            if (dbOptions.SetApplicationName)
+                connectionString = sqlUtility.TrySetApplicationName(connectionString);
+
+            _value = connectionString;
+        }
+
         public ConnectionString(string connectionString)
         {
             _value = connectionString;

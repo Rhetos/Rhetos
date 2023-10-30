@@ -1,5 +1,22 @@
 ﻿# Rhetos release notes
 
+## 6.0.0 (TO BE RELEASED)
+
+### Breaking changes:
+
+Changes in behavior:
+
+1. Configuration setting key "Rhetos:DatabaseOracle:NationalLanguage" has changed to "Rhetos:Build:DatabaseNationalLanguage".
+
+Changes in Rhetos libraries API (will cause compile-time errors):
+
+1. Removed some static members of SqlUtility class:
+   * Instead of SqlUtility.ConnectionString, use the ConnectionString class from dependency injection.
+   * Instead of SqlUtility.SqlCommandTimeout, use DatabaseOptions.SqlCommandTimeout from dependency injection.
+   * Instead of SqlUtility.DatabaseLanguage, use DatabaseSettings.DatabaseLanguage from dependency injection.
+   * Instead of SqlUtility.NationalLanguage, use DatabaseSettings.DatabaseNationalLanguage from dependency injection.
+   * For all other members, use ISqlUtility from dependency injection instead of the static SqlUtility.
+
 ## 5.4.0 (2023-03-16)
 
 ### New features

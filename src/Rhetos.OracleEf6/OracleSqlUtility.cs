@@ -20,12 +20,22 @@
 using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Data.Common;
+using System.Data.SqlClient;
 using System.Globalization;
+using System.Linq;
+using System.Reflection;
 
 namespace Rhetos.Utilities
 {
     public class OracleSqlUtility : ISqlUtility
     {
+        public string ProviderName => "Oracle.ManagedDataAccess.Client";
+
+        public string TrySetApplicationName(string connectionString)
+        {
+            return connectionString;
+        }
+
         public DbConnection CreateConnection(string connectionString, IUserInfo userInfo)
         {
             var connection = new OracleConnection(connectionString);
@@ -62,7 +72,6 @@ namespace Rhetos.Utilities
             return name;
         }
 
-        public static readonly string OracleNationalLanguageKey = "Rhetos:DatabaseOracle:NationalLanguage";
         private static string _setNationalLanguageQuery;
 
         /// <summary>
@@ -117,14 +126,151 @@ END;", SqlUtility.NationalLanguage);
             return null;
         }
 
-        public static string GetSchemaName(string fullObjectName)
+        public string Identifier(string name)
+        {
+            string error = CsUtility.GetIdentifierError(name);
+            if (error != null)
+                throw new FrameworkException("Invalid database object name: " + error);
+
+            return LimitIdentifierLength(name);
+        }
+
+        public string QuoteText(string value)
+        {
+            return value != null
+                ? "'" + value.Replace("'", "''") + "'"
+                : "NULL";
+        }
+
+        public string QuoteIdentifier(string sqlIdentifier)
+        {
+            return sqlIdentifier;
+        }
+
+        public string GetSchemaName(string fullObjectName)
         {
             int dotPosition = fullObjectName.IndexOf('.');
             if (dotPosition == -1)
                 throw new FrameworkException($"Missing schema name for database object '{fullObjectName}'.");
 
             var schema = fullObjectName.Substring(0, dotPosition);
-            return SqlUtility.Identifier(schema);
+            return Identifier(schema);
+        }
+
+        public string GetShortName(string fullObjectName)
+        {
+            int dotPosition = fullObjectName.IndexOf('.');
+            if (dotPosition == -1)
+                return fullObjectName;
+
+            var shortName = fullObjectName.Substring(dotPosition + 1);
+
+            int secondDot = shortName.IndexOf('.');
+            if (secondDot != -1 || string.IsNullOrEmpty(shortName))
+                throw new FrameworkException("Invalid database object name: '" + fullObjectName + "'. Expected format is 'schema.name' or 'name'.");
+            return Identifier(shortName);
+        }
+
+        public string GetFullName(string objectName)
+        {
+            var schema = GetSchemaName(objectName);
+            var name = GetShortName(objectName);
+            return schema + "." + name;
+        }
+
+        /// <summary>
+        /// Vendor-independent database reader.
+        /// </summary>
+        public Guid ReadGuid(DbDataReader dataReader, int column)
+        {
+            return new Guid(((OracleDataReader)dataReader).GetOracleBinary(column).Value);
+        }
+
+        /// <summary>
+        /// Vendor-independent database reader.
+        /// </summary>
+        public int ReadInt(DbDataReader dataReader, int column)
+        {
+            return Convert.ToInt32(dataReader.GetInt64(column)); // On some systems, reading from NUMERIC(10) column will return Int64, and GetInt32 would fail.
+        }
+
+        public Guid StringToGuid(string guid)
+        {
+            return new Guid(CsUtility.HexToByteArray(guid));
+        }
+
+        public string QuoteGuid(Guid? guid)
+        {
+            return guid.HasValue
+                ? "'" + GuidToString(guid.Value) + "'"
+                : "NULL";
+        }
+
+        public string GuidToString(Guid? guid)
+        {
+            return guid.HasValue ? CsUtility.ByteArrayToHex(guid.Value.ToByteArray()) : null;
+        }
+
+        public string QuoteDateTime(DateTime? dateTime)
+        {
+            return dateTime.HasValue
+                ? "'" + DateTimeToString(dateTime.Value) + "'"
+                : "NULL";
+        }
+
+        public string DateTimeToString(DateTime? dateTime)
+        {
+            return dateTime.HasValue ? dateTime.Value.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff") : null;
+        }
+
+        public string QuoteBool(bool? b)
+        {
+            return b.HasValue ? BoolToString(b.Value) : "NULL";
+        }
+
+        public string BoolToString(bool? b)
+        {
+            return b switch { null => null, true => "1", false => "0" };
+        }
+
+        /// <summary>
+        /// Returns empty string if the string value is null.
+        /// This function is used for compatibility between MsSql and Oracle string behavior.
+        /// </summary>
+        public string EmptyNullString(DbDataReader dataReader, int column)
+        {
+            var s = ((OracleDataReader)dataReader).GetOracleString(column);
+            return !s.IsNull ? s.Value : "";
+        }
+
+        public DateTime GetDatabaseTime(ISqlExecuter sqlExecuter)
+        {
+            throw new NotImplementedException("GetDatabaseTime function is not yet supported in Rhetos for Oracle database.");
+        }
+
+        public string SqlConnectionInfo(string connectionString)
+        {
+            OracleConnectionStringBuilder cs;
+            try
+            {
+                cs = new OracleConnectionStringBuilder(connectionString);
+            }
+            catch
+            {
+                // This is not a blocking error, because other database providers should be supported.
+                return "(cannot parse connection string)";
+            }
+
+            var elements = new ListOfTuples<string, string>
+            {
+                { "DataSource", cs.DataSource },
+                { "User Id", cs.UserID },
+            };
+
+            return
+                string.Join(", ", elements
+                    .Where(e => !string.IsNullOrWhiteSpace(e.Item2))
+                    .Select(e => e.Item1 + "=" + e.Item2));
         }
     }
 }
