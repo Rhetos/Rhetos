@@ -24,7 +24,6 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -97,13 +96,9 @@ namespace Rhetos.Persistence
             var sw = Stopwatch.StartNew();
             try
             {
-                var dataReader = command.ExecuteReader();
+                using var dataReader = command.ExecuteReader();
                 while (!dataReader.IsClosed && dataReader.Read())
                     read(dataReader);
-
-                // "Always call the Close method when you have finished using the DataReader object."
-                // https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/retrieving-data-using-a-datareader#closing-the-datareader
-                // Examples on docs.microsoft.com do not dispose SqlDataReader, even though it is IDisposable.
                 dataReader.Close();
             }
             catch (DbException e)
@@ -123,13 +118,9 @@ namespace Rhetos.Persistence
             var sw = Stopwatch.StartNew();
             try
             {
-                var dataReader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+                using var dataReader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
                 while (!dataReader.IsClosed && await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
                     read(dataReader);
-
-                // Examples on docs.microsoft.com do not dispose SqlDataReader, even though it is IDisposable.
-                // "Always call the Close method when you have finished using the DataReader object."
-                // https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/retrieving-data-using-a-datareader#closing-the-datareader
                 await dataReader.CloseAsync().ConfigureAwait(false);
             }
             catch (DbException e)

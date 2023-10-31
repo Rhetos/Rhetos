@@ -17,7 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using CommonConcepts.Test;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos;
 using Rhetos.Dom.DefaultConcepts;
@@ -28,6 +27,7 @@ using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Data.SqlTypes;
 using System.Linq;
 
 namespace CommonConcepts.Test.Framework
@@ -65,7 +65,6 @@ namespace CommonConcepts.Test.Framework
         private static BaseSqlExecuter NewBaseSqlExecuter(IUnitOfWorkScope scope)
         {
             var logProvider = scope.Resolve<ILogProvider>();
-            var userInfo = scope.Resolve<IUserInfo>();
             var persistenceTransaction = scope.Resolve<IPersistenceTransaction>();
             return new BaseSqlExecuter(logProvider, persistenceTransaction, new DatabaseOptions());
         }
@@ -125,6 +124,27 @@ namespace CommonConcepts.Test.Framework
                     () => baseSqlExecuter.ExecuteSqlRaw("INSERT INTO TestEntity.Principal (Name) VALUES(@__p0);", new object[] { sqlParameter }),
                     "parameter name should not start with", "@__p");
             }
+        }
+
+        [TestMethod]
+        public void ClosingDataReaderOnError()
+        {
+            using var scope = TestScope.Create();
+            var baseSqlExecuter = NewBaseSqlExecuter(scope);
+            string s = null;
+
+            TestUtility.ShouldFail<SqlNullValueException>(
+                () => baseSqlExecuter.ExecuteReaderRaw("SELECT a=NULL", null, reader => s = reader.GetString(0)),
+                "Data is Null. This method or property cannot be called on Null values.");
+
+            // In principal, the SQL connection should not be used in the same scope after the SQL exception occurred above,
+            // but this unit test check for robustness in error handling.
+            // The first SQL query should not leave the DataReader open after the error, which would result with the following exception on the
+            // secont SQL query below: System.InvalidOperationException: There is already an open DataReader associated with this Command which must be closed first.
+
+            baseSqlExecuter.ExecuteReaderRaw("SELECT a='aaa'", null, reader => s = reader.GetString(0));
+
+            Assert.AreEqual("aaa", s);
         }
     }
 }
