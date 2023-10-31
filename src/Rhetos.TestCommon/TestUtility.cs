@@ -192,19 +192,22 @@ namespace Rhetos.TestCommon
         /// <summary>
         /// Unit test will be marked as "Inconclusive" if this function fails.
         /// </summary>
-        public static void CheckDatabaseAvailability(string expectedLanguage = null)
+        public static void CheckDatabaseAvailability(IUnitOfWorkScope scope, string expectedLanguage = null)
         {
             try
             {
-                Assert.IsNotNull(SqlUtility.ConnectionString);
+                var connectionString = scope.Resolve<ConnectionString>();
+                if (string.IsNullOrEmpty(connectionString.ToString()))
+                    throw new ArgumentException("Connection string is empty.");
             }
             catch (Exception ex)
             {
                 Assert.Inconclusive($"A live database is needed for this unit test to run. Configure database connection string begin running the tests. {ex.GetType().Name}: {ex.Message}");
             }
 
-            if (expectedLanguage != null && SqlUtility.DatabaseLanguage != expectedLanguage)
-                Assert.Inconclusive($"This test will run only on '{expectedLanguage}' database language, not '{SqlUtility.DatabaseLanguage}'." +
+            var databaseSettings = scope.Resolve<DatabaseSettings>();
+            if (expectedLanguage != null && databaseSettings.DatabaseLanguage != expectedLanguage)
+                Assert.Inconclusive($"This test will run only on '{expectedLanguage}' database language, not '{databaseSettings.DatabaseLanguage}'." +
                     $" Configure database language and connection string, then rebuild this project.");
         }
 

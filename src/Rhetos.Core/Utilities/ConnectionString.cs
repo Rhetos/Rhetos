@@ -57,6 +57,9 @@ namespace Rhetos.Utilities
             _value = connectionString;
         }
 
+        /// <summary>
+        /// Alternative constructor to simplify overriding connection string when needed.
+        /// </summary>
         public ConnectionString(string connectionString)
         {
             _value = connectionString;
@@ -70,11 +73,6 @@ namespace Rhetos.Utilities
         public static implicit operator string(ConnectionString connectionString)
         {
             return connectionString._value;
-        }
-
-        public static implicit operator ConnectionString(string connectionString)
-        {
-            return new ConnectionString(connectionString);
         }
     }
 }

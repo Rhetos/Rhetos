@@ -93,8 +93,10 @@ namespace Rhetos.DatabaseGenerator
         {
             var firstError = appliedConcepts.GroupBy(pca => pca.GetConceptApplicationKey()).Where(g => g.Count() > 1).FirstOrDefault();
             if (firstError != null)
-                throw new FrameworkException(String.Format("More than one concept application with same key {2} ('{0}') loaded in repository. Concept application IDs: {1}.",
-                    firstError.Key, string.Join(", ", firstError.Select(ca => SqlUtility.QuoteGuid(ca.Id))), errorContext));
+            {
+                string ids = string.Join(", ", firstError.Select(ca => ca.Id));
+                throw new FrameworkException($"More than one concept application with same key {errorContext} ('{firstError.Key}') loaded in repository. Concept application IDs: {ids}.");
+            }
         }
     }
 }

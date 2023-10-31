@@ -27,11 +27,12 @@ namespace Rhetos.DatabaseGenerator
     public class ConceptApplicationRepository : IConceptApplicationRepository
     {
         private readonly ISqlExecuter _sqlExecuter;
+        private readonly ISqlUtility _sqlUtility;
 
-        public ConceptApplicationRepository(
-            ISqlExecuter sqlExecuter)
+        public ConceptApplicationRepository(ISqlExecuter sqlExecuter, ISqlUtility sqlUtility)
         {
             _sqlExecuter = sqlExecuter;
+            _sqlUtility = sqlUtility;
         }
 
         public List<ConceptApplication> Load()
@@ -55,13 +56,13 @@ namespace Rhetos.DatabaseGenerator
                 {
                     previoslyAppliedConcepts.Add(new ConceptApplication
                         {
-                            Id = SqlUtility.ReadGuid(dataReader, 0),
+                            Id = _sqlUtility.ReadGuid(dataReader, 0),
                             ConceptInfoTypeName = dataReader.GetString(1),
                             ConceptInfoKey = dataReader.GetString(2),
                             ConceptImplementationTypeName = dataReader.GetString(3),
-                            CreateQuery = SqlUtility.EmptyNullString(dataReader, 4),
-                            RemoveQuery = SqlUtility.EmptyNullString(dataReader, 5),
-                            OldCreationOrder = SqlUtility.ReadInt(dataReader, 6),
+                            CreateQuery = _sqlUtility.EmptyNullString(dataReader, 4),
+                            RemoveQuery = _sqlUtility.EmptyNullString(dataReader, 5),
+                            OldCreationOrder = _sqlUtility.ReadInt(dataReader, 6),
                             DependsOn = null // It will be set later
                         });
                 });
@@ -69,7 +70,7 @@ namespace Rhetos.DatabaseGenerator
             var invalidCa = previoslyAppliedConcepts.FirstOrDefault(ca => ca.ConceptInfoKey == ObsoleteConceptApplicationMark);
             if (invalidCa != null)
                 throw new FrameworkException($"Obsolete concept application loaded from database" +
-                    $" (Rhetos.ConceptApplication, ID = {SqlUtility.GuidToString(invalidCa.Id)})." +
+                    $" (Rhetos.ConceptApplication, ID = {_sqlUtility.GuidToString(invalidCa.Id)})." +
                     $" The update procedure for old version of the system should include deployment" +
                     $" with empty DslScripts folder (using old version of Rhetos framework and packages)" +
                     $" to remove old database structure and keep the data.");
@@ -88,8 +89,8 @@ namespace Rhetos.DatabaseGenerator
                 {
                     dependencies.Add(new DependencyGuids
                     {
-                        Dependent = SqlUtility.ReadGuid(dataReader, 0),
-                        DependsOn = SqlUtility.ReadGuid(dataReader, 1),
+                        Dependent = _sqlUtility.ReadGuid(dataReader, 0),
+                        DependsOn = _sqlUtility.ReadGuid(dataReader, 1),
                     });
                 });
             return dependencies;
@@ -133,7 +134,7 @@ namespace Rhetos.DatabaseGenerator
         {
             return new List<string>
             {
-                Sql.Format("ConceptApplicationRepository_Delete", SqlUtility.QuoteGuid(oldCA.Id))
+                Sql.Format("ConceptApplicationRepository_Delete", _sqlUtility.QuoteGuid(oldCA.Id))
             };
         }
 
@@ -142,17 +143,17 @@ namespace Rhetos.DatabaseGenerator
             var sql = new List<string>();
 
             sql.Add(Sql.Format("ConceptApplicationRepository_Insert",
-                SqlUtility.QuoteGuid(newCA.Id),
-                SqlUtility.QuoteText(newCA.ConceptInfoTypeName),
-                SqlUtility.QuoteText(newCA.ConceptInfoKey),
-                SqlUtility.QuoteText(newCA.ConceptImplementationTypeName),
-                SqlUtility.QuoteText(newCA.CreateQuery),
-                SqlUtility.QuoteText(newCA.RemoveQuery)));
+                _sqlUtility.QuoteGuid(newCA.Id),
+                _sqlUtility.QuoteText(newCA.ConceptInfoTypeName),
+                _sqlUtility.QuoteText(newCA.ConceptInfoKey),
+                _sqlUtility.QuoteText(newCA.ConceptImplementationTypeName),
+                _sqlUtility.QuoteText(newCA.CreateQuery),
+                _sqlUtility.QuoteText(newCA.RemoveQuery)));
 
             foreach (var dependsOnId in newCA.DependsOnConceptApplications.Select(d => d.Id).Distinct())
                 sql.Add(Sql.Format("ConceptApplicationRepository_InsertDependency",
-                    SqlUtility.QuoteGuid(newCA.Id),
-                    SqlUtility.QuoteGuid(dependsOnId)));
+                    _sqlUtility.QuoteGuid(newCA.Id),
+                    _sqlUtility.QuoteGuid(dependsOnId)));
 
             return sql;
         }
@@ -162,12 +163,12 @@ namespace Rhetos.DatabaseGenerator
             var sql = new List<string>();
             if (oldApp.RemoveQuery != newCA.RemoveQuery)
                 sql.Add(Sql.Format("ConceptApplicationRepository_Update",
-                    SqlUtility.QuoteGuid(newCA.Id),
-                    SqlUtility.QuoteText(newCA.ConceptInfoTypeName),
-                    SqlUtility.QuoteText(newCA.ConceptInfoKey),
-                    SqlUtility.QuoteText(newCA.ConceptImplementationTypeName),
-                    SqlUtility.QuoteText(newCA.CreateQuery),
-                    SqlUtility.QuoteText(newCA.RemoveQuery)));
+                    _sqlUtility.QuoteGuid(newCA.Id),
+                    _sqlUtility.QuoteText(newCA.ConceptInfoTypeName),
+                    _sqlUtility.QuoteText(newCA.ConceptInfoKey),
+                    _sqlUtility.QuoteText(newCA.ConceptImplementationTypeName),
+                    _sqlUtility.QuoteText(newCA.CreateQuery),
+                    _sqlUtility.QuoteText(newCA.RemoveQuery)));
 
             HashSet<Guid> oldDependsOn = new HashSet<Guid>(oldApp.DependsOnConceptApplications.Select(depOn => depOn.Id));
             HashSet<Guid> newDependsOn = new HashSet<Guid>(newCA.DependsOnConceptApplications.Select(depOn => depOn.Id));
@@ -175,14 +176,14 @@ namespace Rhetos.DatabaseGenerator
             foreach (var dependsOnId in newCA.DependsOnConceptApplications.Select(d => d.Id).Distinct())
                 if (!oldDependsOn.Contains(dependsOnId))
                     sql.Add(Sql.Format("ConceptApplicationRepository_InsertDependency",
-                        SqlUtility.QuoteGuid(newCA.Id),
-                        SqlUtility.QuoteGuid(dependsOnId)));
+                        _sqlUtility.QuoteGuid(newCA.Id),
+                        _sqlUtility.QuoteGuid(dependsOnId)));
 
             foreach (var dependsOnId in oldApp.DependsOnConceptApplications.Select(d => d.Id).Distinct())
                 if (!newDependsOn.Contains(dependsOnId))
                     sql.Add(Sql.Format("ConceptApplicationRepository_DeleteDependency",
-                        SqlUtility.QuoteGuid(newCA.Id),
-                        SqlUtility.QuoteGuid(dependsOnId)));
+                        _sqlUtility.QuoteGuid(newCA.Id),
+                        _sqlUtility.QuoteGuid(dependsOnId)));
 
             return sql;
         }

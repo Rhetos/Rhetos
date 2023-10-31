@@ -18,6 +18,7 @@
 */
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos.MsSqlEf6;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
@@ -29,17 +30,17 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Rhetos.Deployment.Test
+namespace Rhetos.MsSqlEf6.Test
 {
     [TestClass]
-    public class ConnectionTestingTest
+    public class MsConnectionTestingTest
     {
         [TestMethod]
         public void InvalidConnectionStringFormat()
         {
             string invalidConnectionString = "<ENTER_CONNECTION_STRING_HERE>";
 
-            var connectionTesting = new ConnectionTesting(invalidConnectionString, sqlExecuter: null);
+            var connectionTesting = new MsConnectionTesting(new ConnectionString(invalidConnectionString), sqlExecuter: null);
 
             var ex = TestUtility.ShouldFail<ArgumentException>(
                 () => connectionTesting.ValidateDbConnection(),

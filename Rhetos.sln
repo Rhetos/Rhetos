@@ -45,11 +45,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Core.Test", "test\Rh
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.CommonConcepts", "src\Rhetos.CommonConcepts\Rhetos.CommonConcepts.csproj", "{A157A278-7590-475E-A418-48E776867A5D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.MsSqlEf6", "src\Rhetos.MsSqlEf6\Rhetos.MsSqlEf6.csproj", "{A2000A65-0D20-4D9A-83CA-335EAF5FF201}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.MsSqlEf6", "src\Rhetos.MsSqlEf6\Rhetos.MsSqlEf6.csproj", "{A2000A65-0D20-4D9A-83CA-335EAF5FF201}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.OracleEf6", "src\Rhetos.OracleEf6\Rhetos.OracleEf6.csproj", "{3FEC4921-1593-4A44-9A48-52CB29A8D15E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.OracleEf6", "src\Rhetos.OracleEf6\Rhetos.OracleEf6.csproj", "{3FEC4921-1593-4A44-9A48-52CB29A8D15E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Ef6", "src\Rhetos.Ef6\Rhetos.Ef6.csproj", "{49D178F1-62F3-43FF-845C-71E1A69A7DB0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.MsSqlEf6.Test", "test\Rhetos.MsSqlEf6.Test\Rhetos.MsSqlEf6.Test.csproj", "{15D46505-857C-4772-85D8-B04F4C74605B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.OracleEf6.Test", "test\Rhetos.OracleEf6.Test\Rhetos.OracleEf6.Test.csproj", "{B34EED16-B8ED-4E88-95F3-F6C5091DBC49}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -117,6 +121,14 @@ Global
 		{49D178F1-62F3-43FF-845C-71E1A69A7DB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{49D178F1-62F3-43FF-845C-71E1A69A7DB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{49D178F1-62F3-43FF-845C-71E1A69A7DB0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15D46505-857C-4772-85D8-B04F4C74605B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15D46505-857C-4772-85D8-B04F4C74605B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15D46505-857C-4772-85D8-B04F4C74605B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15D46505-857C-4772-85D8-B04F4C74605B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B34EED16-B8ED-4E88-95F3-F6C5091DBC49}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B34EED16-B8ED-4E88-95F3-F6C5091DBC49}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B34EED16-B8ED-4E88-95F3-F6C5091DBC49}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B34EED16-B8ED-4E88-95F3-F6C5091DBC49}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

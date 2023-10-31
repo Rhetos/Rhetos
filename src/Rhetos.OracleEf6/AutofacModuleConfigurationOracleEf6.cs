@@ -18,6 +18,7 @@
 */
 
 using Autofac;
+using Rhetos.Deployment;
 using Rhetos.Persistence;
 using Rhetos.Utilities;
 using System.ComponentModel.Composition;
@@ -30,10 +31,13 @@ namespace Rhetos.OracleEf6
         protected override void Load(ContainerBuilder builder)
         {
             // Components for all contexts (rhetos build, dbupdate, application runtime):
-            builder.RegisterType<OracleSqlUtility>().As<ISqlUtility>().InstancePerLifetimeScope();
+            builder.RegisterType<OracleSqlUtility>().As<ISqlUtility>().SingleInstance();
 
             // Run-time and DbUpdate:
             builder.RegisterType<OracleSqlExecuter>().As<ISqlExecuter>().InstancePerLifetimeScope();
+
+            // DbUpdate:
+            builder.RegisterType<OracleConnectionTesting>().As<IConnectionTesting>();
 
             base.Load(builder);
         }

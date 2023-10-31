@@ -18,21 +18,29 @@
 */
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos.TestCommon;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
+using System.Threading;
+using Rhetos.Utilities;
 
-namespace Rhetos.Utilities.Test
+namespace Rhetos.MsSqlEf6.Test
 {
     [TestClass]
     public class MsSqlUtilityTest
     {
+        internal static MsSqlUtility NewSqlUtility() => new MsSqlUtility(new NoLocalizer(), new DatabaseSettings { DatabaseLanguage = "MsSql" });
+
         [TestMethod]
         public void InterpretSqlExceptionUserMessage()
         {
-            var msSqlUtility = new MsSqlUtility(new NoLocalizer());
+            var msSqlUtility = NewSqlUtility();
             var interpretedException = msSqlUtility.InterpretSqlException(
                 NewSqlException("test message", 50000, 16, 101)); // State 101 is Rhetos convention for user error message.
             Assert.AreEqual("UserException: test message", interpretedException.GetType().Name + ": " + interpretedException.Message);
@@ -163,7 +171,7 @@ namespace Rhetos.Utilities.Test
 
         private void TestInterpretedException(List<(Exception, string, string)> tests)
         {
-            var msSqlUtility = new MsSqlUtility(new NoLocalizer());
+            var msSqlUtility = NewSqlUtility();
             foreach (var test in tests)
             {
                 string reportInput = "Input: " + (test.Item1 != null ? test.Item1.ToString() : "null");
@@ -215,5 +223,102 @@ namespace Rhetos.Utilities.Test
         }
 
         #endregion
+
+        [TestMethod]
+        public void ConnectionStringAddAppName()
+        {
+            string initialConnectionString = "Data Source=DummyServerName;Initial Catalog=DummyDatabaseName;Integrated Security=true;";
+
+            IConfiguration configuration = new ConfigurationBuilder(new ConsoleLogProvider())
+                .AddKeyValue(ConnectionString.ConnectionStringConfigurationKey, initialConnectionString)
+                .Build();
+            ISqlUtility sqlUtility = NewSqlUtility();
+            string rhetosConnectionString = new ConnectionString(configuration, sqlUtility).ToString();
+
+            Assert.AreEqual(
+                "Data Source=DummyServerName;Initial Catalog=DummyDatabaseName;Integrated Security=true;Application Name=testhost",
+                rhetosConnectionString,
+                ignoreCase: true);
+
+            var s = new SqlConnectionStringBuilder(rhetosConnectionString);
+            Assert.AreEqual("testhost", s.ApplicationName);
+        }
+
+        [TestMethod]
+        public void SingleQuote_SimpleTest()
+        {
+            Assert.AreEqual("N'abc'", NewSqlUtility().QuoteText("abc"));
+        }
+
+        [TestMethod]
+        public void SingleQuote_EscapeSequenceTest()
+        {
+            Assert.AreEqual("N'ab''c'", NewSqlUtility().QuoteText("ab'c"));
+        }
+
+        [TestMethod]
+        public void GetShortName()
+        {
+            Assert.AreEqual("someview", NewSqlUtility().GetShortName("someschema.someview"));
+            Assert.AreEqual("someview", NewSqlUtility().GetShortName("someview"));
+
+            TestUtility.ShouldFail(() => NewSqlUtility().GetShortName("a.b.c"), "Invalid database object name");
+            TestUtility.ShouldFail(() => NewSqlUtility().GetShortName("a."), "Invalid database object name");
+        }
+
+        [TestMethod]
+        public void MsSqlGetSchemaName()
+        {
+            Assert.AreEqual("someschema", NewSqlUtility().GetSchemaName("someschema.someview"));
+            Assert.AreEqual("dbo", NewSqlUtility().GetSchemaName("someview"));
+        }
+
+        [TestMethod]
+        public void MaskPasswordTest()
+        {
+            var tests = new ListOfTuples<string, string[]>
+            {
+                // Format: connection string, expected content.
+                { "Server=tcp:name.database.windows.net,1433;Initial Catalog=RhetosAzureDB;Persist Security Info=False;User ID=jjj;Password=jjj;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
+                    new[] { "tcp:name.database.windows.net,1433", "RhetosAzureDB" } },
+                { "Data Source=localhost;Initial Catalog=Rhetos;Integrated Security=SSPI;",
+                    new[] { "localhost", "Rhetos" } },
+                { "User Id=jjj;Password=jjj;Data Source=localhost:1521/xe;",
+                    new[] { "localhost:1521/xe" } },
+                { "User Id=jjj;Password='jjj;jjj=jjj';Data Source=localhost:1521/xe;",
+                    new[] { "localhost:1521/xe" } },
+                { "User Id=jjj;Password=\"jjj;jjj=jjj\";Data Source=localhost:1521/xe;",
+                    new[] { "localhost:1521/xe" } },
+                { "';[]=-",
+                    Array.Empty<string>() },
+            };
+
+            foreach (var test in tests)
+            {
+                Console.WriteLine(test.Item1);
+                string report = NewSqlUtility().SqlConnectionInfo(test.Item1);
+                Console.WriteLine("=> " + report);
+
+                TestUtility.AssertNotContains(report, "j", "Username or password leaked.");
+                if (test.Item2.Any())
+                    TestUtility.AssertContains(report, test.Item2);
+            }
+        }
+
+        [TestMethod]
+        public void QuoteIdentifier()
+        {
+            var tests = new Dictionary<string, string>
+            {
+                { "abc", "[abc]" },
+                { "abc[", "[abc[]" },
+                { "abc]", "[abc]]]" },
+                { "[][][]", "[[]][]][]]]" },
+                { " '\" ", "[ '\" ]" }
+            };
+
+            foreach (var test in tests)
+                Assert.AreEqual(test.Value, NewSqlUtility().QuoteIdentifier(test.Key));
+        }
     }
 }

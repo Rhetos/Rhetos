@@ -40,14 +40,14 @@ namespace CommonConcepts.Test
         /// </remarks>
         public static IUnitOfWorkScope Create(Action<ContainerBuilder> registerCustomComponents = null)
         {
-            return RhetosHost.CreateScope(registerCustomComponents);
+            return RhetosHost.Value.CreateScope(registerCustomComponents);
         }
 
         /// <summary>
         /// Reusing a single shared static DI container between tests, to reduce initialization time for each test.
         /// Each test should create a child scope with <see cref="TestScope.Create"/> method to start a 'using' block.
         /// </summary>
-        public static readonly RhetosHost RhetosHost = RhetosHost.CreateFrom(
-            @"..\..\..\..\CommonConcepts.TestApp\bin\Debug\net5.0\CommonConcepts.TestApp.dll");
+        public static readonly Lazy<RhetosHost> RhetosHost = new Lazy<RhetosHost>(() => Rhetos.RhetosHost.CreateFrom(
+            @"..\..\..\..\CommonConcepts.TestApp\bin\Debug\net5.0\CommonConcepts.TestApp.dll"));
     }
 }

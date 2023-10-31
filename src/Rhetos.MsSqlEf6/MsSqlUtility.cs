@@ -31,9 +31,14 @@ namespace Rhetos.Utilities
     {
         private readonly ILocalizer _localizer;
 
-        public MsSqlUtility(ILocalizer localizer)
+        public MsSqlUtility(ILocalizer localizer, DatabaseSettings databaseSettings)
         {
             _localizer = localizer;
+
+            const string expectedDatabaseLanguage = "MsSql";
+            if (databaseSettings.DatabaseLanguage != expectedDatabaseLanguage)
+                throw new FrameworkException($"Unsupported database language '{databaseSettings.DatabaseLanguage}'." +
+                    $" Assembly '{GetType().Assembly.GetName()}' expects database language '{expectedDatabaseLanguage}'.");
         }
 
         public string ProviderName => "System.Data.SqlClient";
@@ -94,7 +99,7 @@ namespace Rhetos.Utilities
         /// <returns>
         /// Returns null is the user is not recognized.
         /// </returns>
-        public static DbCommand CreateUserContextInfoCommand(IUserInfo userInfo)
+        private static DbCommand CreateUserContextInfoCommand(IUserInfo userInfo)
         {
             string userInfoText = SqlUtility.UserContextInfoText(userInfo);
             byte[] encodedUserInfo = userInfoText.Take(128).Select(c => (byte)(c < 256 ? c : '?')).ToArray();
@@ -345,7 +350,7 @@ namespace Rhetos.Utilities
                 return "dbo";
 
             var schema = fullObjectName.Substring(0, dotPosition);
-            return SqlUtility.Identifier(schema);
+            return Identifier(schema);
         }
 
         public string Identifier(string name)
@@ -366,8 +371,7 @@ namespace Rhetos.Utilities
 
         public string QuoteIdentifier(string sqlIdentifier)
         {
-            sqlIdentifier = sqlIdentifier.Replace("]", "]]");
-            return "[" + sqlIdentifier + "]";
+            return "[" + sqlIdentifier.Replace("]", "]]") + "]";
         }
 
         public string GetShortName(string fullObjectName)
@@ -457,16 +461,20 @@ namespace Rhetos.Utilities
 
         public DateTime GetDatabaseTime(ISqlExecuter sqlExecuter)
         {
-            return DatabaseTimeCache.GetDatabaseTimeCached(() =>
-            {
-                DateTime databaseTime = DateTime.MinValue;
-                sqlExecuter.ExecuteReader("SELECT SYSDATETIME()",
-                    reader => databaseTime = reader.GetDateTime(0));
-                if (databaseTime == DateTime.MinValue)
-                    throw new FrameworkException("Cannot read database server time.");
+            return DatabaseTimeCache.GetDatabaseTimeCached(
+                () => GetDatabaseTimeUncached(sqlExecuter),
+                () => DateTime.Now);
+        }
 
-                return DateTime.SpecifyKind(databaseTime, DateTimeKind.Local);
-            }, () => DateTime.Now);
+        public DateTime GetDatabaseTimeUncached(ISqlExecuter sqlExecuter)
+        {
+            DateTime databaseTime = DateTime.MinValue;
+            sqlExecuter.ExecuteReader("SELECT SYSDATETIME()",
+                reader => databaseTime = reader.GetDateTime(0));
+            if (databaseTime == DateTime.MinValue)
+                throw new FrameworkException("Cannot read database server time.");
+
+            return DateTime.SpecifyKind(databaseTime, DateTimeKind.Local);
         }
 
         public string SqlConnectionInfo(string connectionString)

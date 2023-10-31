@@ -19,6 +19,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Utilities;
 using System;
 using System.Linq;
 
@@ -41,6 +42,29 @@ namespace CommonConcepts.Test.Framework
 
                 Assert.AreEqual("Rhetos:", logEntry.ContextInfo);
             }
+        }
+
+        [TestMethod]
+        public void GetDatabaseTimeTest()
+        {
+            // More detailed tests are implemented in the DatabaseTimeCacheTest class.
+            // This is only a smoke test for SqlUtility.
+
+            using var scope = TestScope.Create();
+
+            var sqlExecuter = scope.Resolve<ISqlExecuter>();
+            var sqlUtility = scope.Resolve<ISqlUtility>();
+
+            _ = Enumerable.Range(0, 4).Select(x => sqlUtility.GetDatabaseTime(sqlExecuter)).ToList(); // Caching initialization.
+
+            var notCachedDatabaseTime = ((MsSqlUtility)sqlUtility).GetDatabaseTimeUncached(sqlExecuter);
+            var cachedTime = sqlUtility.GetDatabaseTime(sqlExecuter);
+
+            Console.WriteLine(notCachedDatabaseTime.ToString("o"));
+            Console.WriteLine(cachedTime.ToString("o"));
+
+            Assert.IsTrue(notCachedDatabaseTime - cachedTime <= TimeSpan.FromSeconds(0.01));
+            Assert.IsTrue(cachedTime - notCachedDatabaseTime <= TimeSpan.FromSeconds(0.01));
         }
     }
 }

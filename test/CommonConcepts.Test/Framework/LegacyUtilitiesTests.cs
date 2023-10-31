@@ -18,10 +18,9 @@
 */
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos.TestCommon;
-using System;
+using Rhetos.Utilities;
 
-namespace Rhetos.Utilities.Test
+namespace CommonConcepts.Test.Framework
 {
     [TestClass]
     public class LegacyUtilitiesTests
@@ -29,17 +28,15 @@ namespace Rhetos.Utilities.Test
 #pragma warning disable CS0618 // Type or member is obsolete
 
         [TestMethod]
-        public void SqlUtilityWorksCorrectly()
+        public void StaticConfiguration()
         {
-            var configuration = new ConfigurationBuilder(new ConsoleLogProvider())
-                .AddConfigurationManagerConfiguration()
-                .Build();
-            LegacyUtilities.Initialize(configuration);
+            string connectionString1 = new Configuration().GetString(ConnectionString.ConnectionStringConfigurationKey, null).Value;
+            Assert.IsTrue(!string.IsNullOrEmpty(connectionString1));
 
-            Assert.AreEqual("MsSql", SqlUtility.DatabaseLanguage);
-            Assert.IsFalse(string.IsNullOrEmpty(SqlUtility.ConnectionString));
-            Assert.AreEqual(31, SqlUtility.SqlCommandTimeout);
+            string connectionString2 = ConfigUtility.GetAppSetting(ConnectionString.ConnectionStringConfigurationKey);
+            Assert.IsTrue(!string.IsNullOrEmpty(connectionString2));
         }
+
 #pragma warning restore CS0618 // Type or member is obsolete
     }
 }

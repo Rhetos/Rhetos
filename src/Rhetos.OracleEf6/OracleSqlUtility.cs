@@ -20,15 +20,29 @@
 using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.Globalization;
 using System.Linq;
-using System.Reflection;
 
 namespace Rhetos.Utilities
 {
     public class OracleSqlUtility : ISqlUtility
     {
+        private readonly DatabaseSettings _databaseSettings;
+
+        private readonly Lazy<string> _setNationalLanguageQuery;
+
+        public OracleSqlUtility(DatabaseSettings databaseSettings)
+        {
+            _databaseSettings = databaseSettings;
+            _setNationalLanguageQuery = new(CreateSetNationalLanguageQuery);
+
+            // This class is a singleton, so there are no performance issues checking the database settings for each instance.
+            const string expectedDatabaseLanguage = "Oracle";
+            if (databaseSettings.DatabaseLanguage != expectedDatabaseLanguage)
+                throw new FrameworkException($"Unsupported database language '{databaseSettings.DatabaseLanguage}'." +
+                    $" Assembly '{GetType().Assembly.GetName()}' expects database language '{expectedDatabaseLanguage}'.");
+        }
+
         public string ProviderName => "Oracle.ManagedDataAccess.Client";
 
         public string TrySetApplicationName(string connectionString)
@@ -72,25 +86,25 @@ namespace Rhetos.Utilities
             return name;
         }
 
-        private static string _setNationalLanguageQuery;
-
         /// <summary>
         /// Returns an SQL query that is used to set the national language, for string comparison and sorting.
         /// </summary>
-        public static string SetNationalLanguageQuery()
+        public string SetNationalLanguageQuery()
         {
-            if (_setNationalLanguageQuery == null)
-            {
-                if (!string.IsNullOrEmpty(SqlUtility.NationalLanguage))
-                    _setNationalLanguageQuery = string.Format(@"BEGIN
-  EXECUTE IMMEDIATE 'ALTER SESSION SET NLS_COMP=LINGUISTIC';
-  EXECUTE IMMEDIATE 'ALTER SESSION SET NLS_SORT={0}';
-END;", SqlUtility.NationalLanguage);
-                else
-                    _setNationalLanguageQuery = "";
-            }
+            return _setNationalLanguageQuery.Value;
+        }
 
-            return _setNationalLanguageQuery;
+        private string CreateSetNationalLanguageQuery()
+        {
+            if (!string.IsNullOrEmpty(_databaseSettings.DatabaseNationalLanguage))
+                return
+$@"BEGIN
+  EXECUTE IMMEDIATE 'ALTER SESSION SET NLS_COMP=LINGUISTIC';
+  EXECUTE IMMEDIATE 'ALTER SESSION SET NLS_SORT={_databaseSettings.DatabaseNationalLanguage}';
+END;";
+            else
+                return "";
+
 
             // Alternative way (probably slower):
             //if (!string.IsNullOrEmpty(SqlUtility.NationalLanguage))
@@ -264,7 +278,6 @@ END;", SqlUtility.NationalLanguage);
             var elements = new ListOfTuples<string, string>
             {
                 { "DataSource", cs.DataSource },
-                { "User Id", cs.UserID },
             };
 
             return

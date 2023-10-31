@@ -37,6 +37,7 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<DatabaseSettings>()).SingleInstance();
             builder.RegisterType<NoLocalizer>().As<ILocalizer>().SingleInstance();
             builder.RegisterGeneric(typeof(NoLocalizer<>)).As(typeof(ILocalizer<>)).SingleInstance();
+            builder.RegisterType<StaticUtilities>().SingleInstance();
 
             base.Load(builder);
         }

@@ -35,6 +35,13 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(SqlIndexMultiplePropertyInfo))]
     public class SqlIndexMultiplePropertyDatabaseDefinition : IConceptDatabaseDefinitionExtension
     {
+        private readonly DatabaseSettings _databaseSettings;
+
+        public SqlIndexMultiplePropertyDatabaseDefinition(DatabaseSettings databaseSettings)
+        {
+            _databaseSettings = databaseSettings;
+        }
+
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
         {
             return null;
@@ -53,11 +60,11 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             if (info.SqlIndex.SqlImplementation())
             {
                 string nationalProperty = null;
-                if (!string.IsNullOrEmpty(SqlUtility.NationalLanguage))
+                if (!string.IsNullOrEmpty(_databaseSettings.DatabaseNationalLanguage))
                 {
                     var nationalPropertyFormat = Sql.TryGet("SqlIndexMultiplePropertyDatabaseDefinition_National_" + info.Property.GetType().Name);
                     if (!string.IsNullOrEmpty(nationalPropertyFormat))
-                        nationalProperty = string.Format(nationalPropertyFormat, info.Property.Name, SqlUtility.NationalLanguage);
+                        nationalProperty = string.Format(nationalPropertyFormat, info.Property.Name, _databaseSettings.DatabaseNationalLanguage);
                 }
 
                 codeBuilder.InsertCode(

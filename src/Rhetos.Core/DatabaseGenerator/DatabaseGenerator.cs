@@ -194,10 +194,6 @@ namespace Rhetos.DatabaseGenerator
             // to avoid rolling back the concept application's metadata in case of any error that might occur later in the transaction.
             else if (!SqlUtility.ScriptSupportsTransaction(databaseModificationScripts))
                 yield return new SqlBatchScript { Sql = SqlUtility.NoTransactionTag, IsBatch = false };
-
-            // Oracle must commit metadata changes before modifying next database object, to ensure metadata consistency if next DDL command fails
-            // (Oracle db automatically commits changes on DDL commands, so the previous DDL command has already been committed).
-            yield return new SqlBatchScript { Sql = Sql.Get("DatabaseGenerator_CommitAfterDDL"), IsBatch = false };
         }
 
         private List<SqlBatchScript> ApplyChangesToDatabase_Unchanged(List<ConceptApplication> toBeInserted, List<ConceptApplication> newApplications, List<ConceptApplication> oldApplications)
@@ -229,7 +225,7 @@ namespace Rhetos.DatabaseGenerator
             _changesLogger.Trace("{0} {1}, ID={2}.{3}{4}",
                 action,
                 conceptApplication.GetConceptApplicationKey(),
-                SqlUtility.GuidToString(conceptApplication.Id),
+                conceptApplication.Id,
                 additionalInfo != null ? " " : null,
                 additionalInfo != null ? additionalInfo() : null);
         }

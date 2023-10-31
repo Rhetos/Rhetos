@@ -18,9 +18,15 @@
 */
 
 using Autofac;
+using Autofac.Core;
+using Autofac.Core.Registration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos.Persistence;
 using Rhetos.TestCommon;
+using Rhetos.Utilities;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -32,7 +38,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void RuntimeRegistrationsRegressionTest()
         {
-            var lifetimeScope = (ILifetimeScope)TestScope.RhetosHost.GetRootContainer();
+            var lifetimeScope = (ILifetimeScope)TestScope.RhetosHost.Value.GetRootContainer();
 
             var registrations = lifetimeScope.ComponentRegistry.Registrations
                 .Select(registration => registration.ToString())
@@ -70,7 +76,7 @@ Activator = CommonConceptsOptions (DelegateActivator), Services = [Rhetos.Dom.De
 Activator = CommonConceptsRuntimeOptions (DelegateActivator), Services = [Rhetos.Dom.DefaultConcepts.CommonConceptsRuntimeOptions], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = ConceptMetadata (ReflectionActivator), Services = [Rhetos.Dsl.ConceptMetadata], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = ConfigurationProvider (ProvidedInstanceActivator), Services = [Rhetos.Utilities.IConfiguration], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = ExternallyOwned, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
-Activator = ConnectionString (ProvidedInstanceActivator), Services = [Rhetos.Utilities.ConnectionString], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
+Activator = ConnectionString (ReflectionActivator), Services = [Rhetos.Utilities.ConnectionString], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = ConsoleLogProvider (ReflectionActivator), Services = [Rhetos.Logging.ILogProvider], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = CurrentKeepSynchronizedMetadata (ProvidedInstanceActivator), Services = [Rhetos.Dom.DefaultConcepts.CurrentKeepSynchronizedMetadata], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = ExternallyOwned, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = DatabaseOptions (DelegateActivator), Services = [Rhetos.Utilities.DatabaseOptions], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
@@ -79,6 +85,7 @@ Activator = DateCsPropertyType (ReflectionActivator), Services = [Rhetos.Dsl.ICo
 Activator = DateDatabaseColumnTypeMetadata (ReflectionActivator), Services = [Rhetos.Dsl.IConceptMetadataExtension], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = DateTimeCsPropertyType (ReflectionActivator), Services = [Rhetos.Dsl.IConceptMetadataExtension], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = DateTimeDatabaseColumnTypeMetadata (ReflectionActivator), Services = [Rhetos.Dsl.IConceptMetadataExtension], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
+Activator = DbUpdateOptions (DelegateActivator), Services = [Decorator (Rhetos.Utilities.DbUpdateOptions)], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = DecimalCsPropertyType (ReflectionActivator), Services = [Rhetos.Dsl.IConceptMetadataExtension], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = DecimalDatabaseColumnTypeMetadata (ReflectionActivator), Services = [Rhetos.Dsl.IConceptMetadataExtension], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = DelayedLogProvider (ReflectionActivator), Services = [Rhetos.Utilities.IDelayedLogProvider], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
@@ -98,6 +105,7 @@ Activator = EfMappingViewsHash (ReflectionActivator), Services = [Rhetos.Persist
 Activator = EfMappingViewsInitializer (ReflectionActivator), Services = [Rhetos.Persistence.EfMappingViewsInitializer], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = EntityFrameworkConfiguration (ReflectionActivator), Services = [System.Data.Entity.DbConfiguration], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = EntityFrameworkContext (ReflectionActivator), Services = [Common.EntityFrameworkContext, System.Data.Entity.DbContext], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
+Activator = EntityFrameworkMappingGenerator (ReflectionActivator), Services = [Rhetos.Extensibility.IGenerator], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = EntityFrameworkMetadata (ReflectionActivator), Services = [Rhetos.Dom.DefaultConcepts.Persistence.EntityFrameworkMetadata], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = ExecuteActionCommand (ReflectionActivator), Services = [Rhetos.Processing.ICommandImplementation, Rhetos.Processing.DefaultCommands.ExecuteActionCommandInfo (Rhetos.Processing.ICommandImplementation)], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = ExecuteActionCommandClaims (ReflectionActivator), Services = [Rhetos.Security.IClaimProvider, Rhetos.Processing.DefaultCommands.ExecuteActionCommandInfo (Rhetos.Security.IClaimProvider)], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
@@ -124,8 +132,9 @@ Activator = LongStringDatabaseColumnTypeMetadata (ReflectionActivator), Services
 Activator = MetadataWorkspaceFileProvider (ReflectionActivator), Services = [Rhetos.Persistence.IMetadataWorkspaceFileProvider], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = MoneyCsPropertyType (ReflectionActivator), Services = [Rhetos.Dsl.IConceptMetadataExtension], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = MoneyDatabaseColumnTypeMetadata (ReflectionActivator), Services = [Rhetos.Dsl.IConceptMetadataExtension], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
+Activator = MsConnectionTesting (ReflectionActivator), Services = [Rhetos.Deployment.IConnectionTesting], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = MsSqlExecuter (ReflectionActivator), Services = [Rhetos.Utilities.ISqlExecuter], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
-Activator = MsSqlUtility (ReflectionActivator), Services = [Rhetos.Utilities.ISqlUtility], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
+Activator = MsSqlUtility (ReflectionActivator), Services = [Rhetos.Utilities.ISqlUtility], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = NoLocalizer (ReflectionActivator), Services = [Rhetos.Utilities.ILocalizer], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = NullAuthorizationProvider (ReflectionActivator), Services = [Rhetos.Security.IAuthorizationProvider], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = PersistenceStorage (ReflectionActivator), Services = [Rhetos.Dom.DefaultConcepts.IPersistenceStorage], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
@@ -157,8 +166,34 @@ Activator = SqlCommandBatch (ReflectionActivator), Services = [Rhetos.Dom.Defaul
 Activator = SqlObjectsIndex (ReflectionActivator), Services = [Rhetos.Dsl.IDslModelIndex], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = SqlTransactionBatches (ReflectionActivator), Services = [Rhetos.Utilities.ISqlTransactionBatches], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = SqlTransactionBatchesOptions (DelegateActivator), Services = [Rhetos.Utilities.SqlTransactionBatchesOptions], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
+Activator = StaticUtilities (ReflectionActivator), Services = [Rhetos.Utilities.StaticUtilities], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = UnitOfWorkFactory (ReflectionActivator), Services = [Rhetos.UnitOfWorkFactory, Rhetos.IUnitOfWorkFactory], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = XmlUtility (ReflectionActivator), Services = [Rhetos.Utilities.XmlUtility], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 ";
+        [TestMethod]
+        public void DbUpdateOptionsUnavailableAtRuntime()
+        {
+            // DbUpdateOptions in not intended to be available in runtime, since Rhetos.Core registers it at deploy-time only,
+            // but the Rhetos EF6 package decorates the DbUpdateOptions class, and since it is a plugin it cannot
+            // control the registrations at build-time, deploy-time or runtime.
+
+            using var scope = TestScope.Create();
+            TestUtility.ShouldFail<ComponentNotRegisteredException>(
+                () => scope.Resolve<DbUpdateOptions>(),
+                typeof(DbUpdateOptions).FullName);
+        }
+
+        [TestMethod]
+        public void EntityFrameworkMappingGeneratorUnavailableAtRuntime()
+        {
+            // EntityFrameworkMappingGenerator in not intended to be available in runtime, since Rhetos.Core registers it at build-time only,
+            // but the Rhetos EF6 package decorates the DbUpdateOptions class, and since it is a plugin it cannot
+            // control the registrations at build-time, deploy-time or runtime.
+
+            using var scope = TestScope.Create();
+            TestUtility.ShouldFail<DependencyResolutionException>(
+                () => scope.Resolve<IEnumerable<Rhetos.Extensibility.IGenerator>>(),
+                typeof(EntityFrameworkMappingGenerator).FullName);
+        }
     }
 }

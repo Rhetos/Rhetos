@@ -29,22 +29,28 @@ namespace Rhetos.Deployment
     {
         private readonly ILogger _logger;
         private readonly ISqlTransactionBatches _sqlTransactionBatches;
-        private readonly ConnectionTesting _connectionTesting;
+        private readonly IConnectionTesting _connectionTesting;
         private readonly DatabaseCleaner _databaseCleaner;
         private readonly DataMigrationScriptsExecuter _dataMigrationScriptsExecuter;
         private readonly IDatabaseGenerator _databaseGenerator;
         private readonly IConceptDataMigrationExecuter _dataMigrationFromCodeExecuter;
         private readonly DbUpdateOptions _options;
+        private readonly DatabaseSettings _databaseSettings;
+        private readonly ISqlUtility _sqlUtility;
+        private readonly ConnectionString _connectionString;
 
         public DatabaseDeployment(
             ILogProvider logProvider,
             ISqlTransactionBatches sqlTransactionBatches,
-            ConnectionTesting connectionTesting,
+            IConnectionTesting connectionTesting,
             DatabaseCleaner databaseCleaner,
             DataMigrationScriptsExecuter dataMigrationScriptsExecuter,
             IDatabaseGenerator databaseGenerator,
             IConceptDataMigrationExecuter dataMigrationFromCodeExecuter,
-            DbUpdateOptions options)
+            DbUpdateOptions options,
+            DatabaseSettings databaseSettings,
+            ISqlUtility sqlUtility,
+            ConnectionString connectionString)
         {
             _logger = logProvider.GetLogger(GetType().Name);
             _sqlTransactionBatches = sqlTransactionBatches;
@@ -54,11 +60,14 @@ namespace Rhetos.Deployment
             _databaseGenerator = databaseGenerator;
             _dataMigrationFromCodeExecuter = dataMigrationFromCodeExecuter;
             _options = options;
+            _databaseSettings = databaseSettings;
+            _sqlUtility = sqlUtility;
+            _connectionString = connectionString;
         }
 
         public void UpdateDatabase()
         {
-            _logger.Info("SQL connection: " + SqlUtility.SqlConnectionInfo(SqlUtility.ConnectionString));
+            _logger.Info("SQL connection: " + _sqlUtility.SqlConnectionInfo(_connectionString));
             _connectionTesting.ValidateDbConnection();
 
             _logger.Info("Preparing Rhetos database.");
@@ -107,7 +116,7 @@ namespace Rhetos.Deployment
 
         private void PrepareRhetosDatabase()
         {
-            string rhetosDatabaseScriptResourceName = "Rhetos.Deployment.RhetosDatabase." + SqlUtility.DatabaseLanguage + ".sql";
+            string rhetosDatabaseScriptResourceName = "Rhetos.Deployment.RhetosDatabase." + _databaseSettings.DatabaseLanguage + ".sql";
             var resourceStream = GetType().Assembly.GetManifestResourceStream(rhetosDatabaseScriptResourceName);
             if (resourceStream == null)
                 throw new FrameworkException("Cannot find resource '" + rhetosDatabaseScriptResourceName + "'.");

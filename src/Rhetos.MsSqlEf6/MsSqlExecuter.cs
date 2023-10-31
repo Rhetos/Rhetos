@@ -24,13 +24,14 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
-using System.Reflection.Metadata;
 using System.Text;
 
 namespace Rhetos.Persistence
 {
     public class MsSqlExecuter : BaseSqlExecuter, ISqlExecuter
     {
+        private readonly ISqlUtility _sqlUtility;
+
         /// <summary>
         /// In a typical unit of work (a web request, e.g.), a shared persistence transaction is active.
         /// It results with each Execute command call participating in a shared transaction that will be committed
@@ -41,9 +42,10 @@ namespace Rhetos.Persistence
         /// (see IUnitOfWorkFactory), with registered IPersistenceTransaction implementation,
         /// and then resolve ISqlExecuter from the scope.
         /// </remarks>
-        public MsSqlExecuter(ILogProvider logProvider, IPersistenceTransaction persistenceTransaction, DatabaseOptions databaseOptions)
+        public MsSqlExecuter(ILogProvider logProvider, IPersistenceTransaction persistenceTransaction, DatabaseOptions databaseOptions, ISqlUtility sqlUtility)
             : base(logProvider, persistenceTransaction, databaseOptions)
         {
+            _sqlUtility = sqlUtility;
         }
 
         protected override string ReportSqlErrors(DbException exception)
@@ -93,8 +95,8 @@ namespace Rhetos.Persistence
             sql.AppendLine("DECLARE @lockResult int;");
             foreach (var key in keys)
             {
-                sql.AppendLine($"EXEC @lockResult = sp_getapplock {SqlUtility.QuoteText(key.SqlName)}, 'Exclusive'{timeoutParameter};");
-                sql.AppendLine($"IF @lockResult < 0 BEGIN; RAISERROR({SqlUtility.QuoteText(dbLockPrefix + key.FullName)}, 16, 10); RETURN; END;");
+                sql.AppendLine($"EXEC @lockResult = sp_getapplock {_sqlUtility.QuoteText(key.SqlName)}, 'Exclusive'{timeoutParameter};");
+                sql.AppendLine($"IF @lockResult < 0 BEGIN; RAISERROR({_sqlUtility.QuoteText(dbLockPrefix + key.FullName)}, 16, 10); RETURN; END;");
             }
 
             try
@@ -146,7 +148,7 @@ namespace Rhetos.Persistence
             var sql = new StringBuilder();
             sql.AppendLine("DECLARE @lockResult int;");
             foreach (var key in keys)
-                sql.AppendLine($@"EXEC sp_releaseapplock {SqlUtility.QuoteText(key.SqlName)};");
+                sql.AppendLine($@"EXEC sp_releaseapplock {_sqlUtility.QuoteText(key.SqlName)};");
 
             this.ExecuteSql(sql.ToString());
         }

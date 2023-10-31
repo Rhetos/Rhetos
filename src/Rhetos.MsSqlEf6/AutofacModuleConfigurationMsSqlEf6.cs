@@ -18,10 +18,9 @@
 */
 
 using Autofac;
+using Rhetos.Deployment;
 using Rhetos.Persistence;
 using Rhetos.Utilities;
-using System.Collections.Generic;
-using System;
 using System.ComponentModel.Composition;
 
 namespace Rhetos.MsSqlEf6
@@ -32,14 +31,13 @@ namespace Rhetos.MsSqlEf6
         protected override void Load(ContainerBuilder builder)
         {
             // Components for all contexts (rhetos build, dbupdate, application runtime):
-            builder.RegisterType<MsSqlUtility>().As<ISqlUtility>().InstancePerLifetimeScope();
+            builder.RegisterType<MsSqlUtility>().As<ISqlUtility>().SingleInstance();
 
             // Run-time and DbUpdate:
             builder.RegisterType<MsSqlExecuter>().As<ISqlExecuter>().InstancePerLifetimeScope();
 
-            const string dbLanguage = "MsSql";
-            if (SqlUtility.DatabaseLanguage != dbLanguage)
-                throw new FrameworkException($"Unsupported database language '{SqlUtility.DatabaseLanguage}'. {GetType().Assembly.GetName()} expects database language {dbLanguage}.");
+            // DbUpdate:
+            builder.RegisterType<MsConnectionTesting>().As<IConnectionTesting>();
 
             base.Load(builder);
         }

@@ -17,9 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Autofac;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using Rhetos.DatabaseGenerator;
+using Rhetos.Utilities;
 using System;
 
 namespace Rhetos
@@ -70,7 +73,11 @@ namespace Rhetos
                 rhetosHostBuilderConfigureAction(serviceProvider, rhetosHostBuilder);
             }
 
-            return rhetosHostBuilder.Build();
+            var rhetosHost = rhetosHostBuilder.Build();
+
+            rhetosHost.GetRootContainer().Resolve<StaticUtilities>().Initialize();
+
+            return rhetosHost;
         }
     }
 }

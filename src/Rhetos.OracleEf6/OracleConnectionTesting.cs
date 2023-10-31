@@ -17,28 +17,25 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Deployment;
 using Rhetos.Utilities;
 using System;
 using System.Data.Common;
 
-namespace Rhetos.Deployment
+namespace Rhetos.OracleEf6
 {
-    public class ConnectionTesting
+    public class OracleConnectionTesting : IConnectionTesting
     {
-        private const string _checkDboMembershipMsSql = "SELECT IS_MEMBER('db_owner')";
-
         private readonly ConnectionString _connectionString;
-        private readonly ISqlExecuter _sqlExecuter;
 
-        public ConnectionTesting(ConnectionString connectionString, ISqlExecuter sqlExecuter)
+        public OracleConnectionTesting(ConnectionString connectionString)
         {
             _connectionString = connectionString;
-            _sqlExecuter = sqlExecuter;
         }
 
         public void ValidateDbConnection()
         {
-            if (string.IsNullOrEmpty(_connectionString))
+            if (string.IsNullOrWhiteSpace(_connectionString))
                 throw new ArgumentException($"Database connection string is not specified. Please review the application's configuration ({ConnectionString.ConnectionStringConfigurationKey}).");
 
             try
@@ -48,23 +45,6 @@ namespace Rhetos.Deployment
             catch (Exception e)
             {
                 throw new ArgumentException($"Database connection string has invalid format. Please review the application's configuration ({ConnectionString.ConnectionStringConfigurationKey}).", e);
-            }
-
-            // This validation currently runs only on MS SQL databases.
-            if (SqlUtility.DatabaseLanguage == "MsSql")
-            {
-                bool isDbo = false;
-                _sqlExecuter.ExecuteReader(
-                    // PersistenceTransactionOptions.UseDatabaseTransaction is disable on dbupdate.
-                    _checkDboMembershipMsSql,
-                    reader =>
-                    {
-                        if (!reader.IsDBNull(0) && ((int)reader[0] == 1))
-                            isDbo = true;
-                    });
-
-                if (!isDbo)
-                    throw new FrameworkException("Current user does not have db_owner role for the database.");
             }
         }
     }

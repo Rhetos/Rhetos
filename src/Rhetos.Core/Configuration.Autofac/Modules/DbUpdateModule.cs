@@ -35,7 +35,6 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<DbUpdateOptions>()).SingleInstance().PreserveExistingDefaults();
 
             builder.RegisterType<DatabaseDeployment>();
-            builder.RegisterType<ConnectionTesting>();
             builder.RegisterType<DatabaseCleaner>();
 
             // Updating database from database model:

@@ -18,6 +18,7 @@
 */
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos.DatabaseGenerator.Test;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
@@ -41,7 +42,7 @@ namespace Rhetos.Deployment.Test
         {
             var mockSqlExecuter = new MockSqlExecuter(oldColumns, oldTables, oldSchemas);
             var fakeSqlTransactionBatches = new FakeSqlTransactionBatches(mockSqlExecuter);
-            var databaseCleaner = new DatabaseCleaner(new ConsoleLogProvider(), mockSqlExecuter, fakeSqlTransactionBatches);
+            var databaseCleaner = new DatabaseCleaner(new ConsoleLogProvider(), mockSqlExecuter, fakeSqlTransactionBatches, new FakeSqlUtility());
             databaseCleaner.RemoveRedundantMigrationColumns();
 
             Assert.AreEqual(expectedDeletedColumns, TestUtility.DumpSorted(mockSqlExecuter.DroppedColumns), description + ": Deleted columns.");
@@ -87,7 +88,7 @@ namespace Rhetos.Deployment.Test
         {
             var mockSqlExecuter = new MockSqlExecuter("", oldTables, oldSchemas);
             var fakeSqlTransactionBatches = new FakeSqlTransactionBatches(mockSqlExecuter);
-            var databaseCleaner = new DatabaseCleaner(new ConsoleLogProvider(), mockSqlExecuter, fakeSqlTransactionBatches);
+            var databaseCleaner = new DatabaseCleaner(new ConsoleLogProvider(), mockSqlExecuter, fakeSqlTransactionBatches, new FakeSqlUtility());
             Console.WriteLine("Report: " + databaseCleaner.DeleteAllMigrationData());
 
             Assert.AreEqual("", TestUtility.DumpSorted(mockSqlExecuter.DroppedColumns), description + ": Deleted columns.");

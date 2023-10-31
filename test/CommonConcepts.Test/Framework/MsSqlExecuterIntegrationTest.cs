@@ -17,7 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using CommonConcepts.Test;
+using Autofac;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos;
 using Rhetos.Logging;
@@ -30,7 +30,6 @@ using System.Data.Common;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace CommonConcepts.Test.Framework
@@ -38,24 +37,65 @@ namespace CommonConcepts.Test.Framework
     [TestClass]
     public class MsSqlExecuterIntegrationTest
     {
-        private static string LogActionName => MethodBase.GetCurrentMethod().DeclaringType.Name;
+        private string LogActionName => GetType().Name;
+
+        [TestInitialize]
+        public void CheckDatabaseIsMsSql()
+        {
+            using var scope = TestScope.Create();
+            TestUtility.CheckDatabaseAvailability(scope, "MsSql");
+            Assert.AreEqual("MsSqlExecuter", scope.Resolve<ISqlExecuter>().GetType().Name);
+        }
+
+        [ClassCleanup]
+        public static void DropRhetosUnitTestSchema()
+        {
+            Console.WriteLine("=== ClassCleanup ===");
+
+            var test = new MsSqlExecuterIntegrationTest();
+
+            using (var scope = TestScope.Create())
+            {
+                if (scope.Resolve<DatabaseSettings>().DatabaseLanguage != "MsSql")
+                    return;
+                var sqlExecuter = scope.Resolve<ISqlExecuter>();
+                sqlExecuter.ExecuteSqlInterpolated(
+                    $"DELETE FROM Common.Log WHERE Action = {test.LogActionName} AND TableName IS NULL");
+                scope.CommitAndClose();
+            }
+
+            test.ExecuteSql(new[] {
+                @"DECLARE @sql NVARCHAR(MAX)
+                    SET @sql = ''
+                    SELECT @sql = @sql + 'DROP TABLE RhetosUnitTest.' + QUOTENAME(name) + ';' + CHAR(13) + CHAR(10)
+                        FROM sys.tables WHERE schema_id = SCHEMA_ID('RhetosUnitTest')
+                    EXEC (@sql)",
+                "IF SCHEMA_ID('RhetosUnitTest') IS NOT NULL DROP SCHEMA RhetosUnitTest" });
+        }
 
         /// <summary>
         /// Executes the MsSqlExecuter commands and commits the transaction by default.
         /// </summary>
-        private static void InTransaction(Action<MsSqlExecuter> sqlExecuterAction, string connectionString = null, IUserInfo testUser = null, bool commit = true)
+        private void InTransaction(Action<MsSqlExecuter> sqlExecuterAction, IUserInfo testUser = null, bool commit = true)
         {
-            connectionString ??= SqlUtility.ConnectionString;
             testUser ??= new NullUserInfo();
+
+            DatabaseSettings databaseSettings;
+            string connectionString;
+            using (var scope = TestScope.Create())
+            {
+                databaseSettings = scope.Resolve<DatabaseSettings>();
+                connectionString = scope.Resolve<ConnectionString>().ToString();
+            }
 
             using (var persistenceTransaction = new PersistenceTransaction(
                 new ConsoleLogProvider(),
-                connectionString,
+                new ConnectionString(connectionString),
                 testUser,
                 new PersistenceTransactionOptions(),
-                new MsSqlUtility(new NoLocalizer())))
+                new MsSqlUtility(new NoLocalizer(), databaseSettings)))
             {
-                var sqlExecuter = new MsSqlExecuter(new ConsoleLogProvider(), persistenceTransaction, new DatabaseOptions());
+                var sqlExecuter = new MsSqlExecuter(new ConsoleLogProvider(), persistenceTransaction, new DatabaseOptions(), new MsSqlUtility(new NoLocalizer(), databaseSettings));
                 sqlExecuterAction.Invoke(sqlExecuter);
                 if (commit)
                     persistenceTransaction.CommitAndClose();
@@ -65,17 +105,17 @@ namespace CommonConcepts.Test.Framework
         /// <summary>
         /// Executes the MsSqlExecuter command and commits the transaction by default.
         /// </summary>
-        private static void ExecuteSql(IEnumerable<string> commands, string connectionString = null, IUserInfo testUser = null, bool commit = true)
+        private void ExecuteSql(IEnumerable<string> commands, IUserInfo testUser = null, bool commit = true)
         {
-            InTransaction(sqlExecuter => sqlExecuter.ExecuteSql(commands), connectionString, testUser, commit);
+            InTransaction(sqlExecuter => sqlExecuter.ExecuteSql(commands), testUser, commit);
         }
 
         /// <summary>
         /// Executes the MsSqlExecuter command and commits the transaction by default.
         /// </summary>
-        private static void ExecuteReader(string command, Action<DbDataReader> action, string connectionString = null, IUserInfo testUser = null, bool commit = true)
+        private void ExecuteReader(string command, Action<DbDataReader> action, IUserInfo testUser = null, bool commit = true)
         {
-            InTransaction(sqlExecuter => sqlExecuter.ExecuteReader(command, action), connectionString, testUser, commit);
+            InTransaction(sqlExecuter => sqlExecuter.ExecuteReader(command, action), testUser, commit);
         }
 
         private string GetRandomTableName()
@@ -84,39 +124,6 @@ namespace CommonConcepts.Test.Framework
             var newTableName = "RhetosUnitTest.T" + Guid.NewGuid().ToString().Replace("-", "");
             Console.WriteLine("Generated random table name: " + newTableName);
             return newTableName;
-        }
-
-        [TestInitialize]
-        public void CheckDatabaseIsMsSql()
-        {
-            // Creating empty Rhetos DI scope just to initialize static utilities that are required for test in this class.
-            using (var scope = TestScope.Create())
-                Assert.IsNotNull(SqlUtility.ConnectionString);
-
-            TestUtility.CheckDatabaseAvailability("MsSql");
-        }
-
-        [ClassCleanup]
-        public static void DropRhetosUnitTestSchema()
-        {
-            Console.WriteLine("=== ClassCleanup ===");
-
-            using (var scope = TestScope.Create())
-            {
-                var sqlExecuter = scope.Resolve<ISqlExecuter>();
-                sqlExecuter.ExecuteSqlInterpolated(
-                    $"DELETE FROM Common.Log WHERE Action = {LogActionName} AND TableName IS NULL");
-                scope.CommitAndClose();
-            }
-
-            if (SqlUtility.DatabaseLanguage == "MsSql")
-                ExecuteSql(new[] {
-                    @"DECLARE @sql NVARCHAR(MAX)
-                        SET @sql = ''
-                        SELECT @sql = @sql + 'DROP TABLE RhetosUnitTest.' + QUOTENAME(name) + ';' + CHAR(13) + CHAR(10)
-                            FROM sys.tables WHERE schema_id = SCHEMA_ID('RhetosUnitTest')
-                        EXEC (@sql)",
-                    "IF SCHEMA_ID('RhetosUnitTest') IS NOT NULL DROP SCHEMA RhetosUnitTest" });
         }
 
         [TestMethod]
@@ -172,15 +179,25 @@ raiserror('fff', 18, 118)"
         {
             string nonexistentDatabase = "db" + Guid.NewGuid().ToString().Replace("-", "");
 
-            var connectionStringBuilder = new SqlConnectionStringBuilder(SqlUtility.ConnectionString);
+            string initialConnectionString;
+            using (var scope = TestScope.Create())
+            {
+                initialConnectionString = scope.Resolve<ConnectionString>().ToString();
+            }
+
+            var connectionStringBuilder = new SqlConnectionStringBuilder(initialConnectionString);
             connectionStringBuilder.InitialCatalog = nonexistentDatabase;
             connectionStringBuilder.IntegratedSecurity = true;
             connectionStringBuilder.ConnectTimeout = 1;
             string nonexistentDatabaseConnectionString = connectionStringBuilder.ConnectionString;
             Console.WriteLine(nonexistentDatabaseConnectionString);
 
-            TestUtility.ShouldFail(() => ExecuteSql(new[] { "print 123" }, nonexistentDatabaseConnectionString),
-                connectionStringBuilder.DataSource, connectionStringBuilder.InitialCatalog, Environment.UserName);
+            using (var scope = TestScope.Create(builder => builder.RegisterInstance(new ConnectionString(nonexistentDatabaseConnectionString))))
+            {
+                TestUtility.ShouldFail(
+                    () => scope.Resolve<ISqlExecuter>().ExecuteSql("print 123"),
+                    connectionStringBuilder.DataSource, connectionStringBuilder.InitialCatalog, Environment.UserName);
+            }
         }
 
         [TestMethod]
@@ -302,7 +319,7 @@ raiserror('fff', 18, 118)"
         {
             var testUser = new TestUserInfo(null, null, false);
             var result = new List<object>();
-            ExecuteReader($"SELECT {contextInfoToText}", reader => result.Add(reader[0]), SqlUtility.ConnectionString, testUser);
+            ExecuteReader($"SELECT {contextInfoToText}", reader => result.Add(reader[0]), testUser);
 
             Console.WriteLine(result.Single());
             Assert.AreEqual("Rhetos:", (string)result.Single());
@@ -352,7 +369,7 @@ raiserror('fff', 18, 118)"
             Assert.AreEqual(expected, ReadContextWithSqlExecuter(testUser));
         }
 
-        private static string ReadContextWithSqlExecuter(TestUserInfo testUser)
+        private string ReadContextWithSqlExecuter(TestUserInfo testUser)
         {
             var result = new List<string>();
             ExecuteReader(

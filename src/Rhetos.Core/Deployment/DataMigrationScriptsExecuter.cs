@@ -33,15 +33,20 @@ namespace Rhetos.Deployment
         private readonly DataMigrationScripts _dataMigrationScripts;
         private readonly ISqlTransactionBatches _sqlTransactionBatches;
         private readonly ISqlExecuter _sqlExecuter;
+        private readonly ISqlUtility _sqlUtility;
+        private readonly DatabaseSettings _databaseSettings;
         private readonly DbUpdateOptions _dbUpdateOptions;
 
         public DataMigrationScriptsExecuter(ILogProvider logProvider, DataMigrationScripts dataMigrationScripts,
-            DbUpdateOptions dbUpdateOptions, ISqlTransactionBatches sqlTransactionBatches, ISqlExecuter sqlExecuter)
+            DbUpdateOptions dbUpdateOptions, ISqlTransactionBatches sqlTransactionBatches, ISqlExecuter sqlExecuter,
+            ISqlUtility sqlUtility, DatabaseSettings databaseSettings)
         {
             _logger = logProvider.GetLogger("DataMigration");
             _dataMigrationScripts = dataMigrationScripts;
             _sqlTransactionBatches = sqlTransactionBatches;
             _sqlExecuter = sqlExecuter;
+            _sqlUtility = sqlUtility;
+            _databaseSettings = databaseSettings;
             _dbUpdateOptions = dbUpdateOptions;
         }
 
@@ -49,7 +54,7 @@ namespace Rhetos.Deployment
         {
             var newScripts = _dataMigrationScripts.Scripts;
 
-            var scriptsInOtherLanguages = FindScriptsInOtherLanguages(newScripts, SqlUtility.DatabaseLanguage);
+            var scriptsInOtherLanguages = FindScriptsInOtherLanguages(newScripts, _databaseSettings.DatabaseLanguage);
             LogScripts("Ignoring scripts in other database languages", scriptsInOtherLanguages);
             newScripts = newScripts.Except(scriptsInOtherLanguages).ToList();
             LogScripts("Script on disk", newScripts);
@@ -140,7 +145,7 @@ namespace Rhetos.Deployment
 
         private IEnumerable<SqlBatchScript> RemoveScriptAndMetadata(DataMigrationScript script)
         {
-            string removeMetadata = $"UPDATE Rhetos.DataMigrationScript SET Active = 0 WHERE Tag = {SqlUtility.QuoteText(script.Tag)};";
+            string removeMetadata = $"UPDATE Rhetos.DataMigrationScript SET Active = 0 WHERE Tag = {_sqlUtility.QuoteText(script.Tag)};";
 
             if (!string.IsNullOrEmpty(script.Down))
                 yield return new SqlBatchScript { Sql = script.Down, IsBatch = true, Name = script.Path };
@@ -152,10 +157,10 @@ namespace Rhetos.Deployment
             string addMetadata = string.Format(
                 "DELETE FROM Rhetos.DataMigrationScript WHERE Active = 0 AND Tag = {0};\r\n"
                 + "INSERT INTO Rhetos.DataMigrationScript (Tag, Path, Content, Down, Active) VALUES ({0}, {1}, {2}, {3}, 1);",
-                SqlUtility.QuoteText(script.Tag),
-                SqlUtility.QuoteText(script.Path),
-                SqlUtility.QuoteText(script.Content),
-                SqlUtility.QuoteText(script.Down));
+                _sqlUtility.QuoteText(script.Tag),
+                _sqlUtility.QuoteText(script.Path),
+                _sqlUtility.QuoteText(script.Content),
+                _sqlUtility.QuoteText(script.Down));
 
             yield return new SqlBatchScript { Sql = script.Content, IsBatch = true, Name = script.Path };
             yield return new SqlBatchScript { Sql = addMetadata, IsBatch = false, Name = null };
@@ -163,8 +168,8 @@ namespace Rhetos.Deployment
 
         private IEnumerable<SqlBatchScript> UpdateMetadata(DataMigrationScript script)
         {
-            string updateMetadata = $"UPDATE Rhetos.DataMigrationScript SET Down = {SqlUtility.QuoteText(script.Down)}" +
-                $" WHERE Tag = {SqlUtility.QuoteText(script.Tag)};";
+            string updateMetadata = $"UPDATE Rhetos.DataMigrationScript SET Down = {_sqlUtility.QuoteText(script.Down)}" +
+                $" WHERE Tag = {_sqlUtility.QuoteText(script.Tag)};";
             yield return new SqlBatchScript { Sql = updateMetadata, IsBatch = false, Name = null };
         }
 

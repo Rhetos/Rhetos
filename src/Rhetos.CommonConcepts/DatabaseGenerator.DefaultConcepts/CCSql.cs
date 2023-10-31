@@ -17,22 +17,20 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities;
+using System;
+using System.Globalization;
+using System.Resources;
 
-namespace Rhetos
+namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
-    public static class LegacyUtilities
+    public static class Sql
     {
-        /// <summary>
-        /// Use to initialize obsolete static utilities <see cref="ConfigUtility"/> and <see cref="Utilities.Configuration"/>
-        /// prior to using any of their methods. This will bind those utilities to configuration source compliant with new configuration convention.
-        /// </summary>
-        public static void Initialize(IConfiguration configuration)
-        {
-#pragma warning disable CS0618 // Type or member is obsolete
-            ConfigUtility.Initialize(configuration);
-            Utilities.Configuration.Initialize(configuration);
-#pragma warning restore CS0618 // Type or member is obsolete
-        }
+        private static Lazy<ResourceManager> _resourceManager = new(() => Rhetos.DatabaseGenerator.Sql.CreateResourceManager(typeof(Sql)));
+
+        public static string TryGet(string resourceName) => _resourceManager.Value.GetString(resourceName);
+
+        public static string Get(string resourceName) => TryGet(resourceName) ?? throw new FrameworkException($"Missing SQL resource '{resourceName}' for the database language of resource '{_resourceManager.Value.BaseName}'.");
+
+        public static string Format(string resourceName, params object[] args) => string.Format(CultureInfo.InvariantCulture, Get(resourceName), args);
     }
 }

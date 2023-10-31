@@ -27,6 +27,9 @@ using System.Reflection;
 
 namespace Rhetos
 {
+    /// <summary>
+    /// Use <see cref="IRhetosHostBuilder"/> to initialize the Rhetos runtime host (configure settings and dependency injection container).
+    /// </summary>
     public interface IRhetosHostBuilder
     {
         /// <summary>

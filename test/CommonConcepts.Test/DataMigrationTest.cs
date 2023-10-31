@@ -85,7 +85,7 @@ namespace CommonConcepts.Test
                     sqlExecuter.ExecuteSql($"--DBUpdate: {++deployment}");
                     var dbUpdateOptions = new DbUpdateOptions() { DataMigrationSkipScriptsWithWrongOrder = skipScriptsWithWrongOrder };
                     var dataMigration = new DataMigrationScriptsExecuter(scope.Resolve<ILogProvider>(),
-                        ParseDataMigrationScriptsFromScriptsDescription(scriptsDescription), dbUpdateOptions, sqlBatches, sqlExecuter);
+                        ParseDataMigrationScriptsFromScriptsDescription(scriptsDescription), dbUpdateOptions, sqlBatches, sqlExecuter, scope.Resolve<ISqlUtility>(), scope.Resolve<DatabaseSettings>());
                     dataMigration.Execute();
                 }
 

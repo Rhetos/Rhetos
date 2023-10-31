@@ -17,22 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities;
-
-namespace Rhetos
+namespace Rhetos.Deployment
 {
-    public static class LegacyUtilities
+    public interface IConnectionTesting
     {
-        /// <summary>
-        /// Use to initialize obsolete static utilities <see cref="ConfigUtility"/> and <see cref="Utilities.Configuration"/>
-        /// prior to using any of their methods. This will bind those utilities to configuration source compliant with new configuration convention.
-        /// </summary>
-        public static void Initialize(IConfiguration configuration)
-        {
-#pragma warning disable CS0618 // Type or member is obsolete
-            ConfigUtility.Initialize(configuration);
-            Utilities.Configuration.Initialize(configuration);
-#pragma warning restore CS0618 // Type or member is obsolete
-        }
+        void ValidateDbConnection();
     }
 }

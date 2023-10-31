@@ -233,7 +233,7 @@ namespace Rhetos.DatabaseGenerator.Test
 
         private ConceptApplicationRepository TestConceptApplicationRepository(IEnumerable<ConceptApplication> conceptApplications)
         {
-            return new ConceptApplicationRepository(new MockSqlExecuter(conceptApplications));
+            return new ConceptApplicationRepository(new MockSqlExecuter(conceptApplications), new FakeSqlUtility());
         }
 
         [TestMethod]
@@ -274,8 +274,8 @@ namespace Rhetos.DatabaseGenerator.Test
             TestUtility.ShouldFail<FrameworkException>(
                 () => conceptApplicationRepository.Load(),
                 MockSqlExecuter.ConceptApplication.GetConceptApplicationKey(),
-                SqlUtility.GuidToString(MockSqlExecuter.ConceptApplication.Id),
-                SqlUtility.GuidToString(MockSqlExecuter.ConceptApplicationCopy.Id));
+                MockSqlExecuter.ConceptApplication.Id.ToString(),
+                MockSqlExecuter.ConceptApplicationCopy.Id.ToString());
         }
 
         [TestMethod]

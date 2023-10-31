@@ -58,7 +58,7 @@ namespace Rhetos.Utilities
         /// The default ordering is specified by <see cref="IServerInitializer.Dependencies"/>.
         /// This option is only for exceptional cases.
         /// The key is a full type name of the <see cref="IServerInitializer"/> plugin.
-        /// Default value for all plugins is 0.
+        /// Default value for all plugins is 0, recommended values are between -100 and 100.
         /// </summary>
         public Dictionary<string, decimal> OverrideServerInitializerOrdering { get; set; } = new();
     }
