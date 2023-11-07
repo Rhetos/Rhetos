@@ -17,13 +17,11 @@
     <contentFiles>
       <files include="any/net5.0/RhetosTools/rhetos.exe" buildAction="None" copyToOutput="true" flatten="true" />
       <files include="any/net5.0/RhetosTools/rhetos.dll" buildAction="None" copyToOutput="true" flatten="true" />
-      <files include="any/net5.0/RhetosTools/rhetos.pdb" buildAction="None" copyToOutput="true" flatten="true" />
       <files include="any/net5.0/RhetosTools/rhetos.runtimeconfig.json" buildAction="None" copyToOutput="true" flatten="true" />
       <files include="any/net5.0/RhetosTools/rhetos.exe.nlog" buildAction="None" copyToOutput="true" flatten="true" />
 
       <files include="any/net6.0/RhetosTools/rhetos.exe" buildAction="None" copyToOutput="true" flatten="true" />
       <files include="any/net6.0/RhetosTools/rhetos.dll" buildAction="None" copyToOutput="true" flatten="true" />
-      <files include="any/net6.0/RhetosTools/rhetos.pdb" buildAction="None" copyToOutput="true" flatten="true" />
       <files include="any/net6.0/RhetosTools/rhetos.runtimeconfig.json" buildAction="None" copyToOutput="true" flatten="true" />
       <files include="any/net6.0/RhetosTools/rhetos.exe.nlog" buildAction="None" copyToOutput="true" flatten="true" />
     </contentFiles>
@@ -35,13 +33,11 @@
     <!-- Rhetos 'dbupdate' needs to be on net5, so that it can run in the context of the net5 host applications. -->
     <file src="RhetosCli\bin\Debug\net5.0\rhetos.exe" target="contentFiles/any/net5.0/RhetosTools" />
     <file src="RhetosCli\bin\Debug\net5.0\rhetos.dll" target="contentFiles/any/net5.0/RhetosTools" />
-    <file src="RhetosCli\bin\Debug\net5.0\rhetos.pdb" target="contentFiles/any/net5.0/RhetosTools" />
     <file src="RhetosCli\bin\Debug\net5.0\rhetos.runtimeconfig.json" target="contentFiles/any/net5.0/RhetosTools" />
     <file src="RhetosCli\bin\Debug\net5.0\rhetos.exe.nlog" target="contentFiles/any/net5.0/RhetosTools" />
 
     <file src="RhetosCli\bin\Debug\net6.0\rhetos.exe" target="contentFiles/any/net6.0/RhetosTools" />
     <file src="RhetosCli\bin\Debug\net6.0\rhetos.dll" target="contentFiles/any/net6.0/RhetosTools" />
-    <file src="RhetosCli\bin\Debug\net6.0\rhetos.pdb" target="contentFiles/any/net6.0/RhetosTools" />
     <file src="RhetosCli\bin\Debug\net6.0\rhetos.runtimeconfig.json" target="contentFiles/any/net6.0/RhetosTools" />
     <file src="RhetosCli\bin\Debug\net6.0\rhetos.exe.nlog" target="contentFiles/any/net6.0/RhetosTools" />
 

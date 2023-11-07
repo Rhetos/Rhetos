@@ -17,7 +17,6 @@
   <files>
     <!-- Rhetos 'build' needs to be on net6, so that is can load plugins from net5 and net6 libraries. -->
     <file src="RhetosCli\bin\Debug\net6.0\*.dll" target="tools" />
-    <file src="RhetosCli\bin\Debug\net6.0\*.pdb" target="tools" />
     <file src="RhetosCli\bin\Debug\net6.0\rhetos.exe" target="tools" />
     <file src="RhetosCli\bin\Debug\net6.0\rhetos.exe.nlog" target="tools" />
     <file src="RhetosCli\bin\Debug\net6.0\rhetos.deps.json" target="tools" />
@@ -28,7 +27,6 @@
     <file src="MsBuildIntegration\Rhetos.MSBuild.props" target="build" />
 
     <file src="RhetosVSIntegration\bin\Debug\netstandard2.0\*.dll" target="build" />
-    <file src="RhetosVSIntegration\bin\Debug\netstandard2.0\*.pdb" target="build" />
     <file src="RhetosVSIntegration\bin\Debug\netstandard2.0\*.json" target="build" />
   </files>
 </package>

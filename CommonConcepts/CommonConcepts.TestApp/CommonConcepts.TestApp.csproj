@@ -3,11 +3,11 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
-	<IsPackable>false</IsPackable>
-	<RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);..\..\Install</RestoreAdditionalProjectSources>
-	<RootNamespace>CommonConcepts.Test</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);..\..\Install</RestoreAdditionalProjectSources>
+    <RootNamespace>CommonConcepts.Test</RootNamespace>
   </PropertyGroup>
-	
+
   <ItemGroup>
     <PackageReference Include="Rhetos.Host" Version="5.5.0-dev*" />
     <PackageReference Include="Rhetos.Host.Net" Version="5.5.0-dev*" />

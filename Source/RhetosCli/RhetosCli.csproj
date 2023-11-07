@@ -4,6 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFrameworks>net5.0;net6.0</TargetFrameworks>
     <AssemblyName>rhetos</AssemblyName>
+    <DebugType>Embedded</DebugType>
   </PropertyGroup>
 
   <ItemGroup>

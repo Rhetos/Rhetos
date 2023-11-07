@@ -22,7 +22,6 @@
   </metadata>
   <files>
     <file src="Rhetos.Host.Net\bin\Debug\net5.0\Rhetos.Host.Net.dll" target="lib\net5.0" />
-    <file src="Rhetos.Host.Net\bin\Debug\net5.0\Rhetos.Host.Net.pdb" target="lib\net5.0" />
     <file src="Rhetos.Host.Net\bin\Debug\net5.0\Rhetos.Host.Net.xml" target="lib\net5.0" />
   </files>
 </package>
