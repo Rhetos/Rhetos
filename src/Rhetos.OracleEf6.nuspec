@@ -19,7 +19,6 @@
   </metadata>
   <files>
     <file src="Rhetos.OracleEf6\bin\Debug\net5.0\Rhetos.OracleEf6.dll" target="lib\net5.0" />
-    <file src="Rhetos.OracleEf6\bin\Debug\net5.0\Rhetos.OracleEf6.pdb" target="lib\net5.0" />
     <file src="Rhetos.OracleEf6\bin\Debug\net5.0\Rhetos.OracleEf6.xml" target="lib\net5.0" />
   </files>
 </package>

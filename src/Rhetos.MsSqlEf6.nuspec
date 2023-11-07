@@ -19,7 +19,6 @@
   </metadata>
   <files>
     <file src="Rhetos.MsSqlEf6\bin\Debug\net5.0\Rhetos.MsSqlEf6.dll" target="lib\net5.0" />
-    <file src="Rhetos.MsSqlEf6\bin\Debug\net5.0\Rhetos.MsSqlEf6.pdb" target="lib\net5.0" />
     <file src="Rhetos.MsSqlEf6\bin\Debug\net5.0\Rhetos.MsSqlEf6.xml" target="lib\net5.0" />
   </files>
 </package>

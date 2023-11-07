@@ -18,7 +18,6 @@
   </metadata>
   <files>
     <file src="Rhetos.Ef6\bin\Debug\net5.0\Rhetos.Ef6.dll" target="lib\net5.0" />
-    <file src="Rhetos.Ef6\bin\Debug\net5.0\Rhetos.Ef6.pdb" target="lib\net5.0" />
     <file src="Rhetos.Ef6\bin\Debug\net5.0\Rhetos.Ef6.xml" target="lib\net5.0" />
   </files>
 </package>

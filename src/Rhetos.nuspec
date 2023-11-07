@@ -33,7 +33,6 @@
   <files>
     <file src="..\Readme.md" target="" />
     <file src="Rhetos.Core\bin\Debug\net5.0\Rhetos.Core.dll" target="lib\net5.0" />
-    <file src="Rhetos.Core\bin\Debug\net5.0\Rhetos.Core.pdb" target="lib\net5.0" />
     <file src="Rhetos.Core\bin\Debug\net5.0\Rhetos.Core.xml" target="lib\net5.0" />
   </files>
 </package>

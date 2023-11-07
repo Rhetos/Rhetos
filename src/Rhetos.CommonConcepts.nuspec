@@ -24,7 +24,6 @@
     <file src="Rhetos.CommonConcepts\DataMigration\**\*" target="DataMigration" />
     <file src="Rhetos.CommonConcepts\DslScripts\**\*" target="DslScripts" />
     <file src="Rhetos.CommonConcepts\bin\Debug\net5.0\Rhetos.CommonConcepts.dll" target="lib\net5.0" />
-    <file src="Rhetos.CommonConcepts\bin\Debug\net5.0\Rhetos.CommonConcepts.pdb" target="lib\net5.0" />
     <file src="Rhetos.CommonConcepts\bin\Debug\net5.0\Rhetos.CommonConcepts.xml" target="lib\net5.0" />
   </files>
 </package>

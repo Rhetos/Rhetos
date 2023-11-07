@@ -5,6 +5,7 @@
     <DebugType>Embedded</DebugType>
     <Nullable>disable</Nullable>
     <RootNamespace>Rhetos.Dsl</RootNamespace>
+    <DebugType>Embedded</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
