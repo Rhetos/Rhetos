@@ -89,7 +89,7 @@ namespace CommonConcepts.Test
 
         private static DateTime DbTime(IUnitOfWorkScope scope)
         {
-            return SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>());
+            return scope.Resolve<ISqlUtility>().GetDatabaseTime(scope.Resolve<ISqlExecuter>());
         }
 
         [TestMethod]

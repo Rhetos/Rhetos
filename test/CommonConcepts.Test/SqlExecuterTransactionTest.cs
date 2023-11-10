@@ -49,7 +49,7 @@ namespace CommonConcepts.Test
                 // Write using SqlExecuter, read using object model persistence transaction:
                 sqlExecuter.ExecuteSql(string.Format(
                     "INSERT INTO TestEntity.BaseEntity (ID, Name) SELECT {0}, 'e0'",
-                    SqlUtility.QuoteGuid(ids[0])));
+                    scope.Resolve<ISqlUtility>().QuoteGuid(ids[0])));
                 Assert.AreEqual("e0", TestUtility.DumpSorted(repository.TestEntity.BaseEntity.Load(ids), item => item.Name));
 
                 // Write using object model persistence transaction, read using SqlExecuter
@@ -57,7 +57,7 @@ namespace CommonConcepts.Test
                 var sqlReport = new List<string>();
                 sqlExecuter.ExecuteReader(string.Format(
                     "SELECT Name FROM TestEntity.BaseEntity WHERE ID IN ({0}, {1})",
-                    SqlUtility.QuoteGuid(ids[0]), SqlUtility.QuoteGuid(ids[1])),
+                    scope.Resolve<ISqlUtility>().QuoteGuid(ids[0]), scope.Resolve<ISqlUtility>().QuoteGuid(ids[1])),
                     reader => sqlReport.Add(reader.GetString(0)));
                 Assert.AreEqual("e0, e1", TestUtility.DumpSorted(sqlReport));
             }
@@ -92,7 +92,7 @@ namespace CommonConcepts.Test
                     scope2SqlExecuter.ExecuteSql(new[]
                         {
                             "DELETE FROM TestEntity.BaseEntity",
-                            $"INSERT INTO TestEntity.BaseEntity (ID, Name) SELECT {SqlUtility.QuoteGuid(ids[0])}, 'e0'"
+                            $"INSERT INTO TestEntity.BaseEntity (ID, Name) SELECT {scope.Resolve<ISqlUtility>().QuoteGuid(ids[0])}, 'e0'"
                         });
                     scope2.CommitAndClose();
                 }
@@ -105,7 +105,7 @@ namespace CommonConcepts.Test
                 var sqlReport = new List<string>();
                 var sqlExecuter = scope.Resolve<ISqlExecuter>();
                 sqlExecuter.ExecuteReader(
-                    $"SELECT Name FROM TestEntity.BaseEntity WHERE ID IN ({SqlUtility.QuoteGuid(ids[0])}, {SqlUtility.QuoteGuid(ids[1])})",
+                    $"SELECT Name FROM TestEntity.BaseEntity WHERE ID IN ({scope.Resolve<ISqlUtility>().QuoteGuid(ids[0])}, {scope.Resolve<ISqlUtility>().QuoteGuid(ids[1])})",
                     reader => sqlReport.Add(reader.GetString(0)));
 
                 Assert.AreEqual("e0, e1", TestUtility.DumpSorted(sqlReport));

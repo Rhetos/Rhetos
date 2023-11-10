@@ -24,6 +24,7 @@ using Rhetos.Dsl;
 using Rhetos.Compiler;
 using Rhetos.Utilities;
 using Rhetos.DatabaseGenerator.DefaultConcepts;
+using Rhetos.DatabaseGenerator;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -31,6 +32,19 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(UniqueReferenceInfo))]
     public class UniqueReferenceCodeGenerator : IConceptCodeGenerator
     {
+        private readonly ConceptMetadata _conceptMetadata;
+
+        protected ISqlResources Sql { get; private set; }
+
+        protected ISqlUtility SqlUtility { get; private set; }
+
+        public UniqueReferenceCodeGenerator(ISqlResources sqlResources, ISqlUtility sqlUtility, ConceptMetadata conceptMetadata)
+        {
+            Sql = sqlResources;
+            SqlUtility = sqlUtility;
+            _conceptMetadata = conceptMetadata;
+        }
+
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (UniqueReferenceInfo)conceptInfo;
@@ -45,16 +59,15 @@ namespace Rhetos.Dom.DefaultConcepts
                     propertyType: "Common.Queryable." + info.Extension.Module.Name + "_" + info.Extension.Name);
             }
 
-            if (UniqueReferenceDatabaseDefinition.IsSupported(info)
+            if (new UniqueReferenceDatabaseDefinition(Sql, SqlUtility).IsSupported(info)
                 && info.Extension is IOrmDataStructure
                 && info.Base is IWritableOrmDataStructure)
             {
-                var ormDataStructure = (IOrmDataStructure)info.Extension;
                 string systemMessage = $"DataStructure:{info.Extension.FullName},Property:ID,Referenced:{info.Base.FullName}";
                 string onDeleteInterpretSqlError = @"if (interpretedException is Rhetos.UserException && Rhetos.Utilities.MsSqlUtility.IsReferenceErrorOnDelete(interpretedException, "
-                    + CsUtility.QuotedString(ormDataStructure.GetOrmSchema() + "." + ormDataStructure.GetOrmDatabaseObject()) + @", "
+                    + CsUtility.QuotedString(_conceptMetadata.GetOrmSchema(info.Extension) + "." + _conceptMetadata.GetOrmDatabaseObject(info.Extension)) + @", "
                     + CsUtility.QuotedString("ID") + @", "
-                    + CsUtility.QuotedString(UniqueReferenceDatabaseDefinition.GetConstraintName(info)) + @"))
+                    + CsUtility.QuotedString(new UniqueReferenceDatabaseDefinition(Sql, SqlUtility).GetConstraintName(info)) + @"))
                         ((Rhetos.UserException)interpretedException).SystemMessage = " + CsUtility.QuotedString(systemMessage) + @";
                     ";
                 codeBuilder.InsertCode(onDeleteInterpretSqlError, WritableOrmDataStructureCodeGenerator.OnDatabaseErrorTag, info.Base);

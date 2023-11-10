@@ -50,7 +50,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
                     if (parentResourceIDs.Count() > 0)
                     {{
-                        var now = SqlUtility.GetDatabaseTime(_executionContext.SqlExecuter);
+                        var now = _executionContext.SqlUtility.GetDatabaseTime(_executionContext.SqlExecuter);
                         var queryParentLock = _domRepository.Common.ExclusiveLock.Query().Where(itemLock =>
                             itemLock.ResourceType == ""{master.FullName}""
                             && parentResourceIDs.Contains(itemLock.ResourceID.Value)

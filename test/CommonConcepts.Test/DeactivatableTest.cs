@@ -59,10 +59,10 @@ namespace CommonConcepts.Test
                 var id4 = Guid.NewGuid();
                 scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestDeactivatable.BasicEnt",
-                    "INSERT INTO TestDeactivatable.BasicEnt (ID, Name) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 'a')",
-                    "INSERT INTO TestDeactivatable.BasicEnt (ID, Name, Active) VALUES (" + SqlUtility.QuoteGuid(id2) + ", 'b', 0)",
-                    "INSERT INTO TestDeactivatable.BasicEnt (ID, Name) VALUES (" + SqlUtility.QuoteGuid(id3) + ", 'c')",
-                    "INSERT INTO TestDeactivatable.BasicEnt (ID, Name, Active) VALUES (" + SqlUtility.QuoteGuid(id4) + ", 'd', 1)",
+                    "INSERT INTO TestDeactivatable.BasicEnt (ID, Name) VALUES (" + scope.Resolve<ISqlUtility>().QuoteGuid(id1) + ", 'a')",
+                    "INSERT INTO TestDeactivatable.BasicEnt (ID, Name, Active) VALUES (" + scope.Resolve<ISqlUtility>().QuoteGuid(id2) + ", 'b', 0)",
+                    "INSERT INTO TestDeactivatable.BasicEnt (ID, Name) VALUES (" + scope.Resolve<ISqlUtility>().QuoteGuid(id3) + ", 'c')",
+                    "INSERT INTO TestDeactivatable.BasicEnt (ID, Name, Active) VALUES (" + scope.Resolve<ISqlUtility>().QuoteGuid(id4) + ", 'd', 1)",
                 });
                 var repository = scope.Resolve<Common.DomRepository>();
 

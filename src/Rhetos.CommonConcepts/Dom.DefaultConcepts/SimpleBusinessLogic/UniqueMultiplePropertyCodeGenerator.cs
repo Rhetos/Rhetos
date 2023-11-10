@@ -28,6 +28,7 @@ using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
 using Rhetos.Utilities;
 using System.Globalization;
+using Rhetos.DatabaseGenerator;
 
 namespace Rhetos.Dom.DefaultConcepts.SimpleBusinessLogic
 {
@@ -35,6 +36,13 @@ namespace Rhetos.Dom.DefaultConcepts.SimpleBusinessLogic
     [ExportMetadata(MefProvider.Implements, typeof(UniqueMultiplePropertyInfo))]
     public class UniqueMultiplePropertyCodeGenerator : IConceptCodeGenerator
     {
+        protected ISqlUtility SqlUtility { get; private set; }
+
+        public UniqueMultiplePropertyCodeGenerator(ISqlUtility sqlUtility)
+        {
+            this.SqlUtility = sqlUtility;
+        }
+
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (UniqueMultiplePropertyInfo)conceptInfo;
@@ -56,7 +64,7 @@ namespace Rhetos.Dom.DefaultConcepts.SimpleBusinessLogic
             }
         }
         
-        private static string GetColumnName(PropertyInfo property)
+        private string GetColumnName(PropertyInfo property)
         {
             if (property is ReferencePropertyInfo)
                 return SqlUtility.Identifier(property.Name + "ID");

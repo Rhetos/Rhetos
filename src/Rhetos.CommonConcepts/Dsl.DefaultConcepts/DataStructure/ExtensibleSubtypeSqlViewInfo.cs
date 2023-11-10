@@ -18,6 +18,7 @@
 */
 
 using Rhetos.Compiler;
+using Rhetos.DatabaseGenerator;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Utilities;
 using System.Collections.Generic;
@@ -91,9 +92,12 @@ FROM
     {
         private readonly CommonConceptsOptions _commonConceptsOptions;
 
-        public ExtensibleSubtypeSqlViewMacro(CommonConceptsOptions commonConceptsOptions)
+        protected ISqlUtility SqlUtility { get; private set; }
+
+        public ExtensibleSubtypeSqlViewMacro(CommonConceptsOptions commonConceptsOptions, ISqlUtility sqlUtility)
         {
             _commonConceptsOptions = commonConceptsOptions;
+            this.SqlUtility = sqlUtility;
         }
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(ExtensibleSubtypeSqlViewInfo conceptInfo, IDslModel existingConcepts)
@@ -134,7 +138,7 @@ FROM
             return newConcepts;
         }
 
-        private static string GetColumnName(PropertyInfo property)
+        private string GetColumnName(PropertyInfo property)
         {
             if (property is ReferencePropertyInfo)
                 return SqlUtility.Identifier(property.Name + "ID");

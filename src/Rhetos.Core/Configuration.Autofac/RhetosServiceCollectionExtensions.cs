@@ -75,8 +75,6 @@ namespace Rhetos
 
             var rhetosHost = rhetosHostBuilder.Build();
 
-            rhetosHost.GetRootContainer().Resolve<StaticUtilities>().Initialize();
-
             return rhetosHost;
         }
     }

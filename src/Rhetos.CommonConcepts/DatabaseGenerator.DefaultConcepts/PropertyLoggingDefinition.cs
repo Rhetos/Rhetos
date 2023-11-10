@@ -21,6 +21,7 @@ using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -33,9 +34,15 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     {
         private readonly ConceptMetadata _conceptMetadata;
 
-        public PropertyLoggingDefinition(ConceptMetadata conceptMetadata)
+        protected ISqlResources Sql { get; private set; }
+
+        protected ISqlUtility SqlUtility { get; private set; }
+
+        public PropertyLoggingDefinition(ConceptMetadata conceptMetadata, ISqlResources sqlResources, ISqlUtility sqlUtility)
         {
             _conceptMetadata = conceptMetadata;
+            this.Sql = sqlResources;
+            this.SqlUtility = sqlUtility;
         }
 
         public void ExtendDatabaseStructure(IConceptInfo conceptInfo, ICodeBuilder codeBuilder, out IEnumerable<Tuple<IConceptInfo, IConceptInfo>> createdDependencies)

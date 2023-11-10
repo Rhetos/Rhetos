@@ -32,6 +32,16 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(SqlProcedureInfo))]
     public class SqlProcedureDatabaseDefinition : IConceptDatabaseDefinition
     {
+        protected ISqlResources Sql { get; private set; }
+
+        protected ISqlUtility SqlUtility { get; private set; }
+
+        public SqlProcedureDatabaseDefinition(ISqlResources sqlResources, ISqlUtility sqlUtility)
+        {
+            this.Sql = sqlResources;
+            this.SqlUtility = sqlUtility;
+        }
+
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
         {
             var info = (SqlProcedureInfo)conceptInfo;
@@ -40,7 +50,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
                 SqlUtility.Identifier(info.Name),
                 info.ProcedureArguments,
                 info.ProcedureSource,
-                SqlUtility.ScriptSplitterTag);
+                Rhetos.Utilities.SqlUtility.ScriptSplitterTag);
         }
 
         public string RemoveDatabaseStructure(IConceptInfo conceptInfo)

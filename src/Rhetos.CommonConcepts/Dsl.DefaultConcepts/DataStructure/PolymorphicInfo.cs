@@ -17,14 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rhetos.Dsl;
-using System.ComponentModel.Composition;
 using Rhetos.Compiler;
-using Rhetos.Utilities;
+using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.Linq;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
@@ -38,16 +34,6 @@ namespace Rhetos.Dsl.DefaultConcepts
         public PolymorphicUnionViewInfo GetUnionViewPrototype()
         {
             return new PolymorphicUnionViewInfo { Module = Module, Name = Name };
-        }
-
-        public string GetOrmSchema()
-        {
-            return Module.Name; // ORM will be mapped to PolymorphicUnionViewInfo from the database.
-        }
-
-        public string GetOrmDatabaseObject()
-        {
-            return Name; // ORM will be mapped to PolymorphicUnionViewInfo from the database.
         }
 
         public EntityInfo GetMaterializedEntity()

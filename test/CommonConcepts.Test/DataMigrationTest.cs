@@ -17,20 +17,23 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Autofac;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos;
 using Rhetos.Deployment;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace CommonConcepts.Test
 {
     [TestClass]
     public class DataMigrationTest
     {
-        private DataMigrationScripts ParseDataMigrationScriptsFromScriptsDescription(string scriptsDescription)
+        private DataMigrationScripts ParseDataMigrationScriptsFromScriptsDescription(string scriptsDescription, IUnitOfWorkScope scope)
         {
             var scripts = scriptsDescription.Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s))
                 .Select(s =>
@@ -47,8 +50,8 @@ namespace CommonConcepts.Test
                     {
                         Tag = tagPath[0],
                         Path = tagPath[1] + ".sql",
-                        Content = $"/*{tagPath[0]}*/\r\nPRINT {SqlUtility.QuoteText(tagPath[1])}",
-                        Down = hasDown ? $"/*{tagPath[0]}-DOWN*/\r\nPRINT {SqlUtility.QuoteText(tagPath[1])} + '-DOWN'" : null,
+                        Content = $"/*{tagPath[0]}*/\r\nPRINT {scope.Resolve<ISqlUtility>().QuoteText(tagPath[1])}",
+                        Down = hasDown ? $"/*{tagPath[0]}-DOWN*/\r\nPRINT {scope.Resolve<ISqlUtility>().QuoteText(tagPath[1])} + '-DOWN'" : null,
                     };
                 })
                 .ToList();
@@ -85,7 +88,7 @@ namespace CommonConcepts.Test
                     sqlExecuter.ExecuteSql($"--DBUpdate: {++deployment}");
                     var dbUpdateOptions = new DbUpdateOptions() { DataMigrationSkipScriptsWithWrongOrder = skipScriptsWithWrongOrder };
                     var dataMigration = new DataMigrationScriptsExecuter(scope.Resolve<ILogProvider>(),
-                        ParseDataMigrationScriptsFromScriptsDescription(scriptsDescription), dbUpdateOptions, sqlBatches, sqlExecuter, scope.Resolve<ISqlUtility>(), scope.Resolve<DatabaseSettings>());
+                        ParseDataMigrationScriptsFromScriptsDescription(scriptsDescription, scope), dbUpdateOptions, sqlBatches, sqlExecuter, scope.Resolve<ISqlUtility>(), scope.Resolve<DatabaseSettings>());
                     dataMigration.Execute();
                 }
 

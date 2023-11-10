@@ -37,9 +37,15 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     {
         private readonly DatabaseSettings _databaseSettings;
 
-        public SqlIndexMultiplePropertyDatabaseDefinition(DatabaseSettings databaseSettings)
+        protected ISqlResources Sql { get; private set; }
+
+        protected ISqlUtility SqlUtility { get; private set; }
+
+        public SqlIndexMultiplePropertyDatabaseDefinition(DatabaseSettings databaseSettings, ISqlResources sqlResources, ISqlUtility sqlUtility)
         {
             _databaseSettings = databaseSettings;
+            this.Sql = sqlResources;
+            this.SqlUtility = sqlUtility;
         }
 
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
@@ -76,7 +82,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             }
         }
 
-        private static string GetColumnName(PropertyInfo property)
+        private string GetColumnName(PropertyInfo property)
         {
             if (property is ReferencePropertyInfo)
                 return SqlUtility.Identifier(property.Name + "ID");

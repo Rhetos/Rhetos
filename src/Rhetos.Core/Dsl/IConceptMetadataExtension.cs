@@ -22,6 +22,6 @@ namespace Rhetos.Dsl
     public interface IConceptMetadataExtension
     { }
 
-    public interface IConceptMetadataExtension<out T> : IConceptMetadataExtension where T : IConceptInfo
+    public interface IConceptMetadataExtension<T> : IConceptMetadataExtension where T : IConceptInfo
     { }
 }

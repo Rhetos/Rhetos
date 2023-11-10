@@ -32,6 +32,16 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(LoggingRelatedItemInfo))]
     public class LoggingRelatedItemDatabaseDefinition : IConceptDatabaseDefinitionExtension
     {
+        protected ISqlResources Sql { get; private set; }
+
+        protected ISqlUtility SqlUtility { get; private set; }
+
+        public LoggingRelatedItemDatabaseDefinition(ISqlResources sqlResources, ISqlUtility sqlUtility)
+        {
+            this.Sql = sqlResources;
+            this.SqlUtility = sqlUtility;
+        }
+
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
         {
             return null;
@@ -61,7 +71,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             createdDependencies = new[] { Tuple.Create(logRelatedItemTableMustBeFullyCreated, conceptInfo) };
         }
 
-        private static void InsertCode(ICodeBuilder codeBuilder, LoggingRelatedItemInfo info, string sqlResource, SqlTag<EntityLoggingInfo> tag)
+        private void InsertCode(ICodeBuilder codeBuilder, LoggingRelatedItemInfo info, string sqlResource, SqlTag<EntityLoggingInfo> tag)
         {
             string codeSnippet = Sql.Format(sqlResource,
                 GetTempColumnNameOld(info),
@@ -73,12 +83,12 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             codeBuilder.InsertCode(codeSnippet, tag, info.Logging);
         }
 
-        private static string GetTempColumnNameOld(LoggingRelatedItemInfo info)
+        private string GetTempColumnNameOld(LoggingRelatedItemInfo info)
         {
             return SqlUtility.Identifier("Old_" + CsUtility.TextToIdentifier(info.Relation) + "_" + info.Column);
         }
 
-        private static string GetTempColumnNameNew(LoggingRelatedItemInfo info)
+        private string GetTempColumnNameNew(LoggingRelatedItemInfo info)
         {
             return SqlUtility.Identifier("New_" + CsUtility.TextToIdentifier(info.Relation) + "_" + info.Column);
         }

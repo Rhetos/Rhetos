@@ -56,9 +56,9 @@ namespace CommonConcepts.Test
                 scope.Resolve<ISqlExecuter>().ExecuteSql(new[] { "DELETE FROM TestAuditable.Simple" });
                 var repository = scope.Resolve<Common.DomRepository>();
 
-                var start = SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>());
+                var start = scope.Resolve<ISqlUtility>().GetDatabaseTime(scope.Resolve<ISqlExecuter>());
                 repository.TestAuditable.Simple.Insert(new[] { new TestAuditable.Simple { Name = "app" } });
-                var finish = SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>());
+                var finish = scope.Resolve<ISqlUtility>().GetDatabaseTime(scope.Resolve<ISqlExecuter>());
 
                 CheckCreatedDate(scope, start, finish);
             }
@@ -125,7 +125,7 @@ namespace CommonConcepts.Test
                 var repository = scope.Resolve<Common.DomRepository>();
 
                 {
-                    var start = SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>());
+                    var start = scope.Resolve<ISqlUtility>().GetDatabaseTime(scope.Resolve<ISqlExecuter>());
                     repository.TestAuditable.Simple.Insert(new[] { ReadInstance(insertData) });
 
                     DateTime? generatedModificationTime = propertySelector(repository.TestAuditable.Simple.Load().Single());
@@ -139,7 +139,7 @@ namespace CommonConcepts.Test
                     return;
 
                 {
-                    var start = SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>());
+                    var start = scope.Resolve<ISqlUtility>().GetDatabaseTime(scope.Resolve<ISqlExecuter>());
                     repository.TestAuditable.Simple.Update(new[] { ReadInstance(updateData) });
 
                     DateTime? generatedModificationTime = propertySelector(repository.TestAuditable.Simple.Load().Single());

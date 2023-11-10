@@ -17,17 +17,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using Rhetos.Utilities;
 using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
+using Rhetos.Utilities;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.Linq;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
@@ -41,7 +39,17 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     {
         public static readonly SqlTag<ReferencePropertyDbConstraintInfo> ForeignKeyConstraintOptions = "FK options";
 
-        public static string GetConstraintName(ReferencePropertyInfo reference)
+        protected ISqlResources Sql { get; private set; }
+
+        protected ISqlUtility SqlUtility { get; private set; }
+
+        public ReferencePropertyConstraintDatabaseDefinition(ISqlResources sqlResources, ISqlUtility sqlUtility)
+        {
+            this.Sql = sqlResources;
+            this.SqlUtility = sqlUtility;
+        }
+
+        public string GetConstraintName(ReferencePropertyInfo reference)
         {
             return SqlUtility.Identifier(Sql.Format("ReferencePropertyConstraintDatabaseDefinition_ConstraintName",
                 reference.DataStructure.Name,
@@ -57,8 +65,8 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             return Sql.Format("ReferencePropertyConstraintDatabaseDefinition_Create",
                 SqlUtility.Identifier(reference.DataStructure.Module.Name) + "." + SqlUtility.Identifier(reference.DataStructure.Name),
                 GetConstraintName(reference),
-                reference.GetColumnName(),
-                ForeignKeyUtility.GetSchemaTableForForeignKey(reference.Referenced),
+                SqlUtility.Identifier(reference.Name + "ID"),
+                ForeignKeyUtility.GetSchemaTableForForeignKey(reference.Referenced, SqlUtility),
                 ForeignKeyConstraintOptions.Evaluate(info));
         }
 

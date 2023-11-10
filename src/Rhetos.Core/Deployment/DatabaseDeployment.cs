@@ -21,12 +21,13 @@ using Rhetos.DatabaseGenerator;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
-using System.IO;
 
 namespace Rhetos.Deployment
 {
     public class DatabaseDeployment
     {
+        public static readonly string CreateRhetosDatabaseResourceKey = "RhetosCore_CreateRhetosDatabase";
+
         private readonly ILogger _logger;
         private readonly ISqlTransactionBatches _sqlTransactionBatches;
         private readonly IConnectionTesting _connectionTesting;
@@ -35,9 +36,9 @@ namespace Rhetos.Deployment
         private readonly IDatabaseGenerator _databaseGenerator;
         private readonly IConceptDataMigrationExecuter _dataMigrationFromCodeExecuter;
         private readonly DbUpdateOptions _options;
-        private readonly DatabaseSettings _databaseSettings;
         private readonly ISqlUtility _sqlUtility;
         private readonly ConnectionString _connectionString;
+        private readonly ISqlResources _sqlResources;
 
         public DatabaseDeployment(
             ILogProvider logProvider,
@@ -48,9 +49,9 @@ namespace Rhetos.Deployment
             IDatabaseGenerator databaseGenerator,
             IConceptDataMigrationExecuter dataMigrationFromCodeExecuter,
             DbUpdateOptions options,
-            DatabaseSettings databaseSettings,
             ISqlUtility sqlUtility,
-            ConnectionString connectionString)
+            ConnectionString connectionString,
+            ISqlResources sqlResources)
         {
             _logger = logProvider.GetLogger(GetType().Name);
             _sqlTransactionBatches = sqlTransactionBatches;
@@ -60,9 +61,9 @@ namespace Rhetos.Deployment
             _databaseGenerator = databaseGenerator;
             _dataMigrationFromCodeExecuter = dataMigrationFromCodeExecuter;
             _options = options;
-            _databaseSettings = databaseSettings;
             _sqlUtility = sqlUtility;
             _connectionString = connectionString;
+            _sqlResources = sqlResources;
         }
 
         public void UpdateDatabase()
@@ -116,17 +117,7 @@ namespace Rhetos.Deployment
 
         private void PrepareRhetosDatabase()
         {
-            string rhetosDatabaseScriptResourceName = "Rhetos.Deployment.RhetosDatabase." + _databaseSettings.DatabaseLanguage + ".sql";
-            var resourceStream = GetType().Assembly.GetManifestResourceStream(rhetosDatabaseScriptResourceName);
-            if (resourceStream == null)
-                throw new FrameworkException("Cannot find resource '" + rhetosDatabaseScriptResourceName + "'.");
-
-            string sql;
-            using (var reader = new StreamReader(resourceStream))
-            {
-                sql = reader.ReadToEnd();
-            }
-
+            string sql = _sqlResources.Get(CreateRhetosDatabaseResourceKey);
             var batchScript = new SqlBatchScript { Sql = sql, IsBatch = true };
             _sqlTransactionBatches.Execute(new[] { batchScript });
         }

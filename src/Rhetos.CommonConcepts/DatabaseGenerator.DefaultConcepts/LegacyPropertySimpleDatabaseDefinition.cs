@@ -17,50 +17,28 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
-using Rhetos.Utilities;
 using Rhetos.Compiler;
-using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Extensibility;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
-    [Export(typeof(IConceptDatabaseDefinition))]
-    [ExportMetadata(MefProvider.Implements, typeof(LegacyPropertySimpleInfo))]
-    public class LegacyPropertySimpleDatabaseDefinition : IConceptDatabaseDefinitionExtension
+    [Export(typeof(IConceptDatabaseGenerator))]
+    public class LegacyPropertySimpleDatabaseDefinition : IConceptDatabaseGenerator<LegacyPropertySimpleInfo>
     {
-        public string CreateDatabaseStructure(IConceptInfo conceptInfo)
+        public void GenerateCode(LegacyPropertySimpleInfo info, ISqlCodeBuilder sql)
         {
-            return null;
-        }
-
-        public string RemoveDatabaseStructure(IConceptInfo conceptInfo)
-        {
-            return null;
-        }
-
-        public void ExtendDatabaseStructure(IConceptInfo conceptInfo, ICodeBuilder codeBuilder, out IEnumerable<Tuple<IConceptInfo, IConceptInfo>> createdDependencies)
-        {
-            var info = (LegacyPropertySimpleInfo) conceptInfo;
-            createdDependencies = null;
-
-            codeBuilder.InsertCode(Sql.Format("LegacyPropertySimpleDatabaseDefinition_ExtendViewSelect", SqlUtility.Identifier(info.Property.Name), SqlUtility.Identifier(info.Column)),
+            sql.CodeBuilder.InsertCode(sql.Resources.Format("LegacyPropertySimpleDatabaseDefinition_ExtendViewSelect", sql.Utility.Identifier(info.Property.Name), sql.Utility.Identifier(info.Column)),
                 LegacyEntityWithAutoCreatedViewDatabaseDefinition.ViewSelectPartTag, info.Dependency_LegacyEntityWithAutoCreatedView);
 
-            codeBuilder.InsertCode(Sql.Format("LegacyPropertySimpleDatabaseDefinition_ExtendTriggerInsert", SqlUtility.Identifier(info.Column)),
+            sql.CodeBuilder.InsertCode(sql.Resources.Format("LegacyPropertySimpleDatabaseDefinition_ExtendTriggerInsert", sql.Utility.Identifier(info.Column)),
                 LegacyEntityWithAutoCreatedViewDatabaseDefinition.TriggerInsertPartTag, info.Dependency_LegacyEntityWithAutoCreatedView);
 
-            codeBuilder.InsertCode(Sql.Format("LegacyPropertySimpleDatabaseDefinition_ExtendTriggerSelectForInsert", SqlUtility.Identifier(info.Column), SqlUtility.Identifier(info.Property.Name)),
+            sql.CodeBuilder.InsertCode(sql.Resources.Format("LegacyPropertySimpleDatabaseDefinition_ExtendTriggerSelectForInsert", sql.Utility.Identifier(info.Column), sql.Utility.Identifier(info.Property.Name)),
                 LegacyEntityWithAutoCreatedViewDatabaseDefinition.TriggerSelectForInsertPartTag, info.Dependency_LegacyEntityWithAutoCreatedView);
 
-            codeBuilder.InsertCode(Sql.Format("LegacyPropertySimpleDatabaseDefinition_ExtendTriggerSelectForUpdate", SqlUtility.Identifier(info.Column), SqlUtility.Identifier(info.Property.Name)),
+            sql.CodeBuilder.InsertCode(sql.Resources.Format("LegacyPropertySimpleDatabaseDefinition_ExtendTriggerSelectForUpdate", sql.Utility.Identifier(info.Column), sql.Utility.Identifier(info.Property.Name)),
                 LegacyEntityWithAutoCreatedViewDatabaseDefinition.TriggerSelectForUpdatePartTag, info.Dependency_LegacyEntityWithAutoCreatedView);
-
         }
     }
 }

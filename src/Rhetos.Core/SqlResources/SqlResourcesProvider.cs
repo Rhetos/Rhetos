@@ -22,26 +22,23 @@ using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 
-namespace Rhetos.DatabaseGenerator
+namespace Rhetos.SqlResources
 {
     /// <summary>
     /// Provides SQL code snippets, based on the selected database language in <see cref="DatabaseSettings.DatabaseLanguage"/>.
     /// </summary>
-    public class SqlResources : ISqlResources
+    public class SqlResourcesProvider : ISqlResources
     {
-        private readonly string _databaseLanguage;
         private readonly IPluginsContainer<ISqlResourcesPlugin> _plugins;
-        private readonly Lazy<Dictionary<string, string>> _resources;
         private readonly ILogger _logger;
+        private readonly Lazy<Dictionary<string, string>> _resources;
 
-        public SqlResources(DatabaseSettings databaseSettings, IPluginsContainer<ISqlResourcesPlugin> plugins, ILogProvider logProvider)
+        public SqlResourcesProvider(IPluginsContainer<ISqlResourcesPlugin> plugins, ILogProvider logProvider)
         {
-            _databaseLanguage = databaseSettings.DatabaseLanguage;
             _plugins = plugins;
-            _resources = new(LoadResources);
             _logger = logProvider.GetLogger(GetType().Name);
+            _resources = new(LoadResources);
         }
 
         private Dictionary<string, string> LoadResources()
@@ -58,9 +55,10 @@ namespace Rhetos.DatabaseGenerator
                         if (string.IsNullOrEmpty(resource.Key))
                             throw new ArgumentException($"{plugin.GetType()} returns an empty resource key.");
                         if (resource.Value == null)
-                            throw new ArgumentException($"{plugin.GetType()} returns resource value null.");
+                            throw new ArgumentException($"{plugin.GetType()} returns resource value null for key '{resource.Key}'.");
                         if (result.ContainsKey(resource.Key))
                             _logger.Trace(() => $"Plugin {plugin.GetType()} overrides previous key {resource.Key}.");
+
                         result[resource.Key] = resource.Value;
                     }
                 }
@@ -75,17 +73,5 @@ namespace Rhetos.DatabaseGenerator
         /// Return <see langword="null"/> if there is no resource with the given <paramref name="key"/>.
         /// </summary>
         public string TryGet(string key) => _resources.Value.GetValueOrDefault(key, null);
-
-        /// <summary>
-        /// Returns the SQL code snippets from resource files, based on the selected database language in <see cref="DatabaseSettings.DatabaseLanguage"/>.
-        /// Throw an exception if there is no snippet available with the given <paramref name="key"/>.
-        /// </summary>
-        public string Get(string key) => TryGet(key) ?? throw new FrameworkException($"Missing SQL resource '{key}' for database language '{_databaseLanguage}'.");
-
-        /// <summary>
-        /// Returns the SQL code snippets from resource files, based on the selected database language in <see cref="DatabaseSettings.DatabaseLanguage"/>.
-        /// Throw an exception if there is no snippet available with the given <paramref name="key"/>.
-        /// </summary>
-        public string Format(string key, params object[] args) => string.Format(CultureInfo.InvariantCulture, Get(key), args);
     }
 }

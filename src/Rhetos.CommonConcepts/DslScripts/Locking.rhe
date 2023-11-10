@@ -14,7 +14,7 @@
 
     Action SetLock '(parameters, repository, userInfo) =>
         {
-            var now = SqlUtility.GetDatabaseTime(_executionContext.SqlExecuter);
+            var now = _executionContext.SqlUtility.GetDatabaseTime(_executionContext.SqlExecuter);
 
             var oldLock = repository.Common.ExclusiveLock.Query()
                 .Where(itemLock =>

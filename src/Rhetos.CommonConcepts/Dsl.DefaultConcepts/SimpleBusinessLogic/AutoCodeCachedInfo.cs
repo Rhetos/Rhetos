@@ -17,10 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Reflection;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
@@ -41,7 +39,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             return new IConceptInfo[]
             {
                 new SystemRequiredInfo { Property = Property },
-                CreateUniqueConstraint()
+                CreateUniqueConstraint(),
             };
         }
 

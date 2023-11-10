@@ -17,16 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Extensibility;
 using Rhetos.Utilities;
 using System.ComponentModel.Composition;
-using Rhetos.Compiler;
-using Rhetos.Extensibility;
-using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Dsl;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
@@ -34,16 +29,25 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(EntityInfo))]
     public class EntityDatabaseDefinition : IConceptDatabaseDefinition
     {
+        private readonly ISqlResources _sqlResources;
+        private readonly ISqlUtility _sqlUtility;
+
+        public EntityDatabaseDefinition(ISqlResources sqlResources, ISqlUtility sqlUtility)
+        {
+            _sqlResources = sqlResources;
+            _sqlUtility = sqlUtility;
+        }
+
         private string PrimaryKeyConstraintName(EntityInfo info)
         {
-            return SqlUtility.Identifier(Sql.Format("EntityDatabaseDefinition_PrimaryKeyConstraintName",
+            return _sqlUtility.Identifier(_sqlResources.Format("EntityDatabaseDefinition_PrimaryKeyConstraintName",
                 info.Module.Name,
                 info.Name));
         }
 
         private string DefaultConstraintName(EntityInfo info)
         {
-            return SqlUtility.Identifier(Sql.Format("EntityDatabaseDefinition_DefaultConstraintName",
+            return _sqlUtility.Identifier(_sqlResources.Format("EntityDatabaseDefinition_DefaultConstraintName",
                 info.Module.Name,
                 info.Name));
         }
@@ -52,9 +56,9 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         {
             var info = (EntityInfo)conceptInfo;
 
-            return Sql.Format("EntityDatabaseDefinition_Create",
-                SqlUtility.Identifier(info.Module.Name),
-                SqlUtility.Identifier(info.Name),
+            return _sqlResources.Format("EntityDatabaseDefinition_Create",
+                _sqlUtility.Identifier(info.Module.Name),
+                _sqlUtility.Identifier(info.Name),
                 PrimaryKeyConstraintName(info),
                 DefaultConstraintName(info));
         }
@@ -63,9 +67,9 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         {
             var info = (EntityInfo)conceptInfo;
 
-            return Sql.Format("EntityDatabaseDefinition_Remove",
-                SqlUtility.Identifier(info.Module.Name),
-                SqlUtility.Identifier(info.Name),
+            return _sqlResources.Format("EntityDatabaseDefinition_Remove",
+                _sqlUtility.Identifier(info.Module.Name),
+                _sqlUtility.Identifier(info.Name),
                 PrimaryKeyConstraintName(info),
                 DefaultConstraintName(info));
         }

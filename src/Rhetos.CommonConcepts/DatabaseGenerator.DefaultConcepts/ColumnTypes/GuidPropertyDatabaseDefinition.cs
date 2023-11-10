@@ -17,42 +17,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.ComponentModel.Composition;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Extensibility;
-using Rhetos.Utilities;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
-    [Export(typeof(IConceptDatabaseDefinition))]
-    [ExportMetadata(MefProvider.Implements, typeof(GuidPropertyInfo))]
-    public class GuidPropertyDatabaseDefinition : IConceptDatabaseDefinition
+    [Export(typeof(IConceptDatabaseGenerator))]
+    public class GuidPropertyDatabaseDefinition : SimplePropertyDatabaseDefinition<GuidPropertyInfo>
     {
-        private readonly ConceptMetadata _conceptMetadata;
-
-        public GuidPropertyDatabaseDefinition(ConceptMetadata conceptMetadata)
-        {
-            _conceptMetadata = conceptMetadata;
-        }
-
-        public string CreateDatabaseStructure(IConceptInfo conceptInfo)
-        {
-            var info = (GuidPropertyInfo)conceptInfo;
-
-            if (info.DataStructure is EntityInfo)
-                return PropertyDatabaseDefinition.AddColumn(_conceptMetadata, info);
-
-            return "";
-        }
-
-        public string RemoveDatabaseStructure(IConceptInfo conceptInfo)
-        {
-            var info = (GuidPropertyInfo)conceptInfo;
-            if (info.DataStructure is EntityInfo)
-                return PropertyDatabaseDefinition.RemoveColumn(info, SqlUtility.Identifier(info.Name));
-            return "";
-        }
+        public GuidPropertyDatabaseDefinition(ConceptMetadata conceptMetadata) : base(conceptMetadata) { }
     }
 }

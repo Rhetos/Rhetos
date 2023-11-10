@@ -29,16 +29,17 @@ namespace Rhetos.Utilities
 {
     public class MsSqlUtility : ISqlUtility
     {
+        internal const string DatabaseLanguage = "MsSql";
+
         private readonly ILocalizer _localizer;
 
         public MsSqlUtility(ILocalizer localizer, DatabaseSettings databaseSettings)
         {
             _localizer = localizer;
 
-            const string expectedDatabaseLanguage = "MsSql";
-            if (databaseSettings.DatabaseLanguage != expectedDatabaseLanguage)
+            if (databaseSettings.DatabaseLanguage != DatabaseLanguage)
                 throw new FrameworkException($"Unsupported database language '{databaseSettings.DatabaseLanguage}'." +
-                    $" Assembly '{GetType().Assembly.GetName()}' expects database language '{expectedDatabaseLanguage}'.");
+                    $" Assembly '{GetType().Assembly.GetName()}' expects database language '{DatabaseLanguage}'.");
         }
 
         public string ProviderName => "System.Data.SqlClient";

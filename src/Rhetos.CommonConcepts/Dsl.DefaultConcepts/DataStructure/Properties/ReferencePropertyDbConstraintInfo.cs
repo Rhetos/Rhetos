@@ -34,21 +34,28 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         [ConceptKey]
         public ReferencePropertyInfo Reference { get; set; }
-
-        public static bool IsSupported(ReferencePropertyInfo reference)
-        {
-            return reference.DataStructure is EntityInfo
-                && ForeignKeyUtility.GetSchemaTableForForeignKey(reference.Referenced) != null;
-        }
     }
 
     [Export(typeof(IConceptMacro))]
     public class ReferencePropertyDbConstraintMacro : IConceptMacro<InitializationConcept>
     {
+        private readonly ISqlUtility _sqlUtility;
+
+        public ReferencePropertyDbConstraintMacro(ISqlUtility sqlUtility)
+        {
+            _sqlUtility = sqlUtility;
+        }
+
+        public bool IsSupported(ReferencePropertyInfo reference)
+        {
+            return reference.DataStructure is EntityInfo
+                && ForeignKeyUtility.GetSchemaTableForForeignKey(reference.Referenced, _sqlUtility) != null;
+        }
+
         public IEnumerable<IConceptInfo> CreateNewConcepts(InitializationConcept conceptInfo, IDslModel existingConcepts)
         {
             return existingConcepts.FindByType<ReferencePropertyInfo>()
-                .Where(ReferencePropertyDbConstraintInfo.IsSupported)
+                .Where(IsSupported)
                 .Select(rp => new ReferencePropertyDbConstraintInfo { Reference = rp });
         }
     }

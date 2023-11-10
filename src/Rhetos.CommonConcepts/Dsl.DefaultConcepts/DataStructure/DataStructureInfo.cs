@@ -30,6 +30,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     {
         [ConceptKey]
         public ModuleInfo Module { get; set; }
+
         [ConceptKey]
         public string Name { get; set; }
 

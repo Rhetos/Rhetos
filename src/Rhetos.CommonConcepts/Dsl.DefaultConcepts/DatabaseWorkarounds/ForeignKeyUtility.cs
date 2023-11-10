@@ -28,22 +28,22 @@ namespace Rhetos.Dsl.DefaultConcepts
         /// <summary>
         /// Note: When using this function to create a database object, always add the dependencies from GetAdditionalForeignKeyDependencies().
         /// </summary>
-        public static string GetSchemaTableForForeignKey(DataStructureInfo dataStructure)
+        public static string GetSchemaTableForForeignKey(DataStructureInfo dataStructure, ISqlUtility sqlUtility)
         {
             if (dataStructure is EntityInfo)
-                return SqlUtility.Identifier(dataStructure.Module.Name)
-                    + "." + SqlUtility.Identifier(dataStructure.Name);
+                return sqlUtility.Identifier(dataStructure.Module.Name)
+                    + "." + sqlUtility.Identifier(dataStructure.Name);
 
             if (dataStructure is LegacyEntityInfo)
             {
                 var legacy = (LegacyEntityInfo)dataStructure;
-                return SqlUtility.GetFullName(legacy.Table);
+                return sqlUtility.GetFullName(legacy.Table);
             }
 
             if (dataStructure is LegacyEntityWithAutoCreatedViewInfo)
             {
                 var legacy = (LegacyEntityWithAutoCreatedViewInfo)dataStructure;
-                return SqlUtility.GetFullName(legacy.Table);
+                return sqlUtility.GetFullName(legacy.Table);
             }
 
             if (dataStructure is PolymorphicInfo)

@@ -35,6 +35,13 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(UniqueMultiplePropertiesInfo))]
     public class UniqueMultiplePropertiesDatabaseDefinition : IConceptDatabaseDefinitionExtension
     {
+        protected ISqlResources Sql { get; private set; }
+
+        public UniqueMultiplePropertiesDatabaseDefinition(ISqlResources sqlResources)
+        {
+            this.Sql = sqlResources;
+        }
+
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
         {
             return null;

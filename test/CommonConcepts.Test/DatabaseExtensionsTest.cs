@@ -52,7 +52,7 @@ namespace CommonConcepts.Test
 
                     scope.Resolve<ISqlExecuter>().ExecuteSql(
                         new[] { "DELETE FROM TestDatabaseExtensions.Simple" }
-                        .Concat(data.Select(name => "INSERT INTO TestDatabaseExtensions.Simple (Name) SELECT " + SqlUtility.QuoteText(name))));
+                        .Concat(data.Select(name => "INSERT INTO TestDatabaseExtensions.Simple (Name) SELECT " + scope.Resolve<ISqlUtility>().QuoteText(name))));
 
                     var repository = scope.Resolve<Common.DomRepository>();
 

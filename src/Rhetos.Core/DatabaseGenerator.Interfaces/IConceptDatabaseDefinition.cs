@@ -22,7 +22,7 @@ using System;
 
 namespace Rhetos.DatabaseGenerator
 {
-    [Obsolete("Implement IConceptDatabaseGenerator interface instead of IConceptDatabaseDefinition.")]
+    [Obsolete("Use IConceptDatabaseGenerator interface instead of IConceptDatabaseDefinition.")]
     public interface IConceptDatabaseDefinition : IConceptDatabaseGenerator
     {
         string CreateDatabaseStructure(IConceptInfo conceptInfo);

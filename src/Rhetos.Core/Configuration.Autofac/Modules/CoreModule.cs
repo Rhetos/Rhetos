@@ -18,7 +18,10 @@
 */
 
 using Autofac;
-using Rhetos.Logging;
+using Rhetos.DatabaseGenerator;
+using Rhetos.Deployment;
+using Rhetos.Extensibility;
+using Rhetos.SqlResources;
 using Rhetos.Utilities;
 
 namespace Rhetos.Configuration.Autofac.Modules
@@ -37,7 +40,16 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<DatabaseSettings>()).SingleInstance();
             builder.RegisterType<NoLocalizer>().As<ILocalizer>().SingleInstance();
             builder.RegisterGeneric(typeof(NoLocalizer<>)).As(typeof(ILocalizer<>)).SingleInstance();
-            builder.RegisterType<StaticUtilities>().SingleInstance();
+
+            // Extensibility
+            builder.RegisterSource<PluginMetadataRegistrationSource>();
+            builder.RegisterGeneric(typeof(PluginsMetadataCache<>)).SingleInstance();
+            builder.RegisterGeneric(typeof(PluginsContainer<>)).As(typeof(IPluginsContainer<>)).InstancePerLifetimeScope();
+            builder.RegisterGeneric(typeof(NamedPlugins<>)).As(typeof(INamedPlugins<>)).InstancePerLifetimeScope();
+
+            // SQL resources
+            builder.RegisterType<SqlResourcesProvider>().As<ISqlResources>().SingleInstance();
+            builder.GetRhetosPluginRegistration().FindAndRegisterPlugins<ISqlResourcesPlugin>();
 
             base.Load(builder);
         }

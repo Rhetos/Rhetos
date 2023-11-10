@@ -26,9 +26,4 @@
     <ProjectReference Include="..\Rhetos.Core.DslParser\Rhetos.Core.DslParser.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="Deployment\RhetosDatabase.MsSql.sql" />
-    <EmbeddedResource Include="Deployment\RhetosDatabase.Oracle.sql" />
-  </ItemGroup>
-
 </Project>

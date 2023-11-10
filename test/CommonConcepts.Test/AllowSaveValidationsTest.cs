@@ -142,8 +142,8 @@ namespace CommonConcepts.Test
                 var id2 = Guid.NewGuid();
                 Console.WriteLine(id1);
                 Console.WriteLine(id2);
-                sqlExecuter.ExecuteSql("INSERT INTO TestAllowSave.SimpleSystem (ID) SELECT " + SqlUtility.QuoteGuid(id1));
-                sqlExecuter.ExecuteSql("INSERT INTO TestAllowSave.SimpleSystem (ID, Code, Name, CodeAS, NameAS) SELECT " + SqlUtility.QuoteGuid(id2) + ", 1, '', 2, ''");
+                sqlExecuter.ExecuteSql("INSERT INTO TestAllowSave.SimpleSystem (ID) SELECT " + scope.Resolve<ISqlUtility>().QuoteGuid(id1));
+                sqlExecuter.ExecuteSql("INSERT INTO TestAllowSave.SimpleSystem (ID, Code, Name, CodeAS, NameAS) SELECT " + scope.Resolve<ISqlUtility>().QuoteGuid(id2) + ", 1, '', 2, ''");
 
                 {
                     var errorsOnSave = simpleSystem.Validate(new[] { id1, id2 }, onSave: true);

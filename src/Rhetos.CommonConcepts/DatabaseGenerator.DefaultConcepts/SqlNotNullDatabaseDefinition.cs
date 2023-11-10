@@ -36,9 +36,15 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     {
         private readonly ConceptMetadata _conceptMetadata;
 
-        public SqlNotNullDatabaseDefinition(ConceptMetadata conceptMetadata)
+        protected ISqlResources Sql { get; private set; }
+
+        protected ISqlUtility SqlUtility { get; private set; }
+
+        public SqlNotNullDatabaseDefinition(ConceptMetadata conceptMetadata, ISqlResources sqlResources, ISqlUtility sqlUtility)
         {
             _conceptMetadata = conceptMetadata;
+            this.Sql = sqlResources;
+            this.SqlUtility = sqlUtility;
         }
 
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
@@ -67,7 +73,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
                     columnName,
                     columnType,
                     info.InitialValueSqlExpression,
-                    SqlUtility.ScriptSplitterTag).Trim());
+                    Rhetos.Utilities.SqlUtility.ScriptSplitterTag).Trim());
             }
 
             var sqlSnippet = sql.ToString().Trim() + "\r\n";

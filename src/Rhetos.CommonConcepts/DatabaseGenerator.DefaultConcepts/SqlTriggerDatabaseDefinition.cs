@@ -32,20 +32,32 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(SqlTriggerInfo))]
     public class SqlTriggerDatabaseDefinition : IConceptDatabaseDefinition
     {
+        private readonly ConceptMetadata _conceptMetadata;
+
+        protected ISqlResources Sql { get; private set; }
+
+        protected ISqlUtility SqlUtility { get; private set; }
+
+        public SqlTriggerDatabaseDefinition(ISqlResources sqlResources, ISqlUtility sqlUtility, ConceptMetadata conceptMetadata)
+        {
+            Sql = sqlResources;
+            SqlUtility = sqlUtility;
+            _conceptMetadata = conceptMetadata;
+        }
+
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
         {
             var info = (SqlTriggerInfo) conceptInfo;
-            var orm = (IOrmDataStructure) info.Structure;
 
             return Sql.Format("SqlTriggerDatabaseDefinition_Create",
-                SqlUtility.Identifier(orm.GetOrmSchema()),
+                SqlUtility.Identifier(_conceptMetadata.GetOrmSchema(info.Structure)),
                 TriggerName(info),
-                SqlUtility.Identifier(orm.GetOrmDatabaseObject()),
+                SqlUtility.Identifier(_conceptMetadata.GetOrmDatabaseObject(info.Structure)),
                 info.Events,
                 info.TriggerSource);
         }
 
-        private static string TriggerName(SqlTriggerInfo info)
+        private string TriggerName(SqlTriggerInfo info)
         {
             return SqlUtility.Identifier(Sql.Format("SqlTriggerDatabaseDefinition_TriggerName", info.Structure.Name, info.Name));
         }
@@ -53,10 +65,9 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         public string RemoveDatabaseStructure(IConceptInfo conceptInfo)
         {
             var info = (SqlTriggerInfo) conceptInfo;
-            var orm = (IOrmDataStructure) info.Structure;
 
             return Sql.Format("SqlTriggerDatabaseDefinition_Remove",
-                SqlUtility.Identifier(orm.GetOrmSchema()),
+                SqlUtility.Identifier(_conceptMetadata.GetOrmSchema(info.Structure)),
                 TriggerName(info));
         }
     }

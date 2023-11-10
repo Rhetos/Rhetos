@@ -35,6 +35,13 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(EntityHistoryAllPropertiesInfo))]
     public class EntityHistoryAllPropertiesCodeGenerator : IConceptCodeGenerator
     {
+        private readonly ISqlUtility _sqlUtility;
+
+        public EntityHistoryAllPropertiesCodeGenerator(ISqlUtility sqlUtility)
+        {
+            _sqlUtility = sqlUtility;
+        }
+
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (EntityHistoryAllPropertiesInfo)conceptInfo;
@@ -46,7 +53,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// History concept creates a similar filter on the "Entity"_Changes repository, but this filter on the base entity class
         /// can only be created of all properties are selected for history tracking, therefore it is implemented in EntityHistoryAllPropertiesInfo.
         /// </summary>
-        private static string FilterImplementationSnippet(EntityHistoryAllPropertiesInfo info)
+        private string FilterImplementationSnippet(EntityHistoryAllPropertiesInfo info)
         {
             return string.Format(
         @"public global::{0}.{1}[] Load(System.DateTime parameter)
@@ -59,8 +66,8 @@ namespace Rhetos.Dom.DefaultConcepts
         ",
             info.EntityHistory.Entity.Module.Name,
             info.EntityHistory.Entity.Name,
-            SqlUtility.Identifier(info.EntityHistory.Entity.Module.Name),
-            SqlUtility.Identifier(info.EntityHistory.Entity.Name + "_AtTime"));
+            _sqlUtility.Identifier(info.EntityHistory.Entity.Module.Name),
+            _sqlUtility.Identifier(info.EntityHistory.Entity.Name + "_AtTime"));
         }
     }
 }

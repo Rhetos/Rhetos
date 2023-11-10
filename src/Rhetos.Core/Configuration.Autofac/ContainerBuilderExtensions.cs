@@ -28,42 +28,37 @@ namespace Autofac
     public static class ContainerBuilderExtensions
     {
         /// <summary>
-        /// Extension method which resolves <see cref="ILogProvider"/> instance from the <see cref="ContainerBuilder"/> which is initialized with the <see cref="RhetosContainerBuilder.Create"/> method.
+        /// Returns the Rhetos <see cref="ExecutionStage"/> from the <see cref="ContainerBuilder"/> which is initialized with the <see cref="RhetosContainerBuilder.Create"/> method.
+        /// </summary>
+        public static ExecutionStage GetRhetosExecutionStage(this ContainerBuilder builder)
+            => GetContainerBuilderProperty<ExecutionStage>(builder);
+
+        /// <summary>
+        /// Returns the Rhetos <see cref="ILogProvider"/> instance from the <see cref="ContainerBuilder"/> which is initialized with the <see cref="RhetosContainerBuilder.Create"/> method.
         /// </summary>
         public static ILogProvider GetRhetosLogProvider(this ContainerBuilder builder)
-        {
-            var key = nameof(ILogProvider);
-            if (builder.Properties.TryGetValue(key, out var logProvider) && (logProvider is ILogProvider iLogProvider))
-                return iLogProvider;
-
-            throw new FrameworkException($"{nameof(ContainerBuilder)} does not contain an entry for {nameof(ILogProvider)}. " +
-                $"This container was probably not created with the  {nameof(RhetosContainerBuilder)}.{nameof(RhetosContainerBuilder.Create)} method.");
-        }
+            => GetContainerBuilderProperty<ILogProvider>(builder);
 
         /// <summary>
-        /// Extension method which resolves Rhetos <see cref="IConfiguration"/> instance from the <see cref="ContainerBuilder"/> which is initialized with the <see cref="RhetosContainerBuilder.Create"/> method.
+        /// Returns the Rhetos <see cref="IConfiguration"/> instance from the <see cref="ContainerBuilder"/> which is initialized with the <see cref="RhetosContainerBuilder.Create"/> method.
         /// </summary>
         public static IConfiguration GetRhetosConfiguration(this ContainerBuilder builder)
-        {
-            var key = nameof(IConfiguration);
-            if (builder.Properties.TryGetValue(key, out var configuration) && (configuration is IConfiguration iConfiguration))
-                return iConfiguration;
-
-            throw new FrameworkException($"{nameof(ContainerBuilder)} does not contain an entry for {nameof(IConfiguration)}. " +
-                $"This container was probably not created as {nameof(RhetosContainerBuilder)}.");
-        }
+            => GetContainerBuilderProperty<IConfiguration>(builder);
 
         /// <summary>
-        /// Extension method which resolves <see cref="IPluginScanner"/> instance from the <see cref="ContainerBuilder"/> which is initialized with the <see cref="RhetosContainerBuilder.Create"/> method.
+        /// Returns the Rhetos <see cref="IPluginScanner"/> instance from the <see cref="ContainerBuilder"/> which is initialized with the <see cref="RhetosContainerBuilder.Create"/> method.
         /// </summary>
         public static IPluginScanner GetRhetosPluginScanner(this ContainerBuilder builder)
-        {
-            var key = nameof(IPluginScanner);
-            if (builder.Properties.TryGetValue(key, out var pluginScanner) && (pluginScanner is IPluginScanner iPluginScanner))
-                return iPluginScanner;
+            => GetContainerBuilderProperty<IPluginScanner>(builder);
 
-            throw new FrameworkException($"{nameof(ContainerBuilder)} does not contain an entry for {nameof(IPluginScanner)}. " +
-                $"This container was probably not created as {nameof(RhetosContainerBuilder)}.");
+        private static T GetContainerBuilderProperty<T>(ContainerBuilder builder)
+        {
+            var key = typeof(T).Name;
+            if (builder.Properties.TryGetValue(key, out var propertyObject) && (propertyObject is T propertyValue))
+                return propertyValue;
+            else
+                throw new FrameworkException($"{nameof(ContainerBuilder)} does not contain an entry for {key}. " +
+                    $"This container was probably not created with the  {nameof(RhetosContainerBuilder)}.{nameof(RhetosContainerBuilder.Create)} method.");
         }
 
         /// <summary>
@@ -99,6 +94,5 @@ namespace Autofac
             builder.GetRhetosPluginRegistration().FindAndRegisterPluginModules();
             return builder;
         }
-
     }
 }

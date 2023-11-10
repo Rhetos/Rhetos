@@ -11,10 +11,19 @@ Changes in behavior:
 Changes in Rhetos libraries API (will cause compile-time errors):
 
 1. Removed some static members of `SqlUtility` class:
-   * Instead of SqlUtility.ConnectionString, use the ConnectionString class from dependency injection.
-   * Instead of SqlUtility.SqlCommandTimeout, use DatabaseOptions.SqlCommandTimeout from dependency injection.
-   * Instead of SqlUtility.DatabaseLanguage, use DatabaseSettings.DatabaseLanguage from dependency injection.
-   * Instead of SqlUtility.NationalLanguage, use DatabaseSettings.DatabaseNationalLanguage from dependency injection.
+   * Instead of `SqlUtility.ConnectionString`, use the ConnectionString class from dependency injection.
+   * Instead of `SqlUtility.SqlCommandTimeout`, use DatabaseOptions.SqlCommandTimeout from dependency injection.
+   * Instead of `SqlUtility.DatabaseLanguage`, use DatabaseSettings.DatabaseLanguage from dependency injection.
+   * Instead of `SqlUtility.NationalLanguage`, use DatabaseSettings.DatabaseNationalLanguage from dependency injection.
+   * For other removed static members, use `ISqlUtility` from dependency injection.
+2. IOrmDataStructure no longer contains methods `GetOrmSchema` and `GetOrmDatabaseObject`.
+   * These methods are now available on `ConceptMetadata` class (use it from dependency injection).
+3. `IConceptMetadataExtension<>` interface is no longer covariant, and the derived interfaces are no longer generic:
+   * Replace `.Get<ICsPropertyType<PropertyInfo>>` with `.Get<ICsPropertyType>`.
+   * Replace `.Get<IDatabaseColumnName<PropertyInfo>>` with `.Get<IDatabaseColumnName>`.
+   * Replace `.Get<IDatabaseColumnType<PropertyInfo>>` with `.Get<IDatabaseColumnType>`.
+4. AutoCodeHelper.UpdateCodesWithoutCache added parameter ISqlUtility:
+   * Replace `AutoCodeHelper.UpdateCodesWithoutCache(_executionContext.SqlExecuter, ...` with `AutoCodeHelper.UpdateCodesWithoutCache(_executionContext.SqlExecuter, _executionContext.SqlUtility, ...`.
 
 ## 5.4.0 (2023-03-16)
 

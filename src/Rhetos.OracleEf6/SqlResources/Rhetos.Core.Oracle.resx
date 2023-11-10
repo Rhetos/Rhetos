@@ -117,19 +117,19 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ConceptApplicationRepository_Delete" xml:space="preserve">
+  <data name="RhetosCore_ConceptApplicationRepository_Delete" xml:space="preserve">
     <value>BEGIN
   DELETE FROM Rhetos.AppliedConcept WHERE ID={0};
   COMMIT;
 END;</value>
   </data>
-  <data name="ConceptApplicationRepository_DeleteAll" xml:space="preserve">
+  <data name="RhetosCore_ConceptApplicationRepository_DeleteAll" xml:space="preserve">
     <value>BEGIN
 DELETE FROM Rhetos.AppliedConceptDependsOn;
 DELETE FROM Rhetos.AppliedConcept;
 END;</value>
   </data>
-  <data name="ConceptApplicationRepository_Insert" xml:space="preserve">
+  <data name="RhetosCore_ConceptApplicationRepository_Insert" xml:space="preserve">
     <value>DECLARE
 	InfoType NCLOB;
 	ConceptInfoKey NCLOB;
@@ -147,7 +147,7 @@ BEGIN
 	VALUES ({0}, InfoType, ConceptInfoKey, ImplementationType, CreateQuery, RemoveQuery);
 END;</value>
   </data>
-  <data name="ConceptApplicationRepository_Update" xml:space="preserve">
+  <data name="RhetosCore_ConceptApplicationRepository_Update" xml:space="preserve">
     <value>DECLARE
 	vInfoType NCLOB;
 	vConceptInfoKey NCLOB;
@@ -171,13 +171,10 @@ BEGIN
   WHERE ID = {0};
 END;</value>
   </data>
-  <data name="DatabaseGenerator_CommitAfterDDL" xml:space="preserve">
-    <value>COMMIT</value>
-  </data>
-  <data name="ConceptApplicationRepository_InsertDependency" xml:space="preserve">
+  <data name="RhetosCore_ConceptApplicationRepository_InsertDependency" xml:space="preserve">
     <value>INSERT INTO Rhetos.AppliedConceptDependsOn (DependentID, DependsOnID) VALUES ({0}, {1})</value>
   </data>
-  <data name="ConceptApplicationRepository_DeleteDependency" xml:space="preserve">
+  <data name="RhetosCore_ConceptApplicationRepository_DeleteDependency" xml:space="preserve">
     <value>DELETE FROM Rhetos.AppliedConceptDependsOn WHERE DependentID = {0} AND DependsOnID = {1}</value>
   </data>
 </root>

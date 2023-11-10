@@ -60,7 +60,7 @@ namespace CommonConcepts.Test
                 TestUtility.AssertContains(logRecord.ContextInfo, scope.Resolve<IUserInfo>().UserName);
                 TestUtility.AssertContains(logRecord.ContextInfo, scope.Resolve<IUserInfo>().Workstation);
 
-                var now = SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>());
+                var now = scope.Resolve<ISqlUtility>().GetDatabaseTime(scope.Resolve<ISqlExecuter>());
                 Assert.IsTrue(logRecord.Created.Value.Subtract(now).TotalSeconds < 5);
 
                 Assert.AreEqual("TestLogging.Simple", logRecord.TableName);
@@ -200,8 +200,8 @@ namespace CommonConcepts.Test
                     {
                         "DELETE FROM TestLogging.Complex",
                         "DELETE FROM TestLogging.Simple",
-                        "INSERT INTO TestLogging.Simple (ID, Name) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 'abc')",
-                        "UPDATE TestLogging.Simple SET ID = " + SqlUtility.QuoteGuid(id2)
+                        "INSERT INTO TestLogging.Simple (ID, Name) VALUES (" + scope.Resolve<ISqlUtility>().QuoteGuid(id1) + ", 'abc')",
+                        "UPDATE TestLogging.Simple SET ID = " + scope.Resolve<ISqlUtility>().QuoteGuid(id2)
                     });
 
                 var actual = repository.Common.Log.Query().Where(log => new Guid?[] { id1, id2 }.Contains(log.ItemId)).ToArray();
@@ -271,10 +271,10 @@ namespace CommonConcepts.Test
                 Assert.AreEqual(@"bo=""1""", description[3]);
                 Assert.AreEqual(@"da=""2001-02-03""", description[4]);
                 Assert.IsTrue(new Regex(@"^de=""123\.45670*""$").IsMatch(description[5]));// optional additional zeros
-                Assert.AreEqual(@"g=""" + SqlUtility.GuidToString(complex.g.Value) + @"""", description[6]);
+                Assert.AreEqual(@"g=""" + scope.Resolve<ISqlUtility>().GuidToString(complex.g.Value) + @"""", description[6]);
                 Assert.AreEqual(@"ls=""def""", description[7]);
                 Assert.AreEqual(@"m=""11.2200""", description[8]);
-                Assert.AreEqual(@"rID=""" + SqlUtility.GuidToString(simple.ID) + @"""", description[9]);
+                Assert.AreEqual(@"rID=""" + scope.Resolve<ISqlUtility>().GuidToString(simple.ID) + @"""", description[9]);
                 Assert.IsTrue(new Regex(@"^t=""2001-02-03T04:05:06(.0+)?""$").IsMatch(description[10]));// optional milliseconds
             }
         }

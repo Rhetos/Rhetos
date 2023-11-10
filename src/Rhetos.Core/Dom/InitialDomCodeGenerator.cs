@@ -29,7 +29,16 @@ namespace Rhetos.Dom
     public class InitialDomCodeGenerator : IConceptCodeGenerator
     {
         public static readonly string RhetosHostBuilderInitialConfigurationTag = "/*RhetosHostBuilder.InitialConfiguration*/";
+
+        /// <summary>
+        /// Minimize usage of <see cref="RhetosHostBuilderPluginAssembliesTag"/>, use <see cref="RhetosHostBuilderPluginTypesTag"/>
+        /// instead, for better runtime performance and robustness.
+        /// At runtime, <see cref="RhetosHostBuilderPluginTypesTag"/> provides list of plugin types that are already enumerated
+        /// an their assembly references resolved. Scanning assemblies that are listed at <see cref="RhetosHostBuilderPluginAssembliesTag"/>
+        /// takes time and also adds risk of runtime exception for runtime dependencies.
+        /// </summary>
         public static readonly string RhetosHostBuilderPluginAssembliesTag = "/*RhetosHostBuilder.PluginAssemblies*/";
+
         public static readonly string RhetosHostBuilderPluginTypesTag = "/*RhetosHostBuilder.PluginTypes*/";
 
         private readonly PluginInfoCollection _plugins;

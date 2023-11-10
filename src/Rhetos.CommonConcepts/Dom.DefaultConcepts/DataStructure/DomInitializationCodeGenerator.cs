@@ -243,6 +243,9 @@ namespace Common
         protected Lazy<Rhetos.Utilities.IUserInfo> _userInfo;
         public Rhetos.Utilities.IUserInfo UserInfo {{ get {{ return _userInfo.Value; }} }}
 
+        protected Lazy<Rhetos.Utilities.ISqlUtility> _sqlUtility;
+        public Rhetos.Utilities.ISqlUtility SqlUtility {{ get {{ return _sqlUtility.Value; }} }}
+
         protected Lazy<Rhetos.Utilities.ISqlExecuter> _sqlExecuter;
         public Rhetos.Utilities.ISqlExecuter SqlExecuter {{ get {{ return _sqlExecuter.Value; }} }}
 
@@ -284,6 +287,7 @@ namespace Common
         public ExecutionContext(
             Lazy<Rhetos.Persistence.IPersistenceTransaction> persistenceTransaction,
             Lazy<Rhetos.Utilities.IUserInfo> userInfo,
+            Lazy<Rhetos.Utilities.ISqlUtility> sqlUtility,
             Lazy<Rhetos.Utilities.ISqlExecuter> sqlExecuter,
             Lazy<Rhetos.Security.IAuthorizationManager> authorizationManager,
             Lazy<Rhetos.Dom.DefaultConcepts.GenericRepositories> genericRepositories,
@@ -294,6 +298,7 @@ namespace Common
         {{
             _persistenceTransaction = persistenceTransaction;
             _userInfo = userInfo;
+            _sqlUtility = sqlUtility;
             _sqlExecuter = sqlExecuter;
             _authorizationManager = authorizationManager;
             _genericRepositories = genericRepositories;

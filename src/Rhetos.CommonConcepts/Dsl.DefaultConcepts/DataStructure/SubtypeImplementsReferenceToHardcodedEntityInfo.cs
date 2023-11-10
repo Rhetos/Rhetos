@@ -24,6 +24,7 @@ using System.Text;
 using Rhetos.Dsl;
 using Rhetos.Utilities;
 using System.ComponentModel.Composition;
+using Newtonsoft.Json.Linq;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
@@ -32,7 +33,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Implements")]
-    public class SubtypeImplementsReferenceToHardcodedEntityInfo : IMacroConcept
+    public class SubtypeImplementsReferenceToHardcodedEntityInfo : IConceptInfo
     {
         [ConceptKey]
         public IsSubtypeOfInfo IsSubtypeOf { get; set; }
@@ -41,12 +42,23 @@ namespace Rhetos.Dsl.DefaultConcepts
         public PropertyInfo Property { get; set; }
 
         public EntryInfo Entry { get; set; }
+    }
 
-        public IEnumerable<IConceptInfo> CreateNewConcepts()
+    [Export(typeof(IConceptMacro))]
+    public class SubtypeImplementsReferenceToHardcodedEntityMacro : IConceptMacro<SubtypeImplementsReferenceToHardcodedEntityInfo>
+    {
+        private readonly ISqlUtility _sqlUtility;
+
+        public SubtypeImplementsReferenceToHardcodedEntityMacro(ISqlUtility sqlUtility)
+        {
+            _sqlUtility = sqlUtility;
+        }
+
+        public IEnumerable<IConceptInfo> CreateNewConcepts(SubtypeImplementsReferenceToHardcodedEntityInfo conceptInfo, IDslModel existingConcepts)
         {
             return new List<IConceptInfo>
             {
-                new SubtypeImplementsPropertyInfo { IsSubtypeOf = IsSubtypeOf, Property = Property, Expression = SqlUtility.QuoteGuid(Entry.GetIdentifier()) }
+                new SubtypeImplementsPropertyInfo { IsSubtypeOf = conceptInfo.IsSubtypeOf, Property = conceptInfo.Property, Expression = _sqlUtility.QuoteGuid(conceptInfo.Entry.GetIdentifier()) }
             };
         }
     }

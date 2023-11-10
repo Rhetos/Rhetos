@@ -52,20 +52,16 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public static string SnippetSqlFormat(PropertyInfo property)
         {
-            if (property is ReferencePropertyInfo)
-                return $"Rhetos.Utilities.SqlUtility.GuidToString(item.{property.Name}ID)";
-            if (property is GuidPropertyInfo)
-                return $"Rhetos.Utilities.SqlUtility.GuidToString(item.{property.Name})";
-            else if (property is ShortStringPropertyInfo || property is LongStringPropertyInfo)
-                return $"item.{property.Name}";
-            else if (property is DateTimePropertyInfo || property is DatePropertyInfo)
-                return $"Rhetos.Utilities.SqlUtility.DateTimeToString(item.{property.Name})";
-            else if (property is BoolPropertyInfo)
-                return $"Rhetos.Utilities.SqlUtility.BoolToString(item.{property.Name})";
-            else if (property is BinaryPropertyInfo)
-                return $"Rhetos.Utilities.SqlUtility.ByteArrayToString(item.{property.Name})";
-            else
-                return $"item.{property.Name} != null ? item.{property.Name}.ToString() : null";
+            return property switch
+            {
+                ReferencePropertyInfo => $"_executionContext.SqlUtility.GuidToString(item.{property.Name}ID)",
+                GuidPropertyInfo => $"_executionContext.SqlUtility.GuidToString(item.{property.Name})",
+                ShortStringPropertyInfo or LongStringPropertyInfo => $"item.{property.Name}",
+                DateTimePropertyInfo or DatePropertyInfo => $"_executionContext.SqlUtility.DateTimeToString(item.{property.Name})",
+                BoolPropertyInfo => $"_executionContext.SqlUtility.BoolToString(item.{property.Name})",
+                BinaryPropertyInfo => $"_executionContext.SqlUtility.ByteArrayToString(item.{property.Name})",
+                _ => $"item.{property.Name} != null ? item.{property.Name}.ToString() : null"
+            };
         }
 
         public static bool SnippetSqlQuoted(PropertyInfo property)

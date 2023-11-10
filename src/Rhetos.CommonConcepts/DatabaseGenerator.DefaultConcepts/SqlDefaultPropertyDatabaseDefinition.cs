@@ -33,7 +33,17 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(SqlDefaultPropertyInfo))]
     public class SqlDefaultPropertyDatabaseDefinition : IConceptDatabaseDefinition
     {
-        public static string GetConstraintName(PropertyInfo info)
+        protected ISqlResources Sql { get; private set; }
+
+        protected ISqlUtility SqlUtility { get; private set; }
+
+        public SqlDefaultPropertyDatabaseDefinition(ISqlResources sqlResources, ISqlUtility sqlUtility)
+        {
+            this.Sql = sqlResources;
+            this.SqlUtility = sqlUtility;
+        }
+
+        public string GetConstraintName(PropertyInfo info)
         {
             return SqlUtility.Identifier(Sql.Format("SqlDefaultPropertyDatabaseDefinition_ConstraintName", info.DataStructure.Name, info.Name));
         }

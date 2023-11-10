@@ -44,7 +44,7 @@ namespace Rhetos.Dsl
         }
 
         public TMetadata Get<TMetadata>(Type conceptType)
-            where TMetadata : IConceptMetadataExtension<IConceptInfo>
+            where TMetadata : IConceptMetadataExtension
         {
             return (TMetadata)Get(typeof(TMetadata), conceptType);
         }
@@ -56,7 +56,7 @@ namespace Rhetos.Dsl
 
         private IConceptMetadataExtension GetConceptMetadataPlugin((Type MetadataInterface, Type ConceptType) key)
         {
-            var expectedMetadataInterface = typeof(IConceptMetadataExtension<IConceptInfo>);
+            var expectedMetadataInterface = typeof(IConceptMetadataExtension);
             if (!expectedMetadataInterface.IsAssignableFrom(key.MetadataInterface))
                 throw new FrameworkException($"{key.MetadataInterface} does not implement {expectedMetadataInterface}.");
 

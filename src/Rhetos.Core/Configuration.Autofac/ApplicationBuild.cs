@@ -19,14 +19,12 @@
 
 using Autofac;
 using Rhetos.Configuration.Autofac.Modules;
-using Rhetos.DatabaseGenerator;
 using Rhetos.Deployment;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -82,8 +80,6 @@ namespace Rhetos
                 performanceLogger.Write(stopwatch, "Modules and plugins registered.");
                 ContainerBuilderPluginRegistration.LogRegistrationStatistics("Rhetos build component registrations", container, _logProvider);
 
-                container.Resolve<StaticUtilities>().Initialize();
-
                 container.Resolve<ApplicationGenerator>().ExecuteGenerators();
             }
         }
@@ -97,6 +93,7 @@ namespace Rhetos
                 _configuration.GetOptions<PluginScannerOptions>());
 
             var builder = RhetosContainerBuilder.Create(_configuration, _logProvider, pluginScanner);
+            builder.Properties.Add(nameof(ExecutionStage), ExecutionStage.BuildTime);
             builder.Register(context => new PluginInfoCollection(pluginScanner.FindAllPlugins()));
             builder.RegisterModule(new CoreModule());
             builder.RegisterModule(new CorePluginsModule());

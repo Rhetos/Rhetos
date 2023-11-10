@@ -48,7 +48,13 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(EntityHistoryInfo))]
     public class EntityHistoryCodeGenerator : IConceptCodeGenerator
     {
+        public EntityHistoryCodeGenerator(ISqlUtility sqlUtility)
+        {
+            _sqlUtility = sqlUtility;
+        }
+
         public static readonly CsTag<EntityHistoryInfo> ClonePropertiesTag = "CloneProperties";
+        private readonly ISqlUtility _sqlUtility;
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
@@ -61,7 +67,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// Creates a DateTime filter that returns the "Entity"_Changes records that were active at the time (including the current records in the base entity).
         /// AllProperties concept (EntityHistoryAllPropertiesInfo) creates a similar filter on the base Entity class.
         /// </summary>
-        private static string FilterImplementationSnippet(EntityHistoryInfo info)
+        private string FilterImplementationSnippet(EntityHistoryInfo info)
         {
             return string.Format(
         @"public global::{0}.{1}[] Load(System.DateTime parameter)
@@ -74,8 +80,8 @@ namespace Rhetos.Dom.DefaultConcepts
         ",
             info.Dependency_ChangesEntity.Module.Name,
             info.Dependency_ChangesEntity.Name,
-            SqlUtility.Identifier(info.Entity.Module.Name),
-            SqlUtility.Identifier(info.Entity.Name + "_AtTime"));
+            _sqlUtility.Identifier(info.Entity.Module.Name),
+            _sqlUtility.Identifier(info.Entity.Name + "_AtTime"));
         }
 
         private static string CreateHistoryOnUpdateSnippet(EntityHistoryInfo info)
@@ -83,7 +89,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return string.Format(
 @"			if (insertedNew.Count() > 0 || updatedNew.Count() > 0)
             {{
-                var now = SqlUtility.GetDatabaseTime(_executionContext.SqlExecuter);
+                var now = _executionContext.SqlUtility.GetDatabaseTime(_executionContext.SqlExecuter);
 
                 const double errorMarginSeconds = 0.01; // Including database DataTime type imprecision.
                 

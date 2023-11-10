@@ -226,7 +226,7 @@ namespace Rhetos.DatabaseGenerator.Test
 
         private ConceptApplicationRepository TestConceptApplicationRepository(IEnumerable<ConceptApplication> conceptApplications)
         {
-            return new ConceptApplicationRepository(new MockSqlExecuter(conceptApplications), new FakeSqlUtility());
+            return new ConceptApplicationRepository(new MockSqlExecuter(conceptApplications), new FakeSqlUtility(), null);
         }
 
         [TestMethod]

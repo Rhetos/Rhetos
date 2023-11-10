@@ -17,39 +17,34 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Deployment;
+using Rhetos.SqlResources;
 using Rhetos.Utilities;
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Resources;
 
-namespace Rhetos.DatabaseGenerator
+namespace Rhetos.MsSqlEf6.SqlResources
 {
-    public class CoreSqlResourcesPlugin : ISqlResourcesPlugin
+    public class CoreDbUpdateSqlResourcesPlugin : ISqlResourcesPlugin
     {
         private readonly string _databaseLanguage;
 
-        public CoreSqlResourcesPlugin(DatabaseSettings databaseSettings)
+        public CoreDbUpdateSqlResourcesPlugin(DatabaseSettings databaseSettings)
         {
             _databaseLanguage = databaseSettings.DatabaseLanguage;
         }
 
         public IDictionary<string, string> GetResources()
         {
-            Type sampleType = GetType();
-            string resourceName = sampleType.Namespace + ".Sql." + _databaseLanguage;
-            var resourceAssembly = sampleType.Assembly;
-            var resourceManager = new ResourceManager(resourceName, resourceAssembly);
-            ResourceSet resourceSet = resourceManager.GetResourceSet(CultureInfo.InvariantCulture, true, true);
-            if (resourceSet == null)
+            if (!_databaseLanguage.StartsWith(MsSqlUtility.DatabaseLanguage))
                 return null;
 
-            var result = new Dictionary<string, string>();
-            foreach (var entry in resourceSet.Cast<DictionaryEntry>())
-                result.Add((string)entry.Key, (string)entry.Value);
-            return result;
+            var resources = ResourcesUtility.ReadEmbeddedResx("Rhetos.Core.DbUpdate.MsSql", GetType(), true);
+
+            resources.Add(
+                DatabaseDeployment.CreateRhetosDatabaseResourceKey,
+                ResourcesUtility.ReadEmbeddedTextFile("Rhetos.Core.CreateDatabase.MsSql.sql", GetType(), true));
+
+            return resources;
         }
     }
 }

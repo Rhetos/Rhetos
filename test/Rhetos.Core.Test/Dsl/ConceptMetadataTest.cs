@@ -38,9 +38,13 @@ namespace Rhetos.Dsl.Test
 
         public class SimpleConcept2 : IConceptInfo { }
 
-        public interface ISimpleConceptMetadata<out T> : IConceptMetadataExtension<T> where T : IConceptInfo
+        public interface ISimpleConceptMetadata : IConceptMetadataExtension
         {
             string ExtensionForType{ get; }
+        }
+
+        public interface ISimpleConceptMetadata<T> : ISimpleConceptMetadata, IConceptMetadataExtension<T> where T : IConceptInfo
+        {
         }
 
         public class SimpleConceptMetadataImplementation1 : ISimpleConceptMetadata<SimpleConcept1>
@@ -72,9 +76,9 @@ namespace Rhetos.Dsl.Test
                 new DerivationConceptMetadataImplementation1()
             }), new ConsoleLogProvider());
 
-            Assert.AreEqual("SimpleConcept1", metadataProvider.Get<ISimpleConceptMetadata<IConceptInfo>>(typeof(SimpleConcept1)).ExtensionForType);
-            Assert.AreEqual("SimpleConcept2", metadataProvider.Get<ISimpleConceptMetadata<IConceptInfo>>(typeof(SimpleConcept2)).ExtensionForType);
-            Assert.AreEqual("DerivationConcept1", metadataProvider.Get<ISimpleConceptMetadata<IConceptInfo>>(typeof(DerivationConcept1)).ExtensionForType);
+            Assert.AreEqual("SimpleConcept1", metadataProvider.Get<ISimpleConceptMetadata>(typeof(SimpleConcept1)).ExtensionForType);
+            Assert.AreEqual("SimpleConcept2", metadataProvider.Get<ISimpleConceptMetadata>(typeof(SimpleConcept2)).ExtensionForType);
+            Assert.AreEqual("DerivationConcept1", metadataProvider.Get<ISimpleConceptMetadata>(typeof(DerivationConcept1)).ExtensionForType);
         }
 
         [TestMethod]
@@ -86,7 +90,7 @@ namespace Rhetos.Dsl.Test
                     new SimpleConceptMetadataImplementation12()
                 }), new ConsoleLogProvider());
 
-                metadataProvider.Get<ISimpleConceptMetadata<IConceptInfo>>(typeof(SimpleConcept1));
+                metadataProvider.Get<ISimpleConceptMetadata>(typeof(SimpleConcept1));
             },
                 "There are multiple implementations of", "SimpleConceptMetadataImplementation1", "SimpleConceptMetadataImplementation12",
                 "SimpleConceptMetadata", "SimpleConcept1");
@@ -99,7 +103,7 @@ namespace Rhetos.Dsl.Test
                 new SimpleConceptMetadataImplementation1()
             }), new ConsoleLogProvider());
             
-            Assert.AreEqual("SimpleConcept1", metadataProvider.Get<ISimpleConceptMetadata<IConceptInfo>>(typeof(DerivationConcept1)).ExtensionForType);
+            Assert.AreEqual("SimpleConcept1", metadataProvider.Get<ISimpleConceptMetadata>(typeof(DerivationConcept1)).ExtensionForType);
         }
 
         [TestMethod]
@@ -109,7 +113,7 @@ namespace Rhetos.Dsl.Test
             var metadataProvider = new ConceptMetadata(new MockPluginsContainer<IConceptMetadataExtension>(Array.Empty<IConceptMetadataExtension>()),
                 new ConsoleLogProvider((EventType eventType, string eventName, Func<string> message) => log.Add($"{eventType} {eventName} {message()}")));
 
-            Assert.IsNull(metadataProvider.Get<ISimpleConceptMetadata<IConceptInfo>>(typeof(SimpleConcept1)));
+            Assert.IsNull(metadataProvider.Get<ISimpleConceptMetadata>(typeof(SimpleConcept1)));
 
             Assert.IsTrue(log.Any(entry =>
                 entry.Contains($"There is no {nameof(IConceptMetadataExtension)} plugin")

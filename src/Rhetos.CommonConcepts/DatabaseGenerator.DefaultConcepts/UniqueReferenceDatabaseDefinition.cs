@@ -17,18 +17,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Compiler;
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Extensibility;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rhetos.Utilities;
-using Rhetos.DatabaseGenerator;
 using System.ComponentModel.Composition;
-using Rhetos.Extensibility;
-using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Dsl;
-using System.Globalization;
-using Rhetos.Compiler;
+using System.Linq;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
@@ -38,17 +35,27 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     {
         public static readonly SqlTag<UniqueReferenceInfo> ForeignKeyConstraintOptionsTag = "FK options";
 
-        public static string GetConstraintName(UniqueReferenceInfo info)
+        protected ISqlResources Sql { get; private set; }
+
+        protected ISqlUtility SqlUtility { get; private set; }
+
+        public UniqueReferenceDatabaseDefinition(ISqlResources sqlResources, ISqlUtility sqlUtility)
+        {
+            this.Sql = sqlResources;
+            this.SqlUtility = sqlUtility;
+        }
+
+        public string GetConstraintName(UniqueReferenceInfo info)
         {
             return SqlUtility.Identifier(Sql.Format("UniqueReferenceDatabaseDefinition_ConstraintName",
                 info.Extension.Name,
                 info.Base.Name));
         }
 
-        public static bool IsSupported(UniqueReferenceInfo info)
+        public bool IsSupported(UniqueReferenceInfo info)
         {
             return info.Extension is EntityInfo
-                && ForeignKeyUtility.GetSchemaTableForForeignKey(info.Base) != null;
+                && ForeignKeyUtility.GetSchemaTableForForeignKey(info.Base, SqlUtility) != null;
         }
 
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
@@ -59,7 +66,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
                 return Sql.Format("UniqueReferenceDatabaseDefinition_Create",
                     SqlUtility.Identifier(info.Extension.Module.Name) + "." + SqlUtility.Identifier(info.Extension.Name),
                     GetConstraintName(info),
-                    ForeignKeyUtility.GetSchemaTableForForeignKey(info.Base),
+                    ForeignKeyUtility.GetSchemaTableForForeignKey(info.Base, SqlUtility),
                     ForeignKeyConstraintOptionsTag.Evaluate(info));
             }
             // TODO: else - Generate a Filter+InvalidData validation in the server application that checks for invalid items.

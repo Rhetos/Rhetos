@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="SqlResources\Rhetos.Core.CreateDatabase.Oracle.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="3.21.50" />
   </ItemGroup>
 

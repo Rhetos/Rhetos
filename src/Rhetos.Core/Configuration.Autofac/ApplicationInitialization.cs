@@ -61,7 +61,7 @@ namespace Rhetos.Deployment
                 using (var scope = rhetosHost.CreateScope())
                 {
                     var performanceLogger = scope.Resolve<ILogProvider>().GetLogger("Performance." + GetType().Name);
-                    initializers = GetSortedInitializers(scope, _logger);
+                    initializers = GetSortedInitializers(scope);
 
                     performanceLogger.Write(stopwatch, "New modules and plugins registered.");
                     ((UnitOfWorkScope)scope).LogRegistrationStatistics("InitializeApplication component registrations", _logProvider);
@@ -90,7 +90,7 @@ namespace Rhetos.Deployment
             });
         }
 
-        public static Type[] GetSortedInitializers(IUnitOfWorkScope scope, ILogger logger)
+        public Type[] GetSortedInitializers(IUnitOfWorkScope scope)
         {
             // The plugins in the container are sorted by their dependencies defined in ExportMetadata attribute (static typed):
             var initializers = scope.Resolve<IPluginsContainer<IServerInitializer>>().GetPlugins();
@@ -98,6 +98,8 @@ namespace Rhetos.Deployment
             // Additional sorting by loosely-typed dependencies from the Dependencies property:
             var initNames = initializers.Select(init => init.GetType().FullName).ToList();
             var initDependencies = initializers.SelectMany(init => (init.Dependencies ?? Array.Empty<string>()).Select(x => Tuple.Create(x, init.GetType().FullName)));
+            foreach (var depentency in initDependencies)
+                _logger.Trace(() => $"{nameof(IServerInitializer)}: {depentency.Item2} depends on {depentency.Item1}");
             Graph.TopologicalSort(initNames, initDependencies);
 
             var sortedInitializers = initializers.ToList();
@@ -106,7 +108,7 @@ namespace Rhetos.Deployment
             // Additional sorting by priority specified in DbUpdateOptions.OverrideServerInitializerOrdering, if specified.
             var dbUpdateOptions = scope.Resolve<DbUpdateOptions>();
             foreach (var order in dbUpdateOptions.OverrideServerInitializerOrdering)
-                logger.Trace(() => $"{nameof(DbUpdateOptions.OverrideServerInitializerOrdering)} {order.Key} {order.Value}");
+                _logger.Trace(() => $"{nameof(DbUpdateOptions.OverrideServerInitializerOrdering)}: {order.Key} {order.Value}");
             sortedInitializers = sortedInitializers
                 // This method performs a stable sort; that is, if the keys of two elements are equal, the order of the elements is preserved.
                 .OrderBy(init => dbUpdateOptions.OverrideServerInitializerOrdering.GetValueOrDefault(init.GetType().FullName))

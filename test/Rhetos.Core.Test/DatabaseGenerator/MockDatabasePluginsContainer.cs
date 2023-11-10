@@ -21,6 +21,7 @@ using Autofac.Features.Indexed;
 using Autofac.Features.Metadata;
 using Rhetos.Extensibility;
 using Rhetos.Extensibility.Test;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,7 +44,7 @@ namespace Rhetos.DatabaseGenerator.Test
             Lazy<IIndex<Type, IEnumerable<IConceptDatabaseGenerator>>> pluginsByImplementation = new Lazy<IIndex<Type, IEnumerable<IConceptDatabaseGenerator>>>(() =>
                 new StubIndex<IConceptDatabaseGenerator>(conceptImplementations));
 
-            return new PluginsContainer<IConceptDatabaseGenerator>(plugins, pluginsByImplementation, new PluginsMetadataCache<IConceptDatabaseGenerator>(pluginsWithMetadata, new StubIndex<SuppressPlugin>()));
+            return new PluginsContainer<IConceptDatabaseGenerator>(plugins, pluginsByImplementation, new PluginsMetadataCache<IConceptDatabaseGenerator>(pluginsWithMetadata, new StubIndex<SuppressPlugin>()), new ConsoleLogProvider());
         }
     }
 }

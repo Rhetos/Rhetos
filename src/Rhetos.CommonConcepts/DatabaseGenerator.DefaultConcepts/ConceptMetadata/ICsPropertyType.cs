@@ -23,14 +23,28 @@ using Rhetos.Dsl.DefaultConcepts;
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
     /// <summary>
-    /// Interface for metadata plugins that provides C# type for a property.
+    /// Interface for <see cref="ConceptMetadata"/> plugins that provides the C# type for a property.
     /// </summary>
-    public interface ICsPropertyType<out T> : IConceptMetadataExtension<T> where T : PropertyInfo
+    public interface ICsPropertyType : IConceptMetadataExtension
     {
+        string GetCsPropertyTypeGeneric(PropertyInfo concept);
+    }
+
+    /// <summary>
+    /// Helper for implementation of <see cref="ConceptMetadata"/> plugins that provides the C# type for a property.
+    /// </summary>
+    public abstract class CsPropertyTypeBase<TPropertyInfo> : ICsPropertyType, IConceptMetadataExtension<TPropertyInfo> where TPropertyInfo : PropertyInfo
+    {
+        public string GetCsPropertyTypeGeneric(PropertyInfo concept) => GetCsPropertyType((TPropertyInfo)concept);
+
         /// <summary>
         /// Returns the C# type for the specified property.
         /// </summary>
-        string GetCsPropertyType(PropertyInfo concept);
+        /// <remarks>
+        /// Normally, the property type is uniquely specified by generic parameter type <typeparamref name="TPropertyInfo"/>,
+        /// but this interface allows possibility for properties that have the C# type based on some additional property data.
+        /// </remarks>
+        public abstract string GetCsPropertyType(TPropertyInfo concept);
     }
 
     public static class CsPropertyTypeHelper
@@ -40,7 +54,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         /// </summary>
         public static string GetCsPropertyType(this ConceptMetadata conceptMetadata, PropertyInfo property)
         {
-            return conceptMetadata.Get<ICsPropertyType<PropertyInfo>>(property.GetType())?.GetCsPropertyType(property);
+            return conceptMetadata.Get<ICsPropertyType>(property.GetType())?.GetCsPropertyTypeGeneric(property);
         }
     }
 }

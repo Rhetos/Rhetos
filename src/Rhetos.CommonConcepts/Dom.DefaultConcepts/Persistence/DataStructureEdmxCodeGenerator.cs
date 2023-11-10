@@ -18,6 +18,7 @@
 */
 
 using Rhetos.Compiler;
+using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Persistence;
 using Rhetos.Utilities;
@@ -39,10 +40,12 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly XmlTag<DataStructureInfo> StorageModelCustomannotationIndexForIDTag = "StorageModelCustomannotationIndexForID";
 
         private readonly RhetosBuildEnvironment _rhetosBuildEnvironment;
+        private readonly ConceptMetadata _conceptMatadata;
 
-        public DataStructureEdmxCodeGenerator(RhetosBuildEnvironment rhetosBuildEnvironment)
+        public DataStructureEdmxCodeGenerator(RhetosBuildEnvironment rhetosBuildEnvironment, ConceptMetadata conceptMatadata)
         {
             _rhetosBuildEnvironment = rhetosBuildEnvironment;
+            _conceptMatadata = conceptMatadata;
         }
 
         public override void GenerateCode(DataStructureInfo dataStructureInfo, ICodeBuilder codeBuilder)
@@ -102,9 +105,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private string GetEntitySetNodeForStorageModel(DataStructureInfo dataStructureInfo)
         {
-            var ormStructure = (IOrmDataStructure)dataStructureInfo;
             return $@"
-    <EntitySet Name=""{GetName(dataStructureInfo)}"" EntityType=""Self.{GetName(dataStructureInfo)}"" Schema=""{ormStructure.GetOrmSchema()}"" Table=""{ormStructure.GetOrmDatabaseObject()}"" />";
+    <EntitySet Name=""{GetName(dataStructureInfo)}"" EntityType=""Self.{GetName(dataStructureInfo)}"" Schema=""{_conceptMatadata.GetOrmSchema(dataStructureInfo)}"" Table=""{_conceptMatadata.GetOrmDatabaseObject(dataStructureInfo)}"" />";
         }
 
         public static string GetName(DataStructureInfo dataStructureInfo)

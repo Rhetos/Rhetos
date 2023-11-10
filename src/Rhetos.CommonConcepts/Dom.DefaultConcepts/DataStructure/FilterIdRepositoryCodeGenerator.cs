@@ -56,18 +56,18 @@ namespace Rhetos.Dom.DefaultConcepts
                 return ids;
 
             var handle = Guid.NewGuid();
-            string sqlInsertIdFormat = ""INSERT INTO Common.FilterId (Handle, Value) VALUES ('"" + SqlUtility.GuidToString(handle) + ""', '{0}');"";
+            string sqlInsertIdFormat = ""INSERT INTO Common.FilterId (Handle, Value) VALUES ('"" + _executionContext.SqlUtility.GuidToString(handle) + ""', '{0}');"";
 
             const int chunkSize = 1000; // Keeping a moderate SQL script size.
             for (int start = 0; start < ids.Count(); start += chunkSize)
             {
                 string sqlInsertIds = string.Join(""\r\n"", ids.Skip(start).Take(chunkSize)
-                        .Select(id => string.Format(sqlInsertIdFormat, SqlUtility.GuidToString(id))));
+                        .Select(id => string.Format(sqlInsertIdFormat, _executionContext.SqlUtility.GuidToString(id))));
                 _executionContext.SqlExecuter.ExecuteSql(sqlInsertIds);
             }
 
             // Delete temporary data when closing the connection. The data must remain in the database until the returned query is used.
-            string deleteFilterIds = ""DELETE FROM Common.FilterId WHERE Handle = "" + SqlUtility.QuoteGuid(handle);
+            string deleteFilterIds = ""DELETE FROM Common.FilterId WHERE Handle = "" + _executionContext.SqlUtility.QuoteGuid(handle);
             _executionContext.PersistenceTransaction.BeforeClose += () =>
                 {
                     try

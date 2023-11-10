@@ -92,7 +92,7 @@ namespace CommonConcepts.Test
                     {
                         "DELETE FROM TestDenyUserEdit.Simple",
                         "DELETE FROM TestDenyUserEdit.Parent",
-                        "INSERT INTO TestDenyUserEdit.Simple (ID, Editable, NonEditable) VALUES (" + SqlUtility.QuoteGuid(simpleID) + ", 'a', 'x')"
+                        "INSERT INTO TestDenyUserEdit.Simple (ID, Editable, NonEditable) VALUES (" + scope.Resolve<ISqlUtility>().QuoteGuid(simpleID) + ", 'a', 'x')"
                     });
 
                 var repository = scope.Resolve<Common.DomRepository>();
@@ -119,7 +119,7 @@ namespace CommonConcepts.Test
                     {
                         "DELETE FROM TestDenyUserEdit.Simple",
                         "DELETE FROM TestDenyUserEdit.Parent",
-                        "INSERT INTO TestDenyUserEdit.Simple (ID, Editable, NonEditable) VALUES (" + SqlUtility.QuoteGuid(simpleID) + ", 'a', 'x')"
+                        "INSERT INTO TestDenyUserEdit.Simple (ID, Editable, NonEditable) VALUES (" + scope.Resolve<ISqlUtility>().QuoteGuid(simpleID) + ", 'a', 'x')"
                     });
 
                 var repository = scope.Resolve<Common.DomRepository>();
@@ -146,7 +146,7 @@ namespace CommonConcepts.Test
                     {
                         "DELETE FROM TestDenyUserEdit.Simple",
                         "DELETE FROM TestDenyUserEdit.Parent",
-                        "INSERT INTO TestDenyUserEdit.Simple (ID, Editable, NonEditable) VALUES (" + SqlUtility.QuoteGuid(simpleID) + ", 'a', NULL)"
+                        "INSERT INTO TestDenyUserEdit.Simple (ID, Editable, NonEditable) VALUES (" + scope.Resolve<ISqlUtility>().QuoteGuid(simpleID) + ", 'a', NULL)"
                     });
 
                 var repository = scope.Resolve<Common.DomRepository>();
@@ -257,7 +257,7 @@ namespace CommonConcepts.Test
                 var repository = scope.Resolve<Common.DomRepository>();
                 var sqlExecuter = scope.Resolve<ISqlExecuter>();
 
-                DateTime start = SqlUtility.GetDatabaseTime(sqlExecuter);
+                DateTime start = scope.Resolve<ISqlUtility>().GetDatabaseTime(sqlExecuter);
 
                 var item = new TestDenyUserEdit.AutoInitialized
                 {
@@ -266,7 +266,7 @@ namespace CommonConcepts.Test
 
                 repository.TestDenyUserEdit.AutoInitialized.Save(new[] { item }, null, null, checkUserPermissions: true);
 
-                DateTime finish = SqlUtility.GetDatabaseTime(sqlExecuter);
+                DateTime finish = scope.Resolve<ISqlUtility>().GetDatabaseTime(sqlExecuter);
 
                 item = repository.TestDenyUserEdit.AutoInitialized.Load(new[] { item.ID }).Single();
 

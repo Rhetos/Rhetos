@@ -17,7 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 
@@ -41,12 +40,11 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
-            var newConcets = new List<IConceptInfo>();
-
-            newConcets.Add(new SystemRequiredInfo { Property = Property });
-            newConcets.Add(CreateUniqueConstraint());
-
-            return newConcets;
+            return new IConceptInfo[]
+            {
+                new SystemRequiredInfo { Property = Property },
+                CreateUniqueConstraint(),
+            };
         }
 
         virtual protected IConceptInfo CreateUniqueConstraint()

@@ -38,9 +38,15 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     {
         ConceptMetadata _conceptMetadata;
 
-        public ReferencePropertyDatabaseDefinition(ConceptMetadata conceptMetadata)
+        protected ISqlResources Sql { get; private set; }
+
+        protected ISqlUtility SqlUtility { get; private set; }
+
+        public ReferencePropertyDatabaseDefinition(ConceptMetadata conceptMetadata, ISqlResources sqlResources, ISqlUtility sqlUtility)
         {
             _conceptMetadata = conceptMetadata;
+            this.Sql = sqlResources;
+            this.SqlUtility = sqlUtility;
         }
 
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
@@ -48,7 +54,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             var info = (ReferencePropertyInfo)conceptInfo;
 
             if (info.DataStructure is EntityInfo)
-                return PropertyDatabaseDefinition.AddColumn(_conceptMetadata, info);
+                return PropertyDatabaseDefinition.AddColumn(SqlUtility, Sql, _conceptMetadata, info);
 
             return "";
         }
@@ -57,16 +63,8 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         {
             var info = (ReferencePropertyInfo)conceptInfo;
             if (info.DataStructure is EntityInfo)
-                return PropertyDatabaseDefinition.RemoveColumn(info, info.GetColumnName());
+                return PropertyDatabaseDefinition.RemoveColumn(SqlUtility, Sql, _conceptMetadata, info);
             return "";
-        }
-    }
-
-    public static class ReferencePropertyInfoExtensions
-    {
-        public static string GetColumnName(this ReferencePropertyInfo info)
-        {
-            return SqlUtility.Identifier(info.Name + "ID");
         }
     }
 }

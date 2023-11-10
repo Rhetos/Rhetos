@@ -414,7 +414,7 @@ raiserror('fff', 18, 118)"
                     var sqlExecuter = scope.Resolve<ISqlExecuter>();
 
                     string simpleSqlExecuterReport = TestSqlReader(
-                        read => sqlExecuter.ExecuteReader(string.Format(test.Query, SqlUtility.QuoteText(test.Parameter)), read),
+                        read => sqlExecuter.ExecuteReader(string.Format(test.Query, scope.Resolve<ISqlUtility>().QuoteText(test.Parameter)), read),
                         log);
 
                     string parametrizedSqlExecuterReport = TestSqlReader(
@@ -520,7 +520,7 @@ raiserror('fff', 18, 118)"
                     var sqlExecuter = scope.Resolve<ISqlExecuter>();
 
                     var simpleSqlExecuterReport = TestSqlExecuter(
-                        read => sqlExecuter.ExecuteSql(string.Format(test.Query, SqlUtility.QuoteText(test.Parameter))),
+                        read => sqlExecuter.ExecuteSql(string.Format(test.Query, scope.Resolve<ISqlUtility>().QuoteText(test.Parameter))),
                         log);
 
                     var parametrizedSqlExecuterReport = TestSqlExecuter(

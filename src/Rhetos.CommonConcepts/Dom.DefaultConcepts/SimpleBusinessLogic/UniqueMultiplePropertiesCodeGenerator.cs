@@ -18,6 +18,7 @@
 */
 
 using Rhetos.Compiler;
+using Rhetos.DatabaseGenerator;
 using Rhetos.DatabaseGenerator.DefaultConcepts;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
@@ -35,6 +36,18 @@ namespace Rhetos.Dom.DefaultConcepts.SimpleBusinessLogic
         public static readonly CsTag<UniqueMultiplePropertiesInfo> ColumnJoinTag = new CsTag<UniqueMultiplePropertiesInfo>("ColumnJoin", TagType.Appendable, "{0}", " AND {0}");
         public static readonly CsTag<UniqueMultiplePropertiesInfo> PropertyListTag = new CsTag<UniqueMultiplePropertiesInfo>("PropertyList", TagType.Appendable, "{0}", " + \", \" + {0}");
         public static readonly CsTag<UniqueMultiplePropertiesInfo> PropertyValuesTag = new CsTag<UniqueMultiplePropertiesInfo>("PropertyValues", TagType.Appendable, "{0}", " + \", \" + {0}");
+        private readonly ConceptMetadata _conceptMetadata;
+
+        protected ISqlResources Sql { get; private set; }
+
+        protected ISqlUtility SqlUtility { get; private set; }
+
+        public UniqueMultiplePropertiesCodeGenerator(ISqlResources sqlResources, ISqlUtility sqlUtility, ConceptMetadata conceptMetadata)
+        {
+            Sql = sqlResources;
+            SqlUtility = sqlUtility;
+            _conceptMetadata = conceptMetadata;
+        }
 
         public static bool ImplementInObjectModel(UniqueMultiplePropertiesInfo info)
         {
@@ -52,11 +65,10 @@ namespace Rhetos.Dom.DefaultConcepts.SimpleBusinessLogic
 
             if (info.Dependency_SqlIndex.SqlImplementation() && info.DataStructure is IWritableOrmDataStructure)
             {
-                var ormDataStructure = (IWritableOrmDataStructure)info.DataStructure;
                 string systemMessage = $"DataStructure:{info.DataStructure.FullName},Property:{info.PropertyNames}";
                 string interpretSqlError = @"if (interpretedException is Rhetos.UserException && Rhetos.Utilities.MsSqlUtility.IsUniqueError(interpretedException, "
-                    + CsUtility.QuotedString(ormDataStructure.GetOrmSchema() + "." + ormDataStructure.GetOrmDatabaseObject()) + @", "
-                    + CsUtility.QuotedString(SqlIndexMultipleDatabaseDefinition.ConstraintName(info.Dependency_SqlIndex)) + @"))
+                    + CsUtility.QuotedString(_conceptMetadata.GetOrmSchema(info.DataStructure) + "." + _conceptMetadata.GetOrmDatabaseObject(info.DataStructure)) + @", "
+                    + CsUtility.QuotedString(new SqlIndexMultipleDatabaseDefinition(Sql, SqlUtility).ConstraintName(info.Dependency_SqlIndex)) + @"))
                         ((Rhetos.UserException)interpretedException).SystemMessage = " + CsUtility.QuotedString(systemMessage) + @";
                     ";
                 codeBuilder.InsertCode(interpretSqlError, WritableOrmDataStructureCodeGenerator.OnDatabaseErrorTag, info.DataStructure);
@@ -96,8 +108,8 @@ namespace Rhetos.Dom.DefaultConcepts.SimpleBusinessLogic
             ColumnJoinTag.Evaluate(info),
             PropertyListTag.Evaluate(info),
             PropertyValuesTag.Evaluate(info),
-            ((IWritableOrmDataStructure)info.DataStructure).GetOrmSchema(),
-            ((IWritableOrmDataStructure)info.DataStructure).GetOrmDatabaseObject());
+            _conceptMetadata.GetOrmSchema(info.DataStructure),
+            _conceptMetadata.GetOrmDatabaseObject(info.DataStructure));
         }
     }
 }

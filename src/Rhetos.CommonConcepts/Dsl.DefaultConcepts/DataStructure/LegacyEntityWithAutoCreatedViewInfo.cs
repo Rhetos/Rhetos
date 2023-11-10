@@ -17,13 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rhetos.Utilities;
-using Rhetos.Dsl;
 using System.ComponentModel.Composition;
+using System.Linq;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
@@ -40,10 +36,6 @@ namespace Rhetos.Dsl.DefaultConcepts
     public class LegacyEntityWithAutoCreatedViewInfo : DataStructureInfo, IWritableOrmDataStructure
     {
         public string Table { get; set; }
-
-        public string GetOrmSchema() => Module.Name;
-
-        public string GetOrmDatabaseObject() => Name;
     }
 
     [Export(typeof(IConceptMacro))]

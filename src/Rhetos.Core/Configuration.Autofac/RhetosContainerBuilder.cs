@@ -53,4 +53,27 @@ namespace Rhetos
             return containerBuilder;
         }
     }
+
+    /// <summary>
+    /// Phases in the Rhetos app development or deployment lifecycle.
+    /// </summary>
+    public enum ExecutionStage
+    {
+        /// <summary>
+        /// The phase when Rhetos parses DSL scripts are generates C#, SQL and other files.
+        /// </summary>
+        BuildTime,
+
+        /// <summary>
+        /// The phase when Rhetos executes data-migration scripts, and creates/deleted database objects.
+        /// This execution stage *does not* include the application initialization phase from the 'rhetos dbupdate' command (RecomputeOnDeploy).
+        /// </summary>
+        DatabaseUpdate,
+
+        /// <summary>
+        /// Runtime includes the application initialization phase from the 'rhetos dbupdate' command (RecomputeOnDeploy),
+        /// as well as the final usage of the application by the end user.
+        /// </summary>
+        Runtime
+    };
 }

@@ -17,28 +17,28 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Dsl;
-using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.SqlResources;
 using Rhetos.Utilities;
-using System.ComponentModel.Composition;
+using System.Collections.Generic;
 
-namespace Rhetos.DatabaseGenerator.DefaultConcepts
+namespace Rhetos.MsSqlEf6.SqlResources
 {
-    [Export(typeof(IConceptMetadataExtension))]
-    public class PropertyDatabaseColumnNameMetadata : IDatabaseColumnName<PropertyInfo>
+    public class CommonConceptsBuildSqlResourcesPlugin : ISqlResourcesPlugin
     {
-        public string GetColumnName(PropertyInfo info)
-        {
-            return SqlUtility.Identifier(info.Name);
-        }
-    }
 
-    [Export(typeof(IConceptMetadataExtension))]
-    public class ReferencePropertyDatabaseColumnNameMetadata : IDatabaseColumnName<ReferencePropertyInfo>
-    {
-        public string GetColumnName(PropertyInfo info)
+        private readonly string _databaseLanguage;
+
+        public CommonConceptsBuildSqlResourcesPlugin(DatabaseSettings databaseSettings)
         {
-            return SqlUtility.Identifier(info.Name + "ID");
+            _databaseLanguage = databaseSettings.DatabaseLanguage;
+        }
+
+        public IDictionary<string, string> GetResources()
+        {
+            if (!_databaseLanguage.StartsWith(MsSqlUtility.DatabaseLanguage))
+                return null;
+
+            return ResourcesUtility.ReadEmbeddedResx("Rhetos.CommonConcepts.Build.MsSql", GetType(), true);
         }
     }
 }

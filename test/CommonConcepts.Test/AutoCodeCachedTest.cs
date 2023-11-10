@@ -299,7 +299,7 @@ namespace CommonConcepts.Test
                 var s1 = new TestAutoCodeCached.Simple { ID = Guid.NewGuid(), Code = null };
 
                 AutoCodeHelper.UpdateCodesWithCache(
-                    context.SqlExecuter, "TestAutoCodeCached.Simple", "Code",
+                    context.SqlExecuter, context.SqlUtility ,"TestAutoCodeCached.Simple", "Code",
                     new[] { AutoCodeItem.Create(s1, s1.Code) },
                     (item, newCode) => item.Code = newCode);
 

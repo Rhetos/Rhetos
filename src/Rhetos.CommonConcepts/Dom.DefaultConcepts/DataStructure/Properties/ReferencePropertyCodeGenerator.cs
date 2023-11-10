@@ -18,6 +18,7 @@
 */
 
 using Rhetos.Compiler;
+using Rhetos.DatabaseGenerator;
 using Rhetos.DatabaseGenerator.DefaultConcepts;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
@@ -31,6 +32,19 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(ReferencePropertyInfo))]
     public class ReferencePropertyCodeGenerator : IConceptCodeGenerator
     {
+        private readonly ConceptMetadata _conceptMetadata;
+
+        protected ISqlResources Sql { get; private set; }
+
+        protected ISqlUtility SqlUtility { get; private set; }
+
+        public ReferencePropertyCodeGenerator(ISqlResources sqlResources, ISqlUtility sqlUtility, ConceptMetadata conceptMetadata)
+        {
+            Sql = sqlResources;
+            SqlUtility = sqlUtility;
+            _conceptMetadata = conceptMetadata;
+        }
+
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             ReferencePropertyInfo info = (ReferencePropertyInfo)conceptInfo;
@@ -44,20 +58,18 @@ namespace Rhetos.Dom.DefaultConcepts
                     csPropertyName: info.Name,
                     propertyType: "Common.Queryable." + info.Referenced.Module.Name + "_" + info.Referenced.Name);
 
-            if (ReferencePropertyDbConstraintInfo.IsSupported(info)
+            if (new ReferencePropertyDbConstraintMacro(SqlUtility).IsSupported(info)
                 && info.DataStructure is IOrmDataStructure
                 && info.Referenced is IOrmDataStructure)
             {
-                var ormDataStructure = (IOrmDataStructure)info.DataStructure;
-                var referencedOrmDataStructure = (IOrmDataStructure)info.Referenced;
                 string systemMessage = $"DataStructure:{info.DataStructure.FullName},Property:{info.Name}ID,Referenced:{info.Referenced.FullName}";
 
                 if (info.DataStructure is IWritableOrmDataStructure)
                 {
                     string onEnterInterpretSqlError = @"if (interpretedException is Rhetos.UserException && Rhetos.Utilities.MsSqlUtility.IsReferenceErrorOnInsertUpdate(interpretedException, "
-                        + CsUtility.QuotedString(referencedOrmDataStructure.GetOrmSchema() + "." + referencedOrmDataStructure.GetOrmDatabaseObject()) + @", "
+                        + CsUtility.QuotedString(_conceptMetadata.GetOrmSchema(info.Referenced) + "." + _conceptMetadata.GetOrmDatabaseObject(info.Referenced)) + @", "
                         + CsUtility.QuotedString("ID") + @", "
-                        + CsUtility.QuotedString(ReferencePropertyConstraintDatabaseDefinition.GetConstraintName(info)) + @"))
+                        + CsUtility.QuotedString(new ReferencePropertyConstraintDatabaseDefinition(Sql, SqlUtility).GetConstraintName(info)) + @"))
                         ((Rhetos.UserException)interpretedException).SystemMessage = " + CsUtility.QuotedString(systemMessage) + @";
                     ";
                     codeBuilder.InsertCode(onEnterInterpretSqlError, WritableOrmDataStructureCodeGenerator.OnDatabaseErrorTag, info.DataStructure);
@@ -70,13 +82,12 @@ namespace Rhetos.Dom.DefaultConcepts
                 if (info.Referenced is IWritableOrmDataStructure)
                 {
                     string onDeleteInterpretSqlError = @"if (interpretedException is Rhetos.UserException && Rhetos.Utilities.MsSqlUtility.IsReferenceErrorOnDelete(interpretedException, "
-                        + CsUtility.QuotedString(ormDataStructure.GetOrmSchema() + "." + ormDataStructure.GetOrmDatabaseObject()) + @", "
+                        + CsUtility.QuotedString(_conceptMetadata.GetOrmSchema(info.DataStructure) + "." + _conceptMetadata.GetOrmDatabaseObject(info.DataStructure)) + @", "
                         + CsUtility.QuotedString(info.GetSimplePropertyName()) + @", "
-                        + CsUtility.QuotedString(ReferencePropertyConstraintDatabaseDefinition.GetConstraintName(info)) + @"))
+                        + CsUtility.QuotedString(new ReferencePropertyConstraintDatabaseDefinition(Sql, SqlUtility).GetConstraintName(info)) + @"))
                         ((Rhetos.UserException)interpretedException).SystemMessage = " + CsUtility.QuotedString(systemMessage) + @";
                     ";
                     codeBuilder.InsertCode(onDeleteInterpretSqlError, WritableOrmDataStructureCodeGenerator.OnDatabaseErrorTag, info.Referenced);
-
                 }
             }
         }

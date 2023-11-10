@@ -52,7 +52,7 @@ namespace Rhetos.DatabaseGenerator.Test
             return new List<string> { $"ins {newCA.ConceptInfoKey}" };
         }
 
-        private ConceptApplicationRepository _conceptApplicationRepository = new ConceptApplicationRepository(null, null);
+        private ConceptApplicationRepository _conceptApplicationRepository = new ConceptApplicationRepository(null, null, null);
 
         public List<string> UpdateMetadataSql(ConceptApplication newCA, ConceptApplication oldCA)
         {

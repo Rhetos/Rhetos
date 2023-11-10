@@ -18,42 +18,26 @@
 */
 
 using Autofac;
-using Rhetos.DatabaseGenerator;
 using Rhetos.Dsl;
-using Rhetos.Extensibility;
 
 namespace Rhetos.Configuration.Autofac.Modules
 {
+    /// <summary>
+    /// Common components for rhetos build and application runtime, but not for dbupdate.
+    /// </summary>
     public class CorePluginsModule : Module
     {
         protected override void Load(ContainerBuilder builder)
         {
             var pluginRegistration = builder.GetRhetosPluginRegistration();
 
-            AddDsl(builder, pluginRegistration);
-            AddExtensibility(builder);
-
-            builder.RegisterType<SqlResources>().As<ISqlResources>().SingleInstance();
-            pluginRegistration.FindAndRegisterPlugins<ISqlResourcesPlugin>();
-            builder.RegisterType<CoreSqlResourcesPlugin>().As<ISqlResourcesPlugin>().SingleInstance(); // Rhetos core libraries are not scanned for plugins.
-
-            base.Load(builder);
-        }
-
-        private void AddDsl(ContainerBuilder builder, ContainerBuilderPluginRegistration pluginRegistration)
-        {
+            // DSL model
             builder.RegisterType<DslContainer>();
             pluginRegistration.FindAndRegisterPlugins<IDslModelIndex>();
             builder.RegisterType<DslModelIndexByType>().As<IDslModelIndex>(); // This plugin is registered manually because FindAndRegisterPlugins does not scan core Rhetos dlls.
             builder.RegisterType<DslModelIndexByReference>().As<IDslModelIndex>(); // This plugin is registered manually because FindAndRegisterPlugins does not scan core Rhetos dlls.
-        }
 
-        private void AddExtensibility(ContainerBuilder builder)
-        {
-            builder.RegisterSource<PluginMetadataRegistrationSource>();
-            builder.RegisterGeneric(typeof(PluginsMetadataCache<>)).SingleInstance();
-            builder.RegisterGeneric(typeof(PluginsContainer<>)).As(typeof(IPluginsContainer<>)).InstancePerLifetimeScope();
-            builder.RegisterGeneric(typeof(NamedPlugins<>)).As(typeof(INamedPlugins<>)).InstancePerLifetimeScope();
+            base.Load(builder);
         }
     }
 }

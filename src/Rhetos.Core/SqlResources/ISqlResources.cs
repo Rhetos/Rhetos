@@ -18,8 +18,9 @@
 */
 
 using Rhetos.Utilities;
+using System.Globalization;
 
-namespace Rhetos.DatabaseGenerator
+namespace Rhetos
 {
     /// <summary>
     /// Provides SQL code snippets from resource files, based on the selected database language in <see cref="DatabaseSettings.DatabaseLanguage"/>.
@@ -31,17 +32,22 @@ namespace Rhetos.DatabaseGenerator
         /// Return <see langword="null"/> if there is no resource with the given <paramref name="key"/>.
         /// </summary>
         string TryGet(string key);
+    }
+
+    public static class SqlResourcesExtensions
+    {
+        /// <summary>
+        /// Returns the SQL code snippets from resource files, based on the selected database language in <see cref="DatabaseSettings.DatabaseLanguage"/>.
+        /// Throw an exception if there is no snippet available with the given <paramref name="key"/>.
+        /// </summary>
+        public static string Get(this ISqlResources sqlResources, string key)
+            => sqlResources.TryGet(key) ?? throw new FrameworkException($"Missing the SQL resource '{key}' for the current database language.");
 
         /// <summary>
         /// Returns the SQL code snippets from resource files, based on the selected database language in <see cref="DatabaseSettings.DatabaseLanguage"/>.
         /// Throw an exception if there is no snippet available with the given <paramref name="key"/>.
         /// </summary>
-        string Get(string key);
-
-        /// <summary>
-        /// Returns the SQL code snippets from resource files, based on the selected database language in <see cref="DatabaseSettings.DatabaseLanguage"/>.
-        /// Throw an exception if there is no snippet available with the given <paramref name="key"/>.
-        /// </summary>
-        string Format(string key, params object[] args);
+        public static string Format(this ISqlResources sqlResources, string key, params object[] args)
+            => string.Format(CultureInfo.InvariantCulture, sqlResources.Get(key), args);
     }
 }

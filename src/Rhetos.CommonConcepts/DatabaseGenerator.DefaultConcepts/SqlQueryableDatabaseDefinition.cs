@@ -34,6 +34,16 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(SqlQueryableInfo))]
     public class SqlQueryableDatabaseDefinition : IConceptDatabaseDefinition
     {
+        protected ISqlResources Sql { get; private set; }
+
+        protected ISqlUtility SqlUtility { get; private set; }
+
+        public SqlQueryableDatabaseDefinition(ISqlResources sqlResources, ISqlUtility sqlUtility)
+        {
+            this.Sql = sqlResources;
+            this.SqlUtility = sqlUtility;
+        }
+
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
         {
             var info = (SqlQueryableInfo)conceptInfo;

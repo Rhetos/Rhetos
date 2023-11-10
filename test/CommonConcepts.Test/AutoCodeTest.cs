@@ -528,7 +528,7 @@ namespace CommonConcepts.Test
                 var s1 = new TestAutoCode.Simple { ID = Guid.NewGuid(), Code = null };
 
                 AutoCodeHelper.UpdateCodesWithoutCache(
-                    context.SqlExecuter, "TestAutoCode.Simple", "Code",
+                    context.SqlExecuter, context.SqlUtility, "TestAutoCode.Simple", "Code",
                     new[] { AutoCodeItem.Create(s1, s1.Code) },
                     (item, newCode) => item.Code = newCode);
 

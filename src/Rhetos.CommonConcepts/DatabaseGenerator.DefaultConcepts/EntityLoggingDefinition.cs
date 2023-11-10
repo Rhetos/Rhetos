@@ -17,15 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Compiler;
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Extensibility;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using Rhetos.Utilities;
-using Rhetos.Extensibility;
-using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Dsl;
-using System.Globalization;
-using Rhetos.Compiler;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
@@ -40,25 +39,34 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         public static readonly SqlTag<EntityLoggingInfo> TempFromTag = "TempFrom";
         public static readonly SqlTag<EntityLoggingInfo> AfterInsertLogTag = "AfterInsertLog";
 
-        public static string GetTriggerNameInsert(EntityLoggingInfo conceptInfo)
+        private readonly ISqlResources _sqlResources;
+        private readonly ISqlUtility _sqlUtility;
+
+        public EntityLoggingDefinition(ISqlResources sqlResources, ISqlUtility sqlUtility)
         {
-            return SqlUtility.Identifier(Sql.Format(
+            _sqlResources = sqlResources;
+            _sqlUtility = sqlUtility;
+        }
+
+        public string GetTriggerNameInsert(EntityLoggingInfo conceptInfo)
+        {
+            return _sqlUtility.Identifier(_sqlResources.Format(
                 "EntityLoggingDefinition_TriggerNameInsert",
                 conceptInfo.Entity.Module.Name,
                 conceptInfo.Entity.Name));
         }
 
-        public static string GetTriggerNameUpdate(EntityLoggingInfo conceptInfo)
+        public string GetTriggerNameUpdate(EntityLoggingInfo conceptInfo)
         {
-            return SqlUtility.Identifier(Sql.Format(
+            return _sqlUtility.Identifier(_sqlResources.Format(
                 "EntityLoggingDefinition_TriggerNameUpdate",
                 conceptInfo.Entity.Module.Name,
                 conceptInfo.Entity.Name));
         }
 
-        public static string GetTriggerNameDelete(EntityLoggingInfo conceptInfo)
+        public string GetTriggerNameDelete(EntityLoggingInfo conceptInfo)
         {
-            return SqlUtility.Identifier(Sql.Format(
+            return _sqlUtility.Identifier(_sqlResources.Format(
                 "EntityLoggingDefinition_TriggerNameDelete",
                 conceptInfo.Entity.Module.Name,
                 conceptInfo.Entity.Name));
@@ -68,9 +76,9 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         {
             var info = (EntityLoggingInfo)conceptInfo;
 
-            return Sql.Format("EntityLoggingDefinition_Create",
-                SqlUtility.Identifier(info.Entity.Module.Name),
-                SqlUtility.Identifier(info.Entity.Name),
+            return _sqlResources.Format("EntityLoggingDefinition_Create",
+                _sqlUtility.Identifier(info.Entity.Module.Name),
+                _sqlUtility.Identifier(info.Entity.Name),
                 GetTriggerNameInsert(info),
                 GetTriggerNameUpdate(info),
                 GetTriggerNameDelete(info),
@@ -87,8 +95,8 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         {
             var info = (EntityLoggingInfo)conceptInfo;
 
-            return Sql.Format("EntityLoggingDefinition_Remove",
-                SqlUtility.Identifier(info.Entity.Module.Name),
+            return _sqlResources.Format("EntityLoggingDefinition_Remove",
+                _sqlUtility.Identifier(info.Entity.Module.Name),
                 GetTriggerNameInsert(info),
                 GetTriggerNameUpdate(info),
                 GetTriggerNameDelete(info));

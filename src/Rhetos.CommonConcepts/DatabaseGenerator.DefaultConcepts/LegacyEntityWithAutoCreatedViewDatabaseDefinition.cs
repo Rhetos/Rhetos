@@ -17,16 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
-using Rhetos.Utilities;
 using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
+using Rhetos.Utilities;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
@@ -41,30 +37,39 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         public static readonly SqlTag<LegacyEntityWithAutoCreatedViewInfo> TriggerSelectForUpdatePartTag = "TriggerSelectForUpdatePartTag";
         public static readonly SqlTag<LegacyEntityWithAutoCreatedViewInfo> TriggerFromPartTag = "TriggerFromPart";
 
+        private readonly ISqlResources _sqlResource;
+        private readonly ISqlUtility _sqlUtility;
+
+        public LegacyEntityWithAutoCreatedViewDatabaseDefinition(ISqlResources sqlResources, ISqlUtility sqlUtility)
+        {
+            _sqlResource = sqlResources;
+            _sqlUtility = sqlUtility;
+        }
+
         protected string InsertTriggerName(LegacyEntityWithAutoCreatedViewInfo info)
         {
-            return SqlUtility.Identifier(Sql.Format("LegacyEntityWithAutoCreatedViewDatabaseDefinition_InsertTriggerName", info.Name));
+            return _sqlUtility.Identifier(_sqlResource.Format("LegacyEntityWithAutoCreatedViewDatabaseDefinition_InsertTriggerName", info.Name));
         }
 
         protected string UpdateTriggerName(LegacyEntityWithAutoCreatedViewInfo info)
         {
-            return SqlUtility.Identifier(Sql.Format("LegacyEntityWithAutoCreatedViewDatabaseDefinition_UpdateTriggerName", info.Name));
+            return _sqlUtility.Identifier(_sqlResource.Format("LegacyEntityWithAutoCreatedViewDatabaseDefinition_UpdateTriggerName", info.Name));
         }
 
         protected string DeleteTriggerName(LegacyEntityWithAutoCreatedViewInfo info)
         {
-            return SqlUtility.Identifier(Sql.Format("LegacyEntityWithAutoCreatedViewDatabaseDefinition_DeleteTriggerName", info.Name));
+            return _sqlUtility.Identifier(_sqlResource.Format("LegacyEntityWithAutoCreatedViewDatabaseDefinition_DeleteTriggerName", info.Name));
         }
 
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
         {
             var info = (LegacyEntityWithAutoCreatedViewInfo) conceptInfo;
 
-            return Sql.Format("LegacyEntityWithAutoCreatedViewDatabaseDefinition_Create",
-                SqlUtility.Identifier(info.Module.Name),
-                SqlUtility.Identifier(info.Name),
+            return _sqlResource.Format("LegacyEntityWithAutoCreatedViewDatabaseDefinition_Create",
+                _sqlUtility.Identifier(info.Module.Name),
+                _sqlUtility.Identifier(info.Name),
                 SqlUtility.ScriptSplitterTag,
-                SqlUtility.GetFullName(info.Table),
+                _sqlUtility.GetFullName(info.Table),
                 InsertTriggerName(info),
                 UpdateTriggerName(info),
                 DeleteTriggerName(info),
@@ -80,9 +85,9 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         {
             var info = (LegacyEntityWithAutoCreatedViewInfo) conceptInfo;
 
-            return Sql.Format("LegacyEntityWithAutoCreatedViewDatabaseDefinition_Remove",
-                SqlUtility.Identifier(info.Module.Name),
-                SqlUtility.Identifier(info.Name),
+            return _sqlResource.Format("LegacyEntityWithAutoCreatedViewDatabaseDefinition_Remove",
+                _sqlUtility.Identifier(info.Module.Name),
+                _sqlUtility.Identifier(info.Name),
                 InsertTriggerName(info),
                 UpdateTriggerName(info),
                 DeleteTriggerName(info));

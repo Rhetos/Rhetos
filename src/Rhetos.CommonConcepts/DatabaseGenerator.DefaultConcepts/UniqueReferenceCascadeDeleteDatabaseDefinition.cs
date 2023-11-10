@@ -21,6 +21,7 @@ using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -31,6 +32,16 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(UniqueReferenceCascadeDeleteDbInfo))]
     public class UniqueReferenceCascadeDeleteDatabaseDefinition : IConceptDatabaseDefinitionExtension
     {
+        protected ISqlResources Sql { get; private set; }
+
+        protected ISqlUtility SqlUtility { get; private set; }
+
+        public UniqueReferenceCascadeDeleteDatabaseDefinition(ISqlResources sqlResources, ISqlUtility sqlUtility)
+        {
+            this.Sql = sqlResources;
+            this.SqlUtility = sqlUtility;
+        }
+
         public void ExtendDatabaseStructure(
             IConceptInfo conceptInfo, ICodeBuilder codeBuilder,
             out IEnumerable<Tuple<IConceptInfo, IConceptInfo>> createdDependencies)
@@ -40,7 +51,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             // It is turned off by default because if a record is deleted by cascade delete directly in the database, then the business logic implemented in application layer will not be executed.
             var info = (UniqueReferenceCascadeDeleteDbInfo) conceptInfo;
 
-            if (UniqueReferenceDatabaseDefinition.IsSupported(info.UniqueReference))
+            if (new UniqueReferenceDatabaseDefinition(Sql, SqlUtility).IsSupported(info.UniqueReference))
                 codeBuilder.InsertCode("ON DELETE CASCADE ", UniqueReferenceDatabaseDefinition.ForeignKeyConstraintOptionsTag, info.UniqueReference);
 
             createdDependencies = null;

@@ -17,40 +17,19 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
-using Rhetos.Utilities;
 using Rhetos.Compiler;
-using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Extensibility;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
-    [Export(typeof(IConceptDatabaseDefinition))]
-    [ExportMetadata(MefProvider.Implements, typeof(LegacyPropertyReadOnlyInfo))]
-    public class LegacyPropertyReadOnlyDatabaseDefinition : IConceptDatabaseDefinitionExtension
+    [Export(typeof(IConceptDatabaseGenerator))]
+    public class LegacyPropertyReadOnlyDatabaseDefinition : IConceptDatabaseGenerator<LegacyPropertyReadOnlyInfo>
     {
-        public string CreateDatabaseStructure(IConceptInfo conceptInfo)
+        public void GenerateCode(LegacyPropertyReadOnlyInfo info, ISqlCodeBuilder sql)
         {
-            return null;
-        }
-
-        public string RemoveDatabaseStructure(IConceptInfo conceptInfo)
-        {
-            return null;
-        }
-
-        public void ExtendDatabaseStructure(IConceptInfo conceptInfo, ICodeBuilder codeBuilder, out IEnumerable<Tuple<IConceptInfo, IConceptInfo>> createdDependencies)
-        {
-            var info = (LegacyPropertyReadOnlyInfo)conceptInfo;
-            createdDependencies = null;
-
-            codeBuilder.InsertCode(
-                Sql.Format("LegacyPropertyReadOnlyDatabaseDefinition_ViewSelect", SqlUtility.Identifier(info.Property.Name), SqlUtility.Identifier(info.Column)),
+            sql.CodeBuilder.InsertCode(
+                sql.Resources.Format("LegacyPropertyReadOnlyDatabaseDefinition_ViewSelect", sql.Utility.Identifier(info.Property.Name), sql.Utility.Identifier(info.Column)),
                 LegacyEntityWithAutoCreatedViewDatabaseDefinition.ViewSelectPartTag, info.Dependency_LegacyEntityWithAutoCreatedView);
         }
     }

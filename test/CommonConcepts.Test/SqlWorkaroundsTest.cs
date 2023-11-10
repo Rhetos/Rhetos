@@ -320,7 +320,7 @@ namespace CommonConcepts.Test
         {
             Guid id = Guid.Empty;
             scope.Resolve<ISqlExecuter>().ExecuteReader(
-                "SELECT ID FROM Rhetos.AppliedConcept WHERE ConceptInfoKey = " + SqlUtility.QuoteText(conceptInfoKey),
+                "SELECT ID FROM Rhetos.AppliedConcept WHERE ConceptInfoKey = " + scope.Resolve<ISqlUtility>().QuoteText(conceptInfoKey),
                 reader => id = reader.GetGuid(0));
             if (id == Guid.Empty)
                 throw new InvalidOperationException("Cannot find applied concept '" + conceptInfoKey + "'.");
@@ -330,7 +330,7 @@ namespace CommonConcepts.Test
         private static List<Tuple<Guid, Guid>> ReadConceptDependencies(IEnumerable<Guid> conceptsId, IUnitOfWorkScope scope)
         {
             var dependencies = new List<Tuple<Guid, Guid>>();
-            string ids = string.Join(", ", conceptsId.Select(id => SqlUtility.QuoteGuid(id)));
+            string ids = string.Join(", ", conceptsId.Select(id => scope.Resolve<ISqlUtility>().QuoteGuid(id)));
             scope.Resolve<ISqlExecuter>().ExecuteReader(
                 "SELECT DependsOnID, DependentID FROM Rhetos.AppliedConceptDependsOn"
                 + " WHERE DependentID IN (" + ids + ")"

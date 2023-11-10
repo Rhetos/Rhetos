@@ -78,6 +78,13 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public static readonly CsTag<DataStructureInfo> PersistenceStorageMapperDependencyResolutionTag = "PersistenceStorageMapperDependencyResolution";
 
+        private readonly ConceptMetadata _conceptMetadata;
+
+        public WritableOrmDataStructureCodeGenerator(ConceptMetadata conceptMetadata)
+        {
+            _conceptMetadata = conceptMetadata;
+        }
+
         protected static string MemberFunctionsSnippet(DataStructureInfo info)
         {
             return string.Format(
@@ -102,13 +109,13 @@ namespace Rhetos.Dom.DefaultConcepts
             " + ProcessedOldDataTag.Evaluate(info) + @"
 
             {{
-                DomHelper.WriteToDatabase(insertedNew, updatedNew, deletedIds, _executionContext.PersistenceStorage, checkUserPermissions, _sqlUtility,
+                DomHelper.WriteToDatabase(insertedNew, updatedNew, deletedIds, _executionContext.PersistenceStorage, checkUserPermissions, _executionContext.SqlUtility,
                     out Exception saveException, out Rhetos.RhetosException interpretedException);
 
                 if (saveException != null)
                 {{
                     " + OnDatabaseErrorTag.Evaluate(info) + @"
-                    DomHelper.ThrowInterpretedException(checkUserPermissions, saveException, interpretedException, _sqlUtility, ""{0}.{1}"");
+                    DomHelper.ThrowInterpretedException(checkUserPermissions, saveException, interpretedException, _executionContext.SqlUtility, ""{0}.{1}"");
                 }}
             }}
 
@@ -147,7 +154,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 info.Name);
         }
 
-        protected static string PersistenceStorageMappingSnippet(DataStructureInfo info)
+        protected string PersistenceStorageMappingSnippet(DataStructureInfo info)
         {
             return
     $@"public class {info.Module.Name}_{info.Name}_Mapper : IPersistenceStorageObjectMapper
@@ -171,7 +178,7 @@ namespace Rhetos.Dom.DefaultConcepts
     
     	public string GetTableName()
         {{
-            return ""{((IOrmDataStructure)info).GetOrmSchema()}.{((IOrmDataStructure)info).GetOrmDatabaseObject()}"";
+            return ""{_conceptMetadata.GetOrmSchema(info)}.{_conceptMetadata.GetOrmDatabaseObject(info)}"";
         }}
     }}
 

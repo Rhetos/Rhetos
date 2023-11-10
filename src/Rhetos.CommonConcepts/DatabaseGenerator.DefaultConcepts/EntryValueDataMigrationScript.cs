@@ -17,13 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Compiler;
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Utilities;
 using System;
 using System.ComponentModel.Composition;
-using Rhetos.Extensibility;
-using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Dsl;
-using Rhetos.Compiler;
-using Rhetos.Utilities;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
@@ -31,10 +30,12 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     public class EntryValueDataMigrationScript : IConceptDataMigration<EntryValueInfo>
     {
         private readonly ConceptMetadata _conceptMetadata;
+        private readonly ISqlUtility _sqlUtility;
 
-        public EntryValueDataMigrationScript(ConceptMetadata conceptMetadata)
+        public EntryValueDataMigrationScript(ConceptMetadata conceptMetadata, ISqlUtility sqlUtility)
         {
             _conceptMetadata = conceptMetadata;
+            _sqlUtility = sqlUtility;
         }
 
         public void GenerateCode(EntryValueInfo concept, IDataMigrationScriptBuilder codeBuilder)
@@ -42,7 +43,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             var databaseColumnName = _conceptMetadata.GetColumnName(concept.Property);
             var databaseColumnType = _conceptMetadata.GetColumnType(concept.Property);
 
-            codeBuilder.InsertCode($@",{Environment.NewLine}    {databaseColumnName} = CONVERT({databaseColumnType}, {SqlUtility.QuoteText(concept.Value)})",
+            codeBuilder.InsertCode($@",{Environment.NewLine}    {databaseColumnName} = CONVERT({databaseColumnType}, {_sqlUtility.QuoteText(concept.Value)})",
                 EntryDataMigrationScript.UpdatePropertyTag, concept.Entry);
         }
     }

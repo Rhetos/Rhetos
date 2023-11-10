@@ -39,7 +39,7 @@ namespace Rhetos.Dom.DefaultConcepts
             string dataStructure = info.Property.DataStructure.Module.Name + "." + info.Property.DataStructure.Name;
             string snippet =
             $@"AutoCodeHelper.UpdateCodesWithoutCache(
-                _executionContext.SqlExecuter, ""{dataStructure}"", ""{info.Property.Name}"",
+                _executionContext.SqlExecuter, _executionContext.SqlUtility, ""{dataStructure}"", ""{info.Property.Name}"",
                 insertedNew.Select(item => AutoCodeItem.Create(item, item.{info.Property.Name}{GroupingTag.Evaluate(info)})).ToList(),
                 (item, newCode) => item.{info.Property.Name} = newCode{GroupColumnMetadataTag.Evaluate(info)});
 

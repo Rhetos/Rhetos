@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="SqlResources\Rhetos.Core.CreateDatabase.MsSql.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
   </ItemGroup>
 

@@ -57,6 +57,7 @@ namespace Rhetos.Dom.DefaultConcepts
     {
         public static void UpdateCodesWithoutCache<TEntity>(
             ISqlExecuter sqlExecuter,
+            ISqlUtility sqlUtility,
             string entityName,
             string propertyName,
             IList<AutoCodeItem<TEntity, int?>> autoCodeItems,
@@ -91,7 +92,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 if (groupColumnName == null)
                     groupFilter = "";
                 else
-                    groupFilter = "WHERE " + GetGroupFilter(groupColumnName, autoCodeGroup.GroupValue, groupTypeQuoted);
+                    groupFilter = "WHERE " + GetGroupFilter(sqlUtility, groupColumnName, autoCodeGroup.GroupValue, groupTypeQuoted);
 
                 string sql =
                     $@"SELECT ISNULL(MAX({propertyName}), 0)
@@ -115,16 +116,17 @@ namespace Rhetos.Dom.DefaultConcepts
             }
         }
 
-        private static string GetGroupFilter(string groupColumnName, string groupValue, bool groupTypeQuoted)
+        private static string GetGroupFilter(ISqlUtility sqlUtility, string groupColumnName, string groupValue, bool groupTypeQuoted)
         {
             if (groupValue != null)
-                return groupColumnName + " = " + (groupTypeQuoted ? SqlUtility.QuoteText(groupValue) : groupValue);
+                return groupColumnName + " = " + (groupTypeQuoted ? sqlUtility.QuoteText(groupValue) : groupValue);
             else
                 return groupColumnName + " IS NULL";
         }
 
         public static void UpdateCodesWithoutCache<TEntity>(
             ISqlExecuter sqlExecuter,
+            ISqlUtility sqlUtility,
             string entityName,
             string propertyName,
             IList<AutoCodeItem<TEntity, string>> autoCodeItems,
@@ -150,9 +152,9 @@ namespace Rhetos.Dom.DefaultConcepts
                 if (groupColumnName == null)
                     groupFilter = "";
                 else
-                    groupFilter = "AND " + GetGroupFilter(groupColumnName, autoCodeGroup.GroupValue, groupTypeQuoted);
+                    groupFilter = "AND " + GetGroupFilter(sqlUtility, groupColumnName, autoCodeGroup.GroupValue, groupTypeQuoted);
 
-                string quotedPrefix = SqlUtility.QuoteText(autoCodeGroup.Prefix);
+                string quotedPrefix = sqlUtility.QuoteText(autoCodeGroup.Prefix);
                 int prefixLength = autoCodeGroup.Prefix.Length;
 
                 string sql =
@@ -195,6 +197,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public static void UpdateCodesWithCache<TEntity>(
             ISqlExecuter sqlExecuter,
+            ISqlUtility sqlUtility,
             string entityName,
             string propertyName,
             IList<AutoCodeItem<TEntity, string>> autoCodeItems,
@@ -212,10 +215,10 @@ namespace Rhetos.Dom.DefaultConcepts
                 if (autoCodeGroup.MaxProvidedCode != null)
                 {
                     string sql = string.Format("EXEC Common.AutoCodeCacheUpdate {0}, {1}, {2}, {3}, {4}, {5}",
-                        SqlUtility.QuoteText(entityName),
-                        SqlUtility.QuoteText(propertyName),
-                        SqlUtility.QuoteText(autoCodeGroup.GroupValue),
-                        SqlUtility.QuoteText(autoCodeGroup.Prefix),
+                        sqlUtility.QuoteText(entityName),
+                        sqlUtility.QuoteText(propertyName),
+                        sqlUtility.QuoteText(autoCodeGroup.GroupValue),
+                        sqlUtility.QuoteText(autoCodeGroup.Prefix),
                         autoCodeGroup.MinDigits,
                         autoCodeGroup.MaxProvidedCode);
 
@@ -225,10 +228,10 @@ namespace Rhetos.Dom.DefaultConcepts
                 if (autoCodeGroup.ItemsToGenerateCode.Count > 0)
                 {
                     string sql = string.Format("EXEC Common.AutoCodeCacheGetNext {0}, {1}, {2}, {3}, {4}, {5}",
-                        SqlUtility.QuoteText(entityName),
-                        SqlUtility.QuoteText(propertyName),
-                        SqlUtility.QuoteText(autoCodeGroup.GroupValue),
-                        SqlUtility.QuoteText(autoCodeGroup.Prefix),
+                        sqlUtility.QuoteText(entityName),
+                        sqlUtility.QuoteText(propertyName),
+                        sqlUtility.QuoteText(autoCodeGroup.GroupValue),
+                        sqlUtility.QuoteText(autoCodeGroup.Prefix),
                         autoCodeGroup.MinDigits,
                         autoCodeGroup.ItemsToGenerateCode.Count);
 

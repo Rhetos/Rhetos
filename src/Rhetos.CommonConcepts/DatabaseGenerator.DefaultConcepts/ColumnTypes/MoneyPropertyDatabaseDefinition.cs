@@ -17,60 +17,43 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rhetos.Utilities;
-using System.ComponentModel.Composition;
-using Rhetos.Extensibility;
-using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Dsl;
-using System.Globalization;
+using Rhetos.Dsl.DefaultConcepts;
+using System;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
-    [Export(typeof(IConceptDatabaseDefinition))]
-    [ExportMetadata(MefProvider.Implements, typeof(MoneyPropertyInfo))]
-    public class MoneyPropertyDatabaseDefinition : IConceptDatabaseDefinition
+    [Export(typeof(IConceptDatabaseGenerator))]
+    public class MoneyPropertyDatabaseDefinition : IConceptDatabaseGenerator<MoneyPropertyInfo>
     {
-        ConceptMetadata _conceptMetadata;
+        private readonly ConceptMetadata _conceptMetadata;
 
         public MoneyPropertyDatabaseDefinition(ConceptMetadata conceptMetadata)
         {
             _conceptMetadata = conceptMetadata;
         }
 
-        private static string ConstraintName(MoneyPropertyInfo info)
+        public void GenerateCode(MoneyPropertyInfo info, ISqlCodeBuilder sql)
         {
-            return SqlUtility.Identifier(Sql.Format("MoneyPropertyDatabaseDefinition_CheckConstraintName",
+            string constraintName = sql.Utility.Identifier(sql.Resources.Format("MoneyPropertyDatabaseDefinition_CheckConstraintName",
                 info.DataStructure.Name,
                 info.Name));
-        }
-
-        public string CreateDatabaseStructure(IConceptInfo conceptInfo)
-        {
-            var info = (MoneyPropertyInfo)conceptInfo;
-            SqlUtility.Identifier(info.Name);
 
             if (info.DataStructure is EntityInfo)
-                return PropertyDatabaseDefinition.AddColumn(_conceptMetadata, info,
-                    Sql.Format("MoneyPropertyDatabaseDefinition_CreateCheckConstraint", ConstraintName(info), SqlUtility.Identifier(info.Name)));
-            return "";
-        }
+            {
+                sql.Utility.Identifier(info.Name);
 
-        public string RemoveDatabaseStructure(IConceptInfo conceptInfo)
-        {
-            var info = (MoneyPropertyInfo)conceptInfo;
-            if (info.DataStructure is EntityInfo)
-                return
-                    Sql.Format("MoneyPropertyDatabaseDefinition_RemoveCheckConstraint",
-                        SqlUtility.Identifier(info.DataStructure.Module.Name),
-                        SqlUtility.Identifier(info.DataStructure.Name),
-                        ConstraintName(info))
+                sql.CreateDatabaseStructure(PropertyDatabaseDefinition.AddColumn(sql.Utility, sql.Resources, _conceptMetadata, info,
+                    sql.Resources.Format("MoneyPropertyDatabaseDefinition_CreateCheckConstraint", constraintName, sql.Utility.Identifier(info.Name))));
+
+                sql.RemoveDatabaseStructure(sql.Resources.Format("MoneyPropertyDatabaseDefinition_RemoveCheckConstraint",
+                        sql.Utility.Identifier(info.DataStructure.Module.Name),
+                        sql.Utility.Identifier(info.DataStructure.Name),
+                        constraintName)
                     + Environment.NewLine
-                    + PropertyDatabaseDefinition.RemoveColumn(info, SqlUtility.Identifier(info.Name));
-            return "";
+                    + PropertyDatabaseDefinition.RemoveColumn(sql.Utility, sql.Resources, _conceptMetadata, info));
+            }
         }
     }
 }

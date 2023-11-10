@@ -17,17 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using Rhetos.Utilities;
 using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Extensibility;
+using Rhetos.Utilities;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
@@ -43,13 +36,13 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         public static readonly SqlTag<PropertyInfo> AfterCreateTag = "AfterCreate";
         public static readonly SqlTag<PropertyInfo> BeforeRemoveTag = "BeforeRemove";
 
-        public static string AddColumn(ConceptMetadata conceptMetadata, PropertyInfo property, string options = "")
+        public static string AddColumn(ISqlUtility sqlUtility, ISqlResources sqlResources, ConceptMetadata conceptMetadata, PropertyInfo property, string options = "")
         {
             string columnName = conceptMetadata.GetColumnName(property);
 
-            return Sql.Format("PropertyDatabaseDefinition_AddColumn",
-                SqlUtility.Identifier(property.DataStructure.Module.Name),
-                SqlUtility.Identifier(property.DataStructure.Name),
+            return sqlResources.Format("PropertyDatabaseDefinition_AddColumn",
+                sqlUtility.Identifier(property.DataStructure.Module.Name),
+                sqlUtility.Identifier(property.DataStructure.Name),
                 DslUtility.ValidateIdentifier(columnName, property, "Invalid column name."),
                 conceptMetadata.GetColumnType(property),
                 options,
@@ -58,11 +51,13 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
                 AfterCreateTag.Evaluate(property)).Trim();
         }
 
-        public static string RemoveColumn(PropertyInfo property, string columnName)
+        public static string RemoveColumn(ISqlUtility sqlUtility, ISqlResources sqlResources, ConceptMetadata conceptMetadata, PropertyInfo property)
         {
-            return Sql.Format("PropertyDatabaseDefinition_RemoveColumn",
-                SqlUtility.Identifier(property.DataStructure.Module.Name),
-                SqlUtility.Identifier(property.DataStructure.Name),
+            string columnName = conceptMetadata.GetColumnName(property);
+
+            return sqlResources.Format("PropertyDatabaseDefinition_RemoveColumn",
+                sqlUtility.Identifier(property.DataStructure.Module.Name),
+                sqlUtility.Identifier(property.DataStructure.Name),
                 DslUtility.ValidateIdentifier(columnName, property, "Invalid column name."),
                 BeforeRemoveTag.Evaluate(property)).Trim();
         }

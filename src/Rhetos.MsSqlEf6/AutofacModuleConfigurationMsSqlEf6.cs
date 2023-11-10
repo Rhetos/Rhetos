@@ -19,7 +19,9 @@
 
 using Autofac;
 using Rhetos.Deployment;
+using Rhetos.MsSqlEf6.SqlResources;
 using Rhetos.Persistence;
+using Rhetos.SqlResources;
 using Rhetos.Utilities;
 using System.ComponentModel.Composition;
 
@@ -30,14 +32,25 @@ namespace Rhetos.MsSqlEf6
     {
         protected override void Load(ContainerBuilder builder)
         {
-            // Components for all contexts (rhetos build, dbupdate, application runtime):
+            ExecutionStage stage = builder.GetRhetosExecutionStage();
+
             builder.RegisterType<MsSqlUtility>().As<ISqlUtility>().SingleInstance();
 
-            // Run-time and DbUpdate:
-            builder.RegisterType<MsSqlExecuter>().As<ISqlExecuter>().InstancePerLifetimeScope();
+            if (stage is ExecutionStage.BuildTime)
+            {
+                builder.RegisterType<CommonConceptsBuildSqlResourcesPlugin>().As<ISqlResourcesPlugin>().SingleInstance();
+            }
 
-            // DbUpdate:
-            builder.RegisterType<MsConnectionTesting>().As<IConnectionTesting>();
+            if (stage is ExecutionStage.DatabaseUpdate)
+            {
+                builder.RegisterType<MsConnectionTesting>().As<IConnectionTesting>();
+                builder.RegisterType<CoreDbUpdateSqlResourcesPlugin>().As<ISqlResourcesPlugin>().SingleInstance();
+            }
+
+            if (stage is ExecutionStage.DatabaseUpdate or ExecutionStage.Runtime)
+            {
+                builder.RegisterType<MsSqlExecuter>().As<ISqlExecuter>().InstancePerLifetimeScope();
+            }
 
             base.Load(builder);
         }

@@ -34,9 +34,5 @@ namespace Rhetos.Dsl.DefaultConcepts
     public class SqlQueryableInfo : DataStructureInfo, IOrmDataStructure
     {
         public string SqlSource { get; set; }
-
-        public string GetOrmSchema() => Module.Name;
-
-        public string GetOrmDatabaseObject() => Name;
     }
 }

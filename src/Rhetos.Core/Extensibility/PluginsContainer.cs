@@ -18,6 +18,7 @@
 */
 
 using Autofac.Features.Indexed;
+using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
@@ -30,15 +31,18 @@ namespace Rhetos.Extensibility
         private readonly Lazy<IEnumerable<TPlugin>> _sortedPlugins;
         private readonly Lazy<IIndex<Type, IEnumerable<TPlugin>>> _pluginsByImplementation;
         private readonly PluginsMetadataCache<TPlugin> _cache;
+        private readonly ILogger _logger;
 
         public PluginsContainer(
             Lazy<IEnumerable<TPlugin>> plugins,
             Lazy<IIndex<Type, IEnumerable<TPlugin>>> pluginsByImplementation,
-            PluginsMetadataCache<TPlugin> cache)
+            PluginsMetadataCache<TPlugin> cache,
+            ILogProvider logProvider)
         {
             _sortedPlugins = new Lazy<IEnumerable<TPlugin>>(() => _cache.SortedByMetadataDependsOnAndRemoveSuppressed(typeof(object), PreSort(plugins.Value)));
             _pluginsByImplementation = pluginsByImplementation;
             _cache = cache;
+            _logger = logProvider.GetLogger(GetType().Name);
         }
 
         /// <summary>
@@ -55,6 +59,7 @@ namespace Rhetos.Extensibility
 
         public IEnumerable<TPlugin> GetPlugins()
         {
+            _logger.Trace(() => $"Getting plugins '{typeof(TPlugin)}'.");
             return _sortedPlugins.Value;
         }
 

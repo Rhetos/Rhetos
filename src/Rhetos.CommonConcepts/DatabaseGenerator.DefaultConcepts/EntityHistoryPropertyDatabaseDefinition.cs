@@ -17,16 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
-using Rhetos.Utilities;
 using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
+using Rhetos.Utilities;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
@@ -34,6 +32,13 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(EntityHistoryPropertyInfo))]
     public class EntityHistoryPropertyDatabaseDefinition : IConceptDatabaseDefinitionExtension
     {
+        private readonly ISqlUtility _sqlUtility;
+
+        public EntityHistoryPropertyDatabaseDefinition(ISqlUtility sqlUtility)
+        {
+            _sqlUtility = sqlUtility;
+        }
+
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
         {
             return null;
@@ -58,11 +63,11 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
                 EntityHistoryMacro.SelectEntityPropertiesTag, info.Dependency_EntityHistory);
         }
 
-        private static string GetColumnName(PropertyInfo property)
+        private string GetColumnName(PropertyInfo property)
         {
             if (property is ReferencePropertyInfo)
-                return SqlUtility.Identifier(property.Name + "ID");
-            return SqlUtility.Identifier(property.Name);
+                return _sqlUtility.Identifier(property.Name + "ID");
+            return _sqlUtility.Identifier(property.Name);
         }
     }
 }

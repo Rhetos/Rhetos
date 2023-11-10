@@ -30,25 +30,33 @@ namespace Rhetos.Ef6
     {
         protected override void Load(ContainerBuilder builder)
         {
-            // Build-time:
-            builder.RegisterType<EntityFrameworkMappingGenerator>().As<IGenerator>();
+            ExecutionStage stage = builder.GetRhetosExecutionStage();
 
-            // Run-time:
-            builder.RegisterType<EfMappingViewsFileStore>().SingleInstance().PreserveExistingDefaults();
-            builder.RegisterType<EfMappingViewCacheFactory>().SingleInstance().PreserveExistingDefaults();
-            builder.RegisterType<EfMappingViewsInitializer>().SingleInstance();
-
-            // DbUpdate:
-            builder.RegisterDecorator<DbUpdateOptions>((context, parameters, originalOptions) =>
+            if (stage is ExecutionStage.BuildTime)
             {
-                // EfMappingViewsInitializer needs to be executed before other initializers, because of performance issues.
-                // EfMappingViewsInitializer is needed for most of the initializer to run, but lazy initialization of EfMappingViews on first DbContext usage
-                // is not a good option because of significant hash check duration: That lazy initialization would slow down the application at run-time,
-                // where it is actually not needed.
-                DbUpdateOptions modifiedOptions = CsUtility.ShallowCopy(originalOptions);
-                modifiedOptions.OverrideServerInitializerOrdering[typeof(EfMappingViewsInitializer).FullName] = -100;
-                return modifiedOptions;
-            });
+                builder.RegisterType<EntityFrameworkMappingGenerator>().As<IGenerator>();
+            }
+
+            if (stage is ExecutionStage.DatabaseUpdate)
+            {
+                builder.RegisterDecorator<DbUpdateOptions>((context, parameters, originalOptions) =>
+                {
+                    // EfMappingViewsInitializer needs to be executed before other initializers, because of performance issues.
+                    // EfMappingViewsInitializer is needed for most of the initializer to run, but lazy initialization of EfMappingViews on first DbContext usage
+                    // is not a good option because of significant hash check duration: That lazy initialization would slow down the application at run-time,
+                    // where it is actually not needed.
+                    DbUpdateOptions modifiedOptions = CsUtility.ShallowCopy(originalOptions);
+                    modifiedOptions.OverrideServerInitializerOrdering[typeof(EfMappingViewsInitializer).FullName] = -100;
+                    return modifiedOptions;
+                });
+            }
+
+            if (stage is ExecutionStage.Runtime)
+            {
+                builder.RegisterType<EfMappingViewsFileStore>().SingleInstance().PreserveExistingDefaults();
+                builder.RegisterType<EfMappingViewCacheFactory>().SingleInstance().PreserveExistingDefaults();
+                builder.RegisterType<EfMappingViewsInitializer>().SingleInstance();
+            }
 
             base.Load(builder);
         }

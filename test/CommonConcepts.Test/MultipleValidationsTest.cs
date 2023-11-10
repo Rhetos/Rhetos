@@ -44,7 +44,7 @@ namespace CommonConcepts.Test
                 scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestMultipleLock.Simple",
                     "DELETE FROM TestMultipleLock.PassDependency",
-                    "INSERT INTO TestMultipleLock.PassDependency (ID, MinPassLength) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 5)"});
+                    "INSERT INTO TestMultipleLock.PassDependency (ID, MinPassLength) VALUES (" + scope.Resolve<ISqlUtility>().QuoteGuid(id1) + ", 5)"});
                 var repository = scope.Resolve<Common.DomRepository>();
                 var pd = repository.TestMultipleLock.PassDependency.Load().SingleOrDefault();
                 var s1 = new TestMultipleLock.Simple { ID = Guid.NewGuid(), PassDependencyID = pd.ID, UserName = "test", Pass = "1.a" };
@@ -62,7 +62,7 @@ namespace CommonConcepts.Test
                 scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestMultipleLock.Simple",
                     "DELETE FROM TestMultipleLock.PassDependency",
-                    "INSERT INTO TestMultipleLock.PassDependency (ID, MinPassLength) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 5)"});
+                    "INSERT INTO TestMultipleLock.PassDependency (ID, MinPassLength) VALUES (" + scope.Resolve<ISqlUtility>().QuoteGuid(id1) + ", 5)"});
                 var repository = scope.Resolve<Common.DomRepository>();
                 var pd = repository.TestMultipleLock.PassDependency.Load().SingleOrDefault();
                 var s1 = new TestMultipleLock.Simple { ID = Guid.NewGuid(), PassDependencyID = pd.ID, UserName = "test", Pass = "123467" };
@@ -80,7 +80,7 @@ namespace CommonConcepts.Test
                 scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestMultipleLock.Simple",
                     "DELETE FROM TestMultipleLock.PassDependency",
-                    "INSERT INTO TestMultipleLock.PassDependency (ID, MinPassLength) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 5)"});
+                    "INSERT INTO TestMultipleLock.PassDependency (ID, MinPassLength) VALUES (" + scope.Resolve<ISqlUtility>().QuoteGuid(id1) + ", 5)"});
                 var repository = scope.Resolve<Common.DomRepository>();
                 var pd = repository.TestMultipleLock.PassDependency.Load().SingleOrDefault();
                 var s1 = new TestMultipleLock.Simple { ID = Guid.NewGuid(), PassDependencyID = pd.ID, UserName = "test", Pass = "123467..;aaaas" };
@@ -98,7 +98,7 @@ namespace CommonConcepts.Test
                 scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
                     "DELETE FROM TestMultipleLock.Simple",
                     "DELETE FROM TestMultipleLock.PassDependency",
-                    "INSERT INTO TestMultipleLock.PassDependency (ID, MinPassLength) VALUES (" + SqlUtility.QuoteGuid(id1) + ", 5)"});
+                    "INSERT INTO TestMultipleLock.PassDependency (ID, MinPassLength) VALUES (" + scope.Resolve<ISqlUtility>().QuoteGuid(id1) + ", 5)"});
                 var repository = scope.Resolve<Common.DomRepository>();
                 var pd = repository.TestMultipleLock.PassDependency.Load().SingleOrDefault();
                 var s1 = new TestMultipleLock.Simple { ID = Guid.NewGuid(), PassDependencyID = pd.ID, UserName = "test", Pass = "123467..;atestaaas" };

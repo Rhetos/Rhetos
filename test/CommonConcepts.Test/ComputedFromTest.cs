@@ -171,28 +171,28 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("b1 b1a b1b ", TestUtility.DumpSorted(repository.TestComputedFrom.MultiSync.Query().ToList(), Dump));
 
                 var ms = repository.TestComputedFrom.MultiSync.Load().Single();
-                AssertIsRecently(ms.LastModifiedName1bx, SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>()));
-                AssertIsRecently(ms.Start, SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>()));
+                AssertIsRecently(ms.LastModifiedName1bx, scope.Resolve<ISqlUtility>().GetDatabaseTime(scope.Resolve<ISqlExecuter>()));
+                AssertIsRecently(ms.Start, scope.Resolve<ISqlUtility>().GetDatabaseTime(scope.Resolve<ISqlExecuter>()));
 
                 ms.Start = new DateTime(2001, 2, 3);
                 ms.LastModifiedName1bx = new DateTime(2001, 2, 3);
                 repository.TestComputedFrom.MultiSync.Update(new[] { ms });
                 ms = repository.TestComputedFrom.MultiSync.Load().Single();
-                AssertIsRecently(ms.Start, SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>()), false);
-                AssertIsRecently(ms.LastModifiedName1bx, SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>()), false);
+                AssertIsRecently(ms.Start, scope.Resolve<ISqlUtility>().GetDatabaseTime(scope.Resolve<ISqlExecuter>()), false);
+                AssertIsRecently(ms.LastModifiedName1bx, scope.Resolve<ISqlUtility>().GetDatabaseTime(scope.Resolve<ISqlExecuter>()), false);
 
                 b.Info = "xxx";
                 repository.TestComputedFrom.Base1.Update(new[] { b });
                 ms = repository.TestComputedFrom.MultiSync.Load().Single();
-                AssertIsRecently(ms.Start, SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>()), false);
-                AssertIsRecently(ms.LastModifiedName1bx, SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>()), false);
+                AssertIsRecently(ms.Start, scope.Resolve<ISqlUtility>().GetDatabaseTime(scope.Resolve<ISqlExecuter>()), false);
+                AssertIsRecently(ms.LastModifiedName1bx, scope.Resolve<ISqlUtility>().GetDatabaseTime(scope.Resolve<ISqlExecuter>()), false);
 
                 b.Name1 = "b1new";
                 repository.TestComputedFrom.Base1.Update(new[] { b });
                 Assert.AreEqual("b1new b1newa b1newb ", TestUtility.DumpSorted(repository.TestComputedFrom.MultiSync.Query().ToList(), Dump));
                 ms = repository.TestComputedFrom.MultiSync.Load().Single();
-                AssertIsRecently(ms.Start, SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>()), false);
-                AssertIsRecently(ms.LastModifiedName1bx, SqlUtility.GetDatabaseTime(scope.Resolve<ISqlExecuter>()));
+                AssertIsRecently(ms.Start, scope.Resolve<ISqlUtility>().GetDatabaseTime(scope.Resolve<ISqlExecuter>()), false);
+                AssertIsRecently(ms.LastModifiedName1bx, scope.Resolve<ISqlUtility>().GetDatabaseTime(scope.Resolve<ISqlExecuter>()));
             }
         }
 

@@ -20,16 +20,22 @@
 using Rhetos.Utilities;
 using System.Collections.Generic;
 
-namespace Rhetos.DatabaseGenerator
+namespace Rhetos.SqlResources
 {
     /// <summary>
     /// Provides SQL code snippets for <see cref="ISqlResources"/>, based on the selected database language in <see cref="DatabaseSettings.DatabaseLanguage"/>.
     /// </summary>
+    /// <remarks>
+    /// The key should include project name or a similar global identifier, to avoid conflicts between different plugins with same keys.
+    /// </remarks>
     public interface ISqlResourcesPlugin
     {
         /// <summary>
         /// Returns null if the database language is not supported.
         /// </summary>
+        /// <remarks>
+        /// The key should include project name or a similar global identifier, to avoid conflicts between different plugins with same keys.
+        /// </remarks>
         IDictionary<string, string> GetResources();
     }
 }
