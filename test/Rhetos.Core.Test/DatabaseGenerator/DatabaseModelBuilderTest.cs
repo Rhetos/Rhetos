@@ -95,7 +95,7 @@ namespace Rhetos.DatabaseGenerator.Test
             var r5 = MultipleReferencingCi.CreateApplication("5", c, c);
             var r4 = MultipleReferencingCi.CreateApplication("4", c, r5);
 
-            var conceptImplementations = new PluginsMetadataList<IConceptDatabaseDefinition>
+            var conceptImplementations = new PluginsMetadataList<IConceptDatabaseGenerator>
             {
                 new NullImplementation(),
                 { new SimpleConceptImplementation(), typeof(SimpleCi) },
@@ -224,7 +224,7 @@ namespace Rhetos.DatabaseGenerator.Test
             IConceptInfo ci2 = new SimpleCi2 { Name = "2" }; // No concept application in database.
             IConceptInfo ci3 = new SimpleCi3 { Name = "3" }; // Concept application ExtendingConceptImplementation does not generate SQL script.
 
-            var conceptImplementations = new PluginsMetadataList<IConceptDatabaseDefinition>
+            var conceptImplementations = new PluginsMetadataList<IConceptDatabaseGenerator>
             {
                 new NullImplementation(),
                 { new SimpleConceptImplementation(), typeof(SimpleCi) },

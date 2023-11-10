@@ -44,7 +44,7 @@ namespace Rhetos.DatabaseGenerator
 
         public List<CodeGeneratorDependency> ExtractCodeGeneratorDependencies(
             IEnumerable<CodeGenerator> codeGenerators,
-            IPluginsContainer<IConceptDatabaseDefinition> plugins)
+            IPluginsContainer<IConceptDatabaseGenerator> plugins)
         {
             var dependenciesFromConceptInfo = ExtractDependenciesFromConceptInfos(codeGenerators);
            
@@ -95,7 +95,7 @@ namespace Rhetos.DatabaseGenerator
         }
 
         private List<CodeGeneratorDependency> ExtractDependenciesFromMefPluginMetadata(
-            IPluginsContainer<IConceptDatabaseDefinition> plugins,
+            IPluginsContainer<IConceptDatabaseGenerator> plugins,
             IEnumerable<CodeGenerator> codeGenerators)
         {
             var stopwatch = Stopwatch.StartNew();
@@ -125,7 +125,7 @@ namespace Rhetos.DatabaseGenerator
             return dependencies;
         }
 
-        private List<Tuple<Type, Type>> GetImplementationDependencies(IPluginsContainer<IConceptDatabaseDefinition> plugins, IEnumerable<Type> conceptImplementations)
+        private List<Tuple<Type, Type>> GetImplementationDependencies(IPluginsContainer<IConceptDatabaseGenerator> plugins, IEnumerable<Type> conceptImplementations)
         {
             var dependencies = new List<Tuple<Type, Type>>();
 

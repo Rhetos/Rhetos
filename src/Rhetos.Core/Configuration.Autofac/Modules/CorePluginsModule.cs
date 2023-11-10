@@ -18,6 +18,7 @@
 */
 
 using Autofac;
+using Rhetos.DatabaseGenerator;
 using Rhetos.Dsl;
 using Rhetos.Extensibility;
 
@@ -31,6 +32,10 @@ namespace Rhetos.Configuration.Autofac.Modules
 
             AddDsl(builder, pluginRegistration);
             AddExtensibility(builder);
+
+            builder.RegisterType<SqlResources>().As<ISqlResources>().SingleInstance();
+            pluginRegistration.FindAndRegisterPlugins<ISqlResourcesPlugin>();
+            builder.RegisterType<CoreSqlResourcesPlugin>().As<ISqlResourcesPlugin>().SingleInstance(); // Rhetos core libraries are not scanned for plugins.
 
             base.Load(builder);
         }

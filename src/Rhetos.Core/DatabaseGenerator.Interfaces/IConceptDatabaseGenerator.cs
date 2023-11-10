@@ -18,28 +18,28 @@
 */
 
 using Rhetos.Dsl;
-using System;
 
 namespace Rhetos.DatabaseGenerator
 {
-    [Obsolete("Implement IConceptDatabaseGenerator interface instead of IConceptDatabaseDefinition.")]
-    public interface IConceptDatabaseDefinition : IConceptDatabaseGenerator
+    /// <summary>
+    /// Generates database code for the given DSL concept.
+    /// </summary>
+    public interface IConceptDatabaseGenerator
     {
-        string CreateDatabaseStructure(IConceptInfo conceptInfo);
+        void GenerateCode(IConceptInfo conceptInfo, ISqlCodeBuilder sql);
+    }
 
-        string RemoveDatabaseStructure(IConceptInfo conceptInfo);
+    /// <summary>
+    /// Generates database code for the given DSL concept.
+    /// </summary>
+    public interface IConceptDatabaseGenerator<in TConceptInfo> : IConceptDatabaseGenerator
+        where TConceptInfo : IConceptInfo
+    {
+        void GenerateCode(TConceptInfo conceptInfo, ISqlCodeBuilder sql);
 
-#pragma warning disable CA1033 // Interface methods should be callable by child types
         void IConceptDatabaseGenerator.GenerateCode(IConceptInfo conceptInfo, ISqlCodeBuilder sql)
         {
-            GenerateCodeIConceptDatabaseDefinition(conceptInfo, sql);
-        }
-#pragma warning restore CA1033 // Interface methods should be callable by child types
-
-        protected void GenerateCodeIConceptDatabaseDefinition(IConceptInfo conceptInfo, ISqlCodeBuilder sql)
-        {
-            sql.CreateDatabaseStructure(CreateDatabaseStructure(conceptInfo));
-            sql.RemoveDatabaseStructure(RemoveDatabaseStructure(conceptInfo));
+            GenerateCode((TConceptInfo)conceptInfo, sql);
         }
     }
 }

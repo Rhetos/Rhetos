@@ -63,10 +63,17 @@ namespace Rhetos.Extensibility
         /// Scans for plugins that implement the given export type (it is usually the plugin's interface), and registers them.
         /// The function should be called from a plugin module initialization (from Autofac.Module implementation).
         /// </summary>
-        public void FindAndRegisterPlugins<TPluginInterface>()
+        public void FindAndRegisterPlugins<TPluginInterface>() => FindAndRegisterPlugins<TPluginInterface, TPluginInterface>();
+
+        /// <summary>
+        /// Scans for plugins that implement the given <typeparamref name="TPluginInterfaceExport"/> type (it is usually the plugin's interface),
+        /// and registers them as a <typeparamref name="TPluginInterfaceRegistration"/> type plugin (the registration type must be equal or base of the export type).
+        /// The function should be called from a plugin module initialization (from Autofac.Module implementation).
+        /// </summary>
+        public void FindAndRegisterPlugins<TPluginInterfaceExport, TPluginInterfaceRegistration>() where TPluginInterfaceExport : TPluginInterfaceRegistration
         {
-            var matchingPlugins = _pluginScanner.FindPlugins(typeof(TPluginInterface));
-            RegisterPlugins(matchingPlugins, typeof(TPluginInterface));
+            var matchingPlugins = _pluginScanner.FindPlugins(typeof(TPluginInterfaceExport));
+            RegisterPlugins(matchingPlugins, typeof(TPluginInterfaceRegistration));
         }
 
         /// <summary>

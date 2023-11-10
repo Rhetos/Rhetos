@@ -34,23 +34,29 @@ namespace Rhetos.DatabaseGenerator
     /// </summary>
     public class DatabaseModelBuilder
     {
-        private readonly IPluginsContainer<IConceptDatabaseDefinition> _plugins;
+        private readonly IPluginsContainer<IConceptDatabaseGenerator> _plugins;
         private readonly IDslModel _dslModel;
         private readonly ILogger _logger;
         private readonly ILogger _performanceLogger;
         private readonly DatabaseModelDependencies _databaseModelDependencies;
+        private readonly ISqlUtility _sqlUtility;
+        private readonly ISqlResources _sqlResources;
 
         public DatabaseModelBuilder(
-            IPluginsContainer<IConceptDatabaseDefinition> plugins,
+            IPluginsContainer<IConceptDatabaseGenerator> plugins,
             IDslModel dslModel,
             ILogProvider logProvider,
-            DatabaseModelDependencies databaseModelDependencies)
+            DatabaseModelDependencies databaseModelDependencies,
+            ISqlUtility sqlUtility,
+            ISqlResources sqlResources)
         {
             _plugins = plugins;
             _dslModel = dslModel;
             _logger = logProvider.GetLogger(GetType().Name);
             _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _databaseModelDependencies = databaseModelDependencies;
+            _sqlUtility = sqlUtility;
+            _sqlResources = sqlResources;
         }
 
         public DatabaseModel CreateDatabaseModel()
@@ -103,54 +109,54 @@ namespace Rhetos.DatabaseGenerator
             return codeGenerators;
         }
 
-        private readonly IConceptDatabaseDefinition[] _nullImplementations = new[] { new NullImplementation() };
+        private readonly IConceptDatabaseGenerator[] _nullImplementations = new[] { new NullImplementation() };
 
         private void ComputeCreateAndRemoveQuery(
             List<CodeGenerator> codeGenerators,
             List<CodeGeneratorDependency> codeGeneratorDependencies,
             IEnumerable<IConceptInfo> allConceptInfos,
             out Dictionary<int, string> createQueryByCodeGenerator,
-            out Dictionary<int, string> removeQueryByCodeGenerator,
+            out Dictionary<int, string> outRemoveQueryByCodeGenerator,
             out List<CodeGeneratorDependency> sqlScriptDependencies)
         {
-            // Generate RemoveQuery:
-
-            removeQueryByCodeGenerator = codeGenerators.ToDictionary(
-                cg => cg.Id,
-                cg => cg.ConceptImplementation.RemoveDatabaseStructure(cg.ConceptInfo)?.Trim() ?? "");
-
-            // Generate CreateQuery:
+            var removeQueryByCodeGenerator = new Dictionary<int, string>();
 
             Graph.TopologicalSort(codeGenerators, codeGeneratorDependencies.Select(d => Tuple.Create(d.DependsOn, d.Dependent)));
-            var sqlCodeBuilder = new CodeBuilder("/*", "*/");
+            var codeBuilder = new CodeBuilder("/*", "*/");
             var createdDependencies = new List<(IConceptInfo DependsOn, IConceptInfo Dependent)>();
             var conceptInfosByKey = allConceptInfos.ToDictionary(ci => ci.GetKey());
 
             foreach (var cg in codeGenerators)
             {
-                string createQuery = cg.ConceptImplementation.CreateDatabaseStructure(cg.ConceptInfo);
-                if (!string.IsNullOrWhiteSpace(createQuery))
-                {
-                    sqlCodeBuilder.InsertCode(GetCodeGeneratorSeparator(cg.Id));
-                    sqlCodeBuilder.InsertCode(createQuery);
-                }
+                var sqlCodeBuilder = new SqlCodeBuilder(
+                    codeBuilder, _sqlUtility, _sqlResources,
+                    createQuery =>
+                    {
+                        if (!string.IsNullOrWhiteSpace(createQuery))
+                        {
+                            codeBuilder.InsertCode(GetCodeGeneratorSeparator(cg.Id));
+                            codeBuilder.InsertCode(createQuery);
+                        }
+                    },
+                    removeQuery =>
+                    {
+                        removeQueryByCodeGenerator.Add(cg.Id, removeQuery?.Trim() ?? "");
+                    },
+                    pluginCreatedDependencies =>
+                    {
+                        if (pluginCreatedDependencies != null)
+                            createdDependencies.AddRange(pluginCreatedDependencies
+                                .Select(dep =>
+                                (
+                                    DependsOn: GetValidConceptInfo(dep.Item1.GetKey(), conceptInfosByKey, cg),
+                                    Dependent: GetValidConceptInfo(dep.Item2.GetKey(), conceptInfosByKey, cg)
+                                )));
+                    });
 
-                if (cg.ConceptImplementation is IConceptDatabaseDefinitionExtension conceptDatabaseDefinitionExtension)
-                {
-                    conceptDatabaseDefinitionExtension.ExtendDatabaseStructure(
-                        cg.ConceptInfo, sqlCodeBuilder, out var pluginCreatedDependencies);
-
-                    if (pluginCreatedDependencies != null)
-                        createdDependencies.AddRange(pluginCreatedDependencies
-                            .Select(dep =>
-                            (
-                                DependsOn: GetValidConceptInfo(dep.Item1.GetKey(), conceptInfosByKey, cg),
-                                Dependent: GetValidConceptInfo(dep.Item2.GetKey(), conceptInfosByKey, cg)
-                            )));
-                }
+                cg.ConceptImplementation.GenerateCode(cg.ConceptInfo, sqlCodeBuilder);
             }
 
-            createQueryByCodeGenerator = ExtractCreateQueries(sqlCodeBuilder.GenerateCode());
+            createQueryByCodeGenerator = ExtractCreateQueries(codeBuilder.GenerateCode());
 
             sqlScriptDependencies = _databaseModelDependencies.ConceptDependencyToCodeGeneratorsDependency(
                 createdDependencies.Select(d => Tuple.Create(d.DependsOn, d.Dependent)),
@@ -158,6 +164,8 @@ namespace Rhetos.DatabaseGenerator
 
             var reportDependencies = sqlScriptDependencies;
             _logger.Trace(() => _databaseModelDependencies.ReportDependencies("SQL script", reportDependencies));
+
+            outRemoveQueryByCodeGenerator = removeQueryByCodeGenerator;
         }
 
         private static IConceptInfo GetValidConceptInfo(string conceptInfoKey, Dictionary<string, IConceptInfo> conceptInfosByKey, CodeGenerator debugContextNewDatabaseObject)

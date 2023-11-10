@@ -73,8 +73,9 @@ namespace Rhetos.Configuration.Autofac.Modules
 
             // Generating data migration from plugins:
 
-            pluginRegistration.FindAndRegisterPlugins<IConceptDatabaseDefinition>();
-            builder.RegisterType<NullImplementation>().As<IConceptDatabaseDefinition>();
+            pluginRegistration.FindAndRegisterPlugins<IConceptDatabaseGenerator>(typeof(IConceptDatabaseGenerator<>));
+            pluginRegistration.FindAndRegisterPlugins<IConceptDatabaseDefinition, IConceptDatabaseGenerator>();
+            builder.RegisterType<NullImplementation>().As<IConceptDatabaseGenerator>();
             builder.RegisterType<ConceptDataMigrationGenerator>().As<IGenerator>();
         }
 

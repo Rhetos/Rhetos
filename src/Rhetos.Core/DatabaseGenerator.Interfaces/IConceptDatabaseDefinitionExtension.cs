@@ -24,6 +24,7 @@ using Rhetos.Dsl;
 
 namespace Rhetos.DatabaseGenerator
 {
+    [Obsolete("Implement IConceptDatabaseGenerator interface instead of IConceptDatabaseDefinitionExtension.")]
     public interface IConceptDatabaseDefinitionExtension : IConceptDatabaseDefinition
     {
         /// <summary>
@@ -37,5 +38,19 @@ namespace Rhetos.DatabaseGenerator
         /// In the Tuple, Item2 depends on Item1. If no additional dependencies are created, set the output value to null.
         /// In createdDependencies you can create and use a new instance of concept info to reference existing concept info with same concept info key.</param>
         void ExtendDatabaseStructure(IConceptInfo conceptInfo, ICodeBuilder codeBuilder, out IEnumerable<Tuple<IConceptInfo, IConceptInfo>> createdDependencies);
+
+#pragma warning disable CA1033 // Interface methods should be callable by child types
+        void IConceptDatabaseGenerator.GenerateCode(IConceptInfo conceptInfo, ISqlCodeBuilder sql)
+        {
+            GenerateCodeIConceptDatabaseDefinitionExtension(conceptInfo, sql);
+        }
+#pragma warning restore CA1033 // Interface methods should be callable by child types
+
+        protected void GenerateCodeIConceptDatabaseDefinitionExtension(IConceptInfo conceptInfo, ISqlCodeBuilder sql)
+        {
+            GenerateCodeIConceptDatabaseDefinition(conceptInfo, sql);
+            ExtendDatabaseStructure(conceptInfo, sql.CodeBuilder, out var createdDependencies);
+            sql.AddDependencies(createdDependencies);
+        }
     }
 }

@@ -24,14 +24,15 @@ namespace Rhetos.DatabaseGenerator
 {
     /// <summary>
     /// Represents a generator for a part of a database model for a single concept.
-    /// Same concept can have multiple code generators for different IConceptDatabaseDefinition implementations.
+    /// Same concept can have multiple code generators for different IConceptDatabaseGenerator implementations.
     /// </summary>
     public class CodeGenerator
     {
         public IConceptInfo ConceptInfo { get; }
-        public IConceptDatabaseDefinition ConceptImplementation { get; }
 
-        public CodeGenerator(IConceptInfo conceptInfo, IConceptDatabaseDefinition conceptImplementation)
+        public IConceptDatabaseGenerator ConceptImplementation { get; }
+
+        public CodeGenerator(IConceptInfo conceptInfo, IConceptDatabaseGenerator conceptImplementation)
         {
             ConceptInfo = conceptInfo;
             ConceptImplementation = conceptImplementation;

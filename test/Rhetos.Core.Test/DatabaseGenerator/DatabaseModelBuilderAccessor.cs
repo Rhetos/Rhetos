@@ -27,8 +27,8 @@ namespace Rhetos.DatabaseGenerator.Test
 {
     public class DatabaseModelBuilderAccessor : DatabaseModelBuilder, ITestAccessor
     {
-        public DatabaseModelBuilderAccessor(IPluginsContainer<IConceptDatabaseDefinition> plugins, IDslModel dslModel)
-            : base(plugins, dslModel, new ConsoleLogProvider(), new DatabaseModelDependencies(new ConsoleLogProvider()))
+        public DatabaseModelBuilderAccessor(IPluginsContainer<IConceptDatabaseGenerator> plugins, IDslModel dslModel)
+            : base(plugins, dslModel, new ConsoleLogProvider(), new DatabaseModelDependencies(new ConsoleLogProvider()), null, null)
         {
         }
 

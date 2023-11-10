@@ -38,7 +38,7 @@ namespace Rhetos.DatabaseGenerator.Test
 
         private List<DatabaseObject> CreateConceptApplications(params IConceptInfo[] concepts)
         {
-            var implementations = new PluginsMetadataList<IConceptDatabaseDefinition>()
+            var implementations = new PluginsMetadataList<IConceptDatabaseGenerator>()
             {
                 new NullImplementation(),
                 { new SimpleImplementation(), typeof(SimpleConcept) },
@@ -50,7 +50,8 @@ namespace Rhetos.DatabaseGenerator.Test
                 MockDatabasePluginsContainer.Create(implementations),
                 new MockDslModel(concepts),
                 new ConsoleLogProvider(),
-                new DatabaseModelDependencies(new ConsoleLogProvider()));
+                new DatabaseModelDependencies(new ConsoleLogProvider()),
+                null, null);
 
             var conceptApplications = databaseModelBuilder.CreateDatabaseModel().DatabaseObjects;
             Console.WriteLine("ConceptApplications:"

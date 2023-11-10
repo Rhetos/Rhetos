@@ -31,19 +31,19 @@ namespace Rhetos.DatabaseGenerator.Test
 {
     public static class MockDatabasePluginsContainer
     {
-        public static PluginsContainer<IConceptDatabaseDefinition> Create(PluginsMetadataList<IConceptDatabaseDefinition> conceptImplementations = null)
+        public static PluginsContainer<IConceptDatabaseGenerator> Create(PluginsMetadataList<IConceptDatabaseGenerator> conceptImplementations = null)
         {
             if (conceptImplementations == null)
-                conceptImplementations = new PluginsMetadataList<IConceptDatabaseDefinition>();
+                conceptImplementations = new PluginsMetadataList<IConceptDatabaseGenerator>();
 
-            Lazy<IEnumerable<IConceptDatabaseDefinition>> plugins = new Lazy<IEnumerable<IConceptDatabaseDefinition>>(() =>
+            Lazy<IEnumerable<IConceptDatabaseGenerator>> plugins = new Lazy<IEnumerable<IConceptDatabaseGenerator>>(() =>
                 conceptImplementations.Select(pm => pm.Plugin));
-            Lazy<IEnumerable<PluginMetadata<IConceptDatabaseDefinition>>> pluginsWithMetadata = new Lazy<IEnumerable<PluginMetadata<IConceptDatabaseDefinition>>>(() =>
-                conceptImplementations.Select(pm => new PluginMetadata<IConceptDatabaseDefinition>(pm.Plugin.GetType(), pm.Metadata)));
-            Lazy<IIndex<Type, IEnumerable<IConceptDatabaseDefinition>>> pluginsByImplementation = new Lazy<IIndex<Type, IEnumerable<IConceptDatabaseDefinition>>>(() =>
-                new StubIndex<IConceptDatabaseDefinition>(conceptImplementations));
+            Lazy<IEnumerable<PluginMetadata<IConceptDatabaseGenerator>>> pluginsWithMetadata = new Lazy<IEnumerable<PluginMetadata<IConceptDatabaseGenerator>>>(() =>
+                conceptImplementations.Select(pm => new PluginMetadata<IConceptDatabaseGenerator>(pm.Plugin.GetType(), pm.Metadata)));
+            Lazy<IIndex<Type, IEnumerable<IConceptDatabaseGenerator>>> pluginsByImplementation = new Lazy<IIndex<Type, IEnumerable<IConceptDatabaseGenerator>>>(() =>
+                new StubIndex<IConceptDatabaseGenerator>(conceptImplementations));
 
-            return new PluginsContainer<IConceptDatabaseDefinition>(plugins, pluginsByImplementation, new PluginsMetadataCache<IConceptDatabaseDefinition>(pluginsWithMetadata, new StubIndex<SuppressPlugin>()));
+            return new PluginsContainer<IConceptDatabaseGenerator>(plugins, pluginsByImplementation, new PluginsMetadataCache<IConceptDatabaseGenerator>(pluginsWithMetadata, new StubIndex<SuppressPlugin>()));
         }
     }
 }
