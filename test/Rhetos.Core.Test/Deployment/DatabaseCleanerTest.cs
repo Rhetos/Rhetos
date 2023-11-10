@@ -28,14 +28,6 @@ namespace Rhetos.Deployment.Test
     [TestClass]
     public class DatabaseCleanerTest
     {
-        public DatabaseCleanerTest()
-        {
-            var configuration = new ConfigurationBuilder(new ConsoleLogProvider())
-                .Build();
-
-            LegacyUtilities.Initialize(configuration);
-        }
-
         public void TestCleanupRedundantOldData(string description,
             string oldColumns, string oldTables, string oldSchemas,
             string expectedDeletedColumns, string expectedDeletedTables, string expectedDeletedSchemas)

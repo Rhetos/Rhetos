@@ -38,7 +38,6 @@ namespace Rhetos
         /// </summary>
         /// <remarks>
         /// <see cref="ILogProvider"/> is not registered to container and is meant to be used during the lifetime of registration and container building process.
-        /// <see cref="LegacyUtilities"/> will also be initialized with the given configuration.
         /// </remarks>
         public static ContainerBuilder Create(IConfiguration configuration, ILogProvider logProvider, IPluginScanner pluginScanner)
         {
@@ -50,9 +49,6 @@ namespace Rhetos
             containerBuilder.Properties.Add(nameof(IPluginScanner), pluginScanner);
             containerBuilder.Properties.Add(nameof(ILogProvider), logProvider);
             containerBuilder.Properties.Add(nameof(IConfiguration), configuration);
-
-            // this is a patch/mock to provide backward compatibility for all usages of old static classes
-            LegacyUtilities.Initialize(configuration);
 
             return containerBuilder;
         }

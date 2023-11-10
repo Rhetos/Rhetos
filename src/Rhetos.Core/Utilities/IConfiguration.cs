@@ -17,22 +17,16 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities;
+using System.Collections.Generic;
 
-namespace Rhetos
+namespace Rhetos.Utilities
 {
-    public static class LegacyUtilities
+    public interface IConfiguration
     {
-        /// <summary>
-        /// Use to initialize obsolete static utilities <see cref="ConfigUtility"/> and <see cref="Utilities.Configuration"/>
-        /// prior to using any of their methods. This will bind those utilities to configuration source compliant with new configuration convention.
-        /// </summary>
-        public static void Initialize(IConfiguration configuration)
-        {
-#pragma warning disable CS0618 // Type or member is obsolete
-            ConfigUtility.Initialize(configuration);
-            Utilities.Configuration.Initialize(configuration);
-#pragma warning restore CS0618 // Type or member is obsolete
-        }
+        T GetValue<T>(string configurationKey, T defaultValue = default, string configurationPath = "");
+
+        T GetOptions<T>(string configurationPath = "", bool requireAllMembers = false) where T : class;
+
+        IEnumerable<string> AllKeys { get; }
     }
 }

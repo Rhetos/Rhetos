@@ -34,13 +34,6 @@ namespace Rhetos.DatabaseGenerator.Test
     [TestClass]
     public partial class DatabaseGeneratorTest
     {
-        public DatabaseGeneratorTest()
-        {
-            var configuration = new ConfigurationBuilder(new ConsoleLogProvider())
-                .Build();
-            LegacyUtilities.Initialize(configuration);
-        }
-
         #region Helper methods
 
         private List<DatabaseObject> CreateConceptApplications(params IConceptInfo[] concepts)

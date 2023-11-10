@@ -56,13 +56,6 @@ namespace Rhetos.DatabaseGenerator.Test
     [TestClass]
     public class ConceptApplicationRepositoryTest
     {
-        public ConceptApplicationRepositoryTest()
-        {
-            var configuration = new ConfigurationBuilder(new ConsoleLogProvider())
-                .Build();
-            LegacyUtilities.Initialize(configuration);
-        }
-
         private static ConceptApplication NewConceptApplication(
             IConceptInfo conceptInfo,
             IConceptDatabaseDefinition conceptImplementation,

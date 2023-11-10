@@ -305,17 +305,5 @@ namespace Rhetos
             else
                 return path + ConfigurationProviderOptions.ConfigurationPathSeparator + propertyKey;
         }
-
-        [Obsolete("Use GetValue or GetOptions instead")]
-        public Lazy<string> GetString(string key, string defaultValue) => new Lazy<string>(() => GetValue(key, defaultValue));
-
-        [Obsolete("Use GetValue or GetOptions instead")]
-        public Lazy<int> GetInt(string key, int defaultValue) => new Lazy<int>(() => GetValue(key, defaultValue));
-
-        [Obsolete("Use GetValue or GetOptions instead")]
-        public Lazy<bool> GetBool(string key, bool defaultValue) => new Lazy<bool>(() => GetValue(key, defaultValue));
-
-        [Obsolete("Use GetValue or GetOptions instead")]
-        public Lazy<T> GetEnum<T>(string key, T defaultValue) where T : struct => new Lazy<T>(() => GetValue(key, defaultValue));
     }
 }
