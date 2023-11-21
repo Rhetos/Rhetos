@@ -96,7 +96,7 @@ namespace Rhetos.Utilities
         /// Returns empty string if the string value is null.
         /// This function is used for compatibility between MsSql and Oracle string behavior.
         /// </summary>
-        string EmptyNullString(DbDataReader dataReader, int column);
+        string ReadEmptyNullString(DbDataReader dataReader, int column);
 
         DateTime GetDatabaseTime(ISqlExecuter sqlExecuter);
 

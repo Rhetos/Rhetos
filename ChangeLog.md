@@ -16,6 +16,7 @@ Changes in Rhetos libraries API (will cause compile-time errors):
    * Instead of `SqlUtility.DatabaseLanguage`, use DatabaseSettings.DatabaseLanguage from dependency injection.
    * Instead of `SqlUtility.NationalLanguage`, use DatabaseSettings.DatabaseNationalLanguage from dependency injection.
    * For other removed static members, use `ISqlUtility` from dependency injection.
+   * `SqlUtility.EmptyNullString` renamed to `ISqlUtility.ReadEmptyNullString`.
 2. IOrmDataStructure no longer contains methods `GetOrmSchema` and `GetOrmDatabaseObject`.
    * These methods are now available on `ConceptMetadata` class (use it from dependency injection).
 3. `IConceptMetadataExtension<>` interface is no longer covariant, and the derived interfaces are no longer generic:

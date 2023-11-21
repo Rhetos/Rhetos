@@ -33,7 +33,7 @@ namespace Rhetos.DatabaseGenerator.Test
 
         public string DateTimeToString(DateTime? dateTime) => throw new NotImplementedException();
 
-        public string EmptyNullString(DbDataReader dataReader, int column) => dataReader.GetString(column) ?? "";
+        public string ReadEmptyNullString(DbDataReader dataReader, int column) => dataReader.GetString(column) ?? "";
 
         public Exception ExtractSqlException(Exception exception) => throw new NotImplementedException();
 

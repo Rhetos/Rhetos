@@ -251,7 +251,7 @@ END;";
         /// Returns empty string if the string value is null.
         /// This function is used for compatibility between MsSql and Oracle string behavior.
         /// </summary>
-        public string EmptyNullString(DbDataReader dataReader, int column)
+        public string ReadEmptyNullString(DbDataReader dataReader, int column)
         {
             var s = ((OracleDataReader)dataReader).GetOracleString(column);
             return !s.IsNull ? s.Value : "";

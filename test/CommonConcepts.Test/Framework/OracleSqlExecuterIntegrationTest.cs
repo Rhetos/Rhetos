@@ -324,7 +324,7 @@ END;" }),
 
             var result = new List<string>();
             sqlExecuter.ExecuteReader("SELECT * FROM " + table + " WHERE S LIKE 'a%'",
-                reader => result.Add(scope.Resolve<ISqlUtility>().EmptyNullString(reader, 0)));
+                reader => result.Add(scope.Resolve<ISqlUtility>().ReadEmptyNullString(reader, 0)));
 
             Assert.AreEqual(
                 TestUtility.DumpSorted(new[] { "a", "A" }),
@@ -336,7 +336,7 @@ END;" }),
             result.Clear();
             sqlExecuter = scope.Resolve<ISqlExecuter>();
             sqlExecuter.ExecuteReader("SELECT * FROM " + table + " WHERE S LIKE 'a%'",
-                reader => result.Add(scope.Resolve<ISqlUtility>().EmptyNullString(reader, 0)));
+                reader => result.Add(scope.Resolve<ISqlUtility>().ReadEmptyNullString(reader, 0)));
 
             Assert.AreEqual(
                 TestUtility.DumpSorted(new[] { "a", "A" }),
