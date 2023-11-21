@@ -36,7 +36,6 @@
   <Reference Relative="..\Microsoft.Extensions.Localization.Abstractions.dll">..\Microsoft.Extensions.Localization.Abstractions.dll</Reference>
   <Reference Relative="..\Newtonsoft.Json.dll">..\Newtonsoft.Json.dll</Reference>
   <Reference Relative="..\NLog.dll">..\NLog.dll</Reference>
-  <Reference Relative="..\Oracle.ManagedDataAccess.dll">..\Oracle.ManagedDataAccess.dll</Reference>
   <Reference Relative="..\Rhetos.Core.dll">..\Rhetos.Core.dll</Reference>
   <Reference Relative="..\Rhetos.CommonConcepts.dll">..\Rhetos.CommonConcepts.dll</Reference>
   <Reference Relative="..\Rhetos.Core.DslParser.dll">..\Rhetos.Core.DslParser.dll</Reference>
@@ -56,7 +55,6 @@
   <Reference Relative="..\runtimes\win\lib\netstandard2.0\System.Security.Cryptography.ProtectedData.dll">..\runtimes\win\lib\netstandard2.0\System.Security.Cryptography.ProtectedData.dll</Reference>
   <Reference Relative="..\runtimes\win-x64\native\sni.dll">..\runtimes\win-x64\native\sni.dll</Reference>
   <Namespace>Autofac</Namespace>
-  <Namespace>Oracle.ManagedDataAccess.Client</Namespace>
   <Namespace>Rhetos</Namespace>
   <Namespace>Rhetos.Configuration.Autofac</Namespace>
   <Namespace>Rhetos.Dom</Namespace>

@@ -17,9 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Ef6;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
+using Rhetos.Utilities;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Data.Entity.Core.Mapping;
 using System.Data.Entity.Core.Metadata.Edm;
 using System.Diagnostics;
@@ -27,6 +30,14 @@ using System.Linq;
 
 namespace Rhetos.Persistence
 {
+    /// <summary>
+    /// This class is used both at *dbupdate* and at *runtime*, to initialize the EF views cache.
+    /// 1. At dbupdate it is used as an <see cref="IServerInitializer"/>, but it has specifically set <see cref="DbUpdateOptions.OverrideServerInitializerOrdering"></see>
+    /// to execute before other initializers, see <see cref="AutofacModuleConfigurationEf6"/>.
+    /// 2. At runtime it will be used to initialized the EF cache in background if it has not been initialized earlier, <see cref="EfMappingViewCacheFactory"/>.
+    /// This typically happens for example if deploying the Rhetos app on multiple servers, and then running dbupdate only on the first server.
+    /// </summary>
+    [Export(typeof(IServerInitializer))]
     public class EfMappingViewsInitializer : IServerInitializer
     {
         private readonly EfMappingViewsFileStore _efMappingViewsFileStore;

@@ -119,7 +119,7 @@ namespace Rhetos
         {
             var pluginScanner = new RuntimePluginScanner(_pluginAssemblies, _pluginTypes, _builderLogProvider);
             var builder = RhetosContainerBuilder.Create(configuration, _builderLogProvider, pluginScanner);
-            builder.Properties.Add(nameof(ExecutionStage), ExecutionStage.Runtime);
+            builder.Properties.Add(nameof(ExecutionStage), new ExecutionStage { IsRuntime = true });
 
             var configurationAction = _customContainerConfigurationAction ?? DefaultContainerConfiguration;
             configurationAction(configuration, builder, _configureContainerActions);

@@ -32,12 +32,12 @@ namespace Rhetos.Ef6
         {
             ExecutionStage stage = builder.GetRhetosExecutionStage();
 
-            if (stage is ExecutionStage.BuildTime)
+            if (stage.IsBuildTime)
             {
                 builder.RegisterType<EntityFrameworkMappingGenerator>().As<IGenerator>();
             }
 
-            if (stage is ExecutionStage.DatabaseUpdate)
+            if (stage.IsApplicationInitialization)
             {
                 builder.RegisterDecorator<DbUpdateOptions>((context, parameters, originalOptions) =>
                 {
@@ -51,7 +51,7 @@ namespace Rhetos.Ef6
                 });
             }
 
-            if (stage is ExecutionStage.Runtime)
+            if (stage.IsRuntime)
             {
                 builder.RegisterType<EfMappingViewsFileStore>().SingleInstance().PreserveExistingDefaults();
                 builder.RegisterType<EfMappingViewCacheFactory>().SingleInstance().PreserveExistingDefaults();

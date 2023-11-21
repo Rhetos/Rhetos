@@ -85,6 +85,7 @@ namespace Rhetos.Deployment
             hostBuilder.UseBuilderLogProvider(_logProvider);
             hostBuilder.ConfigureContainer(containerBuilder =>
             {
+                containerBuilder.Properties[nameof(ExecutionStage)] = new ExecutionStage { IsApplicationInitialization = true, IsRuntime = true }; // Overrides the default 'Runtime' setting from RhetosHostBuilder.
                 containerBuilder.RegisterModule(new AppInitializeModule());
                 containerBuilder.RegisterType<ProcessUserInfo>().As<IUserInfo>(); // Override runtime IUserInfo plugins. This container is intended to be used in a simple process.
             });
@@ -97,7 +98,7 @@ namespace Rhetos.Deployment
 
             // Additional sorting by loosely-typed dependencies from the Dependencies property:
             var initNames = initializers.Select(init => init.GetType().FullName).ToList();
-            var initDependencies = initializers.SelectMany(init => (init.Dependencies ?? Array.Empty<string>()).Select(x => Tuple.Create(x, init.GetType().FullName)));
+            var initDependencies = initializers.SelectMany(init => (init.Dependencies ?? Array.Empty<string>()).Select(x => Tuple.Create(x, init.GetType().FullName))).ToList();
             foreach (var depentency in initDependencies)
                 _logger.Trace(() => $"{nameof(IServerInitializer)}: {depentency.Item2} depends on {depentency.Item1}");
             Graph.TopologicalSort(initNames, initDependencies);

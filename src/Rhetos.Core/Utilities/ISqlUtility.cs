@@ -54,7 +54,7 @@ namespace Rhetos.Utilities
         /// <summary>
         /// Throws an exception if 'name' is not a valid SQL database object name.
         /// Function returns given argument so it can be used as fluent interface.
-        /// In some cases the function may change the identifier (limit identifier length to 30 on Oracle database, e.g.).
+        /// In some cases the function may change the identifier (for example, limit identifier length on some databases).
         /// </summary>
         string Identifier(string name);
 

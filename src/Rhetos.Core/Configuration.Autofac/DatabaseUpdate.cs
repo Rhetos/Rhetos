@@ -82,7 +82,7 @@ namespace Rhetos.Deployment
                 // or in a Autofac.Module plugin implementation if more control is needed
                 // (also with Export attribute on the Module).
 
-                containerBuilder.Properties[nameof(ExecutionStage)] = ExecutionStage.DatabaseUpdate; // Overrides the default 'Runtime' setting from RhetosHostBuilder.
+                containerBuilder.Properties[nameof(ExecutionStage)] = new ExecutionStage { IsDatabaseUpdate = true }; // Overrides the default 'Runtime' setting from RhetosHostBuilder.
                 containerBuilder.RegisterModule(new CoreModule());
                 containerBuilder.RegisterModule(new DbUpdateModule());
                 containerBuilder.AddRhetosPluginModules();

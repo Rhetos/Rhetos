@@ -57,23 +57,30 @@ namespace Rhetos
     /// <summary>
     /// Phases in the Rhetos app development or deployment lifecycle.
     /// </summary>
-    public enum ExecutionStage
+    public class ExecutionStage
     {
         /// <summary>
         /// The phase when Rhetos parses DSL scripts are generates C#, SQL and other files.
         /// </summary>
-        BuildTime,
+        public bool IsBuildTime { get; init; }
 
         /// <summary>
         /// The phase when Rhetos executes data-migration scripts, and creates/deleted database objects.
         /// This execution stage *does not* include the application initialization phase from the 'rhetos dbupdate' command (RecomputeOnDeploy).
         /// </summary>
-        DatabaseUpdate,
+        public bool IsDatabaseUpdate { get; init; }
 
         /// <summary>
-        /// Runtime includes the application initialization phase from the 'rhetos dbupdate' command (RecomputeOnDeploy),
-        /// as well as the final usage of the application by the end user.
+        /// The application initialization phase from the 'rhetos dbupdate' (RecomputeOnDeploy, ClaimGenerator and similar).
+        /// When <see cref="IsApplicationInitialization"/> is set, then the <see cref="IsRuntime"/> flag is also set
+        /// because then application initialization is executed under the full runtime context.
         /// </summary>
-        Runtime
+        public bool IsApplicationInitialization { get; init; }
+
+        /// <summary>
+        /// Runtime includes the final usage of the application by the end user, as well as
+        /// the application initialization phase from the 'rhetos dbupdate' command (RecomputeOnDeploy and similar).
+        /// </summary>
+        public bool IsRuntime { get; init; }
     };
 }

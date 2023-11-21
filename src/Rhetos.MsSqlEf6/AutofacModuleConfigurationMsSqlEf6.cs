@@ -36,18 +36,18 @@ namespace Rhetos.MsSqlEf6
 
             builder.RegisterType<MsSqlUtility>().As<ISqlUtility>().SingleInstance();
 
-            if (stage is ExecutionStage.BuildTime)
+            if (stage.IsBuildTime)
             {
                 builder.RegisterType<CommonConceptsBuildSqlResourcesPlugin>().As<ISqlResourcesPlugin>().SingleInstance();
             }
 
-            if (stage is ExecutionStage.DatabaseUpdate)
+            if (stage.IsDatabaseUpdate)
             {
                 builder.RegisterType<MsConnectionTesting>().As<IConnectionTesting>();
                 builder.RegisterType<CoreDbUpdateSqlResourcesPlugin>().As<ISqlResourcesPlugin>().SingleInstance();
             }
 
-            if (stage is ExecutionStage.DatabaseUpdate or ExecutionStage.Runtime)
+            if (stage.IsDatabaseUpdate || stage.IsRuntime)
             {
                 builder.RegisterType<MsSqlExecuter>().As<ISqlExecuter>().InstancePerLifetimeScope();
             }

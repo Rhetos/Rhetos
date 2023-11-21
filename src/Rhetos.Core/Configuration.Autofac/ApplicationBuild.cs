@@ -93,7 +93,7 @@ namespace Rhetos
                 _configuration.GetOptions<PluginScannerOptions>());
 
             var builder = RhetosContainerBuilder.Create(_configuration, _logProvider, pluginScanner);
-            builder.Properties.Add(nameof(ExecutionStage), ExecutionStage.BuildTime);
+            builder.Properties.Add(nameof(ExecutionStage), new ExecutionStage { IsBuildTime = true });
             builder.Register(context => new PluginInfoCollection(pluginScanner.FindAllPlugins()));
             builder.RegisterModule(new CoreModule());
             builder.RegisterModule(new CorePluginsModule());
