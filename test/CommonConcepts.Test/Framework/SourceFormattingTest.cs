@@ -43,13 +43,17 @@ namespace CommonConcepts.Test.Framework
         [TestMethod]
         public void LineEndings()
         {
-            var files = Directory.GetFiles(FindRhetosProjectRootPath(), "*.cs", SearchOption.AllDirectories);
+            string root = FindRhetosProjectRootPath();
+            var mainFolders = new[] { "src", "test" }.Select(dir => Path.Combine(root, dir)).ToList();
+            var skipFoldersSuffix = new[] { "bin", "obj", "TestResults" }.Select(dir => Path.DirectorySeparatorChar + dir).ToArray();
 
-            string binPattern = Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar;
-            string objPattern = Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar;
+            var files = GetFiles(
+                mainFolders,
+                dir => !skipFoldersSuffix.Any(skipFolder => dir.EndsWith(skipFolder)),
+                file => Path.GetExtension(file) is ".cs" or ".sql" or ".resx" or ".rhe")
+                .ToList();
 
             List<string> errors = files
-                .Where(filePath => !filePath.Contains(binPattern) && !filePath.Contains(objPattern))
                 .Select(filePath =>
                 {
                     string content =  File.ReadAllText(filePath);
@@ -89,12 +93,29 @@ namespace CommonConcepts.Test.Framework
 
                     return new { filePath, countN, countR, countRN, eolKinds };
                 })
-                .Where(fileAnalysis => fileAnalysis.eolKinds != @"\r\n")
+                .Where(fileAnalysis => fileAnalysis.eolKinds != @"\r\n" && fileAnalysis.eolKinds != "")
                 .Select(fileAnalysis => $@"File line endings are '{fileAnalysis.eolKinds}' instead of '\r\n' (countN {fileAnalysis.countN}, countR {fileAnalysis.countR}, countRN {fileAnalysis.countRN}): {fileAnalysis.filePath}")
                 .ToList();
             Console.WriteLine(errors);
 
             Assert.AreEqual("", string.Join(Environment.NewLine, errors));
+        }
+
+        public static IEnumerable<string> GetFiles(IEnumerable<string> directories, Func<string, bool> directoriesFilter, Func<string, bool> filesFilter)
+        {
+            return GetDirectories(directories, directoriesFilter)
+                .SelectMany(Directory.GetFiles)
+                .Where(filesFilter);
+        }
+
+        public static IEnumerable<string> GetDirectories(IEnumerable<string> directories, Func<string, bool> filter)
+        {
+            var newDirectories = directories.SelectMany(Directory.GetDirectories).Where(filter).ToList();
+
+            if (newDirectories.Count == 0)
+                return Array.Empty<string>();
+
+            return newDirectories.Concat(GetDirectories(newDirectories, filter));
         }
     }
 }
