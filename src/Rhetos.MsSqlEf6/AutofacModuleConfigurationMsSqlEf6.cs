@@ -18,7 +18,6 @@
 */
 
 using Autofac;
-using Rhetos.Deployment;
 using Rhetos.MsSqlEf6.SqlResources;
 using Rhetos.Persistence;
 using Rhetos.SqlResources;
@@ -43,7 +42,6 @@ namespace Rhetos.MsSqlEf6
 
             if (stage.IsDatabaseUpdate)
             {
-                builder.RegisterType<MsConnectionTesting>().As<IConnectionTesting>();
                 builder.RegisterType<CoreDbUpdateSqlResourcesPlugin>().As<ISqlResourcesPlugin>().SingleInstance();
             }
 

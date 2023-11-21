@@ -289,14 +289,22 @@ namespace Rhetos.MsSqlEf6.Test
                     new[] { "localhost:1521/xe" } },
                 { "User Id=jjj;Password=\"jjj;jjj=jjj\";Data Source=localhost:1521/xe;",
                     new[] { "localhost:1521/xe" } },
-                { "';[]=-",
+                { "';[]=-jjj",
                     Array.Empty<string>() },
             };
 
             foreach (var test in tests)
             {
                 Console.WriteLine(test.Item1);
-                string report = NewSqlUtility().SqlConnectionInfo(test.Item1);
+                string report;
+                try
+                {
+                    report = NewSqlUtility().SqlConnectionInfo(test.Item1);
+                }
+                catch (Exception ex)
+                {
+                    report = $"{ex.GetType()} {ex.Message}";
+                }
                 Console.WriteLine("=> " + report);
 
                 TestUtility.AssertNotContains(report, "j", "Username or password leaked.");
@@ -319,6 +327,22 @@ namespace Rhetos.MsSqlEf6.Test
 
             foreach (var test in tests)
                 Assert.AreEqual(test.Value, NewSqlUtility().QuoteIdentifier(test.Key));
+        }
+
+        [TestMethod]
+        public void InvalidConnectionStringFormat()
+        {
+            string invalidConnectionString = "<ENTER_CONNECTION_STRING_HERE>";
+
+            var ex = TestUtility.ShouldFail<ArgumentException>(
+                () => NewSqlUtility().ValidateDbConnection(invalidConnectionString),
+                "Database connection string has invalid format",
+                "ConnectionStrings:RhetosConnectionString");
+
+            TestUtility.AssertNotContains(
+                ex.ToString(),
+                new[] { invalidConnectionString },
+                "The connection string should not be reported in the error message or error log, because it could contain a password.");
         }
     }
 }

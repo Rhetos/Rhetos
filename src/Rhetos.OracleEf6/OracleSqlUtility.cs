@@ -27,6 +27,8 @@ namespace Rhetos.Utilities
 {
     public class OracleSqlUtility : ISqlUtility
     {
+        internal const string DatabaseLanguage = "Oracle";
+
         private readonly DatabaseSettings _databaseSettings;
 
         private readonly Lazy<string> _setNationalLanguageQuery;
@@ -262,18 +264,24 @@ END;";
             throw new NotImplementedException("GetDatabaseTime function is not yet supported in Rhetos for Oracle database.");
         }
 
-        public string SqlConnectionInfo(string connectionString)
+        public void ValidateDbConnection(string connectionString)
         {
-            OracleConnectionStringBuilder cs;
+            if (string.IsNullOrWhiteSpace(connectionString))
+                throw new ArgumentException($"Database connection string is not specified. Please review the application's configuration ({ConnectionString.ConnectionStringConfigurationKey}).");
+
             try
             {
-                cs = new OracleConnectionStringBuilder(connectionString);
+                new DbConnectionStringBuilder().ConnectionString = connectionString;
             }
-            catch
+            catch (Exception e)
             {
-                // This is not a blocking error, because other database providers should be supported.
-                return "(cannot parse connection string)";
+                throw new ArgumentException($"Database connection string has invalid format. Please review the application's configuration ({ConnectionString.ConnectionStringConfigurationKey}).", e);
             }
+        }
+
+        public string SqlConnectionInfo(string connectionString)
+        {
+            var cs = new OracleConnectionStringBuilder(connectionString);
 
             var elements = new ListOfTuples<string, string>
             {

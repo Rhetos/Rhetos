@@ -108,13 +108,21 @@ namespace Rhetos.Utilities.Test
                 { "User Id=jjj;Password=jjj;Data Source=localhost:1521/xe;", new[] { "localhost:1521/xe" } },
                 { "User Id=jjj;Password='jjj;jjj=jjj';Data Source=localhost:1521/xe;", new[] { "localhost:1521/xe" } },
                 { "User Id=jjj;Password=\"jjj;jjj=jjj\";Data Source=localhost:1521/xe;", new[] { "localhost:1521/xe" } },
-                { "';[]=-", Array.Empty<string>() },
+                { "';[]=-jjj", Array.Empty<string>() },
             };
 
             foreach (var test in tests)
             {
                 Console.WriteLine("CS: " + test.Item1);
-                string report = NewSqlUtility().SqlConnectionInfo(test.Item1);
+                string report;
+                try
+                {
+                    report = NewSqlUtility().SqlConnectionInfo(test.Item1);
+                }
+                catch (Exception ex)
+                {
+                    report = $"{ex.GetType()} {ex.Message}";
+                }
                 Console.WriteLine("Report: " + report);
 
                 TestUtility.AssertNotContains(report, "j", "Username or password leaked.");

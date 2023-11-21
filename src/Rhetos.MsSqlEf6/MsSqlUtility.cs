@@ -478,18 +478,46 @@ namespace Rhetos.Utilities
             return DateTime.SpecifyKind(databaseTime, DateTimeKind.Local);
         }
 
-        public string SqlConnectionInfo(string connectionString)
+        public void ValidateDbConnection(string connectionString)
         {
-            SqlConnectionStringBuilder cs;
+            if (string.IsNullOrEmpty(connectionString))
+                throw new ArgumentException($"Database connection string is not specified. Please review the application's configuration ({ConnectionString.ConnectionStringConfigurationKey}).");
+
+            // Testing the correct formatting of the connection string.
             try
             {
-                cs = new SqlConnectionStringBuilder(connectionString);
+                new SqlConnectionStringBuilder().ConnectionString = connectionString;
             }
-            catch
+            catch (Exception e)
             {
-                // This is not a blocking error, because other database providers should be supported.
-                return "(cannot parse connection string)";
+                throw new ArgumentException($"Database connection string has invalid format. Please review the application's configuration ({ConnectionString.ConnectionStringConfigurationKey}).", e);
             }
+
+            // Testing if any command can be executed.
+            // Also testing if the application's account is 'dbo'. The application should have full access to database to create the database on deployment,
+            // but also to access the data. User permissions are handled by the Rhetos app.
+            bool isDbo = false;
+            using (var connection = new SqlConnection(connectionString))
+            using (var command = new SqlCommand("SELECT IS_MEMBER('db_owner')", connection))
+            {
+                connection.Open();
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        if (!reader.IsDBNull(0) && ((int)reader[0] == 1))
+                            isDbo = true;
+                    }
+                }
+            }
+
+            if (!isDbo)
+                throw new FrameworkException("Current user does not have db_owner role for the database.");
+        }
+
+        public string SqlConnectionInfo(string connectionString)
+        {
+            var cs = new SqlConnectionStringBuilder(connectionString);
 
             var elements = new ListOfTuples<string, string>
             {

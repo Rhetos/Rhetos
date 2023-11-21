@@ -30,7 +30,6 @@ namespace Rhetos.Deployment
 
         private readonly ILogger _logger;
         private readonly ISqlTransactionBatches _sqlTransactionBatches;
-        private readonly IConnectionTesting _connectionTesting;
         private readonly DatabaseCleaner _databaseCleaner;
         private readonly DataMigrationScriptsExecuter _dataMigrationScriptsExecuter;
         private readonly IDatabaseGenerator _databaseGenerator;
@@ -43,7 +42,6 @@ namespace Rhetos.Deployment
         public DatabaseDeployment(
             ILogProvider logProvider,
             ISqlTransactionBatches sqlTransactionBatches,
-            IConnectionTesting connectionTesting,
             DatabaseCleaner databaseCleaner,
             DataMigrationScriptsExecuter dataMigrationScriptsExecuter,
             IDatabaseGenerator databaseGenerator,
@@ -55,7 +53,6 @@ namespace Rhetos.Deployment
         {
             _logger = logProvider.GetLogger(GetType().Name);
             _sqlTransactionBatches = sqlTransactionBatches;
-            _connectionTesting = connectionTesting;
             _databaseCleaner = databaseCleaner;
             _dataMigrationScriptsExecuter = dataMigrationScriptsExecuter;
             _databaseGenerator = databaseGenerator;
@@ -68,8 +65,8 @@ namespace Rhetos.Deployment
 
         public void UpdateDatabase()
         {
+            _sqlUtility.ValidateDbConnection(_connectionString);
             _logger.Info("SQL connection: " + _sqlUtility.SqlConnectionInfo(_connectionString));
-            _connectionTesting.ValidateDbConnection();
 
             _logger.Info("Preparing Rhetos database.");
             PrepareRhetosDatabase();

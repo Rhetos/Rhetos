@@ -100,6 +100,8 @@ namespace Rhetos.Utilities
 
         DateTime GetDatabaseTime(ISqlExecuter sqlExecuter);
 
+        void ValidateDbConnection(string connectionString);
+
         string SqlConnectionInfo(string connectionString);
     }
 }
