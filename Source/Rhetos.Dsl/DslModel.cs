@@ -312,7 +312,7 @@ namespace Rhetos.Dsl
             return value;
         }
 
-        private static HashSet<string> _noRecommendedOrderReported = new HashSet<string>();
+        private readonly HashSet<string> _noRecommendedOrderReported = new();
 
         private string ReportLastEvaluationOrder(Dictionary<string, int> lastNewConceptTimeByMacro, List<int> lastNewConceptTimeByIteration)
         {
