@@ -15,7 +15,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Rhetos.Core\Rhetos.Core.csproj" />
-    <ProjectReference Include="..\Rhetos.Ef6\Rhetos.Ef6.csproj" />
   </ItemGroup>
 
 </Project>
