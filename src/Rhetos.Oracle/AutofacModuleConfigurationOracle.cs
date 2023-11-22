@@ -18,16 +18,16 @@
 */
 
 using Autofac;
-using Rhetos.OracleEf6.SqlResources;
+using Rhetos.Oracle.SqlResources;
 using Rhetos.Persistence;
 using Rhetos.SqlResources;
 using Rhetos.Utilities;
 using System.ComponentModel.Composition;
 
-namespace Rhetos.OracleEf6
+namespace Rhetos.Oracle
 {
     [Export(typeof(Module))]
-    public class AutofacModuleConfigurationOracleEf6 : Module
+    public class AutofacModuleConfigurationOracle : Module
     {
         protected override void Load(ContainerBuilder builder)
         {

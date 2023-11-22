@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Rhetos.OracleEf6\Rhetos.OracleEf6.csproj" />
+    <ProjectReference Include="..\..\src\Rhetos.MsSql\Rhetos.MsSql.csproj" />
     <ProjectReference Include="..\..\src\Rhetos.TestCommon\Rhetos.TestCommon.csproj" />
   </ItemGroup>
 

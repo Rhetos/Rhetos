@@ -18,16 +18,16 @@
 */
 
 using Autofac;
-using Rhetos.MsSqlEf6.SqlResources;
+using Rhetos.MsSql.SqlResources;
 using Rhetos.Persistence;
 using Rhetos.SqlResources;
 using Rhetos.Utilities;
 using System.ComponentModel.Composition;
 
-namespace Rhetos.MsSqlEf6
+namespace Rhetos.MsSql
 {
     [Export(typeof(Module))]
-    public class AutofacModuleConfigurationMsSqlEf6 : Module
+    public class AutofacModuleConfigurationMsSql : Module
     {
         protected override void Load(ContainerBuilder builder)
         {

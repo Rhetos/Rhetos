@@ -22,7 +22,7 @@ using Rhetos.SqlResources;
 using Rhetos.Utilities;
 using System.Collections.Generic;
 
-namespace Rhetos.MsSqlEf6.SqlResources
+namespace Rhetos.Oracle.SqlResources
 {
     public class CoreDbUpdateSqlResourcesPlugin : ISqlResourcesPlugin
     {
@@ -35,14 +35,14 @@ namespace Rhetos.MsSqlEf6.SqlResources
 
         public IDictionary<string, string> GetResources()
         {
-            if (!_databaseLanguage.StartsWith(MsSqlUtility.DatabaseLanguage))
+            if (!_databaseLanguage.StartsWith(OracleSqlUtility.DatabaseLanguage))
                 return null;
 
-            var resources = ResourcesUtility.ReadEmbeddedResx("Rhetos.Core.DbUpdate.MsSql", GetType(), true);
+            var resources = ResourcesUtility.ReadEmbeddedResx("Rhetos.Core.DbUpdate.Oracle", GetType(), true);
 
             resources.Add(
                 DatabaseDeployment.CreateRhetosDatabaseResourceKey,
-                ResourcesUtility.ReadEmbeddedTextFile("Rhetos.Core.CreateDatabase.MsSql.sql", GetType(), true));
+                ResourcesUtility.ReadEmbeddedTextFile("Rhetos.Core.CreateDatabase.Oracle.sql", GetType(), true));
 
             return resources;
         }

@@ -15,9 +15,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		src\Rhetos.Host.AspNet.nuspec = src\Rhetos.Host.AspNet.nuspec
 		src\Rhetos.Host.nuspec = src\Rhetos.Host.nuspec
 		src\Rhetos.MSBuild.nuspec = src\Rhetos.MSBuild.nuspec
-		src\Rhetos.MsSqlEf6.nuspec = src\Rhetos.MsSqlEf6.nuspec
+		src\Rhetos.MsSql.nuspec = src\Rhetos.MsSql.nuspec
 		src\Rhetos.nuspec = src\Rhetos.nuspec
-		src\Rhetos.OracleEf6.nuspec = src\Rhetos.OracleEf6.nuspec
+		src\Rhetos.Oracle.nuspec = src\Rhetos.Oracle.nuspec
 		src\Rhetos.TestCommon.nuspec = src\Rhetos.TestCommon.nuspec
 	EndProjectSection
 EndProject
@@ -45,15 +45,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Core.Test", "test\Rh
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.CommonConcepts", "src\Rhetos.CommonConcepts\Rhetos.CommonConcepts.csproj", "{A157A278-7590-475E-A418-48E776867A5D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.MsSqlEf6", "src\Rhetos.MsSqlEf6\Rhetos.MsSqlEf6.csproj", "{A2000A65-0D20-4D9A-83CA-335EAF5FF201}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.MsSql", "src\Rhetos.MsSql\Rhetos.MsSql.csproj", "{A2000A65-0D20-4D9A-83CA-335EAF5FF201}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.OracleEf6", "src\Rhetos.OracleEf6\Rhetos.OracleEf6.csproj", "{3FEC4921-1593-4A44-9A48-52CB29A8D15E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Oracle", "src\Rhetos.Oracle\Rhetos.Oracle.csproj", "{3FEC4921-1593-4A44-9A48-52CB29A8D15E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Ef6", "src\Rhetos.Ef6\Rhetos.Ef6.csproj", "{49D178F1-62F3-43FF-845C-71E1A69A7DB0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.MsSqlEf6.Test", "test\Rhetos.MsSqlEf6.Test\Rhetos.MsSqlEf6.Test.csproj", "{15D46505-857C-4772-85D8-B04F4C74605B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.MsSql.Test", "test\Rhetos.MsSql.Test\Rhetos.MsSql.Test.csproj", "{15D46505-857C-4772-85D8-B04F4C74605B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.OracleEf6.Test", "test\Rhetos.OracleEf6.Test\Rhetos.OracleEf6.Test.csproj", "{B34EED16-B8ED-4E88-95F3-F6C5091DBC49}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Oracle.Test", "test\Rhetos.Oracle.Test\Rhetos.Oracle.Test.csproj", "{B34EED16-B8ED-4E88-95F3-F6C5091DBC49}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

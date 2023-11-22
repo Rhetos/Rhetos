@@ -30,7 +30,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using Rhetos.Utilities;
 
-namespace Rhetos.MsSqlEf6.Test
+namespace Rhetos.MsSql.Test
 {
     [TestClass]
     public class MsSqlUtilityTest

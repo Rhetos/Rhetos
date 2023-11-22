@@ -17,18 +17,18 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Deployment;
 using Rhetos.SqlResources;
 using Rhetos.Utilities;
 using System.Collections.Generic;
 
-namespace Rhetos.MsSqlEf6.SqlResources
+namespace Rhetos.MsSql.SqlResources
 {
-    public class CommonConceptsBuildSqlResourcesPlugin : ISqlResourcesPlugin
+    public class CoreDbUpdateSqlResourcesPlugin : ISqlResourcesPlugin
     {
-
         private readonly string _databaseLanguage;
 
-        public CommonConceptsBuildSqlResourcesPlugin(DatabaseSettings databaseSettings)
+        public CoreDbUpdateSqlResourcesPlugin(DatabaseSettings databaseSettings)
         {
             _databaseLanguage = databaseSettings.DatabaseLanguage;
         }
@@ -38,7 +38,13 @@ namespace Rhetos.MsSqlEf6.SqlResources
             if (!_databaseLanguage.StartsWith(MsSqlUtility.DatabaseLanguage))
                 return null;
 
-            return ResourcesUtility.ReadEmbeddedResx("Rhetos.CommonConcepts.Build.MsSql", GetType(), true);
+            var resources = ResourcesUtility.ReadEmbeddedResx("Rhetos.Core.DbUpdate.MsSql", GetType(), true);
+
+            resources.Add(
+                DatabaseDeployment.CreateRhetosDatabaseResourceKey,
+                ResourcesUtility.ReadEmbeddedTextFile("Rhetos.Core.CreateDatabase.MsSql.sql", GetType(), true));
+
+            return resources;
         }
     }
 }

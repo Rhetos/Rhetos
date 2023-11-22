@@ -17,18 +17,18 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Deployment;
 using Rhetos.SqlResources;
 using Rhetos.Utilities;
 using System.Collections.Generic;
 
-namespace Rhetos.OracleEf6.SqlResources
+namespace Rhetos.Oracle.SqlResources
 {
-    public class CoreDbUpdateSqlResourcesPlugin : ISqlResourcesPlugin
+    public class CommonConceptsBuildSqlResourcesPlugin : ISqlResourcesPlugin
     {
+
         private readonly string _databaseLanguage;
 
-        public CoreDbUpdateSqlResourcesPlugin(DatabaseSettings databaseSettings)
+        public CommonConceptsBuildSqlResourcesPlugin(DatabaseSettings databaseSettings)
         {
             _databaseLanguage = databaseSettings.DatabaseLanguage;
         }
@@ -38,13 +38,7 @@ namespace Rhetos.OracleEf6.SqlResources
             if (!_databaseLanguage.StartsWith(OracleSqlUtility.DatabaseLanguage))
                 return null;
 
-            var resources = ResourcesUtility.ReadEmbeddedResx("Rhetos.Core.DbUpdate.Oracle", GetType(), true);
-
-            resources.Add(
-                DatabaseDeployment.CreateRhetosDatabaseResourceKey,
-                ResourcesUtility.ReadEmbeddedTextFile("Rhetos.Core.CreateDatabase.Oracle.sql", GetType(), true));
-
-            return resources;
+            return ResourcesUtility.ReadEmbeddedResx("Rhetos.CommonConcepts.Build.Oracle", GetType(), true);
         }
     }
 }

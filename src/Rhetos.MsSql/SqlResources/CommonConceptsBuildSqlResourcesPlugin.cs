@@ -21,7 +21,7 @@ using Rhetos.SqlResources;
 using Rhetos.Utilities;
 using System.Collections.Generic;
 
-namespace Rhetos.OracleEf6.SqlResources
+namespace Rhetos.MsSql.SqlResources
 {
     public class CommonConceptsBuildSqlResourcesPlugin : ISqlResourcesPlugin
     {
@@ -35,10 +35,10 @@ namespace Rhetos.OracleEf6.SqlResources
 
         public IDictionary<string, string> GetResources()
         {
-            if (!_databaseLanguage.StartsWith(OracleSqlUtility.DatabaseLanguage))
+            if (!_databaseLanguage.StartsWith(MsSqlUtility.DatabaseLanguage))
                 return null;
 
-            return ResourcesUtility.ReadEmbeddedResx("Rhetos.CommonConcepts.Build.Oracle", GetType(), true);
+            return ResourcesUtility.ReadEmbeddedResx("Rhetos.CommonConcepts.Build.MsSql", GetType(), true);
         }
     }
 }

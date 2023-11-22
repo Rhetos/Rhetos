@@ -14,7 +14,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Rhetos.Core\Rhetos.Core.csproj" />
-    <ProjectReference Include="..\Rhetos.MsSqlEf6\Rhetos.MsSqlEf6.csproj" />
+    <ProjectReference Include="..\Rhetos.MsSql\Rhetos.MsSql.csproj" />
+    <ProjectReference Include="..\Rhetos.Ef6\Rhetos.Ef6.csproj" />
   </ItemGroup>
 
 </Project>
