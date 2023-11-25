@@ -38,6 +38,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public ILogProvider LogProvider { get; set; }
         public GenericFilterHelper GenericFilterHelper { get; set; }
         public IDelayedLogProvider DelayedLogProvider { get; set; }
+        public IOrmUtility OrmUtility { get; set; }
     }
 
     /// <summary>
@@ -62,6 +63,7 @@ namespace Rhetos.Dom.DefaultConcepts
         private readonly ILogger _performanceLogger;
         private readonly IDelayedLogger _delayedLogger;
         private readonly GenericFilterHelper _genericFilterHelper;
+        private readonly IOrmUtility _ormUtility;
 
         private readonly string _genericRepositoryName;
         private readonly Lazy<IRepository> _repository;
@@ -84,6 +86,7 @@ namespace Rhetos.Dom.DefaultConcepts
             _performanceLogger = parameters.LogProvider.GetLogger("Performance." + _genericRepositoryName);
             _delayedLogger = parameters.DelayedLogProvider.GetLogger(_genericRepositoryName);
             _genericFilterHelper = parameters.GenericFilterHelper;
+            _ormUtility = parameters.OrmUtility;
 
             _repository = new Lazy<IRepository>(() => InitializeRepository(parameters.Repositories));
             Reflection = new ReflectionHelper<TEntityInterface>(EntityName, parameters.DomainObjectModel, _repository);
@@ -340,7 +343,7 @@ namespace Rhetos.Dom.DefaultConcepts
                         new[] { Expression.Property(filterPredicateParameter, "ID") }),
                     filterPredicateParameter);
 
-                return Reflection.Where(query, EFExpression.OptimizeContains(filterPredicate));
+                return Reflection.Where(query, _ormUtility.OptimizeContains(filterPredicate));
             }
 
             // It there is only enumerable filter available, use inefficient loader with in-memory filtering: Filter(Load(), parameter)
@@ -536,7 +539,7 @@ namespace Rhetos.Dom.DefaultConcepts
                             new[] { Expression.Property(filterPredicateParameter, "ID") }),
                         filterPredicateParameter);
 
-                    return Reflection.Where((IQueryable<TEntityInterface>)items, EFExpression.OptimizeContains(filterPredicate));
+                    return Reflection.Where((IQueryable<TEntityInterface>)items, _ormUtility.OptimizeContains(filterPredicate));
                 }
 
                 return items.Where(item => ((List<Guid>)parameter).Contains(item.ID));

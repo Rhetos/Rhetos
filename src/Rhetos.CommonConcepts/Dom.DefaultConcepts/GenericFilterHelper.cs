@@ -39,17 +39,20 @@ namespace Rhetos.Dom.DefaultConcepts
         private readonly IDomainObjectModel _domainObjectModel;
         private readonly IDataStructureReadParameters _dataStructureReadParameters;
         private readonly CommonConceptsRuntimeOptions _commonConceptsRuntimeOptions;
+        private readonly IOrmUtility _ormUtility;
         private readonly ILogger _logger;
 
         public GenericFilterHelper(
             IDomainObjectModel domainObjectModel,
             IDataStructureReadParameters dataStructureReadParameters,
             CommonConceptsRuntimeOptions commonConceptsRuntimeOptions,
-            ILogProvider logProvider)
+            ILogProvider logProvider,
+            IOrmUtility ormUtility)
         {
             _domainObjectModel = domainObjectModel;
             _dataStructureReadParameters = dataStructureReadParameters;
             _commonConceptsRuntimeOptions = commonConceptsRuntimeOptions;
+            this._ormUtility = ormUtility;
             _logger = logProvider.GetLogger(GetType().Name);
         }
 
@@ -197,7 +200,7 @@ namespace Rhetos.Dom.DefaultConcepts
                             }
                         }
                         else if (propertyBasicType == typeof(string) && constant.Value != null)
-                            expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("EqualsCaseInsensitive"), memberAccess, constant);
+                            expression = Expression.Call(_ormUtility.EqualsCaseInsensitiveMethod, memberAccess, constant);
                         else
                             expression = Expression.Equal(memberAccess, constant);
                         break;
@@ -212,36 +215,36 @@ namespace Rhetos.Dom.DefaultConcepts
                             expression = Expression.NotEqual(memberAccess, Expression.Convert(idLambda.Body, memberAccess.Type));
                         }
                         else if (propertyBasicType == typeof(string) && constant.Value != null)
-                            expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("NotEqualsCaseInsensitive"), memberAccess, constant);
+                            expression = Expression.Call(_ormUtility.NotEqualsCaseInsensitiveMethod, memberAccess, constant);
                         else
                             expression = Expression.NotEqual(memberAccess, constant);
                         break;
                     case "greater":
                         if (propertyBasicType == typeof(string))
-                            expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("IsGreaterThen"), memberAccess, constant);
+                            expression = Expression.Call(_ormUtility.IsGreaterThenMethod, memberAccess, constant);
                         else if (propertyBasicType == typeof(Guid))
-                            expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("GuidIsGreaterThan"), memberAccess, constant);
+                            expression = Expression.Call(_ormUtility.GuidIsGreaterThanMethod, memberAccess, constant);
                         else expression = Expression.GreaterThan(memberAccess, constant);
                         break;
                     case "greaterequal":
                         if (propertyBasicType == typeof(string))
-                            expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("IsGreaterThenOrEqual"), memberAccess, constant);
+                            expression = Expression.Call(_ormUtility.IsGreaterThenOrEqualMethod, memberAccess, constant);
                         else if (propertyBasicType == typeof(Guid))
-                            expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("GuidIsGreaterThanOrEqual"), memberAccess, constant);
+                            expression = Expression.Call(_ormUtility.GuidIsGreaterThanOrEqualMethod, memberAccess, constant);
                         else expression = Expression.GreaterThanOrEqual(memberAccess, constant);
                         break;
                     case "less":
                         if (propertyBasicType == typeof(string))
-                            expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("IsLessThen"), memberAccess, constant);
+                            expression = Expression.Call(_ormUtility.IsLessThenMethod, memberAccess, constant);
                         else if (propertyBasicType == typeof(Guid))
-                            expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("GuidIsLessThan"), memberAccess, constant);
+                            expression = Expression.Call(_ormUtility.GuidIsLessThanMethod, memberAccess, constant);
                         else expression = Expression.LessThan(memberAccess, constant);
                         break;
                     case "lessequal":
                         if (propertyBasicType == typeof(string))
-                            expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("IsLessThenOrEqual"), memberAccess, constant);
+                            expression = Expression.Call(_ormUtility.IsLessThenOrEqualMethod, memberAccess, constant);
                         else if (propertyBasicType == typeof(Guid))
-                            expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("GuidIsLessThanOrEqual"), memberAccess, constant);
+                            expression = Expression.Call(_ormUtility.GuidIsLessThanOrEqualMethod, memberAccess, constant);
                         else expression = Expression.LessThanOrEqual(memberAccess, constant);
                         break;
                     case "startswith":
@@ -252,13 +255,14 @@ namespace Rhetos.Dom.DefaultConcepts
                                 stringMember = memberAccess;
                             else
                             {
-                                var castMethod = typeof(DatabaseExtensionFunctions).GetMethod("CastToString", new[] { memberAccess.Type });
-                                if (castMethod == null)
-                                    throw new FrameworkException("Generic filter operation '" + filter.Operation + "' is not supported on property type '" + propertyBasicType.Name + "'. There is no overload of 'DatabaseExtensionFunctions.CastToString' function for the type.");
-                                stringMember = Expression.Call(castMethod, memberAccess);
+                                if (propertyBasicType != typeof(int))
+                                    throw new FrameworkException("Generic filter operation '" + filter.Operation + "' is not supported on property type '" + propertyBasicType.Name + "'.");
+                                stringMember = Expression.Call(_ormUtility.CastToStringMethod, memberAccess);
                             }
-                            string dbMethodName = filter.Operation.Equals("startswith", StringComparison.OrdinalIgnoreCase) ? "StartsWithCaseInsensitive" : "EndsWithCaseInsensitive";
-                            expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod(dbMethodName), stringMember, constant);
+                            var dbMethod = filter.Operation.Equals("startswith", StringComparison.OrdinalIgnoreCase)
+                                ? _ormUtility.StartsWithCaseInsensitiveMethod
+                                : _ormUtility.EndsWithCaseInsensitiveMethod;
+                            expression = Expression.Call(dbMethod, stringMember, constant);
                             break;
                         }
                     case "contains":
@@ -269,12 +273,11 @@ namespace Rhetos.Dom.DefaultConcepts
                                 stringMember = memberAccess;
                             else
                             {
-                                var castMethod = typeof(DatabaseExtensionFunctions).GetMethod("CastToString", new[] { memberAccess.Type });
-                                if (castMethod == null)
-                                    throw new FrameworkException("Generic filter operation '" + filter.Operation + "' is not supported on property type '" + propertyBasicType.Name + "'. There is no overload of 'DatabaseExtensionFunctions.CastToString' function for the type.");
-                                stringMember = Expression.Call(castMethod, memberAccess);
+                                if (propertyBasicType != typeof(int))
+                                    throw new FrameworkException("Generic filter operation '" + filter.Operation + "' is not supported on property type '" + propertyBasicType.Name + "'.");
+                                stringMember = Expression.Call(_ormUtility.CastToStringMethod, memberAccess);
                             }
-                            expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("ContainsCaseInsensitive"), stringMember, constant);
+                            expression = Expression.Call(_ormUtility.ContainsCaseInsensitiveMethod, stringMember, constant);
 
                             if (filter.Operation.Equals("notcontains", StringComparison.OrdinalIgnoreCase))
                                 expression = Expression.Not(expression);
@@ -336,7 +339,7 @@ namespace Rhetos.Dom.DefaultConcepts
                                 .Single(m => m.Name == "Contains" && m.GetParameters().Length == 2)
                                 .MakeGenericMethod(collectionElement);
 
-                            expression = EFExpression.OptimizeContains(Expression.Call(containsMethod, constant, convertedMemberAccess));
+                            expression = _ormUtility.OptimizeContains(Expression.Call(containsMethod, constant, convertedMemberAccess));
 
                             if (filter.Operation.Equals("notin", StringComparison.OrdinalIgnoreCase))
                                 expression = Expression.Not(expression);

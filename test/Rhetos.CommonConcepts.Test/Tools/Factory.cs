@@ -40,7 +40,8 @@ namespace Rhetos.CommonConcepts.Test.Tools
                 new CommonConceptsRuntimeOptions { DynamicTypeResolution = dynamicTypeResolution },
                 log != null
                     ? new ConsoleLogProvider((eventType, eventName, message) => log.Add($"[{eventType}] {eventName}: {message()}"))
-                    : new ConsoleLogProvider());
+                    : new ConsoleLogProvider(),
+                new Ef6OrmUtility());
         }
 
         public static DataStructureReadParameters CreateDataStructureReadParameters(IRepository repository, Type type)

@@ -114,7 +114,7 @@ namespace Rhetos.Utilities
         /// <summary>
         /// See ISqlUtility.InterpretSqlException.
         /// </summary>
-        public RhetosException InterpretSqlException(Exception exception)
+        public RhetosException InterpretSqlException(Exception exception, bool checkUserPermissions, ConstraintErrorMetadata constraintErrorMetadata)
         {
             if (exception == null || exception is RhetosException)
                 return null;
@@ -154,13 +154,18 @@ namespace Rhetos.Utilities
 
                 var interpretedException = new UserException("It is not allowed to enter a duplicate record.", exception);
 
+                string tableName = null;
+                string constraintName = null;
                 interpretedException.Info["Constraint"] = "Unique";
                 if (parts[1].Success)
-                    interpretedException.Info["Table"] = parts[1].Value;
+                    interpretedException.Info["Table"] = tableName = parts[1].Value;
                 if (parts[2].Success)
-                    interpretedException.Info["ConstraintName"] = parts[2].Value;
+                    interpretedException.Info["ConstraintName"] = constraintName = parts[2].Value;
                 if (parts[4].Success)
                     interpretedException.Info["DuplicateValue"] = parts[4].Value;
+
+                if (constraintName != null)
+                    interpretedException.SystemMessage = constraintErrorMetadata?.Invoke(tableName, constraintName);
 
                 return interpretedException;
             }
@@ -189,14 +194,19 @@ namespace Rhetos.Utilities
 
                     if (interpretedException != null)
                     {
+                        string tableName = null;
+                        string constraintName = null;
                         interpretedException.Info["Constraint"] = "Reference";
                         interpretedException.Info["Action"] = action;
                         if (parts[5].Success)
-                            interpretedException.Info["ConstraintName"] = parts[5].Value; // The FK constraint name is ambiguous: The error does not show the schema name and the base table that the INSERT or UPDATE actually happened.
+                            interpretedException.Info["ConstraintName"] = constraintName = parts[5].Value; // The FK constraint name is ambiguous: The error does not show the schema name and the base table that the INSERT or UPDATE actually happened.
                         if (parts[7].Success)
-                            interpretedException.Info[action == "DELETE" ? "DependentTable" : "ReferencedTable"] = parts[7].Value;
+                            interpretedException.Info[action == "DELETE" ? "DependentTable" : "ReferencedTable"] = tableName = parts[7].Value;
                         if (parts[9].Success)
                             interpretedException.Info[action == "DELETE" ? "DependentColumn" : "ReferencedColumn"] = parts[9].Value;
+
+                        if (constraintName != null)
+                            interpretedException.SystemMessage = constraintErrorMetadata?.Invoke(tableName, constraintName);
 
                         return interpretedException;
                     }
@@ -211,15 +221,24 @@ namespace Rhetos.Utilities
                 Regex messageParser = new Regex(@"^Violation of PRIMARY KEY constraint '(.+)'\. Cannot insert duplicate key in object '(.+)'\.( The duplicate key value is \((.+)\)\.)?");
                 var parts = messageParser.Match(sqlException.Message).Groups;
 
-                var interpretedException = new FrameworkException(InsertingDuplicateIdMessage, exception);
+                var errorMetadata = new Dictionary<string, object>();
 
-                interpretedException.Info["Constraint"] = "Primary key";
+                string tableName = null;
+                string constraintName = null;
+                string duplicateValue = null;
+                errorMetadata["Constraint"] = "Primary key";
                 if (parts[1].Success)
-                    interpretedException.Info["ConstraintName"] = parts[1].Value;
+                    errorMetadata["ConstraintName"] = constraintName = parts[1].Value;
                 if (parts[2].Success)
-                    interpretedException.Info["Table"] = parts[2].Value;
+                    errorMetadata["Table"] = tableName = parts[2].Value;
                 if (parts[4].Success)
-                    interpretedException.Info["DuplicateValue"] = parts[4].Value;
+                    errorMetadata["DuplicateValue"] = duplicateValue = parts[4].Value;
+
+                RhetosException interpretedException;
+                if (checkUserPermissions && constraintName != null && constraintErrorMetadata?.Invoke(tableName, constraintName) != null)
+                    interpretedException = new ClientException(InsertingDuplicateIdMessage + (tableName != null ? $" ({tableName})" : "")) { Info = errorMetadata };
+                else
+                    interpretedException = new FrameworkException(InsertingDuplicateIdMessage, exception) { Info = errorMetadata };
 
                 return interpretedException;
             }
@@ -273,76 +292,16 @@ namespace Rhetos.Utilities
 
         private static readonly string[] _referenceConstraintTypes = new string[] { "REFERENCE", "SAME TABLE REFERENCE", "FOREIGN KEY", "COLUMN FOREIGN KEY" };
 
-        public Exception ExtractSqlException(Exception exception)
+        public DbException ExtractSqlException(Exception exception)
         {
-            if (exception is SqlException)
-                return (SqlException)exception;
+            if (exception is SqlException sqlException)
+                return sqlException;
             if (exception.InnerException != null)
                 return ExtractSqlException(exception.InnerException);
             return null;
         }
 
-        public static bool IsUniqueError(RhetosException interpretedException, string table, string constraintName)
-        {
-            if (interpretedException == null)
-                return false;
-            var info = interpretedException.Info;
-            return
-                info != null
-                && GetString(info, "Constraint") == "Unique"
-                && GetString(info, "Table") == table
-                && GetString(info, "ConstraintName") == constraintName;
-        }
-
-        public static bool IsReferenceErrorOnInsertUpdate(RhetosException interpretedException, string referencedTable, string referencedColumn, string constraintName)
-        {
-            if (interpretedException == null)
-                return false;
-            var info = interpretedException.Info;
-            return
-                info != null
-                && GetString(info, "Constraint") == "Reference"
-                && (GetString(info, "Action") == "INSERT" || GetString(info, "Action") == "UPDATE")
-                && GetString(info, "ReferencedTable") == referencedTable
-                && GetString(info, "ReferencedColumn") == referencedColumn
-                && GetString(info, "ConstraintName") == constraintName;
-        }
-
-        public static bool IsReferenceErrorOnDelete(RhetosException interpretedException, string dependentTable, string dependentColumn, string constraintName)
-        {
-            if (interpretedException == null)
-                return false;
-            var info = interpretedException.Info;
-            return
-                info != null
-                && GetString(info, "Constraint") == "Reference"
-                && GetString(info, "Action") == "DELETE"
-                && GetString(info, "DependentTable") == dependentTable
-                && GetString(info, "DependentColumn") == dependentColumn
-                && GetString(info, "ConstraintName") == constraintName;
-        }
-
         private const string InsertingDuplicateIdMessage = "Inserting a record that already exists in database.";
-
-        public static void ThrowIfPrimaryKeyErrorOnInsert(RhetosException interpretedException, string tableName)
-        {
-            if (interpretedException != null
-                && interpretedException.Info != null
-                && GetString(interpretedException.Info, "Constraint") == "Primary key"
-                && GetString(interpretedException.Info, "Table") == tableName)
-            {
-                string pkValue = GetString(interpretedException.Info, "DuplicateValue");
-                throw new ClientException(InsertingDuplicateIdMessage + (pkValue != null ? " ID=" + pkValue : ""));
-            }
-        }
-
-        /// <summary>
-        /// Returns null is the key does not exist, or the value is not a string.
-        /// </summary>
-        private static string GetString(IDictionary<string, object> dictionary, string key)
-        {
-            return dictionary.TryGetValue(key, out object value) ? value as string : null;
-        }
 
         public string GetSchemaName(string fullObjectName)
         {

@@ -132,12 +132,12 @@ END;";
         /// <summary>
         /// See ISqlUtility.InterpretSqlException.
         /// </summary>
-        public RhetosException InterpretSqlException(Exception exception)
+        public RhetosException InterpretSqlException(Exception exception, bool checkUserPermissions, ConstraintErrorMetadata constraintErrorMetadata = null)
         {
             return null;
         }
 
-        public Exception ExtractSqlException(Exception exception)
+        public DbException ExtractSqlException(Exception exception)
         {
             return null;
         }

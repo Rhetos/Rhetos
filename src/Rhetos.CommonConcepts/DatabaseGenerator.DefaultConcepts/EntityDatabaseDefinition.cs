@@ -17,61 +17,46 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Extensibility;
 using Rhetos.Utilities;
 using System.ComponentModel.Composition;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
-    [Export(typeof(IConceptDatabaseDefinition))]
-    [ExportMetadata(MefProvider.Implements, typeof(EntityInfo))]
-    public class EntityDatabaseDefinition : IConceptDatabaseDefinition
+    [Export(typeof(IConceptDatabaseGenerator))]
+    public class EntityDatabaseDefinition : IConceptDatabaseGenerator<EntityInfo>
     {
-        private readonly ISqlResources _sqlResources;
-        private readonly ISqlUtility _sqlUtility;
-
-        public EntityDatabaseDefinition(ISqlResources sqlResources, ISqlUtility sqlUtility)
+        public void GenerateCode(EntityInfo info, ISqlCodeBuilder sql)
         {
-            _sqlResources = sqlResources;
-            _sqlUtility = sqlUtility;
+            string createQuery = sql.Resources.Format("EntityDatabaseDefinition_Create",
+                sql.Utility.Identifier(info.Module.Name),
+                sql.Utility.Identifier(info.Name),
+                PrimaryKeyConstraintName(info, sql.Utility, sql.Resources),
+                DefaultConstraintName(info, sql.Utility, sql.Resources));
+
+            sql.CreateDatabaseStructure(createQuery);
+
+            string removeQuery = sql.Resources.Format("EntityDatabaseDefinition_Remove",
+                sql.Utility.Identifier(info.Module.Name),
+                sql.Utility.Identifier(info.Name),
+                PrimaryKeyConstraintName(info, sql.Utility, sql.Resources),
+                DefaultConstraintName(info, sql.Utility, sql.Resources));
+
+            sql.RemoveDatabaseStructure(removeQuery);
         }
 
-        private string PrimaryKeyConstraintName(EntityInfo info)
+        public static string PrimaryKeyConstraintName(EntityInfo info, ISqlUtility sqlUtility, ISqlResources sqlResources)
         {
-            return _sqlUtility.Identifier(_sqlResources.Format("EntityDatabaseDefinition_PrimaryKeyConstraintName",
+            return sqlUtility.Identifier(sqlResources.Format("EntityDatabaseDefinition_PrimaryKeyConstraintName",
                 info.Module.Name,
                 info.Name));
         }
 
-        private string DefaultConstraintName(EntityInfo info)
+        public static string DefaultConstraintName(EntityInfo info, ISqlUtility sqlUtility, ISqlResources sqlResources)
         {
-            return _sqlUtility.Identifier(_sqlResources.Format("EntityDatabaseDefinition_DefaultConstraintName",
+            return sqlUtility.Identifier(sqlResources.Format("EntityDatabaseDefinition_DefaultConstraintName",
                 info.Module.Name,
                 info.Name));
-        }
-
-        public string CreateDatabaseStructure(IConceptInfo conceptInfo)
-        {
-            var info = (EntityInfo)conceptInfo;
-
-            return _sqlResources.Format("EntityDatabaseDefinition_Create",
-                _sqlUtility.Identifier(info.Module.Name),
-                _sqlUtility.Identifier(info.Name),
-                PrimaryKeyConstraintName(info),
-                DefaultConstraintName(info));
-        }
-
-        public string RemoveDatabaseStructure(IConceptInfo conceptInfo)
-        {
-            var info = (EntityInfo)conceptInfo;
-
-            return _sqlResources.Format("EntityDatabaseDefinition_Remove",
-                _sqlUtility.Identifier(info.Module.Name),
-                _sqlUtility.Identifier(info.Name),
-                PrimaryKeyConstraintName(info),
-                DefaultConstraintName(info));
         }
     }
 }

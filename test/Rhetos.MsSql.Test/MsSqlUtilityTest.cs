@@ -42,7 +42,7 @@ namespace Rhetos.MsSql.Test
         {
             var msSqlUtility = NewSqlUtility();
             var interpretedException = msSqlUtility.InterpretSqlException(
-                NewSqlException("test message", 50000, 16, 101)); // State 101 is Rhetos convention for user error message.
+                NewSqlException("test message", 50000, 16, 101), false, null); // State 101 is Rhetos convention for user error message.
             Assert.AreEqual("UserException: test message", interpretedException.GetType().Name + ": " + interpretedException.Message);
         }
 
@@ -176,7 +176,7 @@ namespace Rhetos.MsSql.Test
             {
                 string reportInput = "Input: " + (test.Item1 != null ? test.Item1.ToString() : "null");
                 Console.WriteLine(reportInput);
-                var interpretedException = msSqlUtility.InterpretSqlException(test.Item1);
+                var interpretedException = msSqlUtility.InterpretSqlException(test.Item1, false, null);
                 Console.WriteLine("Output: " + (interpretedException != null ? interpretedException.ToString() : "null"));
                 Assert.AreEqual(test.Item2, Report(interpretedException), reportInput);
                 if (!string.IsNullOrEmpty(test.Item3))

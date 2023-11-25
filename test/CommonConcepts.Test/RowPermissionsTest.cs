@@ -844,8 +844,8 @@ namespace CommonConcepts.Test
                 var _ = processingEngine.Execute(command1);
 
                 var command2 = new SaveEntityCommandInfo { Entity = item2.GetType().FullName, DataToInsert = new[] { item2 } };
-                TestUtility.ShouldFail<ClientException>(
-                    () => processingEngine.Execute(command2),
+                var exception = TestUtility.ShouldFail<ClientException>(() => processingEngine.Execute(command2));
+                TestUtility.AssertContains(exception.ToString(),
                     "Inserting a record that already exists in database.",
                     item2.ID.ToString());
             }
@@ -899,8 +899,8 @@ namespace CommonConcepts.Test
                 processingEngine.Execute(command1);
 
                 var command2 = new SaveEntityCommandInfo { Entity = item2.GetType().FullName, DataToInsert = new[] { item2 } };
-                TestUtility.ShouldFail<ClientException>(
-                    () => processingEngine.Execute(command2),
+                var exception = TestUtility.ShouldFail<ClientException>(() => processingEngine.Execute(command2));
+                TestUtility.AssertContains(exception.ToString(),
                     "Inserting a record that already exists in database.",
                     item2.ID.ToString());
             }

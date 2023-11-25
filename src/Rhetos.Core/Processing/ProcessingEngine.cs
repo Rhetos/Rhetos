@@ -139,7 +139,7 @@ namespace Rhetos.Processing
                 e = e.InnerException;
             }
 
-            e = _sqlUtility.InterpretSqlException(e) ?? e;
+            e = _sqlUtility.InterpretSqlException(e, false, null) ?? e;
             return e;
         }
 

@@ -63,31 +63,24 @@ namespace Rhetos.Dom.DefaultConcepts
                 && info.Referenced is IOrmDataStructure)
             {
                 string systemMessage = $"DataStructure:{info.DataStructure.FullName},Property:{info.Name}ID,Referenced:{info.Referenced.FullName}";
+                string constraintName = new ReferencePropertyConstraintDatabaseDefinition(Sql, SqlUtility).GetConstraintName(info);
 
                 if (info.DataStructure is IWritableOrmDataStructure)
                 {
-                    string onEnterInterpretSqlError = @"if (interpretedException is Rhetos.UserException && Rhetos.Utilities.MsSqlUtility.IsReferenceErrorOnInsertUpdate(interpretedException, "
-                        + CsUtility.QuotedString(_conceptMetadata.GetOrmSchema(info.Referenced) + "." + _conceptMetadata.GetOrmDatabaseObject(info.Referenced)) + @", "
-                        + CsUtility.QuotedString("ID") + @", "
-                        + CsUtility.QuotedString(new ReferencePropertyConstraintDatabaseDefinition(Sql, SqlUtility).GetConstraintName(info)) + @"))
-                        ((Rhetos.UserException)interpretedException).SystemMessage = " + CsUtility.QuotedString(systemMessage) + @";
-                    ";
-                    codeBuilder.InsertCode(onEnterInterpretSqlError, WritableOrmDataStructureCodeGenerator.OnDatabaseErrorTag, info.DataStructure);
+                    string table = _conceptMetadata.GetOrmSchema(info.Referenced) + "." + _conceptMetadata.GetOrmDatabaseObject(info.Referenced);
+                    string onEnterInterpretSqlError = $"({CsUtility.QuotedString(table)}, {CsUtility.QuotedString(constraintName)}) => {CsUtility.QuotedString(systemMessage)},\r\n                    ";
+                    codeBuilder.InsertCode(onEnterInterpretSqlError, WritableOrmDataStructureCodeGenerator.ErrorMetadataTag, info.DataStructure);
 
                     if (info.Referenced == info.DataStructure)
-                        codeBuilder.InsertCode($@"if (entity.{info.Name}ID != null && entity.{info.Name}ID != entity.ID) yield return entity.{info.Name}ID.Value;
-            ", WritableOrmDataStructureCodeGenerator.PersistenceStorageMapperDependencyResolutionTag, info.DataStructure);
+                        codeBuilder.InsertCode($"if (entity.{info.Name}ID != null && entity.{info.Name}ID != entity.ID) yield return entity.{info.Name}ID.Value;\r\n            ",
+                            WritableOrmDataStructureCodeGenerator.PersistenceStorageMapperDependencyResolutionTag, info.DataStructure);
                 }
 
-                if (info.Referenced is IWritableOrmDataStructure)
+                if (info.Referenced is IWritableOrmDataStructure && info.DataStructure != info.Referenced)
                 {
-                    string onDeleteInterpretSqlError = @"if (interpretedException is Rhetos.UserException && Rhetos.Utilities.MsSqlUtility.IsReferenceErrorOnDelete(interpretedException, "
-                        + CsUtility.QuotedString(_conceptMetadata.GetOrmSchema(info.DataStructure) + "." + _conceptMetadata.GetOrmDatabaseObject(info.DataStructure)) + @", "
-                        + CsUtility.QuotedString(info.GetSimplePropertyName()) + @", "
-                        + CsUtility.QuotedString(new ReferencePropertyConstraintDatabaseDefinition(Sql, SqlUtility).GetConstraintName(info)) + @"))
-                        ((Rhetos.UserException)interpretedException).SystemMessage = " + CsUtility.QuotedString(systemMessage) + @";
-                    ";
-                    codeBuilder.InsertCode(onDeleteInterpretSqlError, WritableOrmDataStructureCodeGenerator.OnDatabaseErrorTag, info.Referenced);
+                    string table = _conceptMetadata.GetOrmSchema(info.DataStructure) + "." + _conceptMetadata.GetOrmDatabaseObject(info.DataStructure);
+                    string onDeleteInterpretSqlError = $"({CsUtility.QuotedString(table)}, {CsUtility.QuotedString(constraintName)}) => {CsUtility.QuotedString(systemMessage)},\r\n                    ";
+                    codeBuilder.InsertCode(onDeleteInterpretSqlError, WritableOrmDataStructureCodeGenerator.ErrorMetadataTag, info.Referenced);
                 }
             }
         }

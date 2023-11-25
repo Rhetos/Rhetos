@@ -30,10 +30,13 @@ namespace Rhetos.Dom.DefaultConcepts
     public static class EFExpression
     {
         /// <summary>
-        /// Optimized alternative to LINQ operation "Where(item => ids.Contains(memberSelector))".
+        /// Optimized alternative to LINQ operation: <c>query.Where(item => ids.Contains(memberSelector))</c>.
+        /// The same optimization is applied by <see cref="OptimizeContains"/> method, with a different syntax.
+        /// </summary>
+        /// <remarks>
         /// Entity Framework 6.1.3 has performance issues with Contains method: it does not cache the compiled SQL
         /// if the LINQ query has Contains method, and the compilation can take significant amount on time on complex queries.
-        /// </summary>
+        /// </remarks>
         public static IQueryable<T> WhereContains<T>(this IQueryable<T> query, List<Guid> ids, Expression<Func<T, Guid>> memberSelector)
         {
             Expression<Func<List<Guid>>> idsLambda = () => ids;
@@ -46,11 +49,23 @@ namespace Rhetos.Dom.DefaultConcepts
             return query.Where(OptimizeContains(idsContainsExpression));
         }
 
+        /// <summary>
+        /// Optimizes LINQ expression <c>item => ids.Contains(memberSelector)</c>.
+        /// The same optimization is applied by <see cref="WhereContains{T}(IQueryable{T}, List{Guid}, Expression{Func{T, Guid}})"/> method, with a different syntax.
+        /// </summary>
+        /// <remarks>
+        /// Entity Framework 6.1.3 has performance issues with Contains method: it does not cache the compiled SQL
+        /// if the LINQ query has Contains method, and the compilation can take significant amount on time on complex queries.
+        /// </remarks>
         public static Expression<Func<T, bool>> OptimizeContains<T>(Expression<Func<T, bool>> expressionToOptimize)
         {
             return (Expression<Func<T, bool>>)new ReplaceContainsVisitor().Visit(expressionToOptimize);
         }
 
+        /// <summary>
+        /// Untyped version of <see cref="OptimizeContains{T}(Expression{Func{T, bool}})"/> method,
+        /// for when it is not convenient the use the generic method.
+        /// </summary>
         public static Expression OptimizeContains(Expression expressionToOptimize)
         {
             return new ReplaceContainsVisitor().Visit(expressionToOptimize);
@@ -109,7 +124,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     if (node.Method == EnumerableOfNullableGuidContainsMethod && ce.Value is IList<Guid?> listOfNullableGuid)
                         return CreateOptimizeExpressionForListOfNullableGuid(listOfNullableGuid, node.Arguments[1]);
                 }
-                else if(node.Object == null && node.Arguments.Count == 2 && node.Arguments[0].NodeType == ExpressionType.MemberAccess)
+                else if (node.Object == null && node.Arguments.Count == 2 && node.Arguments[0].NodeType == ExpressionType.MemberAccess)
                 {
                     FieldInfo innerField = (node.Arguments[0] as MemberExpression)?.Member as FieldInfo;
                     ConstantExpression ce = (node.Arguments[0] as MemberExpression)?.Expression as ConstantExpression;

@@ -67,7 +67,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <summary>
         /// Entity-specific interpretation of database errors.
         /// </summary>
-        public static readonly CsTag<DataStructureInfo> OnDatabaseErrorTag = "WritableOrm OnDatabaseError";
+        public static readonly CsTag<DataStructureInfo> ErrorMetadataTag = "WritableOrm GetErrorMetadata";
 
         /// <summary>The inserted code will be execute after recomputing and validations.
         /// Queries "inserted" and "updated" will return NEW data.
@@ -109,14 +109,11 @@ namespace Rhetos.Dom.DefaultConcepts
             " + ProcessedOldDataTag.Evaluate(info) + @"
 
             {{
-                DomHelper.WriteToDatabase(insertedNew, updatedNew, deletedIds, _executionContext.PersistenceStorage, checkUserPermissions, _executionContext.SqlUtility,
-                    out Exception saveException, out Rhetos.RhetosException interpretedException);
-
-                if (saveException != null)
+                static string GetErrorMetadata(string tableName, string constraintName) => (tableName, constraintName) switch
                 {{
-                    " + OnDatabaseErrorTag.Evaluate(info) + @"
-                    DomHelper.ThrowInterpretedException(checkUserPermissions, saveException, interpretedException, _executionContext.SqlUtility, ""{0}.{1}"");
-                }}
+                    " + ErrorMetadataTag.Evaluate(info) + @" _ => null
+                }};
+                DomHelper.WriteToDatabase(insertedNew, updatedNew, deletedIds, _executionContext.PersistenceStorage, checkUserPermissions, _executionContext.SqlUtility, GetErrorMetadata);
             }}
 
             deleted = null;

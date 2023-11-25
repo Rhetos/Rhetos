@@ -35,7 +35,7 @@ namespace Rhetos.DatabaseGenerator.Test
 
         public string ReadEmptyNullString(DbDataReader dataReader, int column) => dataReader.GetString(column) ?? "";
 
-        public Exception ExtractSqlException(Exception exception) => throw new NotImplementedException();
+        public DbException ExtractSqlException(Exception exception) => throw new NotImplementedException();
 
         public DateTime GetDatabaseTime(ISqlExecuter sqlExecuter) => throw new NotImplementedException();
 
@@ -49,7 +49,7 @@ namespace Rhetos.DatabaseGenerator.Test
 
         public string Identifier(string name) => throw new NotImplementedException();
 
-        public RhetosException InterpretSqlException(Exception exception) => throw new NotImplementedException();
+        public RhetosException InterpretSqlException(Exception exception, bool checkUserPermissions, ConstraintErrorMetadata constraintErrorMetadata) => throw new NotImplementedException();
 
         public string QuoteBool(bool? b) => throw new NotImplementedException();
 

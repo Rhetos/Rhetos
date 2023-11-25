@@ -21,7 +21,7 @@ using Rhetos.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Data.SqlClient;
+using System.Data.Common;
 using System.Linq;
 
 namespace Rhetos.Dom.DefaultConcepts
@@ -79,6 +79,8 @@ namespace Rhetos.Dom.DefaultConcepts
                 items = items.Select(item => new TEntity { ID = item.ID }).ToList();
         }
 
+        /// <param name="constraintErrorMetadata">For a given DB constraint name, and considering the current entity,
+        /// returns the error metadata intended for the end user, that may be written to UserException.SystemMessage</param>
         public static void WriteToDatabase<TEntity>(
             IEnumerable<TEntity> insertedNew,
             IEnumerable<TEntity> updatedNew,
@@ -86,43 +88,32 @@ namespace Rhetos.Dom.DefaultConcepts
             IPersistenceStorage persistenceStorage,
             bool checkUserPermissions,
             ISqlUtility sqlUtility,
-            out Exception saveException,
-            out RhetosException interpretedException)
+            ConstraintErrorMetadata constraintErrorMetadata)
             where TEntity : class, IEntity
         {
             try
             {
                 persistenceStorage.Save(insertedNew, updatedNew, deletedIds);
-                saveException = null;
-                interpretedException = null;
             }
             catch (NonexistentRecordException nre)
             {
-                saveException = null;
-                interpretedException = null;
                 if (checkUserPermissions)
                     throw new ClientException(nre.Message);
                 else
                     ExceptionsUtility.Rethrow(nre);
             }
-            catch (SqlException e)
+            catch (Exception e)
             {
-                saveException = e;
-                interpretedException = sqlUtility.InterpretSqlException(saveException);
-            }
-        }
+                RhetosException interpretedException = sqlUtility.InterpretSqlException(e, checkUserPermissions, constraintErrorMetadata);
+                if (interpretedException != null)
+                    ExceptionsUtility.Rethrow(interpretedException);
 
-        /// <param name="saveException">SqlException, or an exception that has SqlException as an inner exception (directly or indirectly).</param>
-        public static void ThrowInterpretedException(bool checkUserPermissions, Exception saveException, RhetosException interpretedException, ISqlUtility sqlUtility, string tableName)
-        {
-            if (checkUserPermissions)
-                MsSqlUtility.ThrowIfPrimaryKeyErrorOnInsert(interpretedException, tableName);
-            if (interpretedException != null)
-                ExceptionsUtility.Rethrow(interpretedException);
-            var sqlException = sqlUtility.ExtractSqlException(saveException);
-            if (sqlException != null)
-                ExceptionsUtility.Rethrow(sqlException);
-            ExceptionsUtility.Rethrow(saveException);
+                DbException sqlException = sqlUtility.ExtractSqlException(e);
+                if (sqlException != null)
+                    ExceptionsUtility.Rethrow(sqlException);
+
+                ExceptionsUtility.Rethrow(e);
+            }
         }
 
         public static IEnumerable<TQueryableEntity> LoadOldDataWithNavigationProperties<TQueryableEntity>(IEnumerable<IEntity> items, IQueryableRepository<TQueryableEntity> repository)

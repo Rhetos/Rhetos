@@ -18,6 +18,8 @@
 */
 
 using Autofac;
+using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Dom.DefaultConcepts.Persistence;
 using Rhetos.Extensibility;
 using Rhetos.Persistence;
 using Rhetos.Utilities;
@@ -56,6 +58,12 @@ namespace Rhetos.Ef6
                 builder.RegisterType<EfMappingViewsFileStore>().SingleInstance().PreserveExistingDefaults();
                 builder.RegisterType<EfMappingViewCacheFactory>().SingleInstance().PreserveExistingDefaults();
                 builder.RegisterType<EfMappingViewsInitializer>().SingleInstance();
+
+                // CommonConcepts:
+                builder.RegisterType<EntityFrameworkMetadata>().SingleInstance();
+                builder.RegisterType<MetadataWorkspaceFileProvider>().As<IMetadataWorkspaceFileProvider>().SingleInstance();
+                builder.RegisterType<EfMappingViewsHash>().As<IEfMappingViewsHash>();
+                builder.RegisterType<Ef6OrmUtility>().As<IOrmUtility>().SingleInstance();
             }
 
             base.Load(builder);

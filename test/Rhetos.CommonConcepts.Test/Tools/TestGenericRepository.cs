@@ -39,6 +39,7 @@ namespace Rhetos.CommonConcepts.Test.Mocks
                     LogProvider = new ConsoleLogProvider(),
                     GenericFilterHelper = Factory.CreateGenericFilterHelper(new DataStructureReadParametersStub(), dynamicTypeResolution),
                     DelayedLogProvider = new DelayedLogProvider(new LoggingOptions { DelayedLogTimout = 0 }, null),
+                    OrmUtility = new Ef6OrmUtility(),
                 },
                 new RegisteredInterfaceImplementations { { typeof(TEntityInterface), typeof(TEntity).FullName } })
         {
@@ -60,6 +61,7 @@ namespace Rhetos.CommonConcepts.Test.Mocks
                 LogProvider = new ConsoleLogProvider(),
                 GenericFilterHelper = Factory.CreateGenericFilterHelper(Factory.CreateDataStructureReadParameters(repository, typeof(TEntity)), dynamicTypeResolution, log),
                 DelayedLogProvider = new DelayedLogProvider(new LoggingOptions { DelayedLogTimout = 0 }, null),
+                OrmUtility = new Ef6OrmUtility(),
             };
         }
 

@@ -554,8 +554,8 @@ namespace CommonConcepts.Test
                 repos.Insert(item1);
 
                 var item2 = new TestEntity.Principal { Name = "b", ID = item1.ID };
-                TestUtility.ShouldFail<Rhetos.ClientException>(() => repos.Save(new[] { item2 }, null, null, checkUserPermissions: true),
-                    "Inserting a record that already exists in database.", item2.ID.ToString());
+                var exception = TestUtility.ShouldFail<Rhetos.ClientException>(() => repos.Save(new[] { item2 }, null, null, checkUserPermissions: true));
+                TestUtility.AssertContains(exception.ToString(), new[] { "Inserting a record that already exists in database.", item2.ID.ToString() });
             }
         }
 
@@ -654,8 +654,8 @@ namespace CommonConcepts.Test
 
                 var item1 = new TestEntity.Principal { Name = "a", ID = Guid.NewGuid() };
                 var item2 = new TestEntity.Principal { Name = "b", ID = item1.ID };
-                TestUtility.ShouldFail<Rhetos.ClientException>(() => repos.Save(new[] { item1, item2 }, null, null, checkUserPermissions: true),
-                    "Inserting a record that already exists in database.", item2.ID.ToString());
+                var exception = TestUtility.ShouldFail<Rhetos.ClientException>(() => repos.Save(new[] { item1, item2 }, null, null, checkUserPermissions: true));
+                TestUtility.AssertContains(exception.ToString(), "Inserting a record that already exists in database.", item2.ID.ToString());
             }
         }
 

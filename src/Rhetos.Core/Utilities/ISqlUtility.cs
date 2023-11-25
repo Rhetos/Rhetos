@@ -23,6 +23,11 @@ using System.Data.Common;
 
 namespace Rhetos.Utilities
 {
+    /// <summary>
+    /// Returns error metadata that will be provided to the client as <see cref="UserException.SystemMessage"/> property, if the error is a <see cref="UserException"/>.
+    /// </summary>
+    public delegate string ConstraintErrorMetadata(string tableName, string constraintName);
+
     /// <remarks>
     /// The main difference between <see cref="ISqlUtility"/> and <see cref="ISqlExecuter"/>
     /// is that <see cref="ISqlUtility"/> implementations do not require <see cref="IPersistenceTransaction"/>
@@ -42,14 +47,14 @@ namespace Rhetos.Utilities
 
         /// <summary>
         /// Checks the exception for database errors and attempts to transform it to a RhetosException.
-        /// It the function returns null, the original exception should be used.
+        /// It <see cref="InterpretSqlException"/> returns null, the original exception should be used.
         /// </summary>
-        RhetosException InterpretSqlException(Exception exception);
+        RhetosException InterpretSqlException(Exception exception, bool checkUserPermissions, ConstraintErrorMetadata constraintErrorMetadata);
 
         /// <summary>
         /// Simplifies ORM exception by detecting the SQL exception that caused it.
         /// </summary>
-        Exception ExtractSqlException(Exception exception);
+        DbException ExtractSqlException(Exception exception);
 
         /// <summary>
         /// Throws an exception if 'name' is not a valid SQL database object name.

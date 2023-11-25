@@ -17,14 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Dsl.DefaultConcepts;
-using System.ComponentModel.Composition;
-using Rhetos.Extensibility;
-using Rhetos.Dsl;
 using Rhetos.Compiler;
-using Rhetos.Utilities;
 using Rhetos.DatabaseGenerator.DefaultConcepts;
-using Rhetos.DatabaseGenerator;
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Extensibility;
+using Rhetos.Utilities;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -64,13 +63,11 @@ namespace Rhetos.Dom.DefaultConcepts
                 && info.Base is IWritableOrmDataStructure)
             {
                 string systemMessage = $"DataStructure:{info.Extension.FullName},Property:ID,Referenced:{info.Base.FullName}";
-                string onDeleteInterpretSqlError = @"if (interpretedException is Rhetos.UserException && Rhetos.Utilities.MsSqlUtility.IsReferenceErrorOnDelete(interpretedException, "
-                    + CsUtility.QuotedString(_conceptMetadata.GetOrmSchema(info.Extension) + "." + _conceptMetadata.GetOrmDatabaseObject(info.Extension)) + @", "
-                    + CsUtility.QuotedString("ID") + @", "
-                    + CsUtility.QuotedString(new UniqueReferenceDatabaseDefinition(Sql, SqlUtility).GetConstraintName(info)) + @"))
-                        ((Rhetos.UserException)interpretedException).SystemMessage = " + CsUtility.QuotedString(systemMessage) + @";
-                    ";
-                codeBuilder.InsertCode(onDeleteInterpretSqlError, WritableOrmDataStructureCodeGenerator.OnDatabaseErrorTag, info.Base);
+                string table = _conceptMetadata.GetOrmSchema(info.Extension) + "." + _conceptMetadata.GetOrmDatabaseObject(info.Extension);
+                string constraintName = new UniqueReferenceDatabaseDefinition(Sql, SqlUtility).GetConstraintName(info);
+                string onDeleteInterpretSqlError = $"({CsUtility.QuotedString(table)}, {CsUtility.QuotedString(constraintName)}) => {CsUtility.QuotedString(systemMessage)},\r\n                    ";
+
+                codeBuilder.InsertCode(onDeleteInterpretSqlError, WritableOrmDataStructureCodeGenerator.ErrorMetadataTag, info.Base);
             }
         }
     }
