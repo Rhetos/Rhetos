@@ -9,7 +9,7 @@ REM Updating the build version.
 PowerShell -ExecutionPolicy ByPass .\Tools\Build\ChangeVersion.ps1 %Version% %Prerelease% || GOTO Error0
 
 dotnet build "Rhetos.sln" --configuration %Config% || GOTO Error1
-CALL CreateInstallationPackage.bat %Config% || GOTO Error1
+PowerShell -ExecutionPolicy ByPass .\CreateInstallationPackage.ps1 || GOTO Error1
 
 REM Restoring the build version back to "dev" (internal development build), to avoid spamming git history with timestamped prerelease versions.
 PowerShell -ExecutionPolicy ByPass .\Tools\Build\ChangeVersion.ps1 %Version% dev || GOTO Error0
