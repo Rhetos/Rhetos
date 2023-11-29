@@ -27,7 +27,7 @@
         <dependency id="System.ComponentModel.Composition" version="6.0.0" /> <!-- Rhetos plugins use MEF. -->
         <dependency id="System.Configuration.ConfigurationManager" version="6.0.0" />
         <dependency id="System.Data.SqlClient" version="4.8.5" />
-        <dependency id="Oracle.ManagedDataAccess.Core" version="3.21.50" />
+        <dependency id="Oracle.ManagedDataAccess.Core" version="3.21.120" />
       </group>
     </dependencies>
   </metadata>
