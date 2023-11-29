@@ -1,7 +1,7 @@
 @REM Delete all "bin", "obj" and "TestResults" subfolders:
-FOR /F "delims=" %%i IN ('dir bin /s/b/ad') DO DEL /F/S/Q "%%i" >nul && RD /S/Q "%%i"
-FOR /F "delims=" %%i IN ('dir obj /s/b/ad') DO DEL /F/S/Q "%%i" >nul && RD /S/Q "%%i"
-FOR /F "delims=" %%i IN ('dir TestResult? /s/b/ad') DO DEL /F/S/Q "%%i" >nul && RD /S/Q "%%i"
+powershell "Get-ChildItem -Path '%~dp0' -Recurse -Directory -Filter 'bin' | ForEach-Object { echo \"Deleting $($_.FullName)\"; Remove-Item $_.FullName -Recurse -Force }"
+powershell "Get-ChildItem -Path '%~dp0' -Recurse -Directory -Filter 'obj' | ForEach-Object { echo \"Deleting $($_.FullName)\"; Remove-Item $_.FullName -Recurse -Force }"
+powershell "Get-ChildItem -Path '%~dp0' -Recurse -Directory -Filter 'TestResults' | ForEach-Object { echo \"Deleting $($_.FullName)\"; Remove-Item $_.FullName -Recurse -Force }"
 
 @REM Delete build log:
 IF EXIST msbuild.log DEL msbuild.log
