@@ -1,13 +1,13 @@
 ﻿Module Common
 {
-    // Recomended for reading the Log table without locking the other server transactions. Data will include transations that are not yet committed.
+    // Recommended for reading the Log table without locking the other server transactions. Data will include transactions that are not yet committed.
     SqlQueryable LogReader <SQL\LogReader.sql>
     {
         AllPropertiesFrom Common.Log;
         SqlDependsOn Common.Log;
     }
     
-    // Recomended for reading the LogRelatedItem table without locking the other server transactions. Data will include transations that are not yet committed.
+    // Recommended for reading the LogRelatedItem table without locking the other server transactions. Data will include transactions that are not yet committed.
     SqlQueryable LogRelatedItemReader <SQL\LogRelatedItemReader.sql>
     {
         AllPropertiesFrom Common.LogRelatedItem;
