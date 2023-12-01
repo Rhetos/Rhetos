@@ -38,7 +38,7 @@ namespace Rhetos.Oracle.SqlResources
             if (!_databaseLanguage.StartsWith(OracleSqlUtility.DatabaseLanguage))
                 return null;
 
-            var resources = ResourcesUtility.ReadEmbeddedResx("Rhetos.Core.DbUpdate.Oracle", GetType(), true);
+            var resources = ResourcesUtility.ReadEmbeddedResx("Rhetos.Core.DbUpdate.Oracle.resx", GetType(), true);
 
             resources.Add(
                 DatabaseDeployment.CreateRhetosDatabaseResourceKey,

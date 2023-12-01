@@ -38,7 +38,7 @@ namespace Rhetos.Oracle.SqlResources
             if (!_databaseLanguage.StartsWith(OracleSqlUtility.DatabaseLanguage))
                 return null;
 
-            return ResourcesUtility.ReadEmbeddedResx("Rhetos.CommonConcepts.Build.Oracle", GetType(), true);
+            return ResourcesUtility.ReadEmbeddedResx("Rhetos.CommonConcepts.Build.Oracle.resx", GetType(), true);
         }
     }
 }

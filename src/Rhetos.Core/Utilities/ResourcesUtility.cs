@@ -16,8 +16,8 @@ namespace Rhetos.Utilities
         /// </summary>
         /// <param name="sampleType">Specify which assembly and namespace is searched for the embedded .resx file, by providing the sample type from the same assembly and same namespace.</param>
         /// <param name="addKeyPrefix">(Optional) The project name or a similar global identifier, that will be added to all resource keys to avoid conflicts between different plugins with same keys.</param>
-        public static Dictionary<string, string> ReadEmbeddedResx(string resxFileNameWithoutExtension, Type sampleType, bool exceptionIfMissing, string addKeyPrefix = "")
-            => ReadEmbeddedResx(resxFileNameWithoutExtension, sampleType.Assembly, sampleType.Namespace, exceptionIfMissing, addKeyPrefix);
+        public static Dictionary<string, string> ReadEmbeddedResx(string resxFileName, Type sampleType, bool exceptionIfMissing, string addKeyPrefix = "")
+            => ReadEmbeddedResx(resxFileName, sampleType.Assembly, sampleType.Namespace, exceptionIfMissing, addKeyPrefix);
 
         /// <summary>
         /// Loads text entries from resources file (.resx) embedded in the compiled assembly (dll).
@@ -25,8 +25,12 @@ namespace Rhetos.Utilities
         /// <param name="resourceAssembly">Assembly that contains the embedded .resx file.</param>
         /// <param name="resourceNamespace">Namespace of the .resx file is usually the *subfolder path* inside the C# project where the .resx file is located.</param>
         /// <param name="addKeyPrefix">(Optional) The project name or a similar global identifier, that will be added to all resource keys to avoid conflicts between different plugins with same keys.</param>
-        public static Dictionary<string, string> ReadEmbeddedResx(string resxFileNameWithoutExtension, Assembly resourceAssembly, string resourceNamespace, bool exceptionIfMissing, string addKeyPrefix = "")
+        public static Dictionary<string, string> ReadEmbeddedResx(string resxFileName, Assembly resourceAssembly, string resourceNamespace, bool exceptionIfMissing, string addKeyPrefix = "")
         {
+            const string expectedExtension = ".resx";
+            if (Path.GetExtension(resxFileName) != expectedExtension)
+                throw new FrameworkException($"The resource file should have extension '{expectedExtension}'. File: '{resxFileName}'.");
+            string resxFileNameWithoutExtension = Path.Combine(Path.GetDirectoryName(resxFileName), Path.GetFileNameWithoutExtension(resxFileName));
             string resxFullName = $"{resourceNamespace}.{resxFileNameWithoutExtension}";
             var resourceManager = new ResourceManager(resxFullName, resourceAssembly);
             ResourceSet resourceSet = resourceManager.GetResourceSet(CultureInfo.InvariantCulture, true, true);

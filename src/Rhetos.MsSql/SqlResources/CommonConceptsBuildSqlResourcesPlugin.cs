@@ -38,7 +38,7 @@ namespace Rhetos.MsSql.SqlResources
             if (!_databaseLanguage.StartsWith(MsSqlUtility.DatabaseLanguage))
                 return null;
 
-            return ResourcesUtility.ReadEmbeddedResx("Rhetos.CommonConcepts.Build.MsSql", GetType(), true);
+            return ResourcesUtility.ReadEmbeddedResx("Rhetos.CommonConcepts.Build.MsSql.resx", GetType(), true);
         }
     }
 }

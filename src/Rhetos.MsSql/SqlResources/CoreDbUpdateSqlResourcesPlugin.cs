@@ -38,7 +38,7 @@ namespace Rhetos.MsSql.SqlResources
             if (!_databaseLanguage.StartsWith(MsSqlUtility.DatabaseLanguage))
                 return null;
 
-            var resources = ResourcesUtility.ReadEmbeddedResx("Rhetos.Core.DbUpdate.MsSql", GetType(), true);
+            var resources = ResourcesUtility.ReadEmbeddedResx("Rhetos.Core.DbUpdate.MsSql.resx", GetType(), true);
 
             resources.Add(
                 DatabaseDeployment.CreateRhetosDatabaseResourceKey,
