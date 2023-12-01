@@ -52,32 +52,32 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             Match createPart = createPartRegex.Match(FullProcedureSource);
             if (!createPart.Success)
-                throw new DslSyntaxException(this, $"The SqlProcedure script must start with \"CREATE PROCEDURE\" or \"CREATE OR ALTER PROCEDURE\". Module '{Module}', SqlProcedure: {FullProcedureSource.Limit(50)}.");
+                throw new DslConceptSyntaxException(this, $"The SqlProcedure script must start with \"CREATE PROCEDURE\" or \"CREATE OR ALTER PROCEDURE\". Module '{Module}', SqlProcedure: {FullProcedureSource.Limit(50)}.");
 
             string rest = FullProcedureSource.Substring(createPart.Index + createPart.Length);
 
             Match namePart = namePartRegex.Match(rest);
             if (!namePart.Success)
-                throw new DslSyntaxException(this, "Cannot detect procedure name in the SQL script. Make sure its syntax is correct. Do not use comments before the procedure name.");
+                throw new DslConceptSyntaxException(this, "Cannot detect procedure name in the SQL script. Make sure its syntax is correct. Do not use comments before the procedure name.");
             string moduleName = namePart.Groups["module"].Value;
             Name = namePart.Groups["name"].Value;
             if (string.IsNullOrWhiteSpace(moduleName))
-                throw new DslSyntaxException(this, $"Procedure '{Name}' should be named with schema '{Module.Name}.{Name}', to match the DSL module where the SqlProcedure is placed.");
+                throw new DslConceptSyntaxException(this, $"Procedure '{Name}' should be named with schema '{Module.Name}.{Name}', to match the DSL module where the SqlProcedure is placed.");
             if (!string.Equals(moduleName, Module.Name, StringComparison.OrdinalIgnoreCase))
-                throw new DslSyntaxException(this, $"Procedure '{moduleName}.{Name}' should have schema '{Module.Name}' instead of '{moduleName}', to match the DSL module where the SqlProcedure is placed.");
+                throw new DslConceptSyntaxException(this, $"Procedure '{moduleName}.{Name}' should have schema '{Module.Name}' instead of '{moduleName}', to match the DSL module where the SqlProcedure is placed.");
 
             rest = rest.Substring(namePart.Index + namePart.Length);
 
             Match parametersPart = parametersPartRegex.Match(rest);
             if (!parametersPart.Success)
-                throw new DslSyntaxException(this, $"Cannot detect beginning of the code block in procedure '{Module.Name}.{Name}'. Make sure the script contains \"AS\" in its own line.");
+                throw new DslConceptSyntaxException(this, $"Cannot detect beginning of the code block in procedure '{Module.Name}.{Name}'. Make sure the script contains \"AS\" in its own line.");
             ProcedureArguments = parametersPart.Groups["params"].Value.Trim();
 
             rest = rest.Substring(parametersPart.Index + parametersPart.Length);
 
             ProcedureSource = rest.TrimStart('\r', '\n').TrimEnd();
             if (goStatementRegex.IsMatch(ProcedureSource))
-                throw new DslSyntaxException(this, $"Please remove \"GO\" statement from the SQL script, or use SqlObject instead of SqlProcedure.");
+                throw new DslConceptSyntaxException(this, $"Please remove \"GO\" statement from the SQL script, or use SqlObject instead of SqlProcedure.");
 
             createdConcepts = null;
         }

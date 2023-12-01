@@ -42,7 +42,7 @@ namespace Rhetos.Dsl
         private static IEnumerable<IConceptInfo> InitializeNonparsablePropertiesRecursive(IAlternativeInitializationConcept alternativeInitializationConcept, HashSet<string> alreadyCreated, int depth, ILogger traceLogger)
         {
             if (depth > 10)
-                throw new DslSyntaxException(alternativeInitializationConcept, "Macro concept references cannot be resolved.");
+                throw new DslConceptSyntaxException(alternativeInitializationConcept, "Macro concept references cannot be resolved.");
 
             List<IConceptInfo> result = new List<IConceptInfo>();
 

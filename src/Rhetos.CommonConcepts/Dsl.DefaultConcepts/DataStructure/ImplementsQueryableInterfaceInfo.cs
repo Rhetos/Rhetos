@@ -42,14 +42,14 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             Type type = Type.GetType(InterfaceType);
             if (type == null)
-                throw new DslSyntaxException(this, "Could not find type \"" + InterfaceType + "\"");
+                throw new DslConceptSyntaxException(this, "Could not find type \"" + InterfaceType + "\"");
             return type;
         }
 
         public void CheckSemantics(IDslModel existingConcepts)
         {
             if (!DslUtility.IsQueryable(DataStructure))
-                throw new DslSyntaxException(this, "This concept can only be used on a queryable data structure, such as Entity. " + DataStructure.GetKeywordOrTypeName() + " is not queryable.");
+                throw new DslConceptSyntaxException(this, "This concept can only be used on a queryable data structure, such as Entity. " + DataStructure.GetKeywordOrTypeName() + " is not queryable.");
             GetInterfaceType();
         }
     }

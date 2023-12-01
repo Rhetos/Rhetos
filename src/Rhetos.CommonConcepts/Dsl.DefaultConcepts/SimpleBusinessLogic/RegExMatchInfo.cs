@@ -89,7 +89,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             catch (Exception ex)
             {
                 var msg = "Invalid format of the regular expression.";
-                throw new DslSyntaxException(this, msg, ex);
+                throw new DslConceptSyntaxException(this, msg, ex);
             }
         }
     }

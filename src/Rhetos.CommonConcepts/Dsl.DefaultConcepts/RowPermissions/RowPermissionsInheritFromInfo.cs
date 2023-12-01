@@ -45,7 +45,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             var rowPermissionsWrite = GetRowPermissionsWrite(existingConcepts);
 
             if (rowPermissionsRead == null && rowPermissionsWrite == null)
-                throw new DslSyntaxException(this, "Referenced '" + Source.GetUserDescription() + "' does not have row permissions.");
+                throw new DslConceptSyntaxException(this, "Referenced '" + Source.GetUserDescription() + "' does not have row permissions.");
         }
 
         public RowPermissionsReadInfo GetRowPermissionsRead(IDslModel existingConcepts)

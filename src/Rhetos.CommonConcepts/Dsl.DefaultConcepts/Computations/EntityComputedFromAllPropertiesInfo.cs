@@ -43,7 +43,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             var duplicates = computedProperties.GroupBy(cp => cp.Source.Name, cp => cp.Target.Name).Where(g => g.Count() >= 2).FirstOrDefault();
             if (duplicates != null)
-                throw new DslSyntaxException(this, $"Source property '{duplicates.Key}' is mapped to two target properties: '{duplicates.First()}' and '{duplicates.Last()}'.");
+                throw new DslConceptSyntaxException(this, $"Source property '{duplicates.Key}' is mapped to two target properties: '{duplicates.First()}' and '{duplicates.Last()}'.");
         }
     }
 

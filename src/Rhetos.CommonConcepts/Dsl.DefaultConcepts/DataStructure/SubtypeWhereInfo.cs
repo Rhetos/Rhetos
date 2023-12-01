@@ -56,7 +56,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         public void CheckSemantics(IDslModel _)
         {
             if (!(Dependency_ImplementationView is ExtensibleSubtypeSqlViewInfo))
-                throw new DslSyntaxException(this, "This concept cannot be used together with '" + Dependency_ImplementationView.GetUserDescription()
+                throw new DslConceptSyntaxException(this, "This concept cannot be used together with '" + Dependency_ImplementationView.GetUserDescription()
                     + "'. Use either " + ConceptInfoHelper.GetKeywordOrTypeName(typeof(SubtypeImplementsPropertyInfo)) + " or " + Dependency_ImplementationView.GetKeywordOrTypeName() + ".");
         }
     }

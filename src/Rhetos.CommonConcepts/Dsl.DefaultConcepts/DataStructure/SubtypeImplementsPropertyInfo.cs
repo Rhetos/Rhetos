@@ -60,7 +60,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             DslUtility.CheckIfPropertyBelongsToDataStructure(Property, IsSubtypeOf.Supertype, this);
 
             if (!(Dependency_ImplementationView is ExtensibleSubtypeSqlViewInfo))
-                throw new DslSyntaxException(this, "This property implementation cannot be used together with '" + Dependency_ImplementationView.GetUserDescription()
+                throw new DslConceptSyntaxException(this, "This property implementation cannot be used together with '" + Dependency_ImplementationView.GetUserDescription()
                     + "'. Use either " + this.GetKeywordOrTypeName() + " or " + Dependency_ImplementationView.GetKeywordOrTypeName() + ".");
         }
     }

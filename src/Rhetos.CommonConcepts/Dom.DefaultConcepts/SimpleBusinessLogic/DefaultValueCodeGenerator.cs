@@ -54,7 +54,7 @@ namespace Rhetos.Dom.DefaultConcepts
             {
                 string csPropertyType = _conceptMetadata.GetCsPropertyType(info.Property);
                 if (string.IsNullOrEmpty(csPropertyType))
-                    throw new DslSyntaxException(info, $"{info.Property.GetKeywordOrTypeName()} is not supported" +
+                    throw new DslConceptSyntaxException(info, $"{info.Property.GetKeywordOrTypeName()} is not supported" +
                         $" for {info.GetKeywordOrTypeName()}, because it does not provide concept metadata for C# property type.");
 
                 string defaultValueMethod =

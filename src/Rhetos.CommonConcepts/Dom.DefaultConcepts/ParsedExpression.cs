@@ -46,7 +46,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// The expression parameters and body formatted as a method.
         /// For example, the expression "text => text.Length" with a string argument will result with "(string text) { return text.Length; }" (line breaks and indentation not shown).
         /// </summary>
-        public string MethodParametersAndBody => MethodParameters != null ? MethodParameters + MethodBody: throw new DslSyntaxException(_errorContext, "The argument types are not provided");
+        public string MethodParametersAndBody => MethodParameters != null ? MethodParameters + MethodBody: throw new DslConceptSyntaxException(_errorContext, "The argument types are not provided");
 
         /// <summary>
         /// If the expression's body is a literal value, returns the text representation, otherwise null.
@@ -100,7 +100,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 ResultLiteral = TryBuildResultLiteral(parenthesizedExpression.Body);
             }
             else
-                throw new DslSyntaxException(errorContext, $"Unexpected node type '{lambdaNode.Kind()}' in code snippet '{expression.Limit(200)}'.");
+                throw new DslConceptSyntaxException(errorContext, $"Unexpected node type '{lambdaNode.Kind()}' in code snippet '{expression.Limit(200)}'.");
         }
 
         private SyntaxNode ParseExpression()
@@ -108,7 +108,7 @@ namespace Rhetos.Dom.DefaultConcepts
             SyntaxTree tree = CSharpSyntaxTree.ParseText(_expression, new CSharpParseOptions(kind: SourceCodeKind.Script, documentationMode: DocumentationMode.None));
             var errors = tree.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
             if (errors.Any())
-                throw new DslSyntaxException(_errorContext, $"C# syntax error '{errors.First()}' in code snippet '{_expression.Limit(200)}'.");
+                throw new DslConceptSyntaxException(_errorContext, $"C# syntax error '{errors.First()}' in code snippet '{_expression.Limit(200)}'.");
 
             var compilationNode = tree.GetCompilationUnitRoot();
             CheckExpectedCodeFormat(compilationNode, SyntaxKind.CompilationUnit, SyntaxKind.GlobalStatement);
@@ -123,32 +123,32 @@ namespace Rhetos.Dom.DefaultConcepts
         private void CheckExpectedCodeFormat(SyntaxNode node, SyntaxKind expectedNodeKind, params SyntaxKind[] expectedChildKinds)
         {
             if (node.Kind() != expectedNodeKind)
-                throw new DslSyntaxException(_errorContext, $"The provided code snippet should be formatted as a C# lambda expression." +
+                throw new DslConceptSyntaxException(_errorContext, $"The provided code snippet should be formatted as a C# lambda expression." +
                     $" Code snippet '{_expression.Limit(200)}' is '{node.Kind()}' instead of '{expectedNodeKind}'.");
 
             var childNodes = node.ChildNodes();
             string expectedChildKindsText = string.Join(" or ", expectedChildKinds);
 
             if (!childNodes.Any())
-                throw new DslSyntaxException(_errorContext, $"The provided code snippet should be formatted as a C# lambda expression." +
+                throw new DslConceptSyntaxException(_errorContext, $"The provided code snippet should be formatted as a C# lambda expression." +
                     $" Code snippet '{_expression.Limit(200)}' has no content." +
                     $" Expected content type is '{expectedChildKindsText}'.");
 
             if (childNodes.Count() > 1)
-                throw new DslSyntaxException(_errorContext, $"The provided code snippet should be formatted as a C# lambda expression." +
+                throw new DslConceptSyntaxException(_errorContext, $"The provided code snippet should be formatted as a C# lambda expression." +
                     $" Code snippet '{_expression.Limit(200)}' contains multiple nodes while only one is expected." +
                     $" Expected child node type is '{expectedChildKindsText}'." +
                     $" The provided snippet contains {childNodes.Count()} child nodes: {string.Join(", ", childNodes.Select(n => n.Kind()))}.");
 
             if (!expectedChildKinds.Contains(childNodes.Single().Kind()))
-                throw new DslSyntaxException(_errorContext, $"The provided code snippet should be formatted as a C# lambda expression." +
+                throw new DslConceptSyntaxException(_errorContext, $"The provided code snippet should be formatted as a C# lambda expression." +
                     $" Code snippet '{_expression.Limit(200)}' is '{childNodes.Single().Kind()}' instead of '{expectedChildKindsText}'.");
         }
 
         private ExpressionParameter[] BuildExpressionParameters(ParameterSyntax[] parametersSyntax)
         {
             if (_argumentTypes != null && _argumentTypes.Length != parametersSyntax.Length)
-                throw new DslSyntaxException(_errorContext, $"The provided code snippet should have {_argumentTypes.Length} parameters instead of {parametersSyntax.Length}." +
+                throw new DslConceptSyntaxException(_errorContext, $"The provided code snippet should have {_argumentTypes.Length} parameters instead of {parametersSyntax.Length}." +
                     $" Code snippet: '{_expression.Limit(200)}'." +
                     $" Expected parameter types: {string.Join(", ", _argumentTypes)}.");
 

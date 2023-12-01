@@ -47,7 +47,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
         {
             if (Referenced != null && Referenced != DataStructure)
-                throw new DslSyntaxException(this, string.Format(
+                throw new DslConceptSyntaxException(this, string.Format(
                     "Incorrectly constructed Hierarchy property: it should reference itself. Reference='{0}', DataStructure='{1}'.",
                     Referenced.GetUserDescription(),
                     DataStructure.GetUserDescription()));

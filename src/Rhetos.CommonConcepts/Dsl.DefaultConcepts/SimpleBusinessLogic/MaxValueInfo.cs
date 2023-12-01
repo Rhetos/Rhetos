@@ -84,32 +84,32 @@ namespace Rhetos.Dsl.DefaultConcepts
             {
                 int i;
                 if (!Int32.TryParse(this.Value, out i))
-                    throw new DslSyntaxException(this, "Value is not an integer.");
+                    throw new DslConceptSyntaxException(this, "Value is not an integer.");
             }
             else if (this.Property is DecimalPropertyInfo)
             {
                 if (!DecimalChecker.IsMatch(this.Value))
-                    throw new DslSyntaxException(this, "Value is not an valid decimal (use period as decimal separator).");
+                    throw new DslConceptSyntaxException(this, "Value is not an valid decimal (use period as decimal separator).");
             }
             else if (this.Property is MoneyPropertyInfo)
             {
                 if (!DecimalChecker.IsMatch(this.Value))
-                    throw new DslSyntaxException(this, "Value is not an valid decimal (use period as decimal separator).");
+                    throw new DslConceptSyntaxException(this, "Value is not an valid decimal (use period as decimal separator).");
             }
             else if (this.Property is DatePropertyInfo)
             {
                 DateTime i3;
                 if (!DateTime.TryParse(this.Value, out i3))
-                    throw new DslSyntaxException(this, "Value is not an date.");
+                    throw new DslConceptSyntaxException(this, "Value is not an date.");
             }
             else if (this.Property is DateTimePropertyInfo)
             {
                 DateTime i4;
                 if (!DateTime.TryParse(this.Value, out i4))
-                    throw new DslSyntaxException(this, "Value is not an datetime.");
+                    throw new DslConceptSyntaxException(this, "Value is not an datetime.");
             }
             else
-                throw new DslSyntaxException(this, "MaxValue can only be used on Integer, Decimal, Money, Date or DateTime.");
+                throw new DslConceptSyntaxException(this, "MaxValue can only be used on Integer, Decimal, Money, Date or DateTime.");
         }
     }
 }

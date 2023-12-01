@@ -69,7 +69,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         public void CheckSemantics(IDslModel existingConcepts)
         {
             if (PropertyFrom.GetType() != PropertyTo.GetType())
-                throw new DslSyntaxException(this, "Range can only be used on two properties of same type.");
+                throw new DslConceptSyntaxException(this, "Range can only be used on two properties of same type.");
         }
     }
 }

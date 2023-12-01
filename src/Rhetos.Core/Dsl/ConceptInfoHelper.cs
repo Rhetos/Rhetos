@@ -245,7 +245,7 @@ namespace Rhetos.Dsl
 
             if (memberValue == null)
                 if (exceptionOnNullMember)
-                    throw new DslSyntaxException(ci, string.Format(
+                    throw new DslConceptSyntaxException(ci, string.Format(
                         "{0}'s property {1} is null. Info: {2}.",
                         ci.GetType().Name, member.Name, ci.GetErrorDescription()));
                 else

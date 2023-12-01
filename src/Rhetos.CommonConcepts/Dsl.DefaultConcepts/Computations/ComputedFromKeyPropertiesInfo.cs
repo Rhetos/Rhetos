@@ -43,7 +43,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             var keyProperties = CreateKeyProperties(existingConcepts);
             var invalidPropertyName = keyProperties.Where(kp => kp.Value == null).Select(kp => kp.Key).FirstOrDefault();
             if (invalidPropertyName != null)
-                throw new DslSyntaxException(this, $"Cannot find property '{invalidPropertyName}' on '{ComputedFrom.Target.GetKeyProperties()}'.");
+                throw new DslConceptSyntaxException(this, $"Cannot find property '{invalidPropertyName}' on '{ComputedFrom.Target.GetKeyProperties()}'.");
         }
 
         public Dictionary<string, IConceptInfo> CreateKeyProperties(IDslModel existingConcepts)

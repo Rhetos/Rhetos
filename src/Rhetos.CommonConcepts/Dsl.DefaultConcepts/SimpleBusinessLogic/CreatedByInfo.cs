@@ -42,7 +42,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             string referenced = Property.Referenced.GetKeyProperties();
             const string commonPrincipal = "Common.Principal";
             if (referenced != commonPrincipal)
-                throw new DslSyntaxException(this, "This property must reference '" + commonPrincipal + "' instead of '" + referenced + "'.");
+                throw new DslConceptSyntaxException(this, "This property must reference '" + commonPrincipal + "' instead of '" + referenced + "'.");
         }
     }
 }

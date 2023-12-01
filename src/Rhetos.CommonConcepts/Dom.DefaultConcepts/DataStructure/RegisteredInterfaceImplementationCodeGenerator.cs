@@ -37,7 +37,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
             var interfaceType = Type.GetType(info.InterfaceAssemblyQualifiedName);
             if (interfaceType == null)
-                throw new DslSyntaxException(conceptInfo, "Could not find type '" + info.InterfaceAssemblyQualifiedName + "'.");
+                throw new DslConceptSyntaxException(conceptInfo, "Could not find type '" + info.InterfaceAssemblyQualifiedName + "'.");
 
             // TODO: Remove IQueryableRepository registration.  IQueryableRepository should be cast from repository object in Rhetos.Dom.DefaultConcepts.GenericRepositories class.
             string registerRepository = string.Format(

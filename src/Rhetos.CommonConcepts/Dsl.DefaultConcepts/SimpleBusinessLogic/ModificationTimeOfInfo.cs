@@ -60,7 +60,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         public IEnumerable<IConceptInfo> CreateNewConcepts(ModificationTimeOfInfo conceptInfo, IDslModel existingConcepts)
         {
             if (!(conceptInfo.Property.DataStructure is EntityInfo))
-                throw new DslSyntaxException(conceptInfo, $"{conceptInfo.GetKeywordOrTypeName()} can only be used on an Entity, " +
+                throw new DslConceptSyntaxException(conceptInfo, $"{conceptInfo.GetKeywordOrTypeName()} can only be used on an Entity, " +
                     $"not on {conceptInfo.Property.DataStructure.GetUserDescription()}.");
             
             var saveMethod = new SaveMethodInfo { Entity = (EntityInfo)conceptInfo.Property.DataStructure };

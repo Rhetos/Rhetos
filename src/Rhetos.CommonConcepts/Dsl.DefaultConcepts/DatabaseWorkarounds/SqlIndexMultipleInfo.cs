@@ -54,7 +54,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         public void CheckSemantics(IDslModel existingConcepts)
         {
             if (!IsSupported(DataStructure))
-                throw new DslSyntaxException(this,
+                throw new DslConceptSyntaxException(this,
                     $"SQL index can only be used in a writable data structure." +
                     $" '{DataStructure.FullName}' is a '{DataStructure.GetKeywordOrTypeName()}'.");
 
@@ -73,9 +73,9 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             var names = conceptInfo.PropertyNames.Split(' ');
             if (names.Distinct().Count() != names.Length)
-                throw new DslSyntaxException(conceptInfo, "Duplicate property name in index list '" + conceptInfo.PropertyNames + "'.");
+                throw new DslConceptSyntaxException(conceptInfo, "Duplicate property name in index list '" + conceptInfo.PropertyNames + "'.");
             if (!names.Any())
-                throw new DslSyntaxException(conceptInfo, "Empty property list.");
+                throw new DslConceptSyntaxException(conceptInfo, "Empty property list.");
 
             SqlIndexMultiplePropertyInfo lastIndexProperty = null;
             for (int i = 0; i < names.Length; i++)

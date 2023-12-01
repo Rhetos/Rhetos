@@ -62,7 +62,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             if (reference.IsError)
                 return null; // Wait for the other macro concepts to be evaluated. If the error persists, it will be handled at IValidatedConcept.CheckSemantics.
             if (!(reference.Value is ReferencePropertyInfo))
-                throw new DslSyntaxException(conceptInfo, $"The given path '{conceptInfo.ReferencePath}' should end with a reference property, instead of the {reference.Value.GetUserDescription()}.");
+                throw new DslConceptSyntaxException(conceptInfo, $"The given path '{conceptInfo.ReferencePath}' should end with a reference property, instead of the {reference.Value.GetUserDescription()}.");
             var referenced = ((ReferencePropertyInfo)reference.Value).Referenced;
 
             var computationDependencies = new List<Tuple<DataStructureInfo, string>>();
@@ -99,7 +99,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             var implementations = existingConcepts.FindByReference<IsSubtypeOfInfo>(imp => imp.Supertype, polymorphic);
             var unsupported = implementations.Where(imp => !(imp.Subtype is IWritableOrmDataStructure)).FirstOrDefault();
             if (unsupported != null)
-                throw new DslSyntaxException(errorContext, $"The referenced '{polymorphic.GetUserDescription()}' is not supported"
+                throw new DslConceptSyntaxException(errorContext, $"The referenced '{polymorphic.GetUserDescription()}' is not supported"
                     + $" because it contains a non-writable implementation '{unsupported.Subtype.GetUserDescription()}'."
                     + $" Please use ChangesOnChangedItems instead, to manually set the computation's dependencies.");
 

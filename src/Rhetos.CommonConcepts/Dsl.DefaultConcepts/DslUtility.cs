@@ -54,7 +54,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         public static void CheckIfPropertyBelongsToDataStructure(PropertyInfo property, DataStructureInfo dataStructure, IConceptInfo errorContext)
         {
             if (property.DataStructure != dataStructure)
-                throw new DslSyntaxException(errorContext,
+                throw new DslConceptSyntaxException(errorContext,
                     $"Property {property.FullName} is not in data structure {dataStructure.FullName}.");
         }
 
@@ -101,7 +101,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                 if (!string.IsNullOrEmpty(additionalErrorMessage))
                     error = additionalErrorMessage + " " + error;
 
-                throw new DslSyntaxException(errorContext, error);
+                throw new DslConceptSyntaxException(errorContext, error);
             }
             return name;
         }
@@ -110,7 +110,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             var property = GetPropertyByPath(source, path, existingConcepts);
             if (property.IsError)
-                throw new DslSyntaxException(errorContext, "Invalid path: " + property.Error);
+                throw new DslConceptSyntaxException(errorContext, "Invalid path: " + property.Error);
         }
 
         public static PropertyInfo FindProperty(IDslModel dslModel, DataStructureInfo dataStructure, string propertyName)
@@ -293,7 +293,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             {
                 string fullName = assemblyQualifiedName.Groups["fullname"].Value;
                 fullName = fullName.Replace("+", ".");
-                throw new DslSyntaxException(errorContext,
+                throw new DslConceptSyntaxException(errorContext,
                     "Use a full type name with namespace, as written in C# source, instead of the assembly qualified name." +
                     $" To remove the assembly name from the type name, try '{fullName}' instead of '{typeName}'.");
             }

@@ -57,7 +57,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                 .Select(f => f.Parameter).OrderBy(f => f).ToList();
 
             if (!availableFilters.Contains(Parameter))
-                throw new DslSyntaxException(this, string.Format(
+                throw new DslConceptSyntaxException(this, string.Format(
                     "There is no {0} '{1}' on {2}. Available {0} filters are: {3}.",
                     ConceptInfoHelper.GetKeywordOrTypeName(typeof(ComposableFilterByInfo)),
                     Parameter,

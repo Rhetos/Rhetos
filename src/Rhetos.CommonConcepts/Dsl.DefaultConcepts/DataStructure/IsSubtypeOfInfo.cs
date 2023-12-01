@@ -70,11 +70,11 @@ namespace Rhetos.Dsl.DefaultConcepts
         public void CheckSemantics(IDslModel existingConcepts)
         {
             if (!(Subtype is IOrmDataStructure))
-                throw new DslSyntaxException(this, "Is (polymorphic) may only be used on a database-mapped data structure, such as Entity or SqlQueryable. "
+                throw new DslConceptSyntaxException(this, "Is (polymorphic) may only be used on a database-mapped data structure, such as Entity or SqlQueryable. "
                     + this.Subtype.GetUserDescription() + " is not IOrmDataStructure.");
 
             if (ImplementationName == null)
-                throw new DslSyntaxException(this, "ImplementationName must not be null. It is allowed to be an empty string.");
+                throw new DslConceptSyntaxException(this, "ImplementationName must not be null. It is allowed to be an empty string.");
 
             if (ImplementationName != "")
                 DslUtility.ValidateIdentifier(ImplementationName, this, "Invalid ImplementationName value.");
@@ -84,7 +84,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                 // Verifying if the ChangesOnChangedItemsInfo can be created (see IsSubtypeOfMacro)
                 var dependsOn = DslUtility.GetBaseChangesOnDependency(Subtype, existingConcepts);
                 if (!dependsOn.Any())
-                    throw new DslSyntaxException(this, Subtype.GetUserDescription() + " should be an *extension* of an entity. Otherwise it cannot be used in a materialized polymorphic entity because the system cannot detect when to update the persisted data.");
+                    throw new DslConceptSyntaxException(this, Subtype.GetUserDescription() + " should be an *extension* of an entity. Otherwise it cannot be used in a materialized polymorphic entity because the system cannot detect when to update the persisted data.");
             }
         }
     }

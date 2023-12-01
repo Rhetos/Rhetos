@@ -38,10 +38,10 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             Type myType = Type.GetType(InterfaceAssemblyQualifiedName);
             if (myType == null)
-                throw new DslSyntaxException(this, "Could not find type '" + InterfaceAssemblyQualifiedName + "'.");
+                throw new DslConceptSyntaxException(this, "Could not find type '" + InterfaceAssemblyQualifiedName + "'.");
 
             if (InterfaceAssemblyQualifiedName != myType.AssemblyQualifiedName)
-                throw new DslSyntaxException(this, "Must use exact assembly qualified name '"
+                throw new DslConceptSyntaxException(this, "Must use exact assembly qualified name '"
                     + myType.AssemblyQualifiedName + "' instead of '" + InterfaceAssemblyQualifiedName + "'.");
         }
     }

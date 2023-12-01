@@ -47,7 +47,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         public void CheckSemantics(IDslModel existingConcepts)
         {
             if (Extension == Base)
-                throw new DslSyntaxException(this, "A data structure cannot be an extension of itself. The base data structure is the same as the extension.");
+                throw new DslConceptSyntaxException(this, "A data structure cannot be an extension of itself. The base data structure is the same as the extension.");
         }
 
         public string ExtensionPropertyName()

@@ -39,13 +39,13 @@ namespace Rhetos.Dsl.DefaultConcepts
             base.CheckSemantics(existingConcepts);
 
             if (!DslUtility.IsQueryable(DataStructure))
-                throw new DslSyntaxException(this, this.GetKeywordOrTypeName() + " can only be used on a queryable data structure, such as Entity. " + DataStructure.GetKeywordOrTypeName() + " is not queryable.");
+                throw new DslConceptSyntaxException(this, this.GetKeywordOrTypeName() + " can only be used on a queryable data structure, such as Entity. " + DataStructure.GetKeywordOrTypeName() + " is not queryable.");
 
             if (!DslUtility.IsQueryable(ReferenceProperty.DataStructure))
-                throw new DslSyntaxException(this, this.GetKeywordOrTypeName() + " must reference a queryable data structure, such as Entity. " + ReferenceProperty.DataStructure.GetKeywordOrTypeName() + " is not queryable.");
+                throw new DslConceptSyntaxException(this, this.GetKeywordOrTypeName() + " must reference a queryable data structure, such as Entity. " + ReferenceProperty.DataStructure.GetKeywordOrTypeName() + " is not queryable.");
 
             if (ReferenceProperty.Referenced != DataStructure)
-                throw new DslSyntaxException(this, string.Format(
+                throw new DslConceptSyntaxException(this, string.Format(
                     "{0} references '{1}' which is a reference to '{2}'. Expected is a reference back to '{3}'.",
                     this.GetKeywordOrTypeName(),
                     ReferenceProperty.GetUserDescription(),

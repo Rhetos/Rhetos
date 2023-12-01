@@ -35,9 +35,6 @@ namespace Rhetos.Dsl
         public DslSyntaxException(string message) : base(message) { }
         public DslSyntaxException(string message, Exception inner) : base(message, inner) { }
         
-        public DslSyntaxException(IConceptInfo concept, string additionalMessage) : base(concept.GetUserDescription() + ": " + additionalMessage) { }
-        public DslSyntaxException(IConceptInfo concept, string additionalMessage, Exception inner) : base(concept.GetUserDescription() + ": " + additionalMessage, inner) { }
-
         protected DslSyntaxException(
           System.Runtime.Serialization.SerializationInfo info,
           System.Runtime.Serialization.StreamingContext context)

@@ -45,7 +45,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
         {
             if (!(Property.DataStructure is EntityInfo))
-                throw new DslSyntaxException(this, "History concept may only be used on entity or its property.");
+                throw new DslConceptSyntaxException(this, "History concept may only be used on entity or its property.");
             Dependency_EntityHistory = new EntityHistoryInfo { Entity = (EntityInfo)Property.DataStructure };
             Dependency_AtTimeSqlFunction = new SqlFunctionInfo { Module = Property.DataStructure.Module, Name = Property.DataStructure.Name + "_AtTime" };
             Dependency_HistorySqlQueryable = new SqlQueryableInfo { Module = Property.DataStructure.Module, Name = Property.DataStructure.Name + "_History" };

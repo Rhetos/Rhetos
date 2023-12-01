@@ -47,7 +47,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             var baseDataStructure = GetBaseDataStructure(existingConcepts);
             if (baseDataStructure == null)
-                throw new DslSyntaxException(this, "'" + this.GetKeywordOrTypeName() + "' can only be used on an extension. '"
+                throw new DslConceptSyntaxException(this, "'" + this.GetKeywordOrTypeName() + "' can only be used on an extension. '"
                     + RowPermissionsFilters.DataStructure.GetUserDescription() + "' does not extend another data structure.");
 
         }

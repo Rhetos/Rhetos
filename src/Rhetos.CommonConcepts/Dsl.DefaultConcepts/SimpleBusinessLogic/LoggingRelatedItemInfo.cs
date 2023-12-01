@@ -49,7 +49,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         public void CheckSemantics(IDslModel existingConcepts)
         {
             if (string.IsNullOrWhiteSpace(Relation))
-                throw new DslSyntaxException(this, "Property 'Relation' must not be empty.");
+                throw new DslConceptSyntaxException(this, "Property 'Relation' must not be empty.");
         }
     }
 }

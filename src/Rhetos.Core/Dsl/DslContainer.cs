@@ -227,7 +227,7 @@ namespace Rhetos.Dsl
                 if (reference.Dependant.Concept is IAlternativeInitializationConcept)
                     errorMessage += $" Check if the InitializeNonparsableProperties function of IAlternativeInitializationConcept implementation at {reference.Dependant.Concept.GetType().Name} is implemented properly.";
 
-                throw new DslSyntaxException(reference.Dependant.Concept, errorMessage);
+                throw new DslConceptSyntaxException(reference.Dependant.Concept, errorMessage);
             }
 
             IConceptInfo referencedConcept;
@@ -299,7 +299,7 @@ namespace Rhetos.Dsl
                         + $" but it is marked as unresolved dependency to '{internalError.ReferencedStub.GetUserDescription()}'.");
 
                 var rootUnresolved = GetRootUnresolvedConcept(unresolvedConcepts.First());
-                throw new DslSyntaxException(rootUnresolved.Dependant.Concept,
+                throw new DslConceptSyntaxException(rootUnresolved.Dependant.Concept,
                     $"Referenced concept is not defined in DSL scripts: '{rootUnresolved.ReferencedStub.GetUserDescription()}'.");
             }
         }
@@ -323,7 +323,7 @@ namespace Rhetos.Dsl
                 var circularGroup = trail
                     .Skip(trail.IndexOf(referencedUnresolvedConcept.Dependant.Key))
                     .Concat(new[] { referencedUnresolvedConcept.Dependant.Key });
-                throw new DslSyntaxException(referencedUnresolvedConcept.Dependant.Concept,
+                throw new DslConceptSyntaxException(referencedUnresolvedConcept.Dependant.Concept,
                     "Circular dependency detected in concept's references: " + string.Join(" => ", circularGroup) + ".");
             }
 

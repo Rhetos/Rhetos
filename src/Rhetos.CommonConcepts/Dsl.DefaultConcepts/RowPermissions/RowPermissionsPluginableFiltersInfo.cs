@@ -108,7 +108,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                 throw new InvalidOperationException($"Unexpected {nameof(newRowPermissionsFilter)} type '{newRowPermissionsFilter.GetType()}'.");
 
             if (oldFilterExpression == null || oldFilterExpression != newFilterExpression)
-                throw new DslSyntaxException(conceptInfo, "Cannot use row permissions rules or row permissions inheritance on "
+                throw new DslConceptSyntaxException(conceptInfo, "Cannot use row permissions rules or row permissions inheritance on "
                     + conceptInfo.DataStructure.GetUserDescription() + " because it already contains a specific row permissions filter ("
                     + filterName + ")."
                     + " Use RowPermissions concept instead of the specific filter, to create rules-based row permissions.");

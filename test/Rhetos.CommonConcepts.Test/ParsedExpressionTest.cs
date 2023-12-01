@@ -73,15 +73,15 @@ a; b; /
             string expected = // Format: MethodParameters / MethodBody / ResultLiteral(if available), or Exception.
 @"
 (int a) { return /*1*/ a; }
-DslSyntaxException: TestConcept Test: C# syntax error '(1,16): error CS1002: ; expected' in code snippet 'a v => a.Length'.
+DslConceptSyntaxException: TestConcept Test: C# syntax error '(1,16): error CS1002: ; expected' in code snippet 'a v => a.Length'.
 (int a, double b) { return (a + b).Length; }
 (string a, string b) { return (a + b).Length; }
-DslSyntaxException: TestConcept Test: The provided code snippet should have 1 parameters instead of 2. Code snippet: '(string a, string b) => (a + b).Length'. Expected parameter types: string.
+DslConceptSyntaxException: TestConcept Test: The provided code snippet should have 1 parameters instead of 2. Code snippet: '(string a, string b) => (a + b).Length'. Expected parameter types: string.
 (string a) { return a.Length; }
 (string a) { return a.Length; }
 (int a) { return a.Length; }
 (int a) { return a.Length; }
-DslSyntaxException: TestConcept Test: The provided code snippet should be formatted as a C# lambda expression. Code snippet 'delegate (string a) { return a.Length; }' is 'AnonymousMethodExpression' instead of 'SimpleLambdaExpression or ParenthesizedLambdaExpression'.
+DslConceptSyntaxException: TestConcept Test: The provided code snippet should be formatted as a C# lambda expression. Code snippet 'delegate (string a) { return a.Length; }' is 'AnonymousMethodExpression' instead of 'SimpleLambdaExpression or ParenthesizedLambdaExpression'.
 (string x) { /*1*/ x++; /*2*/ return /*3*/ x.Length; /*4*/ }
 () { return await Task.Run(() => ""ad""); }
 () { return ""ad""; }/""ad""
@@ -99,11 +99,11 @@ DslSyntaxException: TestConcept Test: The provided code snippet should be format
 (x a) { return @""he""""llo""; }/@""he""""llo""
 (x a) { return null; }/null
 (x a) { return nulll; }
-DslSyntaxException: TestConcept Test: The provided code snippet should have 1 parameters instead of 0. Code snippet: '() => a'. Expected parameter types: x.
+DslConceptSyntaxException: TestConcept Test: The provided code snippet should have 1 parameters instead of 0. Code snippet: '() => a'. Expected parameter types: x.
 () { return a; }
-DslSyntaxException: TestConcept Test: The provided code snippet should be formatted as a C# lambda expression. Code snippet '{ print(a); }' is 'Block' instead of 'ExpressionStatement'.
-DslSyntaxException: TestConcept Test: The provided code snippet should be formatted as a C# lambda expression. Code snippet '' has no content. Expected content type is 'GlobalStatement'.
-DslSyntaxException: TestConcept Test: The provided code snippet should be formatted as a C# lambda expression. Code snippet 'a; b;' contains multiple nodes while only one is expected. Expected child node type is 'GlobalStatement'. The provided snippet contains 2 child nodes: GlobalStatement, GlobalStatement.
+DslConceptSyntaxException: TestConcept Test: The provided code snippet should be formatted as a C# lambda expression. Code snippet '{ print(a); }' is 'Block' instead of 'ExpressionStatement'.
+DslConceptSyntaxException: TestConcept Test: The provided code snippet should be formatted as a C# lambda expression. Code snippet '' has no content. Expected content type is 'GlobalStatement'.
+DslConceptSyntaxException: TestConcept Test: The provided code snippet should be formatted as a C# lambda expression. Code snippet 'a; b;' contains multiple nodes while only one is expected. Expected child node type is 'GlobalStatement'. The provided snippet contains 2 child nodes: GlobalStatement, GlobalStatement.
 ";
 
             IConceptInfo testConcept = new TestConcept { Name = "Test" };
