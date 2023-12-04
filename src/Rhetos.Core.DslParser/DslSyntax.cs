@@ -48,7 +48,7 @@ namespace Rhetos.Dsl
         /// <remarks>
         /// See <see cref="Version"/> for more info.
         /// </remarks>
-        public static readonly Version CurrentVersion = new Version(5, 0);
+        public static readonly Version CurrentVersion = new Version(6, 0);
 
         /// <summary>
         /// Version of Rhetos framework (information only).

@@ -29,10 +29,12 @@ namespace Rhetos.Dsl
         private readonly static char[] Whitespaces = { ' ', '\t', '\n', '\r' };
         private static readonly HashSet<char> invalidPathChars = new HashSet<char>(Path.GetInvalidPathChars());
         private readonly DslSyntax _syntax;
+        private readonly IExternalTextReader _externalTextReader;
 
-        public TokenizerInternals(DslSyntax syntax)
+        public TokenizerInternals(DslSyntax syntax, IExternalTextReader externalTextReader)
         {
             _syntax = syntax;
+            _externalTextReader = externalTextReader;
         }
 
         public static void SkipWhitespaces(string script, ref int position)
@@ -41,7 +43,7 @@ namespace Rhetos.Dsl
                 position++;
         }
 
-        public Token GetNextToken_ValueType(DslScript dslScript, ref int position, Func<string, string> readAllTextfromFile)
+        public Token GetNextToken_ValueType(DslScript dslScript, ref int position)
         {
             string script = dslScript.Script;
             if (position < script.Length && Whitespaces.Contains(script[position]))
@@ -62,7 +64,7 @@ namespace Rhetos.Dsl
             else if (IsExternalTextStart(script[position]))
                 return new Token
                 {
-                    Value = ReadExternalText(dslScript, ref position, readAllTextfromFile),
+                    Value = ReadExternalText(dslScript, ref position),
                     Type = TokenType.Text
                 };
             else if (IsSingleLineCommentStart(script, position))
@@ -194,7 +196,7 @@ namespace Rhetos.Dsl
             return c == '<';
         }
 
-        private string ReadExternalText(DslScript dslScript, ref int end, Func<string, string> readAllTextfromFile)
+        private string ReadExternalText(DslScript dslScript, ref int end)
         {
             string script = dslScript.Script;
             int begin = end;
@@ -217,44 +219,13 @@ namespace Rhetos.Dsl
 
             end++; // Skip closing character.
 
-            // User can use either Windows or Linux/MacOs path separator,
-            // so that we must convert to cross-platform path separator.
-            string basicFilePath = script
-                .Substring(begin + 1, end - begin - 2)
-                .Replace('\\', Path.DirectorySeparatorChar)
-                .Replace('/', Path.DirectorySeparatorChar);
+            string relativePathOrResourceName = script.Substring(begin + 1, end - begin - 2);
+            var externalText = _externalTextReader.Read(dslScript, relativePathOrResourceName);
 
-            string dslScriptFolder = Path.GetDirectoryName(dslScript.Path);
-            return LoadFile(Path.Combine(dslScriptFolder, basicFilePath), dslScript, begin, end, readAllTextfromFile);
-        }
-
-        private string LoadFile(string basicFilePath, DslScript dslScript, int begin, int end, Func<string, string> readAllTextfromFile)
-        {
-            var filePaths = new List<string> { basicFilePath };
-
-            string basicFileExtension = Path.GetExtension(basicFilePath);
-            if (basicFileExtension.Equals(".sql", StringComparison.OrdinalIgnoreCase))
-            {
-                var directory = Path.GetDirectoryName(basicFilePath);
-                var fileName = Path.GetFileNameWithoutExtension(basicFilePath);
-                if (string.IsNullOrWhiteSpace(fileName))
-                {
-                    var errorMessage = $"Referenced empty file name ({basicFilePath}) in DSL script.";
-                    throw new DslSyntaxException(errorMessage, "RH0011", dslScript, begin, end, null);
-                }
-
-                // Look for SQL dialect-specific files before the generic SQL file:
-                filePaths.Insert(0, Path.Combine(directory, fileName + "." + _syntax.DatabaseLanguage + basicFileExtension));
-                filePaths.Insert(1, Path.Combine(directory, fileName + " (" + _syntax.DatabaseLanguage + ")" + basicFileExtension));
-            }
-
-            foreach (var filePath in filePaths)
-                if (File.Exists(filePath))
-                    return readAllTextfromFile(filePath);
-
-            var notFoundMessage = "Cannot find the extension file referenced in DSL script.";
-            var fileListMessage = "Looking for files:\r\n" + string.Join("\r\n", filePaths);
-            throw new DslSyntaxException($"{notFoundMessage} {fileListMessage}", "RH0012", dslScript, begin, end, null);
+            if (!externalText.IsError)
+                return externalText.Value;
+            else
+                throw new DslSyntaxException(externalText.Error, "RH0012", dslScript, begin, end, null);
         }
     }
 }

@@ -28,7 +28,7 @@ namespace Rhetos.Dsl.Test
         public TestTokenizer(params string[] dslScripts)
             : base(
                   new MockDslScriptsProvider(dslScripts),
-                  new FilesUtility(new ConsoleLogProvider()),
+                  new ExternalTextReader(new FilesUtility(new ConsoleLogProvider()), null, null),
                   new Lazy<DslSyntax>(() => new DslSyntaxFromPlugins(Array.Empty<IConceptInfo>(), new BuildOptions(), new DatabaseSettings()).CreateDslSyntax()))
         {
         }

@@ -17,7 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 
@@ -29,13 +28,13 @@ namespace Rhetos.Dsl
     public class Tokenizer : ITokenizer
     {
         private readonly IDslScriptsProvider _dslScriptsProvider;
-        private readonly FilesUtility _filesUtility;
+        private readonly IExternalTextReader _externalTextReader;
         private readonly Lazy<DslSyntax> _syntax;
 
-        public Tokenizer(IDslScriptsProvider dslScriptsProvider, FilesUtility filesUtility, Lazy<DslSyntax> syntax)
+        public Tokenizer(IDslScriptsProvider dslScriptsProvider, IExternalTextReader externalTextReader, Lazy<DslSyntax> syntax)
         {
             _dslScriptsProvider = dslScriptsProvider;
-            _filesUtility = filesUtility;
+            _externalTextReader = externalTextReader;
             _syntax = syntax;
         }
 
@@ -46,7 +45,7 @@ namespace Rhetos.Dsl
 
             try
             {
-                var tokenizerInternals = new TokenizerInternals(_syntax.Value);
+                var tokenizerInternals = new TokenizerInternals(_syntax.Value, _externalTextReader);
 
                 foreach (var dslScript in _dslScriptsProvider.DslScripts)
                 {
@@ -59,7 +58,7 @@ namespace Rhetos.Dsl
                             break;
 
                         int startPosition = scriptPosition;
-                        Token t = tokenizerInternals.GetNextToken_ValueType(dslScript, ref scriptPosition, _filesUtility.ReadAllText);
+                        Token t = tokenizerInternals.GetNextToken_ValueType(dslScript, ref scriptPosition);
                         t.DslScript = dslScript;
                         t.PositionInDslScript = startPosition;
                         t.PositionEndInDslScript = scriptPosition;
