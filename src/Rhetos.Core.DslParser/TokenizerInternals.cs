@@ -17,7 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -25,67 +24,6 @@ using System.Linq;
 
 namespace Rhetos.Dsl
 {
-    /// <summary>
-    /// Performs the lexical analysis for DSL scripts: Transforms source text into a list of tokens.
-    /// </summary>
-    public class Tokenizer : ITokenizer
-    {
-        private readonly IDslScriptsProvider _dslScriptsProvider;
-        private readonly FilesUtility _filesUtility;
-        private readonly Lazy<DslSyntax> _syntax;
-
-        public Tokenizer(IDslScriptsProvider dslScriptsProvider, FilesUtility filesUtility, Lazy<DslSyntax> syntax)
-        {
-            _dslScriptsProvider = dslScriptsProvider;
-            _filesUtility = filesUtility;
-            _syntax = syntax;
-        }
-
-        public TokenizerResult GetTokens()
-        {
-            var tokens = new List<Token>();
-            DslSyntaxException syntaxError = null;
-
-            try
-            {
-                var tokenizerInternals = new TokenizerInternals(_syntax.Value);
-
-                foreach (var dslScript in _dslScriptsProvider.DslScripts)
-                {
-                    int scriptPosition = 0;
-
-                    while (true)
-                    {
-                        TokenizerInternals.SkipWhitespaces(dslScript.Script, ref scriptPosition);
-                        if (scriptPosition >= dslScript.Script.Length)
-                            break;
-
-                        int startPosition = scriptPosition;
-                        Token t = tokenizerInternals.GetNextToken_ValueType(dslScript, ref scriptPosition, _filesUtility.ReadAllText);
-                        t.DslScript = dslScript;
-                        t.PositionInDslScript = startPosition;
-                        t.PositionEndInDslScript = scriptPosition;
-
-                        if (t.Type != TokenType.Comment)
-                            tokens.Add(t);
-                    }
-
-                    tokens.Add(new Token { DslScript = dslScript, PositionInDslScript = dslScript.Script.Length, PositionEndInDslScript = dslScript.Script.Length, Type = TokenType.EndOfFile, Value = "" });
-                }
-            }
-            catch (DslSyntaxException e)
-            {
-                syntaxError = e;
-            }
-
-            return new TokenizerResult
-            {
-                Tokens = tokens,
-                SyntaxError = syntaxError
-            };
-        }
-    }
-
     public class TokenizerInternals
     {
         private readonly static char[] Whitespaces = { ' ', '\t', '\n', '\r' };
