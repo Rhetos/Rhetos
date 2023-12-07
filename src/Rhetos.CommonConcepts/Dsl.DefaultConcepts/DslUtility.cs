@@ -307,5 +307,20 @@ namespace Rhetos.Dsl.DefaultConcepts
         /// It should not have false positives, since it might block a feature implementation.
         /// </remarks>
         private static readonly Regex _isAssemblyQualifiedNameRegex = new Regex(@"(?<fullname>.*?),[^\>\)\]]*$");
+
+        public static (string ResourceKey, string SqlScript) FindSqlResourceKeyPropertyType(ISqlResources sqlResources, string keyPrefix, PropertyInfo propertyInfo)
+        {
+            Type propertyType = propertyInfo.GetType();
+            while (typeof(PropertyInfo).IsAssignableFrom(propertyType))
+            {
+                string resourceKey = keyPrefix + ConceptInfoHelper.GetKeywordOrTypeName(propertyType);
+                string sqlScript = sqlResources.TryGet(resourceKey);
+                if (sqlScript != null)
+                    return (resourceKey, sqlScript);
+
+                propertyType = propertyType.BaseType;
+            }
+            return (null, null);
+        }
     }
 }

@@ -355,15 +355,6 @@ CREATE FUNCTION {0}.{1} ({2})
   <data name="SqlFunctionDatabaseDefinition_Remove" xml:space="preserve">
     <value>DROP FUNCTION {0}.{1}</value>
   </data>
-  <data name="SqlIndex2DatabaseDefinition_ConstraintName" xml:space="preserve">
-    <value>IX_{0}_{1}_{2}</value>
-  </data>
-  <data name="SqlIndex3DatabaseDefinition_ConstraintName" xml:space="preserve">
-    <value>IX_{0}_{1}_{2}_{3}</value>
-  </data>
-  <data name="SqlIndexDatabaseDefinition_ConstraintName" xml:space="preserve">
-    <value>IX_{0}_{1}</value>
-  </data>
   <data name="SqlIndexMultipleDatabaseDefinition_Create" xml:space="preserve">
     <value>CREATE {4} {5} INDEX {0} ON {1}.{2} ({3}) {6}</value>
   </data>

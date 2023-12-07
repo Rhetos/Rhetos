@@ -62,10 +62,10 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 
             var info = (LoggingRelatedItemInfo)conceptInfo;
 
-            InsertCode(codeBuilder, info, "LoggingRelatedItemDatabaseDefinition_TempColumnDefinition", EntityLoggingDefinition.TempColumnDefinitionTag);
-            InsertCode(codeBuilder, info, "LoggingRelatedItemDatabaseDefinition_TempColumnList", EntityLoggingDefinition.TempColumnListTag);
-            InsertCode(codeBuilder, info, "LoggingRelatedItemDatabaseDefinition_TempColumnSelect", EntityLoggingDefinition.TempColumnSelectTag);
-            InsertCode(codeBuilder, info, "LoggingRelatedItemDatabaseDefinition_AfterInsertLog", EntityLoggingDefinition.AfterInsertLogTag);
+            InsertCode(codeBuilder, info, sqlResource: "LoggingRelatedItemDatabaseDefinition_TempColumnDefinition", tag: EntityLoggingDefinition.TempColumnDefinitionTag);
+            InsertCode(codeBuilder, info, sqlResource: "LoggingRelatedItemDatabaseDefinition_TempColumnList", tag: EntityLoggingDefinition.TempColumnListTag);
+            InsertCode(codeBuilder, info, sqlResource: "LoggingRelatedItemDatabaseDefinition_TempColumnSelect", tag: EntityLoggingDefinition.TempColumnSelectTag);
+            InsertCode(codeBuilder, info, sqlResource: "LoggingRelatedItemDatabaseDefinition_AfterInsertLog", tag: EntityLoggingDefinition.AfterInsertLogTag);
 
             IConceptInfo logRelatedItemTableMustBeFullyCreated = new PrerequisiteAllProperties { DependsOn = new EntityInfo { Module = new ModuleInfo { Name = "Common" }, Name = "LogRelatedItem" } };
             createdDependencies = new[] { Tuple.Create(logRelatedItemTableMustBeFullyCreated, conceptInfo) };

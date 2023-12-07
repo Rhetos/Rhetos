@@ -195,15 +195,6 @@ END;</value>
   <data name="ReferenceCascadeDeleteDatabaseDefinition_ExtendForeignKey" xml:space="preserve">
     <value> ON DELETE CASCADE </value>
   </data>
-  <data name="SqlIndex2DatabaseDefinition_ConstraintName" xml:space="preserve">
-    <value>IX{0}{1}</value>
-  </data>
-  <data name="SqlIndex3DatabaseDefinition_ConstraintName" xml:space="preserve">
-    <value>IX{0}{1}</value>
-  </data>
-  <data name="SqlIndexDatabaseDefinition_ConstraintName" xml:space="preserve">
-    <value>IX{0}{1}</value>
-  </data>
   <data name="SqlIndexMultipleDatabaseDefinition_ConstraintName" xml:space="preserve">
     <value>IX{0}{1}</value>
   </data>
@@ -463,7 +454,7 @@ AS
   <data name="SqlQueryableDatabaseDefinition_Remove" xml:space="preserve">
     <value>DROP VIEW {0}.{1}</value>
   </data>
-  <data name="SqlIndexMultiplePropertyDatabaseDefinition_National_ShortStringPropertyInfo" xml:space="preserve">
+  <data name="SqlIndexMultiplePropertyDatabaseDefinition_National_ShortString" xml:space="preserve">
     <value>NLSSORT({0}, 'NLS_SORT={1}')</value>
   </data>
 </root>

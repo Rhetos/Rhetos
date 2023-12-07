@@ -58,8 +58,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
                 return; // Only simple database columns are logged by this concept.
             }
 
-            string propertyTypeKeyword = info.Property.GetKeywordOrTypeName();
-            string propertyToStringSnippet = Sql.TryGet("PropertyLoggingDefinition_TextValue_" + propertyTypeKeyword);
+            string propertyToStringSnippet = DslUtility.FindSqlResourceKeyPropertyType(Sql, "PropertyLoggingDefinition_TextValue_", info.Property).SqlScript;
             if (string.IsNullOrEmpty(propertyToStringSnippet))
                 propertyToStringSnippet = Sql.Get("PropertyLoggingDefinition_TextValue");
             var propertyToString = string.Format(propertyToStringSnippet, column);
