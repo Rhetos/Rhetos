@@ -22,6 +22,7 @@ using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Utilities;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace CommonConcepts.Test.Framework
 {
@@ -50,21 +51,24 @@ namespace CommonConcepts.Test.Framework
             // More detailed tests are implemented in the DatabaseTimeCacheTest class.
             // This is only a smoke test for SqlUtility.
 
-            using var scope = TestScope.Create();
+            for (int test = 0; test < 20; test++)
+            {
+                using var scope = TestScope.Create();
+                var sqlExecuter = scope.Resolve<ISqlExecuter>();
+                var sqlUtility = scope.Resolve<ISqlUtility>();
 
-            var sqlExecuter = scope.Resolve<ISqlExecuter>();
-            var sqlUtility = scope.Resolve<ISqlUtility>();
+                DatabaseTimeCache.Reset();
+                _ = Enumerable.Range(0, 4).Select(x => sqlUtility.GetDatabaseTime(sqlExecuter)).ToList(); // Caching initialization.
 
-            _ = Enumerable.Range(0, 4).Select(x => sqlUtility.GetDatabaseTime(sqlExecuter)).ToList(); // Caching initialization.
+                var notCachedDatabaseTime = ((MsSqlUtility)sqlUtility).GetDatabaseTimeUncached(sqlExecuter);
+                var cachedTime = sqlUtility.GetDatabaseTime(sqlExecuter);
 
-            var notCachedDatabaseTime = ((MsSqlUtility)sqlUtility).GetDatabaseTimeUncached(sqlExecuter);
-            var cachedTime = sqlUtility.GetDatabaseTime(sqlExecuter);
-
-            Console.WriteLine(notCachedDatabaseTime.ToString("o"));
-            Console.WriteLine(cachedTime.ToString("o"));
-
-            Assert.IsTrue(notCachedDatabaseTime - cachedTime <= TimeSpan.FromSeconds(0.01));
-            Assert.IsTrue(cachedTime - notCachedDatabaseTime <= TimeSpan.FromSeconds(0.01));
+                double diffMs = cachedTime.Subtract(notCachedDatabaseTime).TotalMilliseconds;
+                const int toleranceMs = 20; // SYSDATETIME() in MSSQL sometimes returned up to 15ms less then DateTime.Now in C#, even if executed at the same millisecond.
+                if (Math.Abs(diffMs) > toleranceMs)
+                    Assert.Fail($"Cached time diff ({diffMs} ms) is more than tolerance ({toleranceMs} ms)." +
+                        $" Test {test}, cachedTime {cachedTime:o}, notCachedDatabaseTime {notCachedDatabaseTime:o}, cache report {DatabaseTimeCache.Report()}.");
+            };
         }
     }
 }

@@ -18,10 +18,6 @@
 */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Rhetos.Utilities
 {
@@ -34,7 +30,7 @@ namespace Rhetos.Utilities
         private const int MaxRetries = 3;
         private const int ResetCacheOnMinutes = 30; // To support clock adjustments and daylight saving on the database server. Must be set to a divisor of 60.
 
-        private static object _lock = new object();
+        private static readonly object _lock = new();
         private static TimeSpan _latency = TimeSpan.MaxValue;
         private static TimeSpan _difference = TimeSpan.Zero;
         private static DateTime _obsoleteAfter = DateTime.MinValue;
@@ -79,13 +75,37 @@ namespace Rhetos.Utilities
             return now > _obsoleteAfter || now < _lastTime || _retries < MaxRetries;
         }
 
+        /// <summary>
+        /// For testing purpose.
+        /// </summary>
         public static void Reset()
         {
-            _latency = TimeSpan.MaxValue;
-            _difference = TimeSpan.Zero;
-            _obsoleteAfter = DateTime.MinValue;
-            _lastTime = DateTime.MinValue;
-            _retries = 0;
+            lock (_lock)
+            {
+                _latency = TimeSpan.MaxValue;
+                _difference = TimeSpan.Zero;
+                _obsoleteAfter = DateTime.MinValue;
+                _lastTime = DateTime.MinValue;
+                _retries = 0;
+            }
+        }
+
+        /// <summary>
+        /// For testing purpose.
+        /// </summary>
+        public static string Report()
+        {
+            lock (_lock)
+            {
+                return new
+                {
+                    _latency,
+                    _difference,
+                    _obsoleteAfter,
+                    _lastTime,
+                    _retries
+                }.ToString();
+            }
         }
 
         private static DateTime NextCacheResetTime(DateTime now)
