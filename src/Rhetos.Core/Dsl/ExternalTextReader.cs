@@ -41,11 +41,11 @@ namespace Rhetos.Dsl
             string errorMessage;
             if (candidateFiles.Count == 1 && candidateSqlResources.Count == 0)
             {
-                errorMessage = $"File does not exist: '{candidateFiles.First()}'";
+                errorMessage = $"Cannot find the file referenced in DSL script. File does not exist: '{candidateFiles.First()}'";
             }
             else
             {
-                var candidatesInfo = candidateSqlResources.Select(key => $"sql resource key '{key}'")
+                var candidatesInfo = candidateSqlResources.Select(key => $"SQL resource key '{key}'")
                     .Concat(candidateFiles.Select(path => $"file '{path}'"))
                     .Reverse() // Application developers might better understand the error if it begins with the simplest examples and ends with the more specific ones.
                     .ToList();
