@@ -26,9 +26,9 @@ using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Invocation;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Rhetos
 {
@@ -92,45 +92,60 @@ namespace Rhetos
 
         public static int Run(string[] args)
         {
-            var rootCommand = new RootCommand();
-            rootCommand.Add(new Option<VerbosityLevel>("--verbosity", () => VerbosityLevel.Normal, "Output verbosity level. Allowed values are normal and diagnostic."));
-            rootCommand.Add(new Option<string[]>("--trace", () => Array.Empty<string>(), "Output additional trace loggers specified by name."));
-            rootCommand.Add(new Option<bool>("--msbuild-format", () => false, "Adjust error output format for MSBuild integration."));
+            var verbosityOption = new Option<VerbosityLevel>("--verbosity", () => VerbosityLevel.Normal, "Output verbosity level. Allowed values are normal and diagnostic.");
+            var traceOption = new Option<string[]>("--trace", () => Array.Empty<string>(), "Output additional trace loggers specified by name.");
+            var msbuildFormatOption = new Option<bool>("--msbuild-format", () => false, "Adjust error output format for MSBuild integration.");
+            var rootCommand = new RootCommand
+            {
+                verbosityOption,
+                traceOption,
+                msbuildFormatOption
+            };
 
-            var buildCommand = new Command("build", "Generates C# code, database model file and other project assets.");
-            // CurrentDirectory by default, because rhetos.exe on *build* is expected to be located in NuGet package cache.
-            buildCommand.Add(new Argument<DirectoryInfo>("project-root-folder", () => new DirectoryInfo(Environment.CurrentDirectory)) { Description = "Project folder where csproj file is located. If not specified, current working directory is used by default." });
-            buildCommand.Handler = CommandHandler.Create((DirectoryInfo projectRootFolder, bool msbuildFormat, VerbosityLevel verbosity, string[] trace) =>
+            // Using 'CurrentDirectory' by default, because rhetos.exe on *build* is expected to be located in NuGet package cache.
+            var projectRootFolderArgument = new Argument<DirectoryInfo>("project-root-folder", () => new DirectoryInfo(Environment.CurrentDirectory)) { Description = "Project folder where csproj file is located. If not specified, current working directory is used by default." };
+            var buildCommand = new Command("build", "Generates C# code, database model file and other project assets.")
+            {
+                projectRootFolderArgument
+            };
+            buildCommand.SetHandler((DirectoryInfo projectRootFolder, bool msbuildFormat, VerbosityLevel verbosity, string[] trace) =>
             {
                 var program = new Program(verbosity, trace, msbuildFormat);
-                program.SafeExecuteCommand(() => program.Build(projectRootFolder.FullName), "Build");
-            });
+                return program.SafeExecuteCommand(() => program.Build(projectRootFolder.FullName), "Build");
+            }, projectRootFolderArgument, msbuildFormatOption, verbosityOption, traceOption);
             rootCommand.AddCommand(buildCommand);
 
-            var dbUpdateCommand = new Command("dbupdate", "Updates the database structure and initializes the application data in the database.");
-            dbUpdateCommand.Add(new Argument<FileInfo>("startup-assembly") { Description = "Startup assembly of the host application." });
-            dbUpdateCommand.Add(new Option<bool>("--short-transactions", "Commit transaction after creating or dropping each database object."));
-            dbUpdateCommand.Add(new Option<bool>("--skip-recompute", "Skip automatic update of computed data with KeepSynchronized. See output log for data that needs updating."));
-            //Lack of this switch means that the dbupdate command should start the command rhetos.exe dbupdate
-            //in another process with the host applications runtimeconfig.json and deps.json files
-            var executeCommandInCurrentProcessOption = new Option<bool>(ExecuteCommandInCurrentProcessOptionName);
-            executeCommandInCurrentProcessOption.IsHidden = true;
-            dbUpdateCommand.Add(executeCommandInCurrentProcessOption);
-            dbUpdateCommand.Handler =
-                CommandHandler.Create((FileInfo startupAssembly, bool shortTransactions, bool skipRecompute, bool executeCommandInCurrentProcess, bool msbuildFormat, VerbosityLevel verbosity, string[] trace) =>
+            var startupAssemblyArgument = new Argument<FileInfo>("startup-assembly") { Description = "Startup assembly of the host application." };
+            var shortTransactionsOption = new Option<bool>("--short-transactions", "Commit transaction after creating or dropping each database object.");
+            var skipRecomputeOption = new Option<bool>("--skip-recompute", "Skip automatic update of computed data with KeepSynchronized. See output log for data that needs updating.");
+            var executeCommandInCurrentProcessOption = new Option<bool>(ExecuteCommandInCurrentProcessOptionName)
+            {
+                // Internal feature, to be used by rhetos CLI when calling itself.
+                // Lack of this switch means that the dbupdate command should start the command rhetos.exe dbupdate
+                // in another process with the host applications runtimeconfig.json and deps.json files
+                IsHidden = true
+            };
+            var dbUpdateCommand = new Command("dbupdate", "Updates the database structure and initializes the application data in the database.")
+            {
+                startupAssemblyArgument,
+                shortTransactionsOption,
+                skipRecomputeOption,
+                executeCommandInCurrentProcessOption
+            };
+            dbUpdateCommand.SetHandler((FileInfo startupAssembly, bool shortTransactions, bool skipRecompute, bool executeCommandInCurrentProcess, bool msbuildFormat, VerbosityLevel verbosity, string[] trace) =>
                 {
                     var program = new Program(verbosity, trace, msbuildFormat);
                     if (executeCommandInCurrentProcess)
                         return program.SafeExecuteCommand(() => program.DbUpdate(startupAssembly.FullName, shortTransactions, skipRecompute), "DbUpdate");
                     else
                         return program.InvokeDbUpdateAsExternalProcess(startupAssembly.FullName, args);
-                });
+                }, startupAssemblyArgument, shortTransactionsOption, skipRecomputeOption, executeCommandInCurrentProcessOption, msbuildFormatOption, verbosityOption, traceOption);
             rootCommand.AddCommand(dbUpdateCommand);
 
             return rootCommand.Invoke(args);
         }
 
-        private int SafeExecuteCommand(Action action, string commandName)
+        private Task<int> SafeExecuteCommand(Action action, string commandName)
         {
             var logger = _logProvider.GetLogger("Rhetos " + commandName);
             logger.Info(() => $"Started in {AppDomain.CurrentDomain.BaseDirectory}");
@@ -146,7 +161,7 @@ namespace Rhetos
                 // Detailed exception info is logged as additional information, not as an error, to avoid duplicate error reporting.
                 logger.Info(dslException.ToString());
 
-                return 1;
+                return Task.FromResult(1);
             }
             catch (Exception e)
             {
@@ -159,10 +174,10 @@ namespace Rhetos
                 if (Environment.UserInteractive)
                     PrintErrorSummary(e);
 
-                return 1;
+                return Task.FromResult(1);
             }
 
-            return 0;
+            return Task.FromResult(0);
         }
 
         private void Build(string projectRootPath)
@@ -256,18 +271,24 @@ namespace Rhetos
             Console.ForegroundColor = oldColor;
         }
 
-        private int InvokeDbUpdateAsExternalProcess(string rhetosHostDllPath, string[] baseArgs)
+        private Task<int> InvokeDbUpdateAsExternalProcess(string rhetosHostDllPath, string[] baseArgs)
         {
             var logger = _logProvider.GetLogger("Rhetos DbUpdate base");
 
             var newArgs = new List<string>();
             newArgs.Add("exec");
 
+            if (!File.Exists(rhetosHostDllPath))
+            {
+                logger.Error($"File '{rhetosHostDllPath}' does not exist.");
+                return Task.FromResult(1);
+            }
+
             var runtimeConfigPath = Path.ChangeExtension(rhetosHostDllPath, "runtimeconfig.json");
             if (!File.Exists(runtimeConfigPath))
             {
-                logger.Error($"Missing {runtimeConfigPath} file required to run the dbupdate command on {rhetosHostDllPath}.");
-                return 1;
+                logger.Error($"Missing '{runtimeConfigPath}' file required to run the dbupdate command on '{rhetosHostDllPath}'.");
+                return Task.FromResult(1);
             }
 
             newArgs.Add("--runtimeconfig");
@@ -281,7 +302,7 @@ namespace Rhetos
             }
             else
             {
-                logger.Warning($"The file {depsFile} was not found. This can cause a 'DllNotFoundException' during the program execution.");
+                logger.Warning($"The file '{depsFile}' was not found. This can cause a 'DllNotFoundException' during the program execution.");
             }
 
             newArgs.Add(GetType().Assembly.Location);
@@ -292,7 +313,7 @@ namespace Rhetos
 
             NLogProvider.FlushAndShutdown(); // Closing log files to avoid an edge case of the log files being locked by the current process while the new process tries to write to the same log files, since they use the same NLog configuration.
 
-            return Exe.Run("dotnet", newArgs, new ConsoleLogger(logger.Name));
+            return Task.FromResult(Exe.Run("dotnet", newArgs, new ConsoleLogger(logger.Name)));
         }
     }
 }
