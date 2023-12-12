@@ -36,24 +36,15 @@
   <Reference Relative="..\Microsoft.Extensions.Localization.Abstractions.dll">..\Microsoft.Extensions.Localization.Abstractions.dll</Reference>
   <Reference Relative="..\Newtonsoft.Json.dll">..\Newtonsoft.Json.dll</Reference>
   <Reference Relative="..\NLog.dll">..\NLog.dll</Reference>
-  <Reference Relative="..\Rhetos.Core.dll">..\Rhetos.Core.dll</Reference>
   <Reference Relative="..\Rhetos.CommonConcepts.dll">..\Rhetos.CommonConcepts.dll</Reference>
+  <Reference Relative="..\Rhetos.Core.dll">..\Rhetos.Core.dll</Reference>
   <Reference Relative="..\Rhetos.Core.DslParser.dll">..\Rhetos.Core.DslParser.dll</Reference>
   <Reference Relative="..\Rhetos.Core.Integration.dll">..\Rhetos.Core.Integration.dll</Reference>
-  <Reference Relative="..\runtimes\win\lib\netcoreapp2.0\System.DirectoryServices.dll">..\runtimes\win\lib\netcoreapp2.0\System.DirectoryServices.dll</Reference>
-  <Reference Relative="..\runtimes\win\lib\netcoreapp2.0\System.DirectoryServices.Protocols.dll">..\runtimes\win\lib\netcoreapp2.0\System.DirectoryServices.Protocols.dll</Reference>
-  <Reference Relative="..\runtimes\win\lib\netcoreapp2.1\System.Data.SqlClient.dll">..\runtimes\win\lib\netcoreapp2.1\System.Data.SqlClient.dll</Reference>
-  <Reference Relative="..\runtimes\win\lib\netcoreapp3.1\Microsoft.Win32.SystemEvents.dll">..\runtimes\win\lib\netcoreapp3.1\Microsoft.Win32.SystemEvents.dll</Reference>
-  <Reference Relative="..\runtimes\win\lib\netcoreapp3.1\System.Diagnostics.EventLog.dll">..\runtimes\win\lib\netcoreapp3.1\System.Diagnostics.EventLog.dll</Reference>
-  <Reference Relative="..\runtimes\win\lib\netcoreapp3.1\System.Diagnostics.EventLog.Messages.dll">..\runtimes\win\lib\netcoreapp3.1\System.Diagnostics.EventLog.Messages.dll</Reference>
-  <Reference Relative="..\runtimes\win\lib\netcoreapp3.1\System.Diagnostics.PerformanceCounter.dll">..\runtimes\win\lib\netcoreapp3.1\System.Diagnostics.PerformanceCounter.dll</Reference>
-  <Reference Relative="..\runtimes\win\lib\netcoreapp3.1\System.Drawing.Common.dll">..\runtimes\win\lib\netcoreapp3.1\System.Drawing.Common.dll</Reference>
-  <Reference Relative="..\runtimes\win\lib\netcoreapp3.1\System.Runtime.Caching.dll">..\runtimes\win\lib\netcoreapp3.1\System.Runtime.Caching.dll</Reference>
-  <Reference Relative="..\runtimes\win\lib\netcoreapp3.1\System.Text.Encoding.CodePages.dll">..\runtimes\win\lib\netcoreapp3.1\System.Text.Encoding.CodePages.dll</Reference>
-  <Reference Relative="..\runtimes\win\lib\netcoreapp3.1\System.Windows.Extensions.dll">..\runtimes\win\lib\netcoreapp3.1\System.Windows.Extensions.dll</Reference>
-  <Reference Relative="..\runtimes\win\lib\netstandard2.0\System.Security.AccessControl.dll">..\runtimes\win\lib\netstandard2.0\System.Security.AccessControl.dll</Reference>
-  <Reference Relative="..\runtimes\win\lib\netstandard2.0\System.Security.Cryptography.ProtectedData.dll">..\runtimes\win\lib\netstandard2.0\System.Security.Cryptography.ProtectedData.dll</Reference>
   <Reference Relative="..\runtimes\win-x64\native\sni.dll">..\runtimes\win-x64\native\sni.dll</Reference>
+  <Reference Relative="..\runtimes\win\lib\netcoreapp2.1\System.Data.SqlClient.dll">..\runtimes\win\lib\netcoreapp2.1\System.Data.SqlClient.dll</Reference>
+  <Reference Relative="..\runtimes\win\lib\net8.0\System.Diagnostics.EventLog.dll">..\runtimes\win\lib\net8.0\System.Diagnostics.EventLog.dll</Reference>
+  <Reference Relative="..\runtimes\win\lib\net8.0\System.Diagnostics.EventLog.Messages.dll">..\runtimes\win\lib\net8.0\System.Diagnostics.EventLog.Messages.dll</Reference>
+  <Reference Relative="..\runtimes\win\lib\net8.0\System.Runtime.Caching.dll">..\runtimes\win\lib\net8.0\System.Runtime.Caching.dll</Reference>
   <Namespace>Autofac</Namespace>
   <Namespace>Rhetos</Namespace>
   <Namespace>Rhetos.Configuration.Autofac</Namespace>
@@ -70,7 +61,6 @@
   <Namespace>System.Data.Entity</Namespace>
   <Namespace>System.DirectoryServices</Namespace>
   <Namespace>System.Runtime.Serialization.Json</Namespace>
-  <Namespace>System.Xml.Serialization</Namespace>
   <IncludeAspNet>true</IncludeAspNet>
 </Query>
 

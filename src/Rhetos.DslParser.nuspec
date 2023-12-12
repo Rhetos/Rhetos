@@ -12,8 +12,8 @@
     <tags>Rhetos</tags>
     <dependencies>
       <group targetFramework=".NETStandard2.1">
-        <dependency id="System.ComponentModel.Composition" version="6.0.0" />
-        <dependency id="System.Text.Encoding.CodePages" version="6.0.0" />
+        <dependency id="System.ComponentModel.Composition" version="8.0.0" />
+        <dependency id="System.Text.Encoding.CodePages" version="8.0.0" />
         <dependency id="Newtonsoft.Json" version="13.0.3" />
       </group>
     </dependencies>

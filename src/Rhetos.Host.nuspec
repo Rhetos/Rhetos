@@ -12,7 +12,7 @@
     <tags>Rhetos</tags>
     <dependencies>
       <dependency id="Rhetos" version="[6.0.0-dev,6.1.0)" />
-      <dependency id="System.CommandLine" version="2.0.0-beta1.21308.1" /> <!-- For RhetosCli. -->
+      <dependency id="System.CommandLine" version="2.0.0-beta4.22272.1" /> <!-- For RhetosCli. -->
     </dependencies>
     <contentFiles>
       <files include="any/net8.0/RhetosTools/rhetos.exe" buildAction="None" copyToOutput="true" flatten="true" />
