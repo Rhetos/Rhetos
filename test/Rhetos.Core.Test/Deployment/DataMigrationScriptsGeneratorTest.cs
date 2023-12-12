@@ -31,7 +31,7 @@ namespace Rhetos.Deployment.Test
     [TestClass]
     public class DataMigrationScriptsGeneratorTest
     {
-        private const string TestScriptsPath = @"Deployment\TestScripts";
+        private string TestScriptsPath => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Deployment", "TestScripts");
 
         [TestMethod]
         public void UpDown()

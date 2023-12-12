@@ -55,14 +55,14 @@ namespace Rhetos.Extensibility.Test
 
         private static string FindIncompatibleAssemblyPath(string testReferenceProject)
         {
-            string startFolder = Directory.GetCurrentDirectory();
+            string startFolder = AppDomain.CurrentDomain.BaseDirectory;
             var sourceFolder = new DirectoryInfo(startFolder);
             while (true)
             {
                 if (Directory.Exists(Path.Combine(sourceFolder.FullName, testReferenceProject)))
                     break;
                 if (sourceFolder.Parent == null)
-                    throw new ArgumentException($"Invalid unit test setup: Cannot find test reference project '{testReferenceProject}'.");
+                    throw new ArgumentException($"Invalid unit test setup: Cannot find test reference project '{testReferenceProject}', starting from '{startFolder}'.");
                 sourceFolder = sourceFolder.Parent;
             }
 

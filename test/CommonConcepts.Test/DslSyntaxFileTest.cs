@@ -44,7 +44,7 @@ namespace CommonConcepts.Test
 
                 var conceptTypesInDslModel = scope.Resolve<IDslModel>().Concepts.Select(c => c.GetType()).Distinct().Count();
 
-                Assert.AreNotEqual(0, dslSyntax.ConceptTypes, "dslSyntax.ConceptTypes");
+                Assert.AreNotEqual(0, dslSyntax.ConceptTypes.Count, "dslSyntax.ConceptTypes");
                 Assert.AreNotEqual(0, conceptTypesInDslModel, "conceptTypesInDslModel");
                 Assert.IsTrue(
                     dslSyntax.ConceptTypes.Count >= conceptTypesInDslModel,

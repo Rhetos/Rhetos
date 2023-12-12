@@ -42,9 +42,9 @@ namespace CommonConcepts.Test
                 var dslDocumentationFile = scope.Resolve<DslDocumentationFile>();
                 var dslDocumentation = dslDocumentationFile.Load();
 
-                var conceptTypesInDslModel = scope.Resolve<IDslModel>().Concepts.Select(c => c.GetType()).Distinct().Count();
+                int conceptTypesInDslModel = scope.Resolve<IDslModel>().Concepts.Select(c => c.GetType()).Distinct().Count();
 
-                Assert.AreNotEqual(0, dslDocumentation.Concepts, "dslDocumentation.Concepts");
+                Assert.AreNotEqual(0, dslDocumentation.Concepts.Count, "dslDocumentation.Concepts");
                 Assert.AreNotEqual(0, conceptTypesInDslModel, "conceptTypesInDslModel");
                 Assert.IsTrue(
                     dslDocumentation.Concepts.Count >= conceptTypesInDslModel,

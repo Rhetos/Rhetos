@@ -38,8 +38,12 @@ namespace Rhetos.Utilities.Test
             // This ensures that our '.config' file is attached to the correct one.
             // It is required for testing ConfigurationManagerSource class
             // that uses System.Configuration.ConfigurationManager.
-            var source = Path.Combine(context.DeploymentDirectory, @"Utilities\TestRunner.config");
-            var destination = Path.Combine(context.DeploymentDirectory, Path.GetFileName(Assembly.GetEntryAssembly().Location) + ".config");
+
+            if (!Assembly.GetEntryAssembly().Location.Contains(@"\bin\"))
+                throw new ArgumentException($"Expecting test runner in the binary output folder instead of '{Assembly.GetEntryAssembly().Location}'.");
+
+            var source = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Utilities\TestRunner.config");
+            var destination = Assembly.GetEntryAssembly().Location + ".config";
             File.Copy(source, destination, true);
         }
 
@@ -380,7 +384,7 @@ namespace Rhetos.Utilities.Test
         public void ConfigurationFileSource()
         {
             var provider = new ConfigurationBuilder(new ConsoleLogProvider())
-                .AddConfigurationFile("Utilities\\TestCfg.config")
+                .AddConfigurationFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Utilities", "TestCfg.config"))
                 .Build();
 
             Assert.IsTrue(provider.AllKeys.Contains("ConnectionStrings:TestConnectionString"));
@@ -628,7 +632,7 @@ namespace Rhetos.Utilities.Test
         public void InvalidJsonFileThrows()
         {
             var builder = new ConfigurationBuilder(new ConsoleLogProvider())
-                .Add(new JsonFileSource("Utilities\\JsonConfigurationFile_Invalid.json"));
+                .Add(new JsonFileSource(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Utilities", "JsonConfigurationFile_Invalid.json")));
 
             TestUtility.ShouldFail<FrameworkException>(() => builder.Build(), "Error parsing JSON contents", "Utilities\\JsonConfigurationFile_Invalid.json");
         }
@@ -755,7 +759,7 @@ namespace Rhetos.Utilities.Test
         public void JsonFileSourceConvertsPaths()
         {
             var configuration = new ConfigurationBuilder(new ConsoleLogProvider())
-                .AddJsonFile(@"Utilities\JsonConfigurationFile.json")
+                .AddJsonFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Utilities", "JsonConfigurationFile.json"))
                 .Build();
 
             var options = configuration.GetOptions<TestPathOptions>();
