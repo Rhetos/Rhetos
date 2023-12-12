@@ -48,6 +48,6 @@ namespace CommonConcepts.Test
         /// Each test should create a child scope with <see cref="TestScope.Create"/> method to start a 'using' block.
         /// </summary>
         public static readonly Lazy<RhetosHost> RhetosHost = new Lazy<RhetosHost>(() => Rhetos.RhetosHost.CreateFrom(
-            @"..\..\..\..\CommonConcepts.TestApp\bin\Debug\net5.0\CommonConcepts.TestApp.dll"));
+            @"..\..\..\..\CommonConcepts.TestApp\bin\Debug\net8.0\CommonConcepts.TestApp.dll"));
     }
 }

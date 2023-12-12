@@ -10,10 +10,10 @@ IF NOT EXIST test\CommonConcepts.TestApp\local.settings.json ECHO Missing local.
 @REM Using "RestoreForce" to make sure that the new version of local Rhetos NuGet packages are included in build.
 dotnet build CommonConceptsTest.sln /t:restore /p:RestoreForce=True /t:rebuild --configuration %Config% || GOTO Error0
 @REM Running dbupdate again to test the CLI (it was executed in the build above).
-dotnet test\CommonConcepts.TestApp\bin\Debug\net5.0\rhetos.dll dbupdate test\CommonConcepts.TestApp\bin\Debug\net5.0\CommonConcepts.TestApp.dll
+dotnet test\CommonConcepts.TestApp\bin\Debug\net8.0\rhetos.dll dbupdate test\CommonConcepts.TestApp\bin\Debug\net8.0\CommonConcepts.TestApp.dll
 dotnet test CommonConceptsTest.sln --no-build || GOTO Error0
 
-IF EXIST "%ProgramFiles%\LINQPad7\LPRun7.exe" "%ProgramFiles%\LINQPad7\LPRun7.exe" "test\CommonConcepts.TestApp\bin\Debug\net5.0\LinqPad\Rhetos DOM.linq" > nul || GOTO Error0
+IF EXIST "%ProgramFiles%\LINQPad7\LPRun7.exe" "%ProgramFiles%\LINQPad7\LPRun7.exe" "test\CommonConcepts.TestApp\bin\Debug\net8.0\LinqPad\Rhetos DOM.linq" > nul || GOTO Error0
 
 @REM ================================================
 

@@ -66,7 +66,7 @@ namespace Rhetos.Extensibility.Test
                 sourceFolder = sourceFolder.Parent;
             }
 
-            string testReferenceAssemblyPath = Path.Combine(sourceFolder.FullName, testReferenceProject, Path.Combine("bin", "Debug", "net5.0", testReferenceProject + ".dll"));
+            string testReferenceAssemblyPath = Path.Combine(sourceFolder.FullName, testReferenceProject, Path.Combine("bin", "Debug", "net8.0", testReferenceProject + ".dll"));
             if (!File.Exists(testReferenceAssemblyPath))
                 Assert.Fail($"Invalid unit test setup: Cannot find the test reference assembly '{testReferenceAssemblyPath}'. Make sure the build has passed successfully.");
             return testReferenceAssemblyPath;

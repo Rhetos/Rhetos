@@ -12,7 +12,7 @@
     <copyright>Copyright Omega software 2015</copyright>
     <tags>Rhetos plugin</tags>
     <dependencies>
-      <group targetFramework="net5.0">
+      <group targetFramework="net8.0">
         <dependency id="Rhetos" version="[6.0.0-dev,6.1.0)" />
         <dependency id="Rhetos.MsSql" version="[6.0.0-dev,6.1.0)" />
         <dependency id="Rhetos.Ef6" version="[6.0.0-dev,6.1.0)" />
@@ -25,7 +25,7 @@
     <file src="Rhetos.CommonConcepts\Readme.md" target="" />
     <file src="Rhetos.CommonConcepts\DataMigration\**\*" target="DataMigration" />
     <file src="Rhetos.CommonConcepts\DslScripts\**\*" target="DslScripts" />
-    <file src="Rhetos.CommonConcepts\bin\Debug\net5.0\Rhetos.CommonConcepts.dll" target="lib\net5.0" />
-    <file src="Rhetos.CommonConcepts\bin\Debug\net5.0\Rhetos.CommonConcepts.xml" target="lib\net5.0" />
+    <file src="Rhetos.CommonConcepts\bin\Debug\net8.0\Rhetos.CommonConcepts.dll" target="lib\net8.0" />
+    <file src="Rhetos.CommonConcepts\bin\Debug\net8.0\Rhetos.CommonConcepts.xml" target="lib\net8.0" />
   </files>
 </package>

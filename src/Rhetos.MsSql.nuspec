@@ -11,13 +11,13 @@
     <copyright>Copyright Omega software 2013</copyright>
     <tags>Rhetos</tags>
     <dependencies>
-      <group targetFramework="net5.0">
+      <group targetFramework="net8.0">
         <dependency id="System.Data.SqlClient" version="4.8.5" />
       </group>
     </dependencies>
   </metadata>
   <files>
-    <file src="Rhetos.MsSql\bin\Debug\net5.0\Rhetos.MsSql.dll" target="lib\net5.0" />
-    <file src="Rhetos.MsSql\bin\Debug\net5.0\Rhetos.MsSql.xml" target="lib\net5.0" />
+    <file src="Rhetos.MsSql\bin\Debug\net8.0\Rhetos.MsSql.dll" target="lib\net8.0" />
+    <file src="Rhetos.MsSql\bin\Debug\net8.0\Rhetos.MsSql.xml" target="lib\net8.0" />
   </files>
 </package>

@@ -11,7 +11,7 @@
     <copyright>Copyright Omega software 2013</copyright>
     <tags>Rhetos</tags>
     <dependencies>
-      <group targetFramework="net5.0">
+      <group targetFramework="net8.0">
         <dependency id="Rhetos.DslParser" version="[6.0.0-dev,6.1.0)" />
         <dependency id="Autofac" version="6.3.0" />
         <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="6.0.0" />
@@ -32,7 +32,7 @@
   </metadata>
   <files>
     <file src="..\Readme.md" target="" />
-    <file src="Rhetos.Core\bin\Debug\net5.0\Rhetos.Core.dll" target="lib\net5.0" />
-    <file src="Rhetos.Core\bin\Debug\net5.0\Rhetos.Core.xml" target="lib\net5.0" />
+    <file src="Rhetos.Core\bin\Debug\net8.0\Rhetos.Core.dll" target="lib\net8.0" />
+    <file src="Rhetos.Core\bin\Debug\net8.0\Rhetos.Core.xml" target="lib\net8.0" />
   </files>
 </package>
