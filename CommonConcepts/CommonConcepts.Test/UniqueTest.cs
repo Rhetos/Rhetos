@@ -253,5 +253,30 @@ namespace CommonConcepts.Test
                 Assert.AreEqual("DataStructure:TestUnique.E,Property:S I R", ex.SystemMessage);
             }
         }
+
+        [TestMethod]
+        public void TestUniqueIfNotNull()
+        {
+            using (var scope = TestScope.Create())
+            {
+                var repository = scope.Resolve<Common.DomRepository>();
+
+                var item1 = new TestUnique.UniqueWhereNotNullEntity { Name = null };
+                var item2 = new TestUnique.UniqueWhereNotNullEntity { Name = "efg" };
+                var item3 = new TestUnique.UniqueWhereNotNullEntity { Name = null };
+                var item4 = new TestUnique.UniqueWhereNotNullEntity { Name = "efg" };
+
+                repository.TestUnique.UniqueWhereNotNullEntity.Insert(item1);
+                Assert.AreEqual(1, repository.TestUnique.UniqueWhereNotNullEntity.Load().Length);
+
+                repository.TestUnique.UniqueWhereNotNullEntity.Insert(item2);
+                Assert.AreEqual(2, repository.TestUnique.UniqueWhereNotNullEntity.Load().Length);
+
+                repository.TestUnique.UniqueWhereNotNullEntity.Insert(item3);
+                Assert.AreEqual(3, repository.TestUnique.UniqueWhereNotNullEntity.Load().Length);
+
+                TestUtility.ShouldFail(() => repository.TestUnique.UniqueWhereNotNullEntity.Insert(item4));
+            }
+        }
     }
 }
