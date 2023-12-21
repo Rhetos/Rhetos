@@ -224,8 +224,7 @@ namespace Rhetos.Utilities
 
             var shortName = fullObjectName.Substring(dotPosition + 1);
 
-            int secondDot = shortName.IndexOf('.');
-            if (secondDot != -1 || string.IsNullOrEmpty(shortName))
+            if (string.IsNullOrEmpty(shortName) || shortName.Contains('.'))
                 throw new FrameworkException("Invalid database object name: '" + fullObjectName + "'. Expected format is 'schema.name' or 'name'.");
             return SqlUtility.Identifier(shortName);
         }
