@@ -11,19 +11,4 @@ namespace Rhetos.Dsl.DefaultConcepts
     public class UniqueWhereNotNullInfo : UniquePropertyInfo
     {
     }
-
-    [Export(typeof(IConceptMacro))]
-    public class UniqueWhereNotNullMacro : IConceptMacro<UniqueWhereNotNullInfo>
-    {
-        public IEnumerable<IConceptInfo> CreateNewConcepts(UniqueWhereNotNullInfo conceptInfo, IDslModel existingConcepts)
-        {
-            return new[] {
-                new UniqueWhereInfo {
-                    Unique = conceptInfo,
-                    SqlFilter = conceptInfo.Property.Name + " IS NOT NULL"
-                }
-            };
-        }
-
-    }
 }

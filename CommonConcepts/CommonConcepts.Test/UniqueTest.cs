@@ -261,21 +261,23 @@ namespace CommonConcepts.Test
             {
                 var repository = scope.Resolve<Common.DomRepository>();
 
-                var item1 = new TestUnique.UniqueWhereNotNullEntity { Name = null };
-                var item2 = new TestUnique.UniqueWhereNotNullEntity { Name = "efg" };
-                var item3 = new TestUnique.UniqueWhereNotNullEntity { Name = null };
-                var item4 = new TestUnique.UniqueWhereNotNullEntity { Name = "efg" };
+                var item1 = new TestUnique.UniqueWhereNotNullEntity {ID = Guid.NewGuid(), Name = null };
+                var item2 = new TestUnique.UniqueWhereNotNullEntity {ID = Guid.NewGuid(), Name = Guid.NewGuid().ToString() };
+                var item3 = new TestUnique.UniqueWhereNotNullEntity {ID = Guid.NewGuid(), Name = null };
+                var item4 = new TestUnique.UniqueWhereNotNullEntity {ID = Guid.NewGuid(), Name = item2.Name };
+
+                var ids = new[] {item1.ID, item2.ID, item3.ID, item4.ID};
 
                 repository.TestUnique.UniqueWhereNotNullEntity.Insert(item1);
-                Assert.AreEqual(1, repository.TestUnique.UniqueWhereNotNullEntity.Load().Length);
+                Assert.AreEqual(1, repository.TestUnique.UniqueWhereNotNullEntity.Load(ids).Length);
 
                 repository.TestUnique.UniqueWhereNotNullEntity.Insert(item2);
-                Assert.AreEqual(2, repository.TestUnique.UniqueWhereNotNullEntity.Load().Length);
+                Assert.AreEqual(2, repository.TestUnique.UniqueWhereNotNullEntity.Load(ids).Length);
 
                 repository.TestUnique.UniqueWhereNotNullEntity.Insert(item3);
-                Assert.AreEqual(3, repository.TestUnique.UniqueWhereNotNullEntity.Load().Length);
+                Assert.AreEqual(3, repository.TestUnique.UniqueWhereNotNullEntity.Load(ids).Length);
 
-                TestUtility.ShouldFail(() => repository.TestUnique.UniqueWhereNotNullEntity.Insert(item4));
+                TestUtility.ShouldFail<UserException>(() => repository.TestUnique.UniqueWhereNotNullEntity.Insert(item4), "It is not allowed to enter a duplicate record.");
             }
         }
     }

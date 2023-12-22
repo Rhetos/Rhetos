@@ -269,9 +269,7 @@ Module TestUnique
 
 	Entity UniqueWhereNotNullEntity
     {
-		ShortString Code { AutoCode; }
         ShortString Name { UniqueWhereNotNull; }
-        ShortString Data;
     }
 }
 
