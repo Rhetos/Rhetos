@@ -266,6 +266,11 @@ Module TestUnique
 		
 		SqlDependsOn TestUnique.E;
 	}
+
+	Entity UniqueWhereNotNullEntity
+    {
+        ShortString Name { UniqueWhereNotNull; }
+    }
 }
 
 Module TestCloning
