@@ -14,6 +14,8 @@
       <group targetFramework="net8.0">
         <dependency id="EntityFramework" version="6.4.4" />
         <dependency id="System.Data.SqlClient" version="4.8.5" />
+        <dependency id="Rhetos" version="[6.0.0-dev,6.1.0)" />
+        <dependency id="Rhetos.CommonConcepts" version="[6.0.0-dev,6.1.0)" />
       </group>
     </dependencies>
   </metadata>
