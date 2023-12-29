@@ -17,7 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Ef6;
+using Rhetos.MsSqlEf6;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;

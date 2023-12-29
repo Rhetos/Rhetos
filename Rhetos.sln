@@ -11,11 +11,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Readme.md = Readme.md
 		src\Rhetos.CommonConcepts.nuspec = src\Rhetos.CommonConcepts.nuspec
 		src\Rhetos.DslParser.nuspec = src\Rhetos.DslParser.nuspec
-		src\Rhetos.Ef6.nuspec = src\Rhetos.Ef6.nuspec
 		src\Rhetos.Host.AspNet.nuspec = src\Rhetos.Host.AspNet.nuspec
 		src\Rhetos.Host.nuspec = src\Rhetos.Host.nuspec
 		src\Rhetos.MSBuild.nuspec = src\Rhetos.MSBuild.nuspec
 		src\Rhetos.MsSql.nuspec = src\Rhetos.MsSql.nuspec
+		src\Rhetos.MsSqlEf6.nuspec = src\Rhetos.MsSqlEf6.nuspec
 		src\Rhetos.nuspec = src\Rhetos.nuspec
 		src\Rhetos.TestCommon.nuspec = src\Rhetos.TestCommon.nuspec
 	EndProjectSection
@@ -46,9 +46,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.CommonConcepts", "sr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.MsSql", "src\Rhetos.MsSql\Rhetos.MsSql.csproj", "{A2000A65-0D20-4D9A-83CA-335EAF5FF201}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.Ef6", "src\Rhetos.Ef6\Rhetos.Ef6.csproj", "{49D178F1-62F3-43FF-845C-71E1A69A7DB0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.MsSqlEf6", "src\Rhetos.MsSqlEf6\Rhetos.MsSqlEf6.csproj", "{49D178F1-62F3-43FF-845C-71E1A69A7DB0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.MsSql.Test", "test\Rhetos.MsSql.Test\Rhetos.MsSql.Test.csproj", "{15D46505-857C-4772-85D8-B04F4C74605B}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Rhetos.MsSql.Shared", "src\Rhetos.MsSql.Shared\Rhetos.MsSql.Shared.shproj", "{B7DD98E5-7A8F-47B4-B37B-361C25A3A923}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -122,6 +124,11 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4B8D1BEA-EAAA-484D-B00D-1D23226A5A90}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		src\Rhetos.MsSql.Shared\Rhetos.MsSql.Shared.projitems*{49d178f1-62f3-43ff-845c-71e1a69a7db0}*SharedItemsImports = 5
+		src\Rhetos.MsSql.Shared\Rhetos.MsSql.Shared.projitems*{a2000a65-0d20-4d9a-83ca-335eaf5ff201}*SharedItemsImports = 5
+		src\Rhetos.MsSql.Shared\Rhetos.MsSql.Shared.projitems*{b7dd98e5-7a8f-47b4-b37b-361c25a3a923}*SharedItemsImports = 13
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = Rhetos.vsmdi

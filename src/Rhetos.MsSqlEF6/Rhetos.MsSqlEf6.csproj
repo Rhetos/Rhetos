@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -7,11 +7,14 @@
 
   <ItemGroup>
     <PackageReference Include="EntityFramework" Version="6.4.4" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Rhetos.CommonConcepts\Rhetos.CommonConcepts.csproj" />
     <ProjectReference Include="..\Rhetos.Core\Rhetos.Core.csproj" />
   </ItemGroup>
+
+  <Import Project="..\Rhetos.MsSql.Shared\Rhetos.MsSql.Shared.projitems" Label="Shared" />
 
 </Project>

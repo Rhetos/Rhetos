@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
-    <id>Rhetos.Ef6</id>
+    <id>Rhetos.MsSqlEf6</id>
     <version>6.0.0-dev</version>
     <authors>Omega software</authors>
     <owners>Omega software</owners>
@@ -13,11 +13,12 @@
     <dependencies>
       <group targetFramework="net8.0">
         <dependency id="EntityFramework" version="6.4.4" />
+        <dependency id="System.Data.SqlClient" version="4.8.5" />
       </group>
     </dependencies>
   </metadata>
   <files>
-    <file src="Rhetos.Ef6\bin\Debug\net8.0\Rhetos.Ef6.dll" target="lib\net8.0" />
-    <file src="Rhetos.Ef6\bin\Debug\net8.0\Rhetos.Ef6.xml" target="lib\net8.0" />
+    <file src="Rhetos.MsSqlEf6\bin\Debug\net8.0\Rhetos.MsSqlEf6.dll" target="lib\net8.0" />
+    <file src="Rhetos.MsSqlEf6\bin\Debug\net8.0\Rhetos.MsSqlEf6.xml" target="lib\net8.0" />
   </files>
 </package>

@@ -25,7 +25,7 @@ using Rhetos.Persistence;
 using Rhetos.Utilities;
 using System.ComponentModel.Composition;
 
-namespace Rhetos.Ef6
+namespace Rhetos.MsSqlEf6
 {
     [Export(typeof(Module))]
     public class AutofacModuleConfigurationEf6 : Module

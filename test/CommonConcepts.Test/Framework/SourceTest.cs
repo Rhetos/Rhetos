@@ -91,15 +91,20 @@ namespace CommonConcepts.Test.Framework
         public void SqlRepositoryUsage()
         {
             var resxFiles = SourceUtility.GetSourceFiles(
-                new[] { Path.Combine("src", "Rhetos.MsSql") },
+                new[] { Path.Combine("src", "Rhetos.MsSql.Shared") },
                 file => Path.GetExtension(file) is ".resx");
+            if (resxFiles.Count < 2)
+                throw new ArgumentException($"Missing some resxFiles. Count={resxFiles.Count}.");
+
             var resxKeys = resxFiles.SelectMany(file =>
             {
                 var xml = XDocument.Load(file);
                 return xml.Root.Elements("data").Attributes("name").Select(a => a.Value);
-            });
+            }).ToList();
 
             var sourceFiles = SourceUtility.GetSourceFiles(new[] { "src" }, file => Path.GetExtension(file) is ".cs" or ".rhe");
+            if (sourceFiles.Count < 50)
+                throw new ArgumentException($"Missing some sourceFiles. Count={sourceFiles.Count}.");
 
             var unusedKeys = resxKeys.ToHashSet();
             var usedKeys = new HashSet<string>();
@@ -120,7 +125,7 @@ namespace CommonConcepts.Test.Framework
                 usedKeys.UnionWith(foundAllResourcesKeyUsage);
 
                 var foundResxKeysOtherThanResourcesKeyUsage = foundUnusedKeys.Except(foundAllResourcesKeyUsage).ToList();
-                if (foundResxKeysOtherThanResourcesKeyUsage.Any())
+                if (foundResxKeysOtherThanResourcesKeyUsage.Count != 0)
                 {
                     Console.WriteLine(TestUtility.Dump(foundResxKeysOtherThanResourcesKeyUsage));
                     Assert.Fail($"Found usage of key '{foundResxKeysOtherThanResourcesKeyUsage.First()}' from .resx file, without detecting the use of ISqlResources, in file '{sourceFile}'.");
