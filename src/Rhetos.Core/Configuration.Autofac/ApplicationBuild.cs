@@ -80,6 +80,10 @@ namespace Rhetos
                 performanceLogger.Write(stopwatch, "Modules and plugins registered.");
                 ContainerBuilderPluginRegistration.LogRegistrationStatistics("Rhetos build component registrations", container, _logProvider);
 
+                if (!container.TryResolve<ISqlUtility>(out _))
+                    throw new FrameworkException("Database provider for Rhetos is not included in the project." +
+                        " Add the corresponding NuGet package reference to the Rhetos app (for example 'Rhetos.MsSqlEf6' for SQL Server support with EF6).");
+
                 container.Resolve<ApplicationGenerator>().ExecuteGenerators();
             }
         }
