@@ -5,10 +5,11 @@ It provides an implementation of **domain-specific programming language (DSL) fo
 
 The package contains definition of DSL concepts typically used in business applications (such as *Module*, *Entity*, *Logging*, *Computed*, *Hierarchy*, etc.)
 and implementation of the concepts that generates server application.
-The package contains generators for business layer object model (C# dll), database (SQL Server, Oracle), web API (IIS SOAP), ORM (Entity Framework) and other parts.
+The package contains generators for business layer object model (C# dll), database, web API, ORM and other parts.
+There are Rhetos plugins avaible for different database providers (MS SQL Server, PostgreSql, ...) and web API techologies (JSON REST, SOAP XML, OData, ...).
 
 The DSL defined by CommonConcepts is extended by other Rhetos DSL packages.
-The other packages may extend the language with new business concepts or new technology implementations (REST web API, OData, ASP.NET MVC model, etc.).
+The other packages may extend the language with new business concepts or new technology implementations.
 
 ## Installation
 

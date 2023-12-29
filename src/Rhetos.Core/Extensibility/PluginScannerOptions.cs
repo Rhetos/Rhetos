@@ -46,7 +46,7 @@ namespace Rhetos.Extensibility
             "System.*",
             "Newtonsoft.Json.dll",
             "NLog.dll",
-            "Oracle.ManagedDataAccess.dll",
+            "Oracle.ManagedDataAccess.dll", // Keeping this to avoid slowing down legacy apps.
             "rhetos.dll",
             "Rhetos.Core.dll",
             "Rhetos.Core.DslParser.dll",

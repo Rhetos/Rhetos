@@ -99,7 +99,7 @@ namespace Rhetos.Utilities
 
         /// <summary>
         /// Returns empty string if the string value is null.
-        /// This function is used for compatibility between MsSql and Oracle string behavior.
+        /// This function is used for string compatibility between different database providers.
         /// </summary>
         string ReadEmptyNullString(DbDataReader dataReader, int column);
 
