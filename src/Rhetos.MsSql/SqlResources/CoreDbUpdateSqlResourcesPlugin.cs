@@ -21,6 +21,7 @@ using Rhetos.Deployment;
 using Rhetos.SqlResources;
 using Rhetos.Utilities;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Rhetos.MsSql.SqlResources
 {
@@ -38,11 +39,11 @@ namespace Rhetos.MsSql.SqlResources
             if (!_databaseLanguage.StartsWith(MsSqlUtility.DatabaseLanguage))
                 return null;
 
-            var resources = ResourcesUtility.ReadEmbeddedResx("Rhetos.Core.DbUpdate.MsSql.resx", GetType(), true);
+            var resources = ResourcesUtility.ReadEmbeddedResx(Path.Combine("SqlResources", "Rhetos.Core.DbUpdate.MsSql.resx"), GetType().Assembly, true);
 
             resources.Add(
                 DatabaseDeployment.CreateRhetosDatabaseResourceKey,
-                ResourcesUtility.ReadEmbeddedTextFile("Rhetos.Core.CreateDatabase.MsSql.sql", GetType(), true));
+                ResourcesUtility.ReadEmbeddedTextFile(Path.Combine("SqlResources", "Rhetos.Core.CreateDatabase.MsSql.sql"), GetType().Assembly, true));
 
             return resources;
         }

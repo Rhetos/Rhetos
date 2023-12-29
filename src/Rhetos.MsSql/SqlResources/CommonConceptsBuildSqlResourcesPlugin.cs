@@ -20,6 +20,7 @@
 using Rhetos.SqlResources;
 using Rhetos.Utilities;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Rhetos.MsSql.SqlResources
 {
@@ -38,7 +39,7 @@ namespace Rhetos.MsSql.SqlResources
             if (!_databaseLanguage.StartsWith(MsSqlUtility.DatabaseLanguage))
                 return null;
 
-            return ResourcesUtility.ReadEmbeddedResx("Rhetos.CommonConcepts.Build.MsSql.resx", GetType(), true);
+            return ResourcesUtility.ReadEmbeddedResx(Path.Combine("SqlResources", "Rhetos.CommonConcepts.Build.MsSql.resx"), GetType().Assembly, true);
         }
     }
 }
