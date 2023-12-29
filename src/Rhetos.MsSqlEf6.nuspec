@@ -7,7 +7,7 @@
     <owners>Omega software</owners>
     <license type="expression">AGPL-3.0-only</license>
     <projectUrl>https://github.com/rhetos/rhetos</projectUrl>
-    <description>EF6 support for Rhetos.</description>
+    <description>Microsoft SQL Server provider for Rhetos and CommonConcepts, with EF6 support. For new projects use Rhetos.MsSql instead.</description>
     <copyright>Copyright Omega software 2013</copyright>
     <tags>Rhetos</tags>
     <dependencies>

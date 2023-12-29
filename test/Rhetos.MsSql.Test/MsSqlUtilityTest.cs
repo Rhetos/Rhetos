@@ -17,18 +17,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Microsoft.Data.SqlClient;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.TestCommon;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Data.Common;
 using System.Data;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
-using System.Threading;
-using Rhetos.Utilities;
 
 namespace Rhetos.MsSql.Test
 {

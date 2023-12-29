@@ -24,4 +24,7 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)Readme.md" />
+  </ItemGroup>
 </Project>

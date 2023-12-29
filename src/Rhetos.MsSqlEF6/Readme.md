@@ -1,4 +1,6 @@
-﻿**Rhetos.MsSqlEf6** is the Microsoft SQL Server provider for Rhetos and CommonConcepts, with EF6 support.
+﻿# Rhetos.MsSqlEf6
+
+Rhetos.MsSqlEf6 is the Microsoft SQL Server provider for Rhetos and CommonConcepts, with EF6 support.
 
 For new projects use Rhetos.MsSql instead, since it uses a modern EF Core instead of EF6.
 

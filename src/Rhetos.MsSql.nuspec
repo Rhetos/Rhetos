@@ -7,12 +7,12 @@
     <owners>Omega software</owners>
     <license type="expression">AGPL-3.0-only</license>
     <projectUrl>https://github.com/rhetos/rhetos</projectUrl>
-    <description>Microsoft SQL Server support for Rhetos.Core and Rhetos.CommonConcepts.</description>
+    <description>Microsoft SQL Server provider for Rhetos and CommonConcepts, with EF Core support.</description>
     <copyright>Copyright Omega software 2013</copyright>
     <tags>Rhetos</tags>
     <dependencies>
       <group targetFramework="net8.0">
-        <dependency id="System.Data.SqlClient" version="4.8.5" />
+        <dependency id="Microsoft.Data.SqlClient" version="5.1.2" />
       </group>
     </dependencies>
   </metadata>
