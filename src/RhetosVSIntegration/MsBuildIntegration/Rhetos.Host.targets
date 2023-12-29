@@ -15,11 +15,13 @@
 
   <Target Name="RhetosGenerateLinqPadScripts" DependsOnTargets="ResolveReferences" BeforeTargets="AssignTargetPaths">
     <ItemGroup>
-      <_RhetosHostAppAssemblies Include="@(ReferencePath)" Condition="'%(ReferencePath.MSBuildSourceProjectFile)' != ''" />
+      <!-- <_RhetosHostAppAssemblies Include="@(ReferencePath)" Condition="'%(ReferencePath.MSBuildSourceProjectFile)' != ''" /> -->
+      <_RhetosHostAppAssemblies Include="@(ReferencePath) -> '%(Filename)%(Extension)'" Condition="'%(ReferencePath.MSBuildSourceProjectFile)' != ''" />
+      <_RhetosHostAppAssemblies Include="@(RhetosLinqPadReference)" />
     </ItemGroup>  
     <PropertyGroup>
       <_RhetosDomLinqPadScriptPath>$(BaseIntermediateOutputPath)Rhetos\LinqPad\Rhetos DOM.linq</_RhetosDomLinqPadScriptPath>
-      <_RhetosHostAppLinqPadReferences>@(_RhetosHostAppAssemblies -> '&lt;Reference Relative="..\%(Filename)%(Extension)"&gt;..\%(Filename)%(Extension)&lt;/Reference&gt;', '
+      <_RhetosHostAppLinqPadReferences>@(_RhetosHostAppAssemblies -> '&lt;Reference Relative="..\%(identity)"&gt;..\%(identity)&lt;/Reference&gt;', '
   ')</_RhetosHostAppLinqPadReferences>
       <_RhetosDomLinqPadScript>
 <![CDATA[
@@ -29,8 +31,6 @@
   <Reference Relative="..\$(AssemblyName).runtimeconfig.json">..\$(AssemblyName).runtimeconfig.json</Reference>
   $(_RhetosHostAppLinqPadReferences)
   <Reference Relative="..\Autofac.dll">..\Autofac.dll</Reference>
-  <Reference Relative="..\EntityFramework.dll">..\EntityFramework.dll</Reference>
-  <Reference Relative="..\EntityFramework.SqlServer.dll">..\EntityFramework.SqlServer.dll</Reference>
   <Reference Relative="..\Microsoft.CodeAnalysis.CSharp.dll">..\Microsoft.CodeAnalysis.CSharp.dll</Reference>
   <Reference Relative="..\Microsoft.CodeAnalysis.dll">..\Microsoft.CodeAnalysis.dll</Reference>
   <Reference Relative="..\Microsoft.Extensions.Localization.Abstractions.dll">..\Microsoft.Extensions.Localization.Abstractions.dll</Reference>
@@ -41,7 +41,6 @@
   <Reference Relative="..\Rhetos.Core.DslParser.dll">..\Rhetos.Core.DslParser.dll</Reference>
   <Reference Relative="..\Rhetos.Core.Integration.dll">..\Rhetos.Core.Integration.dll</Reference>
   <Reference Relative="..\runtimes\win-x64\native\sni.dll">..\runtimes\win-x64\native\sni.dll</Reference>
-  <Reference Relative="..\runtimes\win\lib\netcoreapp2.1\System.Data.SqlClient.dll">..\runtimes\win\lib\netcoreapp2.1\System.Data.SqlClient.dll</Reference>
   <Reference Relative="..\runtimes\win\lib\net8.0\System.Diagnostics.EventLog.dll">..\runtimes\win\lib\net8.0\System.Diagnostics.EventLog.dll</Reference>
   <Reference Relative="..\runtimes\win\lib\net8.0\System.Diagnostics.EventLog.Messages.dll">..\runtimes\win\lib\net8.0\System.Diagnostics.EventLog.Messages.dll</Reference>
   <Reference Relative="..\runtimes\win\lib\net8.0\System.Runtime.Caching.dll">..\runtimes\win\lib\net8.0\System.Runtime.Caching.dll</Reference>

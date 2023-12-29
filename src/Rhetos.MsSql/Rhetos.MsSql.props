@@ -1,0 +1,5 @@
+<Project>
+    <ItemGroup>
+        <RhetosLinqPadReference Include="runtimes\win\lib\net6.0\Microsoft.Data.SqlClient.dll" />
+    </ItemGroup>
+</Project>
