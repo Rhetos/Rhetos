@@ -271,6 +271,11 @@ Module TestUnique
     {
         ShortString Name { UniqueWhereNotNull; }
     }
+
+	Entity UniqueWhereNotNullEntityReference
+    {
+        Reference TestReference TestUnique.R { UniqueWhereNotNull; }
+    }
 }
 
 Module TestCloning

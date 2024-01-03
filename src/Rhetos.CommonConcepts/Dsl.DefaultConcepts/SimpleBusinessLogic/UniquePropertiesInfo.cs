@@ -30,13 +30,9 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Unique")]
-    public class UniquePropertiesInfo : IValidatedConcept
+    public class UniquePropertiesInfo : UniqueMultiplePropertiesInfo, IAlternativeInitializationConcept, IValidatedConcept
     {
-        [ConceptKey]
-        public DataStructureInfo DataStructure { get; set; }
-        [ConceptKey]
         public PropertyInfo Property1 { get; set; }
-        [ConceptKey]
         public PropertyInfo Property2 { get; set; }
 
         public void CheckSemantics(IDslModel existingConcepts)
@@ -44,21 +40,16 @@ namespace Rhetos.Dsl.DefaultConcepts
             DslUtility.CheckIfPropertyBelongsToDataStructure(Property1, DataStructure, this);
             DslUtility.CheckIfPropertyBelongsToDataStructure(Property2, DataStructure, this);
         }
-    }
 
-    [Export(typeof(IConceptMacro))]
-    public class UniquePropertiesMacro : IConceptMacro<UniquePropertiesInfo>
-    {
-        public IEnumerable<IConceptInfo> CreateNewConcepts(UniquePropertiesInfo conceptInfo, IDslModel existingConcepts)
+        public new IEnumerable<string> DeclareNonparsableProperties()
         {
-            return new[]
-            {
-                new UniqueMultiplePropertiesInfo
-                {
-                    DataStructure = conceptInfo.DataStructure,
-                    PropertyNames = conceptInfo.Property1.Name + " " + conceptInfo.Property2.Name
-                }
-            };
+            return base.DeclareNonparsableProperties()
+                .Concat(new[] { nameof(PropertyNames) });
+        }
+        public new void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        {
+            PropertyNames = Property1.Name + ' ' + Property2.Name;
+            base.InitializeNonparsableProperties(out createdConcepts);
         }
     }
 }

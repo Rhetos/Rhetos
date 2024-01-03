@@ -28,37 +28,31 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// <summary>
     /// Index on two columns in database.
     /// </summary>
+    [Obsolete("Use SqlIndexMultiple instead.")]
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SqlIndex")]
-    public class SqlIndex2Info : IValidatedConcept
+    public class SqlIndex2Info : SqlIndexMultipleInfo, IAlternativeInitializationConcept, IValidatedConcept
     {
-        [ConceptKey]
-        public EntityInfo DataStructure { get; set; }
-        [ConceptKey]
         public PropertyInfo Property1 { get; set; }
-        [ConceptKey]
         public PropertyInfo Property2 { get; set; }
 
-        public void CheckSemantics(IDslModel existingConcepts)
+        public IEnumerable<string> DeclareNonparsableProperties()
+        {
+            return new[] {
+                nameof(PropertyNames)
+            };
+        }
+        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        {
+            PropertyNames = Property1.Name + ' ' + Property2.Name;
+            createdConcepts = null;
+        }
+
+        public new void CheckSemantics(IDslModel existingConcepts)
         {
             DslUtility.CheckIfPropertyBelongsToDataStructure(Property1, DataStructure, this);
             DslUtility.CheckIfPropertyBelongsToDataStructure(Property2, DataStructure, this);
-        }
-    }
-
-    [Export(typeof(IConceptMacro))]
-    public class SqlIndex2Macro : IConceptMacro<SqlIndex2Info>
-    {
-        public IEnumerable<IConceptInfo> CreateNewConcepts(SqlIndex2Info conceptInfo, IDslModel existingConcepts)
-        {
-            return new[]
-            {
-                new SqlIndexMultipleInfo
-                {
-                    DataStructure = conceptInfo.DataStructure,
-                    PropertyNames = conceptInfo.Property1.Name + " " + conceptInfo.Property2.Name
-                }
-            };
+            base.CheckSemantics(existingConcepts);
         }
     }
 }

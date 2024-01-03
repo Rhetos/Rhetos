@@ -30,25 +30,23 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SqlIndex")]
-    public class SqlIndexInfo : IConceptInfo
+    public class SqlIndexInfo : SqlIndexMultipleInfo, IAlternativeInitializationConcept
     {
-        [ConceptKey]
         public PropertyInfo Property { get; set; }
-    }
 
-    [Export(typeof(IConceptMacro))]
-    public class SqlIndexMacro : IConceptMacro<SqlIndexInfo>
-    {
-        public IEnumerable<IConceptInfo> CreateNewConcepts(SqlIndexInfo conceptInfo, IDslModel existingConcepts)
+        public IEnumerable<string> DeclareNonparsableProperties()
         {
-            return new[]
-            {
-                new SqlIndexMultipleInfo
-                {
-                    DataStructure = conceptInfo.Property.DataStructure,
-                    PropertyNames = conceptInfo.Property.Name
-                }
+            return new[] {
+                nameof(DataStructure),
+                nameof(PropertyNames)
             };
+        }
+
+        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        {
+            DataStructure = Property.DataStructure;
+            PropertyNames = Property.Name;
+            createdConcepts = null;
         }
     }
 }

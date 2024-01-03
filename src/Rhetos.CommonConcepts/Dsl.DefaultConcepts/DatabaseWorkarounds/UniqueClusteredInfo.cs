@@ -27,28 +27,21 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Clustered")]
-    public class UniqueClusteredInfo : IConceptInfo
+    public class UniqueClusteredInfo : SqlIndexClusteredInfo, IAlternativeInitializationConcept
     {
-        [ConceptKey]
         public UniqueMultiplePropertiesInfo Unique { get; set; }
-    }
 
-    [Export(typeof(IConceptMacro))]
-    public class UniqueClusteredMacro : IConceptMacro<UniqueClusteredInfo>
-    {
-        public IEnumerable<IConceptInfo> CreateNewConcepts(UniqueClusteredInfo conceptInfo, IDslModel existingConcepts)
+        public IEnumerable<string> DeclareNonparsableProperties()
         {
-            return new[]
-            {
-                new SqlIndexClusteredInfo
-                {
-                    SqlIndex = new SqlIndexMultipleInfo
-                    {
-                        DataStructure = conceptInfo.Unique.DataStructure,
-                        PropertyNames = conceptInfo.Unique.PropertyNames
-                    }
-                }
-            };
+            return new[] { nameof(SqlIndex) };
+        }
+
+        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        {
+            if (Unique.Dependency_SqlIndex == null)
+                throw new FrameworkException($"{nameof(UniqueMultiplePropertiesInfo)} has not been initialized.");
+            SqlIndex = Unique.Dependency_SqlIndex;
+            createdConcepts = null;
         }
     }
 }
