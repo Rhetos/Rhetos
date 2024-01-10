@@ -6,55 +6,56 @@
 
 Changes in Rhetos libraries API:
 
-1. Migrated from .NET 5. and .NET 6 to **.NET 8**. Updated C# version from v9 to v12 (default for .NET 8).
-   * Update the existing projects (.csproj) by setting `TargetFramework` to `net8.0`, and updating `PackageReference` for
-     `System.*` and `Microsoft.*` packages to the latest version (`8.0.0` or higher).
-   * If there are issues with .NET update, see [Migrate from ASP.NET Core 6.0 to 7.0](https://learn.microsoft.com/en-us/aspnet/core/migration/60-70?view=aspnetcore-7.0&tabs=visual-studio)
-     and [Migrate from ASP.NET Core 7.0 to 8.0](https://learn.microsoft.com/en-us/aspnet/core/migration/70-80?view=aspnetcore-7.0&tabs=visual-studio).
-2. Rhetos.CommonConcepts NuGet package no longer includes a **default database provider** (SQL Server).
-   The selected provider must be added to the Rhetos application:
-   * Add a reference to NuGet package "**Rhetos.MsSqlEf6**" to existing projects that reference `Rhetos.CommonConcepts`.
-3. Dropped official support for **Oracle Database**. The development of community plugins for
-   different database providers is still supported.
-4. Removed NuGet package **Rhetos.Host.Net**. The types are move into "Rhetos" NuGet package.
-   * Remove the "Rhetos.Host.Net" package reference from your projects.
-5. Rhetos **core libraries** are reorganized. The class names and namespaces have not been changed.
-   For each new core library, here is a list of the old libraries that are replaced by the new one.
-   * Use **Rhetos.Core.dll** instead of Rhetos.Compiler.dll, Rhetos.Compiler.Interfaces.dll, Rhetos.DatabaseGenerator.dll, Rhetos.DatabaseGenerator.Interfaces.dll, Rhetos.Dom.dll, Rhetos.Dom.Interfaces.dll, Rhetos.Dsl.dll, Rhetos.Extensibility.dll, Rhetos.Extensibility.Interfaces.dll, Rhetos.Logging.dll, Rhetos.Persistence.dll, Rhetos.Persistence.Interfaces.dll, Rhetos.Processing.dll, Rhetos.Processing.Interfaces.dll, Rhetos.Security.dll, Rhetos.Security.Interfaces.dll, Rhetos.Utilities.dll, Rhetos.Configuration.Autofac.dll, Rhetos.Deployment.dll.
-   * Use **Rhetos.CommonConcepts.dll** instead of Rhetos.DatabaseGenerator.DefaultConcepts.dll, Rhetos.Dom.DefaultConcepts.Interfaces.dll, Rhetos.Dom.DefaultConcepts.dll, Rhetos.Dsl.DefaultConcepts.dll, Rhetos.Processing.DefaultCommands.Interfaces.dll, Rhetos.Processing.DefaultCommands.dll.
-   * Use **Rhetos.Core.Integration.dll** instead of Rhetos.Deployment.Interfaces.dll, Rhetos.Logging.Interfaces.dll and Rhetos.Utilities.Interfaces.dll.
-   * Use **Rhetos.Core.DslParser.dll** instead of Rhetos.Dsl.Interfaces.dll and Rhetos.Dsl.Parser.dll.
-6. Removed some static members of **SqlUtility** class:
-   * Instead of `SqlUtility.ConnectionString`, use the ConnectionString class from dependency injection.
-   * Instead of `SqlUtility.SqlCommandTimeout`, use DatabaseOptions.SqlCommandTimeout from dependency injection.
-   * Instead of `SqlUtility.DatabaseLanguage`, use DatabaseSettings.DatabaseLanguage from dependency injection.
-   * Instead of `SqlUtility.NationalLanguage`, use DatabaseSettings.DatabaseNationalLanguage from dependency injection.
-   * For other removed static members, use `ISqlUtility` from dependency injection or `_executionContext.SqlUtility` where the **execution context** is available.
-   * `SqlUtility.EmptyNullString` renamed to `ISqlUtility.ReadEmptyNullString`.
-7. **RepositoryUses** concept: The type parameter must be specified as written in C# code with, with the namespace.
-   The [assembly qualified name](https://learn.microsoft.com/en-us/dotnet/api/system.type.assemblyqualifiedname?view=net-8.0)
-   is no longer supported.
-   * For example, instead of `RepositoryUses _localizer 'Rhetos.Utilities.ILocalizer, Rhetos.Utilities';`, write `RepositoryUses _localizer 'Rhetos.Utilities.ILocalizer';`.
-8. Removed obsolete **IConfiguration** methods: GetString, GetInt, GetBool and GetEnum. Use `GetValue` method instead.
-9. Removed obsolete Rhetos.Utilities classes: **ConfigUtility** and **Configuration**. Use `IConfiguration` from dependency injection instead, method `GetValue`.
-10. Removed static SQL helper class **Sql**. Use `ISqlResources` instead.
-11. **IOrmDataStructure** no longer contains methods `GetOrmSchema` and `GetOrmDatabaseObject`.
-    * These methods are now available on `ConceptMetadata` class (use it from dependency injection).
-12. **DslSyntaxException** constructor no longer supports first argument IConceptInfo. Use `DslConceptSyntaxException` instead.
-13. `IConceptMetadataExtension<>` interface is no longer covariant, and the derived interfaces are no longer generic.
-    * Replace `.Get<ICsPropertyType<PropertyInfo>>` with `.Get<ICsPropertyType>`.
-    * Replace `.Get<IDatabaseColumnName<PropertyInfo>>` with `.Get<IDatabaseColumnName>`.
-    * Replace `.Get<IDatabaseColumnType<PropertyInfo>>` with `.Get<IDatabaseColumnType>`.
-14. The AutoCodeHelper.UpdateCodesWithoutCache method has new parameter "ISqlUtility".
-    * Replace `AutoCodeHelper.UpdateCodesWithoutCache(_executionContext.SqlExecuter, ...` with `AutoCodeHelper.UpdateCodesWithoutCache(_executionContext.SqlExecuter, _executionContext.SqlUtility, ...`.
-15. The **Rhetos.TestCommon** package has updated MSTest.TestFramework referece from v2.1.0 to v3.1.1.
-    * Any test projects that reference the "Rhetos.TestCommon" package, should be updated to the latest version of the MSTest.* packages (v3.1.1 or higher).
-    * There is a breaking change in MSTest v3: If a unit test uses an external file from disk, it should look for the file
-      in `AppDomain.CurrentDomain.BaseDirectory` directory instead of the current directory.
+* Migrated from .NET 5. and .NET 6 to **.NET 8**. Updated C# version from v9 to v12 (default for .NET 8).
+  * Update the existing projects (.csproj) by setting `TargetFramework` to `net8.0`, and updating `PackageReference` for
+    `System.*` and `Microsoft.*` packages to the latest version (`8.0.0` or higher).
+  * If the files exists, update `LangVersion` in the `Directory.Build.props` file from `9.0` to `12.0`.
+  * If there are issues with .NET update, see [Migrate from ASP.NET Core 6.0 to 7.0](https://learn.microsoft.com/en-us/aspnet/core/migration/60-70?view=aspnetcore-7.0&tabs=visual-studio)
+    and [Migrate from ASP.NET Core 7.0 to 8.0](https://learn.microsoft.com/en-us/aspnet/core/migration/70-80?view=aspnetcore-7.0&tabs=visual-studio).
+* Rhetos.CommonConcepts NuGet package no longer includes a **default database provider** (SQL Server).
+  The selected provider must be added to the Rhetos application:
+  * Add a reference to NuGet package "**Rhetos.MsSqlEf6**" to existing projects that reference `Rhetos.CommonConcepts`.
+* Dropped official support for **Oracle Database**. The development of community plugins for
+  different database providers is still supported.
+* Removed NuGet package **Rhetos.Host.Net**. The types are move into "Rhetos" NuGet package.
+  * Remove the "Rhetos.Host.Net" package reference from your projects.
+* Rhetos **core libraries** are reorganized. The class names and namespaces have not been changed.
+  For each new core library, here is a list of the old libraries that are replaced by the new one.
+  * Use **Rhetos.Core.dll** instead of Rhetos.Compiler.dll, Rhetos.Compiler.Interfaces.dll, Rhetos.DatabaseGenerator.dll, Rhetos.DatabaseGenerator.Interfaces.dll, Rhetos.Dom.dll, Rhetos.Dom.Interfaces.dll, Rhetos.Dsl.dll, Rhetos.Extensibility.dll, Rhetos.Extensibility.Interfaces.dll, Rhetos.Logging.dll, Rhetos.Persistence.dll, Rhetos.Persistence.Interfaces.dll, Rhetos.Processing.dll, Rhetos.Processing.Interfaces.dll, Rhetos.Security.dll, Rhetos.Security.Interfaces.dll, Rhetos.Utilities.dll, Rhetos.Configuration.Autofac.dll, Rhetos.Deployment.dll.
+  * Use **Rhetos.CommonConcepts.dll** instead of Rhetos.DatabaseGenerator.DefaultConcepts.dll, Rhetos.Dom.DefaultConcepts.Interfaces.dll, Rhetos.Dom.DefaultConcepts.dll, Rhetos.Dsl.DefaultConcepts.dll, Rhetos.Processing.DefaultCommands.Interfaces.dll, Rhetos.Processing.DefaultCommands.dll.
+  * Use **Rhetos.Core.Integration.dll** instead of Rhetos.Deployment.Interfaces.dll, Rhetos.Logging.Interfaces.dll and Rhetos.Utilities.Interfaces.dll.
+  * Use **Rhetos.Core.DslParser.dll** instead of Rhetos.Dsl.Interfaces.dll and Rhetos.Dsl.Parser.dll.
+* Removed some static members of **SqlUtility** class:
+  * Instead of `SqlUtility.ConnectionString`, use the ConnectionString class from dependency injection.
+  * Instead of `SqlUtility.SqlCommandTimeout`, use DatabaseOptions.SqlCommandTimeout from dependency injection.
+  * Instead of `SqlUtility.DatabaseLanguage`, use DatabaseSettings.DatabaseLanguage from dependency injection.
+  * Instead of `SqlUtility.NationalLanguage`, use DatabaseSettings.DatabaseNationalLanguage from dependency injection.
+  * For other removed static members, use `ISqlUtility` from dependency injection or `_executionContext.SqlUtility` where the **execution context** is available.
+  * `SqlUtility.EmptyNullString` renamed to `ISqlUtility.ReadEmptyNullString`.
+* **RepositoryUses** concept: The type parameter must be specified as written in C# code with, with the namespace.
+  The [assembly qualified name](https://learn.microsoft.com/en-us/dotnet/api/system.type.assemblyqualifiedname?view=net-8.0)
+  is no longer supported.
+  * For example, instead of `RepositoryUses _localizer 'Rhetos.Utilities.ILocalizer, Rhetos.Utilities';`, write `RepositoryUses _localizer 'Rhetos.Utilities.ILocalizer';`.
+* Removed obsolete **IConfiguration** methods: GetString, GetInt, GetBool and GetEnum. Use `GetValue` method instead.
+* Removed obsolete Rhetos.Utilities classes: **ConfigUtility** and **Configuration**. Use `IConfiguration` from dependency injection instead, method `GetValue`.
+* Removed static SQL helper class **Sql**. Use `ISqlResources` instead.
+* **IOrmDataStructure** no longer contains methods `GetOrmSchema` and `GetOrmDatabaseObject`.
+  Use the same methods on `ConceptMetadata` class instead (with dependency injection).
+* **DslSyntaxException** constructor no longer supports first argument IConceptInfo. Use `DslConceptSyntaxException` instead.
+* `IConceptMetadataExtension<>` interface is no longer covariant, and the derived interfaces are no longer generic.
+  * Replace `.Get<ICsPropertyType<PropertyInfo>>` with `.Get<ICsPropertyType>`.
+  * Replace `.Get<IDatabaseColumnName<PropertyInfo>>` with `.Get<IDatabaseColumnName>`.
+  * Replace `.Get<IDatabaseColumnType<PropertyInfo>>` with `.Get<IDatabaseColumnType>`.
+* The AutoCodeHelper.UpdateCodesWithoutCache method has new parameter "ISqlUtility".
+  * Replace `AutoCodeHelper.UpdateCodesWithoutCache(_executionContext.SqlExecuter, ...` with `AutoCodeHelper.UpdateCodesWithoutCache(_executionContext.SqlExecuter, _executionContext.SqlUtility, ...`.
+* The **Rhetos.TestCommon** package has updated MSTest.TestFramework referece from v2.1.0 to v3.1.1.
+  * Any test projects that reference the "Rhetos.TestCommon" package, should be updated to the latest version of the MSTest.* packages (v3.1.1 or higher).
+  * There is a breaking change in MSTest v3: If a unit test uses an external file from disk, it should look for the file
+    in `AppDomain.CurrentDomain.BaseDirectory` directory instead of the current directory.
 
 Changes in behavior:
 
-1. Configuration setting key "Rhetos:DatabaseOracle:NationalLanguage" has changed to "Rhetos:Build:DatabaseNationalLanguage".
+* Configuration setting key "Rhetos:DatabaseOracle:NationalLanguage" has changed to "Rhetos:Build:DatabaseNationalLanguage".
 
 ### Internal improvements
 

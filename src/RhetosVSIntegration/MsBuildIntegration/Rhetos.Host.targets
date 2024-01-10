@@ -15,13 +15,14 @@
 
   <Target Name="RhetosGenerateLinqPadScripts" DependsOnTargets="ResolveReferences" BeforeTargets="AssignTargetPaths">
     <ItemGroup>
-      <!-- <_RhetosHostAppAssemblies Include="@(ReferencePath)" Condition="'%(ReferencePath.MSBuildSourceProjectFile)' != ''" /> -->
-      <_RhetosHostAppAssemblies Include="@(ReferencePath) -> '%(Filename)%(Extension)'" Condition="'%(ReferencePath.MSBuildSourceProjectFile)' != ''" />
-      <_RhetosHostAppAssemblies Include="@(RhetosLinqPadReference)" />
-    </ItemGroup>  
+      <_RhetosHostProjectReferences Include="@(ReferencePath)" Condition="'%(ReferencePath.MSBuildSourceProjectFile)' != ''" />
+      <!--The libraries from _RhetosHostProjectReferences will end up directly in the bin folder, so the directory path is removed.
+      Additional RhetosLinqPadReference are considered as strings so any plugin packages can specify files from the runtimes subfolder.-->
+      <_RhetosHostAppAssemblies Include="@(_RhetosHostProjectReferences -> '%(Filename)%(Extension)');@(RhetosLinqPadReference->'%(Identity)')" />
+    </ItemGroup>
     <PropertyGroup>
       <_RhetosDomLinqPadScriptPath>$(BaseIntermediateOutputPath)Rhetos\LinqPad\Rhetos DOM.linq</_RhetosDomLinqPadScriptPath>
-      <_RhetosHostAppLinqPadReferences>@(_RhetosHostAppAssemblies -> '&lt;Reference Relative="..\%(identity)"&gt;..\%(identity)&lt;/Reference&gt;', '
+      <_RhetosHostAppLinqPadReferences>@(_RhetosHostAppAssemblies -> '&lt;Reference Relative="..\%(Identity)"&gt;..\%(Identity)&lt;/Reference&gt;', '
   ')</_RhetosHostAppLinqPadReferences>
       <_RhetosDomLinqPadScript>
 <![CDATA[
