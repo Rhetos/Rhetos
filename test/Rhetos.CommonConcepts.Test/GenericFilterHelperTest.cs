@@ -76,7 +76,7 @@ namespace Rhetos.CommonConcepts.Test
             var genericFilter = new FilterCriteria("Name", operation, value);
             Console.WriteLine("genericFilter: " + genericFilter.Property + " " + genericFilter.Operation + " " + genericFilter.Value);
 
-            var genericFilterHelper = new GenericFilterHelper(new DomainObjectModelMock(), new DataStructureReadParametersStub(), new CommonConceptsRuntimeOptions(), new ConsoleLogProvider(), new Ef6OrmUtility());
+            var genericFilterHelper = new GenericFilterHelper(new DataStructureReadParametersStub(), new ConsoleLogProvider(), new Ef6OrmUtility());
             var filterObject = genericFilterHelper.ToFilterObjects(typeof(C).FullName, new FilterCriteria[] { genericFilter }).Single();
             Console.WriteLine("filterObject.FilterType: " + filterObject.FilterType.ToString());
             var filterExpression = genericFilterHelper.ToExpression<C>((IEnumerable<PropertyFilter>)filterObject.Parameter);
@@ -205,7 +205,7 @@ namespace Rhetos.CommonConcepts.Test
         private static IEnumerable<TDataStructure> TestFilter<TDataStructure>(string property, string operation, object value, IEnumerable<TDataStructure> items)
         {
             var genericFilter = new FilterCriteria(property, operation, value);
-            var genericFilterHelper = new GenericFilterHelper(new DomainObjectModelMock(), new DataStructureReadParametersStub(), new CommonConceptsRuntimeOptions(), new ConsoleLogProvider(), new Ef6OrmUtility());
+            var genericFilterHelper = new GenericFilterHelper(new DataStructureReadParametersStub(), new ConsoleLogProvider(), new Ef6OrmUtility());
             var filterObject = genericFilterHelper.ToFilterObjects(typeof(TDataStructure).FullName, new FilterCriteria[] { genericFilter }).Single();
             var filterExpression = genericFilterHelper.ToExpression<TDataStructure>((IEnumerable<PropertyFilter>)filterObject.Parameter);
             var filteredItems = items.AsQueryable().Where(filterExpression).ToList();
@@ -337,7 +337,7 @@ namespace Rhetos.CommonConcepts.Test
             var parameters = Array.Empty<KeyValuePair<string, Type>>();
             Dictionary<string, Func<KeyValuePair<string, Type>[]>> repositoryReadParameters = new() { { typeof(TestModule.TestEntity).FullName, () => parameters } };
             var dataStructureReadParameters = new DataStructureReadParameters(repositoryReadParameters);
-            var genericFilterHelper = Factory.CreateGenericFilterHelper(dataStructureReadParameters, dynamicTypeResolution: false);
+            var genericFilterHelper = Factory.CreateGenericFilterHelper(dataStructureReadParameters);
 
             var tests = new (string FilterName, Type Expected)[]
             {
@@ -370,7 +370,7 @@ namespace Rhetos.CommonConcepts.Test
             };
             Dictionary<string, Func<KeyValuePair<string, Type>[]>> repositoryReadParameters = new() { { typeof(TestModule.TestEntity).FullName, () => parameters } };
             var dataStructureReadParameters = new DataStructureReadParameters(repositoryReadParameters);
-            var genericFilterHelper = Factory.CreateGenericFilterHelper(dataStructureReadParameters, dynamicTypeResolution: false);
+            var genericFilterHelper = Factory.CreateGenericFilterHelper(dataStructureReadParameters);
 
             var tests = new (string FilterName, Type Expected)[]
             {
@@ -422,7 +422,7 @@ namespace Rhetos.CommonConcepts.Test
             var parameters = Array.Empty<KeyValuePair<string, Type>>();
             Dictionary<string, Func<KeyValuePair<string, Type>[]>> repositoryReadParameters = new() { { typeof(TestModule.TestEntity).FullName, () => parameters } };
             var dataStructureReadParameters = new DataStructureReadParameters(repositoryReadParameters);
-            var genericFilterHelper = Factory.CreateGenericFilterHelper(dataStructureReadParameters, dynamicTypeResolution: false);
+            var genericFilterHelper = Factory.CreateGenericFilterHelper(dataStructureReadParameters);
 
             var instances = new object[] {
                 new ConcurrentBag<Guid>(),

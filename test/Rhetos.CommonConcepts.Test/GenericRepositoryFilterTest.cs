@@ -60,9 +60,9 @@ namespace Rhetos.CommonConcepts.Test
         static readonly SimpleEntity[] EmptyArray = Array.Empty<SimpleEntity>();
         static readonly SimpleEntity[] AbcArray = new SimpleEntity[] { new SimpleEntity { Name = "abc" } };
 
-        GenericRepository<ISimpleEntity> NewRepos(IRepository repository, bool dynamicTypeResolution = true, List<string> log = null)
+        GenericRepository<ISimpleEntity> NewRepos(IRepository repository, List<string> log = null)
         {
-            return new TestGenericRepository<ISimpleEntity, SimpleEntity>(repository, dynamicTypeResolution, log);
+            return new TestGenericRepository<ISimpleEntity, SimpleEntity>(repository, log);
         }
 
         //=======================================================
@@ -729,7 +729,7 @@ namespace Rhetos.CommonConcepts.Test
         {
             var log = new List<string>();
             var entityRepos = new SystemFilterRepository();
-            var genericRepos = NewRepos(entityRepos, false, log);
+            var genericRepos = NewRepos(entityRepos, log);
 
             TestUtility.ShouldFail<ClientException>(
                 () => genericRepos.Filter(genericRepos.Query(), new[] { new FilterCriteria { Filter = "System.DataTimeOffset" } }),
@@ -765,7 +765,7 @@ namespace Rhetos.CommonConcepts.Test
         public void FilterGenericFilter_Errors()
         {
             var entityRepos = new SystemFilterRepository();
-            var genericRepos = NewRepos(entityRepos, false);
+            var genericRepos = NewRepos(entityRepos);
 
             TestUtility.ShouldFail(() => genericRepos.Filter(genericRepos.Query(), new[] { new FilterCriteria { Operation = "x" } }), "Property, Filter and Value are null");
             TestUtility.ShouldFail(() => genericRepos.Filter(genericRepos.Query(), new[] { new FilterCriteria { } }), "Property, Filter and Value are null");

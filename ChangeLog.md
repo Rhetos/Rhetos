@@ -52,6 +52,8 @@ Changes in Rhetos libraries API:
   * Any test projects that reference the "Rhetos.TestCommon" package, should be updated to the latest version of the MSTest.* packages (v3.1.1 or higher).
   * There is a breaking change in MSTest v3: If a unit test uses an external file from disk, it should look for the file
     in `AppDomain.CurrentDomain.BaseDirectory` directory instead of the current directory.
+* The legacy configuration option `CommonConcepts:DynamicTypeResolution` is no longer supported. DynamicTypeResolution is always disabled.
+    * In FilterCriteria, filter names should be constructed by Type.ToString(), instead of Type.FullName or Type.AssemblyQualifiedName.
 
 Changes in behavior:
 

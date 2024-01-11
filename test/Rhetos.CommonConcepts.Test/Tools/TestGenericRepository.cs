@@ -30,14 +30,14 @@ namespace Rhetos.CommonConcepts.Test.Mocks
         where TEntityInterface : class, IEntity
         where TEntity : class, TEntityInterface
     {
-        public TestGenericRepository(IEnumerable<TEntity> items, bool dynamicTypeResolution = true)
+        public TestGenericRepository(IEnumerable<TEntity> items)
             : base(
                 new GenericRepositoryParameters
                 {
                     DomainObjectModel = new DomainObjectModelMock(),
                     Repositories = new Lazy<IIndex<string, IRepository>>(() => new RepositoryIndexMock<TEntityInterface, TEntity>(items)),
                     LogProvider = new ConsoleLogProvider(),
-                    GenericFilterHelper = Factory.CreateGenericFilterHelper(new DataStructureReadParametersStub(), dynamicTypeResolution),
+                    GenericFilterHelper = Factory.CreateGenericFilterHelper(new DataStructureReadParametersStub()),
                     DelayedLogProvider = new DelayedLogProvider(new LoggingOptions { DelayedLogTimout = 0 }, null),
                     OrmUtility = new Ef6OrmUtility(),
                 },
@@ -45,21 +45,21 @@ namespace Rhetos.CommonConcepts.Test.Mocks
         {
         }
 
-        public TestGenericRepository(IRepository repository, bool dynamicTypeResolution = true, List<string> log = null)
+        public TestGenericRepository(IRepository repository, List<string> log = null)
             : base(
-                NewParameters(repository, dynamicTypeResolution, log),
+                NewParameters(repository, log),
                 new RegisteredInterfaceImplementations { { typeof(TEntityInterface), typeof(TEntity).FullName } })
         {
         }
 
-        public static GenericRepositoryParameters NewParameters(IRepository repository, bool dynamicTypeResolution = true, List<string> log = null)
+        public static GenericRepositoryParameters NewParameters(IRepository repository, List<string> log = null)
         {
             return new GenericRepositoryParameters
             {
                 DomainObjectModel = new DomainObjectModelMock(),
                 Repositories = new Lazy<IIndex<string, IRepository>>(() => new RepositoryIndexMock(typeof(TEntity), repository)),
                 LogProvider = new ConsoleLogProvider(),
-                GenericFilterHelper = Factory.CreateGenericFilterHelper(Factory.CreateDataStructureReadParameters(repository, typeof(TEntity)), dynamicTypeResolution, log),
+                GenericFilterHelper = Factory.CreateGenericFilterHelper(Factory.CreateDataStructureReadParameters(repository, typeof(TEntity)), log),
                 DelayedLogProvider = new DelayedLogProvider(new LoggingOptions { DelayedLogTimout = 0 }, null),
                 OrmUtility = new Ef6OrmUtility(),
             };

@@ -36,23 +36,17 @@ namespace Rhetos.Dom.DefaultConcepts
 {
     public class GenericFilterHelper
     {
-        private readonly IDomainObjectModel _domainObjectModel;
         private readonly IDataStructureReadParameters _dataStructureReadParameters;
-        private readonly CommonConceptsRuntimeOptions _commonConceptsRuntimeOptions;
         private readonly IOrmUtility _ormUtility;
         private readonly ILogger _logger;
 
         public GenericFilterHelper(
-            IDomainObjectModel domainObjectModel,
             IDataStructureReadParameters dataStructureReadParameters,
-            CommonConceptsRuntimeOptions commonConceptsRuntimeOptions,
             ILogProvider logProvider,
             IOrmUtility ormUtility)
         {
-            _domainObjectModel = domainObjectModel;
             _dataStructureReadParameters = dataStructureReadParameters;
-            _commonConceptsRuntimeOptions = commonConceptsRuntimeOptions;
-            this._ormUtility = ormUtility;
+            _ormUtility = ormUtility;
             _logger = logProvider.GetLogger(GetType().Name);
         }
 
@@ -559,14 +553,6 @@ namespace Rhetos.Dom.DefaultConcepts
 
                 if (baseTypes.Count == 1)
                     return baseTypes.Single();
-            }
-
-            // Backward compatibility:
-            if (_commonConceptsRuntimeOptions.DynamicTypeResolution)
-            {
-                Type filterType = _domainObjectModel.GetType(filterName) ?? Type.GetType(filterName);
-                if (filterType != null)
-                    return filterType;
             }
 
             _logger.Warning(() =>

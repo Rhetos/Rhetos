@@ -53,8 +53,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <para>
         /// <see cref="Property"/> and <see cref="Filter"/> members should not be both set.
         /// </para>
-        /// See <see cref="IDataStructureReadParameters"/> and <see cref="CommonConceptsRuntimeOptions.DynamicTypeResolution"/>
-        /// for more info on supported types implementation and usage.
+        /// See <see cref="IDataStructureReadParameters"/> for more info on supported types implementation and usage.
         /// </remarks>
         public string Filter { get; set; }
 

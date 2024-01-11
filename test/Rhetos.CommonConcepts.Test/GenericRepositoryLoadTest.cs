@@ -710,7 +710,12 @@ namespace Rhetos.CommonConcepts.Test
                 return new[] { new SimpleEntity { Name = parameter.ToString() } }.AsQueryable();
             }
 
-            public static KeyValuePair<string, Type>[] GetReadParameterTypes() => Array.Empty<KeyValuePair<string, Type>>();
+            public static KeyValuePair<string, Type>[] GetReadParameterTypes() => new KeyValuePair<string, Type>[]
+            {
+                new KeyValuePair<string, Type>("System.DateTime", typeof(DateTime)),
+                new KeyValuePair<string, Type>("System.Guid", typeof(Guid)),
+                new KeyValuePair<string, Type>("System.String", typeof(string)),
+            };
         }
 
         [TestMethod]

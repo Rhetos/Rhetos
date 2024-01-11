@@ -97,7 +97,10 @@ namespace Rhetos.CommonConcepts.Test
                 return source.Where(item => item.Name.Contains(pattern));
             }
 
-            public static KeyValuePair<string, Type>[] GetReadParameterTypes() => Array.Empty<KeyValuePair<string, Type>>();
+            public static KeyValuePair<string, Type>[] GetReadParameterTypes() => new KeyValuePair<string, Type>[]
+            {
+                new KeyValuePair<string, Type>("System.String", typeof(string)),
+            };
         }
 
         class ExplicitReadCommandRepository : IRepository

@@ -32,12 +32,10 @@ namespace Rhetos.CommonConcepts.Test.Tools
     public static class Factory
     {
 
-        public static GenericFilterHelper CreateGenericFilterHelper(IDataStructureReadParameters readParameters, bool dynamicTypeResolution = true, List<string> log = null)
+        public static GenericFilterHelper CreateGenericFilterHelper(IDataStructureReadParameters readParameters, List<string> log = null)
         {
             return new GenericFilterHelper(
-                new DomainObjectModelMock(),
                 readParameters,
-                new CommonConceptsRuntimeOptions { DynamicTypeResolution = dynamicTypeResolution },
                 log != null
                     ? new ConsoleLogProvider((eventType, eventName, message) => log.Add($"[{eventType}] {eventName}: {message()}"))
                     : new ConsoleLogProvider(),
