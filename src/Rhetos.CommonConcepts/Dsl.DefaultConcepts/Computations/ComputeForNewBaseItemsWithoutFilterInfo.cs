@@ -43,8 +43,8 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public new void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
         {
-            base.InitializeNonparsableProperties(out createdConcepts);
             FilterSaveExpression = "";
+            base.InitializeNonparsableProperties(out createdConcepts);
         }
     }
 }
