@@ -12,7 +12,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
     [Export(typeof(IConceptDatabaseDefinition))]
     [ExportMetadata(MefProvider.Implements, typeof(SqlIndexWhereInfo))]
-    public class UniqueWhereDatabaseDefinition: IConceptDatabaseDefinitionExtension
+    public class SqlWhereDatabaseDefinition: IConceptDatabaseDefinitionExtension
     {
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
         {
