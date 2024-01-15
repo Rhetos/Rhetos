@@ -42,8 +42,7 @@ namespace Rhetos.Dsl
         /// </remarks>
         public static string GetKey(this IConceptInfo ci)
         {
-            if (ci == null)
-                throw new ArgumentNullException(nameof(ci));
+            ArgumentNullException.ThrowIfNull(ci);
 
             return KeyCache.GetValue(ci, CreateKey);
         }

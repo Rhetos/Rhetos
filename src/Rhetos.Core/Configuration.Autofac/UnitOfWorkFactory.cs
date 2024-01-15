@@ -38,8 +38,7 @@ namespace Rhetos
 
         public void Initialize(RhetosHost rhetosHost, Action<ContainerBuilder> customRegistrations = null)
         {
-            if (rhetosHost is null)
-                throw new ArgumentNullException(nameof(rhetosHost));
+            ArgumentNullException.ThrowIfNull(rhetosHost);
 
             Initialize(rhetosHost.GetRootContainer(), customRegistrations);
         }
