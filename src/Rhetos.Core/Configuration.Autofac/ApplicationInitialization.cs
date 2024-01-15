@@ -68,7 +68,7 @@ namespace Rhetos.Deployment
                     scope.CommitAndClose();
                 }
 
-                if (!initializers.Any())
+                if (initializers.Length == 0)
                     _logger.Info("No server initialization plugins.");
 
                 foreach (Type initializerType in initializers)

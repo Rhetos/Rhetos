@@ -120,11 +120,11 @@ namespace Rhetos.Persistence
 
             Try(BeforeClose, exceptions);
 
-            Try(!exceptions.Any() ? CommitTransactionAndDispose : RollbackTransactionAndDispose, exceptions);
+            Try(exceptions.Count == 0 ? CommitTransactionAndDispose : RollbackTransactionAndDispose, exceptions);
 
             Try(CloseConnection, exceptions);
 
-            if (exceptions.Any())
+            if (exceptions.Count != 0)
                 ExceptionsUtility.Rethrow(exceptions.First());
 
             AfterClose?.Invoke();
@@ -140,7 +140,7 @@ namespace Rhetos.Persistence
             Try(CloseConnection, exceptions);
 
             // Failure on rollback should be ignored to allow other cleanup code to be executed, and also to avoid masking the original exception on transaction disposal.
-            if (exceptions.Any())
+            if (exceptions.Count != 0)
                 // Logging the error with low severity level, because the Rollback method is called after some other error is caught and reported.
                 // The rollback might fail if the main error closed the transaction or database connection, this is expected behavior.
                 _logger.Trace("Error on rollback, it can be safely ignored. " + exceptions.First());

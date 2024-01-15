@@ -93,7 +93,7 @@ namespace Rhetos.Dsl.Test
             var types = new HashSet<Type>(conceptInfoTypes);
             var addReferencedTypes = new HashSet<Type>(conceptInfoTypes);
 
-            while (addReferencedTypes.Any())
+            while (addReferencedTypes.Count != 0)
             {
                 var newTypes = new HashSet<Type>();
 

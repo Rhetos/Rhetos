@@ -163,7 +163,7 @@ namespace Rhetos.Configuration.Autofac.Test
                     errors.Add($"Service '{overridenService.Key.FullName}' has activator '{actualActivator}' instead of '{expectedActivator}'.");
             }
 
-            if (errors.Any())
+            if (errors.Count != 0)
                 Assert.Fail(string.Join("\r\n", errors.Select((error, index) => $"{index + 1}. {error}")));
         }
 

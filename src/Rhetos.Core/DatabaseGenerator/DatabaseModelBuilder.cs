@@ -99,7 +99,7 @@ namespace Rhetos.DatabaseGenerator
             {
                 var implementations = conceptImplementations[conceptInfo.GetType()];
 
-                if (!implementations.Any())
+                if (implementations.Length == 0)
                     implementations = _nullImplementations;
 
                 codeGenerators.AddRange(implementations.Select(

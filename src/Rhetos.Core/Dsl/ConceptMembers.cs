@@ -75,7 +75,7 @@ namespace Rhetos.Dsl
             for (int i = 0; i < conceptMembers.Length; i++)
                 conceptMembers[i].Index = i;
 
-            if (!conceptMembers.Any())
+            if (conceptMembers.Length == 0)
                 throw new FrameworkException(
                     $"Concept class must have at lease one public non-static property. Class: \"{conceptInfoType.Name}\".");
 

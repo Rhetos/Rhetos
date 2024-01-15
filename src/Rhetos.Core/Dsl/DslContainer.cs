@@ -381,7 +381,7 @@ namespace Rhetos.Dsl
 
             while (sortedList.Count < _resolvedConcepts.Count)
             {
-                if (!conceptsWithoutDependencies.Any())
+                if (conceptsWithoutDependencies.Count == 0)
                 {
                     var unresolvedConcepts = countOfDependencies.Where(cd => cd.Value > 0).Select(c => c.Key).ToList();
                     int reportConcepts = 5;
@@ -411,7 +411,7 @@ namespace Rhetos.Dsl
 
             // Result:
 
-            if (conceptsWithoutDependencies.Any())
+            if (conceptsWithoutDependencies.Count != 0)
                 throw new FrameworkException($"Unexpected internal state: Remaining {conceptsWithoutDependencies.Count} {nameof(conceptsWithoutDependencies)} to resolve.");
             if (countOfDependencies.Any(c => c.Value != 0))
                 throw new FrameworkException($"Unexpected internal state: Remaining {nameof(countOfDependencies)} != 0.");

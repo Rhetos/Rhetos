@@ -305,7 +305,7 @@ namespace Rhetos.MsSql.Test
                 Console.WriteLine("=> " + report);
 
                 TestUtility.AssertNotContains(report, "j", "Username or password leaked.");
-                if (test.Item2.Any())
+                if (test.Item2.Length != 0)
                     TestUtility.AssertContains(report, test.Item2);
             }
         }

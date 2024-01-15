@@ -64,7 +64,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 .Select(param => int.Parse(param))
                 .ToList();
 
-            if (parameters.Any())
+            if (parameters.Count != 0)
                 return parameters.Max();
             else
                 return -1;
