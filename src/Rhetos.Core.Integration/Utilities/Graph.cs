@@ -78,7 +78,7 @@ namespace Rhetos.Utilities
         /// <summary>
         /// Sorts a partially ordered set (directed acyclic graph).
         /// </summary>
-        /// <param name="dependencies">Dependency: Item2 depends on Item1.</param>
+        /// <param name="dependencies">Dependency: Item2 depends on Item1. In the final sorted list, Item1 will be before Item2.</param>
         public static void TopologicalSort<T>(List<T> list, IEnumerable<Tuple<T, T>> dependencies)
         {
             var dependenciesByDependent = new Dictionary<T, List<T>>();

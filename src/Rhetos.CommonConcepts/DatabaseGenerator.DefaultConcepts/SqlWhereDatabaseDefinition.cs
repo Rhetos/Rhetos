@@ -11,8 +11,8 @@ using Rhetos.Utilities;
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
     [Export(typeof(IConceptDatabaseDefinition))]
-    [ExportMetadata(MefProvider.Implements, typeof(UniqueWhereInfo))]
-    public class UniqueWhereDatabaseDefinition: IConceptDatabaseDefinitionExtension
+    [ExportMetadata(MefProvider.Implements, typeof(SqlIndexWhereInfo))]
+    public class SqlWhereDatabaseDefinition: IConceptDatabaseDefinitionExtension
     {
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
         {
@@ -26,11 +26,11 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 
         public void ExtendDatabaseStructure(IConceptInfo conceptInfo, ICodeBuilder codeBuilder, out IEnumerable<Tuple<IConceptInfo, IConceptInfo>> createdDependencies)
         {
-            var info = (UniqueWhereInfo)conceptInfo;
+            var info = (SqlIndexWhereInfo)conceptInfo;
             createdDependencies = null;
 
-            if (info.Dependency_SqlIndex.SqlImplementation())
-                codeBuilder.InsertCode("WHERE " + info.SqlFilter + " ", SqlIndexMultipleDatabaseDefinition.Options2Tag, info.Dependency_SqlIndex);
+            if (info.SqlIndex.SqlImplementation())
+                codeBuilder.InsertCode("WHERE " + info.SqlFilter + " ", SqlIndexMultipleDatabaseDefinition.Options2Tag, info.SqlIndex);
         }
     }
 }

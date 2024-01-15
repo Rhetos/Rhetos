@@ -94,6 +94,7 @@ namespace Rhetos.Dsl
 
             var swFirstAdd = Stopwatch.StartNew();
             dslContainer.AddNewConceptsAndReplaceReferences(new[] { CreateInitializationConcept() });
+            dslContainer.SortDerivationsAfterBaseConcepts(parsedConcepts);
             dslContainer.AddNewConceptsAndReplaceReferences(parsedConcepts);
             dslContainer.AddNewConceptsAndReplaceReferences(alternativeInitializationGeneratedReferences);
             _performanceLogger.Write(swFirstAdd, $"Initialize: First AddNewConceptsAndReplaceReferences ({dslContainer.Concepts.Count()} concepts).");

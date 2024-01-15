@@ -22,41 +22,35 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
-    /// <remark>
+    /// <remarks>
     /// This is a generic version of the Clustered concept syntax, that helps with DSL parser disambiguation.
     /// This concept will be used if the Clustered keyword is placed flat in the Entity.
     /// Other concepts with Clustered keyword will be used if the Clustered keyword is nested in a specific indexing concept.
-    /// </remark>
+    /// </remarks>
     /// <summary>
     /// Marks the index as clustered.
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Clustered")]
-    public class SqlIndexClusteredFlatInfo : IConceptInfo
+    public class SqlIndexClusteredFlatInfo : SqlIndexClusteredInfo, IAlternativeInitializationConcept
     {
-        [ConceptKey]
         public DataStructureInfo DataStructure { get; set; }
 
-        [ConceptKey]
         public string PropertyNames { get; set; }
-    }
 
-    [Export(typeof(IConceptMacro))]
-    public class SqlIndexClusteredFlatMacro : IConceptMacro<SqlIndexClusteredFlatInfo>
-    {
-        public IEnumerable<IConceptInfo> CreateNewConcepts(SqlIndexClusteredFlatInfo conceptInfo, IDslModel existingConcepts)
+        public IEnumerable<string> DeclareNonparsableProperties()
         {
-            return new[]
+            return new[] { nameof(SqlIndex) };
+        }
+
+        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        {
+            SqlIndex = new SqlIndexMultipleInfo
             {
-                new SqlIndexClusteredInfo
-                {
-                    SqlIndex = new SqlIndexMultipleInfo
-                    {
-                        DataStructure = conceptInfo.DataStructure,
-                        PropertyNames = conceptInfo.PropertyNames
-                    }
-                }
+                DataStructure = DataStructure,
+                PropertyNames = PropertyNames
             };
+            createdConcepts = null;
         }
     }
 }

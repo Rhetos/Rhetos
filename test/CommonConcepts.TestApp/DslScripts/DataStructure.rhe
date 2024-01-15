@@ -267,9 +267,19 @@ Module TestUnique
 		SqlDependsOn TestUnique.E;
 	}
 
+	Entity UniqueWhereEntity
+    {
+        ShortString Name { Unique { Where "Name < 'X'"; } }
+    }
+
 	Entity UniqueWhereNotNullEntity
     {
         ShortString Name { UniqueWhereNotNull; }
+    }
+
+	Entity UniqueWhereNotNullEntityReference
+    {
+        Reference TestReference TestUnique.R { UniqueWhereNotNull; }
     }
 }
 

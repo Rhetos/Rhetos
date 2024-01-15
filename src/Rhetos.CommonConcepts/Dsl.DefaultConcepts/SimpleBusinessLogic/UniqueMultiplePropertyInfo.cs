@@ -25,6 +25,10 @@ using System.Text;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
+    /// <summary>
+    /// An internal helper concept for generating C# code snippets on each property of <see cref="UniqueMultiplePropertiesInfo"/>
+    /// for unique data validation, in case when the validation cannot be created as a constraint in the database.
+    /// </summary>
     [Export(typeof(IConceptInfo))]
     public class UniqueMultiplePropertyInfo : IValidatedConcept
     {

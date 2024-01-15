@@ -185,6 +185,8 @@ Module TestSqlWorkarounds
 		// This is just a deploy-time test. The deployment would fail if there is a conflict between multiple index definitions.
 		SqlIndexMultiple 'Code' { Clustered; }
 		ShortString Code { AutoCode; SqlIndex; Unique; }
+		Unique Code;
+		UniqueMultiple Code;
 	}
 
 	Entity RedundantIndexDefinitions2
@@ -192,6 +194,8 @@ Module TestSqlWorkarounds
 		// This is just a deploy-time test. The deployment would fail if there is a conflict between multiple index definitions.
 		SqlIndexMultiple 'TestIndex' { Clustered; }
 		Reference TestIndex { Unique; SqlIndex; Detail; }
+		Unique TestIndex;
+		UniqueMultiple TestIndex;
 	}
 }
 

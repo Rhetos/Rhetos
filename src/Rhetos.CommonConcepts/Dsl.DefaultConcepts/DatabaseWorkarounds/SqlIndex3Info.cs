@@ -28,40 +28,33 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// <summary>
     /// Index on three columns in database.
     /// </summary>
+    [Obsolete("Use SqlIndexMultiple instead.")]
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SqlIndex")]
-    public class SqlIndex3Info : IValidatedConcept
+    public class SqlIndex3Info : SqlIndexMultipleInfo, IAlternativeInitializationConcept, IValidatedConcept
     {
-        [ConceptKey]
-        public EntityInfo DataStructure { get; set; }
-        [ConceptKey]
         public PropertyInfo Property1 { get; set; }
-        [ConceptKey]
         public PropertyInfo Property2 { get; set; }
-        [ConceptKey]
         public PropertyInfo Property3 { get; set; }
 
-        public void CheckSemantics(IDslModel existingConcepts)
+        public IEnumerable<string> DeclareNonparsableProperties()
+        {
+            return new[] {
+                nameof(PropertyNames)
+            };
+        }
+        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        {
+            PropertyNames = Property1.Name + ' ' + Property2.Name + ' ' + Property3.Name;
+            createdConcepts = null;
+        }
+
+        public new void CheckSemantics(IDslModel existingConcepts)
         {
             DslUtility.CheckIfPropertyBelongsToDataStructure(Property1, DataStructure, this);
             DslUtility.CheckIfPropertyBelongsToDataStructure(Property2, DataStructure, this);
             DslUtility.CheckIfPropertyBelongsToDataStructure(Property3, DataStructure, this);
-        }
-    }
-
-    [Export(typeof(IConceptMacro))]
-    public class SqlIndex3Macro : IConceptMacro<SqlIndex3Info>
-    {
-        public IEnumerable<IConceptInfo> CreateNewConcepts(SqlIndex3Info conceptInfo, IDslModel existingConcepts)
-        {
-            return new[]
-            {
-                new SqlIndexMultipleInfo
-                {
-                    DataStructure = conceptInfo.DataStructure,
-                    PropertyNames = conceptInfo.Property1.Name + " " + conceptInfo.Property2.Name + " " + conceptInfo.Property3.Name
-                }
-            };
+            base.CheckSemantics(existingConcepts);
         }
     }
 }

@@ -210,20 +210,12 @@ namespace Rhetos.Dsl.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(DslSyntaxException))]
         public void OrganizeConceptsByKey_RecursiveConceptErrorIfDuplicatesNotEqual()
         {
-            try
-            {
-                const string dsl = "menu abc { menu abc; }";
-                DslModelFromScript(dsl, new[] { new GenericParserTest.MenuCI(), new GenericParserTest.SubMenuCI() });
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                Assert.IsTrue(ex.Message.Contains("abc"));
-                throw;
-            }
+            const string dsl = "menu abc { menu abc; }";
+            TestUtility.ShouldFail<DslConceptSyntaxException>(
+                () => DslModelFromScript(dsl, new[] { new GenericParserTest.MenuCI(), new GenericParserTest.SubMenuCI() }),
+                "menu abc: Circular dependency detected in concept's references: MenuCI abc => MenuCI abc.");
         }
 
         //===================================================================================

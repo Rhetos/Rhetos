@@ -30,25 +30,26 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Unique")]
-    public class UniquePropertyInfo : IConceptInfo
+    public class UniquePropertyInfo : UniqueMultiplePropertiesInfo, IAlternativeInitializationConcept, IValidatedConcept
     {
-        [ConceptKey]
         public PropertyInfo Property { get; set; }
-    }
 
-    [Export(typeof(IConceptMacro))]
-    public class UniquePropertyMacro : IConceptMacro<UniquePropertyInfo>
-    {
-        public IEnumerable<IConceptInfo> CreateNewConcepts(UniquePropertyInfo conceptInfo, IDslModel existingConcepts)
+        public void CheckSemantics(IDslModel existingConcepts)
         {
-            return new[]
-            {
-                new UniqueMultiplePropertiesInfo
-                {
-                    DataStructure = conceptInfo.Property.DataStructure,
-                    PropertyNames = conceptInfo.Property.Name
-                }
-            };
+            DslUtility.CheckIfPropertyBelongsToDataStructure(Property, DataStructure, this);
+        }
+
+        public new IEnumerable<string> DeclareNonparsableProperties()
+        {
+            return base.DeclareNonparsableProperties()
+                .Concat(new[] { nameof(DataStructure), nameof(PropertyNames) });
+        }
+
+        public new void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        {
+            DataStructure = Property.DataStructure;
+            PropertyNames = Property.Name;
+            base.InitializeNonparsableProperties(out createdConcepts);
         }
     }
 }

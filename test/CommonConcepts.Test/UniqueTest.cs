@@ -255,7 +255,34 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void TestUniqueIfNotNull()
+        public void TestUniqueWhere()
+        {
+            using (var scope = TestScope.Create())
+            {
+                var repository = scope.Resolve<Common.DomRepository>();
+
+                var item1 = new TestUnique.UniqueWhereEntity { ID = Guid.NewGuid(), Name = "X" + Guid.NewGuid().ToString() };
+                var item2 = new TestUnique.UniqueWhereEntity { ID = Guid.NewGuid(), Name = "A" + Guid.NewGuid().ToString() };
+                var item3 = new TestUnique.UniqueWhereEntity { ID = Guid.NewGuid(), Name = "X" + Guid.NewGuid().ToString() };
+                var item4 = new TestUnique.UniqueWhereEntity { ID = Guid.NewGuid(), Name = item2.Name };
+
+                var ids = new[] { item1.ID, item2.ID, item3.ID, item4.ID };
+
+                repository.TestUnique.UniqueWhereEntity.Insert(item1);
+                Assert.AreEqual(1, repository.TestUnique.UniqueWhereEntity.Load(ids).Length);
+
+                repository.TestUnique.UniqueWhereEntity.Insert(item2);
+                Assert.AreEqual(2, repository.TestUnique.UniqueWhereEntity.Load(ids).Length);
+
+                repository.TestUnique.UniqueWhereEntity.Insert(item3);
+                Assert.AreEqual(3, repository.TestUnique.UniqueWhereEntity.Load(ids).Length);
+
+                TestUtility.ShouldFail<UserException>(() => repository.TestUnique.UniqueWhereEntity.Insert(item4), "It is not allowed to enter a duplicate record.");
+            }
+        }
+
+        [TestMethod]
+        public void TestUniqueWhereNotNull()
         {
             using (var scope = TestScope.Create())
             {
@@ -278,6 +305,33 @@ namespace CommonConcepts.Test
                 Assert.AreEqual(3, repository.TestUnique.UniqueWhereNotNullEntity.Load(ids).Length);
 
                 TestUtility.ShouldFail<UserException>(() => repository.TestUnique.UniqueWhereNotNullEntity.Insert(item4), "It is not allowed to enter a duplicate record.");
+            }
+        }
+
+        [TestMethod]
+        public void TestUniqueWhereNotNullReference()
+        {
+            using (var scope = TestScope.Create())
+            {
+                var repository = scope.Resolve<Common.DomRepository>();
+
+                var r1 = new TestUnique.R { S = "r1" };
+                var r2 = new TestUnique.R { S = "r2" };
+                repository.TestUnique.R.Insert(r1, r2);
+
+                var item1 = new TestUnique.UniqueWhereNotNullEntityReference { ID = Guid.NewGuid(), TestReferenceID = r1.ID };
+                var item2 = new TestUnique.UniqueWhereNotNullEntityReference { ID = Guid.NewGuid(), TestReferenceID = r2.ID };
+                var item3 = new TestUnique.UniqueWhereNotNullEntityReference { ID = Guid.NewGuid(), TestReferenceID = r1.ID };
+
+                var ids = new[] { item1.ID, item2.ID, item3.ID};
+
+                repository.TestUnique.UniqueWhereNotNullEntityReference.Insert(item1);
+                Assert.AreEqual(1, repository.TestUnique.UniqueWhereNotNullEntityReference.Load(ids).Length);
+
+                repository.TestUnique.UniqueWhereNotNullEntityReference.Insert(item2);
+                Assert.AreEqual(2, repository.TestUnique.UniqueWhereNotNullEntityReference.Load(ids).Length);
+
+                TestUtility.ShouldFail<UserException>(() => repository.TestUnique.UniqueWhereNotNullEntityReference.Insert(item3), "It is not allowed to enter a duplicate record.");
             }
         }
     }

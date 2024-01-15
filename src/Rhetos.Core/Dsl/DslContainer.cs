@@ -420,5 +420,41 @@ namespace Rhetos.Dsl
             _resolvedConcepts.AddRange(sortedList);
             _performanceLogger.Write(sw, "SortReferencesBeforeUsingConcept.");
         }
+
+        /// <summary>
+        /// A minor heuristics that reduces issues with duplicate concept detection.
+        /// Rhetos ignores duplicate concepts of different type, if one is derivation of another (see ConteptsValueEqualOrBase).
+        /// In that case, the base concept is ignored, but this can happen only if the derived concept is generated first.
+        /// This method sorts new concepts so that any derived concepts will be moved *before* the base concepts.
+        /// </summary>
+        public void SortDerivationsAfterBaseConcepts(List<IConceptInfo> parsedConcepts)
+        {
+            var sw = Stopwatch.StartNew();
+
+            var processed = new Dictionary<string, IConceptInfo>();
+            var dependencies = new List<Tuple<IConceptInfo, IConceptInfo>>();
+
+            foreach (var concept in parsedConcepts)
+            {
+                string key = concept.GetKey();
+                if (processed.TryGetValue(key, out var previousConcept))
+                {
+                    if (previousConcept.GetType() != concept.GetType() && previousConcept.GetType().IsInstanceOfType(concept))
+                        dependencies.Add(Tuple.Create(concept, previousConcept));
+                }
+                else
+                    processed.Add(key, concept);
+            }
+
+            if (dependencies.Count != 0)
+            {
+                Graph.TopologicalSort(parsedConcepts, dependencies);
+                _logger.Trace(() => "Sorted derived concepts:" + string.Concat(dependencies.Select(d => $"{Environment.NewLine}{d.Item1.GetShortDescription()} <= {d.Item2.GetShortDescription()}")));
+            }
+
+            // Most of the performance issues should be related to the first call to the GetKey() method which caches the key internally.
+            // It this method were removed, the first call to GetKey() would occur in AddNewConceptsAndReplaceReferences().
+            _performanceLogger.Write(sw, $"{nameof(SortDerivationsAfterBaseConcepts)} ({dependencies.Count} changes)");
+        }
     }
 }

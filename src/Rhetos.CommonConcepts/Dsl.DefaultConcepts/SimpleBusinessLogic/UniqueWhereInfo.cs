@@ -10,24 +10,23 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Where")]
-    public class UniqueWhereInfo : IAlternativeInitializationConcept
+    public class UniqueWhereInfo : SqlIndexWhereInfo, IAlternativeInitializationConcept
     {
-        [ConceptKey]
         public UniquePropertyInfo Unique { get; set; }
-
-        [ConceptKey]
-        public string SqlFilter { get; set; }
-
-        public SqlIndexMultipleInfo Dependency_SqlIndex { get; set; }
+        public string UniqueSqlFilter { get; set; }
 
         public IEnumerable<string> DeclareNonparsableProperties()
         {
-            return new[] { nameof(Dependency_SqlIndex) };
+            return new[] { 
+                nameof(SqlIndex),
+                nameof(SqlFilter)
+            };
         }
 
         public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
         {
-            Dependency_SqlIndex = new SqlIndexMultipleInfo
+            SqlFilter = UniqueSqlFilter;
+            SqlIndex = new SqlIndexMultipleInfo
             {
                 DataStructure = Unique.Property.DataStructure,
                 PropertyNames = Unique.Property.Name
