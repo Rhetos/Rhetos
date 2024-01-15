@@ -303,9 +303,8 @@ namespace Rhetos.Dsl
             if (!recommendedMacroOrder.TryGetValue(key, out value))
             {
                 value = defaultValue;
-                if (!_noRecommendedOrderReported.Contains(key))
+                if (_noRecommendedOrderReported.Add(key))
                 {
-                    _noRecommendedOrderReported.Add(key);
                     _logger.Trace("GetOrderOrDefault: No recommended macro order for " + key + ".");
                 }
             }
