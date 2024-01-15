@@ -178,8 +178,8 @@ namespace Rhetos
                 return true;
             }
             else if (_configurationProviderOptions?.LegacyKeysSupport == LegacyKeysSupport.Convert
-                && ConfigurationProviderOptions.LegacyKeysMapping.ContainsKey(configurationKey)
-                && _configurationValues.TryGetValue(ConfigurationProviderOptions.LegacyKeysMapping[configurationKey], out var legacyKeyEntry))
+                && ConfigurationProviderOptions.LegacyKeysMapping.TryGetValue(configurationKey, out string key) 
+                && _configurationValues.TryGetValue(key, out var legacyKeyEntry))
             {
                 result = GetConfigurationEntryValue(convertRelativePath, legacyKeyEntry);
                 return true;

@@ -153,8 +153,8 @@ namespace Rhetos.Extensibility
                         ModifiedTime = assemblyModifiedToken,
                         TypesWithExports = pluginsByExportForAssembly.Select(export => export.Plugin.Type.AssemblyQualifiedName).Distinct().ToList()
                     };
-                    if (!cache.Assemblies.ContainsKey(assemblyPath)
-                        || !cache.Assemblies[assemblyPath].Equals(newCachedFileData))
+                    if (!cache.Assemblies.TryGetValue(assemblyPath, out CachedFileData existingCachedFileData) 
+                        || !existingCachedFileData.Equals(newCachedFileData))
                     {
                         cache.Assemblies[assemblyPath] = newCachedFileData;
                         cacheUpdated = true;
