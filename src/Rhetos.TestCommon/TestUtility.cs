@@ -108,7 +108,7 @@ namespace Rhetos.TestCommon
         /// </summary>
         public static void AssertNotContains(string text, string[] patterns, string message = null)
         {
-            if (patterns == null || !patterns.Any())
+            if (patterns == null || patterns.Length == 0)
                 return;
 
             Console.WriteLine("[AssertNotContains] Actual text: '" + text + "'.");

@@ -209,7 +209,7 @@ namespace Rhetos.DatabaseGenerator
             foreach (var ca in unchangedApplications)
             {
                 var updateMetadataSql = _sqlTransactionBatches.JoinScripts(_conceptApplicationRepository.UpdateMetadataSql(ca, oldApplicationsByKey[ca.GetConceptApplicationKey()]));
-                if (updateMetadataSql.Any())
+                if (updateMetadataSql.Count != 0)
                 {
                     LogDatabaseChanges(ca, "Updating metadata");
                     newScripts.AddRange(updateMetadataSql

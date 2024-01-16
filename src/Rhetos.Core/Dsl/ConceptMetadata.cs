@@ -78,9 +78,9 @@ namespace Rhetos.Dsl
                 var pluginInterface = pluginType.GetInterfaces().Single(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IConceptMetadataExtension<>));
                 var conceptType = pluginInterface.GetGenericArguments().Single();
 
-                if (pluginsByConcept.ContainsKey(conceptType))
+                if (pluginsByConcept.TryGetValue(conceptType, out IConceptMetadataExtension existingPlugin))
                     throw new FrameworkException($"There are multiple implementations of {metadataInterface.Name} for type {conceptType.Name}:" +
-                        $" '{pluginsByConcept[conceptType].GetType()}' and '{pluginType}'.");
+                        $" '{existingPlugin.GetType()}' and '{pluginType}'.");
 
                 pluginsByConcept.Add(conceptType, plugin);
             }

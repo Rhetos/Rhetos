@@ -61,7 +61,7 @@ namespace Rhetos.DatabaseGenerator.Test
             var sql = _conceptApplicationRepository.UpdateMetadataSql(newCA, oldCA);
             Console.WriteLine($"[UpdateMetadataSql] {newCA.ConceptInfoKey}:{string.Concat(sql.Select(script => $"\r\n - {script}"))}.");
 
-            if (sql.Any())
+            if (sql.Count != 0)
             {
                 UpdatedLog.Add(Tuple.Create(newCA, oldCA));
                 return new List<string> { $"upd {newCA.ConceptInfoKey}" };

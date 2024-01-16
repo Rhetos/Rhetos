@@ -73,10 +73,8 @@ namespace Rhetos.Dom.DefaultConcepts
         /// </summary>
         public FilterCriteria(string property, string operation, object value)
         {
-            if (property == null)
-                throw new ArgumentNullException(nameof(property));
-            if (operation == null)
-                throw new ArgumentNullException(nameof(operation));
+            ArgumentNullException.ThrowIfNull(property);
+            ArgumentNullException.ThrowIfNull(operation);
             Property = property;
             Operation = operation;
             Value = value;
@@ -87,8 +85,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// </summary>
         public FilterCriteria(Type filterType)
         {
-            if (filterType == null)
-                throw new ArgumentNullException(nameof(filterType));
+            ArgumentNullException.ThrowIfNull(filterType);
             Filter = filterType.ToString();
         }
 
@@ -100,8 +97,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// </remarks>
         public FilterCriteria(object filterValue)
         {
-            if (filterValue == null)
-                throw new ArgumentNullException(nameof(filterValue));
+            ArgumentNullException.ThrowIfNull(filterValue);
             Value = filterValue;
         }
 
@@ -114,8 +110,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// </remarks>
         public FilterCriteria(Type filterType, object filterValue)
         {
-            if (filterType == null)
-                throw new ArgumentNullException(nameof(filterType));
+            ArgumentNullException.ThrowIfNull(filterType);
             if (filterValue != null && !filterType.IsInstanceOfType(filterValue))
                 throw new ArgumentException($"Provided {nameof(filterValue)} is not an instance of the {nameof(filterType)} '{filterType}'.");
             Filter = filterType.ToString();

@@ -45,9 +45,9 @@ namespace Rhetos.Dsl.DefaultConcepts
             // Ensure uniqueness of the concept's key. There should not exists different instances of SqlIndexMultiple that generate same index in database.
             if (propertyList.Contains("  "))
                 throw new DslSyntaxException(errorHeader.Value + "Property names in the list must be separated by single space character. Verify that there are no multiple spaces.");
-            if (propertyList.StartsWith(" "))
+            if (propertyList.StartsWith(' '))
                 throw new DslSyntaxException(errorHeader.Value + "The list of property names must not start with a space character.");
-            if (propertyList.EndsWith(" "))
+            if (propertyList.EndsWith(' '))
                 throw new DslSyntaxException(errorHeader.Value + "The list of property names must not end with a space character.");
         }
 

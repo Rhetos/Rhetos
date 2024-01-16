@@ -103,13 +103,13 @@ namespace Rhetos.Utilities
 
         private Type ResolveRuntimeType(string typeName)
         {
-            if (_runtimeTypesCache.ContainsKey(typeName))
-                return _runtimeTypesCache[typeName];
+            if (_runtimeTypesCache.TryGetValue(typeName, out Type typeValue))
+                return typeValue;
 
             lock (_runtimeTypesCache)
             {
-                if (_runtimeTypesCache.ContainsKey(typeName))
-                    return _runtimeTypesCache[typeName];
+                if (_runtimeTypesCache.TryGetValue(typeName, out typeValue))
+                    return typeValue;
 
                 var asms = (from asm in AppDomain.CurrentDomain.GetAssemblies()
                             where !asm.FullName.StartsWith("System.") && !asm.FullName.StartsWith("Microsoft.")

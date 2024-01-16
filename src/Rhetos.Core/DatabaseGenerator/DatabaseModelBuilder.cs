@@ -99,7 +99,7 @@ namespace Rhetos.DatabaseGenerator
             {
                 var implementations = conceptImplementations[conceptInfo.GetType()];
 
-                if (!implementations.Any())
+                if (implementations.Length == 0)
                     implementations = _nullImplementations;
 
                 codeGenerators.AddRange(implementations.Select(
@@ -170,12 +170,12 @@ namespace Rhetos.DatabaseGenerator
 
         private static IConceptInfo GetValidConceptInfo(string conceptInfoKey, Dictionary<string, IConceptInfo> conceptInfosByKey, CodeGenerator debugContextNewDatabaseObject)
         {
-            if (!conceptInfosByKey.ContainsKey(conceptInfoKey))
+            if (!conceptInfosByKey.TryGetValue(conceptInfoKey, out IConceptInfo conceptInfoValue))
                 throw new FrameworkException(string.Format(
                     "DatabaseGenerator error while generating code with plugin {0}: Extension created a dependency to the nonexistent concept info {1}.",
                     debugContextNewDatabaseObject.ConceptImplementation.GetType().Name,
                     conceptInfoKey));
-            return conceptInfosByKey[conceptInfoKey];
+            return conceptInfoValue;
         }
 
         private const string DatabaseObjectSeparatorPrefix = "\r\n--RhetosDatabaseObjectSeparator ";

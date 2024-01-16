@@ -39,8 +39,8 @@ namespace Rhetos.Dsl
             this.Name = memberInfo.Name;
             this.ValueType = GetMemberType(memberInfo);
             this.IsConceptInfo = typeof(IConceptInfo).IsAssignableFrom(ValueType);
-            this.IsKey = memberInfo.GetCustomAttributes(typeof(ConceptKeyAttribute), false).Any();
-            this.IsParentNested = memberInfo.GetCustomAttributes(typeof(ConceptParentAttribute), false).Any();
+            this.IsKey = memberInfo.GetCustomAttributes(typeof(ConceptKeyAttribute), false).Length != 0;
+            this.IsParentNested = memberInfo.GetCustomAttributes(typeof(ConceptParentAttribute), false).Length != 0;
             this.SortOrder1 = -InheritanceDepth(memberInfo); // This is needed when the derived type is not in the same assembly as the base type. In that case, MetadataToken in not enough for sorting all properties.
             this.SortOrder2 = memberInfo.MetadataToken;
 

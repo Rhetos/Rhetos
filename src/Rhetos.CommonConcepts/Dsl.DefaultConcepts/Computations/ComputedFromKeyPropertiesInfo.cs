@@ -60,10 +60,10 @@ namespace Rhetos.Dsl.DefaultConcepts
                         {
                             EntityComputedFrom = ComputedFrom
                         };
-                    else if (computedPropertiesByTarget.ContainsKey(propertyName))
+                    else if (computedPropertiesByTarget.TryGetValue(propertyName, out PropertyComputedFromInfo propertyValue))
                         return new KeyPropertyComputedFromInfo
                         {
-                            PropertyComputedFrom = computedPropertiesByTarget[propertyName]
+                            PropertyComputedFrom = propertyValue
                         };
                     else
                         return (IConceptInfo)null;

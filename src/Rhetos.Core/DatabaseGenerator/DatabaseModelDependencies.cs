@@ -110,12 +110,9 @@ namespace Rhetos.DatabaseGenerator
             var implementationDependencies = GetImplementationDependencies(plugins, distinctConceptImplementations);
 
             foreach (var implementationDependency in implementationDependencies)
-                if (codeGeneratorsByImplementationType.ContainsKey(implementationDependency.Item1)
-                    && codeGeneratorsByImplementationType.ContainsKey(implementationDependency.Item2))
-                    AddDependenciesOnSameConceptInfo(
-                        codeGeneratorsByImplementationType[implementationDependency.Item1],
-                        codeGeneratorsByImplementationType[implementationDependency.Item2],
-                        dependencies);
+                if (codeGeneratorsByImplementationType.TryGetValue(implementationDependency.Item1, out List<CodeGenerator> codeGenerator1) 
+                    && codeGeneratorsByImplementationType.TryGetValue(implementationDependency.Item2, out List<CodeGenerator> codeGenerator2))
+                    AddDependenciesOnSameConceptInfo(codeGenerator1, codeGenerator2, dependencies);
 
             dependencies = dependencies.Distinct().ToList();
 

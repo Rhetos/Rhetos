@@ -168,7 +168,7 @@ namespace Rhetos.Deployment
                         .Where(dependency => !validGenerators.Contains(dependency))
                         .ToList();
 
-                    if (invalidDependenciesForName.Any())
+                    if (invalidDependenciesForName.Count != 0)
                     {
                         string InvalidDependenciesInfo() => string.Join(", ", invalidDependenciesForName.Select(dependency => $"'{dependency}'"));
                         _logger.Warning(() => $"Invalid dependencies specified for generator '{generatorDependencies.Key}': {InvalidDependenciesInfo()}.");

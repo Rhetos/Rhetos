@@ -106,10 +106,8 @@ namespace Rhetos.Dsl
 
             public void Add(Type subtype)
             {
-                if (!_typesAdded.Contains(subtype))
+                if (_typesAdded.Add(subtype))
                 {
-                    _typesAdded.Add(subtype);
-
                     Add(subtype, subtype);
 
                     foreach (var interfaceType in subtype.GetInterfaces())

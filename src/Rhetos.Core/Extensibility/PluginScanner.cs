@@ -62,8 +62,8 @@ namespace Rhetos.Extensibility
             _logger = logProvider.GetLogger(GetType().Name);
 
             var ignoreList = pluginScannerOptions.PredefinedIgnoreAssemblyFiles.Concat(pluginScannerOptions.IgnoreAssemblyFiles ?? Array.Empty<string>()).Distinct().ToList();
-            _ignoreAssemblyFiles = new HashSet<string>(ignoreList.Where(name => !name.EndsWith("*")), StringComparer.OrdinalIgnoreCase);
-            _ignoreAssemblyPrefixes = ignoreList.Where(name => name.EndsWith("*")).Select(name => name.Trim('*')).ToArray();
+            _ignoreAssemblyFiles = new HashSet<string>(ignoreList.Where(name => !name.EndsWith('*')), StringComparer.OrdinalIgnoreCase);
+            _ignoreAssemblyPrefixes = ignoreList.Where(name => name.EndsWith('*')).Select(name => name.Trim('*')).ToArray();
         }
 
         /// <summary>
@@ -153,8 +153,8 @@ namespace Rhetos.Extensibility
                         ModifiedTime = assemblyModifiedToken,
                         TypesWithExports = pluginsByExportForAssembly.Select(export => export.Plugin.Type.AssemblyQualifiedName).Distinct().ToList()
                     };
-                    if (!cache.Assemblies.ContainsKey(assemblyPath)
-                        || !cache.Assemblies[assemblyPath].Equals(newCachedFileData))
+                    if (!cache.Assemblies.TryGetValue(assemblyPath, out CachedFileData existingCachedFileData) 
+                        || !existingCachedFileData.Equals(newCachedFileData))
                     {
                         cache.Assemblies[assemblyPath] = newCachedFileData;
                         cacheUpdated = true;

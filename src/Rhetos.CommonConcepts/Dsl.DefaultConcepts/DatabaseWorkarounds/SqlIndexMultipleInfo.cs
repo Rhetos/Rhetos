@@ -74,7 +74,7 @@ namespace Rhetos.Dsl.DefaultConcepts
             var names = conceptInfo.PropertyNames.Split(' ');
             if (names.Distinct().Count() != names.Length)
                 throw new DslConceptSyntaxException(conceptInfo, "Duplicate property name in index list '" + conceptInfo.PropertyNames + "'.");
-            if (!names.Any())
+            if (names.Length == 0)
                 throw new DslConceptSyntaxException(conceptInfo, "Empty property list.");
 
             SqlIndexMultiplePropertyInfo lastIndexProperty = null;

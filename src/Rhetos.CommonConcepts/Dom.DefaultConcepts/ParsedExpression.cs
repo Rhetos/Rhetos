@@ -107,7 +107,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             SyntaxTree tree = CSharpSyntaxTree.ParseText(_expression, new CSharpParseOptions(kind: SourceCodeKind.Script, documentationMode: DocumentationMode.None));
             var errors = tree.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
-            if (errors.Any())
+            if (errors.Count != 0)
                 throw new DslConceptSyntaxException(_errorContext, $"C# syntax error '{errors.First()}' in code snippet '{_expression.Limit(200)}'.");
 
             var compilationNode = tree.GetCompilationUnitRoot();

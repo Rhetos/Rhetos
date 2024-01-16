@@ -74,7 +74,7 @@ namespace Rhetos.Deployment
             // Compute columns, tables and schemas to be deleted:
 
             var allColumnsIndex = new HashSet<string>(allColumns.Select(c => c.Key));
-            var migrationColumns = allColumns.Where(c => c.SchemaName.StartsWith("_")).ToList();
+            var migrationColumns = allColumns.Where(c => c.SchemaName.StartsWith('_')).ToList();
             var redundantMigrationColumns = migrationColumns.Where(dmc => allColumnsIndex.Contains(dmc.Key.Substring(1))).ToList();
 
             var redundantMigrationColumnsIndex = new HashSet<string>(redundantMigrationColumns.Select(c => c.Key));

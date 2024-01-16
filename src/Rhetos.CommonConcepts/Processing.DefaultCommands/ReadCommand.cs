@@ -95,7 +95,7 @@ namespace Rhetos.Processing.DefaultCommands
             {
                 bool pagingIsUsed = commandInfo.Top > 0 || commandInfo.Skip > 0;
 
-                object filter = commandInfo.Filters != null && commandInfo.Filters.Any() ? (object)commandInfo.Filters : new FilterAll();
+                object filter = commandInfo.Filters != null && commandInfo.Filters.Length != 0 ? (object)commandInfo.Filters : new FilterAll();
                 IEnumerable<IEntity> filtered = genericRepository.Read(filter, filter.GetType(), preferQuery: pagingIsUsed || !commandInfo.ReadRecords);
 
                 IEntity[] resultRecords = null;
