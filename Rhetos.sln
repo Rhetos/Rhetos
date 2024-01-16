@@ -6,6 +6,7 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D3CC17A8-D557-44D9-8D3D-3D425ED09838}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		Build.bat = Build.bat
 		ChangeLog.md = ChangeLog.md
 		Directory.Build.props = Directory.Build.props
 		Readme.md = Readme.md
@@ -18,6 +19,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		src\Rhetos.MsSqlEf6.nuspec = src\Rhetos.MsSqlEf6.nuspec
 		src\Rhetos.nuspec = src\Rhetos.nuspec
 		src\Rhetos.TestCommon.nuspec = src\Rhetos.TestCommon.nuspec
+		Test.bat = Test.bat
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.CommonConcepts.Test", "test\Rhetos.CommonConcepts.Test\Rhetos.CommonConcepts.Test.csproj", "{ED46FC75-BF87-4F74-B1D6-91C1CF20BC46}"
