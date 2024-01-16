@@ -222,7 +222,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         private static string RemoveQuotes(string name)
         {
-            if (name.StartsWith("[") || name.StartsWith("\""))
+            if (name.StartsWith('[') || name.StartsWith('"'))
                 return name.Substring(1, name.Length - 2);
             return name;
         }

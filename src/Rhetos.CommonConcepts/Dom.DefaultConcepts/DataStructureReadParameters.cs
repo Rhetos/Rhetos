@@ -117,7 +117,7 @@ namespace Rhetos.Dom.DefaultConcepts
             removablePrefixes.AddRange(_defaultNamespaces);
             if (dataStuctureFullName != null)
             {
-                var moduleEnd = dataStuctureFullName.IndexOf(".");
+                var moduleEnd = dataStuctureFullName.IndexOf('.');
                 if (moduleEnd > 0)
                     removablePrefixes.Add(dataStuctureFullName.Substring(0, moduleEnd + 1));
             }
@@ -136,7 +136,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 foreach (var namePart in _namePartsRegex.Matches(shortName).Reverse()) // Reverse to avoid corrupting remaining matches after removing some prefixes.
                     shortName = TryRemovePrefix(shortName, namePart.Index, namePart.Length, removablePrefixes);
 
-                if (shortName.StartsWith("IEnumerable<", StringComparison.Ordinal) && shortName.EndsWith(">", StringComparison.Ordinal))
+                if (shortName.StartsWith("IEnumerable<", StringComparison.Ordinal) && shortName.EndsWith('>'))
                     shortName = string.Concat(shortName.AsSpan("IEnumerable<".Length, shortName.Length - "IEnumerable<".Length - 1), "[]");
 
                 if (shortName != filterType.Name)

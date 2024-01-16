@@ -56,7 +56,7 @@ namespace Rhetos.Deployment.Test
             Schemas.Columns.Add();
             foreach (var s in schemas.Split(',').Select(x => x.Trim()).Where(x => !string.IsNullOrEmpty(x)))
             {
-                if (!s.StartsWith("_"))
+                if (!s.StartsWith('_'))
                     throw new ArgumentException("Invalid test data: Migration schema name must start with '_'.");
                 Schemas.Rows.Add(s);
             }

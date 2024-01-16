@@ -62,8 +62,8 @@ namespace Rhetos.Extensibility
             _logger = logProvider.GetLogger(GetType().Name);
 
             var ignoreList = pluginScannerOptions.PredefinedIgnoreAssemblyFiles.Concat(pluginScannerOptions.IgnoreAssemblyFiles ?? Array.Empty<string>()).Distinct().ToList();
-            _ignoreAssemblyFiles = new HashSet<string>(ignoreList.Where(name => !name.EndsWith("*")), StringComparer.OrdinalIgnoreCase);
-            _ignoreAssemblyPrefixes = ignoreList.Where(name => name.EndsWith("*")).Select(name => name.Trim('*')).ToArray();
+            _ignoreAssemblyFiles = new HashSet<string>(ignoreList.Where(name => !name.EndsWith('*')), StringComparer.OrdinalIgnoreCase);
+            _ignoreAssemblyPrefixes = ignoreList.Where(name => name.EndsWith('*')).Select(name => name.Trim('*')).ToArray();
         }
 
         /// <summary>

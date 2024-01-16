@@ -190,13 +190,13 @@ namespace Rhetos.CommonConcepts.Test
 
             var items = repos.Filter(
                 new SimpleEntityList { "a1", "a2", "b1" },
-                (Expression<Func<ISimpleEntity, bool>>)(item => item.Name.StartsWith("a")));
+                (Expression<Func<ISimpleEntity, bool>>)(item => item.Name.StartsWith('a')));
             Assert.AreEqual("a1, a2", string.Join(", ", items.Select(item => item.Name)));
             Assert.IsTrue(items is List<SimpleEntity>, "GenericRepository.Filter should always return materialized list instead of a query.");
 
             items = repos.Filter(
                 new SimpleEntityList { "a1", "a2", "b1" }.Where(item => true).Select(item => item),
-                (Expression<Func<ISimpleEntity, bool>>)(item => item.Name.StartsWith("a")));
+                (Expression<Func<ISimpleEntity, bool>>)(item => item.Name.StartsWith('a')));
             Assert.AreEqual("a1, a2", string.Join(", ", items.Select(item => item.Name)));
             Assert.IsTrue(items is List<SimpleEntity>, "GenericRepository.Filter should always return materialized list instead of a query.");
         }
@@ -208,13 +208,13 @@ namespace Rhetos.CommonConcepts.Test
 
             var items = repos.Filter(
                 new SimpleEntityList { "a1", "a2", "b1" },
-                (Func<ISimpleEntity, bool>)(item => item.Name.StartsWith("a")));
+                (Func<ISimpleEntity, bool>)(item => item.Name.StartsWith('a')));
             Assert.AreEqual("a1, a2", string.Join(", ", items.Select(item => item.Name)));
             Assert.IsTrue(items is List<SimpleEntity>, "GenericRepository.Filter should always return materialized list instead of a query.");
 
             items = repos.Filter(
                 new SimpleEntityList { "a1", "a2", "b1" }.Where(item => true).Select(item => item),
-                (Func<ISimpleEntity, bool>)(item => item.Name.StartsWith("a")));
+                (Func<ISimpleEntity, bool>)(item => item.Name.StartsWith('a')));
             Assert.AreEqual("a1, a2", string.Join(", ", items.Select(item => item.Name)));
             Assert.IsTrue(items is List<SimpleEntity>, "GenericRepository.Filter should always return materialized list instead of a query.");
         }
@@ -386,7 +386,7 @@ namespace Rhetos.CommonConcepts.Test
             public IQueryable<SimpleEntity> Filter(IQueryable<SimpleEntity> items, NamedFilter parameter)
             {
                 AddLog("QF"); // Using queryable filter ...
-                return items.Where(i => i.Name.StartsWith("b"));
+                return items.Where(i => i.Name.StartsWith('b'));
             }
 
             public IEnumerable<SimpleEntity> Filter(NamedFilter parameter)
@@ -656,7 +656,7 @@ namespace Rhetos.CommonConcepts.Test
         [TestMethod]
         public void FilterGenericFilter_NotMatches()
         {
-            Expression<Func<SimpleEntity, bool>> predicate = item => item.Name.StartsWith("a");
+            Expression<Func<SimpleEntity, bool>> predicate = item => item.Name.StartsWith('a');
 
             var entityRepos = new GenericFilterRepository();
             var genericRepos = NewRepos(entityRepos);

@@ -122,7 +122,7 @@ namespace Rhetos.DatabaseGenerator.Test
         {
             if (!script.StartsWith("--Name: ", StringComparison.Ordinal))
                 return script;
-            var eol = script.IndexOf("\n", StringComparison.Ordinal);
+            var eol = script.IndexOf('\n', StringComparison.Ordinal);
             if (eol < 0)
                 return script;
             return script.Substring(eol + 1);
