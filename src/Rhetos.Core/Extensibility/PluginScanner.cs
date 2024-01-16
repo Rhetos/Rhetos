@@ -81,7 +81,7 @@ namespace Rhetos.Extensibility
 
         private MultiDictionary<string, PluginInfo> GetPluginsByExport(IEnumerable<string> pluginAssemblies)
         {
-            List<string> assemblyPaths = pluginAssemblies.Select(path => Path.GetFullPath(path)).Distinct().ToList();
+            List<string> assemblyPaths = pluginAssemblies.Select(path => Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, path))).Distinct().ToList();
 
             foreach (var assembly in assemblyPaths)
                 if (!File.Exists(assembly))

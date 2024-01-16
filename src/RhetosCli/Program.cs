@@ -196,7 +196,7 @@ namespace Rhetos
                 .AddKeyValue(ConfigurationProvider.GetKey((LoggingOptions o) => o.DelayedLogTimout), 60.0)
                 .AddKeyValue(ConfigurationProvider.GetKey((LoggingOptions o) => o.MsBuildErrorFormat), _msBuildErrorFormat)
                 .AddJsonFile(Path.Combine(projectRootPath, RhetosBuildEnvironment.ConfigurationFileName), optional: true)
-                .Build();
+                .Build(projectRootPath);
 
             rhetosProjectContentProvider.SplitProjectToSubpackages(
                 rhetosProjectContent.RhetosProjectAssets.InstalledPackages.Packages,

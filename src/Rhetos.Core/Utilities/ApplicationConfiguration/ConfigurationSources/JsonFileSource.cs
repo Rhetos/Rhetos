@@ -33,26 +33,28 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
 
         public JsonFileSource(string filePath, bool optional = false)
         {
-            _filePath = Path.GetFullPath(filePath);
+            _filePath = filePath;
             _optional = optional;
         }
 
-        public IDictionary<string, ConfigurationValue> Load()
+        public IDictionary<string, ConfigurationValue> Load(string rootDirectory)
         {
-            if (_optional && !File.Exists(_filePath))
+            string fullPath = Path.GetFullPath(Path.Combine(rootDirectory, _filePath));
+
+            if (_optional && !File.Exists(fullPath))
                 return new Dictionary<string, ConfigurationValue>();
 
-            var jsonText = File.ReadAllText(_filePath);
+            var jsonText = File.ReadAllText(fullPath);
 
             try
             {
                 var jsonSource = new JsonSource(jsonText);
-                return jsonSource.Load()
+                return jsonSource.Load(rootDirectory)
                     .ToDictionary(entry => entry.Key, entry => new ConfigurationValue(entry.Value.Value, this));
             }
             catch (Exception e)
             {
-                throw new FrameworkException($"Error parsing JSON contents from '{_filePath}'.", e);
+                throw new FrameworkException($"Error parsing JSON contents from '{fullPath}'.", e);
             }
         }
 

@@ -35,7 +35,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
     /// </remarks>
     public class ConfigurationManagerSource : IConfigurationSource
     {
-        public IDictionary<string, ConfigurationValue> Load()
+        public IDictionary<string, ConfigurationValue> Load(string rootDirectory)
         {
             var appSettings = new List<KeyValuePair<string, string>>();
             if (ConfigurationManager.AppSettings != null)
@@ -47,7 +47,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
             var connectionStrings = ConfigurationManager.ConnectionStrings?.Cast<ConnectionStringSettings>();
 
             return new DotNetConfigurationSource(appSettings, connectionStrings)
-                .Load()
+                .Load(rootDirectory)
                 .ToDictionary(entry => entry.Key, entry => new ConfigurationValue(entry.Value.Value, this));
         }
 

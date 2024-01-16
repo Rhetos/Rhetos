@@ -17,38 +17,34 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Configuration;
+using System.IO;
 
 namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
 {
-    public class CommandLineArgumentsSource : IConfigurationSource
+    public class ExeConfigurationFileSource : IConfigurationSource
     {
-        private readonly string[] args;
-        private readonly string argumentPrefix;
-        private readonly string configurationPath;
+        private readonly string _filePath;
 
-        public CommandLineArgumentsSource(string[] args, string argumentPrefix, string configurationPath = "")
+        public ExeConfigurationFileSource(string filePath)
         {
-            this.args = args;
-            this.argumentPrefix = argumentPrefix;
-            this.configurationPath = configurationPath;
+            _filePath = filePath;
         }
 
         public IDictionary<string, ConfigurationValue> Load(string rootDirectory)
         {
-            var argsTrimmed = args.Select(arg => arg.TrimStart(argumentPrefix.ToCharArray())).Where(arg => !string.IsNullOrWhiteSpace(arg));
-            if (!string.IsNullOrEmpty(configurationPath))
-                argsTrimmed = argsTrimmed.Select(arg => $"{configurationPath}{ConfigurationProviderOptions.ConfigurationPathSeparator}{arg}").ToArray();
-            
-            return argsTrimmed
-                .ToDictionary(arg => arg, _ => new ConfigurationValue(true, this));
+            string fullPath = Path.GetFullPath(Path.Combine(rootDirectory, _filePath));
+            var configMap = new ExeConfigurationFileMap { ExeConfigFilename = fullPath };
+            var exeConfiguration = ConfigurationManager.OpenMappedExeConfiguration(configMap, ConfigurationUserLevel.None);
+
+            var configurationSource = new ConfigurationFileSource(exeConfiguration);
+            return configurationSource.Load(rootDirectory);
         }
 
         public override string ToString()
         {
-            return "Command line arguments";
+            return $"Exe configuration file '{_filePath}'";
         }
     }
 }

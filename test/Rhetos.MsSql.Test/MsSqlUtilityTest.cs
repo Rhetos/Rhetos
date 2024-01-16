@@ -228,7 +228,7 @@ namespace Rhetos.MsSql.Test
 
             IConfiguration configuration = new ConfigurationBuilder(new ConsoleLogProvider())
                 .AddKeyValue(ConnectionString.ConnectionStringConfigurationKey, initialConnectionString)
-                .Build();
+                .Build(AppDomain.CurrentDomain.BaseDirectory);
             ISqlUtility sqlUtility = NewSqlUtility();
             string rhetosConnectionString = new ConnectionString(configuration, sqlUtility).ToString();
 

@@ -34,7 +34,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
             _jsonText = jsonText;
         }
 
-        public IDictionary<string, ConfigurationValue> Load()
+        public IDictionary<string, ConfigurationValue> Load(string rootDirectory)
         {
             using var reader = new JsonTextReader(new StringReader(_jsonText));
             reader.DateParseHandling = DateParseHandling.None;

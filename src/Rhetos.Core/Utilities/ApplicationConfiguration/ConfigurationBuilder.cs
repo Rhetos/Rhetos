@@ -47,13 +47,13 @@ namespace Rhetos
             return this;
         }
 
-        public IConfiguration Build()
+        public IConfiguration Build(string rootDirectory)
         {
             var configurationValues = new Dictionary<string, ConfigurationValue>(new ConfigurationKeyComparer());
 
             foreach (var configurationSource in configurationSources)
             {
-                var sourceValues = configurationSource.Load();
+                var sourceValues = configurationSource.Load(rootDirectory);
 
                 foreach (var sourceValue in sourceValues)
                 {

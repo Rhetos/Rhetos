@@ -36,7 +36,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
             this.connectionStrings = connectionStrings;
         }
 
-        public IDictionary<string, ConfigurationValue> Load()
+        public IDictionary<string, ConfigurationValue> Load(string rootDirectory)
         {
             var settings = new Dictionary<string, ConfigurationValue>();
 

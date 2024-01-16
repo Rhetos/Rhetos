@@ -31,7 +31,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
             this.keyValuePairs = keyValuePairs;
         }
 
-        public IDictionary<string, ConfigurationValue> Load()
+        public IDictionary<string, ConfigurationValue> Load(string rootDirectory)
         {
             return keyValuePairs.ToDictionary(pair => pair.Key, pair => new ConfigurationValue(pair.Value,this));
         }

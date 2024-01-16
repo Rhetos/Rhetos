@@ -27,6 +27,6 @@ namespace Rhetos
     {
         IConfigurationBuilder Add(IConfigurationSource source);
         IConfigurationBuilder UseBuilderLogProvider(ILogProvider builderLogProvider);
-        IConfiguration Build();
+        IConfiguration Build(string rootDirectory);
     }
 }

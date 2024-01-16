@@ -51,7 +51,7 @@ namespace Rhetos.Configuration.Autofac.Test
                 .AddKeyValue(ConfigurationProvider.GetKey((ConfigurationProviderOptions o) => o.LegacyKeysWarning), true)
                 .AddKeyValue(ConfigurationProvider.GetKey((LoggingOptions o) => o.DelayedLogTimout), 60.0)
                 .AddJsonFile(Path.Combine(rhetosAppRootPath, RhetosBuildEnvironment.ConfigurationFileName), optional: true)
-                .Build();
+                .Build(rhetosAppRootPath);
 
             return configuration;
         }

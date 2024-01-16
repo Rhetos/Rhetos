@@ -87,10 +87,7 @@ namespace Rhetos
 
         public static IConfigurationBuilder AddConfigurationFile(this IConfigurationBuilder builder, string filePath)
         {
-            filePath = Path.GetFullPath(filePath);
-            ExeConfigurationFileMap configMap = new ExeConfigurationFileMap { ExeConfigFilename = filePath };
-            System.Configuration.Configuration configuration = ConfigurationManager.OpenMappedExeConfiguration(configMap, ConfigurationUserLevel.None);
-            builder.Add(new ConfigurationFileSource(configuration));
+            builder.Add(new ExeConfigurationFileSource(filePath));
             return builder;
         }
 

@@ -28,6 +28,6 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
     /// </summary>
     public interface IConfigurationSource
     {
-        IDictionary<string, ConfigurationValue> Load();
+        IDictionary<string, ConfigurationValue> Load(string rootDirectory);
     }
 }

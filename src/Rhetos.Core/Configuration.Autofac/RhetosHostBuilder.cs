@@ -64,6 +64,9 @@ namespace Rhetos
 
         public IRhetosHostBuilder UseRootFolder(string rootFolder)
         {
+            if (_rootFolder != null && rootFolder != _rootFolder)
+                throw new ArgumentException($"Modifying Rhetos host root directory. Old value '{_rootFolder}', new value '{rootFolder}'.");
+
             _rootFolder = rootFolder;
             return this;
         }
@@ -82,37 +85,28 @@ namespace Rhetos
 
         public RhetosHost Build()
         {
-            var restoreCurrentDirectory = Environment.CurrentDirectory;
-
-            var buildLogger = _builderLogProvider.GetLogger(nameof(RhetosHost));
-            try
-            {
-                if (!string.IsNullOrEmpty(_rootFolder))
-                {
-                    buildLogger.Trace($"Using specified '{_rootFolder}' as root folder for {nameof(RhetosHost)} configuration.");
-                    Directory.SetCurrentDirectory(_rootFolder);
-                }
-                else
-                {
-                    buildLogger.Trace($"Using base directory '{AppDomain.CurrentDomain.BaseDirectory}' as root folder for {nameof(RhetosHost)} configuration.");
-                    Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
-                }
-
-                var configuration = BuildConfiguration();
-                var rhetosContainer = BuildContainer(configuration);
-                return new RhetosHost(rhetosContainer);
-            }
-            finally
-            {
-                Directory.SetCurrentDirectory(restoreCurrentDirectory);
-            }
+            var configuration = BuildConfiguration();
+            var rhetosContainer = BuildContainer(configuration);
+            return new RhetosHost(rhetosContainer);
         }
 
         private IConfiguration BuildConfiguration()
         {
+            var buildLogger = _builderLogProvider.GetLogger(nameof(RhetosHost));
+            if (!string.IsNullOrEmpty(_rootFolder))
+            {
+                buildLogger.Trace($"Using specified '{_rootFolder}' as root folder for {nameof(RhetosHost)} configuration.");
+            }
+            else
+            {
+                buildLogger.Trace($"Using base directory '{AppDomain.CurrentDomain.BaseDirectory}' as root folder for {nameof(RhetosHost)} configuration.");
+                _rootFolder = AppDomain.CurrentDomain.BaseDirectory;
+            }
+
             var configurationBuilder = new ConfigurationBuilder(_builderLogProvider);
             CsUtility.InvokeAll(configurationBuilder, _configureConfigurationActions);
-            return configurationBuilder.Build();
+
+            return configurationBuilder.Build(_rootFolder);
         }
 
         private IContainer BuildContainer(IConfiguration configuration)
