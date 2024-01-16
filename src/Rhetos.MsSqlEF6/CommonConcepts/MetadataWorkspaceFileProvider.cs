@@ -42,6 +42,7 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
         private readonly ILogger _performanceLogger;
         private readonly ILogger _logger;
         private readonly Lazy<MetadataWorkspace> _loadedMetadata;
+        private static readonly object _fileLock = new();
 
         public MetadataWorkspace MetadataWorkspace => _loadedMetadata.Value;
 
@@ -76,31 +77,36 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
 
         private void SetProviderManifestTokenIfNeeded(Stopwatch sw, List<string> modelFilesPath)
         {
-            string expectedManifestToken = GetDatabaseManifestToken();
-
-            var ssdlFile = modelFilesPath.Single(path => path.EndsWith(".ssdl"));
-            string ssdlFirstLine = ReadFirstLine(ssdlFile);
-            var existingManifestToken = _manifestTokenRegex.Match(ssdlFirstLine).Groups["token"];
-            _performanceLogger.Write(sw, "Checked if ProviderManifestToken is set.");
-
-            if (!existingManifestToken.Success)
-                throw new FrameworkException($"Cannot find ProviderManifestToken attribute in '{ssdlFile}'.");
-
-            if (existingManifestToken.Value != expectedManifestToken)
+            // The locking is needed to avoid parallel file writes. Even though the MetadataWorkspaceFileProvider class
+            // is registered as singleton, in some plugin unit tests there can be multiple parallel instances which causes issues.
+            lock (_fileLock)
             {
-                if (existingManifestToken.Value == EntityFrameworkMappingGenerator.ProviderManifestTokenPlaceholder)
-                    _logger.Trace($@"Setting ProviderManifestToken to {expectedManifestToken}.");
-                else
-                    _logger.Warning($@"Changing ProviderManifestToken from {existingManifestToken.Value} to {expectedManifestToken}.");
+                string expectedManifestToken = GetDatabaseManifestToken();
 
-                var lines = File.ReadAllLines(ssdlFile, Encoding.UTF8);
-                lines[0] = string.Concat(
-                    ssdlFirstLine.AsSpan(0, existingManifestToken.Index),
-                    expectedManifestToken,
-                    ssdlFirstLine.AsSpan(existingManifestToken.Index + existingManifestToken.Length));
-                File.WriteAllLines(ssdlFile, lines, Encoding.UTF8);
+                var ssdlFile = modelFilesPath.Single(path => path.EndsWith(".ssdl"));
+                string ssdlFirstLine = ReadFirstLine(ssdlFile);
+                var existingManifestToken = _manifestTokenRegex.Match(ssdlFirstLine).Groups["token"];
+                _performanceLogger.Write(sw, "Checked if ProviderManifestToken is set.");
 
-                _performanceLogger.Write(sw, $"Initialized {Path.GetFileName(ssdlFile)}.");
+                if (!existingManifestToken.Success)
+                    throw new FrameworkException($"Cannot find ProviderManifestToken attribute in '{ssdlFile}'.");
+
+                if (existingManifestToken.Value != expectedManifestToken)
+                {
+                    if (existingManifestToken.Value == EntityFrameworkMappingGenerator.ProviderManifestTokenPlaceholder)
+                        _logger.Trace($@"Setting ProviderManifestToken to {expectedManifestToken}.");
+                    else
+                        _logger.Warning($@"Changing ProviderManifestToken from {existingManifestToken.Value} to {expectedManifestToken}.");
+
+                    var lines = File.ReadAllLines(ssdlFile, Encoding.UTF8);
+                    lines[0] = string.Concat(
+                        ssdlFirstLine.AsSpan(0, existingManifestToken.Index),
+                        expectedManifestToken,
+                        ssdlFirstLine.AsSpan(existingManifestToken.Index + existingManifestToken.Length));
+                    File.WriteAllLines(ssdlFile, lines, Encoding.UTF8);
+
+                    _performanceLogger.Write(sw, $"Initialized {Path.GetFileName(ssdlFile)}.");
+                }
             }
         }
 
