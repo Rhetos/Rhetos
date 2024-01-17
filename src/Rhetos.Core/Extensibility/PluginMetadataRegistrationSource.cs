@@ -43,7 +43,7 @@ namespace Rhetos.Extensibility
 
         public override string Description => "PluginMetadata<T> Support";
 
-        protected override object ResolveInstance<T>(IComponentContext ctx, ResolveRequest request)
+        protected override object ResolveInstance<T>(IComponentContext ctx, in ResolveRequest request)
             => new PluginMetadata<T>(request.Registration.Activator.LimitType, request.Registration.Target.Metadata);
     }
 }
