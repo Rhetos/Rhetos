@@ -30,7 +30,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             createdDependencies = null;
 
             if (info.Dependency_SqlIndex.SqlImplementation())
-                codeBuilder.InsertCode("WHERE " + info.SqlFilter + " ", SqlIndexMultipleDatabaseDefinition.Options2Tag, info.Dependency_SqlIndex);
+                codeBuilder.InsertCode(info.SqlFilter, SqlIndexMultipleDatabaseDefinition.WhereTag, info.Dependency_SqlIndex);
         }
     }
 }

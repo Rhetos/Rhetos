@@ -280,5 +280,40 @@ namespace CommonConcepts.Test
                 TestUtility.ShouldFail<UserException>(() => repository.TestUnique.UniqueWhereNotNullEntity.Insert(item4), "It is not allowed to enter a duplicate record.");
             }
         }
+
+        [TestMethod]
+        public void TestUniqueWithMultipleWhere()
+        {
+            using (var scope = TestScope.Create())
+            {
+                var repository = scope.Resolve<Common.DomRepository>();
+
+                var item1 = new TestUnique.UniqueWithMultipleWhere { ID = Guid.NewGuid(), Name = null };
+                var item2 = new TestUnique.UniqueWithMultipleWhere { ID = Guid.NewGuid(), Name = 'A' + Guid.NewGuid().ToString() };
+                var item3 = new TestUnique.UniqueWithMultipleWhere { ID = Guid.NewGuid(), Name = null };
+                var item4 = new TestUnique.UniqueWithMultipleWhere { ID = Guid.NewGuid(), Name = item2.Name };
+                var item5 = new TestUnique.UniqueWithMultipleWhere { ID = Guid.NewGuid(), Name = 'P' + Guid.NewGuid().ToString() };
+                var item6 = new TestUnique.UniqueWithMultipleWhere { ID = Guid.NewGuid(), Name = item5.Name };
+
+                var ids = new[] { item1.ID, item2.ID, item3.ID, item4.ID, item5.ID, item6.ID };
+
+                repository.TestUnique.UniqueWithMultipleWhere.Insert(item1);
+                Assert.AreEqual(1, repository.TestUnique.UniqueWithMultipleWhere.Load(ids).Length);
+
+                repository.TestUnique.UniqueWithMultipleWhere.Insert(item2);
+                Assert.AreEqual(2, repository.TestUnique.UniqueWithMultipleWhere.Load(ids).Length);
+
+                repository.TestUnique.UniqueWithMultipleWhere.Insert(item3);
+                Assert.AreEqual(3, repository.TestUnique.UniqueWithMultipleWhere.Load(ids).Length);
+
+                repository.TestUnique.UniqueWithMultipleWhere.Insert(item4);
+                Assert.AreEqual(4, repository.TestUnique.UniqueWithMultipleWhere.Load(ids).Length);
+                
+                repository.TestUnique.UniqueWithMultipleWhere.Insert(item5);
+                Assert.AreEqual(5, repository.TestUnique.UniqueWithMultipleWhere.Load(ids).Length);
+
+                TestUtility.ShouldFail<UserException>(() => repository.TestUnique.UniqueWithMultipleWhere.Insert(item6), "It is not allowed to enter a duplicate record.");
+            }
+        }
     }
 }

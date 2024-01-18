@@ -271,6 +271,19 @@ Module TestUnique
     {
         ShortString Name { UniqueWhereNotNull; }
     }
+
+	Entity UniqueWithMultipleWhere
+	{
+		ShortString Name { Unique { Where "Name IS NOT NULL"; Where "Name > 'N'"; } }
+	}
+
+	Entity IncludeEntity
+	{
+		ShortString Name;
+		ShortString Title;
+		Reference Description TestEntity.Large;
+		SqlIndexMultiple 'Name Title' {Include 'Description ID';}
+	}
 }
 
 Module TestCloning

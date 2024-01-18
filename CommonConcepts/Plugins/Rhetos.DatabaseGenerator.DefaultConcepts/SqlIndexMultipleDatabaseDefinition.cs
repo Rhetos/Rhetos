@@ -44,7 +44,15 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
         /// </summary>
         public static readonly SqlTag<SqlIndexMultipleInfo> Options1Tag = "Options1";
         /// <summary>
-        /// Options inserted at the end of the CREATE INDEX query.
+        /// INCLUDE inserted after CREATE INDEX query, before WHERE.
+        /// </summary>
+        public static readonly SqlTag<SqlIndexMultipleInfo> IncludeTag = new SqlTag<SqlIndexMultipleInfo>("INCLUDE", TagType.Appendable, "INCLUDE ({0}) ");
+        /// <summary>
+        /// WHERE inserted after INCLUDE, before Options2.
+        /// </summary>
+        public static readonly SqlTag<SqlIndexMultipleInfo> WhereTag = new SqlTag<SqlIndexMultipleInfo>("WHERE", TagType.Appendable, "WHERE ({0}) ", "AND ({0}) ");
+        /// <summary>
+        /// Options2 inserted after WHERE.
         /// </summary>
         public static readonly SqlTag<SqlIndexMultipleInfo> Options2Tag = "Options2";
         /// <summary>
@@ -73,6 +81,8 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
                     ColumnsTag.Evaluate(info),
                     Options0Tag.Evaluate(info),
                     Options1Tag.Evaluate(info),
+                    IncludeTag.Evaluate(info),
+                    WhereTag.Evaluate(info),
                     Options2Tag.Evaluate(info));
             return null;
         }
