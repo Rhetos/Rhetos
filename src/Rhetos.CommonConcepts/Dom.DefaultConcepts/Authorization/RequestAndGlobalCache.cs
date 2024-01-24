@@ -17,13 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Microsoft.Extensions.Caching.Memory;
 using Rhetos.Logging;
 using Rhetos.Persistence;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Caching;
 
 namespace Rhetos.Dom.DefaultConcepts.Authorization
 {
@@ -38,7 +38,7 @@ namespace Rhetos.Dom.DefaultConcepts.Authorization
         private readonly RhetosAppOptions _rhetosAppOptions;
         private readonly IPersistenceTransaction _persistenceTransaction;
         private readonly Dictionary<string, object> _currentRequestCache = new();
-        private readonly ObjectCache _globalCache = MemoryCache.Default;
+        private static readonly MemoryCache _globalCache = new MemoryCache(new MemoryCacheOptions());
         private bool _registeredToUpdateGlobalCache;
 
         public RequestAndGlobalCache(
@@ -145,14 +145,9 @@ namespace Rhetos.Dom.DefaultConcepts.Authorization
         /// <summary>
         /// For unit testing.
         /// </summary>
-        public static void ClearGlobalCache(string keyPrefix)
+        public static void ClearGlobalCacheAll()
         {
-            var globalCache = MemoryCache.Default;
-            var deleteKeys = globalCache.Select(item => item.Key)
-                .Where(key => key.StartsWith(keyPrefix, StringComparison.Ordinal))
-                .ToList();
-            foreach (string key in deleteKeys)
-                globalCache.Remove(key);
+            _globalCache.Clear();
         }
     }
 }

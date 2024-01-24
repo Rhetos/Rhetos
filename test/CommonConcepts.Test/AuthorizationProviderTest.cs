@@ -43,7 +43,7 @@ namespace CommonConcepts.Test
             string allPrincipals = SystemRole.AllPrincipals.ToString();
             string anonymous = SystemRole.Anonymous.ToString();
 
-            AuthorizationDataCache.ClearCache();
+            AuthorizationDataCache.ClearCacheAll();
 
             using (var scope = TestScope.Create())
             {

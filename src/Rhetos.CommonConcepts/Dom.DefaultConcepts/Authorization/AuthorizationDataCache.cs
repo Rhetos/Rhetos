@@ -149,9 +149,9 @@ namespace Rhetos.Dom.DefaultConcepts
         /// Note that it does not clear the current scope cache from existing instances of AuthorizationDataCache.
         /// See <see cref="RequestAndGlobalCache"/> for more info.
         /// </remarks>
-        public static void ClearCache()
+        public static void ClearCacheAll()
         {
-            RequestAndGlobalCache.ClearGlobalCache("AuthorizationDataCache.");
+            RequestAndGlobalCache.ClearGlobalCacheAll();
         }
 
         /// <summary>

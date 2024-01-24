@@ -29,9 +29,6 @@ using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.Caching;
-using System.Text;
 
 namespace Rhetos.CommonConcepts.Test
 {
@@ -282,7 +279,7 @@ namespace Rhetos.CommonConcepts.Test
         {
             var expiration = (double)60 * 60 * 24 * 365; // Very long expiration time for simpler debugging.
 
-            AuthorizationDataCache.ClearCache();
+            AuthorizationDataCache.ClearCacheAll();
 
             Console.WriteLine("First call");
             var log1 = SimpleTest(true, expiration);
@@ -299,7 +296,7 @@ namespace Rhetos.CommonConcepts.Test
         {
             var expiration = (double)60 * 60 * 24 * 365; // Very long expiration time for simpler debugging.
 
-            AuthorizationDataCache.ClearCache();
+            AuthorizationDataCache.ClearCacheAll();
 
             Console.WriteLine("First call");
             var log1 = SimpleTest(true, expiration, commit: false);
@@ -426,7 +423,7 @@ RolePermissions.55595e07-8d14-4db9-bd79-c0c3e8407feb.";
         {
             var expiration = (double)60 * 60 * 24 * 365; // Very long expiration time for simpler debugging.
 
-            AuthorizationDataCache.ClearCache();
+            AuthorizationDataCache.ClearCacheAll();
 
             var log1 = SimilarClaimsTest(true, expiration);
             Assert.AreEqual(@"Principal.pr0.
@@ -514,7 +511,7 @@ PrincipalPermissions.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.", ReportCacheMiss
         {
             var expiration = (double)60 * 60 * 24 * 365; // Very long expiration time for simpler debugging.
 
-            AuthorizationDataCache.ClearCache();
+            AuthorizationDataCache.ClearCacheAll();
 
             var log1 = ClearCachePrincipalsRoles_GetAuthorization(expiration, editSystemRole: false);
             Assert.AreEqual(@"Principal.pr0.

@@ -44,7 +44,6 @@
   <Reference Relative="..\runtimes\win-x64\native\sni.dll">..\runtimes\win-x64\native\sni.dll</Reference>
   <Reference Relative="..\runtimes\win\lib\net8.0\System.Diagnostics.EventLog.dll">..\runtimes\win\lib\net8.0\System.Diagnostics.EventLog.dll</Reference>
   <Reference Relative="..\runtimes\win\lib\net8.0\System.Diagnostics.EventLog.Messages.dll">..\runtimes\win\lib\net8.0\System.Diagnostics.EventLog.Messages.dll</Reference>
-  <Reference Relative="..\runtimes\win\lib\net8.0\System.Runtime.Caching.dll">..\runtimes\win\lib\net8.0\System.Runtime.Caching.dll</Reference>
   <Namespace>Autofac</Namespace>
   <Namespace>Rhetos</Namespace>
   <Namespace>Rhetos.Configuration.Autofac</Namespace>

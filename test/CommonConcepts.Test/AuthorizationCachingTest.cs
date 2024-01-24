@@ -20,14 +20,12 @@
 using Autofac;
 using CommonConcepts.Test.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos.Configuration.Autofac;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Security;
 using Rhetos.TestCommon;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Caching;
 using System.Text.RegularExpressions;
 
 namespace CommonConcepts.Test
@@ -226,7 +224,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void InsertOrUpdateSystemRole()
         {
-            AuthorizationDataCache.ClearCache();
+            AuthorizationDataCache.ClearCacheAll();
             Assert.AreEqual("Roles, SystemRoles",
                 TestPermissionsCachingOnChange(
                     context =>
@@ -303,7 +301,7 @@ namespace CommonConcepts.Test
                 init?.Invoke(context);
                 Console.WriteLine("== End test initialization ==");
 
-                AuthorizationDataCache.ClearCache();
+                AuthorizationDataCache.ClearCacheAll();
 
                 // Get user authorization:
 
