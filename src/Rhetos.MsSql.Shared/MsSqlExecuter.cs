@@ -83,7 +83,7 @@ namespace Rhetos.Persistence
         public void GetDbLock(IEnumerable<string> resources, bool wait = true)
         {
             var keys = PreprocessResourceNames(resources);
-            if (!keys.Any())
+            if (keys.Count == 0)
                 return;
 
             const string dbLockPrefix = "DbLock ";
@@ -104,8 +104,6 @@ namespace Rhetos.Persistence
             }
             catch (Exception e)
             {
-                // Resursi su trenutačno zauzeti, pokušajte ponovno.
-
                 string lockInfo;
 
                 if (e is FrameworkException fe && fe.InnerException is DbException dbe && dbe.Message.StartsWith(dbLockPrefix))
@@ -114,7 +112,7 @@ namespace Rhetos.Persistence
                 }
                 else if (e is FrameworkException fe2 && fe2.InnerException is DbException dbe2 && dbe2.Message.StartsWith("Timeout expired"))
                 {
-                    lockInfo = dbLockPrefix + keys.First().FullName + (keys.Count() > 1 ? $", {keys.Count()}" : "");
+                    lockInfo = dbLockPrefix + keys.First().FullName + (keys.Count > 1 ? $", {keys.Count}" : "");
                 }
                 else
                 {
@@ -128,7 +126,7 @@ namespace Rhetos.Persistence
             }
         }
 
-        private static IEnumerable<(string SqlName, string FullName)> PreprocessResourceNames(IEnumerable<string> resources)
+        private static List<(string SqlName, string FullName)> PreprocessResourceNames(IEnumerable<string> resources)
         {
             return resources
                 .Where(r => !string.IsNullOrEmpty(r))
@@ -141,7 +139,7 @@ namespace Rhetos.Persistence
         public void ReleaseDbLock(IEnumerable<string> resources)
         {
             var keys = PreprocessResourceNames(resources);
-            if (!keys.Any())
+            if (keys.Count == 0)
                 return;
 
             var sql = new StringBuilder();

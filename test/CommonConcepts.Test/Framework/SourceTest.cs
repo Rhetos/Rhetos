@@ -82,7 +82,8 @@ namespace CommonConcepts.Test.Framework
                 .Where(fileAnalysis => fileAnalysis.eolKinds != @"\r\n" && fileAnalysis.eolKinds != "")
                 .Select(fileAnalysis => $@"File line endings are '{fileAnalysis.eolKinds}' instead of '\r\n' (countN {fileAnalysis.countN}, countR {fileAnalysis.countR}, countRN {fileAnalysis.countRN}): {fileAnalysis.filePath}")
                 .ToList();
-            Console.WriteLine(errors);
+
+            Console.WriteLine(string.Join(Environment.NewLine, errors));
 
             Assert.AreEqual("", string.Join(Environment.NewLine, errors));
         }

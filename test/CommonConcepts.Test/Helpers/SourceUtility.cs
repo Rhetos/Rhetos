@@ -34,7 +34,7 @@ namespace CommonConcepts.Test.Helpers
         public static ICollection<string> GetSourceFiles(IEnumerable<string> subdirectories, Func<string, bool> filesFilter)
         {
             string root = FindRhetosProjectRootPath();
-            var searchFolders = subdirectories.Select(dir => Path.Combine(root, dir)).ToList();
+            var searchFolders = subdirectories.Select(dir => Path.GetFullPath(Path.Combine(root, dir))).ToList();
             var skipFoldersSuffix = new[] { "bin", "obj", "TestResults" }.Select(dir => Path.DirectorySeparatorChar + dir).ToArray();
             Func<string, bool> directoriesFilter = dir => !skipFoldersSuffix.Any(skipFolder => dir.EndsWith(skipFolder, StringComparison.OrdinalIgnoreCase));
 
