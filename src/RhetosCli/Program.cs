@@ -26,6 +26,7 @@ using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -93,27 +94,37 @@ namespace Rhetos
         public static int Run(string[] args)
         {
             var verbosityOption = new Option<VerbosityLevel>("--verbosity", () => VerbosityLevel.Normal, "Output verbosity level. Allowed values are normal and diagnostic.");
-            var traceOption = new Option<string[]>("--trace", () => Array.Empty<string>(), "Output additional trace loggers specified by name.");
+            var traceOption = new Option<string[]>("--trace", "Output additional trace loggers specified by name.");
             var msbuildFormatOption = new Option<bool>("--msbuild-format", () => false, "Adjust error output format for MSBuild integration.");
+            var startPausedOption = new Option<bool>("--start-paused", "Start paused, to allow attaching a debugger. Works only on interactive environment.");
             var rootCommand = new RootCommand
             {
                 verbosityOption,
                 traceOption,
-                msbuildFormatOption
+                msbuildFormatOption,
+                startPausedOption,
             };
 
-            // Using 'CurrentDirectory' by default, because rhetos.exe on *build* is expected to be located in NuGet package cache.
-            var projectRootFolderArgument = new Argument<DirectoryInfo>("project-root-folder", () => new DirectoryInfo(Environment.CurrentDirectory)) { Description = "Project folder where csproj file is located. If not specified, current working directory is used by default." };
+            //===============================================
+            // 'build' command:
+
+            // Using CurrentDirectory by default, because rhetos.exe on *build* is expected to be located in NuGet package cache.
+            var projectRootFolderArgument = new Argument<DirectoryInfo>("project-root-folder", () => new DirectoryInfo(Environment.CurrentDirectory)) { Description = "Project folder where .csproj file is located. If not specified, current working directory is used by default." };
             var buildCommand = new Command("build", "Generates C# code, database model file and other project assets.")
             {
                 projectRootFolderArgument
             };
-            buildCommand.SetHandler((DirectoryInfo projectRootFolder, bool msbuildFormat, VerbosityLevel verbosity, string[] trace) =>
-            {
-                var program = new Program(verbosity, trace, msbuildFormat);
-                return program.SafeExecuteCommand(() => program.Build(projectRootFolder.FullName), "Build");
-            }, projectRootFolderArgument, msbuildFormatOption, verbosityOption, traceOption);
+            buildCommand.SetHandler((DirectoryInfo projectRootFolder, bool msbuildFormat, VerbosityLevel verbosity, string[] trace, bool startPaused) =>
+                {
+                    StartPausedIfEnabled(startPaused);
+                    var program = new Program(verbosity, trace, msbuildFormat);
+                    return program.SafeExecuteCommand(() => program.Build(projectRootFolder.FullName), "Build");
+                },
+                projectRootFolderArgument, msbuildFormatOption, verbosityOption, traceOption, startPausedOption);
             rootCommand.AddCommand(buildCommand);
+
+            //===============================================
+            // 'dbupdate' command:
 
             var startupAssemblyArgument = new Argument<FileInfo>("startup-assembly") { Description = "Startup assembly of the host application." };
             var shortTransactionsOption = new Option<bool>("--short-transactions", "Commit transaction after creating or dropping each database object.");
@@ -132,17 +143,31 @@ namespace Rhetos
                 skipRecomputeOption,
                 executeCommandInCurrentProcessOption
             };
-            dbUpdateCommand.SetHandler((FileInfo startupAssembly, bool shortTransactions, bool skipRecompute, bool executeCommandInCurrentProcess, bool msbuildFormat, VerbosityLevel verbosity, string[] trace) =>
+            dbUpdateCommand.SetHandler((FileInfo startupAssembly, bool shortTransactions, bool skipRecompute, bool executeCommandInCurrentProcess, bool msbuildFormat, VerbosityLevel verbosity, string[] trace, bool startPaused) =>
                 {
+                    StartPausedIfEnabled(startPaused);
                     var program = new Program(verbosity, trace, msbuildFormat);
                     if (executeCommandInCurrentProcess)
                         return program.SafeExecuteCommand(() => program.DbUpdate(startupAssembly.FullName, shortTransactions, skipRecompute), "DbUpdate");
                     else
                         return program.InvokeDbUpdateAsExternalProcess(startupAssembly.FullName, args);
-                }, startupAssemblyArgument, shortTransactionsOption, skipRecomputeOption, executeCommandInCurrentProcessOption, msbuildFormatOption, verbosityOption, traceOption);
+                },
+                startupAssemblyArgument, shortTransactionsOption, skipRecomputeOption, executeCommandInCurrentProcessOption, msbuildFormatOption, verbosityOption, traceOption, startPausedOption);
             rootCommand.AddCommand(dbUpdateCommand);
 
+            //===============================================
+
             return rootCommand.Invoke(args);
+        }
+
+        private static void StartPausedIfEnabled(bool startPaused)
+        {
+            if (startPaused && Environment.UserInteractive)
+            {
+                var currentProcess = Process.GetCurrentProcess();
+                Console.WriteLine($"Attach the debugger to process '{currentProcess.MainModule?.ModuleName}' ({currentProcess.Id}) and press any key to continue ...");
+                Console.ReadKey();
+            };
         }
 
         private Task<int> SafeExecuteCommand(Action action, string commandName)
