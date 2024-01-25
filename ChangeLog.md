@@ -61,6 +61,8 @@ Changes in behavior:
 
 ### Internal improvements
 
+* SQL index concepts **Clustered** and **Where** can be used on all variants of **SqlIndex** and **Unique** concepts.
+* Added **rhetos.exe** command-line switch `--start-paused`, to allow attaching a debugger on build or dbupdate. This is a replacement for the `[debug]` option, since System.CommandLine no longer supports it.
 * New interface for database generator plugins: `IConceptDatabaseGenerator`.
   Old interfaces `IConceptDatabaseDefinition` and `IConceptDatabaseDefinitionExtension` are still available
   for backward compatibility, but they are marked as obsolete.
@@ -69,6 +71,7 @@ Changes in behavior:
   This will allow development of plugins that provide the support for a specific SQL language without implementing the specific language in the base DSL package.
 * Embedding PDBs into DLLs to simplify debugging. Removed NuGet symbols packages.
 * The generated LINQPad script now references different libraries based on the referenced Rhetos NuGet packages.
+* Rhetos plugin packages can extend the generated LINQPad script references with RhetosLinqPadReference ItemGroup.
 
 ## 5.4.0 (2023-03-16)
 
