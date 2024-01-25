@@ -61,6 +61,7 @@
   <Namespace>System.DirectoryServices</Namespace>
   <Namespace>System.Runtime.Serialization.Json</Namespace>
   <IncludeAspNet>true</IncludeAspNet>
+  <RuntimeVersion>8.0</RuntimeVersion>
 </Query>
 
 void Main()
