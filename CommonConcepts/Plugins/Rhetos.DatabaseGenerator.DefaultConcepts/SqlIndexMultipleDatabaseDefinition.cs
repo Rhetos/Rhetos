@@ -36,23 +36,23 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     public class SqlIndexMultipleDatabaseDefinition : IConceptDatabaseDefinition
     {
         /// <summary>
-        /// Options inserted between CREATE and INDEX, before Options1Tag.
+        /// Options inserted between CREATE and INDEX keywords, before Options1Tag.
         /// </summary>
         public static readonly SqlTag<SqlIndexMultipleInfo> Options0Tag = "Options0";
         /// <summary>
-        /// Options inserted between CREATE and INDEX, after Options0Tag.
+        /// Options inserted between CREATE and INDEX keywords, after Options0Tag.
         /// </summary>
         public static readonly SqlTag<SqlIndexMultipleInfo> Options1Tag = "Options1";
         /// <summary>
-        /// INCLUDE inserted after CREATE INDEX query, before WHERE.
+        /// Add the INCLUDE columns (nonkey) to the index, before Options2Tag.
         /// </summary>
-        public static readonly SqlTag<SqlIndexMultipleInfo> IncludeTag = new SqlTag<SqlIndexMultipleInfo>("INCLUDE", TagType.Appendable, "INCLUDE ({0}) ");
+        public static readonly SqlTag<SqlIndexMultipleInfo> IncludeTag = new SqlTag<SqlIndexMultipleInfo>("Include", TagType.Appendable, "INCLUDE ({0}) ");
         /// <summary>
-        /// WHERE inserted after INCLUDE, before Options2.
+        /// Add the WHERE filter to the index, before Options2Tag.
         /// </summary>
-        public static readonly SqlTag<SqlIndexMultipleInfo> WhereTag = new SqlTag<SqlIndexMultipleInfo>("WHERE", TagType.Appendable, "WHERE ({0}) ", "AND ({0}) ");
+        public static readonly SqlTag<SqlIndexMultipleInfo> WhereTag = new SqlTag<SqlIndexMultipleInfo>("Where", TagType.Appendable, "WHERE ({0}) ", "AND ({0}) ");
         /// <summary>
-        /// Options2 inserted after WHERE.
+        /// Options inserted after the list of columns, and after INCLUDE and WHERE (or instead of).
         /// </summary>
         public static readonly SqlTag<SqlIndexMultipleInfo> Options2Tag = "Options2";
         /// <summary>
