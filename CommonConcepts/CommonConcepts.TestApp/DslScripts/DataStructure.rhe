@@ -233,6 +233,22 @@ Module TestTypes
     }
 }
 
+Module TestIndex
+{
+	Entity IndexIncludeDependencies
+    {
+        Integer I;
+		// Testing if the SQL dependencies are automatically detected and the columns are created before the index.
+		// If the dbupdate succeeds, the test has passed.
+        SqlIndexMultiple I { Include 'P RID'; }
+        Reference P;
+        Reference R;
+    }
+    
+    Entity P;
+    Entity R;
+}
+
 Module TestUnique
 {
 	Entity R
