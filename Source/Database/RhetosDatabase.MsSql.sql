@@ -197,7 +197,7 @@ AS
                 [' + @SchemaName + '].[' + @TableName + '] original
                 INNER JOIN [' + @MigrationSchemaName + '].[' + @TableName + '] migration ON migration.ID = original.ID
             WHERE
-                original.[' + @ColumnName + '] <> migration.[' + @ColumnName + ']
+                original.[' + @ColumnName + '] COLLATE Latin1_General_BIN <> migration.[' + @ColumnName + '] COLLATE Latin1_General_BIN
                 OR original.[' + @ColumnName + '] IS NULL AND migration.[' + @ColumnName + '] IS NOT NULL
                 OR original.[' + @ColumnName + '] IS NOT NULL AND migration.[' + @ColumnName + '] IS NULL');
 		SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RETURN @Error END
@@ -342,7 +342,9 @@ AS
                     [' + name + '] = migration.[' + name + ']',
                 @columns2sql = @columns2sql + '
                     ' + CASE WHEN @columns2sql <> '' THEN 'OR ' ELSE '' END
-                    + '(original.[' + name + '] <> migration.[' + name + '] OR original.[' + name + '] IS NULL AND migration.[' + name + '] IS NOT NULL OR original.[' + name + '] IS NOT NULL AND migration.[' + name + '] IS NULL)'
+                    + '(original.[' + name + '] COLLATE Latin1_General_BIN <> migration.[' + name + '] COLLATE Latin1_General_BIN
+                    OR original.[' + name + '] IS NULL AND migration.[' + name + '] IS NOT NULL 
+                    OR original.[' + name + '] IS NOT NULL AND migration.[' + name + '] IS NULL)'
             FROM
                 @columns
             SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RETURN @Error END
