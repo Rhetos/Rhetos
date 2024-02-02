@@ -300,6 +300,13 @@ Module TestUnique
 		Reference Description TestEntity.Large;
 		SqlIndexMultiple 'Name Title' {Include 'Description ID';}
 	}
+
+	Entity OptionsEntity
+	{
+		ShortString Name;
+		ShortString Title;
+		SqlIndexMultiple 'Name Title' { Options 'WHERE Name IS NOT NULL'; }
+	}
 }
 
 Module TestCloning
