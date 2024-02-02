@@ -1,24 +1,23 @@
 <?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
-    <id>Rhetos.TestCommon</id>
+    <id>Rhetos.EfCore</id>
     <version>6.0.0-dev</version>
     <authors>Omega software</authors>
     <owners>Omega software</owners>
     <license type="expression">AGPL-3.0-only</license>
     <projectUrl>https://github.com/rhetos/rhetos</projectUrl>
-    <description>Utility classes for unit testing. Part of Rhetos development platform.</description>
+    <description>EF Core support for Rhetos DSL framework.</description>
     <copyright>Copyright Omega software 2013</copyright>
     <tags>Rhetos</tags>
     <dependencies>
       <group targetFramework="net8.0">
-        <dependency id="Rhetos" version="[6.0.0-dev,6.1.0)" />
-        <dependency id="MSTest.TestFramework" version="3.1.1" />
+        <dependency id="Microsoft.EntityFrameworkCore" version="8.0.1" />
       </group>
     </dependencies>
   </metadata>
   <files>
-    <file src="Rhetos.TestCommon\bin\Debug\net8.0\Rhetos.TestCommon.dll" target="lib\net8.0" />
-    <file src="Rhetos.TestCommon\bin\Debug\net8.0\Rhetos.TestCommon.xml" target="lib\net8.0" />
+    <file src="Rhetos.EfCore\bin\Debug\net8.0\Rhetos.EfCore.dll" target="lib\net8.0" />
+    <file src="Rhetos.EfCore\bin\Debug\net8.0\Rhetos.EfCore.xml" target="lib\net8.0" />
   </files>
 </package>

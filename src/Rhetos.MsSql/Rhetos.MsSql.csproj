@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Rhetos.Core\Rhetos.Core.csproj" />
+    <ProjectReference Include="..\Rhetos.EfCore\Rhetos.EfCore.csproj" />
   </ItemGroup>
 
   <Import Project="..\Rhetos.MsSql.Shared\Rhetos.MsSql.Shared.projitems" Label="Shared" />
