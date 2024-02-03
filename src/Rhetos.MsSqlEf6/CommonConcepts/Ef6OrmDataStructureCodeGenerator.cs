@@ -19,19 +19,29 @@
 
 using Rhetos.Compiler;
 using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
 using System.ComponentModel.Composition;
 
-namespace Rhetos.Dom.DefaultConcepts.Persistence
+namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(InitializationConcept))]
-    [ExportMetadata(MefProvider.DependsOn, typeof(DomInitializationCodeGenerator))]
-    public class FullTextSearchInterceptorCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(DataStructureInfo))]
+    [ExportMetadata(MefProvider.DependsOn, typeof(OrmDataStructureCodeGenerator))]
+    public class Ef6OrmDataStructureCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            codeBuilder.InsertCode("AddInterceptor(new Rhetos.Dom.DefaultConcepts.Persistence.FullTextSearchInterceptor());\r\n            ", DomInitializationCodeGenerator.EntityFrameworkConfigurationTag);
+            var info = (DataStructureInfo)conceptInfo;
+            if (info is IOrmDataStructure)
+            {
+                string module = info.Module.Name;
+                string entity = info.Name;
+
+                codeBuilder.InsertCode(
+                    $"public System.Data.Entity.DbSet<Common.Queryable.{module}_{entity}> {module}_{entity} {{ get; set; }}\r\n        ",
+                    EntityFrameworkContextCodeGenerator.EntityFrameworkContextMembersTag);
+            }
         }
     }
 }

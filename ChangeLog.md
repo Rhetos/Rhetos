@@ -54,6 +54,10 @@ Changes in Rhetos libraries API:
     in `AppDomain.CurrentDomain.BaseDirectory` directory instead of the current directory.
 * The legacy configuration option `CommonConcepts:DynamicTypeResolution` is no longer supported. DynamicTypeResolution is always disabled.
     * In FilterCriteria, filter names should be constructed by Type.ToString(), instead of Type.FullName or Type.AssemblyQualifiedName.
+* Some EF6-specific features moved from Rhetos.CommonConcepts to Rhetos.MsSqlEf6.
+    * If a custom code generator class uses one of `DomInitializationCodeGenerator.EntityFramework*` tags,
+      use instead a same tag from `EntityFrameworkContextCodeGenerator` class and add an attribute
+      `[ExportMetadata(MefProvider.DependsOn, typeof(EntityFrameworkContextCodeGenerator))]`.
 
 Changes in behavior:
 

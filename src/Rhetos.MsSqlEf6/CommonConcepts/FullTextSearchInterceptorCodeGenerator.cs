@@ -26,12 +26,14 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
 {
     [Export(typeof(IConceptCodeGenerator))]
     [ExportMetadata(MefProvider.Implements, typeof(InitializationConcept))]
-    [ExportMetadata(MefProvider.DependsOn, typeof(DomInitializationCodeGenerator))]
-    public class ContainsIdsInterceptorCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.DependsOn, typeof(EntityFrameworkContextCodeGenerator))]
+    public class FullTextSearchInterceptorCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            codeBuilder.InsertCode("AddInterceptor(new Rhetos.Dom.DefaultConcepts.ContainsIdsInterceptor());\r\n            ", DomInitializationCodeGenerator.EntityFrameworkConfigurationTag);
+            codeBuilder.InsertCode(
+                "AddInterceptor(new Rhetos.Dom.DefaultConcepts.Persistence.FullTextSearchInterceptor());\r\n            ",
+                EntityFrameworkContextCodeGenerator.EntityFrameworkConfigurationTag);
         }
     }
 }

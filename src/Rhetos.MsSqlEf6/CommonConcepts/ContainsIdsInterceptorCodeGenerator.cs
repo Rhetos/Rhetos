@@ -19,30 +19,21 @@
 
 using Rhetos.Compiler;
 using Rhetos.Dsl;
-using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
 using System.ComponentModel.Composition;
 
-namespace Rhetos.Dom.DefaultConcepts
+namespace Rhetos.Dom.DefaultConcepts.Persistence
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(DataStructureInfo))]
-    [ExportMetadata(MefProvider.DependsOn, typeof(DataStructureQueryableCodeGenerator))]
-    public class OrmDataStructureCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(InitializationConcept))]
+    [ExportMetadata(MefProvider.DependsOn, typeof(EntityFrameworkContextCodeGenerator))]
+    public class ContainsIdsInterceptorCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (DataStructureInfo)conceptInfo;
-            if (info is IOrmDataStructure)
-            {
-                string module = info.Module.Name;
-                string entity = info.Name;
-
-                DataStructureCodeGenerator.AddInterfaceAndReference(codeBuilder, $"EntityBase<{module}.{entity}>", info);
-
-                RepositoryHelper.GenerateQueryableRepository(info, codeBuilder);
-                codeBuilder.InsertCode($"Common.OrmRepositoryBase<Common.Queryable.{module}_{entity}, {module}.{entity}>", RepositoryHelper.OverrideBaseTypeTag, info);
-            }
+            codeBuilder.InsertCode(
+                "AddInterceptor(new Rhetos.Dom.DefaultConcepts.ContainsIdsInterceptor());\r\n            ",
+                EntityFrameworkContextCodeGenerator.EntityFrameworkConfigurationTag);
         }
     }
 }

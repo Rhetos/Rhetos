@@ -18,12 +18,10 @@
 */
 
 using Autofac;
-using Rhetos.Dom.DefaultConcepts.Persistence;
+using Rhetos.Dom.DefaultConcepts.Authorization;
 using Rhetos.Security;
 using Rhetos.Utilities;
 using System.ComponentModel.Composition;
-using Rhetos.Persistence;
-using Rhetos.Dom.DefaultConcepts.Authorization;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
