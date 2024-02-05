@@ -36,9 +36,10 @@ namespace Rhetos.MsSql
         {
             codeBuilder.InsertCode(
             $@"optionsBuilder.UseSqlServer(_persistenceTransaction.Connection,
-                o =>
+                sqlServerOptions =>
                 {{
-                    o.UseRelationalNulls(_rhetosAppOptions.EntityFrameworkUseDatabaseNullSemantics);
+                    sqlServerOptions.UseRelationalNulls(_rhetosAppOptions.EntityFrameworkUseDatabaseNullSemantics);
+                    sqlServerOptions.CommandTimeout(_databaseOptions.SqlCommandTimeout);
                     {EntityFrameworkContextSqlServerConfigurationTag}
                 }});
             this.Database.UseTransaction(_persistenceTransaction.Transaction);

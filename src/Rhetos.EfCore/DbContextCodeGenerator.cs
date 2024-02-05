@@ -77,7 +77,6 @@ namespace Common
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {{
             {EntityFrameworkOnConfiguringTag}
-            this.Database.CommandTimeout = _databaseOptions.SqlCommandTimeout;
         }}
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -63,6 +63,11 @@ Changes in behavior:
 
 * Configuration setting key "Rhetos:DatabaseOracle:NationalLanguage" has changed to "Rhetos:Build:DatabaseNationalLanguage".
 
+Migrating a Rhetos app from EF6 to EF Core:
+
+* (Disclaimer: It is recommended to keep EF6 in old Rhetos apps for backward compatiblity. Use EF Core in new apps.)
+* In the existing projects that reference the NuGet package `Rhetos.CommonConcepts`, add the NuGet package `Rhetos.MsSql` instead of `Rhetos.MsSqlEf6`.
+
 ### Internal improvements
 
 * SQL index concepts **Clustered** and **Where** can be used on all variants of **SqlIndex** and **Unique** concepts.
