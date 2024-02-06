@@ -45,6 +45,17 @@ namespace Rhetos.Dom.DefaultConcepts
             codeBuilder.InsertCodeToFile(GetOrmSnippet(), "EntityFrameworkContext");
 
             codeBuilder.InsertCode(
+            @"builder.RegisterType<EntityFrameworkConfiguration>()
+                .As<System.Data.Entity.DbConfiguration>()
+                .SingleInstance();
+            builder.RegisterType<EntityFrameworkContext>()
+                .As<EntityFrameworkContext>()
+                .As<System.Data.Entity.DbContext>()
+                .InstancePerLifetimeScope();
+            ",
+                ModuleCodeGenerator.CommonAutofacConfigurationMembersTag);
+
+            codeBuilder.InsertCode(
                 "return _executionContext.EntityFrameworkContext.Set<TQueryableEntity>().AsNoTracking();\r\n            ",
                 DomInitializationCodeGenerator.OrmRepositoryBaseQueryTag);
         }

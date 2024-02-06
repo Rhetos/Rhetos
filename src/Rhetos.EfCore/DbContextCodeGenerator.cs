@@ -47,6 +47,14 @@ namespace Rhetos.EfCore
             codeBuilder.InsertCodeToFile(GetOrmSnippet(), "EntityFrameworkContext");
 
             codeBuilder.InsertCode(
+            @"builder.RegisterType<EntityFrameworkContext>()
+                .As<EntityFrameworkContext>()
+                .As<Microsoft.EntityFrameworkCore.DbContext>()
+                .InstancePerLifetimeScope();
+            ",
+                ModuleCodeGenerator.CommonAutofacConfigurationMembersTag);
+
+            codeBuilder.InsertCode(
                 @"return Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.AsNoTracking(
                 _executionContext.EntityFrameworkContext.Set<TQueryableEntity>());",
                 DomInitializationCodeGenerator.OrmRepositoryBaseQueryTag);

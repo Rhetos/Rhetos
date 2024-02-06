@@ -265,13 +265,6 @@ namespace Common
         protected override void Load(Autofac.ContainerBuilder builder)
         {{
             builder.RegisterType<DomRepository>().InstancePerLifetimeScope();
-            builder.RegisterType<EntityFrameworkConfiguration>()
-                .As<System.Data.Entity.DbConfiguration>()
-                .SingleInstance();
-            builder.RegisterType<EntityFrameworkContext>()
-                .As<EntityFrameworkContext>()
-                .As<System.Data.Entity.DbContext>()
-                .InstancePerLifetimeScope();
             builder.RegisterType<ExecutionContext>().InstancePerMatchingLifetimeScope(Rhetos.UnitOfWorkScope.ScopeName);
             builder.RegisterInstance(Infrastructure.RegisteredInterfaceImplementations).ExternallyOwned();
             builder.RegisterInstance(Infrastructure.ApplyFiltersOnClientRead).ExternallyOwned();
