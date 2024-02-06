@@ -33,6 +33,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly string RepositoryBaseMembersTag = "/*RepositoryBaseMembers*/";
         public static readonly string ReadableRepositoryBaseMembersTag = "/*ReadableRepositoryBaseMembers*/";
         public static readonly string QueryableRepositoryBaseMembersTag = "/*QueryableRepositoryBaseMembers*/";
+        public static readonly string OrmRepositoryBaseQueryTag = "/*OrmRepositoryBaseQuery*/";
         public static readonly string OrmRepositoryBaseMembersTag = "/*OrmRepositoryBaseMembers*/";
         public static readonly string PersistenceStorageMappingRegistrationTag = "/*PersistenceStorageMappingRegistration*/";
         public static readonly string PersistenceStorageMappingsTag = "/*PersistenceStorageMappings*/";
@@ -395,7 +396,7 @@ namespace Common
     {{
         public override IQueryable<TQueryableEntity> Query()
         {{
-            return _executionContext.EntityFrameworkContext.Set<TQueryableEntity>().AsNoTracking();
+            {OrmRepositoryBaseQueryTag}
         }}
 
         public IQueryable<TQueryableEntity> Filter(IQueryable<TQueryableEntity> query, IEnumerable<Guid> ids)

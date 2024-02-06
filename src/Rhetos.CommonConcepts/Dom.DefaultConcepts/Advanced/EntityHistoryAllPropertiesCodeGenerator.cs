@@ -59,8 +59,8 @@ namespace Rhetos.Dom.DefaultConcepts
         @"public global::{0}.{1}[] Load(System.DateTime parameter)
         {{
             var sql = ""SELECT * FROM {2}.{3}(@p0)"";
-            var query = _executionContext.EntityFrameworkContext.Database.SqlQuery<{0}.{1}>(sql, parameter);
-            return query.ToArray();
+            var items = _executionContext.EntityFrameworkContext.LoadFromSql<{0}.{1}>(sql, parameter);
+            return items;
         }}
 
         ",

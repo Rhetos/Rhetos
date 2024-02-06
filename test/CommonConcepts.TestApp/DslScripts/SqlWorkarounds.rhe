@@ -61,9 +61,7 @@ Module TestSqlWorkarounds
 				string sql = "EXEC TestSqlWorkarounds.ComputePersonInfo @p0, @p1";
 				var sqlParams = new object[] { parameter.NamePattern, parameter.LimitResultCount };
 
-				var result = _executionContext.EntityFrameworkContext.Database
-					.SqlQuery<TestSqlWorkarounds.PersonInfo>(sql, sqlParams)
-					.ToArray();
+				var result = _executionContext.EntityFrameworkContext.LoadFromSql<TestSqlWorkarounds.PersonInfo>(sql, sqlParams);
 				return result;
 			}';
 	}

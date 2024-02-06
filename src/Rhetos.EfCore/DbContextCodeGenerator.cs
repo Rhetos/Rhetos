@@ -27,6 +27,7 @@ namespace Rhetos.EfCore
 {
     [Export(typeof(IConceptCodeGenerator))]
     [ExportMetadata(MefProvider.Implements, typeof(InitializationConcept))]
+    [ExportMetadata(MefProvider.DependsOn, typeof(DomInitializationCodeGenerator))]
     public class DbContextCodeGenerator : IConceptCodeGenerator
     {
         public static readonly string EntityFrameworkContextMembersTag = "/*EntityFrameworkContextMembers*/";
@@ -44,6 +45,11 @@ namespace Rhetos.EfCore
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             codeBuilder.InsertCodeToFile(GetOrmSnippet(), "EntityFrameworkContext");
+
+            codeBuilder.InsertCode(
+                @"return Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.AsNoTracking(
+                _executionContext.EntityFrameworkContext.Set<TQueryableEntity>());",
+                DomInitializationCodeGenerator.OrmRepositoryBaseQueryTag);
         }
 
         private string GetOrmSnippet() =>
@@ -84,6 +90,14 @@ namespace Common
             base.OnModelCreating(modelBuilder);
 
             {EntityFrameworkOnModelCreatingTag}
+        }}
+
+        /// <summary>
+        /// A helper method to unify EF6 and EFCore custom SQL queries.
+        /// </summary>
+        public TEntity[] LoadFromSql<TEntity>(string sql, params object[] parameters) where TEntity : class
+        {{
+            return this.Set<TEntity>().FromSqlRaw(sql, parameters).AsNoTracking().ToArray();
         }}
 
         {EntityFrameworkContextMembersTag}
