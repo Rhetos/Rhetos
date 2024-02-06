@@ -79,10 +79,12 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly CsTag<DataStructureInfo> PersistenceStorageMapperDependencyResolutionTag = "PersistenceStorageMapperDependencyResolution";
 
         private readonly ConceptMetadata _conceptMetadata;
+        private readonly ISqlResources _sqlResources;
 
-        public WritableOrmDataStructureCodeGenerator(ConceptMetadata conceptMetadata)
+        public WritableOrmDataStructureCodeGenerator(ConceptMetadata conceptMetadata, ISqlResources sqlResources)
         {
             _conceptMetadata = conceptMetadata;
+            _sqlResources = sqlResources;
         }
 
         protected static string MemberFunctionsSnippet(DataStructureInfo info)
@@ -153,6 +155,9 @@ namespace Rhetos.Dom.DefaultConcepts
 
         protected string PersistenceStorageMappingSnippet(DataStructureInfo info)
         {
+            string dbParameterClass = _sqlResources.Get("DbParameterClass");
+            string dbParameterType = _sqlResources.Get("StorageMappingDbType_Guid");
+
             return
     $@"public class {info.Module.Name}_{info.Name}_Mapper : IPersistenceStorageObjectMapper
     {{
@@ -161,7 +166,7 @@ namespace Rhetos.Dom.DefaultConcepts
             var entity = ({info.Module}.{info.Name})genericEntity;
             return new PersistenceStorageObjectParameter[]
             {{
-                new PersistenceStorageObjectParameter(""ID"", new SqlParameter("""", System.Data.SqlDbType.UniqueIdentifier) {{ Value = entity.ID }}),
+                new PersistenceStorageObjectParameter(""ID"", new {dbParameterClass}("""", {dbParameterType}) {{ Value = entity.ID }}),
                 {PersistenceStorageMapperPropertyMappingTag.Evaluate(info)}
             }};
         }}

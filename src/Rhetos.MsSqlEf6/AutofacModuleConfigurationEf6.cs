@@ -21,7 +21,9 @@ using Autofac;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Dom.DefaultConcepts.Persistence;
 using Rhetos.Extensibility;
+using Rhetos.MsSqlEf6.SqlResources;
 using Rhetos.Persistence;
+using Rhetos.SqlResources;
 using Rhetos.Utilities;
 using System.ComponentModel.Composition;
 
@@ -37,6 +39,7 @@ namespace Rhetos.MsSqlEf6
             if (stage.IsBuildTime)
             {
                 builder.RegisterType<EntityFrameworkMappingGenerator>().As<IGenerator>();
+                builder.RegisterType<MsSqlEf6SqlResourcesPlugin>().As<ISqlResourcesPlugin>().SingleInstance();
             }
 
             if (stage.IsApplicationInitialization)

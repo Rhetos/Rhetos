@@ -17,9 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Compiler;
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -48,17 +48,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     RepositoryHelper.AssignSimplePropertyTag, info.DataStructure);
         }
 
-        public static void GenerateStorageCustomMapping(PropertyInfo info, ICodeBuilder codeBuilder, string sqlParameter)
-        {
-            if (info.DataStructure is IWritableOrmDataStructure)
-            {
-                var code = $@"new PersistenceStorageObjectParameter(""{info.Name}"", {sqlParameter}),
-                ";
-                codeBuilder.InsertCode(code, WritableOrmDataStructureCodeGenerator.PersistenceStorageMapperPropertyMappingTag, info.DataStructure);
-            }
-        }
-
-        public static void GenerateStorageMapping(PropertyInfo info, ICodeBuilder codeBuilder, string dbType, int precision = 0, int scale = 0)
+        public static void GenerateStorageMapping(PropertyInfo info, ICodeBuilder codeBuilder, ISqlResources sqlResources, int precision = 0, int scale = 0, string overrideDbParameterType = null)
         {
             if (info.DataStructure is IWritableOrmDataStructure)
             {
@@ -68,8 +58,17 @@ namespace Rhetos.Dom.DefaultConcepts
                 if (scale > 0)
                     options += $", Scale = {scale}";
 
-                var sqlParameter = $@"new SqlParameter("""", {dbType}) {{ Value = ((object)entity.{info.Name}) ?? DBNull.Value{options} }}";
-                GenerateStorageCustomMapping(info, codeBuilder, sqlParameter);
+                string dbParameterType = overrideDbParameterType
+                    ?? sqlResources.FindSqlResourceKeyPropertyType("StorageMappingDbType_", info).SqlScript
+                    ?? throw new DslConceptSyntaxException(info, $"There is no DbParameter type provided for '{info.GetKeywordOrTypeName()}' property type."
+                        + " This property type is not supported on a writable data structure for the current database language.");
+
+                string dbParameterClass = sqlResources.Get("DbParameterClass");
+
+                string code = $@"new PersistenceStorageObjectParameter(""{info.Name}"", new {dbParameterClass}("""", {dbParameterType}) {{ Value = ((object)entity.{info.Name}) ?? DBNull.Value{options} }}),
+                ";
+
+                codeBuilder.InsertCode(code, WritableOrmDataStructureCodeGenerator.PersistenceStorageMapperPropertyMappingTag, info.DataStructure);
             }
         }
     }

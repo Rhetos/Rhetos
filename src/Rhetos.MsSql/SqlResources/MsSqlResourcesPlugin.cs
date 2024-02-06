@@ -1,4 +1,4 @@
-﻿/*
+/*
     Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
@@ -17,29 +17,19 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Compiler;
-using Rhetos.Dsl;
-using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Extensibility;
+using Rhetos.SqlResources;
+using Rhetos.Utilities;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.IO;
 
-namespace Rhetos.Dom.DefaultConcepts
+namespace Rhetos.MsSql.SqlResources
 {
-    [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(BoolPropertyInfo))]
-    public class BoolPropertyCodeGenerator : IConceptCodeGenerator
+    public class MsSqlResourcesPlugin : ISqlResourcesPlugin
     {
-        private readonly ISqlResources _sqlResources;
-
-        public BoolPropertyCodeGenerator(ISqlResources sqlResources)
+        public IDictionary<string, string> GetResources()
         {
-            _sqlResources = sqlResources;
-        }
-
-        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
-        {
-            PropertyHelper.GenerateCodeForType((PropertyInfo)conceptInfo, codeBuilder, "bool?");
-            PropertyHelper.GenerateStorageMapping((PropertyInfo)conceptInfo, codeBuilder, _sqlResources);
+            return ResourcesUtility.ReadEmbeddedResx(Path.Combine("SqlResources", "Rhetos.MsSql.resx"), GetType().Assembly, true);
         }
     }
 }

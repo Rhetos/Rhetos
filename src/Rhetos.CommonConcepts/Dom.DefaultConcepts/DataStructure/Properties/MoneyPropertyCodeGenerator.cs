@@ -32,11 +32,18 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(MoneyPropertyInfo))]
     public class MoneyPropertyCodeGenerator : IConceptCodeGenerator
     {
+        private readonly ISqlResources _sqlResources;
+
+        public MoneyPropertyCodeGenerator(ISqlResources sqlResources)
+        {
+            _sqlResources = sqlResources;
+        }
+
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (MoneyPropertyInfo)conceptInfo;
             PropertyHelper.GenerateCodeForType(info, codeBuilder, "decimal?");
-            PropertyHelper.GenerateStorageMapping(info, codeBuilder, "System.Data.SqlDbType.Money");
+            PropertyHelper.GenerateStorageMapping(info, codeBuilder, _sqlResources);
 
             if (info.DataStructure is IWritableOrmDataStructure)
             {

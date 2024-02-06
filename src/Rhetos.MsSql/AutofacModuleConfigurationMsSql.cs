@@ -1,4 +1,4 @@
-﻿/*
+/*
     Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
@@ -17,30 +17,26 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Compiler;
-using Rhetos.Dsl;
-using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Extensibility;
+using Autofac;
+using Rhetos.MsSql.SqlResources;
+using Rhetos.SqlResources;
 using System.ComponentModel.Composition;
 
-namespace Rhetos.Dom.DefaultConcepts
+namespace Rhetos.MsSqlEf6
 {
-    [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(LongStringPropertyInfo))]
-    public class LongStringPropertyCodeGenerator : IConceptCodeGenerator
+    [Export(typeof(Module))]
+    public class AutofacModuleConfigurationMsSql : Module
     {
-        private readonly ISqlResources _sqlResources;
-
-        public LongStringPropertyCodeGenerator(ISqlResources sqlResources)
+        protected override void Load(ContainerBuilder builder)
         {
-            _sqlResources = sqlResources;
-        }
+            ExecutionStage stage = builder.GetRhetosExecutionStage();
 
-        public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
-        {
-            PropertyInfo info = (PropertyInfo)conceptInfo;
-            PropertyHelper.GenerateCodeForType(info, codeBuilder, "string");
-            PropertyHelper.GenerateStorageMapping(info, codeBuilder, _sqlResources);
+            if (stage.IsBuildTime)
+            {
+                builder.RegisterType<MsSqlResourcesPlugin>().As<ISqlResourcesPlugin>().SingleInstance();
+            }
+
+            base.Load(builder);
         }
     }
 }

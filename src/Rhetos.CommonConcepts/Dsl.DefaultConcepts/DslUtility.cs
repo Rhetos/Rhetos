@@ -308,9 +308,11 @@ namespace Rhetos.Dsl.DefaultConcepts
         /// </remarks>
         private static readonly Regex _isAssemblyQualifiedNameRegex = new Regex(@"(?<fullname>.*?),[^\>\)\]]*$");
 
-        public static (string ResourceKey, string SqlScript) FindSqlResourceKeyPropertyType(ISqlResources sqlResources, string keyPrefix, PropertyInfo propertyInfo)
+        public static (string ResourceKey, string SqlScript) FindSqlResourceKeyPropertyType(this ISqlResources sqlResources, string keyPrefix, PropertyInfo propertyInfo)
+            => FindSqlResourceKeyPropertyType(sqlResources, keyPrefix, propertyInfo.GetType());
+
+        public static (string ResourceKey, string SqlScript) FindSqlResourceKeyPropertyType(this ISqlResources sqlResources, string keyPrefix, Type propertyType)
         {
-            Type propertyType = propertyInfo.GetType();
             while (typeof(PropertyInfo).IsAssignableFrom(propertyType))
             {
                 string resourceKey = keyPrefix + ConceptInfoHelper.GetKeywordOrTypeName(propertyType);

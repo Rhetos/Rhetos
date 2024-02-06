@@ -29,11 +29,18 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(BinaryPropertyInfo))]
     public class BinaryCodeGenerator : IConceptCodeGenerator
     {
+        private readonly ISqlResources _sqlResources;
+
+        public BinaryCodeGenerator(ISqlResources sqlResources)
+        {
+            _sqlResources = sqlResources;
+        }
+
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             PropertyInfo info = (PropertyInfo)conceptInfo;
             PropertyHelper.GenerateCodeForType(info, codeBuilder, "byte[]");
-            PropertyHelper.GenerateStorageMapping(info, codeBuilder, "System.Data.SqlDbType.VarBinary");
+            PropertyHelper.GenerateStorageMapping(info, codeBuilder, _sqlResources);
         }
     }
 }

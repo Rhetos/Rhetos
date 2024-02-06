@@ -29,10 +29,17 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(DatePropertyInfo))]
     public class DatePropertyCodeGenerator : IConceptCodeGenerator
     {
+        private readonly ISqlResources _sqlResources;
+
+        public DatePropertyCodeGenerator(ISqlResources sqlResources)
+        {
+            _sqlResources = sqlResources;
+        }
+
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             PropertyHelper.GenerateCodeForType((PropertyInfo)conceptInfo, codeBuilder, "DateTime?");
-            PropertyHelper.GenerateStorageMapping((PropertyInfo)conceptInfo, codeBuilder, "System.Data.SqlDbType.Date");
+            PropertyHelper.GenerateStorageMapping((PropertyInfo)conceptInfo, codeBuilder, _sqlResources);
         }
     }
 }

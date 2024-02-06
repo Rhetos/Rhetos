@@ -8,8 +8,8 @@ dotnet test Rhetos.sln --no-build || GOTO Error0
 
 IF NOT EXIST test\CommonConcepts.TestApp\local.settings.json ECHO Missing local.settings.json. Follow the Initial setup instructions in Readme.md. & GOTO Error0
 
-CALL :TestAppWithDatabase Rhetos.MsSql || GOTO Error0
 CALL :TestAppWithDatabase Rhetos.MsSqlEf6 || GOTO Error0
+CALL :TestAppWithDatabase Rhetos.MsSql || GOTO Error0
 
 @REM ================================================
 
@@ -25,6 +25,7 @@ CALL :TestAppWithDatabase Rhetos.MsSqlEf6 || GOTO Error0
 @REM ================================================
 :TestAppWithDatabase
 
+TITLE Testing %1
 dotnet remove test\CommonConcepts.TestApp package Rhetos.MsSql > nul
 dotnet remove test\CommonConcepts.TestApp package Rhetos.MsSqlEf6 > nul
 dotnet add test\CommonConcepts.TestApp package %1 --version 6.0.0-dev* || GOTO DatabaseError0

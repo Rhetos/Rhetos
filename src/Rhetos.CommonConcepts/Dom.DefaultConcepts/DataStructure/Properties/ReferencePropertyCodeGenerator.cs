@@ -49,9 +49,9 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             ReferencePropertyInfo info = (ReferencePropertyInfo)conceptInfo;
 
-            var referenceGuid = new PropertyInfo { DataStructure = info.DataStructure, Name = info.Name + "ID" };
+            var referenceGuid = new GuidPropertyInfo { DataStructure = info.DataStructure, Name = info.Name + "ID" };
             PropertyHelper.GenerateCodeForType(referenceGuid, codeBuilder, "Guid?");
-            PropertyHelper.GenerateStorageMapping(referenceGuid, codeBuilder, "System.Data.SqlDbType.UniqueIdentifier");
+            PropertyHelper.GenerateStorageMapping(referenceGuid, codeBuilder, Sql);
 
             if (DslUtility.IsQueryable(info.DataStructure) && DslUtility.IsQueryable(info.Referenced))
                 DataStructureQueryableCodeGenerator.AddNavigationProperty(codeBuilder, info.DataStructure,

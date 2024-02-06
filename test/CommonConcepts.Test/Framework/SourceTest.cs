@@ -17,17 +17,18 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Autofac.Core;
 using CommonConcepts.Test.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos;
 using Rhetos.TestCommon;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Resources;
 using System.Text.RegularExpressions;
-using System.Xml;
-using System.Xml.Linq;
 
 namespace CommonConcepts.Test.Framework
 {
@@ -89,25 +90,40 @@ namespace CommonConcepts.Test.Framework
         }
 
         [TestMethod]
-        public void SqlRepositoryUsage()
+        public void SqlResourceUsage()
         {
-            var resxFiles = SourceUtility.GetSourceFiles(
-                new[] { Path.Combine("src", "Rhetos.MsSql.Shared") },
-                file => Path.GetExtension(file) is ".resx");
-            if (resxFiles.Count < 2)
-                throw new ArgumentException($"Missing some resxFiles. Count={resxFiles.Count}.");
+            //=============================================================
+            // List SQL snippets that are available in assembly resources:
 
-            var resxKeys = resxFiles.SelectMany(file =>
+            using var scope = TestScope.Create();
+            Assert.IsNotNull(scope.Resolve<ISqlResources>());
+            Assert.IsNotNull(scope.Resolve<IEnumerable<Autofac.Module>>()); // Loading all referenced assemblies that might contain resources files. Otherwise CurrentDomain.GetAssemblies() might not return those assemblies.
+
+            var assemblyResources = AppDomain.CurrentDomain.GetAssemblies() // GetAssemblies() returns only those referenced assemblies that have been loaded (used) before calling this method.
+                .Where(a => a.FullName.StartsWith("Rhetos"))
+                .SelectMany(a => a.GetManifestResourceNames().Select(r => new { a, r }))
+                .Where(ar => ar.r.EndsWith(".resources"))
+                .ToList();
+            if (assemblyResources.Count < 2)
+                throw new ArgumentException($"Expecting multiple assemblyResources. Count={assemblyResources.Count}.");
+
+            var resourceKeys = new List<string>();
+            foreach (var ar in assemblyResources)
             {
-                var xml = XDocument.Load(file);
-                return xml.Root.Elements("data").Attributes("name").Select(a => a.Value);
-            }).ToList();
+                Console.WriteLine($"Loading {ar.a.GetName().Name}: {ar.r}");
+                var resourceManager = new ResourceManager(Path.GetFileNameWithoutExtension(ar.r), ar.a);
+                ResourceSet resourceSet = resourceManager.GetResourceSet(CultureInfo.InvariantCulture, true, true);
+                resourceKeys.AddRange(resourceSet.Cast<DictionaryEntry>().Select(e => e.Key.ToString()));
+            }
+
+            //=============================================================
+            // List SQL snippets that are used in source files:
 
             var sourceFiles = SourceUtility.GetSourceFiles(new[] { "src" }, file => Path.GetExtension(file) is ".cs" or ".rhe");
             if (sourceFiles.Count < 50)
                 throw new ArgumentException($"Missing some sourceFiles. Count={sourceFiles.Count}.");
 
-            var unusedKeys = resxKeys.ToHashSet();
+            var unusedKeys = resourceKeys.ToHashSet();
             var usedKeys = new HashSet<string>();
 
             string iSqlResourcesMethodCall = @"(sql|resources)\.(TryGet|Get|Format)\(";
@@ -133,7 +149,14 @@ namespace CommonConcepts.Test.Framework
                 }
             }
 
-            var usedUndefinedKeys = usedKeys.Except(resxKeys).ToList();
+            //=============================================================
+            // Test for snippets that are provided but not used, or used but not provided:
+
+            // Adding keys that are dynamically used in source:
+            foreach (var propertyType in new[] { "Binary", "Bool", "Date", "DateTime", "Decimal", "Integer", "LongString", "Money", "Reference", "ShortString" })
+                unusedKeys.Remove($"StorageMappingDbType_{propertyType}");
+
+            var usedUndefinedKeys = usedKeys.Except(resourceKeys).ToList();
 
             // The logging concepts dynamically generate resource keys based on property type.
             unusedKeys.RemoveWhere(key => key.StartsWith("PropertyLoggingDefinition_TextValue_"));

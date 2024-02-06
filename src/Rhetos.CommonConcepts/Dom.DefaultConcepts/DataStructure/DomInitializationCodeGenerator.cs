@@ -440,7 +440,6 @@ namespace Common
     using Rhetos.Dom.DefaultConcepts;
     using Rhetos.Utilities;
     using System.Collections.Generic;
-    using System.Data.SqlClient;
 
     public class PersistenceStorageObjectMappings : IPersistenceStorageObjectMappings
     {{

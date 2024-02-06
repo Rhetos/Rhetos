@@ -29,10 +29,17 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(GuidPropertyInfo))]
     public class GuidPropertyCodeGenerator : IConceptCodeGenerator
     {
+        private readonly ISqlResources _sqlResources;
+
+        public GuidPropertyCodeGenerator(ISqlResources sqlResources)
+        {
+            _sqlResources = sqlResources;
+        }
+
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             PropertyHelper.GenerateCodeForType((PropertyInfo)conceptInfo, codeBuilder, "Guid?");
-            PropertyHelper.GenerateStorageMapping((PropertyInfo)conceptInfo, codeBuilder, "System.Data.SqlDbType.UniqueIdentifier");
+            PropertyHelper.GenerateStorageMapping((PropertyInfo)conceptInfo, codeBuilder, _sqlResources);
         }
     }
 }

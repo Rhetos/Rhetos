@@ -30,10 +30,12 @@ namespace Rhetos.Dom.DefaultConcepts
     public class DateTimePropertyCodeGenerator : IConceptCodeGenerator
     {
         private readonly CommonConceptsDatabaseSettings _setting;
+        private readonly ISqlResources _sqlResources;
 
-        public DateTimePropertyCodeGenerator(CommonConceptsDatabaseSettings setting)
+        public DateTimePropertyCodeGenerator(CommonConceptsDatabaseSettings setting, ISqlResources sqlResources)
         {
             _setting = setting;
+            _sqlResources = sqlResources;
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
@@ -41,9 +43,9 @@ namespace Rhetos.Dom.DefaultConcepts
             var info = (DateTimePropertyInfo)conceptInfo;
             PropertyHelper.GenerateCodeForType(info, codeBuilder, "DateTime?");
             if (!_setting.UseLegacyMsSqlDateTime)
-                PropertyHelper.GenerateStorageMapping(info, codeBuilder, "System.Data.SqlDbType.DateTime2", scale: _setting.DateTimePrecision);
+                PropertyHelper.GenerateStorageMapping(info, codeBuilder, _sqlResources, scale: _setting.DateTimePrecision);
             else
-                PropertyHelper.GenerateStorageMapping(info, codeBuilder, "System.Data.SqlDbType.DateTime");
+                PropertyHelper.GenerateStorageMapping(info, codeBuilder, _sqlResources, overrideDbParameterType: "System.Data.SqlDbType.DateTime");
         }
     }
 }

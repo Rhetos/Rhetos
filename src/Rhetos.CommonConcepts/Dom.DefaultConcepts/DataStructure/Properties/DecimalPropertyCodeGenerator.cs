@@ -29,12 +29,19 @@ namespace Rhetos.Dom.DefaultConcepts
     [ExportMetadata(MefProvider.Implements, typeof(DecimalPropertyInfo))]
     public class DecimalPropertyCodeGenerator : IConceptCodeGenerator
     {
+        private readonly ISqlResources _sqlResources;
+
+        public DecimalPropertyCodeGenerator(ISqlResources sqlResources)
+        {
+            _sqlResources = sqlResources;
+        }
+
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (PropertyInfo)conceptInfo;
 
             PropertyHelper.GenerateCodeForType(info, codeBuilder, "decimal?");
-            PropertyHelper.GenerateStorageMapping(info, codeBuilder, "System.Data.SqlDbType.Decimal", precision: 28, scale: 10);
+            PropertyHelper.GenerateStorageMapping(info, codeBuilder, _sqlResources, precision: 28, scale: 10);
         }
     }
 }
