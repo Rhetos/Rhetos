@@ -58,26 +58,26 @@ namespace Rhetos.Dom.DefaultConcepts
                 return a == null || !a.Equals(b, StringComparison.InvariantCultureIgnoreCase);
         }
 
-        [DbFunction(EntityFrameworkMapping.ConceptualModelNamespace, "StringIsLessThen")]
-        public static bool IsLessThen(this string a, string b)
+        [DbFunction(EntityFrameworkMapping.ConceptualModelNamespace, "StringIsLessThan")]
+        public static bool IsLessThan(this string a, string b)
         {
             return a != null && b != null && String.Compare(a, b, StringComparison.InvariantCultureIgnoreCase) < 0;
         }
 
-        [DbFunction(EntityFrameworkMapping.ConceptualModelNamespace, "StringIsLessThenOrEqual")]
-        public static bool IsLessThenOrEqual(this string a, string b)
+        [DbFunction(EntityFrameworkMapping.ConceptualModelNamespace, "StringIsLessThanOrEqual")]
+        public static bool IsLessThanOrEqual(this string a, string b)
         {
             return a != null && b != null && String.Compare(a, b, StringComparison.InvariantCultureIgnoreCase) <= 0;
         }
 
-        [DbFunction(EntityFrameworkMapping.ConceptualModelNamespace, "StringIsGreaterThen")]
-        public static bool IsGreaterThen(this string a, string b)
+        [DbFunction(EntityFrameworkMapping.ConceptualModelNamespace, "StringIsGreaterThan")]
+        public static bool IsGreaterThan(this string a, string b)
         {
             return a != null && b != null && String.Compare(a, b, StringComparison.InvariantCultureIgnoreCase) > 0;
         }
 
-        [DbFunction(EntityFrameworkMapping.ConceptualModelNamespace, "StringIsGreaterThenOrEqual")]
-        public static bool IsGreaterThenOrEqual(this string a, string b)
+        [DbFunction(EntityFrameworkMapping.ConceptualModelNamespace, "StringIsGreaterThanOrEqual")]
+        public static bool IsGreaterThanOrEqual(this string a, string b)
         {
             return a != null && b != null && String.Compare(a, b, StringComparison.InvariantCultureIgnoreCase) >= 0;
         }

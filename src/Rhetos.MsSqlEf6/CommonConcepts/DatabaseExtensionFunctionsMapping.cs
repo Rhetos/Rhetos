@@ -44,22 +44,22 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
     <Parameter Name=""b"" Type=""Edm.String"" />
     <DefiningExpression>a != b</DefiningExpression>
   </Function>
-  <Function Name=""StringIsLessThen"" ReturnType=""Edm.Boolean"">
+  <Function Name=""StringIsLessThan"" ReturnType=""Edm.Boolean"">
     <Parameter Name=""a"" Type=""Edm.String"" />
     <Parameter Name=""b"" Type=""Edm.String"" />
     <DefiningExpression>a &lt; b</DefiningExpression>
   </Function>
-  <Function Name=""StringIsLessThenOrEqual"" ReturnType=""Edm.Boolean"">
+  <Function Name=""StringIsLessThanOrEqual"" ReturnType=""Edm.Boolean"">
     <Parameter Name=""a"" Type=""Edm.String"" />
     <Parameter Name=""b"" Type=""Edm.String"" />
     <DefiningExpression>a &lt;= b</DefiningExpression>
   </Function>
-  <Function Name=""StringIsGreaterThen"" ReturnType=""Edm.Boolean"">
+  <Function Name=""StringIsGreaterThan"" ReturnType=""Edm.Boolean"">
     <Parameter Name=""a"" Type=""Edm.String"" />
     <Parameter Name=""b"" Type=""Edm.String"" />
     <DefiningExpression>a &gt; b</DefiningExpression>
   </Function>
-  <Function Name=""StringIsGreaterThenOrEqual"" ReturnType=""Edm.Boolean"">
+  <Function Name=""StringIsGreaterThanOrEqual"" ReturnType=""Edm.Boolean"">
     <Parameter Name=""a"" Type=""Edm.String"" />
     <Parameter Name=""b"" Type=""Edm.String"" />
     <DefiningExpression>a &gt;= b</DefiningExpression>

@@ -35,10 +35,10 @@ namespace Rhetos.Dom.DefaultConcepts
         public MethodInfo GuidIsGreaterThanOrEqualMethod => typeof(DatabaseExtensionFunctions).GetMethod("GuidIsGreaterThanOrEqual");
         public MethodInfo GuidIsLessThanMethod => typeof(DatabaseExtensionFunctions).GetMethod("GuidIsLessThan");
         public MethodInfo GuidIsLessThanOrEqualMethod => typeof(DatabaseExtensionFunctions).GetMethod("GuidIsLessThanOrEqual");
-        public MethodInfo IsGreaterThenMethod => typeof(DatabaseExtensionFunctions).GetMethod("IsGreaterThen");
-        public MethodInfo IsGreaterThenOrEqualMethod => typeof(DatabaseExtensionFunctions).GetMethod("IsGreaterThenOrEqual");
-        public MethodInfo IsLessThenMethod => typeof(DatabaseExtensionFunctions).GetMethod("IsLessThen");
-        public MethodInfo IsLessThenOrEqualMethod => typeof(DatabaseExtensionFunctions).GetMethod("IsLessThenOrEqual");
+        public MethodInfo IsGreaterThanMethod => typeof(DatabaseExtensionFunctions).GetMethod("IsGreaterThan");
+        public MethodInfo IsGreaterThanOrEqualMethod => typeof(DatabaseExtensionFunctions).GetMethod("IsGreaterThanOrEqual");
+        public MethodInfo IsLessThanMethod => typeof(DatabaseExtensionFunctions).GetMethod("IsLessThan");
+        public MethodInfo IsLessThanOrEqualMethod => typeof(DatabaseExtensionFunctions).GetMethod("IsLessThanOrEqual");
         public MethodInfo NotEqualsCaseInsensitiveMethod => typeof(DatabaseExtensionFunctions).GetMethod("NotEqualsCaseInsensitive");
         public MethodInfo StartsWithCaseInsensitiveMethod => typeof(DatabaseExtensionFunctions).GetMethod("StartsWithCaseInsensitive");
 

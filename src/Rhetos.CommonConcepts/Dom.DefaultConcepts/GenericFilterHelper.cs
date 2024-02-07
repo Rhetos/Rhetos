@@ -215,28 +215,28 @@ namespace Rhetos.Dom.DefaultConcepts
                         break;
                     case "greater":
                         if (propertyBasicType == typeof(string))
-                            expression = Expression.Call(_ormUtility.IsGreaterThenMethod, memberAccess, constant);
+                            expression = Expression.Call(_ormUtility.IsGreaterThanMethod, memberAccess, constant);
                         else if (propertyBasicType == typeof(Guid))
                             expression = Expression.Call(_ormUtility.GuidIsGreaterThanMethod, memberAccess, constant);
                         else expression = Expression.GreaterThan(memberAccess, constant);
                         break;
                     case "greaterequal":
                         if (propertyBasicType == typeof(string))
-                            expression = Expression.Call(_ormUtility.IsGreaterThenOrEqualMethod, memberAccess, constant);
+                            expression = Expression.Call(_ormUtility.IsGreaterThanOrEqualMethod, memberAccess, constant);
                         else if (propertyBasicType == typeof(Guid))
                             expression = Expression.Call(_ormUtility.GuidIsGreaterThanOrEqualMethod, memberAccess, constant);
                         else expression = Expression.GreaterThanOrEqual(memberAccess, constant);
                         break;
                     case "less":
                         if (propertyBasicType == typeof(string))
-                            expression = Expression.Call(_ormUtility.IsLessThenMethod, memberAccess, constant);
+                            expression = Expression.Call(_ormUtility.IsLessThanMethod, memberAccess, constant);
                         else if (propertyBasicType == typeof(Guid))
                             expression = Expression.Call(_ormUtility.GuidIsLessThanMethod, memberAccess, constant);
                         else expression = Expression.LessThan(memberAccess, constant);
                         break;
                     case "lessequal":
                         if (propertyBasicType == typeof(string))
-                            expression = Expression.Call(_ormUtility.IsLessThenOrEqualMethod, memberAccess, constant);
+                            expression = Expression.Call(_ormUtility.IsLessThanOrEqualMethod, memberAccess, constant);
                         else if (propertyBasicType == typeof(Guid))
                             expression = Expression.Call(_ormUtility.GuidIsLessThanOrEqualMethod, memberAccess, constant);
                         else expression = Expression.LessThanOrEqual(memberAccess, constant);

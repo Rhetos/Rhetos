@@ -35,10 +35,10 @@ namespace Rhetos.Dom.DefaultConcepts
         MethodInfo GuidIsGreaterThanOrEqualMethod { get; }
         MethodInfo GuidIsLessThanMethod { get; }
         MethodInfo GuidIsLessThanOrEqualMethod { get; }
-        MethodInfo IsGreaterThenMethod { get; }
-        MethodInfo IsGreaterThenOrEqualMethod { get; }
-        MethodInfo IsLessThenMethod { get; }
-        MethodInfo IsLessThenOrEqualMethod { get; }
+        MethodInfo IsGreaterThanMethod { get; }
+        MethodInfo IsGreaterThanOrEqualMethod { get; }
+        MethodInfo IsLessThanMethod { get; }
+        MethodInfo IsLessThanOrEqualMethod { get; }
         MethodInfo NotEqualsCaseInsensitiveMethod { get; }
         MethodInfo StartsWithCaseInsensitiveMethod { get; }
 

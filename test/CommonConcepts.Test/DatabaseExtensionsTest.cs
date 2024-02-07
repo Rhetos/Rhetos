@@ -215,11 +215,11 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void IsLessThen()
+        public void IsLessThan()
         {
             var testData = new[] { "a", "A", "b", "B", null };
 
-            TestStrings(testData, parameter => item => item.Name.IsLessThen(parameter),
+            TestStrings(testData, parameter => item => item.Name.IsLessThan(parameter),
                 ("a", ""),
                 ("A", ""),
                 ("b", "a, A"),
@@ -228,11 +228,11 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void IsLessThenOrEqual()
+        public void IsLessThanOrEqual()
         {
             var testData = new[] { "a", "A", "b", "B", null };
 
-            TestStrings(testData, parameter => item => item.Name.IsLessThenOrEqual(parameter),
+            TestStrings(testData, parameter => item => item.Name.IsLessThanOrEqual(parameter),
                 ("a", "a, A"),
                 ("A", "a, A"),
                 ("b", "a, A, b, B"),
@@ -241,11 +241,11 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void IsGreaterThen()
+        public void IsGreaterThan()
         {
             var testData = new[] { "a", "A", "b", "B", null };
 
-            TestStrings(testData, parameter => item => item.Name.IsGreaterThen(parameter),
+            TestStrings(testData, parameter => item => item.Name.IsGreaterThan(parameter),
                 ("a", "b, B"),
                 ("A", "b, B"),
                 ("b", ""),
@@ -254,11 +254,11 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void IsGreaterThenOrEqual()
+        public void IsGreaterThanOrEqual()
         {
             var testData = new[] { "a", "A", "b", "B", null };
 
-            TestStrings(testData, parameter => item => item.Name.IsGreaterThenOrEqual(parameter),
+            TestStrings(testData, parameter => item => item.Name.IsGreaterThanOrEqual(parameter),
                 ("a", "a, A, b, B"),
                 ("A", "a, A, b, B"),
                 ("b", "b, B"),
