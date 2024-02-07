@@ -83,18 +83,13 @@ namespace Common
         {{
             _rhetosAppOptions = rhetosAppOptions;
             _databaseOptions = databaseOptions;
-            Initialize();
-            Database.UseTransaction(persistenceTransaction.Transaction);
-        }}
 
-        private void Initialize()
-        {{
             System.Data.Entity.Database.SetInitializer<EntityFrameworkContext>(null); // Prevent EF from creating database objects.
-
             this.Configuration.UseDatabaseNullSemantics = _rhetosAppOptions.EntityFrameworkUseDatabaseNullSemantics;
-            {EntityFrameworkContextInitializeTag}
 
+            {EntityFrameworkContextInitializeTag}
             this.Database.CommandTimeout = _databaseOptions.SqlCommandTimeout;
+            this.Database.UseTransaction(persistenceTransaction.Transaction);
         }}
 
         /// <summary>

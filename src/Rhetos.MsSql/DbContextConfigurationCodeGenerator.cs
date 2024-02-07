@@ -39,10 +39,8 @@ namespace Rhetos.MsSql
                 sqlServerOptions =>
                 {{
                     sqlServerOptions.UseRelationalNulls(_rhetosAppOptions.EntityFrameworkUseDatabaseNullSemantics);
-                    sqlServerOptions.CommandTimeout(_databaseOptions.SqlCommandTimeout);
                     {EntityFrameworkContextSqlServerConfigurationTag}
                 }});
-            this.Database.UseTransaction(_persistenceTransaction.Transaction);
             ",
                 DbContextCodeGenerator.EntityFrameworkOnConfiguringTag);
         }

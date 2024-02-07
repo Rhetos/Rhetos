@@ -76,30 +76,17 @@ namespace CommonConcepts.Test.Framework
         /// <summary>
         /// Executes the MsSqlExecuter commands and commits the transaction by default.
         /// </summary>
-        private void InTransaction(Action<MsSqlExecuter> sqlExecuterAction, IUserInfo testUser = null, bool commit = true)
+        private void InTransaction(Action<ISqlExecuter> sqlExecuterAction, IUserInfo testUser = null, bool commit = true)
         {
-            testUser ??= new NullUserInfo();
+            using var scope = TestScope.Create(builder =>
+                {
+                    builder.RegisterInstance(testUser ?? new NullUserInfo()).As<IUserInfo>();
+                });
 
-            DatabaseSettings databaseSettings;
-            string connectionString;
-            using (var scope = TestScope.Create())
-            {
-                databaseSettings = scope.Resolve<DatabaseSettings>();
-                connectionString = scope.Resolve<ConnectionString>().ToString();
-            }
-
-            using (var persistenceTransaction = new PersistenceTransaction(
-                new ConsoleLogProvider(),
-                new ConnectionString(connectionString),
-                testUser,
-                new PersistenceTransactionOptions(),
-                new MsSqlUtility(new NoLocalizer(), databaseSettings)))
-            {
-                var sqlExecuter = new MsSqlExecuter(new ConsoleLogProvider(), persistenceTransaction, new DatabaseOptions(), new MsSqlUtility(new NoLocalizer(), databaseSettings));
-                sqlExecuterAction.Invoke(sqlExecuter);
-                if (commit)
-                    persistenceTransaction.CommitAndClose();
-            }
+            var sqlExecuter = scope.Resolve<ISqlExecuter>();
+            sqlExecuterAction.Invoke(sqlExecuter);
+            if (commit)
+                scope.CommitAndClose();
         }
 
         /// <summary>

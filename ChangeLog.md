@@ -68,6 +68,10 @@ Migrating a Rhetos app from EF6 to EF Core:
 
 * (Disclaimer: It is recommended to keep EF6 in old Rhetos apps for backward compatiblity. Use EF Core in new apps.)
 * In the existing projects that reference the NuGet package `Rhetos.CommonConcepts`, add the NuGet package `Rhetos.MsSql` instead of `Rhetos.MsSqlEf6`.
+* Removed Guid comparison extension methods GuidIsGreaterThan, GuidIsGreaterThanOrEqual, GuidIsLessThan, GuidIsLessThanOrEqual. They are supported by standard operators `>` and `<`.
+* Removed the 'FullTextSearch' extension method for Entity Framework LINQ queries. Use `EF.Functions.Contains` instead.
+* System.Data.SqlClient is replaced with Microsoft.Data.SqlClient, which affects database connection: `Encrypt` defaults to `true` and the driver will always validate the server certificate based on `TrustServerCertificate`.
+  * In a local development environment, if you use encryption with a self-signed certificate on the server, you can specify `TrustServerCertificate=true` in the connection string. If you need to turn off encryption, you can specify `Encrypt=false` instead.
 
 ### Internal improvements
 
