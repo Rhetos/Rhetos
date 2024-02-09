@@ -1,5 +1,5 @@
 <Project>
-    <UsingTask AssemblyFile="RhetosVSIntegration.dll" TaskName="RhetosVSIntegration.ResolveRhetosProjectAssets" />
+    <UsingTask AssemblyFile="$(RhetosVSIntegrationPath)" TaskName="RhetosVSIntegration.ResolveRhetosProjectAssets" />
 
     <Target Name="ResolveRhetosBuildItems" BeforeTargets="ResolveRhetosProjectAssets;CollectUpToDateCheckInputDesignTime">
         <Message Text="ResolveRhetosBuildItems" />

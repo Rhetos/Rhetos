@@ -7,6 +7,7 @@
         <RhetosBuildCompleteFile>$(BaseIntermediateOutputPath)Rhetos\Rhetos.BuildComplete</RhetosBuildCompleteFile>
         <RhetosGeneratedAssetsFolder Condition=" '$(RhetosGeneratedAssetsFolder)'=='' ">$(TargetDir)RhetosAssets\</RhetosGeneratedAssetsFolder>
         <RhetosBuildSettingsFile>rhetos-build.settings.json</RhetosBuildSettingsFile>
+        <RhetosVSIntegrationPath>RhetosVSIntegration.dll</RhetosVSIntegrationPath>
     </PropertyGroup>
     <ItemGroup>
         <!-- RhetosOutput should not include files that are sometimes unchanged on build (because of internal optimizations).
