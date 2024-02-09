@@ -32,12 +32,12 @@ namespace Rhetos.Dom.DefaultConcepts
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var info = (LinkedItemsInfo)conceptInfo;
-            string propertyType = string.Format("IList<Common.Queryable.{0}_{1}>", info.ReferenceProperty.DataStructure.Module.Name, info.ReferenceProperty.DataStructure.Name);
 
             if (DslUtility.IsQueryable(info.ReferenceProperty.DataStructure) && DslUtility.IsQueryable(info.DataStructure))
-                DataStructureQueryableCodeGenerator.AddNavigationProperty(codeBuilder, info.DataStructure,
-                    csPropertyName: info.Name,
-                    propertyType: propertyType);
+            {
+                string propertyType = $"IList<Common.Queryable.{info.ReferenceProperty.DataStructure.Module.Name}_{info.ReferenceProperty.DataStructure.Name}>";
+                DataStructureQueryableCodeGenerator.AddNavigationProperty(codeBuilder, info.DataStructure, info.Name, propertyType);
+            }
         }
     }
 }

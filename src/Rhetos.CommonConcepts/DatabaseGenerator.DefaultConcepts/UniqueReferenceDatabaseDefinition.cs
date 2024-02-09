@@ -52,6 +52,9 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
                 info.Base.Name));
         }
 
+        /// <summary>
+        /// Returns whether the FOREIGN KEY constraint can be created in database.
+        /// </summary>
         public bool IsSupported(UniqueReferenceInfo info)
         {
             return info.Extension is EntityInfo

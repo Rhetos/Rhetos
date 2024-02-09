@@ -32,8 +32,8 @@ namespace Rhetos.EfCore
     {
         public static readonly string EntityFrameworkContextMembersTag = "/*EntityFrameworkContextMembers*/";
         public static readonly string EntityFrameworkContextInitializeTag = "/*EntityFrameworkContextInitialize*/";
-        public static readonly string EntityFrameworkOnConfiguringTag = "/*EntityFrameworkOnConfiguring*/";
         public static readonly string EntityFrameworkOnModelCreatingTag = "/*EntityFrameworkOnModelCreating*/";
+        public static readonly string EntityFrameworkContextOptionsTag = "/*EntityFrameworkContextOptions*/";
 
         private readonly CommonConceptsOptions _commonConceptsOptions;
 
@@ -47,11 +47,16 @@ namespace Rhetos.EfCore
             codeBuilder.InsertCodeToFile(GetOrmSnippet(), "EntityFrameworkContext");
 
             codeBuilder.InsertCode(
-            @"builder.RegisterType<EntityFrameworkContext>()
+            $@"builder.RegisterType<EntityFrameworkContext>()
                 .As<EntityFrameworkContext>()
                 .As<Microsoft.EntityFrameworkCore.DbContext>()
                 .InstancePerLifetimeScope();
-            builder.RegisterType<Microsoft.EntityFrameworkCore.DbContextOptions<EntityFrameworkContext>>(); // The options can be overridden by a custom registration.
+            builder.Register<Microsoft.EntityFrameworkCore.DbContextOptions<EntityFrameworkContext>>(context =>
+            {{
+                var optionsBuilder = new Microsoft.EntityFrameworkCore.DbContextOptionsBuilder<EntityFrameworkContext>();
+                {EntityFrameworkContextOptionsTag}
+                return optionsBuilder.Options;
+            }});
             ",
                 ModuleCodeGenerator.CommonAutofacConfigurationMembersTag);
 
@@ -77,100 +82,34 @@ namespace Common
         private readonly Rhetos.Persistence.IPersistenceTransaction _persistenceTransaction;
         private readonly Rhetos.Utilities.RhetosAppOptions _rhetosAppOptions;
         private readonly Rhetos.Utilities.DatabaseOptions _databaseOptions;
+        private readonly Rhetos.Logging.ILogger _logger;
 
         public EntityFrameworkContext(
             DbContextOptions<EntityFrameworkContext> options,
             Rhetos.Persistence.IPersistenceTransaction persistenceTransaction,
             Rhetos.Utilities.RhetosAppOptions rhetosAppOptions,
-            Rhetos.Utilities.DatabaseOptions databaseOptions)
+            Rhetos.Utilities.DatabaseOptions databaseOptions,
+            Rhetos.Logging.ILogProvider logProvider)
             : base(options)
         {{
             _persistenceTransaction = persistenceTransaction;
             _rhetosAppOptions = rhetosAppOptions;
             _databaseOptions = databaseOptions;
+            _logger = logProvider.GetLogger(GetType().Name);
 
             this.Database.UseTransaction(_persistenceTransaction.Transaction);
             this.Database.SetCommandTimeout(_databaseOptions.SqlCommandTimeout);
-            {EntityFrameworkContextInitializeTag}
-        }}
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {{
-            {EntityFrameworkOnConfiguringTag}
+            {EntityFrameworkContextInitializeTag}
         }}
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {{
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.HasDbFunction(typeof(DatabaseExtensionFunctions).GetMethod(nameof(DatabaseExtensionFunctions.EqualsCaseInsensitive), new[] {{ typeof(string), typeof(string) }}))
-                .HasTranslation(args => new SqlBinaryExpression(ExpressionType.Equal, args[0], args[1], args[0].Type, args[0].TypeMapping));
-
-            modelBuilder.HasDbFunction(typeof(DatabaseExtensionFunctions).GetMethod(nameof(DatabaseExtensionFunctions.NotEqualsCaseInsensitive), new[] {{ typeof(string), typeof(string) }}))
-                .HasTranslation(args => new SqlBinaryExpression(ExpressionType.NotEqual, args[0], args[1], args[0].Type, args[0].TypeMapping));
-
-            modelBuilder.HasDbFunction(typeof(DatabaseExtensionFunctions).GetMethod(nameof(DatabaseExtensionFunctions.IsLessThan), new[] {{ typeof(string), typeof(string) }}))
-                .HasTranslation(args => new SqlBinaryExpression(ExpressionType.LessThan, args[0], args[1], args[0].Type, args[0].TypeMapping));
-
-            modelBuilder.HasDbFunction(typeof(DatabaseExtensionFunctions).GetMethod(nameof(DatabaseExtensionFunctions.IsLessThanOrEqual), new[] {{ typeof(string), typeof(string) }}))
-                .HasTranslation(args => new SqlBinaryExpression(ExpressionType.LessThanOrEqual, args[0], args[1], args[0].Type, args[0].TypeMapping));
-
-            modelBuilder.HasDbFunction(typeof(DatabaseExtensionFunctions).GetMethod(nameof(DatabaseExtensionFunctions.IsGreaterThan), new[] {{ typeof(string), typeof(string) }}))
-                .HasTranslation(args => new SqlBinaryExpression(ExpressionType.GreaterThan, args[0], args[1], args[0].Type, args[0].TypeMapping));
-
-            modelBuilder.HasDbFunction(typeof(DatabaseExtensionFunctions).GetMethod(nameof(DatabaseExtensionFunctions.IsGreaterThanOrEqual), new[] {{ typeof(string), typeof(string) }}))
-                .HasTranslation(args => new SqlBinaryExpression(ExpressionType.GreaterThanOrEqual, args[0], args[1], args[0].Type, args[0].TypeMapping));
-
-            modelBuilder.HasDbFunction(typeof(DatabaseExtensionFunctions).GetMethod(nameof(DatabaseExtensionFunctions.StartsWith), new[] {{ typeof(int), typeof(string) }}))
-                .HasTranslation(args =>
-                {{
-                    var columnAsStringExpression = new SqlUnaryExpression(ExpressionType.Convert, args[0], typeof(string), new StringTypeMapping(""nvarchar(max)"", DbType.String));
-                    var valueExpression = args[1];
-                    var patternExpression = new SqlBinaryExpression(ExpressionType.Add,
-                        valueExpression, new SqlFragmentExpression(""N'%'""),
-                        typeof(string), new StringTypeMapping(""nvarchar(max)"", DbType.String));
-                    return new LikeExpression(columnAsStringExpression, patternExpression, null, null);
-                }});
-
-            modelBuilder.HasDbFunction(typeof(DatabaseExtensionFunctions).GetMethod(nameof(DatabaseExtensionFunctions.StartsWithCaseInsensitive), new[] {{ typeof(string), typeof(string) }}))
-                .HasTranslation(args =>
-                {{
-                    var patternExpression = new SqlBinaryExpression(ExpressionType.Add,
-                        args[1], new SqlFragmentExpression(""N'%'""),
-                        typeof(string), new StringTypeMapping(""nvarchar(max)"", DbType.String));
-                    return new LikeExpression(args[0], patternExpression, null, null);
-                }});
-
-            modelBuilder.HasDbFunction(typeof(DatabaseExtensionFunctions).GetMethod(nameof(DatabaseExtensionFunctions.EndsWithCaseInsensitive), new[] {{ typeof(string), typeof(string) }}))
-                .HasTranslation(args =>
-                {{
-                    var patternExpression = new SqlBinaryExpression(ExpressionType.Add,
-                        new SqlFragmentExpression(""N'%'""), args[1],
-                        typeof(string), new StringTypeMapping(""nvarchar(max)"", DbType.String));
-                    return new LikeExpression(args[0], patternExpression, null, null);
-                }});
-
-            modelBuilder.HasDbFunction(typeof(DatabaseExtensionFunctions).GetMethod(nameof(DatabaseExtensionFunctions.ContainsCaseInsensitive), new[] {{ typeof(string), typeof(string) }}))
-                .HasTranslation(args =>
-                {{
-                    var patternExpression = new SqlBinaryExpression(ExpressionType.Add,
-                        new SqlFragmentExpression(""N'%'""), args[1],
-                        typeof(string), new StringTypeMapping(""nvarchar(max)"", DbType.String));
-
-                    patternExpression = new SqlBinaryExpression(ExpressionType.Add,
-                        patternExpression, new SqlFragmentExpression(""N'%'""),
-                        typeof(string), new StringTypeMapping(""nvarchar(max)"", DbType.String));
-
-                    return new LikeExpression(args[0], patternExpression, null, null);
-                }});
-
-            modelBuilder.HasDbFunction(typeof(DatabaseExtensionFunctions).GetMethod(nameof(DatabaseExtensionFunctions.Like), new[] {{ typeof(string), typeof(string) }}))
-                .HasTranslation(args => new LikeExpression(args[0], args[1], null, null));
-
-            modelBuilder.HasDbFunction(typeof(DatabaseExtensionFunctions).GetMethod(nameof(DatabaseExtensionFunctions.CastToString), new[] {{ typeof(int) }}))
-                .HasTranslation(args => new SqlUnaryExpression(ExpressionType.Convert, args[0], typeof(string), new StringTypeMapping(""nvarchar(max)"", DbType.String)));
-
             {EntityFrameworkOnModelCreatingTag}
+
+            _logger.Write(Rhetos.Logging.EventType.Trace, () => modelBuilder.Model.ToDebugString());
         }}
 
         /// <summary>

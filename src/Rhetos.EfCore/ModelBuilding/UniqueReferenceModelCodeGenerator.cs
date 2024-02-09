@@ -19,29 +19,28 @@
 
 using Rhetos.Compiler;
 using Rhetos.Dsl;
-using Rhetos.EfCore;
+using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
 using System.ComponentModel.Composition;
 
-namespace Rhetos.MsSql
+namespace Rhetos.EfCore.ModelBuilding
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(InitializationConcept))]
-    [ExportMetadata(MefProvider.DependsOn, typeof(DbContextCodeGenerator))]
-    public class DbContextConfigurationCodeGenerator : IConceptCodeGenerator
+    [ExportMetadata(MefProvider.Implements, typeof(UniqueReferenceInfo))]
+    public class UniqueReferenceModelCodeGenerator : IConceptCodeGenerator
     {
-        public static readonly string EntityFrameworkContextSqlServerOptionsTag = "/*EntityFrameworkContextSqlServerOptions*/";
-
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            codeBuilder.InsertCode(
-            $@"Microsoft.EntityFrameworkCore.SqlServerDbContextOptionsExtensions.UseSqlServer(optionsBuilder, context.Resolve<Rhetos.Persistence.IPersistenceTransaction>().Connection, sqlServerOptions =>
-                {{
-                    sqlServerOptions.UseRelationalNulls(context.Resolve<RhetosAppOptions>().EntityFrameworkUseDatabaseNullSemantics);
-                    {EntityFrameworkContextSqlServerOptionsTag}
-                }});
-                ",
-                DbContextCodeGenerator.EntityFrameworkContextOptionsTag);
+            var info = (UniqueReferenceInfo)conceptInfo;
+
+            if (info.Base is IOrmDataStructure && info.Extension is IOrmDataStructure)
+            {
+                string code =
+                $@"
+                entity.HasOne(e => e.{info.ExtensionPropertyName()}).WithOne(e => e.Base).HasForeignKey<Common.Queryable.{info.Base.Module.Name}_{info.Base.Name}>(e => e.ID).IsRequired();";
+
+                codeBuilder.InsertCode(code, DataStructureModelCodeGenerator.ModelBuilderTag, info.Base);
+            }
         }
     }
 }

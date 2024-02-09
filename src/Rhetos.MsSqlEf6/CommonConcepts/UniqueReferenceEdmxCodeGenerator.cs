@@ -109,15 +109,7 @@ namespace Rhetos.Dom.DefaultConcepts
         private static string GetNavigationPropertyNodeForConceptualModelForExtension(UniqueReferenceInfo uniqueReferenceInfo)
         {
             return $@"
-    <NavigationProperty Name=""{GetNavigationPropertyNameForConceptualModelForExtension(uniqueReferenceInfo)}"" Relationship=""Self.{DataStructureEdmxCodeGenerator.GetName(uniqueReferenceInfo.Extension)}_Base"" FromRole=""{DataStructureEdmxCodeGenerator.GetName(uniqueReferenceInfo.Extension)}_Base_Target"" ToRole=""{DataStructureEdmxCodeGenerator.GetName(uniqueReferenceInfo.Extension)}_Base_Source"" />";
-        }
-
-        private static string GetNavigationPropertyNameForConceptualModelForExtension(UniqueReferenceInfo uniqueReferenceInfo)
-        {
-            if (uniqueReferenceInfo.Base.Module.Name.Equals(uniqueReferenceInfo.Extension.Module.Name, System.StringComparison.Ordinal))
-                return $@"Extension_{uniqueReferenceInfo.Extension.Name}";
-            else
-                return $@"Extension_{uniqueReferenceInfo.Extension.Module.Name}_{uniqueReferenceInfo.Extension.Name}";
+    <NavigationProperty Name=""{uniqueReferenceInfo.ExtensionPropertyName()}"" Relationship=""Self.{DataStructureEdmxCodeGenerator.GetName(uniqueReferenceInfo.Extension)}_Base"" FromRole=""{DataStructureEdmxCodeGenerator.GetName(uniqueReferenceInfo.Extension)}_Base_Target"" ToRole=""{DataStructureEdmxCodeGenerator.GetName(uniqueReferenceInfo.Extension)}_Base_Source"" />";
         }
 
         private static string GetAssociationSetName(UniqueReferenceInfo uniqueReferenceInfo)
