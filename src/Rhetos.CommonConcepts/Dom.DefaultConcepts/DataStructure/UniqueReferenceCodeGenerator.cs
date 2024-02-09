@@ -53,6 +53,10 @@ namespace Rhetos.Dom.DefaultConcepts
                 DataStructureQueryableCodeGenerator.AddNavigationProperty(codeBuilder, info.Extension,
                     csPropertyName: "Base",
                     propertyType: "Common.Queryable." + info.Base.Module.Name + "_" + info.Base.Name);
+            }
+
+            if (info.Extension is IOrmDataStructure && DslUtility.IsQueryable(info.Base))
+            {
                 DataStructureQueryableCodeGenerator.AddNavigationProperty(codeBuilder, info.Base,
                     csPropertyName: info.ExtensionPropertyName(),
                     propertyType: "Common.Queryable." + info.Extension.Module.Name + "_" + info.Extension.Name);
