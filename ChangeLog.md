@@ -63,6 +63,7 @@ Changes in Rhetos libraries API:
 Changes in behavior:
 
 * Configuration setting key "Rhetos:DatabaseOracle:NationalLanguage" has changed to "Rhetos:Build:DatabaseNationalLanguage".
+* Bugfix: **Computed** concept is no longer reported as queryable in DslUtility.IsQueryable, since it does not generate a queryable repository.
 
 Migrating a Rhetos app from EF6 to EF Core:
 
