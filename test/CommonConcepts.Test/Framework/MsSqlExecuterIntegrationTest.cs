@@ -27,10 +27,10 @@ using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace CommonConcepts.Test.Framework
 {
@@ -166,16 +166,18 @@ raiserror('fff', 18, 118)"
         {
             string nonexistentDatabase = "db" + Guid.NewGuid().ToString().Replace("-", "");
 
-            string initialConnectionString;
+            DbConnectionStringBuilder connectionStringBuilder;
             using (var scope = TestScope.Create())
             {
-                initialConnectionString = scope.Resolve<ConnectionString>().ToString();
+                string initialConnectionString = scope.Resolve<ConnectionString>().ToString();
+                var dbProvider = scope.Resolve<DbProviderFactory>();
+                connectionStringBuilder = dbProvider.CreateConnectionStringBuilder();
+                connectionStringBuilder.ConnectionString = initialConnectionString;
+                connectionStringBuilder["Initial Catalog"] = nonexistentDatabase;
+                connectionStringBuilder["Integrated Security"] = true;
+                connectionStringBuilder["Connect Timeout"] = 1;
             }
 
-            var connectionStringBuilder = new SqlConnectionStringBuilder(initialConnectionString);
-            connectionStringBuilder.InitialCatalog = nonexistentDatabase;
-            connectionStringBuilder.IntegratedSecurity = true;
-            connectionStringBuilder.ConnectTimeout = 1;
             string nonexistentDatabaseConnectionString = connectionStringBuilder.ConnectionString;
             Console.WriteLine(nonexistentDatabaseConnectionString);
 
@@ -183,7 +185,7 @@ raiserror('fff', 18, 118)"
             {
                 TestUtility.ShouldFail(
                     () => scope.Resolve<ISqlExecuter>().ExecuteSql("print 123"),
-                    connectionStringBuilder.DataSource, connectionStringBuilder.InitialCatalog, Environment.UserName);
+                    connectionStringBuilder["Data Source"].ToString(), connectionStringBuilder["Initial Catalog"].ToString(), Environment.UserName);
             }
         }
 

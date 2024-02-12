@@ -626,25 +626,23 @@ namespace CommonConcepts.Test
                 (true, "notequals", null, "WHERE [Extent1].[ParentID] IS NOT NULL"),
             };
 
-            using (var scope = TestScope.Create())
+            var actualReport = new StringBuilder();
+            var expectedReport = new StringBuilder();
+            foreach (var test in tests)
             {
+                using var scope = TestScope.Create(builder => builder.ConfigureOptions<RhetosAppOptions>(o => o.EntityFrameworkUseDatabaseNullSemantics = test.UseDatabaseNullSemantics));
+
                 var context = scope.Resolve<Common.ExecutionContext>();
                 var repository = scope.Resolve<Common.DomRepository>();
 
-                var actualReport = new StringBuilder();
-                var expectedReport = new StringBuilder();
-                foreach (var test in tests)
-                {
-                    context.EntityFrameworkContext.Configuration.UseDatabaseNullSemantics = test.UseDatabaseNullSemantics;
-                    string sqlQuery = repository.TestGenericFilter.Child.Query(new FilterCriteria("ParentID", test.Operation, test.Value)).ToString();
-                    string inputDataReport = $"{test.UseDatabaseNullSemantics} {test.Operation} {(test.Value?.GetType().ToString() ?? "null")}";
-                    actualReport.AppendLine($"{inputDataReport} => {sqlQuery.Substring(sqlQuery.IndexOf("WHERE"))}");
-                    expectedReport.AppendLine($"{inputDataReport} => {test.expectedSql}");
-                }
-
-                Console.WriteLine(actualReport);
-                TestUtility.AssertAreEqualByLine(expectedReport.ToString(), actualReport.ToString());
+                string sqlQuery = repository.TestGenericFilter.Child.Query(new FilterCriteria("ParentID", test.Operation, test.Value)).ToString();
+                string inputDataReport = $"{test.UseDatabaseNullSemantics} {test.Operation} {(test.Value?.GetType().ToString() ?? "null")}";
+                actualReport.AppendLine($"{inputDataReport} => {sqlQuery.Substring(sqlQuery.IndexOf("WHERE"))}");
+                expectedReport.AppendLine($"{inputDataReport} => {test.expectedSql}");
             }
+
+            Console.WriteLine(actualReport);
+            TestUtility.AssertAreEqualByLine(expectedReport.ToString(), actualReport.ToString());
         }
 
         [TestMethod]

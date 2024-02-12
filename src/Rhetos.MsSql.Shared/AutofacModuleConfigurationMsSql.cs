@@ -27,7 +27,7 @@ using System.ComponentModel.Composition;
 namespace Rhetos.MsSql
 {
     [Export(typeof(Module))]
-    public class AutofacModuleConfigurationMsSql : Module
+    public class AutofacModuleConfigurationMsSqlShared : Module
     {
         protected override void Load(ContainerBuilder builder)
         {

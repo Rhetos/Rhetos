@@ -17,6 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#if RHETOS_EF6
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -139,7 +141,7 @@ namespace CommonConcepts.Test
                 Assert.AreEqual(id3, repository.Test12.Entity3.Query().Where(containsExpression).Single().ID);
             }
         }
-
+        
         [TestMethod]
         public void OptimizeContainsNullableIdsTest()
         {
@@ -402,3 +404,5 @@ namespace CommonConcepts.Test
         }
     }
 }
+
+#endif

@@ -72,15 +72,15 @@ namespace TestReading.Repositories
             return query.Where(item => item.Name.StartsWith("B"));
         }
 
-        public partial IEnumerable<Simple> Load(string[] names)
+        public partial IEnumerable<Simple> Load(string[] parameter)
         {
-            return names.Select(name => new Simple { Name = name }).ToArray();
+            return parameter.Select(name => new Simple { Name = name }).ToArray();
         }
 
         public partial IQueryable<TestReading_Simple> Filter(
-            IQueryable<TestReading_Simple> query, Prefix prefix)
+            IQueryable<TestReading_Simple> query, Prefix parameter)
         {
-            return query.Where(item => item.Name.StartsWith(prefix.Pattern));
+            return query.Where(item => item.Name.StartsWith(parameter.Pattern));
         }
     }
 }

@@ -9,6 +9,10 @@
       "executablePath": "dotnet",
       "commandLineArgs": "exec --runtimeconfig \"..\\..\\..\\..\\..\\test\\CommonConcepts.TestApp\\bin\\Debug\\net8.0\\CommonConcepts.TestApp.runtimeconfig.json\" --depsfile \"..\\..\\..\\..\\..\\test\\CommonConcepts.TestApp\\bin\\Debug\\net8.0\\CommonConcepts.TestApp.deps.json\" \"rhetos.dll\" --msbuild-format dbupdate ..\\..\\..\\..\\..\\test\\CommonConcepts.TestApp\\bin\\Debug\\net8.0\\CommonConcepts.TestApp.dll --execute-command-in-current-process"
     },
+    "build TestAppDirectMsSqlEfCore": {
+      "commandName": "Project",
+      "commandLineArgs": "build \"..\\..\\..\\..\\..\\test\\TestAppDirectMsSqlEfCore\""
+    },
     "dbupdate TestAppDirectMsSqlEfCore": {
       "commandName": "Executable",
       "executablePath": "dotnet",

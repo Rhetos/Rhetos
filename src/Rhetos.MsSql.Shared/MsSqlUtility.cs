@@ -41,7 +41,7 @@ namespace Rhetos.Utilities
                     $" Assembly '{GetType().Assembly.GetName()}' expects database language '{DatabaseLanguage}'.");
         }
 
-        public string ProviderName => "System.Data.SqlClient";
+        public string ProviderName => typeof(SqlConnection).Namespace;
 
         public string TrySetApplicationName(string connectionString)
         {

@@ -1,7 +1,10 @@
 <Project>
-    <ItemGroup>
-        <RhetosLinqPadReference Include="EntityFramework.dll" />
-        <RhetosLinqPadReference Include="EntityFramework.SqlServer.dll" />
-        <RhetosLinqPadReference Include="runtimes\win\lib\netcoreapp2.1\System.Data.SqlClient.dll" />
-    </ItemGroup>
+  <ItemGroup>
+    <RhetosLinqPadReference Include="EntityFramework.dll" />
+    <RhetosLinqPadReference Include="EntityFramework.SqlServer.dll" />
+    <RhetosLinqPadReference Include="runtimes\win\lib\netcoreapp2.1\System.Data.SqlClient.dll" />
+  </ItemGroup>
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);RHETOS_EF6</DefineConstants>
+  </PropertyGroup>
 </Project>

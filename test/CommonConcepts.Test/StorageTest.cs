@@ -21,10 +21,9 @@ using Autofac;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.TestCommon;
-using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
+using System.Data.Common;
 using System.Linq;
 using System.Text;
 
@@ -370,7 +369,7 @@ namespace CommonConcepts.Test
                         ID = Guid.NewGuid(),
                         ShortStringProperty = test
                     };
-                    TestUtility.ShouldFail<SqlException>(
+                    TestUtility.ShouldFail<DbException>(
                         () => context.PersistenceStorage.Insert(entity1),
                         "String or binary data would be truncated"); // SQL Server 2019 includes table and column name, but older version do not.
                 }
@@ -389,7 +388,7 @@ namespace CommonConcepts.Test
                     ID = Guid.NewGuid(),
                     ShortStringProperty = "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt."
                 };
-                TestUtility.ShouldFail<SqlException>(() => context.PersistenceStorage.Insert(entity1),
+                TestUtility.ShouldFail<DbException>(() => context.PersistenceStorage.Insert(entity1),
                     "data would be truncated");
             }
         }

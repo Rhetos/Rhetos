@@ -26,6 +26,7 @@ using Rhetos.Persistence;
 using Rhetos.SqlResources;
 using Rhetos.Utilities;
 using System.ComponentModel.Composition;
+using System.Data.Common;
 
 namespace Rhetos.MsSqlEf6
 {
@@ -34,6 +35,9 @@ namespace Rhetos.MsSqlEf6
     {
         protected override void Load(ContainerBuilder builder)
         {
+            // SqlClientFactory.Instance is null at this point (Autofac Module Load), is expected to get initialized later.
+            builder.Register<DbProviderFactory>(context => SqlClientFactory.Instance).SingleInstance();
+
             ExecutionStage stage = builder.GetRhetosExecutionStage();
 
             if (stage.IsBuildTime)

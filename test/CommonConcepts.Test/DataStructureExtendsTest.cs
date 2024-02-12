@@ -17,16 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos.TestCommon;
-using Rhetos.Configuration.Autofac;
-using Rhetos.Utilities;
 using Rhetos.Dom.DefaultConcepts;
-using CommonConcepts.Test.Helpers;
+using Rhetos.TestCommon;
+using Rhetos.Utilities;
+using System;
+using System.Linq;
 
 namespace CommonConcepts.Test
 {
@@ -34,7 +30,7 @@ namespace CommonConcepts.Test
     public class DataStructureExtendsTest
     {
         [TestMethod]
-        public void QueryableExtenstionHasBase()
+        public void QueryableExtensionHasBase()
         {
             using (var scope = TestScope.Create())
             {
@@ -179,7 +175,7 @@ namespace CommonConcepts.Test
                     item.Name += "X";
 
                 repository.TestExtension.SimpleBase.Update(all);
-                repository.TestExtension.SimpleBase.Insert(new[] { new TestExtension.SimpleBase { Name = "b3" }});
+                repository.TestExtension.SimpleBase.Insert([new TestExtension.SimpleBase { Name = "b3" }]);
 
                 Assert.AreEqual("b1X, b2missingX, b3", TestUtility.DumpSorted(repository.TestExtension.SimpleBase.Load(), item => item.Name),
                     "InvalidExtension should not fail because there is no need to load those records.");
@@ -188,9 +184,17 @@ namespace CommonConcepts.Test
 
                 var s = repository.TestExtension.SimpleBase.Query().First();
 
-                var ex = TestUtility.ShouldFail<System.Data.Entity.Core.EntityCommandExecutionException>(
-                    () => Console.WriteLine(s.Extension_InvalidExtension.Data));
-                TestUtility.AssertContains(ex.InnerException.Message, "divide by zero");
+                var actualException = TestUtility.ShouldFail(() => Console.WriteLine(s.Extension_InvalidExtension.Data));
+
+                var expectedExceptionType = typeof(Common.EntityFrameworkContext).BaseType.Namespace switch
+                {
+                    "Microsoft.EntityFrameworkCore" => "System.Data.Entity.Core.EntityCommandExecutionException",
+                    "System.Data.Entity"            => "System.Data.Entity.Core.EntityCommandExecutionException",
+                    _ => throw new NotImplementedException()
+                };
+
+                Assert.AreEqual(expectedExceptionType, actualException.GetType().ToString());
+                TestUtility.AssertContains(actualException.InnerException.Message, "divide by zero");
             }
         }
     }

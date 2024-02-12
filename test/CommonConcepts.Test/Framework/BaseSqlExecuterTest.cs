@@ -26,7 +26,7 @@ using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
+using System.Data.Common;
 using System.Data.SqlTypes;
 using System.Linq;
 
@@ -55,11 +55,20 @@ namespace CommonConcepts.Test.Framework
 
                 var results = new List<Common.Principal>();
                 baseSqlExecuter.ExecuteReaderRaw("SELECT ID, Name FROM Common.Principal WHERE Name LIKE {0}+'%' AND Name LIKE '%'+@suffix",
-                    new object[] { principalNamePrefix, new SqlParameter("@suffix", principalNameSuffix) },
+                    [principalNamePrefix, CreateDbParameter(scope, "@suffix", principalNameSuffix)],
                     reader => results.Add(new Common.Principal { ID = reader.GetGuid(0), Name = reader.GetString(1) }));
 
                 Assert.AreEqual(Report(principal2), Report(results.ToArray()));
             }
+        }
+
+        private static DbParameter CreateDbParameter(IUnitOfWorkScope scope, string name, object value)
+        {
+            var dbProvider = scope.Resolve<DbProviderFactory>();
+            var dbParameter = dbProvider.CreateParameter();
+            dbParameter.ParameterName = name;
+            dbParameter.Value = value;
+            return dbParameter;
         }
 
         private static BaseSqlExecuter NewBaseSqlExecuter(IUnitOfWorkScope scope)
@@ -85,8 +94,8 @@ namespace CommonConcepts.Test.Framework
                 baseSqlExecuter.ExecuteSqlRaw(@"
                         INSERT INTO Common.Principal (ID, Name) VALUES({0}, {1});
                         INSERT INTO Common.Principal (ID, Name) VALUES(@principal2ID, @principal2Name);
-                    ", new object[] { principal1.ID, principal1.Name, new SqlParameter("@principal2ID", principal2.ID),
-                    new SqlParameter("@principal2Name", principal2.Name) });
+                    ", [ principal1.ID, principal1.Name, CreateDbParameter(scope, "@principal2ID", principal2.ID),
+                    CreateDbParameter(scope, "@principal2Name", principal2.Name) ]);
 
                 var results = executionContext.Repository.Common.Principal.Query(x => x.Name.StartsWith(principalNamePrefix)).ToSimple().ToArray();
 
@@ -104,7 +113,7 @@ namespace CommonConcepts.Test.Framework
                 var principalID = Guid.NewGuid();
                 var baseSqlExecuter = NewBaseSqlExecuter(scope);
 
-                baseSqlExecuter.ExecuteSqlRaw("INSERT INTO TestEntity.Principal (ID, Name) VALUES({0}, {1});", new object[] { principalID, null });
+                baseSqlExecuter.ExecuteSqlRaw("INSERT INTO TestEntity.Principal (ID, Name) VALUES({0}, {1});", [principalID, null]);
 
                 var result = executionContext.Repository.TestEntity.Principal.Query(x => x.ID == principalID).ToSimple().First();
 
@@ -119,9 +128,9 @@ namespace CommonConcepts.Test.Framework
             {
                 var baseSqlExecuter = NewBaseSqlExecuter(scope);
 
-                var sqlParameter = new SqlParameter("@__p0", "Test");
+                var sqlParameter = CreateDbParameter(scope, "@__p0", "Test");
                 TestUtility.ShouldFail<ArgumentException>(
-                    () => baseSqlExecuter.ExecuteSqlRaw("INSERT INTO TestEntity.Principal (Name) VALUES(@__p0);", new object[] { sqlParameter }),
+                    () => baseSqlExecuter.ExecuteSqlRaw("INSERT INTO TestEntity.Principal (Name) VALUES(@__p0);", [sqlParameter]),
                     "parameter name should not start with", "@__p");
             }
         }

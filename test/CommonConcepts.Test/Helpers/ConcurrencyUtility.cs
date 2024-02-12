@@ -21,8 +21,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos;
 using Rhetos.Utilities;
 using System;
-using System.Data.SqlClient;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace CommonConcepts.Test
@@ -31,38 +31,45 @@ namespace CommonConcepts.Test
     {
         private static int _checkedForParallelismThreadCount = 0;
 
-        public static void CheckForParallelism(IUnitOfWorkScope scope, int requiredNumberOfThreads)
+        public static void CheckForParallelism(IUnitOfWorkFactory scopeFactory, int requiredNumberOfThreads)
         {
             if (_checkedForParallelismThreadCount >= requiredNumberOfThreads)
                 return;
 
-            string connectionString = scope.Resolve<ConnectionString>();
+            var scopes = Enumerable.Range(0, requiredNumberOfThreads)
+                .Select(x => scopeFactory.CreateScope())
+                .ToArray();
 
-            ExecuteSqlCommand(connectionString, "WAITFOR DELAY '00:00:00.000'"); // Possible cold start.
+            try
+            {
+                var sqlExecuters = scopes.Select(scope => scope.Resolve<ISqlExecuter>()).ToArray();
 
-            var sw = Stopwatch.StartNew();
-            Parallel.For(0, requiredNumberOfThreads,
-                x => { ExecuteSqlCommand(connectionString, "WAITFOR DELAY '00:00:00.100'"); });
-            sw.Stop();
+                foreach (var sqlExecuter in sqlExecuters)
+                    sqlExecuter.ExecuteSql("WAITFOR DELAY '00:00:00.000'"); // Possible cold start.
 
-            Console.WriteLine($"CheckForParallelism: {sw.ElapsedMilliseconds} ms.");
+                var sw = Stopwatch.StartNew();
+                Parallel.ForEach(sqlExecuters,
+                    sqlExecuter => sqlExecuter.ExecuteSql("WAITFOR DELAY '00:00:00.100'"));
+                sw.Stop();
 
-            if (sw.ElapsedMilliseconds < 90)
-                Assert.Fail($"Delay is unexpectedly short: {sw.ElapsedMilliseconds}");
+                Console.WriteLine($"CheckForParallelism: {sw.ElapsedMilliseconds} ms.");
 
-            if (sw.Elapsed.TotalMilliseconds > 190)
-                Assert.Inconclusive($"This test requires {requiredNumberOfThreads} parallel SQL queries. {requiredNumberOfThreads} parallel delays for 100 ms are executed in {sw.ElapsedMilliseconds} ms.");
+                if (sw.ElapsedMilliseconds < 90)
+                    Assert.Fail($"Delay is unexpectedly short: {sw.ElapsedMilliseconds}");
 
-            _checkedForParallelismThreadCount = requiredNumberOfThreads;
+                if (sw.Elapsed.TotalMilliseconds > 190)
+                    Assert.Inconclusive($"This test requires {requiredNumberOfThreads} parallel SQL queries. {requiredNumberOfThreads} parallel delays for 100 ms are executed in {sw.ElapsedMilliseconds} ms.");
+
+                _checkedForParallelismThreadCount = requiredNumberOfThreads;
+            }
+            finally
+            {
+                foreach (var scope in scopes)
+                    scope.Dispose();
+            }
         }
 
-        private static void ExecuteSqlCommand(string connectionString, string sql)
-        {
-            using var connection = new SqlConnection(connectionString);
-            connection.Open();
-            using var command = new SqlCommand(sql, connection);
-            command.ExecuteNonQuery();
-            connection.Close();
-        }
+        public static void CheckForParallelism(IUnitOfWorkScope scope, int requiredNumberOfThreads)
+            => CheckForParallelism(scope.Resolve<IUnitOfWorkFactory>(), requiredNumberOfThreads);
     }
 }

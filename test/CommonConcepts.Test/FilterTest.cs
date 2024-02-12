@@ -135,8 +135,8 @@ namespace CommonConcepts.Test
                     throw new InvalidOperationException(limitedLengthReport.ToString());
                 }
 
-                context.EntityFrameworkContext.Database.ExecuteSqlCommand("DELETE FROM Test10.Simple");
-                repository.Test10.Simple.Insert(new[] { new Test10.Simple { ID = commitCheckId } });
+                context.SqlExecuter.ExecuteSql("DELETE FROM Test10.Simple");
+                repository.Test10.Simple.Insert([new Test10.Simple { ID = commitCheckId }]);
 
                 scope.CommitAndClose();
             }

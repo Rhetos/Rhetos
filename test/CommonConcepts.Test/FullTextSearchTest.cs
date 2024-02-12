@@ -17,6 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#if RHETOS_EF6
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.TestCommon;
@@ -489,3 +491,5 @@ namespace CommonConcepts.Test
         }
     }
 }
+
+#endif
