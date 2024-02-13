@@ -80,20 +80,17 @@ namespace Common
     public sealed class EntityFrameworkContext : DbContext
     {{
         private readonly Rhetos.Persistence.IPersistenceTransaction _persistenceTransaction;
-        private readonly Rhetos.Utilities.RhetosAppOptions _rhetosAppOptions;
         private readonly Rhetos.Utilities.DatabaseOptions _databaseOptions;
         private readonly Rhetos.Logging.ILogger _logger;
 
         public EntityFrameworkContext(
             DbContextOptions<EntityFrameworkContext> options,
             Rhetos.Persistence.IPersistenceTransaction persistenceTransaction,
-            Rhetos.Utilities.RhetosAppOptions rhetosAppOptions,
             Rhetos.Utilities.DatabaseOptions databaseOptions,
             Rhetos.Logging.ILogProvider logProvider)
             : base(options)
         {{
             _persistenceTransaction = persistenceTransaction;
-            _rhetosAppOptions = rhetosAppOptions;
             _databaseOptions = databaseOptions;
             _logger = logProvider.GetLogger(GetType().Name);
 

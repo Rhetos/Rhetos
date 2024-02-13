@@ -78,7 +78,38 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void ReferencedEntity()
+        public void ReferencedEntityQuery()
+        {
+            using (var scope = TestScope.Create())
+            {
+                var repository = scope.Resolve<Common.DomRepository>();
+
+                scope.Resolve<ISqlExecuter>().ExecuteSql(
+                    "DELETE FROM TestEntity.Permission",
+                    "DELETE FROM TestEntity.Principal",
+                    "DELETE FROM TestEntity.Claim",
+                    "INSERT INTO TestEntity.Claim (ID, ClaimResource, ClaimRight) SELECT '4074B807-FA5A-4772-9631-198E89A302DE', 'res1', 'rig1'",
+                    "INSERT INTO TestEntity.Claim (ID, ClaimResource, ClaimRight) SELECT 'A45F7194-7288-4B25-BC77-4FCC920A1479', 'res2', 'rig2'",
+                    "INSERT INTO TestEntity.Principal (ID, Name) SELECT 'A45F7194-7288-4B25-BC77-4FCC920A1479', 'p1'",
+                    "INSERT INTO TestEntity.Permission (ID, PrincipalID, ClaimID, IsAuthorized) SELECT '65D4B68E-B0E7-491C-9405-800F531866CA', 'A45F7194-7288-4B25-BC77-4FCC920A1479', '4074B807-FA5A-4772-9631-198E89A302DE', 0",
+                    "INSERT INTO TestEntity.Permission (ID, PrincipalID, ClaimID, IsAuthorized) SELECT 'B7F19BA7-C70F-46ED-BFC7-29A44DFECA9B', 'A45F7194-7288-4B25-BC77-4FCC920A1479', 'A45F7194-7288-4B25-BC77-4FCC920A1479', 1");
+
+                var permission = repository.TestEntity.Permission.Query().Where(perm => perm.IsAuthorized == true)
+                    .Select(p => new { p.IsAuthorized, PrincipalName = p.Principal.Name })
+                    .Single();
+                Assert.AreEqual(true, permission.IsAuthorized);
+                Assert.AreEqual("p1", permission.PrincipalName);
+
+                var permission2 = repository.TestEntity.Permission.Query().Where(perm => perm.IsAuthorized == false)
+                    .Select(p => new { p.IsAuthorized, PrincipalName = p.Principal.Name })
+                    .Single();
+                Assert.AreEqual(false, permission2.IsAuthorized);
+                Assert.AreEqual("p1", permission2.PrincipalName);
+            }
+        }
+
+        [TestMethod]
+        public void ReferencedEntityLazyLoad()
         {
             using (var scope = TestScope.Create())
             {
