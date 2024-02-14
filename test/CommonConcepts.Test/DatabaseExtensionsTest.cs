@@ -149,8 +149,11 @@ namespace CommonConcepts.Test
 
             TestStrings(testData, parameter => item => item.Name == parameter,
                 ("a", "a"),
+#if RHETOS_EF6
                 (null, "null/")); // For UseDatabaseNullSemantics=true this will generate SQL query "Name = @ParameterNull" and will not return the null values.
-
+#else
+                (null, "null"));
+#endif
             // Testing for null LITERAL, instead of null VARIABLE.
             // The variable is translated to SQL similar to "WHERE Name = @p OR (Name IS NULL AND @p IS NULL)".
             // The literal is translated to SQL "WHERE Name IS NULL".
@@ -167,14 +170,22 @@ namespace CommonConcepts.Test
             TestStrings(testData, parameter => item => item.Name.EqualsCaseInsensitive(parameter),
                 ("a", "a, A"),
                 ("A", "a, A"),
+#if RHETOS_EF6
                 (null, "null/")); // Same as EqualsOperator(), for UseDatabaseNullSemantics=true, searching by parameter set to null value will not return the null values.
+#else
+                (null, "null"));
+#endif
 
             // Testing for null LITERAL, instead of null VARIABLE.
             // The variable is translated to SQL similar to "WHERE Name = @p OR (Name IS NULL AND @p IS NULL)".
             // The literal is translated to SQL "WHERE Name IS NULL".
 
             TestStrings(testData, parameter => item => item.Name.EqualsCaseInsensitive(null),
+#if RHETOS_EF6
                 (null, "null/")); // Different from EqualsOperator(): for UseDatabaseNullSemantics=true, even with constant value, EqualsCaseInsensitive will generate SQL '= null' and not return the null values.
+#else
+                (null, "null"));
+#endif
         }
 
         [TestMethod]
@@ -185,7 +196,11 @@ namespace CommonConcepts.Test
 
             TestStrings(testData, parameter => item => item.Name != parameter,
                 ("a", "b, null/b"), // For UseDatabaseNullSemantics=true this will generate SQL query "Name <> @ParameterA" and will not return the null values.
+#if RHETOS_EF6
                 (null, "a, b/")); // For UseDatabaseNullSemantics=true this will generate SQL query "Name <> @ParameterNull" and will return no records.
+#else
+                (null, "a, b")); // EF Core generates SQL query "is not null" for all combination of UseDatabaseNullSemantics and variable/literal usage.
+#endif
 
             // Testing for null LITERAL, instead of null VARIABLE.
             // The variable is translated to SQL similar to "WHERE Name <> @p OR (Name IS NULL AND @p IS NOT NULL) OR ...".
