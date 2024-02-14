@@ -95,9 +95,9 @@ namespace Common
         /// <summary>
         /// A helper method to unify EF6 and EFCore custom SQL queries.
         /// </summary>
-        public TEntity[] LoadFromSql<TEntity>(string sql, params object[] parameters) where TEntity : class
+        public TSimpleEntity[] LoadFromSql<TQueryableEntity, TSimpleEntity>(string sql, params object[] parameters) where TSimpleEntity : class, IEntity where TQueryableEntity : class, IQueryableEntity<TSimpleEntity>
         {{
-            return this.Database.SqlQuery<TEntity>(sql, parameters).ToArray();
+            return this.Database.SqlQuery<TSimpleEntity>(sql, parameters).ToArray();
         }}
 
         {EntityFrameworkContextMembersTag}

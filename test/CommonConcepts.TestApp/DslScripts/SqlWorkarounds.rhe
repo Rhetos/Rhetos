@@ -16,11 +16,15 @@ Module TestSqlWorkarounds
 	}
 	
 	SqlObject Views12
-		'CREATE VIEW TestSqlWorkarounds.V1 AS SELECT ID, I+1 AS I1 FROM E
-		{SPLIT SCRIPT}
-		CREATE VIEW TestSqlWorkarounds.V2 AS SELECT ID, I+2 AS I2 FROM E'
-		'DROP VIEW TestSqlWorkarounds.V1
-		DROP VIEW TestSqlWorkarounds.V2'
+		'
+			CREATE VIEW TestSqlWorkarounds.V1 AS SELECT ID, I+1 AS I1 FROM E
+			{SPLIT SCRIPT}
+			CREATE VIEW TestSqlWorkarounds.V2 AS SELECT ID, I+2 AS I2 FROM E
+		'
+		'
+			DROP VIEW TestSqlWorkarounds.V1
+			DROP VIEW TestSqlWorkarounds.V2
+		'
 	{
 		SqlDependsOn TestSqlWorkarounds.E;
 	}
@@ -52,25 +56,17 @@ Module TestSqlWorkarounds
 	{
 		ShortString Name;
 		Integer NameLength;
-		Reference Person TestSqlWorkarounds.Person; // Simpler alternative would be "Guid PersonID;"
+		Reference Person; // Simpler alternative would be "Guid PersonID;"
 		
-		FilterBy PersonFilter
-			'(repository, parameter) =>
-			{
-				// Always use parameters to prevent SQL injection.
-				string sql = "EXEC TestSqlWorkarounds.ComputePersonInfo @p0, @p1";
-				var sqlParams = new object[] { parameter.NamePattern, parameter.LimitResultCount };
-
-				var result = _executionContext.EntityFrameworkContext.LoadFromSql<TestSqlWorkarounds.PersonInfo>(sql, sqlParams);
-				return result;
-			}';
+		Load PersonFilter; // Implemented in SqlWorkarounds.cs
 	}
 
 	SqlProcedure
-	"CREATE OR ALTER PROCEDURE TestSqlWorkarounds.SingleScriptProcedure
-	AS
-	SELECT 'TestResult'
-	";
+		"
+			CREATE OR ALTER PROCEDURE TestSqlWorkarounds.SingleScriptProcedure
+			AS
+			SELECT 'TestResult'
+		";
 
     Entity DependencyBase
     {

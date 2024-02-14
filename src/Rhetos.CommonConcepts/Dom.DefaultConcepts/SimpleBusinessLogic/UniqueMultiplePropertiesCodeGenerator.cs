@@ -86,7 +86,7 @@ namespace Rhetos.Dom.DefaultConcepts.SimpleBusinessLogic
                     IEnumerable<Guid> changesItems = inserted.Select(item => item.ID).Union(updated.Select(item => item.ID));
                     var changesItemsSet = new HashSet<Guid>(changesItems);
 
-                    var invalidItems = _executionContext.EntityFrameworkContext.LoadFromSql<{0}.{1}>(sql)
+                    var invalidItems = _executionContext.EntityFrameworkContext.LoadFromSql<Common.Queryable.{0}_{1}, {0}.{1}>(sql)
                         .Where(invalidItem => changesItemsSet.Contains(invalidItem.ID)).ToList();
                 
                     if (invalidItems.Count() > 0)
