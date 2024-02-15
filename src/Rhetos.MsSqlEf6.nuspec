@@ -20,7 +20,7 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="Rhetos.MsSqlEf6\Rhetos.MsSqlEf6.props" target="build" />
+    <file src="Rhetos.MsSqlEf6\Rhetos.MsSqlEf6.props" target="buildTransitive" />
     <file src="Rhetos.MsSqlEf6\bin\Debug\net8.0\Rhetos.MsSqlEf6.dll" target="lib\net8.0" />
     <file src="Rhetos.MsSqlEf6\bin\Debug\net8.0\Rhetos.MsSqlEf6.xml" target="lib\net8.0" />
   </files>
