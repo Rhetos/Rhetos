@@ -37,7 +37,7 @@ namespace Rhetos.EfCore.ModelBuilding
             {
                 string code =
                 $@"
-                entity.HasOne(e => e.{info.ExtensionPropertyName()}).WithOne(e => e.Base).HasForeignKey<Common.Queryable.{info.Base.Module.Name}_{info.Base.Name}>(e => e.ID).IsRequired();";
+                entity.HasOne(e => e.{info.ExtensionPropertyName()}).WithOne(e => e.Base).HasForeignKey<Common.Queryable.{info.Base.Module.Name}_{info.Base.Name}>(e => e.ID).IsRequired(false);";
 
                 codeBuilder.InsertCode(code, DataStructureModelCodeGenerator.ModelBuilderTag, info.Base);
             }
