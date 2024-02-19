@@ -57,7 +57,7 @@ Changes in Rhetos libraries API:
     * In FilterCriteria, filter names should be constructed by Type.ToString(), instead of Type.FullName or Type.AssemblyQualifiedName.
 * Some EF6-specific features moved from Rhetos.CommonConcepts to Rhetos.MsSqlEf6.
     * If a custom code generator class uses one of `DomInitializationCodeGenerator.EntityFramework*` tags,
-      use instead a same tag from `EntityFrameworkContextCodeGenerator` class and add an attribute
+      instead of it use the same tag from `EntityFrameworkContextCodeGenerator` class and add an attribute
       `[ExportMetadata(MefProvider.DependsOn, typeof(EntityFrameworkContextCodeGenerator))]`.
 
 Changes in behavior:
@@ -69,25 +69,32 @@ Migrating a Rhetos app from EF6 to EF Core:
 
 * (Disclaimer: It is recommended to keep EF6 in old Rhetos apps for backward compatiblity. Use EF Core in new apps.)
 * In the existing projects that reference the NuGet package `Rhetos.CommonConcepts`, add the NuGet package `Rhetos.MsSql` instead of `Rhetos.MsSqlEf6`.
-* System.Data.SqlClient library is replaced with newer Microsoft.Data.SqlClient.
-  * In C# code, replace namespace `System.Data.SqlClient` with `Microsoft.Data.SqlClient`.
-  * Microsoft.Data.SqlClient handles the **database connection string** differently:
-    `Encrypt` defaults to `true` and the driver will always validate the server certificate based on `TrustServerCertificate`.
-      * In a local development environment, if you use encryption with a self-signed certificate on the server,
-        you can specify `TrustServerCertificate=true` in the connection string.
-        If you need to turn off encryption, you can specify `Encrypt=false` instead.
-* Most EF6 types where in namespace `System.Data.Entity`, while EF Core uses namespace `Microsoft.EntityFrameworkCore`.
-* Removed Guid comparison extension methods GuidIsGreaterThan, GuidIsGreaterThanOrEqual, GuidIsLessThan, GuidIsLessThanOrEqual. They are supported by standard operators `>` and `<`.
-* Removed the 'FullTextSearch' extension method for Entity Framework LINQ queries. Use `EF.Functions.Contains` instead.
-* The EF6 method `EntityFrameworkContext.Database.SqlQuery` method is different in EF Core:
-  * When querying classes that are registered in EF DbContext (for example Entity or SqlQueryable), use EF Core methods instead of EF 6,
-    for example `EntityFrameworkContext.Bookstore_Book.FromSqlRaw(sql, parameters).AsNoTracking().ToSimple()`.
-  * For classes that are not registered in EF DbContext (for example DataStructure or Computed),
-    use Rhetos ISqlExecuter ([example](https://github.com/Rhetos/Rhetos/blob/4ce994c993accead793d5664185e7f7521dd0dc9/test/CommonConcepts.TestApp/DslScripts/SqlWorkarounds.cs#L13)),
-    or Dapper to load data from a custom SQL query.
-* In LINQ queries and in generic filters (REST), operations `equals` and `notequals` with a variable parameter containing null value will return different results then EF6.
-  * For example `string n = null; books.Where(b => b.Title == n)` will return all books with title null (`WHERE b.Title IS NULL`). In EF6 this query generated the SQL `WHERE b.Title = @param` which never returns records.
-  * Both EF6 and EF Core behave the same with literal null values, such as `books.Where(b => b.Title == null)` returning books with title null.
+* Lazy loading is disabled by default on EF Core. To enable it in Rhetos app, set the option `CommonConcepts:EntityFrameworkUseLazyLoading` to `true` in rhetos-build.settings.json,
+  and add the NuGet package "Microsoft.EntityFrameworkCore.Proxies".
+* Breaking changes in libraries API:
+  * System.Data.SqlClient library is replaced with newer Microsoft.Data.SqlClient.
+    * In C# code, replace namespace `System.Data.SqlClient` with `Microsoft.Data.SqlClient`.
+    * Microsoft.Data.SqlClient handles the **database connection string** differently:
+      `Encrypt` defaults to `true` and the driver will always validate the server certificate based on `TrustServerCertificate`.
+        * In a local development environment, if you use encryption with a self-signed certificate on the server,
+          you can specify `TrustServerCertificate=true` in the connection string.
+          If you need to turn off encryption, you can specify `Encrypt=false` instead.
+  * Most EF6 types where in namespace `System.Data.Entity`, while EF Core uses namespace `Microsoft.EntityFrameworkCore`.
+  * Removed Guid comparison extension methods GuidIsGreaterThan, GuidIsGreaterThanOrEqual, GuidIsLessThan, GuidIsLessThanOrEqual. They are supported by standard operators `>` and `<`.
+  * Removed the 'FullTextSearch' extension method for Entity Framework LINQ queries. Use `EF.Functions.Contains` instead.
+  * The EF6 method `EntityFrameworkContext.Database.SqlQuery` method is different in EF Core:
+    * When querying classes that are registered in EF DbContext (for example Entity or SqlQueryable), use EF Core methods instead of EF 6,
+      for example `EntityFrameworkContext.Bookstore_Book.FromSqlRaw(sql, parameters).AsNoTracking().ToSimple()`.
+    * For classes that are not registered in EF DbContext (for example DataStructure or Computed),
+      use Rhetos ISqlExecuter ([example](https://github.com/Rhetos/Rhetos/blob/4ce994c993accead793d5664185e7f7521dd0dc9/test/CommonConcepts.TestApp/DslScripts/SqlWorkarounds.cs#L13)),
+      or Dapper to load data from a custom SQL query.
+* Breaking changes in behavior:
+  * Converting boolean to string in database will result with strings `0` and `1` instead of `false` and `true`.
+    * For example `query.Select(book => book.Title + " " book.Active)`, converts bool Active to string in database SQL query.
+  * In LINQ queries and in generic filters (REST), operations `equals` and `notequals` with a variable parameter containing null value will return different results then EF6.
+    * For example `string n = null; books.Where(b => b.Title == n)` will return all books with title null (`WHERE b.Title IS NULL`). In EF6 this query generated the SQL `WHERE b.Title = @param` which never returns records.
+    * Both EF6 and EF Core behave the same with literal null values, such as `books.Where(b => b.Title == null)` returning books with title null.
+  * In EF6 LINQ query, `.ToString()` method returns the expected SQL query. In EF Core use `.ToQueryString()` instead.
 
 ### Internal improvements
 

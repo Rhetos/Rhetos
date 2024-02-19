@@ -46,6 +46,13 @@ namespace Rhetos.EfCore
         {
             codeBuilder.InsertCodeToFile(GetOrmSnippet(), "EntityFrameworkContext");
 
+            string useLazyLoading = null;
+            if (_commonConceptsOptions.EntityFrameworkUseLazyLoading)
+            {
+				// The Rhetos app needs to reference "Microsoft.EntityFrameworkCore.Proxies" NuGet package. 
+                useLazyLoading = "Microsoft.EntityFrameworkCore.ProxiesExtensions.UseLazyLoadingProxies(optionsBuilder);\r\n                ";
+            }
+
             codeBuilder.InsertCode(
             $@"builder.RegisterType<EntityFrameworkContext>()
                 .As<EntityFrameworkContext>()
@@ -54,7 +61,7 @@ namespace Rhetos.EfCore
             builder.Register<Microsoft.EntityFrameworkCore.DbContextOptions<EntityFrameworkContext>>(context =>
             {{
                 var optionsBuilder = new Microsoft.EntityFrameworkCore.DbContextOptionsBuilder<EntityFrameworkContext>();
-                {EntityFrameworkContextOptionsTag}
+                {useLazyLoading}{EntityFrameworkContextOptionsTag}
                 return optionsBuilder.Options;
             }});
             ",
