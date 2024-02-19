@@ -7,7 +7,7 @@
 	<RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);..\..\dist</RestoreAdditionalProjectSources>
 	<RootNamespace>CommonConcepts.Test</RootNamespace>
   </PropertyGroup>
-	
+
   <ItemGroup>
     <PackageReference Include="Rhetos.Host" Version="6.0.0-dev*" />
     <PackageReference Include="Rhetos.MSBuild" Version="6.0.0-dev*" />
@@ -17,9 +17,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="local.settings.json">
+    <Content Include="rhetos-build.settings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    </Content>
+    <Content Include="local.settings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

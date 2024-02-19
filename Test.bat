@@ -8,8 +8,8 @@ dotnet test Rhetos.sln --no-build || GOTO Error0
 
 IF NOT EXIST test\CommonConcepts.TestApp\local.settings.json ECHO Missing local.settings.json. Follow the Initial setup instructions in Readme.md. & GOTO Error0
 
-CALL :TestAppWithDatabase Rhetos.MsSqlEf6 || GOTO Error0
 CALL :TestAppWithDatabase Rhetos.MsSql || GOTO Error0
+CALL :TestAppWithDatabase Rhetos.MsSqlEf6 || GOTO Error0
 
 @REM ================================================
 
@@ -26,9 +26,14 @@ CALL :TestAppWithDatabase Rhetos.MsSql || GOTO Error0
 :TestAppWithDatabase
 
 TITLE Testing %1
-dotnet remove test\CommonConcepts.TestApp package Rhetos.MsSql > nul
-dotnet remove test\CommonConcepts.TestApp package Rhetos.MsSqlEf6 > nul
-dotnet add test\CommonConcepts.TestApp package %1 --version 6.0.0-dev* || GOTO DatabaseError0
+
+IF %1 NEQ Rhetos.MsSqlEf6 dotnet remove test\CommonConcepts.TestApp package Rhetos.MsSqlEf6 > nul
+IF %1 NEQ Rhetos.MsSql dotnet remove test\CommonConcepts.TestApp package Microsoft.EntityFrameworkCore.Proxies > nul
+IF %1 NEQ Rhetos.MsSql dotnet remove test\CommonConcepts.TestApp package Rhetos.MsSql > nul
+
+IF %1 EQU Rhetos.MsSqlEf6 dotnet add test\CommonConcepts.TestApp package Rhetos.MsSqlEf6 --version 6.0.0-dev* || GOTO DatabaseError0
+IF %1 EQU Rhetos.MsSql dotnet add test\CommonConcepts.TestApp package Rhetos.MsSql --version 6.0.0-dev* || GOTO DatabaseError0
+IF %1 EQU Rhetos.MsSql dotnet add test\CommonConcepts.TestApp package Microsoft.EntityFrameworkCore.Proxies --version 8.0.* || GOTO DatabaseError0
 
 @REM Using "RestoreForce" to make sure that the new version of local Rhetos NuGet packages are included in build.
 dotnet build CommonConceptsTest.sln /t:restore /p:RestoreForce=True /t:rebuild --configuration %Config% || GOTO DatabaseError0
