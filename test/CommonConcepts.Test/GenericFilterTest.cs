@@ -606,24 +606,37 @@ namespace CommonConcepts.Test
         public void AvoidNullParameterCheckInGeneratedSqlQueryWhenValueInFilterCriteriaIsNotNullTest()
         {
             Guid? nullableId = Guid.NewGuid();
+            Guid? nullId = null;
             var tests = new (bool UseDatabaseNullSemantics, string Operation, object Value, string expectedSql)[]
             {
                 (false, "equals", nullableId, "WHERE [Extent1].[ParentID] = @p__linq__0"),
                 (false, "equals", nullableId.Value, "WHERE [Extent1].[ParentID] = @p__linq__0"),
                 (false, "equals", nullableId.Value.ToString(), "WHERE [Extent1].[ParentID] = @p__linq__0"),
+                (false, "equals", nullId, "WHERE [Extent1].[ParentID] IS NULL"),
                 (true, "equals", nullableId, "WHERE [Extent1].[ParentID] = @p__linq__0"),
                 (true, "equals", nullableId.Value, "WHERE [Extent1].[ParentID] = @p__linq__0"),
                 (true, "equals", nullableId.Value.ToString(), "WHERE [Extent1].[ParentID] = @p__linq__0"),
-                (true, "equals", null, "WHERE [Extent1].[ParentID] IS NULL"),
+                (true, "equals", nullId, "WHERE [Extent1].[ParentID] IS NULL"),
 
-                // "notequals" is currently not optimized for not-null constant parameter (it is rarely used).
-                (false, "notequals", nullableId, "WHERE  NOT (([Extent1].[ParentID] = @p__linq__0) AND ((CASE WHEN ([Extent1].[ParentID] IS NULL) THEN cast(1 as bit) ELSE cast(0 as bit) END) = (CASE WHEN (@p__linq__0 IS NULL) THEN cast(1 as bit) ELSE cast(0 as bit) END)))"),
-                (false, "notequals", nullableId.Value, "WHERE  NOT (([Extent1].[ParentID] = @p__linq__0) AND ((CASE WHEN ([Extent1].[ParentID] IS NULL) THEN cast(1 as bit) ELSE cast(0 as bit) END) = (CASE WHEN (@p__linq__0 IS NULL) THEN cast(1 as bit) ELSE cast(0 as bit) END)))"),
-                (false, "notequals", nullableId.Value.ToString(), "WHERE  NOT (([Extent1].[ParentID] = @p__linq__0) AND ((CASE WHEN ([Extent1].[ParentID] IS NULL) THEN cast(1 as bit) ELSE cast(0 as bit) END) = (CASE WHEN (@p__linq__0 IS NULL) THEN cast(1 as bit) ELSE cast(0 as bit) END)))"),
+#if RHETOS_EF6
+                (false, "notequals", nullableId, "WHERE  NOT (([Extent1].[ParentID] = @p__linq__0) AND ((CASE WHEN ([Extent1].[ParentID] IS NULL) THEN cast(1 as bit) ELSE cast(0 as bit) END) = 0))"),
+                (false, "notequals", nullableId.Value, "WHERE  NOT (([Extent1].[ParentID] = @p__linq__0) AND ((CASE WHEN ([Extent1].[ParentID] IS NULL) THEN cast(1 as bit) ELSE cast(0 as bit) END) = 0))"),
+                (false, "notequals", nullableId.Value.ToString(), "WHERE  NOT (([Extent1].[ParentID] = @p__linq__0) AND ((CASE WHEN ([Extent1].[ParentID] IS NULL) THEN cast(1 as bit) ELSE cast(0 as bit) END) = 0))"),
+                (false, "notequals", nullId, "WHERE [Extent1].[ParentID] IS NOT NULL"),
                 (true, "notequals", nullableId, "WHERE [Extent1].[ParentID] <> @p__linq__0"),
                 (true, "notequals", nullableId.Value, "WHERE [Extent1].[ParentID] <> @p__linq__0"),
                 (true, "notequals", nullableId.Value.ToString(), "WHERE [Extent1].[ParentID] <> @p__linq__0"),
-                (true, "notequals", null, "WHERE [Extent1].[ParentID] IS NOT NULL"),
+                (true, "notequals", nullId, "WHERE [Extent1].[ParentID] IS NOT NULL"),
+#else
+                (false, "notequals", nullableId, "WHERE [Extent1].[ParentID] <> @p__linq__0 OR [Extent1].[ParentID] IS NULL"),
+                (false, "notequals", nullableId.Value, "WHERE [Extent1].[ParentID] <> @p__linq__0 OR [Extent1].[ParentID] IS NULL"),
+                (false, "notequals", nullableId.Value.ToString(), "WHERE [Extent1].[ParentID] <> @p__linq__0 OR [Extent1].[ParentID] IS NULL"),
+                (false, "notequals", nullId, "WHERE [Extent1].[ParentID] IS NOT NULL"),
+                (true, "notequals", nullableId, "WHERE [Extent1].[ParentID] <> @p__linq__0"),
+                (true, "notequals", nullableId.Value, "WHERE [Extent1].[ParentID] <> @p__linq__0"),
+                (true, "notequals", nullableId.Value.ToString(), "WHERE [Extent1].[ParentID] <> @p__linq__0"),
+                (true, "notequals", nullId, "WHERE [Extent1].[ParentID] IS NOT NULL"),
+#endif
             };
 
             var actualReport = new StringBuilder();
@@ -635,13 +648,18 @@ namespace CommonConcepts.Test
                 var context = scope.Resolve<Common.ExecutionContext>();
                 var repository = scope.Resolve<Common.DomRepository>();
 
-                string sqlQuery = repository.TestGenericFilter.Child.Query(new FilterCriteria("ParentID", test.Operation, test.Value)).ToString();
+                var query = repository.TestGenericFilter.Child.Query(new FilterCriteria("ParentID", test.Operation, test.Value));
+                string sqlQuery = query.GetSqlQuery();
                 string inputDataReport = $"{test.UseDatabaseNullSemantics} {test.Operation} {(test.Value?.GetType().ToString() ?? "null")}";
                 actualReport.AppendLine($"{inputDataReport} => {sqlQuery.Substring(sqlQuery.IndexOf("WHERE"))}");
                 expectedReport.AppendLine($"{inputDataReport} => {test.expectedSql}");
             }
 
             Console.WriteLine(actualReport);
+            actualReport = actualReport // Converting EF Core to EF6 style.
+                .Replace("[c]", "[Extent1]")
+                .Replace("@__value_0", "@p__linq__0");
+
             TestUtility.AssertAreEqualByLine(expectedReport.ToString(), actualReport.ToString());
         }
 

@@ -172,6 +172,18 @@ namespace Rhetos.Dom.DefaultConcepts
                 else
                     throw new ClientException($"Unsupported generic filter operation '{filter.Operation}' on a property.");
 
+                static Expression ConvertConstantToParameterGuid(Guid value)
+                {
+                    Expression<Func<Guid>> idLambda = () => value;
+                    return idLambda.Body;
+                }
+
+                static Expression ConvertConstantToParameterGuidNullable(Guid value)
+                {
+                    Expression<Func<Guid?>> idLambda = () => value;
+                    return idLambda.Body;
+                }
+
                 Expression expression;
                 switch (filter.Operation.ToLower())
                 {
@@ -182,16 +194,10 @@ namespace Rhetos.Dom.DefaultConcepts
                             // Using a different expression instead of the constant, to force Entity Framework to
                             // use query parameter instead of hardcoding the constant value (literal) into the generated query.
                             // Query with parameter will allow cache reuse for both EF LINQ compiler and database SQL compiler.
-                            if (memberAccess.Type == typeof(Guid?))
-                            {
-                                Expression<Func<Guid?>> idLambda = () => constantIdEquals;
-                                expression = Expression.Equal(memberAccess, idLambda.Body);
-                            }
-                            else
-                            {
-                                Expression<Func<Guid>> idLambda = () => constantIdEquals;
-                                expression = Expression.Equal(memberAccess, idLambda.Body);
-                            }
+                            Expression guidParameter = memberAccess.Type == typeof(Guid?)
+                                ? ConvertConstantToParameterGuidNullable(constantIdEquals)
+                                : ConvertConstantToParameterGuid(constantIdEquals);
+                            expression = Expression.Equal(memberAccess, guidParameter);
                         }
                         else if (propertyBasicType == typeof(string) && constant.Value != null)
                             expression = Expression.Call(_ormUtility.EqualsCaseInsensitiveMethod, memberAccess, constant);
@@ -205,8 +211,10 @@ namespace Rhetos.Dom.DefaultConcepts
                             // Using a different expression instead of the constant, to force Entity Framework to
                             // use query parameter instead of hardcoding the constant value (literal) into the generated query.
                             // Query with parameter will allow cache reuse for both EF LINQ compiler and database SQL compiler.
-                            Expression<Func<object>> idLambda = () => constantIdNotEquals;
-                            expression = Expression.NotEqual(memberAccess, Expression.Convert(idLambda.Body, memberAccess.Type));
+                            Expression guidParameter = memberAccess.Type == typeof(Guid?)
+                                ? ConvertConstantToParameterGuidNullable(constantIdNotEquals)
+                                : ConvertConstantToParameterGuid(constantIdNotEquals);
+                            expression = Expression.NotEqual(memberAccess, guidParameter);
                         }
                         else if (propertyBasicType == typeof(string) && constant.Value != null)
                             expression = Expression.Call(_ormUtility.NotEqualsCaseInsensitiveMethod, memberAccess, constant);
