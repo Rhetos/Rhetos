@@ -108,7 +108,7 @@ namespace CommonConcepts.Test
                 repository.TestSystemRequired.Simple2.Insert(new TestSystemRequired.Simple2 { Name = "a", Tagged = false });
                 repository.TestSystemRequired.Simple2.Insert(new TestSystemRequired.Simple2 { Name = "b", Tagged = true });
 
-                Assert.AreEqual("a False, b True", TestUtility.DumpSorted(repository.TestSystemRequired.Simple2.Query(), item => item.Name + " " + item.Tagged));
+                Assert.AreEqual("a False, b True", TestUtility.DumpSorted(repository.TestSystemRequired.Simple2.Query().ToList(), item => item.Name + " " + item.Tagged));
 
                 var invalidItem = new TestSystemRequired.Simple2 { ID = Guid.NewGuid(), Name = "c" };
                 TestUtility.ShouldFail<Rhetos.UserException>(

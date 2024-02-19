@@ -114,12 +114,12 @@ namespace CommonConcepts.Test
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
-                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql([
                     "DELETE FROM TestExtension.SimpleBase",
                     "INSERT INTO TestExtension.SimpleBase (ID, Name) VALUES ('" + id1 + "', 'b1')",
                     "INSERT INTO TestExtension.SimpleBase (ID, Name) VALUES ('" + id2 + "', 'b2missing')",
                     "INSERT INTO TestExtension.SimpleExtension (ID, Name) VALUES ('" + id1 + "', 'e1')"
-                });
+                ]);
                 var repository = scope.Resolve<Common.DomRepository>();
 
                 Assert.AreEqual("b1 e1 b1Sql, b2missing <null> <null>", TestUtility.DumpSorted(
@@ -188,13 +188,13 @@ namespace CommonConcepts.Test
 
                 var expectedExceptionType = typeof(Common.EntityFrameworkContext).BaseType.Namespace switch
                 {
-                    "Microsoft.EntityFrameworkCore" => "System.Data.Entity.Core.EntityCommandExecutionException",
+                    "Microsoft.EntityFrameworkCore" => "Microsoft.Data.SqlClient.SqlException",
                     "System.Data.Entity"            => "System.Data.Entity.Core.EntityCommandExecutionException",
                     _ => throw new NotImplementedException()
                 };
 
                 Assert.AreEqual(expectedExceptionType, actualException.GetType().ToString());
-                TestUtility.AssertContains(actualException.InnerException.Message, "divide by zero");
+                TestUtility.AssertContains(actualException.ToString(), "divide by zero");
             }
         }
     }

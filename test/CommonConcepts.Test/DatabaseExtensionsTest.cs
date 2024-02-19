@@ -219,14 +219,23 @@ namespace CommonConcepts.Test
                 ("a", "b, null/b"), // Same as EqualsOperator(), for UseDatabaseNullSemantics=true this will generate SQL query "Name <> @ParameterA" and will not return the null values.
                 ("A", "b, null/b"),
                 ("B", "a, A, null/a, A"),
+
+#if RHETOS_EF6
                 (null, "a, A, b/")); // Same as EqualsOperator(), for UseDatabaseNullSemantics=true this will generate SQL query "Name <> @ParameterNull" and will return no records.
+#else
+                (null, "a, A, b")); // EF Core generates SQL query "is not null" for all combination of UseDatabaseNullSemantics and variable/literal usage.
+#endif
 
             // Null value should be provided as a LITERAL, not as a VARIABLE.
             // The variable is translated to SQL similar to "WHERE Name <> @p OR (Name IS NULL AND @p IS NOT NULL) OR ...".
             // The literal is translated to SQL "WHERE Name IS NOT NULL".
 
             TestStrings(testData, parameter => item => item.Name.NotEqualsCaseInsensitive(null),
-                (null, "a, A, b/")); // Different from EqualsOperator(): for UseDatabaseNullSemantics=true, even with constant value, EqualsCaseInsensitive will generate SQL '<> null' and not return the null values.
+#if RHETOS_EF6
+                (null, "a, A, b/")); // Different from NotEqualsOperator(): for UseDatabaseNullSemantics=true, even with constant value, EqualsCaseInsensitive will generate SQL '<> null' and not return the null values.
+#else
+                (null, "a, A, b")); // EF Core generates SQL query "is not null" for all combination of UseDatabaseNullSemantics and variable/literal usage.
+#endif
         }
 
         [TestMethod]

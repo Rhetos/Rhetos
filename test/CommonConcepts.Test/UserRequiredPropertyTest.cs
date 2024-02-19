@@ -94,7 +94,7 @@ namespace CommonConcepts.Test
                 repository.TestUserRequired.Simple2.Insert(new TestUserRequired.Simple2 { Name = "a", Tagged = false });
                 repository.TestUserRequired.Simple2.Insert(new TestUserRequired.Simple2 { Name = "b", Tagged = true });
 
-                Assert.AreEqual("a False, b True", TestUtility.DumpSorted(repository.TestUserRequired.Simple2.Query(), item => item.Name + " " + item.Tagged));
+                Assert.AreEqual("a False, b True", TestUtility.DumpSorted(repository.TestUserRequired.Simple2.Query().ToList(), item => item.Name + " " + item.Tagged));
 
                 var invalidItem = new TestUserRequired.Simple2 { ID = Guid.NewGuid(), Name = "c" };
                 TestUtility.ShouldFail<Rhetos.UserException>(

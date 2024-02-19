@@ -57,29 +57,29 @@ namespace CommonConcepts.Test
                 var id2 = Guid.NewGuid();
                 var id3 = Guid.NewGuid();
                 var id4 = Guid.NewGuid();
-                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {
+                scope.Resolve<ISqlExecuter>().ExecuteSql([
                     "DELETE FROM TestDeactivatable.BasicEnt",
                     "INSERT INTO TestDeactivatable.BasicEnt (ID, Name) VALUES (" + scope.Resolve<ISqlUtility>().QuoteGuid(id1) + ", 'a')",
                     "INSERT INTO TestDeactivatable.BasicEnt (ID, Name, Active) VALUES (" + scope.Resolve<ISqlUtility>().QuoteGuid(id2) + ", 'b', 0)",
                     "INSERT INTO TestDeactivatable.BasicEnt (ID, Name) VALUES (" + scope.Resolve<ISqlUtility>().QuoteGuid(id3) + ", 'c')",
                     "INSERT INTO TestDeactivatable.BasicEnt (ID, Name, Active) VALUES (" + scope.Resolve<ISqlUtility>().QuoteGuid(id4) + ", 'd', 1)",
-                });
+                ]);
                 var repository = scope.Resolve<Common.DomRepository>();
 
                 Assert.AreEqual(
                     "a , b False, c , d True",
-                    TestUtility.DumpSorted(repository.TestDeactivatable.BasicEnt.Query(), item => item.Name + " " + item.Active));
+                    TestUtility.DumpSorted(repository.TestDeactivatable.BasicEnt.Query().ToList(), item => item.Name + " " + item.Active));
 
                 var e1 = new BasicEnt { ID = id1, Name = "a2", Active = false };
                 var e2 = new BasicEnt { ID = id2, Name = "b2" };
                 var e3 = new BasicEnt { ID = id3, Name = "c2" };
                 var e4 = new BasicEnt { ID = id4, Name = "d2" };
-                repository.TestDeactivatable.BasicEnt.Update(new[] { e1, e2, e3, e4 });
+                repository.TestDeactivatable.BasicEnt.Update([e1, e2, e3, e4]);
 
                 var afterUpdate = repository.TestDeactivatable.BasicEnt.Query();
                 Assert.AreEqual(
                     "a2 False, b2 False, c2 True, d2 True",
-                    TestUtility.DumpSorted(afterUpdate, item => item.Name + " " + item.Active));
+                    TestUtility.DumpSorted(afterUpdate.ToList(), item => item.Name + " " + item.Active));
             }
         }
 

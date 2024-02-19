@@ -1007,7 +1007,7 @@ namespace CommonConcepts.Test
 
                 var filter = new FilterCriteria { Filter = "Common.RowPermissionsReadItems" };
                 var q = repository.TestRowPermissions.SimpleRP.Query(filter);
-                TestUtility.AssertContains(q.ToString(), "1500", "2500"); // Check in the query contains the row permissions filter.
+                TestUtility.AssertContains(q.GetSqlQuery(), "1500", "2500"); // Check in the query contains the row permissions filter.
             }
         }
     }
