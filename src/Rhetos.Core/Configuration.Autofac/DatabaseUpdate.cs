@@ -49,6 +49,8 @@ namespace Rhetos.Deployment
             using (var rhetosHost = _rhetosHostFactory(ConfigureRhetosHost))
             using (var scope = rhetosHost.CreateScope())
             {
+                CheckIfMissingRhetosInitialization(scope);
+
                 var performanceLogger = scope.Resolve<ILogProvider>().GetLogger("Performance." + GetType().Name);
                 performanceLogger.Write(stopwatch, "Modules and plugins registered.");
                 ((UnitOfWorkScope)scope).LogRegistrationStatistics("UpdateDatabase component registrations", _logProvider);
@@ -56,6 +58,24 @@ namespace Rhetos.Deployment
                 // No need to call scope.CommitAndClose() here, since DbUpdate has its own transaction management.
                 // See UseDatabaseTransaction set to false in configuration above.
             }
+        }
+
+        private static void CheckIfMissingRhetosInitialization(IUnitOfWorkScope scope)
+        {
+            // Tests if the RhetosAppOptions is both registered (usually in services.AddRhetosHost method)
+            // and initialized (usually in the generated ConfigureRhetosAppDefaults method).
+            string testRhetosAppAssemblyFileName = null;
+            try
+            {
+                testRhetosAppAssemblyFileName = scope.Resolve<RhetosAppOptions>().RhetosAppAssemblyFileName;
+            }
+            catch
+            {
+                // RhetosAppOptions might not be registered.
+            }
+            if (testRhetosAppAssemblyFileName == null)
+                throw new ArgumentException("Rhetos is not configured in this application." +
+                    " Verify that Program.cs or Startup.cs contains calls to services.AddRhetosHost() and ConfigureRhetosAppDefaults().");
         }
 
         private void ConfigureRhetosHost(IRhetosHostBuilder builder)
