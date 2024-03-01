@@ -296,7 +296,7 @@ namespace CommonConcepts.Test
             Console.WriteLine("TEST Identifier: " + operation + " " + value);
             var source = repository.TestGenericFilter.Simple.Query();
             var result = GenericFilterHelperFilter(source, new[] { new FilterCriteria { Property = "Identifier", Operation = operation, Value = value } });
-            Assert.AreEqual(TestUtility.DumpSorted(expectedValues.Select(x => x.ToString())), TestUtility.DumpSorted(result, item => item.Identifier.ToString()));
+            Assert.AreEqual(TestUtility.DumpSorted(expectedValues.Select(x => x.ToString())), TestUtility.DumpSorted(result.ToList(), item => item.Identifier.ToString()));
         }
 
         private static void FilterIdentifierArray(Common.DomRepository repository, string operation, Guid[] values, Guid[] expectedValues)
@@ -304,7 +304,7 @@ namespace CommonConcepts.Test
             Console.WriteLine("TEST Identifier: " + operation + " " + string.Join(", ", expectedValues.Select(x => x.ToString())));
             var source = repository.TestGenericFilter.Simple.Query();
             var result = GenericFilterHelperFilter(source, new[] { new FilterCriteria { Property = "Identifier", Operation = operation, Value = values } });
-            Assert.AreEqual(TestUtility.DumpSorted(expectedValues.Select(x => x.ToString())), TestUtility.DumpSorted(result, item => item.Identifier.ToString()));
+            Assert.AreEqual(TestUtility.DumpSorted(expectedValues.Select(x => x.ToString())), TestUtility.DumpSorted(result.ToList(), item => item.Identifier.ToString()));
         }
 
         private static void FilterStartDateIn(Common.DomRepository repository, string value, string expectedCodes)

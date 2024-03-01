@@ -283,25 +283,27 @@ namespace CommonConcepts.Test
             {
                 var context = scope.Resolve<Common.ExecutionContext>();
 
-                var tests = new List<(decimal Save, decimal Load)>
+                var tests = new List<decimal>
                 {
-                    (12.34000000001m, 12.34m),
-                    (12.34000000009m, 12.34m),
-                    (-12.34000000001m, -12.34m),
-                    (-12.34000000009m, -12.34m),
-                    (12.34000000011m, 12.3400000001m),
-                    (12.34000000019m, 12.3400000001m),
-                    (-12.34000000011m, -12.3400000001m),
-                    (-12.34000000019m, -12.3400000001m),
-                    (923456789012345678.0123456789m, 923456789012345678.0123456789m), // decimal(28,10) should allow 18 digits on left and 10 digits on right side of the decimal point.
-                    (-923456789012345678.0123456789m, -923456789012345678.0123456789m), // decimal(28,10) should allow 18 digits on left and 10 digits on right side of the decimal point.
-                    (0m, 0m),
-                    (0.00000000001m, 0m),
-                    (0.00000000009m, 0m),
-                    (0.00000000019m, 0.0000000001m),
-                    (-0.00000000001m, 0m),
-                    (-0.00000000009m, 0m),
-                    (-0.00000000019m, -0.0000000001m),
+                    12.34000000001m,
+                    12.34000000005m,
+                    12.34000000009m,
+                    -12.34000000001m,
+                    -12.34000000005m,
+                    -12.34000000009m,
+                    12.34000000011m,
+                    12.34000000019m,
+                    -12.34000000011m,
+                    -12.34000000019m,
+                    923456789012345678.0123456789m, // decimal(28,10) should allow 18 digits on left and 10 digits on right side of the decimal point.
+                    -923456789012345678.0123456789m, // decimal(28,10) should allow 18 digits on left and 10 digits on right side of the decimal point.
+                    0m,
+                    0.00000000001m,
+                    0.00000000009m,
+                    0.00000000019m,
+                    -0.00000000001m,
+                    -0.00000000009m,
+                    -0.00000000019m,
                 };
 
                 foreach (var test in tests)
@@ -309,11 +311,19 @@ namespace CommonConcepts.Test
                     var entity1 = new TestStorage.AllProperties
                     {
                         ID = Guid.NewGuid(),
-                        DecimalProperty = test.Save
+                        DecimalProperty = test
                     };
                     context.PersistenceStorage.Insert(entity1);
-                    Assert.AreEqual(test.Load, context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity1.ID).Single().DecimalProperty,
-                        $"The money property should be cut off on the 10th decimal position ({test.Save}).");
+                    decimal? expected =
+#if RHETOS_EF6
+                        Math.Truncate(test * 10_000_000_000m) / 10_000_000_000m;
+#else
+                        Math.Round(test, 10, MidpointRounding.AwayFromZero);
+#endif
+
+                    decimal? valueFromDb = context.Repository.TestStorage.AllProperties.Load(x => x.ID == entity1.ID).Single().DecimalProperty;
+                    Assert.AreEqual(expected, valueFromDb,
+                        $"The money property should be cut off on the 10th decimal position ({test}).");
                 }
             }
         }

@@ -65,9 +65,9 @@ Changes in behavior:
 * Configuration setting key "Rhetos:DatabaseOracle:NationalLanguage" has changed to "Rhetos:Build:DatabaseNationalLanguage".
 * Bugfix: **Computed** concept is no longer reported as queryable in DslUtility.IsQueryable, since it does not generate a queryable repository.
 
-Migrating a Rhetos app from EF6 to EF Core:
+Migrating a Rhetos app from EF6 to EF Core (optional):
 
-* (Disclaimer: It is recommended to keep EF6 in old Rhetos apps for backward compatiblity. Use EF Core in new apps.)
+* Disclaimer: It is recommended to keep EF6 in old Rhetos apps for backward compatiblity. Use EF Core in new apps.
 * In the existing projects that reference the NuGet package `Rhetos.CommonConcepts`, add the NuGet package `Rhetos.MsSql` instead of `Rhetos.MsSqlEf6`.
 * Lazy loading is disabled by default on EF Core. To enable it in Rhetos app, set the option `CommonConcepts:EntityFrameworkUseLazyLoading` to `true` in rhetos-build.settings.json,
   and add the NuGet package "Microsoft.EntityFrameworkCore.Proxies".
@@ -95,6 +95,7 @@ Migrating a Rhetos app from EF6 to EF Core:
     * For example `string n = null; books.Where(b => b.Title == n)` will return all books with title null (`WHERE b.Title IS NULL`). In EF6 this query generated the SQL `WHERE b.Title = @param` which never returns records.
     * Both EF6 and EF Core behave the same with literal null values, such as `books.Where(b => b.Title == null)` returning books with title null.
   * In EF6 LINQ query, `.ToString()` method returns the expected SQL query. In EF Core use `.ToQueryString()` instead.
+  * If EF6, when saving a decimal number with more then 10 digits to database, the excess digits are simply *cut off*. In EF Core, the number is *rounded* to 10 decimal places.
 
 ### Internal improvements
 
