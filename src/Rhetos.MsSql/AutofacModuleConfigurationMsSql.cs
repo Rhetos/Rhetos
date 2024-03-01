@@ -23,7 +23,7 @@ using Rhetos.SqlResources;
 using System.ComponentModel.Composition;
 using System.Data.Common;
 
-namespace Rhetos.MsSqlEf6
+namespace Rhetos.MsSql
 {
     [Export(typeof(Module))]
     public class AutofacModuleConfigurationMsSql : Module

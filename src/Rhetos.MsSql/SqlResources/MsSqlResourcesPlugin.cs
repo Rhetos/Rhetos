@@ -20,7 +20,6 @@
 using Rhetos.SqlResources;
 using Rhetos.Utilities;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.IO;
 
 namespace Rhetos.MsSql.SqlResources

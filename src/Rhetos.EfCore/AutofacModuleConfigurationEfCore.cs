@@ -21,7 +21,7 @@ using Autofac;
 using Rhetos.Dom.DefaultConcepts;
 using System.ComponentModel.Composition;
 
-namespace Rhetos.MsSqlEf6
+namespace Rhetos.EfCore
 {
     [Export(typeof(Module))]
     public class AutofacModuleConfigurationEfCore : Module
