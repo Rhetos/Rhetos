@@ -48,8 +48,8 @@ Changes in Rhetos libraries API:
   * Replace `.Get<IDatabaseColumnType<PropertyInfo>>` with `.Get<IDatabaseColumnType>`.
 * The AutoCodeHelper.UpdateCodesWithoutCache method has new parameter "ISqlUtility".
   * Replace `AutoCodeHelper.UpdateCodesWithoutCache(_executionContext.SqlExecuter, ...` with `AutoCodeHelper.UpdateCodesWithoutCache(_executionContext.SqlExecuter, _executionContext.SqlUtility, ...`.
-* The **Rhetos.TestCommon** package has updated MSTest.TestFramework referece from v2.1.0 to v3.1.1.
-  * Any test projects that reference the "Rhetos.TestCommon" package, should be updated to the latest version of the MSTest.* packages (v3.1.1 or higher).
+* The **Rhetos.TestCommon** package has updated MSTest.TestFramework referece from v2.1.0 to v3.2.2.
+  * Any test projects that reference the "Rhetos.TestCommon" package, should be updated to the latest version of the MSTest.* packages (v3.2.2 or higher).
   * There is a breaking change in MSTest v3: If a unit test uses an external file from disk, it should look for the file
     in `AppDomain.CurrentDomain.BaseDirectory` directory instead of the current directory.
 * Corrected type in extension methods: IsLessThen to IsLessThan, IsGreaterThen to IsGreaterThan.

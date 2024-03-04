@@ -17,17 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.TestCommon;
-using Rhetos.Configuration.Autofac;
 using Rhetos.Utilities;
-using Rhetos;
-using CommonConcepts.Test.Helpers;
+using System;
+using System.Linq;
 
 namespace CommonConcepts.Test
 {
