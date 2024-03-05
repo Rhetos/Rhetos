@@ -341,7 +341,7 @@ namespace Rhetos.Dom.DefaultConcepts
                                 .Single(m => m.Name == "Contains" && m.GetParameters().Length == 2)
                                 .MakeGenericMethod(collectionElement);
 
-                            expression = _ormUtility.OptimizeContains(Expression.Call(containsMethod, constant, convertedMemberAccess));
+                            expression = _ormUtility.OptimizeContains(Expression.Call(containsMethod, _ormUtility.CreateContainsItemsExpression(constant.Value), convertedMemberAccess));
 
                             if (filter.Operation.Equals("notin", StringComparison.OrdinalIgnoreCase))
                                 expression = Expression.Not(expression);
@@ -399,7 +399,7 @@ namespace Rhetos.Dom.DefaultConcepts
             if (list is IQueryable<TPropertyBasicType> queryable)
             {
                 if (propertyIsNullableValueType)
-                    list = queryable.Cast<TPropertyBasicType?>();
+                    list = queryable.Select(element => (TPropertyBasicType?)element);
             }
             else if (list is IEnumerable<TPropertyBasicType> enumerable)
             {

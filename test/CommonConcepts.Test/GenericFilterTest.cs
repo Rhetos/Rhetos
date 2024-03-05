@@ -557,7 +557,9 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void GenericQueryableInSubquery()
         {
-            string expectedSql = @"SELECT 
+#if RHETOS_EF6
+            string expectedSql =
+@"SELECT 
     [Extent1].[ID] AS [ID]
     FROM [TestGenericFilter].[Child] AS [Extent1]
     WHERE  EXISTS (SELECT 
@@ -565,17 +567,27 @@ namespace CommonConcepts.Test
         FROM [TestGenericFilter].[Simple] AS [Extent2]
         WHERE (N'A' = [Extent2].[Name]) AND ([Extent2].[ID] = [Extent1].[ParentID])
     )";
+#else
+            string expectedSql =
+@"SELECT [c].[ID]
+FROM [TestGenericFilter].[Child] AS [c]
+WHERE [c].[ParentID] IN (
+    SELECT [s].[ID]
+    FROM [TestGenericFilter].[Simple] AS [s]
+    WHERE [s].[Name] = N'A'
+)";
+#endif
             using (var scope = TestScope.Create())
             {
                 var repository = scope.Resolve<Common.DomRepository>();
                 var subquery = repository.TestGenericFilter.Simple.Query(item => item.Name == "A").Select(item => item.ID);
 
                 var querySimple = repository.TestGenericFilter.Child.Query(item => subquery.Contains(item.ParentID.Value)).Select(item => item.ID);
-                Assert.AreEqual(expectedSql, querySimple.ToString(), "This is just a control query.");
+                Assert.AreEqual(expectedSql, querySimple.GetSqlQuery(), "This is just a control query.");
 
                 var genericFilter = new FilterCriteria { Property = "ParentID", Operation = "In", Value = subquery };
                 var queryGenericFilter = repository.TestGenericFilter.Child.Query(new[] { genericFilter }).Select(item => item.ID);
-                Assert.AreEqual(expectedSql, queryGenericFilter.ToString(), "Generic filter's Value parameter should be implemented as a LINQ subquery as generated a single SQL query.");
+                Assert.AreEqual(expectedSql, queryGenericFilter.GetSqlQuery(), "Generic filter's Value parameter should be implemented as a LINQ subquery.");
             }
         }
 

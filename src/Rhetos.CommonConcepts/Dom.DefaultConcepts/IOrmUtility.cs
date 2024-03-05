@@ -18,6 +18,7 @@
 */
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -67,5 +68,15 @@ namespace Rhetos.Dom.DefaultConcepts
         /// if the LINQ query has Contains method, and the compilation can take significant amount on time on complex queries.
         /// </remarks>
         IQueryable<T> WhereContains<T>(IQueryable<T> query, List<Guid> ids, Expression<Func<T, Guid>> memberSelector);
+
+        /// <summary>
+        /// On EF Core, the `items.Contains(member)` method does not work well in generated lambda expression, if the `items` is provided as a ConstantExpression.
+        /// It works well on EF6, but on EF Core the 'items' list or query needs to be provided as a field or a property of some other "wrapper" class.
+        /// When writing a lambda expression directly in C# source, the compiler automatically generates the wrapper class (it is the "closure" for the lambda expression),
+        /// but when generating the lambda expression dynamically, we need to generate a wrapper class.
+        /// This might be improved in newer versions of EF Core, then this method might be simplified to simply return the ConstantExpression.
+        /// </summary>
+        /// <returns></returns>
+        public Expression CreateContainsItemsExpression<TItems>(TItems items);
     }
 }

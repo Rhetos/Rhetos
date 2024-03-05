@@ -329,8 +329,7 @@ namespace Rhetos.Dom.DefaultConcepts
             if (Reflection.RepositoryQueryMethod != null && typeof(IEnumerable<Guid>).IsAssignableFrom(parameterType))
             {
                 _logger.Trace(() => "Reading using Query().Where(item => guids.Contains(item.ID))");
-                if (!(parameter is List<Guid>))
-                    parameter = ((IEnumerable<Guid>)parameter).ToList();
+                var parameterList = parameter is List<Guid> list ? list : ((IEnumerable<Guid>)parameter).ToList();
                 var query = (IQueryable<TEntityInterface>)Reflection.RepositoryQueryMethod.InvokeEx(_repository.Value);
 
                 // The query is built by reflection to avoid an obscure problem with complex query in NHibernate:
@@ -338,7 +337,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 var filterPredicateParameter = Expression.Parameter(Reflection.EntityType, "item");
                 var filterPredicate = Expression.Lambda(
                     Expression.Call(
-                        Expression.Constant(parameter),
+                        _ormUtility.CreateContainsItemsExpression(parameterList),
                         typeof(List<Guid>).GetMethod("Contains"),
                         new[] { Expression.Property(filterPredicateParameter, "ID") }),
                     filterPredicateParameter);
@@ -524,8 +523,7 @@ namespace Rhetos.Dom.DefaultConcepts
             if (typeof(IEnumerable<Guid>).IsAssignableFrom(parameterType))
             {
                 _logger.Trace(() => "Filtering using items.Where(item => guids.Contains(item.ID))");
-                if (!(parameter is List<Guid>))
-                    parameter = ((IEnumerable<Guid>)parameter).ToList();
+                var parameterList = parameter is List<Guid> list ? list : ((IEnumerable<Guid>)parameter).ToList();
 
                 if (items is IQueryable<TEntityInterface>) // Use queryable Where function with bool expression instead of bool function.
                 {
@@ -534,7 +532,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     var filterPredicateParameter = Expression.Parameter(Reflection.EntityType, "item");
                     var filterPredicate = Expression.Lambda(
                         Expression.Call(
-                            Expression.Constant(parameter),
+                            _ormUtility.CreateContainsItemsExpression(parameterList),
                             typeof(List<Guid>).GetMethod("Contains"),
                             new[] { Expression.Property(filterPredicateParameter, "ID") }),
                         filterPredicateParameter);
@@ -542,7 +540,7 @@ namespace Rhetos.Dom.DefaultConcepts
                     return Reflection.Where((IQueryable<TEntityInterface>)items, _ormUtility.OptimizeContains(filterPredicate));
                 }
 
-                return items.Where(item => ((List<Guid>)parameter).Contains(item.ID));
+                return items.Where(item => parameterList.Contains(item.ID));
             }
 
             string errorMessage = $"{EntityName} does not implement a filter method with parameter {parameterType}.";

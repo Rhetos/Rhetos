@@ -17,8 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Autofac.Core;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Reflection.Metadata;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -38,9 +40,21 @@ namespace Rhetos.Dom.DefaultConcepts
         public MethodInfo IsLessThanOrEqualMethod => typeof(DatabaseExtensionFunctions).GetMethod("IsLessThanOrEqual");
         public MethodInfo NotEqualsCaseInsensitiveMethod => typeof(DatabaseExtensionFunctions).GetMethod("NotEqualsCaseInsensitive");
         public MethodInfo StartsWithCaseInsensitiveMethod => typeof(DatabaseExtensionFunctions).GetMethod("StartsWithCaseInsensitive");
-
         public Expression OptimizeContains(Expression expressionToOptimize) => EFExpression.OptimizeContains(expressionToOptimize);
         public Expression<Func<T, bool>> OptimizeContains<T>(Expression<Func<T, bool>> expressionToOptimize) => EFExpression.OptimizeContains(expressionToOptimize);
         public IQueryable<T> WhereContains<T>(IQueryable<T> query, List<Guid> ids, Expression<Func<T, Guid>> memberSelector) => EFExpression.WhereContains(query, ids, memberSelector);
+
+        public Expression CreateContainsItemsExpression<TItems>(TItems items)
+        {
+            // In EF Core, a lambda expression with Contains method ('items.Contains(selector)') does not support directly provided ConstantExpression with the 'items'.
+            // When developer writes the lambda expression directly in C# source, the compiler will generate a FieldExpression with a generated 'closure' class.
+            // The PropertyExpression also works, so we are emulating the closure here.
+            var closure = new { items };
+            var expression = Expression.Property(Expression.Constant(closure), nameof(closure.items));
+            if (items.GetType() == typeof(TItems))
+                return expression;
+            else
+                return Expression.Convert(expression, items.GetType());
+        }
     }
 }
