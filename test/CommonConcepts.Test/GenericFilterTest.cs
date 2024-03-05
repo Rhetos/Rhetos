@@ -591,6 +591,70 @@ WHERE [c].[ParentID] IN (
             }
         }
 
+#if !RHETOS_EF6
+        [TestMethod]
+        public void GenericFilterResultsWithEfCoreOptimizedContains()
+        {
+            string expectedSql =
+@"DECLARE @__array_0 nvarchar(4000) = N'[""11111111-1111-1111-1111-111111111111"",""22222222-2222-2222-2222-222222222222""]';
+
+SELECT [c].[ID]
+FROM [TestGenericFilter].[Child] AS [c]
+WHERE [c].[ParentID] IN (
+    SELECT [a].[value]
+    FROM OPENJSON(@__array_0) WITH ([value] uniqueidentifier '$') AS [a]
+)";
+            using (var scope = TestScope.Create())
+            {
+                var repository = scope.Resolve<Common.DomRepository>();
+                var array = new[] { new Guid("11111111-1111-1111-1111-111111111111"), new Guid("22222222-2222-2222-2222-222222222222") };
+
+                {
+                    var query = repository.TestGenericFilter.Child.Query(item => array.Contains(item.ParentID.Value)).Select(item => item.ID);
+                    string sql = query.GetSqlQuery();
+                    Assert.AreEqual(expectedSql, sql, "This is just a control query.");
+                }
+
+                {
+                    var genericFilter = new FilterCriteria { Property = "ParentID", Operation = "In", Value = array };
+                    var query = repository.TestGenericFilter.Child.Query(new[] { genericFilter }).Select(item => item.ID);
+                    string sql = query.GetSqlQuery();
+                    sql = sql.Replace("[p]", "[a]").Replace("@__p_0", "@__array_0");
+                    Assert.AreEqual(expectedSql, sql, "Generic filter's Contains expression on 'array' should result with optimized SQL that uses OPENJSON.");
+                }
+            }
+        }
+#endif
+
+        [TestMethod]
+        public void GenericQueryableInCustomSourceSameAsManualQuery()
+        {
+#if RHETOS_EF6
+            string expectedSql =
+@"SELECT 
+    [Extent1].[ID] AS [ID]
+    FROM [TestGenericFilter].[Child] AS [Extent1]
+    WHERE [Extent1].[ParentID] IN (cast('11111111-1111-1111-1111-111111111111' as uniqueidentifier), cast('22222222-2222-2222-2222-222222222222' as uniqueidentifier))";
+#else
+            string expectedSql =
+@"SELECT [c].[ID]
+FROM [TestGenericFilter].[Child] AS [c]
+WHERE [c].[ParentID] IN ('11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222')";
+#endif
+            using (var scope = TestScope.Create())
+            {
+                var repository = scope.Resolve<Common.DomRepository>();
+                var customSource = (new[] { new Guid("11111111-1111-1111-1111-111111111111"), new Guid("22222222-2222-2222-2222-222222222222") }).AsQueryable();
+
+                var querySimple = repository.TestGenericFilter.Child.Query(item => customSource.Contains(item.ParentID.Value)).Select(item => item.ID);
+                Assert.AreEqual(expectedSql, querySimple.GetSqlQuery(), "This is just a control query.");
+
+                var genericFilter = new FilterCriteria { Property = "ParentID", Operation = "In", Value = customSource };
+                var queryGenericFilter = repository.TestGenericFilter.Child.Query(new[] { genericFilter }).Select(item => item.ID);
+                Assert.AreEqual(expectedSql, queryGenericFilter.GetSqlQuery(), "Generic filter's Value parameter should be implemented same as a manual LINQ query.");
+            }
+        }
+
         [TestMethod]
         public void OptimizeEqualsGuidTest()
         {
