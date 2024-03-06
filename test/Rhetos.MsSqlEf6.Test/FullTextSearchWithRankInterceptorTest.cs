@@ -17,23 +17,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Dom.DefaultConcepts.Persistence;
 using Rhetos.Persistence;
-using Rhetos.TestCommon;
-using System;
-using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Rhetos.CommonConcepts.Test
+namespace Rhetos.MsSqlEf6.Test
 {
-    [TestClass]
     public class FullTextSearchWithRankInterceptorTest
     {
-        [TestMethod]
+        [Fact]
         public void Simple()
         {
             string generatedQuery = $@"
@@ -59,11 +51,11 @@ SELECT
 AND [Extent1].[ID2] IN (SELECT [KEY] FROM CONTAINSTABLE(TestFullTextSearch.Simple_Search2, (a, b, c), N'a2', 33))";
 
 
-                Assert.AreEqual(expected, command.CommandText);
+                Assert.Equal(expected, command.CommandText);
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void ValidQueries()
         {
             var tests = new Dictionary<string, string>
@@ -87,12 +79,12 @@ AND [Extent1].[ID2] IN (SELECT [KEY] FROM CONTAINSTABLE(TestFullTextSearch.Simpl
                 using (var command = new SqlCommand(test.Key))
                 {
                     new FullTextSearchInterceptor().ReaderExecuting(command, null);
-                    Assert.AreEqual(test.Value, command.CommandText);
+                    Assert.Equal(test.Value, command.CommandText);
                 }
             }
         }
-        
-        [TestMethod]
+
+        [Fact]
         public void InvalidQueries()
         {
             var tests = new Dictionary<string, string>
@@ -127,9 +119,8 @@ AND [Extent1].[ID2] IN (SELECT [KEY] FROM CONTAINSTABLE(TestFullTextSearch.Simpl
             {
                 using (var command = new SqlCommand(test.Key))
                 {
-                    TestUtility.ShouldFail<FrameworkException>(
-                        () => new FullTextSearchInterceptor().ReaderExecuting(command, null),
-                        test.Value);
+                    var ex = Assert.Throws<FrameworkException>(() => new FullTextSearchInterceptor().ReaderExecuting(command, null));
+                    Assert.Contains(test.Value, ex.ToString());
                 }
             }
         }

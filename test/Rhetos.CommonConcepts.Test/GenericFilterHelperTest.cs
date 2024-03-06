@@ -47,36 +47,39 @@ namespace Rhetos.CommonConcepts.Test
         [TestMethod]
         public void StringCaseInsensitiveTest()
         {
-            var items = "a1, A2, a3, A4, b1, B2"
+            foreach (var ormUtility in new IOrmUtility[] { new Ef6OrmUtility(), new EfCoreOrmUtility() })
+            {
+                var items = "a1, A2, a3, A4, b1, B2"
                 .Split(new[] { ", " }, StringSplitOptions.None)
                 .Select(name => new C { Name = name }).ToList();
-            items.Add(new C { Name = null });
+                items.Add(new C { Name = null });
 
-            Assert.AreEqual("b1, B2", TestFilterByName(items, "startswith", "b"));
-            Assert.AreEqual("b1, B2", TestFilterByName(items, "startswith", "B"));
-            Assert.AreEqual("b1, B2", TestFilterByName(items, "contains", "b"));
-            Assert.AreEqual("b1, B2", TestFilterByName(items, "contains", "B"));
-            Assert.AreEqual("A2", TestFilterByName(items, "equal", "a2"));
-            Assert.AreEqual("<null>, a1, a3, A4, b1, B2", TestFilterByName(items, "notequal", "a2"));
-            Assert.AreEqual("a1, A2", TestFilterByName(items, "less", "A3"));
-            Assert.AreEqual("a1, A2, a3", TestFilterByName(items, "lessequal", "A3"));
-            Assert.AreEqual("a3, A4, b1, B2", TestFilterByName(items, "greater", "a2"));
-            Assert.AreEqual("A2, a3, A4, b1, B2", TestFilterByName(items, "greaterequal", "a2"));
+                Assert.AreEqual("b1, B2", TestFilterByName(items, "startswith", "b", ormUtility));
+                Assert.AreEqual("b1, B2", TestFilterByName(items, "startswith", "B", ormUtility));
+                Assert.AreEqual("b1, B2", TestFilterByName(items, "contains", "b", ormUtility));
+                Assert.AreEqual("b1, B2", TestFilterByName(items, "contains", "B", ormUtility));
+                Assert.AreEqual("A2", TestFilterByName(items, "equal", "a2", ormUtility));
+                Assert.AreEqual("<null>, a1, a3, A4, b1, B2", TestFilterByName(items, "notequal", "a2", ormUtility));
+                Assert.AreEqual("a1, A2", TestFilterByName(items, "less", "A3", ormUtility));
+                Assert.AreEqual("a1, A2, a3", TestFilterByName(items, "lessequal", "A3", ormUtility));
+                Assert.AreEqual("a3, A4, b1, B2", TestFilterByName(items, "greater", "a2", ormUtility));
+                Assert.AreEqual("A2, a3, A4, b1, B2", TestFilterByName(items, "greaterequal", "a2", ormUtility));
 
-            items.Add(new C { Name = "" });
+                items.Add(new C { Name = "" });
 
-            Assert.AreEqual("", TestFilterByName(items, "equal", ""));
-            Assert.AreEqual("<null>", TestFilterByName(items, "equal", null));
-            Assert.AreEqual("<null>, a1, A2, a3, A4, b1, B2", TestFilterByName(items, "notequal", ""));
-            Assert.AreEqual(", a1, A2, a3, A4, b1, B2", TestFilterByName(items, "notequal", null));
+                Assert.AreEqual("", TestFilterByName(items, "equal", "", ormUtility));
+                Assert.AreEqual("<null>", TestFilterByName(items, "equal", null, ormUtility));
+                Assert.AreEqual("<null>, a1, A2, a3, A4, b1, B2", TestFilterByName(items, "notequal", "", ormUtility));
+                Assert.AreEqual(", a1, A2, a3, A4, b1, B2", TestFilterByName(items, "notequal", null, ormUtility));
+            }
         }
 
-        private static string TestFilterByName(IEnumerable<C> items, string operation, object value)
+        private static string TestFilterByName(IEnumerable<C> items, string operation, object value, IOrmUtility ormUtility)
         {
             var genericFilter = new FilterCriteria("Name", operation, value);
             Console.WriteLine("genericFilter: " + genericFilter.Property + " " + genericFilter.Operation + " " + genericFilter.Value);
 
-            var genericFilterHelper = new GenericFilterHelper(new DataStructureReadParametersStub(), new ConsoleLogProvider(), new Ef6OrmUtility());
+            var genericFilterHelper = new GenericFilterHelper(new DataStructureReadParametersStub(), new ConsoleLogProvider(), ormUtility);
             var filterObject = genericFilterHelper.ToFilterObjects(typeof(C).FullName, new FilterCriteria[] { genericFilter }).Single();
             Console.WriteLine("filterObject.FilterType: " + filterObject.FilterType.ToString());
             var filterExpression = genericFilterHelper.ToExpression<C>((IEnumerable<PropertyFilter>)filterObject.Parameter);
@@ -152,11 +155,14 @@ namespace Rhetos.CommonConcepts.Test
             items.Add(new C { Name = null });
             items.Add(new C { Name = "" });
 
-            Assert.AreEqual("b1, B2", TestFilterByName(items, "in", new[] { "b1", "B2", "B2", "b3" }));
-            Assert.AreEqual("b1, B2", TestFilterByName(items, "in", new List<string> { "b1", "B2", "B2", "b3" }));
-            Assert.AreEqual(", <null>, a1, A2, a3, A4", TestFilterByName(items, "NotIn", new[] { "b1", "B2", "B2", "b3" }));
-            Assert.AreEqual("<null>, a1, A2, a3, A4", TestFilterByName(items, "NotIn", new[] { "b1", "B2", "B2", "b3", "" }));
-            Assert.AreEqual(", a1, A2, a3, A4", TestFilterByName(items, "NotIn", new[] { "b1", "B2", "B2", "b3", null }));
+            foreach (var ormUtility in new IOrmUtility[] { new Ef6OrmUtility(), new EfCoreOrmUtility() })
+            {
+                Assert.AreEqual("b1, B2", TestFilterByName(items, "in", new[] { "b1", "B2", "B2", "b3" }, ormUtility));
+                Assert.AreEqual("b1, B2", TestFilterByName(items, "in", new List<string> { "b1", "B2", "B2", "b3" }, ormUtility));
+                Assert.AreEqual(", <null>, a1, A2, a3, A4", TestFilterByName(items, "NotIn", new[] { "b1", "B2", "B2", "b3" }, ormUtility));
+                Assert.AreEqual("<null>, a1, A2, a3, A4", TestFilterByName(items, "NotIn", new[] { "b1", "B2", "B2", "b3", "" }, ormUtility));
+                Assert.AreEqual(", a1, A2, a3, A4", TestFilterByName(items, "NotIn", new[] { "b1", "B2", "B2", "b3", null }, ormUtility));
+            }
         }
 
         [TestMethod]
@@ -175,38 +181,41 @@ namespace Rhetos.CommonConcepts.Test
                 new { ID = id3, RefID = (Guid?)id3, Name = "3" },
             };
 
-            // Guid property, Guid array:
-            Assert.AreEqual("1, 2", TestUtility.DumpSorted(TestFilter("ID", "In", new Guid[] { id1, id2, id2, id4 }, items), item => item.Name));
-            Assert.AreEqual("3", TestUtility.DumpSorted(TestFilter("ID", "NotIn", new Guid[] { id1, id2, id2, id4 }, items), item => item.Name));
+            foreach (var ormUtility in new IOrmUtility[] { new Ef6OrmUtility(), new EfCoreOrmUtility() })
+            {
+                // Guid property, Guid array:
+                Assert.AreEqual("1, 2", TestUtility.DumpSorted(TestFilter("ID", "In", new Guid[] { id1, id2, id2, id4 }, items, ormUtility), item => item.Name));
+                Assert.AreEqual("3", TestUtility.DumpSorted(TestFilter("ID", "NotIn", new Guid[] { id1, id2, id2, id4 }, items, ormUtility), item => item.Name));
 
-            // Guid property, Guid list:
-            Assert.AreEqual("1, 2", TestUtility.DumpSorted(TestFilter("ID", "In", new List<Guid> { id1, id2, id2, id4 }, items), item => item.Name));
-            Assert.AreEqual("3", TestUtility.DumpSorted(TestFilter("ID", "NotIn", new List<Guid> { id1, id2, id2, id4 }, items), item => item.Name));
+                // Guid property, Guid list:
+                Assert.AreEqual("1, 2", TestUtility.DumpSorted(TestFilter("ID", "In", new List<Guid> { id1, id2, id2, id4 }, items, ormUtility), item => item.Name));
+                Assert.AreEqual("3", TestUtility.DumpSorted(TestFilter("ID", "NotIn", new List<Guid> { id1, id2, id2, id4 }, items, ormUtility), item => item.Name));
 
-            // Guid property, Guid? array:
-            Assert.AreEqual("1, 2", TestUtility.DumpSorted(TestFilter("ID", "In", new Guid?[] { idnull, id1, id2, id2, id4 }, items), item => item.Name));
-            Assert.AreEqual("3", TestUtility.DumpSorted(TestFilter("ID", "NotIn", new Guid?[] { idnull, id1, id2, id2, id4 }, items), item => item.Name));
+                // Guid property, Guid? array:
+                Assert.AreEqual("1, 2", TestUtility.DumpSorted(TestFilter("ID", "In", new Guid?[] { idnull, id1, id2, id2, id4 }, items, ormUtility), item => item.Name));
+                Assert.AreEqual("3", TestUtility.DumpSorted(TestFilter("ID", "NotIn", new Guid?[] { idnull, id1, id2, id2, id4 }, items, ormUtility), item => item.Name));
 
-            // Guid property, string array:
-            Assert.AreEqual("1, 2", TestUtility.DumpSorted(TestFilter("ID", "In", new string[] { null, "", id1.ToString(), id2.ToString(), id2.ToString(), id4.ToString() }, items), item => item.Name));
-            Assert.AreEqual("3", TestUtility.DumpSorted(TestFilter("ID", "NotIn", new string[] { null, "", id1.ToString(), id2.ToString(), id2.ToString(), id4.ToString() }, items), item => item.Name));
+                // Guid property, string array:
+                Assert.AreEqual("1, 2", TestUtility.DumpSorted(TestFilter("ID", "In", new string[] { null, "", id1.ToString(), id2.ToString(), id2.ToString(), id4.ToString() }, items, ormUtility), item => item.Name));
+                Assert.AreEqual("3", TestUtility.DumpSorted(TestFilter("ID", "NotIn", new string[] { null, "", id1.ToString(), id2.ToString(), id2.ToString(), id4.ToString() }, items, ormUtility), item => item.Name));
 
-            // Guid? property, Guid array:
-            Assert.AreEqual("2", TestUtility.DumpSorted(TestFilter("RefID", "In", new Guid[] { id1, id2, id2, id4 }, items), item => item.Name));
-            Assert.AreEqual("1, 3", TestUtility.DumpSorted(TestFilter("RefID", "NotIn", new Guid[] { id1, id2, id2, id4 }, items), item => item.Name));
+                // Guid? property, Guid array:
+                Assert.AreEqual("2", TestUtility.DumpSorted(TestFilter("RefID", "In", new Guid[] { id1, id2, id2, id4 }, items, ormUtility), item => item.Name));
+                Assert.AreEqual("1, 3", TestUtility.DumpSorted(TestFilter("RefID", "NotIn", new Guid[] { id1, id2, id2, id4 }, items, ormUtility), item => item.Name));
 
-            // Guid? property, string array:
-            Assert.AreEqual("1, 2", TestUtility.DumpSorted(TestFilter("RefID", "In", new string[] { null, id1.ToString(), id2.ToString(), id2.ToString(), id4.ToString() }, items), item => item.Name));
-            Assert.AreEqual("3", TestUtility.DumpSorted(TestFilter("RefID", "NotIn", new string[] { null, id1.ToString(), id2.ToString(), id2.ToString(), id4.ToString() }, items), item => item.Name));
-            Assert.AreEqual("1, 2", TestUtility.DumpSorted(TestFilter("RefID", "In", new string[] { "", id1.ToString(), id2.ToString(), id2.ToString(), id4.ToString() }, items), item => item.Name));
-            Assert.AreEqual("3", TestUtility.DumpSorted(TestFilter("RefID", "NotIn", new string[] { "", id1.ToString(), id2.ToString(), id2.ToString(), id4.ToString() }, items), item => item.Name));
+                // Guid? property, string array:
+                Assert.AreEqual("1, 2", TestUtility.DumpSorted(TestFilter("RefID", "In", new string[] { null, id1.ToString(), id2.ToString(), id2.ToString(), id4.ToString() }, items, ormUtility), item => item.Name));
+                Assert.AreEqual("3", TestUtility.DumpSorted(TestFilter("RefID", "NotIn", new string[] { null, id1.ToString(), id2.ToString(), id2.ToString(), id4.ToString() }, items, ormUtility), item => item.Name));
+                Assert.AreEqual("1, 2", TestUtility.DumpSorted(TestFilter("RefID", "In", new string[] { "", id1.ToString(), id2.ToString(), id2.ToString(), id4.ToString() }, items, ormUtility), item => item.Name));
+                Assert.AreEqual("3", TestUtility.DumpSorted(TestFilter("RefID", "NotIn", new string[] { "", id1.ToString(), id2.ToString(), id2.ToString(), id4.ToString() }, items, ormUtility), item => item.Name));
+            }
         }
 
-        private static IEnumerable<TDataStructure> TestFilter<TDataStructure>(string property, string operation, object value, IEnumerable<TDataStructure> items)
+        private static IEnumerable<TDataStructure> TestFilter<TDataStructure>(string property, string operation, object value, IEnumerable<TDataStructure> items, IOrmUtility ormUtility)
         {
             var genericFilter = new FilterCriteria(property, operation, value);
-            var genericFilterHelper = new GenericFilterHelper(new DataStructureReadParametersStub(), new ConsoleLogProvider(), new Ef6OrmUtility());
-            var filterObject = genericFilterHelper.ToFilterObjects(typeof(TDataStructure).FullName, new FilterCriteria[] { genericFilter }).Single();
+            var genericFilterHelper = new GenericFilterHelper(new DataStructureReadParametersStub(), new ConsoleLogProvider(), ormUtility);
+            var filterObject = genericFilterHelper.ToFilterObjects(typeof(TDataStructure).FullName, [genericFilter]).Single();
             var filterExpression = genericFilterHelper.ToExpression<TDataStructure>((IEnumerable<PropertyFilter>)filterObject.Parameter);
             var filteredItems = items.AsQueryable().Where(filterExpression).ToList();
             return filteredItems;
@@ -223,11 +232,14 @@ namespace Rhetos.CommonConcepts.Test
                 new { ID = id1, RefID = idnull, Name = "1" },
             };
 
-            TestUtility.ShouldFail<ClientException>(() => TestFilter("ID", "In", new int[] { 1 }, items), "Invalid generic filter", "'In'", "'ID'", "Int32", "Guid");
-            TestUtility.ShouldFail<ClientException>(() => TestFilter("RefID", "In", new int[] { 1 }, items), "Invalid generic filter", "'In'", "'RefID'", "Int32", "Guid");
-            TestUtility.ShouldFail<ClientException>(() => TestFilter("Name", "In", new int[] { 1 }, items), "Invalid generic filter", "'In'", "'Name'", "Int32", "String");
-            TestUtility.ShouldFail<ClientException>(() => TestFilter("ID", "In", 2, items), "Invalid generic filter", "'In'", "'ID'", "Int32", "Guid");
-            TestUtility.ShouldFail<ClientException>(() => TestFilter("Name", "In", null, items), "Invalid generic filter", "'In'", "'Name'", "null", "String");
+            foreach (var ormUtility in new IOrmUtility[] { new Ef6OrmUtility(), new EfCoreOrmUtility() })
+            {
+                TestUtility.ShouldFail<ClientException>(() => TestFilter("ID", "In", new int[] { 1 }, items, ormUtility), "Invalid generic filter", "'In'", "'ID'", "Int32", "Guid");
+                TestUtility.ShouldFail<ClientException>(() => TestFilter("RefID", "In", new int[] { 1 }, items, ormUtility), "Invalid generic filter", "'In'", "'RefID'", "Int32", "Guid");
+                TestUtility.ShouldFail<ClientException>(() => TestFilter("Name", "In", new int[] { 1 }, items, ormUtility), "Invalid generic filter", "'In'", "'Name'", "Int32", "String");
+                TestUtility.ShouldFail<ClientException>(() => TestFilter("ID", "In", 2, items, ormUtility), "Invalid generic filter", "'In'", "'ID'", "Int32", "Guid");
+                TestUtility.ShouldFail<ClientException>(() => TestFilter("Name", "In", null, items, ormUtility), "Invalid generic filter", "'In'", "'Name'", "null", "String");
+            }
         }
 
         [TestMethod]
@@ -248,14 +260,17 @@ namespace Rhetos.CommonConcepts.Test
                 new { ID = id3, RefID = (Guid?)id3, Name = "3" },
             };
 
-            Assert.AreEqual("", TestUtility.DumpSorted(TestFilter("ID", "In", Array.Empty<int>(), items), item => item.Name));
-            Assert.AreEqual("1, 2, 3", TestUtility.DumpSorted(TestFilter("ID", "NotIn", Array.Empty<int>(), items), item => item.Name));
-            Assert.AreEqual("", TestUtility.DumpSorted(TestFilter("RefID", "In", Array.Empty<int>(), items), item => item.Name));
-            Assert.AreEqual("1, 2, 3", TestUtility.DumpSorted(TestFilter("RefID", "NotIn", Array.Empty<int>(), items), item => item.Name));
-            Assert.AreEqual("", TestUtility.DumpSorted(TestFilter("Name", "In", Array.Empty<int>(), items), item => item.Name));
-            Assert.AreEqual("1, 2, 3", TestUtility.DumpSorted(TestFilter("Name", "NotIn", Array.Empty<int>(), items), item => item.Name));
-            Assert.AreEqual("", TestUtility.DumpSorted(TestFilter("Name", "In", Array.Empty<C>(), items), item => item.Name));
-            Assert.AreEqual("1, 2, 3", TestUtility.DumpSorted(TestFilter("Name", "NotIn", Array.Empty<C>(), items), item => item.Name));
+            foreach (var ormUtility in new IOrmUtility[] { new Ef6OrmUtility(), new EfCoreOrmUtility() })
+            {
+                Assert.AreEqual("", TestUtility.DumpSorted(TestFilter("ID", "In", Array.Empty<int>(), items, ormUtility), item => item.Name));
+                Assert.AreEqual("1, 2, 3", TestUtility.DumpSorted(TestFilter("ID", "NotIn", Array.Empty<int>(), items, ormUtility), item => item.Name));
+                Assert.AreEqual("", TestUtility.DumpSorted(TestFilter("RefID", "In", Array.Empty<int>(), items, ormUtility), item => item.Name));
+                Assert.AreEqual("1, 2, 3", TestUtility.DumpSorted(TestFilter("RefID", "NotIn", Array.Empty<int>(), items, ormUtility), item => item.Name));
+                Assert.AreEqual("", TestUtility.DumpSorted(TestFilter("Name", "In", Array.Empty<int>(), items, ormUtility), item => item.Name));
+                Assert.AreEqual("1, 2, 3", TestUtility.DumpSorted(TestFilter("Name", "NotIn", Array.Empty<int>(), items, ormUtility), item => item.Name));
+                Assert.AreEqual("", TestUtility.DumpSorted(TestFilter("Name", "In", Array.Empty<C>(), items, ormUtility), item => item.Name));
+                Assert.AreEqual("1, 2, 3", TestUtility.DumpSorted(TestFilter("Name", "NotIn", Array.Empty<C>(), items, ormUtility), item => item.Name));
+            }
         }
 
         [TestMethod]
@@ -274,23 +289,26 @@ namespace Rhetos.CommonConcepts.Test
                 new { ID = id3, RefID = (Guid?)id3, Name = "3" },
             };
 
-            int queryExecutions = 0;
-            var query = new[] { 1 }
-                .SelectMany(x =>
-                {
-                    queryExecutions++;
-                    return new Guid[] { id1, id2, id2, id4 }.AsQueryable();
-                }).AsQueryable();
+            foreach (var ormUtility in new IOrmUtility[] { new Ef6OrmUtility(), new EfCoreOrmUtility() })
+            {
+                int queryExecutions = 0;
+                var query = new[] { 1 }
+                    .SelectMany(x =>
+                    {
+                        queryExecutions++;
+                        return new Guid[] { id1, id2, id2, id4 }.AsQueryable();
+                    }).AsQueryable();
 
-            Assert.AreEqual(0, queryExecutions);
-            Assert.AreEqual("1, 2", TestUtility.DumpSorted(TestFilter("ID", "In", query, items), item => item.Name));
-            Assert.AreEqual(items.Length, queryExecutions);
-            Assert.AreEqual("3", TestUtility.DumpSorted(TestFilter("ID", "NotIn", query, items), item => item.Name));
-            Assert.AreEqual(2 * items.Length, queryExecutions);
-            Assert.AreEqual("2", TestUtility.DumpSorted(TestFilter("RefID", "In", query, items), item => item.Name));
-            Assert.AreEqual(3 * items.Length, queryExecutions);
-            Assert.AreEqual("1, 2", TestUtility.DumpSorted(TestFilter("ID", "In", query.Cast<Guid?>(), items), item => item.Name));
-            Assert.AreEqual(4 * items.Length, queryExecutions);
+                Assert.AreEqual(0, queryExecutions);
+                Assert.AreEqual("1, 2", TestUtility.DumpSorted(TestFilter("ID", "In", query, items, ormUtility), item => item.Name));
+                Assert.AreEqual(items.Length, queryExecutions);
+                Assert.AreEqual("3", TestUtility.DumpSorted(TestFilter("ID", "NotIn", query, items, ormUtility), item => item.Name));
+                Assert.AreEqual(2 * items.Length, queryExecutions);
+                Assert.AreEqual("2", TestUtility.DumpSorted(TestFilter("RefID", "In", query, items, ormUtility), item => item.Name));
+                Assert.AreEqual(3 * items.Length, queryExecutions);
+                Assert.AreEqual("1, 2", TestUtility.DumpSorted(TestFilter("ID", "In", query.Cast<Guid?>(), items, ormUtility), item => item.Name));
+                Assert.AreEqual(4 * items.Length, queryExecutions);
+            }
         }
 
         [TestMethod]

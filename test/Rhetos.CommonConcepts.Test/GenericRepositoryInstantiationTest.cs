@@ -29,6 +29,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using Rhetos.CommonConcepts.Test.Mocks;
+using Rhetos.CommonConcepts.Test.Tools;
 
 namespace Rhetos.CommonConcepts.Test
 {
@@ -51,9 +52,9 @@ namespace Rhetos.CommonConcepts.Test
             }
         }
 
-        static TestGenericRepository<ISimpleEntity, SimpleEntity> NewSimpleRepos(IEnumerable<SimpleEntity> items = null)
+        static TestGenericRepository<ISimpleEntity, SimpleEntity> NewSimpleRepos(IOrmUtility ormUtility = null, IEnumerable<SimpleEntity> items = null)
         {
-            return new TestGenericRepository<ISimpleEntity, SimpleEntity>(items);
+            return new TestGenericRepository<ISimpleEntity, SimpleEntity>(items, ormUtility);
         }
 
         [TestMethod]

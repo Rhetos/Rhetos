@@ -58,9 +58,9 @@ namespace Rhetos.CommonConcepts.Test
             public void Add(string name) { Add(new SimpleEntity { Name = name, ID = new Guid(idCounter++, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) }); }
         }
 
-        GenericRepositories NewRepos(IRepository repository)
+        GenericRepositories NewRepos(IRepository repository, IOrmUtility ormUtility = null)
         {
-            var parameters = TestGenericRepository<IEntity, SimpleEntity>.NewParameters(repository);
+            var parameters = TestGenericRepository<IEntity, SimpleEntity>.NewParameters(repository, ormUtility);
             var rie = new RegisteredInterfaceImplementations { { typeof(IEntity), typeof(SimpleEntity).FullName } };
             return new GenericRepositories(parameters, rie);
         }
@@ -123,71 +123,77 @@ namespace Rhetos.CommonConcepts.Test
         [TestMethod]
         public void ReadCommand()
         {
-            var entityRepos = new ImplicitReadCommandRepository();
-            var genericRepositories = NewRepos(entityRepos);
-
-            var command = new ReadCommandInfo
+            foreach (var ormUtility in new IOrmUtility[] { new Ef6OrmUtility(), new EfCoreOrmUtility() })
             {
-                Filters = new[] { new FilterCriteria { Property = "Name", Operation = "StartsWith", Value = "b" } },
-                OrderByProperties = new[] { new OrderByProperty { Property = "Name" } },
-                Top = 3,
-                Skip = 3,
-                ReadRecords = true,
-                ReadTotalCount = true,
-            };
-            Assert.AreEqual("a1, b1, b2 / 10", Dump(ExecuteReadCommand(NewRepos(new ExplicitReadCommandRepository()), command)));
-            Assert.AreEqual(0, entityRepos.DropQueryCount());
-            Assert.AreEqual("b4, b5 / 5", Dump(ExecuteReadCommand(genericRepositories, command)));
-            Assert.AreEqual(2, entityRepos.DropQueryCount()); // Paging should result with two queries: selecting items and count.
+                var entityRepos = new ImplicitReadCommandRepository();
+                var genericRepositories = NewRepos(entityRepos, ormUtility);
 
-            command = new ReadCommandInfo { ReadRecords = true, ReadTotalCount = true };
-            Assert.AreEqual("a1, b1, b2, b3, b4, b5 / 6", Dump(ExecuteReadCommand(genericRepositories, command)));
-            Assert.AreEqual(1, entityRepos.DropQueryCount()); // Without paging, there is no need for two queries.
+                var command = new ReadCommandInfo
+                {
+                    Filters = new[] { new FilterCriteria { Property = "Name", Operation = "StartsWith", Value = "b" } },
+                    OrderByProperties = new[] { new OrderByProperty { Property = "Name" } },
+                    Top = 3,
+                    Skip = 3,
+                    ReadRecords = true,
+                    ReadTotalCount = true,
+                };
+                Assert.AreEqual("a1, b1, b2 / 10", Dump(ExecuteReadCommand(NewRepos(new ExplicitReadCommandRepository(), ormUtility), command)));
+                Assert.AreEqual(0, entityRepos.DropQueryCount());
+                Assert.AreEqual("b4, b5 / 5", Dump(ExecuteReadCommand(genericRepositories, command)));
+                Assert.AreEqual(2, entityRepos.DropQueryCount()); // Paging should result with two queries: selecting items and count.
 
-            command = new ReadCommandInfo { Filters = new[] { new FilterCriteria("1") }, ReadRecords = true, ReadTotalCount = true };
-            Assert.AreEqual("a1, b1 / 2", Dump(ExecuteReadCommand(genericRepositories, command)));
-            Assert.AreEqual(1, entityRepos.DropQueryCount()); // Without paging, there is no need for two queries.
+                command = new ReadCommandInfo { ReadRecords = true, ReadTotalCount = true };
+                Assert.AreEqual("a1, b1, b2, b3, b4, b5 / 6", Dump(ExecuteReadCommand(genericRepositories, command)));
+                Assert.AreEqual(1, entityRepos.DropQueryCount()); // Without paging, there is no need for two queries.
 
-            command = new ReadCommandInfo { Filters = new[] { new FilterCriteria("1"), new FilterCriteria { Property = "Name", Operation = "StartsWith", Value = "b" } }, ReadRecords = true, ReadTotalCount = true };
-            Assert.AreEqual("b1 / 1", Dump(ExecuteReadCommand(genericRepositories, command)));
-            Assert.AreEqual(1, entityRepos.DropQueryCount()); // Without paging, there is no need for two queries.
+                command = new ReadCommandInfo { Filters = new[] { new FilterCriteria("1") }, ReadRecords = true, ReadTotalCount = true };
+                Assert.AreEqual("a1, b1 / 2", Dump(ExecuteReadCommand(genericRepositories, command)));
+                Assert.AreEqual(1, entityRepos.DropQueryCount()); // Without paging, there is no need for two queries.
 
-            command = new ReadCommandInfo { Filters = new[] { new FilterCriteria("1"), new FilterCriteria { Filter = "System.String", Value = "b" } }, ReadRecords = true, ReadTotalCount = true };
-            Assert.AreEqual("b1 / 1", Dump(ExecuteReadCommand(genericRepositories, command)));
-            Assert.AreEqual(1, entityRepos.DropQueryCount()); // Without paging, there is no need for two queries.
+                command = new ReadCommandInfo { Filters = new[] { new FilterCriteria("1"), new FilterCriteria { Property = "Name", Operation = "StartsWith", Value = "b" } }, ReadRecords = true, ReadTotalCount = true };
+                Assert.AreEqual("b1 / 1", Dump(ExecuteReadCommand(genericRepositories, command)));
+                Assert.AreEqual(1, entityRepos.DropQueryCount()); // Without paging, there is no need for two queries.
 
-            command = new ReadCommandInfo { Filters = new[] { new FilterCriteria("b") }, Top = 2, Skip = 2, OrderByProperties = new[] { new OrderByProperty { Property = "Name" } }, ReadRecords = true, ReadTotalCount = true };
-            Assert.AreEqual("b3, b4 / 5", Dump(ExecuteReadCommand(genericRepositories, command)));
-            Assert.AreEqual(1, entityRepos.DropQueryCount()); // Enumerable filter will cause GenericRepository to materialize of the query, so it will be executed only once even though the paging is used.
+                command = new ReadCommandInfo { Filters = new[] { new FilterCriteria("1"), new FilterCriteria { Filter = "System.String", Value = "b" } }, ReadRecords = true, ReadTotalCount = true };
+                Assert.AreEqual("b1 / 1", Dump(ExecuteReadCommand(genericRepositories, command)));
+                Assert.AreEqual(1, entityRepos.DropQueryCount()); // Without paging, there is no need for two queries.
+
+                command = new ReadCommandInfo { Filters = new[] { new FilterCriteria("b") }, Top = 2, Skip = 2, OrderByProperties = new[] { new OrderByProperty { Property = "Name" } }, ReadRecords = true, ReadTotalCount = true };
+                Assert.AreEqual("b3, b4 / 5", Dump(ExecuteReadCommand(genericRepositories, command)));
+                Assert.AreEqual(1, entityRepos.DropQueryCount()); // Enumerable filter will cause GenericRepository to materialize of the query, so it will be executed only once even though the paging is used.
+            }
         }
 
         [TestMethod]
         public void ReadCommand_OutsideInterface()
         {
-            var entityRepos = new ImplicitReadCommandRepository();
-            var genericRepositories = NewRepos(entityRepos);
-
-            var command = new ReadCommandInfo
+            foreach (var ormUtility in new IOrmUtility[] { new Ef6OrmUtility(), new EfCoreOrmUtility() })
             {
-                Filters = new[] { new FilterCriteria { Property = "Name", Operation = "StartsWith", Value = "b" } },
-                OrderByProperties = new[] { new OrderByProperty { Property = "Data" } },
-                Top = 3,
-                Skip = 3,
-                ReadRecords = true,
-                ReadTotalCount = true,
-            };
-            Assert.AreEqual("b4, b5 / 5", Dump(ExecuteReadCommand(genericRepositories, command)));
+                var entityRepos = new ImplicitReadCommandRepository();
+                var genericRepositories = NewRepos(entityRepos, ormUtility);
 
-            command = new ReadCommandInfo
-            {
-                Filters = new[] { new FilterCriteria { Property = "Data", Operation = "Equal", Value = "xxx" } },
-                OrderByProperties = new[] { new OrderByProperty { Property = "Name" } },
-                Top = 3,
-                Skip = 3,
-                ReadRecords = true,
-                ReadTotalCount = true,
-            };
-            Assert.AreEqual(" / 0", Dump(ExecuteReadCommand(genericRepositories, command)));
+                var command = new ReadCommandInfo
+                {
+                    Filters = new[] { new FilterCriteria { Property = "Name", Operation = "StartsWith", Value = "b" } },
+                    OrderByProperties = new[] { new OrderByProperty { Property = "Data" } },
+                    Top = 3,
+                    Skip = 3,
+                    ReadRecords = true,
+                    ReadTotalCount = true,
+                };
+                Assert.AreEqual("b4, b5 / 5", Dump(ExecuteReadCommand(genericRepositories, command)));
+
+                command = new ReadCommandInfo
+                {
+                    Filters = new[] { new FilterCriteria { Property = "Data", Operation = "Equal", Value = "xxx" } },
+                    OrderByProperties = new[] { new OrderByProperty { Property = "Name" } },
+                    Top = 3,
+                    Skip = 3,
+                    ReadRecords = true,
+                    ReadTotalCount = true,
+                };
+                Assert.AreEqual(" / 0", Dump(ExecuteReadCommand(genericRepositories, command)));
+            }
         }
 
         [TestMethod]

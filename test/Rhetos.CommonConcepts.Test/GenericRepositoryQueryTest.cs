@@ -19,6 +19,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.CommonConcepts.Test.Mocks;
+using Rhetos.CommonConcepts.Test.Tools;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.TestCommon;
 using System;
@@ -55,9 +56,9 @@ namespace Rhetos.CommonConcepts.Test
             public void Add(string name) { Add(new SimpleEntity { Name = name, ID = new Guid(idCounter++, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) }); }
         }
 
-        GenericRepository<ISimpleEntity> NewRepos(IRepository repository)
+        GenericRepository<ISimpleEntity> NewRepos(IRepository repository, IOrmUtility ormUtility = null)
         {
-            return new TestGenericRepository<ISimpleEntity, SimpleEntity>(repository);
+            return new TestGenericRepository<ISimpleEntity, SimpleEntity>(repository, ormUtility);
         }
 
         //=======================================================
@@ -163,25 +164,28 @@ namespace Rhetos.CommonConcepts.Test
         [TestMethod]
         public void GenericFilterByIds()
         {
-            var repos = NewRepos(new SimpleRepository());
+            foreach (var ormUtility in new IOrmUtility[] { new Ef6OrmUtility(), new EfCoreOrmUtility() })
+            {
+                var repos = NewRepos(new SimpleRepository(), ormUtility);
 
-            var guids = new[] { new Guid(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) };
-            Assert.AreEqual("qb", repos.Load(guids).Single().Name);
-            Assert.AreEqual("qb", repos.Load(guids.ToList()).Single().Name);
-            Assert.AreEqual("qb", repos.Load(guids.AsQueryable()).Single().Name);
-            Assert.AreEqual("qb", repos.Query(guids).Single().Name);
-            Assert.AreEqual("qb", repos.Query(guids.ToList()).Single().Name);
-            Assert.AreEqual("qb", repos.Query(guids.AsQueryable()).Single().Name);
+                var guids = new[] { new Guid(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) };
+                Assert.AreEqual("qb", repos.Load(guids).Single().Name);
+                Assert.AreEqual("qb", repos.Load(guids.ToList()).Single().Name);
+                Assert.AreEqual("qb", repos.Load(guids.AsQueryable()).Single().Name);
+                Assert.AreEqual("qb", repos.Query(guids).Single().Name);
+                Assert.AreEqual("qb", repos.Query(guids.ToList()).Single().Name);
+                Assert.AreEqual("qb", repos.Query(guids.AsQueryable()).Single().Name);
 
-            var q = repos.Query();
-            Assert.AreEqual("qb", repos.Filter(q, guids).Single().Name);
-            Assert.AreEqual("qb", repos.Filter(q, guids.ToList()).Single().Name);
-            Assert.AreEqual("qb", repos.Filter(q, guids.AsQueryable()).Single().Name);
+                var q = repos.Query();
+                Assert.AreEqual("qb", repos.Filter(q, guids).Single().Name);
+                Assert.AreEqual("qb", repos.Filter(q, guids.ToList()).Single().Name);
+                Assert.AreEqual("qb", repos.Filter(q, guids.AsQueryable()).Single().Name);
 
-            var a = repos.Load();
-            Assert.AreEqual("qb", repos.Filter(a, guids).Single().Name);
-            Assert.AreEqual("qb", repos.Filter(a, guids.ToList()).Single().Name);
-            Assert.AreEqual("qb", repos.Filter(a, guids.AsQueryable()).Single().Name);
+                var a = repos.Load();
+                Assert.AreEqual("qb", repos.Filter(a, guids).Single().Name);
+                Assert.AreEqual("qb", repos.Filter(a, guids.ToList()).Single().Name);
+                Assert.AreEqual("qb", repos.Filter(a, guids.AsQueryable()).Single().Name);
+            }
         }
     }
 }

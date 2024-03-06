@@ -32,14 +32,14 @@ namespace Rhetos.CommonConcepts.Test.Tools
     public static class Factory
     {
 
-        public static GenericFilterHelper CreateGenericFilterHelper(IDataStructureReadParameters readParameters, List<string> log = null)
+        public static GenericFilterHelper CreateGenericFilterHelper(IDataStructureReadParameters readParameters, IOrmUtility ormUtility = null, List<string> log = null)
         {
             return new GenericFilterHelper(
                 readParameters,
                 log != null
                     ? new ConsoleLogProvider((eventType, eventName, message) => log.Add($"[{eventType}] {eventName}: {message()}"))
                     : new ConsoleLogProvider(),
-                new Ef6OrmUtility());
+                ormUtility ?? new FakeOrmUtility());
         }
 
         public static DataStructureReadParameters CreateDataStructureReadParameters(IRepository repository, Type type)

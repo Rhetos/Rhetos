@@ -19,6 +19,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.CommonConcepts.Test.Mocks;
+using Rhetos.CommonConcepts.Test.Tools;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.TestCommon;
 using System;
@@ -82,9 +83,9 @@ namespace Rhetos.CommonConcepts.Test
 #pragma warning restore CA1801 // Review unused parameters
         }
 
-        GenericRepository<SimpleEntity> NewRepos(IRepository repository)
+        GenericRepository<SimpleEntity> NewRepos(IRepository repository, IOrmUtility ormUtility = null)
         {
-            return new TestGenericRepository<SimpleEntity, SimpleEntity>(repository);
+            return new TestGenericRepository<SimpleEntity, SimpleEntity>(repository, ormUtility);
         }
 
         void TestError(Action action, string errorMessage, string locationFunctionName)
