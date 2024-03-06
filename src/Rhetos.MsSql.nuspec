@@ -15,6 +15,7 @@
         <dependency id="Microsoft.Data.SqlClient" version="5.2.0" />
         <dependency id="Microsoft.EntityFrameworkCore.SqlServer" version="8.0.2" />
         <dependency id="Rhetos" version="[6.0.0-dev,6.1.0)" />
+        <dependency id="Rhetos.CommonConcepts" version="[6.0.0-dev,6.1.0)" />
         <dependency id="Rhetos.EfCore" version="[6.0.0-dev,6.1.0)" />
       </group>
     </dependencies>
