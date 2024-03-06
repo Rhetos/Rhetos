@@ -3,8 +3,12 @@
     <RhetosLinqPadReference Include="EntityFramework.dll" />
     <RhetosLinqPadReference Include="EntityFramework.SqlServer.dll" />
     <RhetosLinqPadReference Include="runtimes\win\lib\netcoreapp2.1\System.Data.SqlClient.dll" />
+    <RhetosLinqPadReference Include="runtimes\win-x64\native\sni.dll" />
+    <RhetosLinqPadNamespace Include="System.Data.Entity" />
   </ItemGroup>
   <PropertyGroup>
     <DefineConstants>$(DefineConstants);RHETOS_EF6</DefineConstants>
+    <RhetosLinqPadShowSqlExample>claims.ToString().Dump("Common.Claims SQL query")%3B
+        </RhetosLinqPadShowSqlExample>
   </PropertyGroup>
 </Project>

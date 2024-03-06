@@ -17,13 +17,16 @@
     <ItemGroup>
       <_RhetosHostProjectReferences Include="@(ReferencePath)" Condition="'%(ReferencePath.MSBuildSourceProjectFile)' != ''" />
       <!--The libraries from _RhetosHostProjectReferences will end up directly in the bin folder, so the directory path is removed.
-      Additional RhetosLinqPadReference are considered as strings so any plugin packages can specify files from the runtimes subfolder.-->
+      Additional RhetosLinqPadReference are considered as strings so any plugin packages can specify additional files from output folder
+      or from the runtimes subfolder.-->
       <_RhetosHostAppAssemblies Include="@(_RhetosHostProjectReferences -> '%(Filename)%(Extension)');@(RhetosLinqPadReference->'%(Identity)')" />
     </ItemGroup>
     <PropertyGroup>
       <_RhetosDomLinqPadScriptPath>$(BaseIntermediateOutputPath)Rhetos\LinqPad\Rhetos DOM.linq</_RhetosDomLinqPadScriptPath>
       <_RhetosHostAppLinqPadReferences>@(_RhetosHostAppAssemblies -> '&lt;Reference Relative="..\%(Identity)"&gt;..\%(Identity)&lt;/Reference&gt;', '
   ')</_RhetosHostAppLinqPadReferences>
+      <_RhetosHostAppLinqPadNamespaces>@(RhetosLinqPadNamespace -> '&lt;Namespace&gt;%(Identity)&lt;/Namespace&gt;', '
+  ')</_RhetosHostAppLinqPadNamespaces>
       <_RhetosDomLinqPadScript>
 <![CDATA[
 <Query Kind="Program">
@@ -41,7 +44,6 @@
   <Reference Relative="..\Rhetos.Core.dll">..\Rhetos.Core.dll</Reference>
   <Reference Relative="..\Rhetos.Core.DslParser.dll">..\Rhetos.Core.DslParser.dll</Reference>
   <Reference Relative="..\Rhetos.Core.Integration.dll">..\Rhetos.Core.Integration.dll</Reference>
-  <Reference Relative="..\runtimes\win-x64\native\sni.dll">..\runtimes\win-x64\native\sni.dll</Reference>
   <Reference Relative="..\runtimes\win\lib\net8.0\System.Diagnostics.EventLog.dll">..\runtimes\win\lib\net8.0\System.Diagnostics.EventLog.dll</Reference>
   <Reference Relative="..\runtimes\win\lib\net8.0\System.Diagnostics.EventLog.Messages.dll">..\runtimes\win\lib\net8.0\System.Diagnostics.EventLog.Messages.dll</Reference>
   <Namespace>Autofac</Namespace>
@@ -57,17 +59,17 @@
   <Namespace>Rhetos.Processing.DefaultCommands</Namespace>
   <Namespace>Rhetos.Security</Namespace>
   <Namespace>Rhetos.Utilities</Namespace>
-  <Namespace>System.Data.Entity</Namespace>
   <Namespace>System.DirectoryServices</Namespace>
   <Namespace>System.Runtime.Serialization.Json</Namespace>
+  $(_RhetosHostAppLinqPadNamespaces)
   <IncludeAspNet>true</IncludeAspNet>
   <RuntimeVersion>8.0</RuntimeVersion>
 </Query>
 
 void Main()
 {
-    ConsoleLogger.MinLevel = EventType.Info%3B // Use EventType.Trace for more detailed log.
-    string rhetosHostAssemblyPath = Path.Combine(Path.GetDirectoryName(Util.CurrentQueryPath), @"..\$(AssemblyName).dll")%3B
+    const string rhetosHostAssemblyFile = "$(AssemblyName).dll"%3B
+    string rhetosHostAssemblyPath = LINQPad.Util.CurrentQuery.FileReferences.Single(dll => Path.GetFileName(dll) == rhetosHostAssemblyFile)%3B
     using (var scope = LinqPadRhetosHost.CreateScope(rhetosHostAssemblyPath))
     {
         var context = scope.Resolve<Common.ExecutionContext>()%3B
@@ -79,8 +81,7 @@ void Main()
             .Where(c => c.ClaimResource.StartsWith("Common.") && c.ClaimRight == "New")
             .ToSimple()%3B // Removes ORM navigation properties from the loaded objects.
             
-        claims.ToString().Dump("Common.Claims SQL query")%3B
-        claims.Dump("Common.Claims items")%3B
+        $(RhetosLinqPadShowSqlExample)claims.ToList().Dump("Common.Claims items")%3B
         
         // Add and remove a `Common.Principal`:
         

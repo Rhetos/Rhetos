@@ -1,5 +1,12 @@
 <Project>
-    <ItemGroup>
-        <RhetosLinqPadReference Include="runtimes\win\lib\net6.0\Microsoft.Data.SqlClient.dll" />
-    </ItemGroup>
+  <ItemGroup>
+    <RhetosLinqPadReference Include="runtimes\win\lib\net8.0\Microsoft.Data.SqlClient.dll" />
+    <RhetosLinqPadReference Include="runtimes\win\lib\net8.0\System.Runtime.Caching.dll" />
+    <RhetosLinqPadReference Include="runtimes\win-x64\native\Microsoft.Data.SqlClient.SNI.dll" />
+    <RhetosLinqPadNamespace Include="Microsoft.EntityFrameworkCore" />
+  </ItemGroup>
+  <PropertyGroup>
+    <RhetosLinqPadShowSqlExample>claims.ToQueryString().Dump("Common.Claims SQL query")%3B
+        </RhetosLinqPadShowSqlExample>
+  </PropertyGroup>
 </Project>
