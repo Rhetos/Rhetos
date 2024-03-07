@@ -35,7 +35,7 @@ namespace Rhetos.MsSql
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             codeBuilder.InsertCode(
-            $@"Microsoft.EntityFrameworkCore.SqlServerDbContextOptionsExtensions.UseSqlServer(optionsBuilder, context.Resolve<Rhetos.Persistence.IPersistenceTransaction>().Connection, sqlServerOptions =>
+            $@"optionsBuilder.UseSqlServer(context.Resolve<Rhetos.Persistence.IPersistenceTransaction>().Connection, sqlServerOptions =>
                 {{
                     sqlServerOptions.UseRelationalNulls(context.Resolve<RhetosAppOptions>().EntityFrameworkUseDatabaseNullSemantics);
                     {EntityFrameworkContextSqlServerOptionsTag}

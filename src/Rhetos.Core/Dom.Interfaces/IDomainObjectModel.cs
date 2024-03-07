@@ -28,7 +28,7 @@ namespace Rhetos.Dom
     /// A helper to encourage naming consistency for subdirectories where the source code is generated.
     /// The source can also be generated in other subdirectories.
     /// </summary>
-    public enum GeneratedSourceDirectories { Model, Orm, Repositories };
+    public enum GeneratedSourceDirectories { Model, Orm, Repositories, Infrastructure };
 
     /// <summary>
     /// Provides C# types from the generated object model.

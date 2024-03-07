@@ -69,7 +69,7 @@ Migrating a Rhetos app from EF6 to EF Core (optional):
 
 * Disclaimer: It is recommended to keep EF6 in old Rhetos apps for backward compatiblity. Use EF Core in new apps.
 * In the existing projects that reference the NuGet package `Rhetos.CommonConcepts`, add the NuGet package `Rhetos.MsSql` instead of `Rhetos.MsSqlEf6`.
-* Lazy loading is disabled by default on EF Core. To enable it in Rhetos app, set the option `CommonConcepts:EntityFrameworkUseLazyLoading` to `true` in rhetos-build.settings.json,
+* Lazy loading is disabled by default on EF Core. To enable it in a Rhetos app, set the option `CommonConcepts:EntityFrameworkUseLazyLoading` to `true` in rhetos-build.settings.json,
   and add the NuGet package "Microsoft.EntityFrameworkCore.Proxies".
 * Breaking changes in libraries API:
   * System.Data.SqlClient library is replaced with newer Microsoft.Data.SqlClient.
