@@ -28,6 +28,7 @@ using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Utilities;
 using System.Diagnostics;
 using Rhetos;
+using Common;
 
 namespace CommonConcepts.Test
 {
@@ -135,11 +136,13 @@ namespace CommonConcepts.Test
 
                 var now = scope.Resolve<ISqlUtility>().GetDatabaseTime(scope.Resolve<ISqlExecuter>());
 
-                var h = repository.TestHistory.Minimal_Changes.Query().Single();
+                var hc = repository.TestHistory.Minimal_Changes.Query()
+                    .Select(h => new { EntityCode = h.Entity.Code, EntityActiveSince = h.Entity.ActiveSince, h.ActiveSince })
+                    .Single();
 
-                Assert.AreEqual(11, h.Entity.Code);
-                AssertIsRecently(h.Entity.ActiveSince, now);
-                AssertIsRecently(h.ActiveSince, Day(1));
+                Assert.AreEqual(11, hc.EntityCode);
+                AssertIsRecently(hc.EntityActiveSince, now);
+                AssertIsRecently(hc.ActiveSince, Day(1));
             }
         }
 
@@ -213,10 +216,11 @@ namespace CommonConcepts.Test
 
                 var now = scope.Resolve<ISqlUtility>().GetDatabaseTime(scope.Resolve<ISqlExecuter>());
 
-                var hist = repository.TestHistory.Minimal_Changes.Query().Where(item => item.EntityID == m1.ID).Single();
+                var histActiveUntil = repository.TestHistory.Minimal_Changes.Query(item => item.EntityID == m1.ID)
+                    .Select(item => item.Extension_Minimal_ChangesActiveUntil.ActiveUntil).Single();
                 var m = repository.TestHistory.Minimal.Load().Single();
 
-                Assert.AreEqual(hist.Extension_Minimal_ChangesActiveUntil.ActiveUntil, m.ActiveSince);
+                Assert.AreEqual(histActiveUntil, m.ActiveSince);
             }
         }
 

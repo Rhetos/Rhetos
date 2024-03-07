@@ -17,15 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using CommonConcepts.Test.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos.Configuration.Autofac;
 using Rhetos.Dom.DefaultConcepts;
-using Rhetos.Persistence;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -37,7 +33,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void LazyLoadReferenceBaseExtensionLinkedItems()
         {
-            using (var scope = TestScope.Create())
+            using (var scope = TestScope.Create(builder => builder.EnableLazyLoad()))
             {
                 var repository = scope.Resolve<Common.DomRepository>();
                 repository.TestLazyLoad.Simple.Delete(repository.TestLazyLoad.Simple.Load());
@@ -75,7 +71,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void LinkedItems()
         {
-            using (var scope = TestScope.Create())
+            using (var scope = TestScope.Create(builder => builder.EnableLazyLoad()))
             {
                 var repository = scope.Resolve<Common.DomRepository>();
 
@@ -146,7 +142,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void QueryLoaded()
         {
-            using (var scope = TestScope.Create())
+            using (var scope = TestScope.Create(builder => builder.EnableLazyLoad()))
             {
                 var repository = scope.Resolve<Common.DomRepository>();
                 repository.TestLazyLoad.Simple.Delete(repository.TestLazyLoad.Simple.Load());

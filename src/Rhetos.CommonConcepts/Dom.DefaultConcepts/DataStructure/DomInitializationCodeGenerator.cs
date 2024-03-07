@@ -79,10 +79,10 @@ namespace Rhetos.Dom.DefaultConcepts
         private string GetInitialConfigurationSnippet()
         {
             return
-            $@"hostBuilder.ConfigureConfiguration(builder => {{
-                builder.AddOptions(new Rhetos.Dom.DefaultConcepts.CommonConceptsDatabaseSettings
+            $@"hostBuilder.ConfigureConfiguration(configurationBuilder => {{
+                configurationBuilder.AddOptions(new Rhetos.Dom.DefaultConcepts.CommonConceptsDatabaseSettings
                 {{
-                    UseLegacyMsSqlDateTime = {_databaseSettings.UseLegacyMsSqlDateTime.ToString().ToLower()},
+                    UseLegacyMsSqlDateTime = {_databaseSettings.UseLegacyMsSqlDateTime.ToString().ToLowerInvariant()},
                     DateTimePrecision = {_databaseSettings.DateTimePrecision},
                     MoneyPrecision = {_databaseSettings.MoneyPrecision},
                     MoneyScale = {_databaseSettings.MoneyScale},

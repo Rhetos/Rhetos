@@ -90,7 +90,7 @@ namespace Rhetos
         public static IRhetosHostBuilder ConfigureRhetosAppDefaults(this IRhetosHostBuilder hostBuilder)
         {{
             hostBuilder
-                .ConfigureConfiguration(containerBuilder => containerBuilder
+                .ConfigureConfiguration(configurationBuilder => configurationBuilder
                     .AddKeyValue(
                         ConfigurationProvider.GetKey((RhetosAppOptions o) => o.RhetosAppAssemblyName),
                         typeof(RhetosHostBuilderAppConfiguration).Assembly.GetName().Name)

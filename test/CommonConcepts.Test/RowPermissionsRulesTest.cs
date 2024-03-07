@@ -391,7 +391,7 @@ namespace CommonConcepts.Test
                 reposE1.Save(itemsE1, null, reposE1.Load());
 
                 Assert.AreEqual("4", TestUtility.DumpSorted(reposE4.Load<Common.RowPermissionsReadItems>(), item => item.Name4));
-                Assert.AreEqual("3->3", TestUtility.DumpSorted(reposE3.Query(null, typeof(Common.RowPermissionsReadItems)).ToList(), item => item.Name3 + "->" + item.E4.Name4));
+                Assert.AreEqual("3->3", TestUtility.DumpSorted(reposE3.Query(null, typeof(Common.RowPermissionsReadItems)), item => item.Name3 + "->" + item.E4.Name4));
                 Assert.AreEqual("2, 3", TestUtility.DumpSorted(reposE2.Load<Common.RowPermissionsReadItems>(), item => item.Name2));
                 Assert.AreEqual("1, 2, 3", TestUtility.DumpSorted(reposE1.Load<Common.RowPermissionsReadItems>(), item => item.Name1));
                 Assert.AreEqual("1, 2, 3", TestUtility.DumpSorted(reposE1Browse.Load<Common.RowPermissionsReadItems>(), item => item.Name1Browse));

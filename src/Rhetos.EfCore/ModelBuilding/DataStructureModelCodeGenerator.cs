@@ -51,7 +51,7 @@ namespace Rhetos.EfCore.ModelBuilding
 
             ";
 
-                codeBuilder.InsertCode(code, DbContextCodeGenerator.EntityFrameworkOnModelCreatingTag);
+                codeBuilder.InsertCode(code, DbContextCodeGenerator.EntityFrameworkContextOnModelCreatingTag);
             }
         }
     }

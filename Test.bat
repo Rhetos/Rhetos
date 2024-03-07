@@ -3,6 +3,7 @@ SETLOCAL
 @SET Config=%1%
 @IF [%1] == [] SET Config=Debug
 
+TITLE Testing Rhetos.sln
 @REM Using "no-build" option as optimization, because Test.bat should always be executed after Build.bat.
 dotnet test Rhetos.sln --no-build || GOTO Error0
 

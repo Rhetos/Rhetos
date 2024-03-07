@@ -70,6 +70,38 @@ namespace CommonConcepts.Test
             return builder;
         }
 
+        /// <summary>
+        /// <para>
+        /// On Rhetos with EF6, lazy loading is always enabled.
+        /// </para>
+        /// <para>
+        /// On EF Core, lazy loading is disabled by default. It can be enabled on Rhetos build by enabling option CommonConcepts:EntityFrameworkCoreUseLazyLoading,
+        /// or programmatically by calling this method for specific unit tests that require it.
+        /// </para>
+        /// </summary>
+        public static ContainerBuilder EnableLazyLoad(this ContainerBuilder builder)
+        {
+#if RHETOS_EF6
+            Console.WriteLine("EF6 has lazy load already enabled by default.");
+#else
+            builder.ConfigureDbContextOptions(dbc => Microsoft.EntityFrameworkCore.ProxiesExtensions.UseLazyLoadingProxies(dbc));
+#endif
+            return builder;
+        }
+
+#if !RHETOS_EF6
+        public static ContainerBuilder ConfigureDbContextOptions(this ContainerBuilder builder, Action<Microsoft.EntityFrameworkCore.DbContextOptionsBuilder<Common.EntityFrameworkContext>> configure)
+        {
+            builder.RegisterDecorator<Microsoft.EntityFrameworkCore.DbContextOptions<Common.EntityFrameworkContext>>((context, parameters, originalOptions) =>
+            {
+                var optionsBuilder = new Microsoft.EntityFrameworkCore.DbContextOptionsBuilder<Common.EntityFrameworkContext>(originalOptions);
+                configure.Invoke(optionsBuilder);
+                return optionsBuilder.Options;
+            });
+            return builder;
+        }
+#endif
+
         public static ContainerBuilder ConfigureIgnoreClaims(this ContainerBuilder builder)
         {
             builder.RegisterType<IgnoreAuthorizationProvider>().As<IAuthorizationProvider>();

@@ -17,15 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos.Configuration.Autofac;
-using Rhetos.Utilities;
 using Rhetos.Dom.DefaultConcepts;
-using CommonConcepts.Test.Helpers;
+using Rhetos.Utilities;
+using System;
+using System.Linq;
 
 namespace CommonConcepts.Test
 {
@@ -77,15 +73,34 @@ namespace CommonConcepts.Test
         {
             using (var scope = TestScope.Create())
             {
-                scope.Resolve<ISqlExecuter>().ExecuteSql(new[] {"DELETE FROM TestSqlQueryable.Document;"});
+                scope.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestSqlQueryable.Document;");
                 var documentRepository = scope.Resolve<Common.DomRepository>().TestSqlQueryable.Document;
 
                 var doc = new TestSqlQueryable.Document { ID = Guid.NewGuid(), Name = "abc" };
-                documentRepository.Insert(new[] { doc });
+                documentRepository.Insert(doc);
+                Assert.AreEqual(3, documentRepository.Query().Select(d => d.Extension_DocumentInfo.NameLen).Single());
+
+                doc.Name = "abcd";
+                documentRepository.Update(doc);
+
+                Assert.AreEqual(4, documentRepository.Query().Select(d => d.Extension_DocumentInfo.NameLen).Single());
+            }
+        }
+
+        [TestMethod]
+        public void NotCachedReferenceLazyLoad()
+        {
+            using (var scope = TestScope.Create(builder => builder.EnableLazyLoad()))
+            {
+                scope.Resolve<ISqlExecuter>().ExecuteSql("DELETE FROM TestSqlQueryable.Document;");
+                var documentRepository = scope.Resolve<Common.DomRepository>().TestSqlQueryable.Document;
+
+                var doc = new TestSqlQueryable.Document { ID = Guid.NewGuid(), Name = "abc" };
+                documentRepository.Insert(doc);
                 Assert.AreEqual(3, documentRepository.Query().Single().Extension_DocumentInfo.NameLen);
 
                 doc.Name = "abcd";
-                documentRepository.Update(new[] { doc });
+                documentRepository.Update(doc);
 
                 Assert.AreEqual(4, documentRepository.Query().ToList().Single().Extension_DocumentInfo.NameLen);
             }

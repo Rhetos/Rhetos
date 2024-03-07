@@ -231,17 +231,17 @@ namespace CommonConcepts.Test
                 var repository = scope.Resolve<Common.DomRepository>();
 
                 var s1 = new TestPolymorphic.Simple1 { Name = "a", Days = 1 };
-                repository.TestPolymorphic.Simple1.Insert(new[] { s1 });
+                repository.TestPolymorphic.Simple1.Insert(s1);
 
                 var dep = new TestPolymorphic.Dependant { Name = "dep", SimpleBaseID = s1.ID };
-                repository.TestPolymorphic.Dependant.Insert(new[] { dep });
+                repository.TestPolymorphic.Dependant.Insert(dep);
 
                 Assert.AreEqual("dep-a", TestUtility.DumpSorted(
                     repository.TestPolymorphic.DependantBrowse.Query(new[] { dep.ID }),
                     item => item.Name + "-" + item.SimpleBaseName));
 
                 var ex = TestUtility.ShouldFail<Rhetos.UserException>(
-                    () => repository.TestPolymorphic.Simple1.Delete(new[] { s1 }),
+                    () => repository.TestPolymorphic.Simple1.Delete(s1),
                     "It is not allowed to delete");
                 TestUtility.AssertContains(ex.ToString(), new[] { "Dependant", "REFERENCE", "SimpleBase" }, "Expected inner SQL exception");
             }
@@ -255,14 +255,14 @@ namespace CommonConcepts.Test
                 var repository = scope.Resolve<Common.DomRepository>();
 
                 var s1 = new TestPolymorphic.Simple1 { Name = "a", Days = 1 };
-                repository.TestPolymorphic.Simple1.Insert(new[] { s1 });
+                repository.TestPolymorphic.Simple1.Insert(s1);
 
                 var dep = new TestPolymorphic.Dependant { Name = "dep", SimpleBaseID = s1.ID };
-                repository.TestPolymorphic.Dependant.Insert(new[] { dep });
+                repository.TestPolymorphic.Dependant.Insert(dep);
 
                 var depInvalidReference = new TestPolymorphic.Dependant { Name = "depInvalidReference", SimpleBaseID = Guid.NewGuid() };
                 var ex = TestUtility.ShouldFail<Rhetos.UserException>(
-                    () => repository.TestPolymorphic.Dependant.Insert(new[] { depInvalidReference }),
+                    () => repository.TestPolymorphic.Dependant.Insert(depInvalidReference),
                     "It is not allowed to enter the record.");
                 TestUtility.AssertContains(ex.ToString(), new[] { "Dependant", "FOREIGN KEY", "SimpleBase" }, "Expected inner SQL exception");
             }
@@ -276,15 +276,15 @@ namespace CommonConcepts.Test
                 var repository = scope.Resolve<Common.DomRepository>();
 
                 var s1 = new TestPolymorphic.Simple1 { Name = "a", Days = 1 };
-                repository.TestPolymorphic.Simple1.Insert(new[] { s1 });
+                repository.TestPolymorphic.Simple1.Insert(s1);
 
                 var dep = new TestPolymorphic.Dependant { Name = "dep", SimpleBaseID = s1.ID };
-                repository.TestPolymorphic.Dependant.Insert(new[] { dep });
+                repository.TestPolymorphic.Dependant.Insert(dep);
 
                 dep.SimpleBaseID = Guid.NewGuid();
 
                 var ex = TestUtility.ShouldFail<Rhetos.UserException>(
-                    () => repository.TestPolymorphic.Dependant.Update(new[] { dep }),
+                    () => repository.TestPolymorphic.Dependant.Update(dep),
                     "It is not allowed to edit the record.");
                 TestUtility.AssertContains(ex.ToString(), new[] { "Dependant", "FOREIGN KEY", "SimpleBase" }, "Expected inner SQL exception");
             }
@@ -298,17 +298,17 @@ namespace CommonConcepts.Test
                 var repository = scope.Resolve<Common.DomRepository>();
 
                 var s1 = new TestPolymorphic.Simple1 { Name = "s1", Days = 1 };
-                repository.TestPolymorphic.Simple1.Insert(new[] { s1 });
+                repository.TestPolymorphic.Simple1.Insert(s1);
 
                 var d1 = new TestPolymorphic.DependantUniqueReference { Name = "d1", ID = s1.ID };
-                repository.TestPolymorphic.DependantUniqueReference.Insert(new[] { d1 });
+                repository.TestPolymorphic.DependantUniqueReference.Insert(d1);
 
                 Assert.AreEqual("s1-d1", TestUtility.DumpSorted(
                     repository.TestPolymorphic.SimpleBase.Query(new[] { d1.ID }),
                     item => item.Name + "-" + item.Extension_DependantUniqueReference.Name));
 
                 var ex = TestUtility.ShouldFail<Rhetos.UserException>(
-                    () => repository.TestPolymorphic.Simple1.Delete(new[] { s1 }),
+                    () => repository.TestPolymorphic.Simple1.Delete(s1),
                     "It is not allowed to delete");
                 TestUtility.AssertContains(ex.ToString(), new[] { "DependantUniqueReference", "REFERENCE", "SimpleBase" }, "Expected inner SQL exception");
             }
@@ -322,19 +322,19 @@ namespace CommonConcepts.Test
                 var repository = scope.Resolve<Common.DomRepository>();
 
                 var s1 = new TestPolymorphic.Simple1 { Name = "s1", Days = 1 };
-                repository.TestPolymorphic.Simple1.Insert(new[] { s1 });
+                repository.TestPolymorphic.Simple1.Insert(s1);
 
                 var d1 = new TestPolymorphic.DependantDetail { Name = "d1", SimpleBaseID = s1.ID };
-                repository.TestPolymorphic.DependantDetail.Insert(new[] { d1 });
+                repository.TestPolymorphic.DependantDetail.Insert(d1);
 
                 Assert.AreEqual("s1-d1", TestUtility.DumpSorted(
-                    repository.TestPolymorphic.DependantDetail.Query(new[] { d1.ID }).ToList(),
+                    repository.TestPolymorphic.DependantDetail.Query(new[] { d1.ID }),
                     item => item.SimpleBase.Name + "-" + item.Name));
 
-                repository.TestPolymorphic.Simple1.Delete(new[] { s1 });
+                repository.TestPolymorphic.Simple1.Delete(s1);
 
                 Assert.AreEqual("", TestUtility.DumpSorted(
-                    repository.TestPolymorphic.DependantDetail.Query(new[] { d1.ID }).ToList(),
+                    repository.TestPolymorphic.DependantDetail.Query(new[] { d1.ID }),
                     item => item.SimpleBase.Name + "-" + item.Name));
             }
         }
@@ -347,19 +347,19 @@ namespace CommonConcepts.Test
                 var repository = scope.Resolve<Common.DomRepository>();
 
                 var s1 = new TestPolymorphic.Simple1 { Name = "s1", Days = 1 };
-                repository.TestPolymorphic.Simple1.Insert(new[] { s1 });
+                repository.TestPolymorphic.Simple1.Insert(s1);
 
                 var d1 = new TestPolymorphic.DependantExtension { Name = "d1", ID = s1.ID };
-                repository.TestPolymorphic.DependantExtension.Insert(new[] { d1 });
+                repository.TestPolymorphic.DependantExtension.Insert(d1);
 
                 Assert.AreEqual("s1-d1", TestUtility.DumpSorted(
-                    repository.TestPolymorphic.DependantExtension.Query(new[] { d1.ID }).ToList(),
+                    repository.TestPolymorphic.DependantExtension.Query(new[] { d1.ID }),
                     item => item.Base.Name + "-" + item.Name));
 
-                repository.TestPolymorphic.Simple1.Delete(new[] { s1 });
+                repository.TestPolymorphic.Simple1.Delete(s1);
 
                 Assert.AreEqual("", TestUtility.DumpSorted(
-                    repository.TestPolymorphic.DependantExtension.Query(new[] { d1.ID }).ToList(),
+                    repository.TestPolymorphic.DependantExtension.Query(new[] { d1.ID }),
                     item => item.Base.Name + "-" + item.Name));
             }
         }
@@ -377,10 +377,10 @@ namespace CommonConcepts.Test
                     Assert.AreEqual(0, repository.TestPolymorphic.Disjunctive.Load().Length);
 
                     var d1 = new TestPolymorphic.Disjunctive1 { ID = Guid.NewGuid(), Name = "abc" };
-                    repository.TestPolymorphic.Disjunctive1.Insert(new[] { d1 });
+                    repository.TestPolymorphic.Disjunctive1.Insert(d1);
 
                     var d2 = new TestPolymorphic.Disjunctive2 { ID = Guid.NewGuid(), Days = 123 };
-                    repository.TestPolymorphic.Disjunctive2.Insert(new[] { d2 });
+                    repository.TestPolymorphic.Disjunctive2.Insert(d2);
 
                     var all = repository.TestPolymorphic.Disjunctive.Query();
                     Assert.AreEqual(
@@ -442,8 +442,7 @@ namespace CommonConcepts.Test
                     Assert.AreEqual(
                         "abc-, cba-abc, def-, fed-def",
                         TestUtility.DumpSorted(repository.TestPolymorphic.Base1.Query()
-                            .ToList()
-                            .Select(item => item.Name1 + "-" + item.MultipleImplementationsReverse?.Name1)));
+                            .Select(item => item.Name1 + "-" + (item.MultipleImplementationsReverse.Name1 ?? ""))));
 
                     // Testing C# implementation:
 
@@ -664,7 +663,7 @@ namespace CommonConcepts.Test
                 sx.AlternativeId = hash(sx.ID, "sql2");
                 sy.AlternativeId = hash(sy.ID, "sql2");
 
-                repository.TestPolymorphic.ComplexImplementationData.Insert(new[] { d });
+                repository.TestPolymorphic.ComplexImplementationData.Insert(d);
                 repository.TestPolymorphic.ComplexImplementationSql.Insert(new[] { sx, sy });
 
                 Assert.AreEqual("abc1, abc2, sx3, sx4, sy3, sy4",
@@ -695,28 +694,28 @@ namespace CommonConcepts.Test
                     TestUtility.DumpSorted(repository.TestPolymorphic.ComplexBase_Materialized.Query(), item => item.ID));
 
                 sx.s = "sxx";
-                repository.TestPolymorphic.ComplexImplementationSql.Update(new[] { sx });
+                repository.TestPolymorphic.ComplexImplementationSql.Update(sx);
                 Assert.AreEqual("abc1, abc2, sxx3, sxx4, sy3, sy4",
                     TestUtility.DumpSorted(repository.TestPolymorphic.ComplexBase.Query(), item => item.Name1));
                 Assert.AreEqual(
                     TestUtility.DumpSorted(repository.TestPolymorphic.ComplexBase.Query(), item => item.ID),
                     TestUtility.DumpSorted(repository.TestPolymorphic.ComplexBase_Materialized.Query(), item => item.ID));
 
-                repository.TestPolymorphic.ComplexImplementationSql.Delete(new[] { sx });
+                repository.TestPolymorphic.ComplexImplementationSql.Delete(sx);
                 Assert.AreEqual("abc1, abc2, sy3, sy4",
                     TestUtility.DumpSorted(repository.TestPolymorphic.ComplexBase.Query(), item => item.Name1));
                 Assert.AreEqual(
                     TestUtility.DumpSorted(repository.TestPolymorphic.ComplexBase.Query(), item => item.ID),
                     TestUtility.DumpSorted(repository.TestPolymorphic.ComplexBase_Materialized.Query(), item => item.ID));
 
-                repository.TestPolymorphic.ComplexImplementationData.Delete(new[] { d });
+                repository.TestPolymorphic.ComplexImplementationData.Delete(d);
                 Assert.AreEqual("sy3, sy4",
                     TestUtility.DumpSorted(repository.TestPolymorphic.ComplexBase.Query(), item => item.Name1));
                 Assert.AreEqual(
                     TestUtility.DumpSorted(repository.TestPolymorphic.ComplexBase.Query(), item => item.ID),
                     TestUtility.DumpSorted(repository.TestPolymorphic.ComplexBase_Materialized.Query(), item => item.ID));
 
-                repository.TestPolymorphic.ComplexImplementationSql.Delete(new[] { sy });
+                repository.TestPolymorphic.ComplexImplementationSql.Delete(sy);
                 Assert.AreEqual("",
                     TestUtility.DumpSorted(repository.TestPolymorphic.ComplexBase.Query(), item => item.Name1));
                 Assert.AreEqual(

@@ -111,7 +111,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void ReferencedEntityLazyLoad()
         {
-            using (var scope = TestScope.Create())
+            using (var scope = TestScope.Create(builder => builder.EnableLazyLoad()))
             {
                 var repository = scope.Resolve<Common.DomRepository>();
 
@@ -313,6 +313,33 @@ namespace CommonConcepts.Test
         public void UpdatePersistent()
         {
             using (var scope = TestScope.Create())
+            {
+                var context = scope.Resolve<Common.ExecutionContext>();
+                var repository = context.Repository;
+
+                var b = new TestEntity.BaseEntity { ID = Guid.NewGuid(), Name = "b" };
+                var c = new TestEntity.Child { Name = "c", ParentID = b.ID };
+                repository.TestEntity.BaseEntity.Insert(b);
+                repository.TestEntity.Child.Insert(c);
+
+                var b2 = repository.TestEntity.BaseEntity.Query().Where(item => item.ID == b.ID).Single();
+                b2.Name = "b2"; // Should not be saved when calling Child.Update.
+
+                var c2 = repository.TestEntity.Child.Query().Where(item => item.ID == c.ID).Single();
+                Console.WriteLine("c2.GetType().FullName: " + c2.GetType().FullName);
+                c2.Name = "c2";
+                repository.TestEntity.Child.Update(c2);
+
+                var report = repository.TestEntity.Child.Query().Where(item => item.ID == c.ID)
+                    .Select(item => item.Name + " " + item.Parent.Name);
+                Assert.AreEqual("c2 b", TestUtility.DumpSorted(report));
+            }
+        }
+
+        [TestMethod]
+        public void UpdatePersistentLazyLoad()
+        {
+            using (var scope = TestScope.Create(builder => builder.EnableLazyLoad()))
             {
                 var context = scope.Resolve<Common.ExecutionContext>();
                 var repository = context.Repository;
@@ -803,5 +830,46 @@ namespace CommonConcepts.Test
                 Assert.IsNull(items.Single().Data);
             }
         }
+
+        [TestMethod]
+        public void LazyLoadEnabledTest()
+        {
+            using (var scope = TestScope.Create(builder => builder.EnableLazyLoad()))
+            {
+                var repository = scope.Resolve<Common.DomRepository>();
+
+                var parent = new TestEntity.BaseEntity { ID = Guid.NewGuid(), Name = "b" };
+                var child = new TestEntity.Child { Name = "c", ParentID = parent.ID };
+                repository.TestEntity.BaseEntity.Insert(parent);
+                repository.TestEntity.Child.Insert(child);
+
+                var childLoaded = repository.TestEntity.Child.Query(new[] { child.ID }).Single();
+                Assert.AreEqual(parent.Name, childLoaded.Parent.Name);
+            }
+        }
+
+#if !RHETOS_EF6
+        [TestMethod]
+        public void LazyLoadDisabledTest()
+        {
+            using (var scope = TestScope.Create())
+            {
+                var repository = scope.Resolve<Common.DomRepository>();
+
+                var parent = new TestEntity.BaseEntity { ID = Guid.NewGuid(), Name = "b" };
+                var child = new TestEntity.Child { Name = "c", ParentID = parent.ID };
+                repository.TestEntity.BaseEntity.Insert(parent);
+                repository.TestEntity.Child.Insert(child);
+
+                string childParentNameQueried = repository.TestEntity.Child.Query(new[] { child.ID })
+                    .Select(c => c.Parent.Name).Single();
+                Assert.AreEqual(parent.Name, childParentNameQueried);
+
+                var childLoaded = repository.TestEntity.Child.Query(new[] { child.ID }).Single();
+                Assert.ThrowsException<NullReferenceException>(
+                    () => _ = childLoaded.Parent.Name);
+            }
+        }
+#endif
     }
 }

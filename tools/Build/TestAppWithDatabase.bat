@@ -23,10 +23,10 @@ IF EXIST "%ProgramFiles%\LINQPad8\LPRun8.exe" "%ProgramFiles%\LINQPad8\LPRun8.ex
 @REM ================================================
 
 @ECHO.
-@ECHO %~nx0 SUCCESSFULLY COMPLETED WITH DB PROVIDER '%1'.
+@ECHO %~nx0 SUCCESSFULLY COMPLETED FOR '%1'.
 @EXIT /B 0
 
 :Error0
 @ECHO.
-@ECHO %~nx0 FAILED WITH DB PROVIDER '%1'.
+@ECHO %~nx0 FAILED ON '%1'.
 @EXIT /B 1

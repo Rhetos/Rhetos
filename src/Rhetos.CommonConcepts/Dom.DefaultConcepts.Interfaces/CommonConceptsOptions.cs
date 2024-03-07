@@ -55,6 +55,6 @@ namespace Rhetos.Dom.DefaultConcepts
         /// This options is only applicable to EF Core, the EF6 provider for Rhetos always uses lazy loading.
         /// If enabled on EF Core, the NuGet package "Microsoft.EntityFrameworkCore.Proxies" must be installed.
         /// </summary>
-        public bool EntityFrameworkUseLazyLoading { get; set; } = false;
+        public bool EntityFrameworkCoreUseLazyLoading { get; set; } = false;
     }
 }

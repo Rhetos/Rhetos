@@ -55,14 +55,16 @@ Module TestAction
     Action RemoveAFromAllSimpleEntities
         '(parameters, repository, userInfo) =>
             { 
-                var simpleEntities = repository.TestAction.Simple.Query().Where(item => item.Name.Length > 0).ToList();
+                var simpleEntities = repository.TestAction.Simple.Query().Where(item => item.Name.Length > 0)
+                    .Select(entity => new { Entity = entity, ContainsA = entity.Extension_NameContainsA.ContainsA.Value })
+                    .ToList();
                 foreach(var entity in simpleEntities)
                 {
-                    if (entity.Extension_NameContainsA.ContainsA.Value)
-                        entity.Name = entity.Name.Replace("A", "");
+                    if (entity.ContainsA)
+                        entity.Entity.Name = entity.Entity.Name.Replace("A", "");
                 }
                 
-                repository.TestAction.Simple.Update(simpleEntities);
+                repository.TestAction.Simple.Update(simpleEntities.Select(se => se.Entity));
             }'
     {
     }

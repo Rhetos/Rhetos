@@ -17,13 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
 using Rhetos.Compiler;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Linq;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
@@ -114,14 +111,15 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             return string.Format(@"(items, parameter) =>
             {{
-                var child = _domRepository.{0}.{1}.Query().Where(item => item.ID == parameter.ID).SingleOrDefault();
-                if (child == null)
-                    throw new Rhetos.UserException(""Given record does not exist: {{0}}, ID {{1}}."", new object[] {{ _localizer[""{0}.{1}""], parameter.ID }}, null, null);
-                int leftIndex = child.Extension_{1}{2}Hierarchy.LeftIndex.Value;
+                int? leftIndex = _domRepository.{0}.{1}.Query().Where(item => item.ID == parameter.ID)
+                    .Select(child => child.Extension_{1}{2}Hierarchy.LeftIndex)
+                    .SingleOrDefault();
+                if (leftIndex == null)
+                    throw new Rhetos.UserException(""Given record does not exist or isn't initialized correctly: {{0}}, ID {{1}}."", new object[] {{ _localizer[""{0}.{1}""], parameter.ID }}, null, null);
 
                 return items.Where(item =>
-                    item.Extension_{1}{2}Hierarchy.LeftIndex < leftIndex
-                    && item.Extension_{1}{2}Hierarchy.RightIndex > leftIndex);
+                    item.Extension_{1}{2}Hierarchy.LeftIndex < leftIndex.Value
+                    && item.Extension_{1}{2}Hierarchy.RightIndex > leftIndex.Value);
             }}",
                 DataStructure.Module.Name,
                 DataStructure.Name,
@@ -132,15 +130,19 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             return string.Format(@"(items, parameter) =>
             {{
-                var parent = _domRepository.{0}.{1}.Query().Where(item => item.ID == parameter.ID).SingleOrDefault();
+                var parent = _domRepository.{0}.{1}.Query().Where(item => item.ID == parameter.ID)
+                    .Select(p => new
+                        {{
+                            LeftIndex = p.Extension_{1}{2}Hierarchy.LeftIndex.Value,
+                            RightIndex = p.Extension_{1}{2}Hierarchy.RightIndex.Value
+                        }})
+                    .SingleOrDefault();
                 if (parent == null)
                     throw new Rhetos.UserException(""Given record does not exist: {{0}}, ID {{1}}."", new object[] {{ _localizer[""{0}.{1}""], parameter.ID }}, null, null);
-                int leftIndex = parent.Extension_{1}{2}Hierarchy.LeftIndex.Value;
-                int rightIndex = parent.Extension_{1}{2}Hierarchy.RightIndex.Value;
 
                 return items.Where(item =>
-                    item.Extension_{1}{2}Hierarchy.LeftIndex > leftIndex
-                    && item.Extension_{1}{2}Hierarchy.LeftIndex < rightIndex);
+                    item.Extension_{1}{2}Hierarchy.LeftIndex > parent.LeftIndex
+                    && item.Extension_{1}{2}Hierarchy.LeftIndex < parent.RightIndex);
             }}",
                 DataStructure.Module.Name,
                 DataStructure.Name,

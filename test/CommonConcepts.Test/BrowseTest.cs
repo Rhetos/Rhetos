@@ -17,28 +17,22 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos.TestCommon;
-using Rhetos.Configuration.Autofac;
-using Rhetos.Utilities;
 using Rhetos.Dom.DefaultConcepts;
-using CommonConcepts.Test.Helpers;
+using Rhetos.TestCommon;
+using Rhetos.Utilities;
+using System;
+using System.Linq;
 
 namespace CommonConcepts.Test.OldConcepts
 {
-    // TODO: Make better unit tests. These are mostly research spikes, not unit tests.
-
     [TestClass]
     public class BrowseTest
     {
         [TestMethod]
         public void SimpleReference()
         {
-            using (var scope = TestScope.Create())
+            using (var scope = TestScope.Create(builder => builder.EnableLazyLoad()))
             {
                 var repository = scope.Resolve<Common.DomRepository>();
 
@@ -275,8 +269,10 @@ namespace CommonConcepts.Test.OldConcepts
                     repository.TestBrowse.UniqueReferenceChild.Insert(urc1, urc2);
 
                     Func<string> report = () => TestUtility.DumpSorted(
-                        repository.TestBrowse.ParentBase.Query(new[] { p1.ID, p2.ID }).ToList(),
-                        item => item.Name + "-" + item.Extension_ParentUniqueReference?.Name3 + "-" + item.Extension_ParentUniqueReference?.Extension_UniqueReferenceChild.Name4);
+                        repository.TestBrowse.ParentBase.Query(new[] { p1.ID, p2.ID })
+                            .Select(item => new { item.Name, item.Extension_ParentUniqueReference.Name3, item.Extension_ParentUniqueReference.Extension_UniqueReferenceChild.Name4 })
+                            .ToList(),
+                        item => $"{item.Name}-{item.Name3}-{item.Name4}");
 
                     Assert.AreEqual("p1-pur1-urc1, p2-pur2-urc2", report());
 

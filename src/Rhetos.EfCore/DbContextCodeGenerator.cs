@@ -32,7 +32,7 @@ namespace Rhetos.EfCore
     {
         public static readonly string EntityFrameworkContextMembersTag = "/*EntityFrameworkContextMembers*/";
         public static readonly string EntityFrameworkContextInitializeTag = "/*EntityFrameworkContextInitialize*/";
-        public static readonly string EntityFrameworkOnModelCreatingTag = "/*EntityFrameworkOnModelCreating*/";
+        public static readonly string EntityFrameworkContextOnModelCreatingTag = "/*EntityFrameworkContextOnModelCreating*/";
         public static readonly string EntityFrameworkContextOptionsTag = "/*EntityFrameworkContextOptions*/";
 
         private readonly CommonConceptsOptions _commonConceptsOptions;
@@ -49,9 +49,9 @@ namespace Rhetos.EfCore
             codeBuilder.InsertCode("using Microsoft.EntityFrameworkCore;" + Environment.NewLine, ModuleCodeGenerator.CommonUsingTag);
 
             string useLazyLoading = null;
-            if (_commonConceptsOptions.EntityFrameworkUseLazyLoading)
+            if (_commonConceptsOptions.EntityFrameworkCoreUseLazyLoading)
             {
-				// The Rhetos app needs to reference "Microsoft.EntityFrameworkCore.Proxies" NuGet package. 
+				// The Rhetos app needs to reference "Microsoft.EntityFrameworkCore.Proxies" NuGet package.
                 useLazyLoading = "optionsBuilder.UseLazyLoadingProxies();\r\n                ";
             }
 
@@ -111,7 +111,7 @@ namespace Common
         {{
             base.OnModelCreating(modelBuilder);
 
-            {EntityFrameworkOnModelCreatingTag}
+            {EntityFrameworkContextOnModelCreatingTag}
 
             _logger.Write(Rhetos.Logging.EventType.Trace, () => modelBuilder.Model.ToDebugString());
         }}

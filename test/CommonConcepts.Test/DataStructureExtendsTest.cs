@@ -98,7 +98,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void NavigationFromBaseToExtension_LazyLoadReference()
         {
-            using (var scope = TestScope.Create())
+            using (var scope = TestScope.Create(builder => builder.EnableLazyLoad()))
             {
                 var repository = scope.Resolve<Common.DomRepository>();
 
@@ -155,7 +155,7 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void LazyLoadExtensions()
         {
-            using (var scope = TestScope.Create())
+            using (var scope = TestScope.Create(builder => builder.EnableLazyLoad()))
             {
                 var id1 = Guid.NewGuid();
                 var id2 = Guid.NewGuid();
