@@ -24,15 +24,12 @@ namespace Rhetos
     /// <summary>
     /// An internal error of the Rhetos application occurred. Usually a result of incorrect configuration/setup or a platform bug.
     /// </summary>
-    [Serializable]
     public class FrameworkException : RhetosException
     {
         public FrameworkException() { }
+
         public FrameworkException(string message) : base(message) { }
+
         public FrameworkException(string message, Exception inner) : base(message, inner) { }
-        protected FrameworkException(
-          System.Runtime.Serialization.SerializationInfo info,
-          System.Runtime.Serialization.StreamingContext context)
-            : base(info, context) { }
     }
 }

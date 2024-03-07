@@ -24,7 +24,6 @@ using System.Text;
 
 namespace Rhetos.Dsl
 {
-    [Serializable]
     public class DslSyntaxException : RhetosException
     {
         public readonly string ErrorCode;
@@ -32,13 +31,10 @@ namespace Rhetos.Dsl
         public readonly string Details;
 
         public DslSyntaxException() { }
+
         public DslSyntaxException(string message) : base(message) { }
+
         public DslSyntaxException(string message, Exception inner) : base(message, inner) { }
-        
-        protected DslSyntaxException(
-          System.Runtime.Serialization.SerializationInfo info,
-          System.Runtime.Serialization.StreamingContext context)
-            : base(info, context) { }
 
         public DslSyntaxException(string message, string errorCode, DslScript dslScript, int positionBegin = 0, int positionEnd = 0, string additionalDetails = null)
             : base(message)

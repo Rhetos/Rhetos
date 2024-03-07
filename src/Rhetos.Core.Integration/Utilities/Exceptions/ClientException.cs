@@ -27,16 +27,13 @@ namespace Rhetos
     /// Client is not adhering to server API.
     /// Web response HTTP status code on this exception is 400 by default, but can be configured by <see cref="HttpStatusCode"/>.
     /// </summary>
-    [Serializable]
     public class ClientException : RhetosException
     {
         public ClientException() { }
+
         public ClientException(string message) : base(message) { }
+
         public ClientException(string message, Exception inner) : base(message, inner) { }
-        protected ClientException(
-          System.Runtime.Serialization.SerializationInfo info,
-          System.Runtime.Serialization.StreamingContext context)
-            : base(info, context) { }
 
         public HttpStatusCode HttpStatusCode { get; set; } = HttpStatusCode.BadRequest;
     }

@@ -26,7 +26,6 @@ namespace Rhetos
     /// These errors result from end user's incorrect usage of the application.
     /// It supports message localization with message parameters, and custom error metadata.
     /// </summary>
-    [Serializable]
     public class UserException : RhetosException
     {
         private string _userMessage;
@@ -189,11 +188,6 @@ namespace Rhetos
                     throw new ArgumentException(error, e);
             }
         }
-
-        protected UserException(
-          System.Runtime.Serialization.SerializationInfo info,
-          System.Runtime.Serialization.StreamingContext context)
-            : base(info, context) { }
 
         public override string ToString()
         {

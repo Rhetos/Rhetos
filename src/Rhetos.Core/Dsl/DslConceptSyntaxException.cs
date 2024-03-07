@@ -2,7 +2,6 @@
 
 namespace Rhetos.Dsl
 {
-    [Serializable]
     public class DslConceptSyntaxException : DslSyntaxException
     {
         public DslConceptSyntaxException(IConceptInfo concept, string additionalMessage)

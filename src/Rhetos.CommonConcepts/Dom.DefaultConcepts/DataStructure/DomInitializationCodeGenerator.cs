@@ -48,13 +48,12 @@ namespace Rhetos.Dom.DefaultConcepts
         }
 
         public static readonly string StandardNamespacesSnippet =
-@"using System;
+    @"using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Text;
     using System.Linq.Expressions;
-    using System.Runtime.Serialization;
-    using Rhetos.Dom.DefaultConcepts; 
+    using System.Text;
+    using Rhetos.Dom.DefaultConcepts;
     using Rhetos.Utilities;";
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)

@@ -26,7 +26,6 @@ namespace Rhetos
     /// <summary>
     /// Base class for Rhetos framework and application exceptions.
     /// </summary>
-    [Serializable]
     public abstract class RhetosException : Exception
     {
         /// <summary>
@@ -39,12 +38,10 @@ namespace Rhetos
         public IDictionary<string, object> Info { get; set; } = new Dictionary<string, object>();
 
         protected RhetosException() { }
+
         protected RhetosException(string message) : base(message) { }
+
         protected RhetosException(string message, Exception inner) : base(message, inner) { }
-        protected RhetosException(
-          System.Runtime.Serialization.SerializationInfo info,
-          System.Runtime.Serialization.StreamingContext context)
-            : base(info, context) { }
 
         public override string ToString()
         {

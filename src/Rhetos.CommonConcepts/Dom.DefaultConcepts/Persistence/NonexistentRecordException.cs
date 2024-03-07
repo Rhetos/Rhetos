@@ -21,7 +21,6 @@ using System;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
-    [global::System.Serializable]
     public class NonexistentRecordException : FrameworkException
     {
         public NonexistentRecordException()
@@ -35,10 +34,5 @@ namespace Rhetos.Dom.DefaultConcepts
         public NonexistentRecordException(string message, Exception innerException) : base(message, innerException)
         {
         }
-
-        protected NonexistentRecordException(
-          System.Runtime.Serialization.SerializationInfo info,
-          System.Runtime.Serialization.StreamingContext context)
-            : base(info, context) { }
     }
 }

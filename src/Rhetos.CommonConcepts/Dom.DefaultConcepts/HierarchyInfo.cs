@@ -26,12 +26,10 @@ namespace Rhetos.Dom.DefaultConcepts
     public class HierarchyCircularReferenceException : Exception
     {
         public HierarchyCircularReferenceException() { }
+
         public HierarchyCircularReferenceException(string message) : base(message) { }
+
         public HierarchyCircularReferenceException(string message, Exception inner) : base(message, inner) { }
-        protected HierarchyCircularReferenceException(
-          System.Runtime.Serialization.SerializationInfo info,
-          System.Runtime.Serialization.StreamingContext context)
-            : base(info, context) { }
     }
 
     public class HierarchyInfo // TODO: Rename to HierarchyIndexes
