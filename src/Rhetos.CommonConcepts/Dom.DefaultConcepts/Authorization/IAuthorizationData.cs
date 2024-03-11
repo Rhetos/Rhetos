@@ -27,33 +27,33 @@ namespace Rhetos.Dom.DefaultConcepts
     {
         PrincipalInfo GetPrincipal(string username);
 
-        IEnumerable<Guid> GetPrincipalRoles(IPrincipal principal);
+        IReadOnlyCollection<Guid> GetPrincipalRoles(IPrincipal principal);
 
         /// <summary>
         /// The function may return permissions for more claims than required.
         /// </summary>
-        IEnumerable<PrincipalPermissionInfo> GetPrincipalPermissions(IPrincipal principal, IEnumerable<Guid> claimIds = null);
+        IReadOnlyCollection<PrincipalPermissionInfo> GetPrincipalPermissions(IPrincipal principal, IReadOnlyCollection<Guid> claimIds = null);
 
         /// <summary>
         /// The function may return more items than required.
         /// Note that the result will not include roles that do not exist, and that the order of returned items might not match the parameter.
         /// </summary>
-        IDictionary<Guid, string> GetRoles(IEnumerable<Guid> roleIds = null);
+        IDictionary<Guid, string> GetRoles(IReadOnlyCollection<Guid> roleIds = null);
 
         IDictionary<SystemRole, Guid> GetSystemRoles();
 
-        IEnumerable<Guid> GetRoleRoles(Guid roleId);
+        IReadOnlyCollection<Guid> GetRoleRoles(Guid roleId);
 
         /// <summary>
         /// The function may return permissions for more claims than required.
         /// </summary>
-        IEnumerable<RolePermissionInfo> GetRolePermissions(IEnumerable<Guid> roleIds, IEnumerable<Guid> claimIds = null);
+        IReadOnlyCollection<RolePermissionInfo> GetRolePermissions(IReadOnlyCollection<Guid> roleIds, IReadOnlyCollection<Guid> claimIds = null);
 
         /// <summary>
         /// The function may return more items than required.
         /// Note that the result will not include claims that are inactive or do not exist, and that the order of returned items might not match the parameter.
         /// </summary>
-        IDictionary<Claim, ClaimInfo> GetClaims(IEnumerable<Claim> requiredClaims = null);
+        IDictionary<Claim, ClaimInfo> GetClaims(IReadOnlyCollection<Claim> requiredClaims = null);
     }
 
     public enum SystemRole { AllPrincipals, Anonymous };

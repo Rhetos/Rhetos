@@ -104,12 +104,12 @@ namespace Rhetos.Extensibility
             _builder.RegisterInstance(new SuppressPlugin(typeof(TPlugin))).Keyed<SuppressPlugin>(typeof(TPluginInterface));
         }
 
-        private void RegisterPlugins(IEnumerable<PluginInfo> matchingPlugins, Type exportType)
+        private void RegisterPlugins(IReadOnlyCollection<PluginInfo> matchingPlugins, Type exportType)
         {
-            if (!matchingPlugins.Any())
+            if (matchingPlugins.Count == 0)
                 return;
 
-            _logger.Trace(() => "Registering plugins: " + exportType.FullName + " (" + matchingPlugins.Count() + ")");
+            _logger.Trace(() => $"Registering plugins: {exportType} ({matchingPlugins.Count})");
 
             foreach (var plugin in matchingPlugins)
             {

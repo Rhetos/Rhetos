@@ -73,8 +73,8 @@ namespace Rhetos.Compiler
 
         private string ErrorOnUpdate(string filePath, string oldValue)
         {
-            var sameFiles = _files.Keys.Where(oldFilePath => string.Equals(filePath, oldFilePath, StringComparison.OrdinalIgnoreCase)); // Robust error reporting, even though only one file is expected.
-            string oldFileInfo = (sameFiles.Count() == 1 && string.Equals(sameFiles.Single(), filePath, StringComparison.Ordinal))
+            var sameFiles = _files.Keys.Where(oldFilePath => string.Equals(filePath, oldFilePath, StringComparison.OrdinalIgnoreCase)).ToList(); // Robust error reporting, even though only one file is expected.
+            string oldFileInfo = (sameFiles.Count == 1 && string.Equals(sameFiles.Single(), filePath, StringComparison.Ordinal))
                 ? ""
                 : $" Previously generated file is '{string.Join(", ", sameFiles)}'.";
 

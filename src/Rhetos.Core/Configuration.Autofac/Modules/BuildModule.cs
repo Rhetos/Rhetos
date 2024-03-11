@@ -74,7 +74,9 @@ namespace Rhetos.Configuration.Autofac.Modules
             // Generating data migration from plugins:
 
             pluginRegistration.FindAndRegisterPlugins<IConceptDatabaseGenerator>(typeof(IConceptDatabaseGenerator<>));
+#pragma warning disable CS0618 // Type or member is obsolete
             pluginRegistration.FindAndRegisterPlugins<IConceptDatabaseDefinition, IConceptDatabaseGenerator>();
+#pragma warning restore CS0618 // Type or member is obsolete
             builder.RegisterType<NullImplementation>().As<IConceptDatabaseGenerator>();
             builder.RegisterType<ConceptDataMigrationGenerator>().As<IGenerator>();
         }

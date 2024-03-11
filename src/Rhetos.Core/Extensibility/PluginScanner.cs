@@ -56,7 +56,7 @@ namespace Rhetos.Extensibility
             if (string.IsNullOrEmpty(buildEnvironment.CacheFolder))
                 throw new ArgumentException($"Configuration setting '{OptionsAttribute.GetConfigurationPath<RhetosBuildEnvironment>()}:{nameof(RhetosBuildEnvironment.CacheFolder)}' in not provided.");
 
-            _pluginsByExport = new Lazy<MultiDictionary<string, PluginInfo>>(() => GetPluginsByExport(pluginAssemblies), LazyThreadSafetyMode.ExecutionAndPublication);
+            _pluginsByExport = new(() => GetPluginsByExport(pluginAssemblies), LazyThreadSafetyMode.ExecutionAndPublication);
             _pluginScannerCache = new PluginScannerCache(buildEnvironment.CacheFolder, logProvider, new FilesUtility(logProvider));
             _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _logger = logProvider.GetLogger(GetType().Name);
@@ -69,7 +69,7 @@ namespace Rhetos.Extensibility
         /// <summary>
         /// Returns plugins that are registered for the given interface, sorted by dependencies (MefPovider.DependsOn).
         /// </summary>
-        public IEnumerable<PluginInfo> FindPlugins(Type pluginInterface)
+        public IReadOnlyCollection<PluginInfo> FindPlugins(Type pluginInterface)
         {
             return _pluginsByExport.Value.Get(pluginInterface.FullName);
         }

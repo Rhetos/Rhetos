@@ -17,20 +17,19 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.ComponentModel.Composition;
-using Rhetos.Utilities;
-using Rhetos.Extensibility;
-using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Dsl;
-using System.Globalization;
-using Rhetos.Compiler;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Extensibility;
+using Rhetos.Utilities;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     [Export(typeof(IConceptDatabaseDefinition))]
     [ExportMetadata(MefProvider.Implements, typeof(SqlTriggerInfo))]
     public class SqlTriggerDatabaseDefinition : IConceptDatabaseDefinition
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         private readonly ConceptMetadata _conceptMetadata;
 

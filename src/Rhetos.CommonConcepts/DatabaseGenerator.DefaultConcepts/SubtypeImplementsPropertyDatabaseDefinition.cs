@@ -28,9 +28,11 @@ using System.Linq;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     [Export(typeof(IConceptDatabaseDefinition))]
     [ExportMetadata(MefProvider.Implements, typeof(SubtypeImplementsPropertyInfo))]
     public class SubtypeImplementsPropertyDatabaseDefinition : IConceptDatabaseDefinitionExtension
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         ConceptMetadata _conceptMetadata;
 

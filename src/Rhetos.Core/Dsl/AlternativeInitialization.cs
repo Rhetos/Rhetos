@@ -19,38 +19,34 @@
 
 using Rhetos.Logging;
 using Rhetos.Utilities;
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Rhetos.Dsl
 {
     public static class AlternativeInitialization
     {
-        public static IEnumerable<IConceptInfo> InitializeNonparsableProperties(IEnumerable<IConceptInfo> concepts, ILogger traceLogger)
+        public static List<IConceptInfo> InitializeNonparsableProperties(IEnumerable<IConceptInfo> concepts, ILogger traceLogger)
         {
             var newConcepts = new List<IConceptInfo>();
 
             foreach (var alternativeInitializationConcept in concepts.OfType<IAlternativeInitializationConcept>())
-                newConcepts.AddRange(InitializeNonparsablePropertiesRecursive(alternativeInitializationConcept, new HashSet<string>(), 0, traceLogger));
+                newConcepts.AddRange(InitializeNonparsablePropertiesRecursive(alternativeInitializationConcept, [], 0, traceLogger));
 
             return newConcepts;
         }
 
-        private static IEnumerable<IConceptInfo> InitializeNonparsablePropertiesRecursive(IAlternativeInitializationConcept alternativeInitializationConcept, HashSet<string> alreadyCreated, int depth, ILogger traceLogger)
+        private static List<IConceptInfo> InitializeNonparsablePropertiesRecursive(IAlternativeInitializationConcept alternativeInitializationConcept, HashSet<string> alreadyCreated, int depth, ILogger traceLogger)
         {
             if (depth > 10)
                 throw new DslConceptSyntaxException(alternativeInitializationConcept, "Macro concept references cannot be resolved.");
 
-            List<IConceptInfo> result = new List<IConceptInfo>();
+            List<IConceptInfo> result = [];
 
-            IEnumerable<IConceptInfo> createdConcepts;
-            alternativeInitializationConcept.InitializeNonparsableProperties(out createdConcepts);
-            CsUtility.Materialize(ref createdConcepts);
+            alternativeInitializationConcept.InitializeNonparsableProperties(out var createdConceptsEnum);
+            var createdConcepts = CsUtility.Materialized(createdConceptsEnum);
 
-            if (createdConcepts != null && createdConcepts.Any())
+            if (createdConcepts != null && createdConcepts.Count != 0)
             {
                 traceLogger.Trace(() => alternativeInitializationConcept.GetShortDescription() + " generated on alternative initialization: "
                     + string.Join(", ", createdConcepts.Select(c => c.GetShortDescription())) + ".");

@@ -20,6 +20,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -159,28 +160,84 @@ namespace Rhetos.Utilities
         /// <summary>
         /// If <paramref name="items"/> is not a List or an Array, converts it to a List&lt;<typeparamref name="T"/>&gt;.
         /// If the parameter is null, it will remain null.
-        /// Use this function to make sure that the <paramref name="items"/> is not a LINQ query
+        /// </summary>
+        /// <remarks>
+        /// Use this method to make sure that the provided <see cref="IEnumerable"/> <paramref name="items"/> is not a LINQ query
         /// before using it multiple times, in order to avoid the query evaluation every time
         /// (sometimes it means reading data from the database on every evaluation).
-        /// </summary>
+        /// </remarks>
         public static void Materialize<T>(ref IEnumerable<T> items)
         {
-            if (items != null && !(items is IList))
+            if (items != null && items is not IList)
                 items = items.ToList();
         }
 
         /// <summary>
+        /// Returns materialized <paramref name="items"/> (converted to List), if not already materialized (a List, an array or similar).
+        /// If the parameter is null, the result is null.
+        /// </summary>
+        /// <remarks>
+        /// Use this method to make sure that the provided <see cref="IEnumerable"/> <paramref name="items"/> is not a LINQ query
+        /// before using it multiple times, in order to avoid the query evaluation every time
+        /// (sometimes it means reading data from the database on every evaluation).
+        /// </remarks>
+        public static IReadOnlyCollection<T> Materialized<T>(IEnumerable<T> items)
+        {
+            return items switch
+            {
+                null => null,
+                IReadOnlyCollection<T> collection => collection,
+                _ => items.ToList()
+            };
+        }
+
+        /// <summary>
+        /// Efficient concatenation if collections.
         /// When joining zero or one collections, no new IEnumerable "wrapper" objects are created.
         /// </summary>
-        public static IEnumerable<T> Concatenate<T>(List<IEnumerable<T>> _values)
+        public static IEnumerable<T> Concatenate<T>(List<IEnumerable<T>> collections)
         {
-            if (_values.Count == 0)
-                return Enumerable.Empty<T>();
+            if (collections.Count == 0)
+                return [];
 
-            IEnumerable<T> all = _values[0];
-            for (int x = 1; x < _values.Count; x++)
-                all = all.Concat(_values[x]);
+            IEnumerable<T> all = collections[0];
+            for (int x = 1; x < collections.Count; x++)
+                all = all.Concat(collections[x]);
             return all;
+        }
+
+        /// <summary>
+        /// Efficient concatenation if collections.
+        /// </summary>
+        public static IReadOnlyCollection<T> Concatenate<T>(List<IReadOnlyCollection<T>> collections)
+        {
+            int totalSize = 0;
+            int nonEmptyCount = 0;
+            IReadOnlyCollection<T> lastNonEmpty = null;
+
+            foreach (var colletion in collections)
+            {
+                int size = colletion.Count;
+                totalSize += size;
+                if (size > 0)
+                {
+                    nonEmptyCount++;
+                    lastNonEmpty = colletion;
+                }
+            }
+
+            if (nonEmptyCount == 0)
+                return [];
+            else if (nonEmptyCount == 1)
+                return lastNonEmpty;
+            else
+            {
+                var all = new List<T>(totalSize);
+                foreach (var c in collections)
+                    if (c.Count > 0)
+                        all.AddRange(c);
+                return all;
+            }
         }
 
         /// <summary>

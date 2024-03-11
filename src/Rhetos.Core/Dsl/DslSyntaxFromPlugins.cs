@@ -55,9 +55,7 @@ namespace Rhetos.Dsl
 
             var types = conceptInfoTypes
                 .Distinct()
-                .ToDictionary(
-                    conceptInfoType => conceptInfoType,
-                    conceptInfoType => CreateConceptTypePartial(conceptInfoType));
+                .ToDictionary(conceptInfoType => conceptInfoType, CreateConceptTypePartial);
 
             foreach (var type in types)
             {
@@ -89,10 +87,13 @@ namespace Rhetos.Dsl
         /// </summary>
         private static void IncludeBaseConceptTypes(ref IEnumerable<Type> conceptInfoTypes)
         {
-            var conceptInfoTypesIndex = new HashSet<Type>(conceptInfoTypes);
+            var conceptInfoTypesIndex = new HashSet<Type>();
             foreach (Type conceptInfoType in conceptInfoTypes)
+            {
+                conceptInfoTypesIndex.Add(conceptInfoType);
                 foreach (Type baseType in GetBaseConceptInfoTypes(conceptInfoType))
                     conceptInfoTypesIndex.Add(baseType);
+            }
             conceptInfoTypes = conceptInfoTypesIndex;
         }
 

@@ -69,20 +69,20 @@ namespace Rhetos.TestCommon
         /// </summary>
         public static void AssertContains(string text, IEnumerable<string> patterns, string message = null, string errorContext = null)
         {
-            CsUtility.Materialize(ref patterns);
-            if (patterns == null || !patterns.Any())
+            var patternsCollection = CsUtility.Materialized(patterns);
+            if (patternsCollection == null || patternsCollection.Count == 0)
                 return;
 
-            if (patterns.Any(string.IsNullOrEmpty))
+            if (patternsCollection.Any(string.IsNullOrEmpty))
                 throw new ArgumentException("Given list of patterns contains an empty string.");
 
             Console.WriteLine("[AssertContains] Actual text: '" + text + "'.");
 
-            foreach (var pattern in patterns)
+            foreach (var pattern in patternsCollection)
             {
                 Console.Write("[AssertContains] Looking for pattern '" + pattern + "'.");
 
-                if (text.ToLower().Contains(pattern.ToLower()))
+                if (text.Contains(pattern, StringComparison.InvariantCultureIgnoreCase))
                     Console.WriteLine(" Found.");
                 else
                 {

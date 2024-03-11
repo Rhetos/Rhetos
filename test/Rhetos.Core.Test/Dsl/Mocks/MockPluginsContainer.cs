@@ -25,14 +25,14 @@ namespace Rhetos.Dsl.Test
 {
     public class MockPluginsContainer<T> : IPluginsContainer<T>
     {
-        readonly IEnumerable<T> _plugins;
+        readonly IReadOnlyCollection<T> _plugins;
 
         public MockPluginsContainer(params T[] plugins)
         {
             _plugins = plugins;
         }
 
-        public IEnumerable<T> GetPlugins()
+        public IReadOnlyCollection<T> GetPlugins()
         {
             return _plugins;
         }
@@ -47,7 +47,7 @@ namespace Rhetos.Dsl.Test
             return null;
         }
 
-        public IEnumerable<T> GetImplementations(Type activator)
+        public IReadOnlyCollection<T> GetImplementations(Type activator)
         {
             return Array.Empty<T>();
         }

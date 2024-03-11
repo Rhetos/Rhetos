@@ -17,23 +17,21 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using Rhetos.Utilities;
 using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
+using Rhetos.Utilities;
+using System.ComponentModel.Composition;
+using System.Linq;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     [Export(typeof(IConceptDatabaseDefinition))]
     [ExportMetadata(MefProvider.Implements, typeof(SqlIndexMultipleInfo))]
     public class SqlIndexMultipleDatabaseDefinition : IConceptDatabaseDefinition
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         /// <summary>
         /// Options inserted between CREATE and INDEX, before Options1Tag.

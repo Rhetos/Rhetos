@@ -88,12 +88,12 @@ namespace Rhetos.Dsl.Test
             public StubDslParser(IEnumerable<IConceptInfo> rawConcepts)
             {
                 var syntax = DslSyntaxHelper.CreateDslSyntax(rawConcepts.ToArray());
-                ParsedConcepts = rawConcepts.Select(ci => syntax.CreateConceptSyntaxNode(ci));
+                ParsedConcepts = rawConcepts.Select(syntax.CreateConceptSyntaxNode).ToList();
             }
 
-            public IEnumerable<ConceptSyntaxNode> ParsedConcepts { get; }
+            public IReadOnlyCollection<ConceptSyntaxNode> ParsedConcepts { get; }
 
-            public IEnumerable<ConceptSyntaxNode> GetConcepts() => ParsedConcepts;
+            public IReadOnlyCollection<ConceptSyntaxNode> GetConcepts() => ParsedConcepts;
         }
 
         internal class MockMacroIndex : IIndex<Type, IEnumerable<IConceptMacro>>
@@ -155,7 +155,7 @@ namespace Rhetos.Dsl.Test
             return dslModel.Concepts.ToList();
         }
 
-        static List<IConceptInfo> DslModelFromConcepts(IEnumerable<ConceptSyntaxNode> rawConcepts)
+        static List<IConceptInfo> DslModelFromConcepts(IReadOnlyCollection<ConceptSyntaxNode> rawConcepts)
         {
             var conceptInfos = ConceptInfoHelper.ConvertNodesToConceptInfos(rawConcepts);
             var dslModel = NewDslModel(new StubDslParser(rawConcepts), conceptInfos);

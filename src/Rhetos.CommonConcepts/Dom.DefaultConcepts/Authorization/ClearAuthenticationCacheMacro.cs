@@ -101,13 +101,13 @@ namespace Rhetos.Dom.DefaultConcepts
                 PropertyName = "_authorizationDataCache"
             };
             var saveMethod = new SaveMethodInfo { Entity = entity };
-            newConcepts.AddRange(new IConceptInfo[] { usesAuthorizationDataCache, saveMethod });
+            newConcepts.AddRange([usesAuthorizationDataCache, saveMethod]);
 
             if (loadOldPropertyValue != null)
             {
                 var loadOldItems = new LoadOldItemsInfo { SaveMethod = saveMethod };
                 var loadOldItemsProperty = new LoadOldItemsTakeInfo { LoadOldItems = loadOldItems, Path = loadOldPropertyValue };
-                newConcepts.AddRange(new IConceptInfo[] { loadOldItems, loadOldItemsProperty });
+                newConcepts.AddRange([loadOldItems, loadOldItemsProperty]);
             }
 
             var clearCache = new OnSaveUpdateInfo
@@ -116,7 +116,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 RuleName = "ClearAuthenticationCache",
                 CsCodeSnippet = snippetClearCache
             };
-            newConcepts.AddRange(new IConceptInfo[] { clearCache });
+            newConcepts.AddRange([clearCache]);
         }
     }
 }

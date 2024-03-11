@@ -122,23 +122,23 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private void CheckExpectedCodeFormat(SyntaxNode node, SyntaxKind expectedNodeKind, params SyntaxKind[] expectedChildKinds)
         {
-            if (node.Kind() != expectedNodeKind)
+            if (!node.IsKind(expectedNodeKind))
                 throw new DslConceptSyntaxException(_errorContext, $"The provided code snippet should be formatted as a C# lambda expression." +
                     $" Code snippet '{_expression.Limit(200)}' is '{node.Kind()}' instead of '{expectedNodeKind}'.");
 
-            var childNodes = node.ChildNodes();
+            var childNodes = CsUtility.Materialized(node.ChildNodes());
             string expectedChildKindsText = string.Join(" or ", expectedChildKinds);
 
-            if (!childNodes.Any())
+            if (childNodes.Count == 0)
                 throw new DslConceptSyntaxException(_errorContext, $"The provided code snippet should be formatted as a C# lambda expression." +
                     $" Code snippet '{_expression.Limit(200)}' has no content." +
                     $" Expected content type is '{expectedChildKindsText}'.");
 
-            if (childNodes.Count() > 1)
+            if (childNodes.Count > 1)
                 throw new DslConceptSyntaxException(_errorContext, $"The provided code snippet should be formatted as a C# lambda expression." +
                     $" Code snippet '{_expression.Limit(200)}' contains multiple nodes while only one is expected." +
                     $" Expected child node type is '{expectedChildKindsText}'." +
-                    $" The provided snippet contains {childNodes.Count()} child nodes: {string.Join(", ", childNodes.Select(n => n.Kind()))}.");
+                    $" The provided snippet contains {childNodes.Count} child nodes: {string.Join(", ", childNodes.Select(n => n.Kind()))}.");
 
             if (!expectedChildKinds.Contains(childNodes.Single().Kind()))
                 throw new DslConceptSyntaxException(_errorContext, $"The provided code snippet should be formatted as a C# lambda expression." +

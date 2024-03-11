@@ -105,7 +105,7 @@ namespace Rhetos.DatabaseGenerator
                 .GroupBy(ca => ca.ConceptImplementation.GetType())
                 .ToDictionary(g => g.Key, g => g.ToList());
 
-            var distinctConceptImplementations = codeGenerators.Select(ca => ca.ConceptImplementation.GetType()).Distinct().ToList();
+            var distinctConceptImplementations = codeGeneratorsByImplementationType.Keys.ToList();
 
             var implementationDependencies = GetImplementationDependencies(plugins, distinctConceptImplementations);
 
@@ -122,7 +122,7 @@ namespace Rhetos.DatabaseGenerator
             return dependencies;
         }
 
-        private List<Tuple<Type, Type>> GetImplementationDependencies(IPluginsContainer<IConceptDatabaseGenerator> plugins, IEnumerable<Type> conceptImplementations)
+        private List<Tuple<Type, Type>> GetImplementationDependencies(IPluginsContainer<IConceptDatabaseGenerator> plugins, List<Type> conceptImplementations)
         {
             var dependencies = new List<Tuple<Type, Type>>();
 

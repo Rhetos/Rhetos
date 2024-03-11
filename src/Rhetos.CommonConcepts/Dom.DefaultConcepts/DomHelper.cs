@@ -46,12 +46,16 @@ namespace Rhetos.Dom.DefaultConcepts
             MaterializeItemsToSave(ref updatedNew);
             MaterializeItemsToDelete(ref deletedIds);
 
+#pragma warning disable CA1851 // Possible multiple enumerations of 'IEnumerable' collection
+
             if (!insertedNew.Any() && !updatedNew.Any() && !deletedIds.Any())
                 return false;
 
             foreach (var item in insertedNew)
                 if (item.ID == Guid.Empty)
                     item.ID = Guid.NewGuid();
+
+#pragma warning restore CA1851 // Possible multiple enumerations of 'IEnumerable' collection
 
             return true;
         }
@@ -60,10 +64,10 @@ namespace Rhetos.Dom.DefaultConcepts
             where TEntity : IEntity, new()
         {
             if (items == null)
-                items = Enumerable.Empty<TEntity>();
+                items = [];
             else if (items is IQueryable)
                 throw new FrameworkException("The Save method for '" + typeof(TEntity).FullName + "' does not support the argument type '" + items.GetType().Name + "'. Use a List or an Array.");
-            else if (!(items is IList))
+            else if (items is not IList)
                 items = items.ToList();
         }
 
@@ -71,11 +75,11 @@ namespace Rhetos.Dom.DefaultConcepts
             where TEntity : IEntity, new()
         {
             if (items == null)
-                items = Enumerable.Empty<TEntity>();
-            if (items is IQueryable<IEntity> queryable)
+                items = [];
+            else if (items is IQueryable<IEntity> queryable)
                 // IQueryable Select will generate a better SQL query instead. IEnumerable Select would load all columns.
                 items = queryable.Select(item => new TEntity { ID = item.ID }).ToList();
-            else if (!(items is IList))
+            else if (items is not IList)
                 items = items.Select(item => new TEntity { ID = item.ID }).ToList();
         }
 
@@ -121,7 +125,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var loaded = items.Any()
                 ? repository.Query(items.Select(item => item.ID)).ToList()
-                : new List<TQueryableEntity>();
+                : [];
 
             Graph.SortByGivenOrder(loaded, items.Select(item => item.ID), item => item.ID);
             return loaded;

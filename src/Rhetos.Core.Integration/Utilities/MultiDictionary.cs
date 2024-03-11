@@ -56,12 +56,12 @@ namespace Rhetos.Utilities
         /// <summary>
         /// Returns an empty array if the given key does not exist.
         /// </summary>
-        public IEnumerable<TValue> Get(TKey key)
+        public IReadOnlyCollection<TValue> Get(TKey key)
         {
             if (TryGetValue(key, out List<TValue> list))
                 return list;
             else
-                return Array.Empty<TValue>();
+                return [];
         }
     }
 
@@ -69,18 +69,18 @@ namespace Rhetos.Utilities
     {
         public static MultiDictionary<TKey, TElement> ToMultiDictionary<TSource, TKey, TElement>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> valueSelector)
         {
-            var multyDictionary = new MultiDictionary<TKey, TElement>();
+            var multiDictionary = new MultiDictionary<TKey, TElement>();
             foreach (var element in source)
-                multyDictionary.Add(keySelector(element), valueSelector(element));
-            return multyDictionary;
+                multiDictionary.Add(keySelector(element), valueSelector(element));
+            return multiDictionary;
         }
 
         public static MultiDictionary<TKey, TElement> ToMultiDictionary<TSource, TKey, TElement>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> valueSelector, IEqualityComparer<TKey> comparer)
         {
-            var multyDictionary = new MultiDictionary<TKey, TElement>(comparer);
+            var multiDictionary = new MultiDictionary<TKey, TElement>(comparer);
             foreach (var element in source)
-                multyDictionary.Add(keySelector(element), valueSelector(element));
-            return multyDictionary;
+                multiDictionary.Add(keySelector(element), valueSelector(element));
+            return multiDictionary;
         }
     }
 }

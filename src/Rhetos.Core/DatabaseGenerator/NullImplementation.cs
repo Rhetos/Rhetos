@@ -27,9 +27,10 @@ namespace Rhetos.DatabaseGenerator
     /// that has no implementation and which depends on a third database object. First database object should indirectly depend on third, even though there
     /// is no second database object implementation.  Such scenarios are easier to handle if every concept has its implementation.
     /// </summary>
-    public class NullImplementation : IConceptDatabaseDefinition
+    public class NullImplementation : IConceptDatabaseGenerator
     {
-        public string CreateDatabaseStructure(IConceptInfo conceptInfo) { return ""; }
-        public string RemoveDatabaseStructure(IConceptInfo conceptInfo) { return ""; }
+        public void GenerateCode(IConceptInfo conceptInfo, ISqlCodeBuilder sql)
+        {
+        }
     }
 }

@@ -212,7 +212,7 @@ namespace Rhetos.Utilities
             return ToString(RootSnippetByFile.Values);
         }
 
-        private static string ToString(IEnumerable<FastReplacerSnippet> rootSnippets)
+        private static string ToString(IReadOnlyCollection<FastReplacerSnippet> rootSnippets)
         {
             int totalTextLength = rootSnippets.Sum(rootSnippet => rootSnippet.GetLength());
             var sb = new StringBuilder(totalTextLength);

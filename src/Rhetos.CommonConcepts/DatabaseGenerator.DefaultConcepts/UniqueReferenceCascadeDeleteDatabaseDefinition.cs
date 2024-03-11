@@ -28,9 +28,11 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     [Export(typeof(IConceptDatabaseDefinition))]
     [ExportMetadata(MefProvider.Implements, typeof(UniqueReferenceCascadeDeleteDbInfo))]
     public class UniqueReferenceCascadeDeleteDatabaseDefinition : IConceptDatabaseDefinitionExtension
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         protected ISqlResources Sql { get; private set; }
 

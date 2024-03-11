@@ -141,7 +141,7 @@ namespace Rhetos.Dom.DefaultConcepts
             IEnumerable<object> instances = Enumerable.Range(1, size).Select(i => Activator.CreateInstance(Reflection.EntityType));
             var castInstances = Reflection.CastAsEntity(instances);
 
-            var list = (IEnumerable<TEntityInterface>)Activator.CreateInstance(Reflection.ListType, new object[] { size });
+            var list = (IEnumerable<TEntityInterface>)Activator.CreateInstance(Reflection.ListType, [size]);
             Reflection.AddRange(list, castInstances);
 
             return list;
@@ -153,9 +153,9 @@ namespace Rhetos.Dom.DefaultConcepts
         /// Neither List&lt;&gt; or IList&lt;&gt; are covariant, so IEnumerable&lt;&gt; is used.</returns>
         public IEnumerable<TEntityInterface> CreateList<TSource>(IEnumerable<TSource> source, Action<TSource, TEntityInterface> initializer)
         {
-            CsUtility.Materialize(ref source);
-            var newItems = CreateList(source.Count());
-            foreach (var pair in source.Zip(newItems, (sourceItem, newItem) => new { sourceItem, newItem }))
+            var sourceCollection = CsUtility.Materialized(source);
+            var newItems = CreateList(sourceCollection.Count);
+            foreach (var pair in sourceCollection.Zip(newItems, (sourceItem, newItem) => new { sourceItem, newItem }))
                 initializer(pair.sourceItem, pair.newItem);
             return newItems;
         }
@@ -673,14 +673,14 @@ namespace Rhetos.Dom.DefaultConcepts
         ///     destination.Property2 = source.Property2; }</code></param>
         /// <remarks>
         /// This method updates the <paramref name="oldItems"/> instances that are returned in the <paramref name="toUpdate"/> list.
-        /// To avoid this behavior, use one of the Diff methods from <see cref="ComputedFromHelper"/>, but note that it requires
+        /// To avoid this behavior, use one of the <see cref="Diff"/> methods from <see cref="ComputedFromHelper"/>, but note that it requires
         /// processing the result before saving it to the database by calling <see cref="DiffResult{T}.PrepareForSaving()"/> or <see cref="DiffResult{T}.PrepareForSaving(Action{T, T})"/>.
         /// </remarks>
         public void Diff(
             IEnumerable<TEntityInterface> oldItems, IEnumerable<TEntityInterface> newItems,
             IComparer<TEntityInterface> sameRecord, Func<TEntityInterface, TEntityInterface, bool> sameValue,
             Action<TEntityInterface, TEntityInterface> assign,
-            out IEnumerable<TEntityInterface> toInsert, out IEnumerable<TEntityInterface> toUpdate, out IEnumerable<TEntityInterface> toDelete)
+            out IReadOnlyCollection<TEntityInterface> toInsert, out IReadOnlyCollection<TEntityInterface> toUpdate, out IReadOnlyCollection<TEntityInterface> toDelete)
         {
             // TODO: Remove this method and use ComputedFromHelper.Diff instead, after refactoring GenericRepository class into a set of base repository class helpers. This legacy method is currently still needed because of usage of reflection to manage entity instances in GenericRepository methods.
 
@@ -746,9 +746,9 @@ namespace Rhetos.Dom.DefaultConcepts
                 oldEnum.Dispose();
             }
 
-            toDelete = (IEnumerable<TEntityInterface>)toDeleteList;
-            toInsert = (IEnumerable<TEntityInterface>)toInsertList;
-            toUpdate = (IEnumerable<TEntityInterface>)toUpdateList;
+            toDelete = (IReadOnlyCollection<TEntityInterface>)toDeleteList;
+            toInsert = (IReadOnlyCollection<TEntityInterface>)toInsertList;
+            toUpdate = (IReadOnlyCollection<TEntityInterface>)toUpdateList;
         }
 
         public delegate void BeforeSave(ref IEnumerable<TEntityInterface> toInsert, ref IEnumerable<TEntityInterface> toUpdate, ref IEnumerable<TEntityInterface> toDelete);
@@ -784,31 +784,33 @@ namespace Rhetos.Dom.DefaultConcepts
 
             // Initialize new items:
 
-            CsUtility.Materialize(ref newItems);
-            _performanceLogger.Write(stopwatch, () => $"InsertOrUpdateOrDelete: Initialize new items ({newItems.Count()})");
+            var newItemsCollection = CsUtility.Materialized(newItems);
+            _performanceLogger.Write(stopwatch, () => $"InsertOrUpdateOrDelete: Initialize new items ({newItemsCollection.Count})");
 
             // Load old items:
 
-            IEnumerable<TEntityInterface> oldItems = this.Load(filterLoad);
-            _performanceLogger.Write(stopwatch, () => $"InsertOrUpdateOrDelete: Load old items ({oldItems.Count()})");
+            var oldItems = CsUtility.Materialized(this.Load(filterLoad));
+            _performanceLogger.Write(stopwatch, () => $"InsertOrUpdateOrDelete: Load old items ({oldItems.Count})");
 
             // Compare new and old items:
 
-            IEnumerable<TEntityInterface> toInsert, toUpdate, toDelete;
-            Diff(oldItems, newItems, sameRecord, sameValue, assign, out toInsert, out toUpdate, out toDelete);
-            _performanceLogger.Write(stopwatch, () => $"InsertOrUpdateOrDelete: Diff ({newItems.Count()} new items, {oldItems.Count()} old items, {toInsert.Count()} to insert, {toUpdate.Count()} to update, {toDelete.Count()} to delete)");
+            Diff(oldItems, newItemsCollection, sameRecord, sameValue, assign, out var toInsert, out var toUpdate, out var toDelete);
+            _performanceLogger.Write(stopwatch, () => $"InsertOrUpdateOrDelete: Diff ({newItemsCollection.Count} new items, {oldItems.Count} old items, {toInsert.Count} to insert, {toUpdate.Count} to update, {toDelete.Count} to delete)");
 
             // Save the new items, delete or update old items:
 
             if (beforeSave != null)
             {
-                beforeSave(ref toInsert, ref toUpdate, ref toDelete);
-                CsUtility.Materialize(ref toInsert);
-                CsUtility.Materialize(ref toUpdate);
-                CsUtility.Materialize(ref toDelete);
+                var toInsertEnum = (IEnumerable<TEntityInterface>)toInsert;
+                var toUpdateEnum = (IEnumerable<TEntityInterface>)toUpdate;
+                var toDeleteEnum = (IEnumerable<TEntityInterface>)toDelete;
+                beforeSave(ref toInsertEnum, ref toUpdateEnum, ref toDeleteEnum);
+                toInsert = CsUtility.Materialized(toInsertEnum);
+                toUpdate = CsUtility.Materialized(toUpdateEnum);
+                toDelete = CsUtility.Materialized(toDeleteEnum);
             }
             Save(toInsert, toUpdate, toDelete);
-            _performanceLogger.Write(stopwatch, () => $"InsertOrUpdateOrDelete: Save ({newItems.Count()} new items, {oldItems.Count()} old items, {toInsert.Count()} to insert, {toUpdate.Count()} to update, {toDelete.Count()} to delete)");
+            _performanceLogger.Write(stopwatch, () => $"InsertOrUpdateOrDelete: Save ({newItemsCollection.Count} new items, {oldItems.Count} old items, {toInsert.Count} to insert, {toUpdate.Count} to update, {toDelete.Count} to delete)");
         }
 
         /// <param name="sameRecord">Compare key properties, determining the records that should be inserted or deleted.
@@ -848,43 +850,42 @@ namespace Rhetos.Dom.DefaultConcepts
 
             // Initialize new items:
 
-            CsUtility.Materialize(ref newItems);
-            foreach (var newItem in newItems.Cast<IDeactivatable>())
+            var newItemsCollection = CsUtility.Materialized(newItems);
+            foreach (var newItem in newItemsCollection.Cast<IDeactivatable>())
                 if (newItem.Active == null)
                     newItem.Active = true;
-            _performanceLogger.Write(stopwatch, () => $"InsertOrUpdateOrDeleteOrDeactivate: Initialize new items ({newItems.Count()})");
+            _performanceLogger.Write(stopwatch, () => $"InsertOrUpdateOrDeleteOrDeactivate: Initialize new items ({newItemsCollection.Count})");
 
             // Load old items:
 
-            IEnumerable<TEntityInterface> oldItems = this.Load(filterLoad);
-            _performanceLogger.Write(stopwatch, () => $"InsertOrUpdateOrDeleteOrDeactivate: Load old items ({oldItems.Count()})");
+            var oldItems = CsUtility.Materialized(this.Load(filterLoad));
+            _performanceLogger.Write(stopwatch, () => $"InsertOrUpdateOrDeleteOrDeactivate: Load old items ({oldItems.Count})");
 
             // Compare new and old items:
 
-            IEnumerable<TEntityInterface> toInsert, toUpdate, toDelete;
-            Diff(oldItems, newItems, sameRecord, sameValue, assign, out toInsert, out toUpdate, out toDelete);
-            _performanceLogger.Write(stopwatch, () => $"InsertOrUpdateOrDeleteOrDeactivate: Diff ({newItems.Count()} new items, {oldItems.Count()} old items, {toInsert.Count()} to insert, {toUpdate.Count()} to update, {toDelete.Count()} to delete)");
+            Diff(oldItems, newItemsCollection, sameRecord, sameValue, assign, out var toInsert, out var toUpdate, out var toDelete);
+            _performanceLogger.Write(stopwatch, () => $"InsertOrUpdateOrDeleteOrDeactivate: Diff ({newItemsCollection.Count} new items, {oldItems.Count} old items, {toInsert.Count} to insert, {toUpdate.Count} to update, {toDelete.Count} to delete)");
 
             // Deactivate some items instead of deleting:
 
-            IEnumerable<TEntityInterface> toDeactivate = Filter(toDelete, filterDeactivateDeleted);
+            var toDeactivate = CsUtility.Materialized(Filter(toDelete, filterDeactivateDeleted));
             int activeToDeactivateCount = 0;
-            if (toDeactivate.Any())
+            if (toDeactivate.Count != 0)
             {
-                int oldDeleteCount = toDelete.Count();
+                int oldDeleteCount = toDelete.Count;
 
                 // Don't delete items that should be deactivated:
-                if (toDeactivate.Count() == oldDeleteCount)
-                    toDelete = CreateList(0);
+                if (toDeactivate.Count == oldDeleteCount)
+                    toDelete = CsUtility.Materialized(CreateList(0));
                 else
                 {
                     var toDeactivateIndex = new HashSet<TEntityInterface>(toDeactivate, ReferenceEqualityComparer.Instance);
                     toDelete = Reflection.ToListOfEntity(toDelete.Where(item => !toDeactivateIndex.Contains(item)));
                 }
-                if (toDelete.Count() + toDeactivate.Count() != oldDeleteCount)
+                if (toDelete.Count + toDeactivate.Count != oldDeleteCount)
                     throw new FrameworkException($"Invalid number of items to deactivate for '{_genericRepositoryName}'." +
                         $" Verify if the deactivation filter ({filterDeactivateDeleted.GetType()}) on that data structure returns a valid subset of the given items." +
-                        $" {oldDeleteCount} items to remove: {toDeactivate.Count()} items to deactivate and {toDelete.Count()} items remaining to delete (should be {oldDeleteCount - toDeactivate.Count()}).");
+                        $" {oldDeleteCount} items to remove: {toDeactivate.Count} items to deactivate and {toDelete.Count} items remaining to delete (should be {oldDeleteCount - toDeactivate.Count}).");
 
                 // Update the items to deactivate (unless already deactivated):
                 var activeToDeactivate = toDeactivate.Cast<IDeactivatable>().Where(item => item.Active == null || item.Active == true).ToList();
@@ -893,19 +894,22 @@ namespace Rhetos.Dom.DefaultConcepts
                 Reflection.AddRange(toUpdate, Reflection.CastAsEntity(activeToDeactivate));
                 activeToDeactivateCount = activeToDeactivate.Count;
             }
-            _performanceLogger.Write(stopwatch, () => $"InsertOrUpdateOrDeleteOrDeactivate: Deactivate ({activeToDeactivateCount} to deactivate, {toDeactivate.Count() - activeToDeactivateCount} already deactivated)");
+            _performanceLogger.Write(stopwatch, () => $"InsertOrUpdateOrDeleteOrDeactivate: Deactivate ({activeToDeactivateCount} to deactivate, {toDeactivate.Count - activeToDeactivateCount} already deactivated)");
 
             // Modify old items to match new items:
 
             if (beforeSave != null)
             {
-                beforeSave(ref toInsert, ref toUpdate, ref toDelete);
-                CsUtility.Materialize(ref toInsert);
-                CsUtility.Materialize(ref toUpdate);
-                CsUtility.Materialize(ref toDelete);
+                var toInsertEnum = (IEnumerable<TEntityInterface>)toInsert;
+                var toUpdateEnum = (IEnumerable<TEntityInterface>)toUpdate;
+                var toDeleteEnum = (IEnumerable<TEntityInterface>)toDelete;
+                beforeSave(ref toInsertEnum, ref toUpdateEnum, ref toDeleteEnum);
+                toInsert = CsUtility.Materialized(toInsertEnum);
+                toUpdate = CsUtility.Materialized(toUpdateEnum);
+                toDelete = CsUtility.Materialized(toDeleteEnum);
             }
             Save(toInsert, toUpdate, toDelete);
-            _performanceLogger.Write(stopwatch, () => $"InsertOrUpdateOrDeleteOrDeactivate: Save ({newItems.Count()} new items, {oldItems.Count()} old items, {toInsert.Count()} to insert, {toUpdate.Count()} to update, {toDelete.Count()} to delete)");
+            _performanceLogger.Write(stopwatch, () => $"InsertOrUpdateOrDeleteOrDeactivate: Save ({newItemsCollection.Count} new items, {oldItems.Count} old items, {toInsert.Count} to insert, {toUpdate.Count} to update, {toDelete.Count} to delete)");
         }
 
         public DiffResult<TEntityInterface> DiffFrom(

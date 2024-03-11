@@ -27,7 +27,7 @@ namespace Rhetos.Extensibility
         /// <summary>
         /// The plugins are sorted by their dependencies.
         /// </summary>
-        IEnumerable<TPlugin> GetPlugins();
+        IReadOnlyCollection<TPlugin> GetPlugins();
 
         Type GetMetadata(TPlugin plugin, string metadataKey);
 
@@ -38,6 +38,6 @@ namespace Rhetos.Extensibility
         /// </summary>
         /// <param name="activator">
         /// </param>
-        IEnumerable<TPlugin> GetImplementations(Type activator);
+        IReadOnlyCollection<TPlugin> GetImplementations(Type activator);
     }
 }

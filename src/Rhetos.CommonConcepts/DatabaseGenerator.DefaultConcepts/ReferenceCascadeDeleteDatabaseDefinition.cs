@@ -18,50 +18,18 @@
 */
 
 using Rhetos.Compiler;
-using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Extensibility;
-using Rhetos.Utilities;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
-    [Export(typeof(IConceptDatabaseDefinition))]
-    [ExportMetadata(MefProvider.Implements, typeof(ReferenceCascadeDeleteDbInfo))]
-    public class ReferenceCascadeDeleteDatabaseDefinition : IConceptDatabaseDefinitionExtension
+    [Export(typeof(IConceptDatabaseGenerator))]
+    public class ReferenceCascadeDeleteDatabaseDefinition : IConceptDatabaseGenerator<ReferenceCascadeDeleteDbInfo>
     {
-        protected ISqlResources Sql { get; private set; }
-
-        protected ISqlUtility SqlUtility { get; private set; }
-
-        public ReferenceCascadeDeleteDatabaseDefinition(ISqlResources sqlResources, ISqlUtility sqlUtility)
+        public void GenerateCode(ReferenceCascadeDeleteDbInfo info, ISqlCodeBuilder sql)
         {
-            this.Sql = sqlResources;
-            this.SqlUtility = sqlUtility;
-        }
-
-        public void ExtendDatabaseStructure(
-            IConceptInfo conceptInfo, ICodeBuilder codeBuilder, 
-            out IEnumerable<Tuple<IConceptInfo, IConceptInfo>> createdDependencies)
-        {
-            var info = (ReferenceCascadeDeleteDbInfo)conceptInfo;
-
-            codeBuilder.InsertCode(Sql.Get("ReferenceCascadeDeleteDatabaseDefinition_ExtendForeignKey"),
+            sql.CodeBuilder.InsertCode(sql.Resources.Get("ReferenceCascadeDeleteDatabaseDefinition_ExtendForeignKey"),
                 ReferencePropertyConstraintDatabaseDefinition.ForeignKeyConstraintOptions, info.ReferenceDbConstraint);
-
-            createdDependencies = null;
-        }
-
-        public string CreateDatabaseStructure(IConceptInfo conceptInfo)
-        {
-            return null;
-        }
-
-        public string RemoveDatabaseStructure(IConceptInfo conceptInfo)
-        {
-            return null;
         }
     }
 }

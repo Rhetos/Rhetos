@@ -31,9 +31,11 @@ using Rhetos.Extensibility;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     [Export(typeof(IConceptDatabaseDefinition))]
     [ExportMetadata(MefProvider.Implements, typeof(SqlIndexMultiplePropertyInfo))]
     public class SqlIndexMultiplePropertyDatabaseDefinition : IConceptDatabaseDefinitionExtension
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         private readonly DatabaseSettings _databaseSettings;
 

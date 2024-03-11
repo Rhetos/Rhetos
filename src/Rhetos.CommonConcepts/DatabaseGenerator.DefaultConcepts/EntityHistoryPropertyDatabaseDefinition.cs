@@ -20,54 +20,30 @@
 using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Extensibility;
 using Rhetos.Utilities;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
-    [Export(typeof(IConceptDatabaseDefinition))]
-    [ExportMetadata(MefProvider.Implements, typeof(EntityHistoryPropertyInfo))]
-    public class EntityHistoryPropertyDatabaseDefinition : IConceptDatabaseDefinitionExtension
+    [Export(typeof(IConceptDatabaseGenerator))]
+    public class EntityHistoryPropertyDatabaseDefinition : IConceptDatabaseGenerator<EntityHistoryPropertyInfo>
     {
-        private readonly ISqlUtility _sqlUtility;
+        private readonly ConceptMetadata _conceptMetadata;
 
-        public EntityHistoryPropertyDatabaseDefinition(ISqlUtility sqlUtility)
+        public EntityHistoryPropertyDatabaseDefinition(ConceptMetadata conceptMetadata)
         {
-            _sqlUtility = sqlUtility;
+            _conceptMetadata = conceptMetadata;
         }
 
-        public string CreateDatabaseStructure(IConceptInfo conceptInfo)
+        public void GenerateCode(EntityHistoryPropertyInfo conceptInfo, ISqlCodeBuilder sql)
         {
-            return null;
-        }
+            var columnName = _conceptMetadata.GetColumnName(conceptInfo.Property);
 
-        public string RemoveDatabaseStructure(IConceptInfo conceptInfo)
-        {
-            return null;
-        }
+            sql.CodeBuilder.InsertCode($",\r\n        {columnName} = history.{columnName}",
+                EntityHistoryMacro.SelectHistoryPropertiesTag, conceptInfo.Dependency_EntityHistory);
 
-        public void ExtendDatabaseStructure(IConceptInfo conceptInfo, ICodeBuilder codeBuilder, out IEnumerable<Tuple<IConceptInfo, IConceptInfo>> createdDependencies)
-        {
-            var info = (EntityHistoryPropertyInfo)conceptInfo;
-            createdDependencies = null;
-
-            var columnName = GetColumnName(info.Property);
-
-            codeBuilder.InsertCode(string.Format(",\r\n        {0} = history.{0}", columnName),
-                EntityHistoryMacro.SelectHistoryPropertiesTag, info.Dependency_EntityHistory);
-
-            codeBuilder.InsertCode(string.Format(",\r\n        {0} = entity.{0}", columnName),
-                EntityHistoryMacro.SelectEntityPropertiesTag, info.Dependency_EntityHistory);
-        }
-
-        private string GetColumnName(PropertyInfo property)
-        {
-            if (property is ReferencePropertyInfo)
-                return _sqlUtility.Identifier(property.Name + "ID");
-            return _sqlUtility.Identifier(property.Name);
+            sql.CodeBuilder.InsertCode($",\r\n        {columnName} = entity.{columnName}",
+                EntityHistoryMacro.SelectEntityPropertiesTag, conceptInfo.Dependency_EntityHistory);
         }
     }
 }

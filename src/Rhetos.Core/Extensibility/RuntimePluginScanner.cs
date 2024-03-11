@@ -47,7 +47,7 @@ namespace Rhetos.Extensibility
         /// <summary>
         /// Returns plugins that are registered for the given interface, sorted by dependencies (MefPovider.DependsOn).
         /// </summary>
-        public IEnumerable<PluginInfo> FindPlugins(Type pluginInterface)
+        public IReadOnlyCollection<PluginInfo> FindPlugins(Type pluginInterface)
         {
             return _pluginsByExport.Value.Get(pluginInterface.FullName);
         }

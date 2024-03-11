@@ -42,18 +42,21 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public void Save<TEntity>(IEnumerable<TEntity> toInsert, IEnumerable<TEntity> toUpdate, IEnumerable<TEntity> toDelete) where TEntity : class, IEntity
         {
-            if (toDelete != null && toDelete.Any())
-                ExecuteInBatches(GetSorted(toDelete, reverse: true), PersistenceStorageCommandType.Delete);
+            if (toDelete != null)
+                ExecuteInBatches(GetSortedList(toDelete, reverse: true), PersistenceStorageCommandType.Delete);
 
-            if (toUpdate != null && toUpdate.Any())
+            if (toUpdate != null)
                 ExecuteInBatches(new List<TEntity>(toUpdate), PersistenceStorageCommandType.Update);
 
-            if (toInsert != null && toInsert.Any())
-                ExecuteInBatches(GetSorted(toInsert), PersistenceStorageCommandType.Insert);
+            if (toInsert != null)
+                ExecuteInBatches(GetSortedList(toInsert), PersistenceStorageCommandType.Insert);
         }
 
         private void ExecuteInBatches<TEntity>(List<TEntity> entities, PersistenceStorageCommandType commandType) where TEntity : class, IEntity
         {
+            if (entities.Count == 0)
+                return;
+
             var entityType = typeof(TEntity);
             for (int batchStart = 0; batchStart < entities.Count; batchStart += _options.SaveSqlCommandBatchSize)
             {
@@ -82,9 +85,12 @@ namespace Rhetos.Dom.DefaultConcepts
                 throw new FrameworkException($"Unexpected number of rows affected on insert of '{entityType}'. Row count {numberOfAffectedRows}, expected {commands.Count}.");
         }
 
-        private List<TEntity> GetSorted<TEntity>(IEnumerable<TEntity> entities, bool reverse = false) where TEntity : IEntity
+        private List<TEntity> GetSortedList<TEntity>(IEnumerable<TEntity> entities, bool reverse = false) where TEntity : IEntity
         {
             var entitiesCopy = new List<TEntity>(entities);
+            if (entitiesCopy.Count == 0)
+                return entitiesCopy;
+
             var mapper = _persistenceMappings.GetMapping(typeof(TEntity));
             var dependencies = entitiesCopy.SelectMany(x => mapper.GetDependencies(x).Select(y => new Tuple<Guid, Guid>(y, x.ID)));
             var ids = entitiesCopy.Select(x => x.ID).ToList();

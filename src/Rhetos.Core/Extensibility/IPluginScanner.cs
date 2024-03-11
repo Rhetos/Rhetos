@@ -17,12 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Autofac;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Rhetos.Extensibility
 {
@@ -31,6 +27,6 @@ namespace Rhetos.Extensibility
         /// <summary>
         /// Returns plugins that are registered for the given interface, sorted by dependencies (MefPovider.DependsOn).
         /// </summary>
-        IEnumerable<PluginInfo> FindPlugins(Type pluginInterface);
+        IReadOnlyCollection<PluginInfo> FindPlugins(Type pluginInterface);
     }
 }

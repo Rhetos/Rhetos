@@ -29,9 +29,11 @@ using System.Linq;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     [Export(typeof(IConceptDatabaseDefinition))]
     [ExportMetadata(MefProvider.Implements, typeof(UniqueReferenceInfo))]
     public class UniqueReferenceDatabaseDefinition : IConceptDatabaseDefinitionExtension
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         public static readonly SqlTag<UniqueReferenceInfo> ForeignKeyConstraintOptionsTag = "FK options";
 

@@ -285,6 +285,7 @@ namespace Rhetos.Dsl
             _performanceLogger.Write(_validateDuplicateStopwatch, "ValidateNewConceptSameAsExisting total time.");
 
             var unresolvedConcepts = _unresolvedConceptsByReference.SelectMany(ucbr => ucbr.Value);
+#pragma warning disable CA1851 // Possible multiple enumerations of 'IEnumerable' collection. The overhead of materialization is not needed, since `unresolvedConcepts` will be later used only in case of exception that will stop the execution.
             if (unresolvedConcepts.Any())
             {
                 _logger.Trace(() => string.Join("\r\n",
@@ -302,6 +303,7 @@ namespace Rhetos.Dsl
                 throw new DslConceptSyntaxException(rootUnresolved.Dependant.Concept,
                     $"Referenced concept is not defined in DSL scripts: '{rootUnresolved.ReferencedStub.GetUserDescription()}'.");
             }
+#pragma warning restore CA1851 // Possible multiple enumerations of 'IEnumerable' collection
         }
 
         private UnresolvedReference GetRootUnresolvedConcept(UnresolvedReference unresolved, List<string> trail = null)

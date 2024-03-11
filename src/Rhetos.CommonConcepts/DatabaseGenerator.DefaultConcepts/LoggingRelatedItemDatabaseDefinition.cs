@@ -17,80 +17,48 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using Rhetos.Utilities;
-using Rhetos.Extensibility;
-using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Dsl;
 using Rhetos.Compiler;
+using Rhetos.Dsl;
+using Rhetos.Dsl.DefaultConcepts;
+using Rhetos.Utilities;
+using System;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
-    [Export(typeof(IConceptDatabaseDefinition))]
-    [ExportMetadata(MefProvider.Implements, typeof(LoggingRelatedItemInfo))]
-    public class LoggingRelatedItemDatabaseDefinition : IConceptDatabaseDefinitionExtension
+    [Export(typeof(IConceptDatabaseGenerator))]
+    public class LoggingRelatedItemDatabaseDefinition : IConceptDatabaseGenerator<LoggingRelatedItemInfo>
     {
-        protected ISqlResources Sql { get; private set; }
-
-        protected ISqlUtility SqlUtility { get; private set; }
-
-        public LoggingRelatedItemDatabaseDefinition(ISqlResources sqlResources, ISqlUtility sqlUtility)
+        public void GenerateCode(LoggingRelatedItemInfo conceptInfo, ISqlCodeBuilder sql)
         {
-            this.Sql = sqlResources;
-            this.SqlUtility = sqlUtility;
-        }
-
-        public string CreateDatabaseStructure(IConceptInfo conceptInfo)
-        {
-            return null;
-        }
-
-        public string RemoveDatabaseStructure(IConceptInfo conceptInfo)
-        {
-            return null;
-        }
-
-        public void ExtendDatabaseStructure(IConceptInfo conceptInfo, ICodeBuilder codeBuilder, out IEnumerable<Tuple<IConceptInfo, IConceptInfo>> createdDependencies)
-        {
-            if (Sql.TryGet("LoggingRelatedItemDatabaseDefinition_TempColumnDefinition") == null)
-            {
-                createdDependencies = null;
+            if (sql.Resources.TryGet("LoggingRelatedItemDatabaseDefinition_TempColumnDefinition") == null)
                 return;
+
+            string tempColumnNameOld = sql.Utility.Identifier("Old_" + CsUtility.TextToIdentifier(conceptInfo.Relation) + "_" + conceptInfo.Column);
+            string tempColumnNameNew = sql.Utility.Identifier("New_" + CsUtility.TextToIdentifier(conceptInfo.Relation) + "_" + conceptInfo.Column);
+
+            var snippets = new[]
+            {
+                (sqlResource: "LoggingRelatedItemDatabaseDefinition_TempColumnDefinition", tag: EntityLoggingDefinition.TempColumnDefinitionTag),
+                (sqlResource: "LoggingRelatedItemDatabaseDefinition_TempColumnList", tag: EntityLoggingDefinition.TempColumnListTag),
+                (sqlResource: "LoggingRelatedItemDatabaseDefinition_TempColumnSelect", tag: EntityLoggingDefinition.TempColumnSelectTag),
+                (sqlResource: "LoggingRelatedItemDatabaseDefinition_AfterInsertLog", tag: EntityLoggingDefinition.AfterInsertLogTag),
+            };
+
+            foreach (var snippet in snippets)
+            {
+                string codeSnippet = sql.Resources.Format(snippet.sqlResource,
+                    tempColumnNameOld,
+                    tempColumnNameNew,
+                    conceptInfo.Table,
+                    sql.Utility.Identifier(conceptInfo.Column),
+                    sql.Utility.QuoteText(conceptInfo.Relation));
+
+                sql.CodeBuilder.InsertCode(codeSnippet, snippet.tag, conceptInfo.Logging);
             }
 
-            var info = (LoggingRelatedItemInfo)conceptInfo;
-
-            InsertCode(codeBuilder, info, sqlResource: "LoggingRelatedItemDatabaseDefinition_TempColumnDefinition", tag: EntityLoggingDefinition.TempColumnDefinitionTag);
-            InsertCode(codeBuilder, info, sqlResource: "LoggingRelatedItemDatabaseDefinition_TempColumnList", tag: EntityLoggingDefinition.TempColumnListTag);
-            InsertCode(codeBuilder, info, sqlResource: "LoggingRelatedItemDatabaseDefinition_TempColumnSelect", tag: EntityLoggingDefinition.TempColumnSelectTag);
-            InsertCode(codeBuilder, info, sqlResource: "LoggingRelatedItemDatabaseDefinition_AfterInsertLog", tag: EntityLoggingDefinition.AfterInsertLogTag);
-
             IConceptInfo logRelatedItemTableMustBeFullyCreated = new PrerequisiteAllProperties { DependsOn = new EntityInfo { Module = new ModuleInfo { Name = "Common" }, Name = "LogRelatedItem" } };
-            createdDependencies = new[] { Tuple.Create(logRelatedItemTableMustBeFullyCreated, conceptInfo) };
-        }
-
-        private void InsertCode(ICodeBuilder codeBuilder, LoggingRelatedItemInfo info, string sqlResource, SqlTag<EntityLoggingInfo> tag)
-        {
-            string codeSnippet = Sql.Format(sqlResource,
-                GetTempColumnNameOld(info),
-                GetTempColumnNameNew(info),
-                info.Table,
-                SqlUtility.Identifier(info.Column),
-                SqlUtility.QuoteText(info.Relation));
-
-            codeBuilder.InsertCode(codeSnippet, tag, info.Logging);
-        }
-
-        private string GetTempColumnNameOld(LoggingRelatedItemInfo info)
-        {
-            return SqlUtility.Identifier("Old_" + CsUtility.TextToIdentifier(info.Relation) + "_" + info.Column);
-        }
-
-        private string GetTempColumnNameNew(LoggingRelatedItemInfo info)
-        {
-            return SqlUtility.Identifier("New_" + CsUtility.TextToIdentifier(info.Relation) + "_" + info.Column);
+            sql.AddDependencies([ Tuple.Create(logRelatedItemTableMustBeFullyCreated, (IConceptInfo)conceptInfo) ]);
         }
     }
 }

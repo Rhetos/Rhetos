@@ -60,14 +60,16 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public LambdaExpression ToExpression(IEnumerable<PropertyFilter> propertyFilters, Type parameterType)
         {
+            var propertyFiltersCollection = CsUtility.Materialized(propertyFilters);
+
             ParameterExpression parameter = Expression.Parameter(parameterType, "p");
 
-            if (propertyFilters == null || !propertyFilters.Any())
+            if (propertyFiltersCollection == null || propertyFiltersCollection.Count == 0)
                 return Expression.Lambda(Expression.Constant(true), parameter);
 
             Expression resultCondition = null;
 
-            foreach (var filter in propertyFilters)
+            foreach (var filter in propertyFiltersCollection)
             {
                 if (string.IsNullOrEmpty(filter.Property))
                     continue;
@@ -587,23 +589,23 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public IList<FilterObject> ToFilterObjects(string dataStructureFullName, IEnumerable<FilterCriteria> genericFilter)
         {
-            CsUtility.Materialize(ref genericFilter);
+            var genericFilterCollection = CsUtility.Materialized(genericFilter);
 
-            foreach (var filter in genericFilter)
+            foreach (var filter in genericFilterCollection)
                 ValidateAndPrepare(filter);
 
-            var filterObjects = new List<FilterObject>(genericFilter.Count());
+            var filterObjects = new List<FilterObject>(genericFilterCollection.Count);
 
             bool handledPropertyFilter = false;
 
-            foreach (var filter in genericFilter)
+            foreach (var filter in genericFilterCollection)
             {
                 if (IsPropertyFilter(filter))
                 {
                     if (!handledPropertyFilter)
                     {
                         handledPropertyFilter = true;
-                        filterObjects.Add(CombinePropertyFilters(genericFilter));
+                        filterObjects.Add(CombinePropertyFilters(genericFilterCollection));
                     }
                 }
                 else

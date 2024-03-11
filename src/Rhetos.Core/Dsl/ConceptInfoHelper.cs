@@ -276,10 +276,10 @@ namespace Rhetos.Dsl
             return t;
         }
 
-        public static List<IConceptInfo> ConvertNodesToConceptInfos(IEnumerable<ConceptSyntaxNode> nodes)
+        public static List<IConceptInfo> ConvertNodesToConceptInfos(IReadOnlyCollection<ConceptSyntaxNode> nodes)
         {
             var keepReferences = new Dictionary<ConceptSyntaxNode, IConceptInfo>();
-            var conceptInfos = new List<IConceptInfo>(nodes.Count());
+            var conceptInfos = new List<IConceptInfo>(nodes.Count);
             foreach (var node in nodes)
                 conceptInfos.Add(ConvertNodeToConceptInfo(node, keepReferences));
             return conceptInfos;

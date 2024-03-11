@@ -32,7 +32,7 @@ namespace Rhetos.Extensibility
     /// </remarks>
     public interface INamedPlugins<TPlugin>
     {
-        IEnumerable<TPlugin> GetPlugins(string name);
+        IReadOnlyCollection<TPlugin> GetPlugins(string name);
     }
 
     public static class NamedPluginsExtensions
@@ -41,14 +41,12 @@ namespace Rhetos.Extensibility
         {
             var plugins = namedPlugins.GetPlugins(name);
 
-            if (!plugins.Any())
-                throw new FrameworkException("There is no " + typeof(TPlugin).Name + " plugin named '" + name + "'.");
-
-            if (plugins.Count() > 1)
-                throw new FrameworkException("There is more than one " + typeof(TPlugin).Name + " plugin named '" + name
-                    + "': " + plugins.First().GetType().FullName + ", " + plugins.Last().GetType().FullName + ".");
-
-            return plugins.First();
+            return plugins.Count switch
+            {
+                0 => throw new FrameworkException($"There is no {typeof(TPlugin)} plugin named '{name}'."),
+                > 1 => throw new FrameworkException($"There is more than one {typeof(TPlugin)} plugin named '{name}': {plugins.First().GetType()}, {plugins.Last().GetType()}."),
+                _ => plugins.First()
+            };
         }
     }
 }

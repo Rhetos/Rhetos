@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,40 +36,40 @@ namespace Rhetos.Dom.DefaultConcepts
 
         readonly Lazy<bool> _simpleConstruct; // True if propertiesSelector is "item=>item.SomeProperty", false if propertiesSelector is "item => new { item.Prop1, item.Prop2 }"
         readonly Lazy<Func<TEntityInterface, TProperties>> _propertiesSelectorFunc;
-        readonly Lazy<IEnumerable<Expression>> _propertiesExpression;
-        readonly Lazy<IEnumerable<PropertyInfo>> _propertiesInfo;
+        readonly Lazy<Expression[]> _propertiesExpression;
+        readonly Lazy<PropertyInfo[]> _propertiesInfo;
 
         public PropertySelectorExpression(Expression<Func<TEntityInterface, TProperties>> propertiesSelector)
         {
             _propertiesSelector = propertiesSelector;
 
             _simpleConstruct = new Lazy<bool>(InitializeSimpleConstruct);
-            _propertiesSelectorFunc = new Lazy<Func<TEntityInterface, TProperties>>(() => _propertiesSelector.Compile());
-            _propertiesExpression = new Lazy<IEnumerable<Expression>>(InitializeMemberExpressions);
-            _propertiesInfo = new Lazy<IEnumerable<PropertyInfo>>(InitializePropertyInfos);
+            _propertiesSelectorFunc = new(() => _propertiesSelector.Compile());
+            _propertiesExpression = new(InitializeMemberExpressions);
+            _propertiesInfo = new(InitializePropertyInfos);
         }
 
         public string ToString(TEntityInterface item)
         {
             var value = _propertiesSelectorFunc.Value.Invoke(item);
-            if (value == null)
-                return "<null>";
-            if (value is string)
-                return @"""" + value.ToString() + @"""";
-            return
-                value.ToString();
+
+            return value switch
+            {
+                null => "<null>",
+                string s => $@"""{s}""",
+                _ => value.ToString()
+            };
         }
 
         public Expression<Func<TEntityInterface, bool>> BuildComparisonPredicate(TEntityInterface item)
         {
             Expression allEquals = null;
 
-            var propertiesValue = GetPropertiesValue(item);
+            var propertiesValue = CsUtility.Materialized(GetPropertiesValue(item));
 
-            if (propertiesValue.Count() != _propertiesExpression.Value.Count())
-                throw new Rhetos.FrameworkException(string.Format(
-                    "Internal error: propertiesValue and _propertiesExpression length mismatch ({0} != {1}).",
-                    propertiesValue.Count(), _propertiesExpression.Value.Count()));
+            if (propertiesValue.Count != _propertiesExpression.Value.Length)
+                throw new Rhetos.FrameworkException("Internal error: propertiesValue and _propertiesExpression length mismatch" +
+                    $" ({propertiesValue.Count} != {_propertiesExpression.Value.Length}).");
 
             var members = propertiesValue.Zip(_propertiesExpression.Value, (value, expression) => new { value, expression });
             foreach (var member in members)
@@ -83,26 +84,25 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public void Assign(TEntityInterface destination, TEntityInterface source)
         {
-            var propertiesValue = GetPropertiesValue(source);
+            var propertiesValue = CsUtility.Materialized(GetPropertiesValue(source));
 
-            if (propertiesValue.Count() != _propertiesExpression.Value.Count())
-                throw new FrameworkException(string.Format(
-                    "Internal error: propertiesValue and _propertiesExpression length mismatch ({0} != {1}).",
-                    propertiesValue.Count(), _propertiesExpression.Value.Count()));
+            if (propertiesValue.Count != _propertiesExpression.Value.Length)
+                throw new FrameworkException("Internal error: propertiesValue and _propertiesExpression length mismatch" +
+                    $" ({propertiesValue.Count} != {_propertiesExpression.Value.Length}).");
 
             var members = propertiesValue.Zip(_propertiesExpression.Value, (value, expression) => new { value, expression });
             foreach (var member in members)
             {
                 var memberExpression = member.expression as MemberExpression;
                 if (memberExpression == null)
-                    throw new FrameworkException("Assign function supports only simple property selector. (" + member.expression.ToString() + " is not a MemberExpression)");
+                    throw new FrameworkException($"Assign function supports only simple property selector. ({member.expression} is not a MemberExpression)");
 
                 var propertyInfo = memberExpression.Member as PropertyInfo;
                 if (propertyInfo == null)
-                    throw new FrameworkException("Assign function supports only simple property selector. (" + memberExpression.Member.ToString() + " is not a PropertyInfo)");
+                    throw new FrameworkException($"Assign function supports only simple property selector. ({memberExpression.Member} is not a PropertyInfo)");
 
                 if (!(memberExpression.Expression is ParameterExpression))
-                    throw new FrameworkException("Assign function supports only simple property selector. (" + memberExpression.Expression.ToString() + " is not a ParameterExpression)");
+                    throw new FrameworkException($"Assign function supports only simple property selector. ({memberExpression.Expression} is not a ParameterExpression)");
 
                 propertyInfo.SetValue(destination, member.value, null);
             }
@@ -112,22 +112,23 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private bool InitializeSimpleConstruct()
         {
-            if (_propertiesSelector.Body is MemberExpression)
-                return true;
-            if (_propertiesSelector.Body is NewExpression)
-                return false;
-            throw new FrameworkException("The given propertiesSelector must be a MemberExpression or a NewExpression (for multiple members).");
+            return _propertiesSelector.Body switch
+            {
+                MemberExpression => true,
+                NewExpression => false,
+                _ => throw new FrameworkException("The given propertiesSelector must be a MemberExpression or a NewExpression (for multiple members).")
+            };
         }
 
-        private IEnumerable<Expression> InitializeMemberExpressions()
+        private Expression[] InitializeMemberExpressions()
         {
             if (_simpleConstruct.Value)
                 return new[] { (MemberExpression)_propertiesSelector.Body };
             else
-                return ((NewExpression)_propertiesSelector.Body).Arguments.ToList();
+                return ((NewExpression)_propertiesSelector.Body).Arguments.ToArray();
         }
 
-        private IEnumerable<PropertyInfo> InitializePropertyInfos()
+        private PropertyInfo[] InitializePropertyInfos()
         {
             if (_simpleConstruct.Value)
                 return null;
@@ -140,7 +141,7 @@ namespace Rhetos.Dom.DefaultConcepts
             object instanceSelectedProperties = _propertiesSelectorFunc.Value.Invoke(item);
 
             if (_simpleConstruct.Value)
-                return new object[] { instanceSelectedProperties };
+                return [instanceSelectedProperties];
             else
                 return _propertiesInfo.Value.Select(pi => pi.GetValue(instanceSelectedProperties, null));
         }

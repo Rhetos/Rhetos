@@ -18,6 +18,7 @@
 */
 
 using Autofac.Core;
+using NLog;
 using Rhetos.Deployment;
 using Rhetos.Dsl;
 using Rhetos.Extensibility;
@@ -54,12 +55,6 @@ namespace Rhetos
 
         private Program(VerbosityLevel verbosity, string[] traceLoggers, bool msBuildErrorFormat)
         {
-            // NLog should automatically read the configuration from application-specific configuration file (e.g. 'rhetos.exe.nlog')
-            // and if the file does not exist it should try to read it from nlog.config,
-            // but there is a bug in NLog which is causing first to try to read the nlog.config and then rhetos.exe.nlog configuration file.
-            // As this is a breaking changes the fix will be released in version 5 of NLog so remove this code after upgrading to NLog 5.
-            NLog.LogManager.LogFactory.SetCandidateConfigFilePaths(new[] { LoggingConfigurationPath });
-
             // "ConsoleLog" target by default logs min-level 'Info'. See the initial rules in 'rhetos.exe.nlog' file.
             // Diagnostic and trace options include additional loggers.
             if (verbosity == VerbosityLevel.Diagnostic)

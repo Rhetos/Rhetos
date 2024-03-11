@@ -28,9 +28,11 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     [Export(typeof(IConceptDatabaseDefinition))]
     [ExportMetadata(MefProvider.Implements, typeof(EntityLoggingInfo))]
     public class EntityLoggingDefinition : IConceptDatabaseDefinitionExtension
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         public static readonly SqlTag<EntityLoggingInfo> LogPropertyTag = "LogProperty";
         public static readonly SqlTag<EntityLoggingInfo> TempColumnDefinitionTag = "TempColumnDefinition";

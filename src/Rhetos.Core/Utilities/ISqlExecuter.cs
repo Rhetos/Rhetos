@@ -136,12 +136,12 @@ namespace Rhetos.Utilities
         /// <param name="afterExecute">Intended for progress reporting. The integer argument is the index of currently executed command in <paramref name="commands"/>.</param>
         public static void ExecuteSql(this ISqlExecuter sqlExecuter, IEnumerable<string> commands, Action<int> beforeExecute, Action<int> afterExecute)
         {
-            CsUtility.Materialize(ref commands);
-            if (commands.Any(sql => sql == null))
+            var commandsCollection = CsUtility.Materialized(commands);
+            if (commandsCollection.Any(sql => sql == null))
                 throw new FrameworkException("SQL script is null.");
 
             int count = 0;
-            foreach (string sql in commands)
+            foreach (string sql in commandsCollection)
             {
                 if (string.IsNullOrWhiteSpace(sql))
                     continue;

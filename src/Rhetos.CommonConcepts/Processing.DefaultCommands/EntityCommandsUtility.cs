@@ -187,8 +187,8 @@ namespace Rhetos.Processing.DefaultCommands
             {
                 var findIds = items.Select(searchItem => searchItem.ID).ToList();
                 var existingIds = GenericRepository.Query(findIds).Select(existingItem => existingItem.ID).ToList();
-                var missingIds = findIds.Except(existingIds).Take(1);
-                if (missingIds.Any())
+                var missingIds = findIds.Except(existingIds).Take(1).ToList();
+                if (missingIds.Count != 0)
                     missingId = missingIds.First();
             }
 

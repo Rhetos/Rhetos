@@ -33,7 +33,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// It includes filters specified in DSL scripts, for example with ItemFilter concept, and
         /// other filters that are automatically available on certain data structures.
         /// </summary>
-        /// <param name="dataStuctureFullName">
+        /// <param name="dataStructureFullName">
         /// Format "{ModuleName}.{DataStructureName}".
         /// </param>
         /// <param name="extendedSet">
@@ -48,6 +48,6 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <remarks>
         /// In the resulting list, there may be multiple occurrences of same Type with different name, for example both "string" and "System.String".
         /// </remarks>
-        IEnumerable<DataStructureReadParameter> GetReadParameters(string dataStuctureFullName, bool extendedSet);
+        IReadOnlyCollection<DataStructureReadParameter> GetReadParameters(string dataStructureFullName, bool extendedSet);
     }
 }

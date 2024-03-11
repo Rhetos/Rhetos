@@ -23,7 +23,6 @@ namespace Rhetos.Dsl
 {
     public interface IExternalTextReader
     {
-        /// <param name="path">Relative file path or a resource key.</param>
         ValueOrError<string> Read(DslScript dslScript, string relativePathOrResourceName);
     }
 }

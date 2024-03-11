@@ -42,6 +42,8 @@ Changes in Rhetos libraries API:
 * **IOrmDataStructure** no longer contains methods `GetOrmSchema` and `GetOrmDatabaseObject`.
   Use the same methods on `ConceptMetadata` class instead (with dependency injection).
 * **DslSyntaxException** constructor no longer supports first argument IConceptInfo. Use `DslConceptSyntaxException` instead.
+* Changed `IEnumerable` to `IReadOnlyCollection` in following types and methods: `IAuthorizationData`, `IDataStructureReadParameters`,
+  `MultiDictionary`, `INamedPlugins`, `IPluginsContainer`, `IPluginScanner`, `IDslParser` and `GenericRepository.Diff`.
 * `IConceptMetadataExtension<>` interface is no longer covariant, and the derived interfaces are no longer generic.
   * Replace `.Get<ICsPropertyType<PropertyInfo>>` with `.Get<ICsPropertyType>`.
   * Replace `.Get<IDatabaseColumnName<PropertyInfo>>` with `.Get<IDatabaseColumnName>`.

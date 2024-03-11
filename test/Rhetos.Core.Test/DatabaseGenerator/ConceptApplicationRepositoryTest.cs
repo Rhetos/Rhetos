@@ -47,18 +47,20 @@ namespace Rhetos.DatabaseGenerator.Test
         public string Name { get; set; }
     }
 
+#pragma warning disable CS0618 // Type or member is obsolete
     class TestConceptImplementation : IConceptDatabaseDefinition
     {
         public string CreateDatabaseStructure(IConceptInfo conceptInfo) { return ""; }
         public string RemoveDatabaseStructure(IConceptInfo conceptInfo) { return ""; }
     }
+#pragma warning restore CS0618 // Type or member is obsolete
 
     [TestClass]
     public class ConceptApplicationRepositoryTest
     {
         private static ConceptApplication NewConceptApplication(
             IConceptInfo conceptInfo,
-            IConceptDatabaseDefinition conceptImplementation,
+            IConceptDatabaseGenerator conceptImplementation,
             Guid Id,
             string CreateQuery,
             ConceptApplication[] DependsOn,

@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,9 +43,12 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public static void ValidateOnSave(IEnumerable<IEntity> inserted, IEnumerable<IEntity> updated, IValidateRepository repository, string dataStructure)
         {
-            if (inserted.Any() || updated.Any())
+            var insertedItems = CsUtility.Materialized(inserted);
+            var updatedItems = CsUtility.Materialized(updated);
+
+            if (insertedItems.Count != 0 || updatedItems.Count != 0)
             {
-                Guid[] newItemsIds = inserted.Concat(updated).Select(item => item.ID).ToArray();
+                Guid[] newItemsIds = insertedItems.Concat(updatedItems).Select(item => item.ID).ToArray();
                 var error = repository.Validate(newItemsIds, onSave: true).FirstOrDefault();
                 if (error != null)
                 {

@@ -60,7 +60,7 @@ namespace Rhetos.DatabaseGenerator
         {
             var conceptApplications = databaseObjects.Select(o => new ConceptApplication(o)).ToList();
 
-            var pairs = databaseObjects.Zip(conceptApplications, (databaseObject, conceptApplication) => new { databaseObject, conceptApplication });
+            var pairs = databaseObjects.Zip(conceptApplications, (databaseObject, conceptApplication) => new { databaseObject, conceptApplication }).ToList();
             var applicationByObject = pairs.ToDictionary(pair => pair.databaseObject, pair => pair.conceptApplication);
             foreach (var pair in pairs)
                 pair.conceptApplication.DependsOn = pair.databaseObject.DependsOn.Select(dbObject => applicationByObject[dbObject]).ToArray();

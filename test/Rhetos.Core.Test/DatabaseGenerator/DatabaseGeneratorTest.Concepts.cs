@@ -90,6 +90,7 @@ namespace Rhetos.DatabaseGenerator.Test
             public string Sql { get; set; }
         }
 
+#pragma warning disable CS0618 // Type or member is obsolete
         private class SimpleImplementation : IConceptDatabaseDefinition
         {
             public string CreateDatabaseStructure(IConceptInfo conceptInfo) => ((SimpleConcept)conceptInfo).Sql;
@@ -110,6 +111,7 @@ namespace Rhetos.DatabaseGenerator.Test
 
             public string RemoveDatabaseStructure(IConceptInfo conceptInfo) => RemoveQuery(CreateDatabaseStructure(conceptInfo));
         }
+#pragma warning restore CS0618 // Type or member is obsolete
 
         public static string RemoveQuery(string createQuery)
         {

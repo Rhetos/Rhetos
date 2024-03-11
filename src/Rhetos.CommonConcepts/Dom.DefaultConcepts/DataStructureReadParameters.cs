@@ -32,32 +32,32 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <summary>
         /// This cache is not static, because <see cref="DataStructureReadParameters"/> is a singleton.
         /// </summary>
-        private readonly ConcurrentDictionary<(string DataStuctureFullName, bool ExtendedSet), IEnumerable<DataStructureReadParameter>> _readParametersByDataStucture = new();
+        private readonly ConcurrentDictionary<(string DataStructureFullName, bool ExtendedSet), DataStructureReadParameter[]> _readParametersByDataStructure = new();
 
         public DataStructureReadParameters(Dictionary<string, Func<KeyValuePair<string, Type>[]>> repositoryReadParameters)
         {
             _repositoryReadParameters = repositoryReadParameters;
         }
 
-        public IEnumerable<DataStructureReadParameter> GetReadParameters(string dataStuctureFullName, bool extendedSet)
+        public IReadOnlyCollection<DataStructureReadParameter> GetReadParameters(string dataStructureFullName, bool extendedSet)
         {
-            return _readParametersByDataStucture.GetOrAdd((dataStuctureFullName, extendedSet), CreateReadParametersList);
+            return _readParametersByDataStructure.GetOrAdd((dataStructureFullName, extendedSet), CreateReadParametersList);
         }
 
-        private static readonly string[] _defaultNamespaces = new string[]
-        {
+        private static readonly string[] _defaultNamespaces =
+        [
             "Common.", // TODO: Should be removed. Configurable for backward compatibility.
             "System.",
             "System.Collections.Generic.",
             "Rhetos.Dom.DefaultConcepts.",
-        };
+        ];
 
-        private static readonly DataStructureReadParameter[] _standardFilterTypes = new DataStructureReadParameter[]
-        {
+        private static readonly DataStructureReadParameter[] _standardFilterTypes =
+        [
             new DataStructureReadParameter(
                 "IEnumerable<Guid>", // Short type name format as specified in C# source. Exact type name with full namespace is supported by adding Type.ToString() later.
                 typeof(IEnumerable<Guid>)),
-        };
+        ];
 
         /// <summary>
         /// Reusing string instances for standard filters names for many data structures.
@@ -71,10 +71,10 @@ namespace Rhetos.Dom.DefaultConcepts
             return result.ToArray();
         }
 
-        private IEnumerable<DataStructureReadParameter> CreateReadParametersList((string DataStuctureFullName, bool ExtendedSet) key)
+        private DataStructureReadParameter[] CreateReadParametersList((string DataStructureFullName, bool ExtendedSet) key)
         {
-            if (!_repositoryReadParameters.TryGetValue(key.DataStuctureFullName, out var specificFilterTypesFunc))
-                return Array.Empty<DataStructureReadParameter>();
+            if (!_repositoryReadParameters.TryGetValue(key.DataStructureFullName, out var specificFilterTypesFunc))
+                return [];
 
             var specificFilterTypes = specificFilterTypesFunc();
             int estimatedSize = !key.ExtendedSet
@@ -84,16 +84,16 @@ namespace Rhetos.Dom.DefaultConcepts
 
             allFilterTypes.UnionWith(specificFilterTypes.Select(filterType => new DataStructureReadParameter(filterType.Key, filterType.Value)));
             if (key.ExtendedSet)
-                AddAlternativeFilterNames(allFilterTypes, key.DataStuctureFullName);
+                AddAlternativeFilterNames(allFilterTypes, key.DataStructureFullName);
 
             allFilterTypes.UnionWith(key.ExtendedSet ? _standardFilterTypesAlternativeNames.Value : _standardFilterTypes);
 
             return allFilterTypes.ToArray();
         }
 
-        private static void AddAlternativeFilterNames(ICollection<DataStructureReadParameter> allFilterTypes, string dataStuctureFullName = null)
+        private static void AddAlternativeFilterNames(ICollection<DataStructureReadParameter> allFilterTypes, string dataStructureFullName = null)
         {
-            AddSimplifiedTypeNames(allFilterTypes, dataStuctureFullName);
+            AddSimplifiedTypeNames(allFilterTypes, dataStructureFullName);
             AddTypeNamesFromReflection(allFilterTypes);
         }
 
@@ -111,15 +111,15 @@ namespace Rhetos.Dom.DefaultConcepts
         /// Heuristics that allows usage of simplified type name without default namespaces
         /// and by using array instead of IEnumerable, for the C# source type name format.
         /// </summary>
-        private static void AddSimplifiedTypeNames(ICollection<DataStructureReadParameter> allFilterTypes, string dataStuctureFullName = null)
+        private static void AddSimplifiedTypeNames(ICollection<DataStructureReadParameter> allFilterTypes, string dataStructureFullName = null)
         {
             var removablePrefixes = new List<string>(_defaultNamespaces.Length + 1);
             removablePrefixes.AddRange(_defaultNamespaces);
-            if (dataStuctureFullName != null)
+            if (dataStructureFullName != null)
             {
-                var moduleEnd = dataStuctureFullName.IndexOf('.');
+                var moduleEnd = dataStructureFullName.IndexOf('.');
                 if (moduleEnd > 0)
-                    removablePrefixes.Add(dataStuctureFullName.Substring(0, moduleEnd + 1));
+                    removablePrefixes.Add(dataStructureFullName.Substring(0, moduleEnd + 1));
             }
             removablePrefixes = removablePrefixes.OrderByDescending(p => p.Length).ToList();
 
@@ -144,9 +144,9 @@ namespace Rhetos.Dom.DefaultConcepts
             }
         }
 
-        private static readonly char[] _refectionTypeNameIndicators = new[] { '`', '+' };
+        private static readonly char[] _refectionTypeNameIndicators = ['`', '+'];
 
-        private static readonly Regex _namePartsRegex = new Regex(@"[\w\.]+");
+        private static readonly Regex _namePartsRegex = new(@"[\w\.]+");
 
         private static string TryRemovePrefix(string filterName, int index, int length, List<string> removablePrefixes)
         {

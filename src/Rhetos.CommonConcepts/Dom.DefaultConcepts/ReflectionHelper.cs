@@ -349,14 +349,14 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <summary>
         /// Casts items to the entity type before calling ToList.
         /// </summary>
-        public IEnumerable<TEntityInterface> ToListOfEntity(IEnumerable<TEntityInterface> items)
+        public IReadOnlyCollection<TEntityInterface> ToListOfEntity(IEnumerable<TEntityInterface> items)
         {
             if (items.GetType().GetInterface("IEnumerable`1").GetGenericArguments()[0].FullName.StartsWith("Common.Queryable."))
                 LoadSimpleObjects(ref items);
             else
                 items = CastAsEntity(items);
 
-            return (IEnumerable<TEntityInterface>)ToListOfEntityMethod.InvokeEx(null, items);
+            return (IReadOnlyCollection<TEntityInterface>)ToListOfEntityMethod.InvokeEx(null, items);
         }
 
         private MethodInfo _toArrayOfEntityMethod = null;
@@ -375,14 +375,14 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <summary>
         /// Casts items to the entity type before calling ToArray.
         /// </summary>
-        public IEnumerable<TEntityInterface> ToArrayOfEntity(IEnumerable<TEntityInterface> items)
+        public IReadOnlyCollection<TEntityInterface> ToArrayOfEntity(IEnumerable<TEntityInterface> items)
         {
             if (items.GetType().GetInterface("IEnumerable`1").GetGenericArguments()[0].FullName.StartsWith("Common.Queryable."))
                 LoadSimpleObjects(ref items);
             else
                 items = CastAsEntity(items);
 
-            return (IEnumerable<TEntityInterface>)ToArrayOfEntityMethod.InvokeEx(null, items);
+            return (IReadOnlyCollection<TEntityInterface>)ToArrayOfEntityMethod.InvokeEx(null, items);
         }
 
         /// <summary>

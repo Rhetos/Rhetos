@@ -29,9 +29,11 @@ using System.Linq;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     [Export(typeof(IConceptDatabaseDefinition))]
     [ExportMetadata(MefProvider.Implements, typeof(SqlDependsOnPropertyInfo))]
     public class SqlDependsOnPropertyDatabaseDefinition : IConceptDatabaseDefinitionExtension
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         private readonly Lazy<MultiDictionary<(string, string, string), UniqueMultiplePropertiesInfo>> _uniqueIndexesByFirstProperty;
 

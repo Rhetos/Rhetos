@@ -42,7 +42,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
-            var dataSourceNames = DataSources.Split(',').Select(ds => ds.Trim());
+            var dataSourceNames = DataSources.Split(',').Select(ds => ds.Trim()).ToList();
 
             var sources = dataSourceNames
                 .Select(name => name.Split('.'))
@@ -57,7 +57,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                                     + ". Data structure '" + string.Join(".", nameParts) + "' does not exist.");
                             });
 
-            var digits = dataSourceNames.Count().ToString().Length;
+            var digits = dataSourceNames.Count.ToString().Length;
 
             return sources.Select((source, index) =>
                                   new ReportDataSourceInfo

@@ -25,8 +25,8 @@ namespace Rhetos.CommonConcepts.Test
 {
     public class RepositoryNamedPluginsMock : INamedPlugins<IRepository>
     {
-        public Dictionary<string, IEnumerable<IRepository>> Plugins { get; set; } = new Dictionary<string, IEnumerable<IRepository>>();
+        public Dictionary<string, IReadOnlyCollection<IRepository>> Plugins { get; set; } = new Dictionary<string, IReadOnlyCollection<IRepository>>();
 
-        public IEnumerable<IRepository> GetPlugins(string name) => Plugins[name];
+        public IReadOnlyCollection<IRepository> GetPlugins(string name) => Plugins[name];
     }
 }

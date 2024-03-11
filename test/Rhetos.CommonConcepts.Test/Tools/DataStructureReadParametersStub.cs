@@ -24,6 +24,6 @@ namespace Rhetos.CommonConcepts.Test.Mocks
 {
     class DataStructureReadParametersStub : IDataStructureReadParameters
     {
-        public IEnumerable<DataStructureReadParameter> GetReadParameters(string dataStuctureFullName, bool extendedSet) => new List<DataStructureReadParameter>();
+        public IReadOnlyCollection<DataStructureReadParameter> GetReadParameters(string dataStructureFullName, bool extendedSet) => [];
     }
 }

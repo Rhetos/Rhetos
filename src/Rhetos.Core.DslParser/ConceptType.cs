@@ -25,18 +25,18 @@ using System.Linq;
 namespace Rhetos.Dsl
 {
     /// <summary>
-    /// Represents a distinct concept type (implementation of <see cref="IConceptInfo"/>),
-    /// and describes the DSL syntax of the concept.
+    /// Describes the syntax of a DSL concept.
     /// </summary>
     /// <remarks>
-    /// It provides separation from <see cref="IConceptInfo"/> types, to allow serialization
-    /// of DSL syntax and use of the syntax in external DSL analysis, such as DSL IntelliSense plugin.
+    /// It provides separation from IConceptInfo types, to allow serialization
+    /// of DSL syntax and use of the syntax in external DSL analysis, such as DSL IntelliSense plugin,
+    /// without referencing all core and custom assemblies that contain various DSL concept implementations.
     /// </remarks>
     [DebuggerDisplay("{TypeName}")]
     public class ConceptType
     {
         /// <summary>
-        /// <see cref="Type.AssemblyQualifiedName"/> of <see cref="IConceptInfo"/> implementation class for this concept.
+        /// <see cref="Type.AssemblyQualifiedName"/> of IConceptInfo implementation class for this concept.
         /// </summary>
         public string AssemblyQualifiedName { get; set; }
 
@@ -50,12 +50,12 @@ namespace Rhetos.Dsl
         /// Short type name of the root concept type, used for unique concept key definition.
         /// </summary>
         /// <remarks>
-        /// It is same as <see cref="TypeName"/> if the <see cref="IConceptInfo"/> implementation is not a derivation of another concept.
+        /// It is same as <see cref="TypeName"/> if the IConceptInfo implementation is not a derivation of another concept.
         /// </remarks>
         public string GetRootTypeName() => (BaseTypes.FirstOrDefault() ?? this).TypeName;
 
         /// <summary>
-        /// Short type name of <see cref="IConceptInfo"/> implementation class for this concept.
+        /// Short type name of IConceptInfo implementation class for this concept.
         /// </summary>
         public string TypeName { get; set; }
 
@@ -72,7 +72,7 @@ namespace Rhetos.Dsl
         /// Before calling this method, check if the base property has <see cref="ConceptMemberSyntax.ConceptType"/> set,
         /// to avoid null reference exception.
         /// In case of the null value, consider including the base properties with <see cref="ConceptMemberBase.IsConceptInfoInterface"/> set,
-        /// because any derived concept type can also be assigned to the base property of type <see cref="IConceptInfo"/>.
+        /// because any derived concept type can also be assigned to the base property of type IConceptInfo.
         /// </remarks>
         public bool IsInstanceOfType(ConceptSyntaxNode derivedTypeNode)
         {
@@ -86,7 +86,7 @@ namespace Rhetos.Dsl
         /// Before calling this method, check if the base property has <see cref="ConceptMemberSyntax.ConceptType"/> set,
         /// to avoid null reference exception.
         /// In case of the null value, consider including the base properties with <see cref="ConceptMemberBase.IsConceptInfoInterface"/> set,
-        /// because any derived concept type can also be assigned to the base property of type <see cref="IConceptInfo"/>.
+        /// because any derived concept type can also be assigned to the base property of type IConceptInfo.
         /// </remarks>
         public bool IsAssignableFrom(ConceptType derivedConceptType)
         {

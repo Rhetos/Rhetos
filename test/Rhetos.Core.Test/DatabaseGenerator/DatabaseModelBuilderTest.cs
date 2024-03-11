@@ -34,7 +34,9 @@ namespace Rhetos.DatabaseGenerator.Test
     {
         #region Helper classes
 
+#pragma warning disable CS0618 // Type or member is obsolete
         private class SimpleConceptImplementation : IConceptDatabaseDefinition
+#pragma warning restore CS0618 // Type or member is obsolete
         {
             public string CreateDatabaseStructure(IConceptInfo conceptInfo) { return "create " + ((BaseCi)conceptInfo).Name; }
             public string RemoveDatabaseStructure(IConceptInfo conceptInfo) { return "remove " + ((BaseCi)conceptInfo).Name; }
@@ -205,6 +207,7 @@ namespace Rhetos.DatabaseGenerator.Test
                     .OrderBy(s => s)));
         }
 
+#pragma warning disable CS0618 // Type or member is obsolete
         private class ExtendingConceptImplementation : IConceptDatabaseDefinition, IConceptDatabaseDefinitionExtension
         {
             public string CreateDatabaseStructure(IConceptInfo conceptInfo) { return ""; }
@@ -214,6 +217,7 @@ namespace Rhetos.DatabaseGenerator.Test
                 createdDependencies = tempConceptInfoDependencies;
             }
         }
+#pragma warning restore CS0618 // Type or member is obsolete
 
         private static IEnumerable<Tuple<IConceptInfo, IConceptInfo>> tempConceptInfoDependencies;
 

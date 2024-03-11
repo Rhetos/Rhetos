@@ -122,17 +122,17 @@ FROM
                 })
                 .ToList();
 
-            var missingProperties = missingImplementations.Select(subim => subim.Property).Where(supp => !subtypeProperties.Any(subp => subp.Name == supp.Name));
-            var missingPropertiesToAdd = missingProperties.Select(missing => DslUtility.CreatePassiveClone(missing, conceptInfo.IsSubtypeOf.Subtype)).ToList();
+            newConcepts.AddRange(missingImplementations);
 
-            if (!_commonConceptsOptions.AutoGeneratePolymorphicProperty && missingProperties.Any())
+            var missingProperties = missingImplementations.Select(subim => subim.Property).Where(supp => !subtypeProperties.Any(subp => subp.Name == supp.Name)).ToList();
+            if (!_commonConceptsOptions.AutoGeneratePolymorphicProperty && missingProperties.Count != 0)
             {
                 throw new DslSyntaxException( "The property " + missingProperties.First().GetUserDescription() + 
                     " is not implemented in the polymorphic subtype " + conceptInfo.IsSubtypeOf.Subtype.GetUserDescription() + ". " + 
                     "Please add the property implementation to the subtype.");
             }
 
-            newConcepts.AddRange(missingImplementations);
+            var missingPropertiesToAdd = missingProperties.Select(missing => DslUtility.CreatePassiveClone(missing, conceptInfo.IsSubtypeOf.Subtype));
             newConcepts.AddRange(missingPropertiesToAdd);
 
             return newConcepts;

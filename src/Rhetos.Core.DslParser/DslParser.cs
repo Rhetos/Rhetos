@@ -57,7 +57,7 @@ namespace Rhetos.Dsl
 
         //=================================================================
 
-        public IEnumerable<ConceptSyntaxNode> GetConcepts()
+        public IReadOnlyCollection<ConceptSyntaxNode> GetConcepts()
         {
             var parsers = CreateGenericParsers(_syntax.Value.ConceptTypes);
             var parsedConcepts = ExtractConcepts(parsers);

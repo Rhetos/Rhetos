@@ -76,7 +76,7 @@ namespace Rhetos.CommonConcepts.Test
                 commonClaimsRepos = InitRepos(commonClaims);
             }
 
-            public IEnumerable<IRepository> GetPlugins(string name)
+            public IReadOnlyCollection<IRepository> GetPlugins(string name)
             {
                 if (name == "Common.PrincipalHasRole") return new IRepository[] { principalRolesRepos };
                 if (name == "Common.Principal") return new IRepository[] { principalsRepos };
@@ -310,35 +310,35 @@ namespace Rhetos.CommonConcepts.Test
             Assert.AreEqual(SimpleTestExpectedLogWithoutClaims, ReportCacheMisses(log2));
         }
 
-        private const string SimpleTestExpectedLog = @"Principal.pr0.
-PrincipalRoles.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
+        private const string SimpleTestExpectedLog = @"Principal.PR0.
+PrincipalRoles.PR0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
 SystemRoles.
 RoleRoles.33395e07-8d14-4db9-bd79-c0c3e8407feb.
 RoleRoles.44495e07-8d14-4db9-bd79-c0c3e8407feb.
 Claims.
-PrincipalPermissions.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
+PrincipalPermissions.PR0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
 RolePermissions.33395e07-8d14-4db9-bd79-c0c3e8407feb.
 RolePermissions.44495e07-8d14-4db9-bd79-c0c3e8407feb.
 Roles.
-Principal.pr1.
-PrincipalRoles.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.
+Principal.PR1.
+PrincipalRoles.PR1.22295e07-8d14-4db9-bd79-c0c3e8407feb.
 RoleRoles.55595e07-8d14-4db9-bd79-c0c3e8407feb.
-PrincipalPermissions.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.
+PrincipalPermissions.PR1.22295e07-8d14-4db9-bd79-c0c3e8407feb.
 RolePermissions.55595e07-8d14-4db9-bd79-c0c3e8407feb.";
 
-        private const string SimpleTestExpectedLogWithoutClaims = @"Principal.pr0.
-PrincipalRoles.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
+        private const string SimpleTestExpectedLogWithoutClaims = @"Principal.PR0.
+PrincipalRoles.PR0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
 SystemRoles.
 RoleRoles.33395e07-8d14-4db9-bd79-c0c3e8407feb.
 RoleRoles.44495e07-8d14-4db9-bd79-c0c3e8407feb.
-PrincipalPermissions.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
+PrincipalPermissions.PR0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
 RolePermissions.33395e07-8d14-4db9-bd79-c0c3e8407feb.
 RolePermissions.44495e07-8d14-4db9-bd79-c0c3e8407feb.
 Roles.
-Principal.pr1.
-PrincipalRoles.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.
+Principal.PR1.
+PrincipalRoles.PR1.22295e07-8d14-4db9-bd79-c0c3e8407feb.
 RoleRoles.55595e07-8d14-4db9-bd79-c0c3e8407feb.
-PrincipalPermissions.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.
+PrincipalPermissions.PR1.22295e07-8d14-4db9-bd79-c0c3e8407feb.
 RolePermissions.55595e07-8d14-4db9-bd79-c0c3e8407feb.";
 
         /// <param name="commit">
@@ -426,19 +426,19 @@ RolePermissions.55595e07-8d14-4db9-bd79-c0c3e8407feb.";
             AuthorizationDataCache.ClearCacheAll();
 
             var log1 = SimilarClaimsTest(true, expiration);
-            Assert.AreEqual(@"Principal.pr0.
-PrincipalRoles.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
+            Assert.AreEqual(@"Principal.PR0.
+PrincipalRoles.PR0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
 SystemRoles.
 RoleRoles.33395e07-8d14-4db9-bd79-c0c3e8407feb.
 RoleRoles.44495e07-8d14-4db9-bd79-c0c3e8407feb.
 Claims.
-PrincipalPermissions.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
+PrincipalPermissions.PR0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
 RolePermissions.33395e07-8d14-4db9-bd79-c0c3e8407feb.
 RolePermissions.44495e07-8d14-4db9-bd79-c0c3e8407feb.
 Roles.
-Principal.pr1.
-PrincipalRoles.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.
-PrincipalPermissions.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.", ReportCacheMisses(log1));
+Principal.PR1.
+PrincipalRoles.PR1.22295e07-8d14-4db9-bd79-c0c3e8407feb.
+PrincipalPermissions.PR1.22295e07-8d14-4db9-bd79-c0c3e8407feb.", ReportCacheMisses(log1));
 
             Console.WriteLine("Reusing cache");
 
@@ -514,39 +514,39 @@ PrincipalPermissions.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.", ReportCacheMiss
             AuthorizationDataCache.ClearCacheAll();
 
             var log1 = ClearCachePrincipalsRoles_GetAuthorization(expiration, editSystemRole: false);
-            Assert.AreEqual(@"Principal.pr0.
-PrincipalRoles.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
+            Assert.AreEqual(@"Principal.PR0.
+PrincipalRoles.PR0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
 SystemRoles.
 RoleRoles.33395e07-8d14-4db9-bd79-c0c3e8407feb.
 RoleRoles.44495e07-8d14-4db9-bd79-c0c3e8407feb.
 RoleRoles.55595e07-8d14-4db9-bd79-c0c3e8407feb.
 Claims.
-PrincipalPermissions.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
+PrincipalPermissions.PR0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
 RolePermissions.33395e07-8d14-4db9-bd79-c0c3e8407feb.
 RolePermissions.55595e07-8d14-4db9-bd79-c0c3e8407feb.
 RolePermissions.44495e07-8d14-4db9-bd79-c0c3e8407feb.
 Roles.
-Principal.pr1.
-PrincipalRoles.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.
-PrincipalPermissions.pr1.22295e07-8d14-4db9-bd79-c0c3e8407feb.", ReportCacheMisses(log1));
+Principal.PR1.
+PrincipalRoles.PR1.22295e07-8d14-4db9-bd79-c0c3e8407feb.
+PrincipalPermissions.PR1.22295e07-8d14-4db9-bd79-c0c3e8407feb.", ReportCacheMisses(log1));
 
             Console.WriteLine("Reusing some parts of cache.");
 
             var log2 = ClearCachePrincipalsRoles_GetAuthorization(expiration, editSystemRole: false);
-            Assert.AreEqual(@"Principal.pr0.
-PrincipalRoles.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
+            Assert.AreEqual(@"Principal.PR0.
+PrincipalRoles.PR0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
 RoleRoles.33395e07-8d14-4db9-bd79-c0c3e8407feb.
-PrincipalPermissions.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
+PrincipalPermissions.PR0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
 RolePermissions.33395e07-8d14-4db9-bd79-c0c3e8407feb.
 Roles.", ReportCacheMisses(log2));
 
             var log3 = ClearCachePrincipalsRoles_GetAuthorization(expiration, editSystemRole: true);
-            Assert.AreEqual(@"Principal.pr0.
-PrincipalRoles.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
+            Assert.AreEqual(@"Principal.PR0.
+PrincipalRoles.PR0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
 SystemRoles.
 RoleRoles.33395e07-8d14-4db9-bd79-c0c3e8407feb.
 RoleRoles.55595e07-8d14-4db9-bd79-c0c3e8407feb.
-PrincipalPermissions.pr0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
+PrincipalPermissions.PR0.11195e07-8d14-4db9-bd79-c0c3e8407feb.
 RolePermissions.33395e07-8d14-4db9-bd79-c0c3e8407feb.
 RolePermissions.55595e07-8d14-4db9-bd79-c0c3e8407feb.
 Roles.", ReportCacheMisses(log3));
@@ -610,10 +610,10 @@ Roles.", ReportCacheMisses(log3));
                 true, authorizationCacheExpirationSeconds);
 
             var cache = authorizationContext.AuthorizationDataCache;
-            cache.ClearCachePrincipals(new[] { principals[0] });
-            cache.ClearCacheRoles(new[] { roles[0].ID });
+            cache.ClearCachePrincipals([principals[0]]);
+            cache.ClearCacheRoles([roles[0].ID]);
             if (editSystemRole)
-                cache.ClearCacheRoles(new[] { roles[2].ID });
+                cache.ClearCacheRoles([roles[2].ID]);
 
             var provider = authorizationContext.CommonAuthorizationProvider;
             Assert.AreEqual("True, True, False, False, False, True, False, False", TestUtility.Dump(provider.GetAuthorizations(new TestUserInfo("pr0"), claims)));

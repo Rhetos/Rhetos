@@ -35,7 +35,7 @@ namespace Rhetos.Extensibility
     public class PluginsMetadataCache<TPlugin>
     {
         private readonly Lazy<Dictionary<Type, IDictionary<string, object>>> _metadataByPluginType;
-        private readonly ConcurrentDictionary<Type, List<Type>> _sortedImplementations = new ConcurrentDictionary<Type, List<Type>>();
+        private readonly ConcurrentDictionary<Type, List<Type>> _sortedImplementations = new();
         private readonly HashSet<Type> _suppressedPlugins;
 
         public PluginsMetadataCache(
@@ -49,7 +49,7 @@ namespace Rhetos.Extensibility
             _suppressedPlugins = new HashSet<Type>(suppressPlugins[typeof(TPlugin)].Select(sp => sp.PluginType));
         }
 
-        public IEnumerable<TPlugin> SortedByMetadataDependsOnAndRemoveSuppressed(Type cacheKey, IEnumerable<TPlugin> plugins)
+        public IReadOnlyCollection<TPlugin> SortedByMetadataDependsOnAndRemoveSuppressed(Type cacheKey, IEnumerable<TPlugin> plugins)
         {
             var sortedPlugins = plugins.ToArray();
             if (sortedPlugins.Length > 1)
@@ -72,12 +72,12 @@ namespace Rhetos.Extensibility
             return pluginTypes;
         }
 
-        public IEnumerable<TPlugin> RemoveSuppressedPlugins(IEnumerable<TPlugin> plugins)
+        public IReadOnlyCollection<TPlugin> RemoveSuppressedPlugins(IReadOnlyCollection<TPlugin> plugins)
         {
             if (_suppressedPlugins.Count > 0 && plugins.Any(p => _suppressedPlugins.Contains(p.GetType()))) // Optimization: Check if we can return the original argument, since most plugin types are not suppressed.
                 return plugins.Where(p => !_suppressedPlugins.Contains(p.GetType())).ToArray();
             else
-                return plugins;
+                return CsUtility.Materialized(plugins);
         }
 
         public Type GetMetadata(Type pluginType, string metadataKey)

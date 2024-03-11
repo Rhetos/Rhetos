@@ -93,7 +93,7 @@ namespace Rhetos.Dsl
             var alternativeInitializationGeneratedReferences = InitializeAlternativeInitializationConcepts(parsedConcepts);
 
             var swFirstAdd = Stopwatch.StartNew();
-            dslContainer.AddNewConceptsAndReplaceReferences(new[] { CreateInitializationConcept() });
+            dslContainer.AddNewConceptsAndReplaceReferences([CreateInitializationConcept()]);
             dslContainer.SortDerivationsAfterBaseConcepts(parsedConcepts);
             dslContainer.AddNewConceptsAndReplaceReferences(parsedConcepts);
             dslContainer.AddNewConceptsAndReplaceReferences(alternativeInitializationGeneratedReferences);
@@ -119,11 +119,11 @@ namespace Rhetos.Dsl
             };
         }
 
-        private IEnumerable<IConceptInfo> InitializeAlternativeInitializationConcepts(IEnumerable<IConceptInfo> parsedConcepts)
+        private List<IConceptInfo> InitializeAlternativeInitializationConcepts(IEnumerable<IConceptInfo> parsedConcepts)
         {
             var stopwatch = Stopwatch.StartNew();
             var newConcepts = AlternativeInitialization.InitializeNonparsableProperties(parsedConcepts, _logger);
-            _performanceLogger.Write(stopwatch, "InitializeAlternativeInitializationConcepts (" + newConcepts.Count() + " new concepts created).");
+            _performanceLogger.Write(stopwatch, "InitializeAlternativeInitializationConcepts (" + newConcepts.Count + " new concepts created).");
             return newConcepts;
         }
 

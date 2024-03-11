@@ -28,9 +28,11 @@ using Rhetos.Compiler;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     [Export(typeof(IConceptDatabaseDefinition))]
     [ExportMetadata(MefProvider.Implements, typeof(SqlProcedureInfo))]
     public class SqlProcedureDatabaseDefinition : IConceptDatabaseDefinition
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         protected ISqlResources Sql { get; private set; }
 

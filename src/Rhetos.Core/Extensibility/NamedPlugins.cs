@@ -18,6 +18,7 @@
 */
 
 using Autofac.Features.Indexed;
+using Rhetos.Utilities;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -37,17 +38,16 @@ namespace Rhetos.Extensibility
             _cache = cache;
         }
 
-        public IEnumerable<TPlugin> GetPlugins(string name)
+        public IReadOnlyCollection<TPlugin> GetPlugins(string name)
         {
-            IEnumerable<TPlugin> plugins;
-            if (_pluginsByName.TryGetValue(name, out plugins))
+            if (_pluginsByName.TryGetValue(name, out var allPlugins))
             {
-                plugins = _cache.RemoveSuppressedPlugins(plugins);
-                if (plugins.Count() > 1)
+                var plugins = _cache.RemoveSuppressedPlugins(CsUtility.Materialized(allPlugins));
+                if (plugins.Count > 1)
                     plugins = plugins.OrderBy(p => p.GetType().Name).ToArray();
                 return plugins;
             }
-            return Enumerable.Empty<TPlugin>();
+            return [];
         }
     }
 }

@@ -29,6 +29,7 @@ using System.Linq;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     /// <summary>
     /// Generator for FOREIGN KEY is separated from COLUMN generator (ReferencePropertyDatabaseDefinition)
     /// so that changes in foreign key options (such as on delete cascade) can be done without regenerating the column.
@@ -36,6 +37,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
     [Export(typeof(IConceptDatabaseDefinition))]
     [ExportMetadata(MefProvider.Implements, typeof(ReferencePropertyDbConstraintInfo))]
     public class ReferencePropertyConstraintDatabaseDefinition : IConceptDatabaseDefinitionExtension
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         public static readonly SqlTag<ReferencePropertyDbConstraintInfo> ForeignKeyConstraintOptions = "FK options";
 

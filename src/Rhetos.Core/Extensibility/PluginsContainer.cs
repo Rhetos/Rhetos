@@ -28,7 +28,7 @@ namespace Rhetos.Extensibility
 {
     public class PluginsContainer<TPlugin> : IPluginsContainer<TPlugin>
     {
-        private readonly Lazy<IEnumerable<TPlugin>> _sortedPlugins;
+        private readonly Lazy<IReadOnlyCollection<TPlugin>> _sortedPlugins;
         private readonly Lazy<IIndex<Type, IEnumerable<TPlugin>>> _pluginsByImplementation;
         private readonly PluginsMetadataCache<TPlugin> _cache;
         private readonly ILogger _logger;
@@ -39,7 +39,7 @@ namespace Rhetos.Extensibility
             PluginsMetadataCache<TPlugin> cache,
             ILogProvider logProvider)
         {
-            _sortedPlugins = new Lazy<IEnumerable<TPlugin>>(() => _cache.SortedByMetadataDependsOnAndRemoveSuppressed(typeof(object), PreSort(plugins.Value)));
+            _sortedPlugins = new(() => _cache.SortedByMetadataDependsOnAndRemoveSuppressed(typeof(object), PreSort(plugins.Value)));
             _pluginsByImplementation = pluginsByImplementation;
             _cache = cache;
             _logger = logProvider.GetLogger(GetType().Name);
@@ -57,7 +57,7 @@ namespace Rhetos.Extensibility
 
         #region IPluginsContainer implementations
 
-        public IEnumerable<TPlugin> GetPlugins()
+        public IReadOnlyCollection<TPlugin> GetPlugins()
         {
             _logger.Trace(() => $"Getting plugins '{typeof(TPlugin)}'.");
             return _sortedPlugins.Value;
@@ -75,7 +75,7 @@ namespace Rhetos.Extensibility
             return _cache.GetMetadata(pluginType, metadataKey);
         }
 
-        public IEnumerable<TPlugin> GetImplementations(Type activator)
+        public IReadOnlyCollection<TPlugin> GetImplementations(Type activator)
         {
             var typeHierarchy = CsUtility.GetClassHierarchy(activator);
             var allImplementations = typeHierarchy.SelectMany(type => PreSort(_pluginsByImplementation.Value[type]));

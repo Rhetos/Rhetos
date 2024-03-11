@@ -86,12 +86,12 @@ namespace Rhetos.Dom.DefaultConcepts
             }
         }
 
-        public IEnumerable<Guid> GetPrincipalRoles(IPrincipal principal)
+        public IReadOnlyCollection<Guid> GetPrincipalRoles(IPrincipal principal)
         {
             return _principalRolesRepository.Query(principal).Select(pr => pr.RoleID.Value).ToList();
         }
 
-        public IEnumerable<Guid> GetRoleRoles(Guid roleId)
+        public IReadOnlyCollection<Guid> GetRoleRoles(Guid roleId)
         {
             return _roleRolesRepository.Query().Where(rr => rr.UsersFromID == roleId).Select(rr => rr.PermissionsFromID.Value).ToList();
         }
@@ -104,17 +104,16 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <summary>
         /// The function may return permissions for more claims than required.
         /// </summary>
-        public IEnumerable<PrincipalPermissionInfo> GetPrincipalPermissions(IPrincipal principal, IEnumerable<Guid> claimIds = null)
+        public IReadOnlyCollection<PrincipalPermissionInfo> GetPrincipalPermissions(IPrincipal principal, IReadOnlyCollection<Guid> claimIds = null)
         {
-            CsUtility.Materialize(ref claimIds);
-            if (claimIds != null && !claimIds.Any())
-                return Enumerable.Empty<PrincipalPermissionInfo>();
+            if (claimIds != null && claimIds.Count == 0)
+                return [];
 
             var query = _principalPermissionRepository.Query()
                 .Where(principalPermission => principalPermission.IsAuthorized != null
                     && principalPermission.PrincipalID == principal.ID);
 
-            if (claimIds != null && claimIds.Count() < _sqlFilterItemsLimit)
+            if (claimIds != null && claimIds.Count < _sqlFilterItemsLimit)
                 query = query.Where(principalPermission => claimIds.Contains(principalPermission.ClaimID.Value));
                 
             return query.Select(principalPermission => new PrincipalPermissionInfo
@@ -130,18 +129,16 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <summary>
         /// The function may return permissions for more claims than required.
         /// </summary>
-        public IEnumerable<RolePermissionInfo> GetRolePermissions(IEnumerable<Guid> roleIds, IEnumerable<Guid> claimIds = null)
+        public IReadOnlyCollection<RolePermissionInfo> GetRolePermissions(IReadOnlyCollection<Guid> roleIds, IReadOnlyCollection<Guid> claimIds = null)
         {
-            CsUtility.Materialize(ref roleIds);
-            CsUtility.Materialize(ref claimIds);
-            if (!roleIds.Any() || (claimIds != null && !claimIds.Any()))
-                return Enumerable.Empty<RolePermissionInfo>();
+            if (roleIds.Count == 0 || (claimIds != null && claimIds.Count == 0))
+                return [];
 
             var query = _rolePermissionRepository.Query()
                 .Where(rolePermission => rolePermission.IsAuthorized != null
                     && roleIds.Contains(rolePermission.RoleID.Value));
 
-            if (claimIds != null && claimIds.Count() < _sqlFilterItemsLimit)
+            if (claimIds != null && claimIds.Count < _sqlFilterItemsLimit)
                 query = query.Where(rolePermission => claimIds.Contains(rolePermission.ClaimID.Value));
 
             return query.Select(rolePermission => new RolePermissionInfo
@@ -157,10 +154,9 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <summary>
         /// Note that the result will not include roles that do not exist, and that the order of returned items might not match the parameter.
         /// </summary>
-        public IDictionary<Guid, string> GetRoles(IEnumerable<Guid> roleIds = null)
+        public IDictionary<Guid, string> GetRoles(IReadOnlyCollection<Guid> roleIds = null)
         {
-            CsUtility.Materialize(ref roleIds);
-            if (roleIds != null && !roleIds.Any())
+            if (roleIds != null && roleIds.Count == 0)
                 return new Dictionary<Guid, string>();
 
             var query = _roleRepository.Query();
@@ -188,10 +184,9 @@ namespace Rhetos.Dom.DefaultConcepts
         /// The function may return more claims than required.
         /// Note that the result will not include claims that are inactive or do not exist, and that the order of returned items might not match the parameter.
         /// </summary>
-        public IDictionary<Claim, ClaimInfo> GetClaims(IEnumerable<Claim> requiredClaims = null)
+        public IDictionary<Claim, ClaimInfo> GetClaims(IReadOnlyCollection<Claim> requiredClaims = null)
         {
-            CsUtility.Materialize(ref requiredClaims);
-            if (requiredClaims != null && !requiredClaims.Any())
+            if (requiredClaims != null && requiredClaims.Count == 0)
                 return new Dictionary<Claim, ClaimInfo>();
 
             var queryClaims = _claimRepository.Query().Where(claim => claim.Active != null && claim.Active.Value);

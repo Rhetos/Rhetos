@@ -45,17 +45,17 @@ namespace Rhetos.Dom.DefaultConcepts
 
         public PrincipalInfo GetPrincipal(string username)
         {
-            return _cache.GetOrAdd("AuthorizationDataCache.Principal." + username.ToLower(),
+            return _cache.GetOrAdd("AuthorizationDataCache.Principal." + username.ToUpperInvariant(),
                 () => _authorizationDataReader.Value.GetPrincipal(username));
         }
 
-        public IEnumerable<Guid> GetPrincipalRoles(IPrincipal principal)
+        public IReadOnlyCollection<Guid> GetPrincipalRoles(IPrincipal principal)
         {
-            return _cache.GetOrAdd("AuthorizationDataCache.PrincipalRoles." + principal.Name.ToLower() + "." + principal.ID.ToString(),
+            return _cache.GetOrAdd("AuthorizationDataCache.PrincipalRoles." + principal.Name.ToUpperInvariant() + "." + principal.ID.ToString(),
                 () => _authorizationDataReader.Value.GetPrincipalRoles(principal));
         }
 
-        public IEnumerable<Guid> GetRoleRoles(Guid roleId)
+        public IReadOnlyCollection<Guid> GetRoleRoles(Guid roleId)
         {
             return _cache.GetOrAdd("AuthorizationDataCache.RoleRoles." + roleId.ToString(),
                 () => _authorizationDataReader.Value.GetRoleRoles(roleId));
@@ -64,18 +64,18 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <summary>
         /// The function may return permissions for more claims than required.
         /// </summary>
-        public IEnumerable<PrincipalPermissionInfo> GetPrincipalPermissions(IPrincipal principal, IEnumerable<Guid> claimIds = null)
+        public IReadOnlyCollection<PrincipalPermissionInfo> GetPrincipalPermissions(IPrincipal principal, IReadOnlyCollection<Guid> claimIds = null)
         {
-            return _cache.GetOrAdd("AuthorizationDataCache.PrincipalPermissions." + principal.Name.ToLower() + "." + principal.ID.ToString(),
+            return _cache.GetOrAdd("AuthorizationDataCache.PrincipalPermissions." + principal.Name.ToUpperInvariant() + "." + principal.ID.ToString(),
                 () => _authorizationDataReader.Value.GetPrincipalPermissions(principal, null));
         }
 
         /// <summary>
         /// The function may return permissions for more claims than required.
         /// </summary>
-        public IEnumerable<RolePermissionInfo> GetRolePermissions(IEnumerable<Guid> roleIds, IEnumerable<Guid> claimIds = null)
+        public IReadOnlyCollection<RolePermissionInfo> GetRolePermissions(IReadOnlyCollection<Guid> roleIds, IReadOnlyCollection<Guid> claimIds = null)
         {
-            List<IEnumerable<RolePermissionInfo>> results = new();
+            List<IReadOnlyCollection<RolePermissionInfo>> results = new();
 
             static string cacheKey(Guid roleId) => "AuthorizationDataCache.RolePermissions." + roleId.ToString();
 
@@ -88,7 +88,7 @@ namespace Rhetos.Dom.DefaultConcepts
             foreach (Guid roleId in roleIds)
             {
                 string key = cacheKey(roleId);
-                var rolePermissions = _cache.Get<IEnumerable<RolePermissionInfo>>(key);
+                var rolePermissions = _cache.Get<IReadOnlyCollection<RolePermissionInfo>>(key);
                 if (rolePermissions != null)
                     results.Add(rolePermissions);
                 else
@@ -98,16 +98,16 @@ namespace Rhetos.Dom.DefaultConcepts
                 }
             }
 
-            var freshPermissions = missingCache.Count == 0
-                ? Enumerable.Empty<RolePermissionInfo>()
-                : _authorizationDataReader.Value.GetRolePermissions(missingCache, null);
+            var freshPermissions = missingCache.Count != 0
+                ? _authorizationDataReader.Value.GetRolePermissions(missingCache, null)
+                : [];
 
             results.Add(freshPermissions);
 
             var freshPermissionsByRole = freshPermissions.GroupBy(p => p.RoleID).ToDictionary(group => group.Key, group => group.ToList());
             foreach (Guid roleId in missingCache)
                 if (!freshPermissionsByRole.ContainsKey(roleId))
-                    freshPermissionsByRole.Add(roleId, new List<RolePermissionInfo>());
+                    freshPermissionsByRole.Add(roleId, []);
 
             foreach (var rolePermissions in freshPermissionsByRole)
                 _cache.Set(cacheKey(rolePermissions.Key), rolePermissions.Value);
@@ -119,7 +119,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// The function may return more roles than required.
         /// Note that the result will not include roles that do not exist, and that the order of returned items might not match the parameter.
         /// </summary>
-        public IDictionary<Guid, string> GetRoles(IEnumerable<Guid> roleIds = null)
+        public IDictionary<Guid, string> GetRoles(IReadOnlyCollection<Guid> roleIds = null)
         {
             return _cache.GetOrAdd("AuthorizationDataCache.Roles",
                 () => _authorizationDataReader.Value.GetRoles());
@@ -135,7 +135,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// The function may return more claims than required.
         /// Note that the result will not include claims that are inactive or do not exist, and that the order of returned items might not match the parameter.
         /// </summary>
-        public IDictionary<Claim, ClaimInfo> GetClaims(IEnumerable<Claim> requiredClaims = null)
+        public IDictionary<Claim, ClaimInfo> GetClaims(IReadOnlyCollection<Claim> requiredClaims = null)
         {
             return _cache.GetOrAdd("AuthorizationDataCache.Claims",
                 () => _authorizationDataReader.Value.GetClaims(null),
@@ -159,13 +159,13 @@ namespace Rhetos.Dom.DefaultConcepts
         /// </summary>
         public void ClearCachePrincipals(IEnumerable<IPrincipal> principals)
         {
-            CsUtility.Materialize(ref principals);
-            _logger.Trace(() => "ClearCachePrincipals: " + string.Join(", ", principals.Select(p => p.Name + " " + p.ID.ToString())) + ".");
+            var principalsCollection = CsUtility.Materialized(principals);
+            _logger.Trace(() => "ClearCachePrincipals: " + string.Join(", ", principalsCollection.Select(p => p.Name + " " + p.ID.ToString())) + ".");
 
             var deleteKeys =
-                principals.Select(principal => "AuthorizationDataCache.Principal." + principal.Name.ToLower())
-                .Concat(principals.Select(principal => "AuthorizationDataCache.PrincipalRoles." + principal.Name.ToLower() + "." + principal.ID.ToString()))
-                .Concat(principals.Select(principal => "AuthorizationDataCache.PrincipalPermissions." + principal.Name.ToLower() + "." + principal.ID.ToString()))
+                principalsCollection.Select(principal => "AuthorizationDataCache.Principal." + principal.Name.ToUpperInvariant())
+                .Concat(principalsCollection.Select(principal => "AuthorizationDataCache.PrincipalRoles." + principal.Name.ToUpperInvariant() + "." + principal.ID.ToString()))
+                .Concat(principalsCollection.Select(principal => "AuthorizationDataCache.PrincipalPermissions." + principal.Name.ToUpperInvariant() + "." + principal.ID.ToString()))
                 .Distinct();
 
             foreach (string key in deleteKeys)
@@ -177,20 +177,20 @@ namespace Rhetos.Dom.DefaultConcepts
         /// </summary>
         public void ClearCacheRoles(IEnumerable<Guid> roleIds)
         {
-            CsUtility.Materialize(ref roleIds);
-            _logger.Trace(() => "ClearCacheRoles: " + string.Join(", ", roleIds) + ".");
+            var roleIdsCollection = CsUtility.Materialized(roleIds);
+            _logger.Trace(() => "ClearCacheRoles: " + string.Join(", ", roleIdsCollection) + ".");
 
             var deleteKeys =
-                roleIds.Distinct()
+                roleIdsCollection.Distinct()
                 .Select(roleId => "AuthorizationDataCache.RoleRoles." + roleId.ToString())
-                .Concat(roleIds.Select(roleId => "AuthorizationDataCache.RolePermissions." + roleId.ToString()))
-                .Concat(new[] { "AuthorizationDataCache.Roles" });
+                .Concat(roleIdsCollection.Select(roleId => "AuthorizationDataCache.RolePermissions." + roleId.ToString()))
+                .Concat(["AuthorizationDataCache.Roles"]);
 
             foreach (string key in deleteKeys)
                 _cache.RemoveFromBothCaches(key);
 
             var systemRoles = _cache.GetAllDataFromBothCaches<IDictionary<SystemRole, Guid>>("AuthorizationDataCache.SystemRoles");
-            var invalidatedSystemRoles = systemRoles.SelectMany(sr => sr.Values).Intersect(roleIds);
+            var invalidatedSystemRoles = systemRoles.SelectMany(sr => sr.Values).Intersect(roleIdsCollection);
             if (invalidatedSystemRoles.Any())
             {
                 _logger.Trace(() => "ClearCacheRoles: SystemRoles.");
