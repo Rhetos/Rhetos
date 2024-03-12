@@ -43,9 +43,9 @@ namespace Rhetos.Dom.DefaultConcepts
             return string.Format(
             @"if (updatedNew.Count() > 0 || deletedIds.Count() > 0)
             {{
-                {0}[] changedItems = updated.Concat(deleted).ToArray();
+                Guid[] changedItemsIds = updatedNew.Concat(deletedIds).Select(item => item.ID).ToArray();
 
-                var lockedItems = _domRepository.{0}.Filter(this.Query(changedItems.Select(item => item.ID)), new {1}());
+                var lockedItems = _domRepository.{0}.Filter(this.Query(changedItemsIds), new {1}());
                 if (lockedItems.Count() > 0)
                     throw new Rhetos.UserException({2}, ""DataStructure:{0},ID:"" + lockedItems.First().ID.ToString(){3});
             }}

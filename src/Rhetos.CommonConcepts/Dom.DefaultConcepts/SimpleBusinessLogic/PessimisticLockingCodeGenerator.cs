@@ -44,7 +44,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
                 Common.ExclusiveLock deniedLock = null;
 
-                Guid[] resourceIDs = updated.Select(item => item.ID).Concat(deleted.Select(item => item.ID)).ToArray();
+                Guid[] resourceIDs = updatedNew.Concat(deletedIds).Select(item => item.ID).ToArray();
                 if (resourceIDs.Count() > 0)
                 {{
                     var now = _executionContext.SqlUtility.GetDatabaseTime(_executionContext.SqlExecuter);

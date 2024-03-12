@@ -120,15 +120,24 @@ namespace Rhetos.Dom.DefaultConcepts
             }
         }
 
-        public static IEnumerable<TQueryableEntity> LoadOldDataWithNavigationProperties<TQueryableEntity>(IEnumerable<IEntity> items, IQueryableRepository<TQueryableEntity> repository)
+        /// <summary>
+        /// Loads the given items from database, using the provided item's IDs.
+        /// The resulting list has the same order of elements as the given list.
+        /// The data is not loaded immediately. It will be loaded on the first usage of the resulting IEnumerable.
+        /// </summary>
+        public static IEnumerable<TQueryableEntity> LazyLoadData<TQueryableEntity>(IEnumerable<IEntity> items, IQueryableRepository<TQueryableEntity> repository)
             where TQueryableEntity : class, IEntity
         {
-            var loaded = items.Any()
-                ? repository.Query(items.Select(item => item.ID)).ToList()
-                : [];
+            var ids = items.Select(item => item.ID).ToList();
+            if (ids.Count == 0)
+                return [];
 
-            Graph.SortByGivenOrder(loaded, items.Select(item => item.ID), item => item.ID);
-            return loaded;
+            return LazyEnumerable.Create(() =>
+            {
+                var loaded = repository.Query(ids).ToList();
+                Graph.SortByGivenOrder(loaded, ids, item => item.ID);
+                return loaded;
+            });
         }
     }
 }

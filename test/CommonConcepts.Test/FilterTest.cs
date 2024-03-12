@@ -781,7 +781,7 @@ namespace CommonConcepts.Test
         //=====================================================================================================
 
         [TestMethod]
-        public void QueryFilterParemeterDataStructure()
+        public void QueryFilterParameterDataStructure()
         {
             using (var scope = TestScope.Create())
             {
@@ -823,7 +823,7 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void QueryFilterCustomPareter()
+        public void QueryFilterCustomParameter()
         {
             using (var scope = TestScope.Create())
             {
@@ -932,6 +932,65 @@ Query1: TestFilter.Query1
                     string.Join("\r\n", expected.Split("\r\n").Where(line => !string.IsNullOrWhiteSpace(line)).OrderBy(x => x)),
                     string.Join("\r\n", readParameters.Select(rp => rp.ToString()).OrderBy(x => x)));
             }
+        }
+
+        [TestMethod]
+        public void QueryBySimpleItems()
+        {
+            using var scope = TestScope.Create();
+            var repository = scope.Resolve<Common.DomRepository>();
+
+            var parent = new TestFilter.Simple { Name = "s1" };
+            repository.TestFilter.Simple.Insert(parent);
+
+            var details = new[]
+            {
+                new TestFilter.CombinedFilters { Name = "cf1", SimpleID = parent.ID },
+                new TestFilter.CombinedFilters { Name = "cf2", SimpleID = parent.ID },
+            };
+            repository.TestFilter.CombinedFilters.Insert(details);
+
+            var detailsExtra = new[]
+            {
+                new TestFilter.CombinedFilters { Name = "cf3", SimpleID = parent.ID },
+            };
+            repository.TestFilter.CombinedFilters.Insert(detailsExtra);
+
+            var query = repository.TestFilter.CombinedFilters
+                .Query(details)
+                .Select(d => new { d.Name, ParentName = d.Simple.Name });
+
+            Assert.AreEqual("cf1-s1, cf2-s1", TestUtility.DumpSorted(query.ToList(), d => $"{d.Name}-{d.ParentName}"));
+        }
+
+        [TestMethod]
+        public void QueryBySimpleItemsGenericRepository()
+        {
+            using var scope = TestScope.Create();
+            var context = scope.Resolve<Common.ExecutionContext>();
+            var repository = context.Repository;
+
+            var parent = new TestFilter.Simple { Name = "s1" };
+            repository.TestFilter.Simple.Insert(parent);
+
+            var details = new[]
+            {
+                new TestFilter.CombinedFilters { Name = "cf1", SimpleID = parent.ID },
+                new TestFilter.CombinedFilters { Name = "cf2", SimpleID = parent.ID },
+            };
+            repository.TestFilter.CombinedFilters.Insert(details);
+
+            var detailsExtra = new[]
+            {
+                new TestFilter.CombinedFilters { Name = "cf3", SimpleID = parent.ID },
+            };
+            repository.TestFilter.CombinedFilters.Insert(detailsExtra);
+
+            var query = context.GenericRepository<Common.Queryable.TestFilter_CombinedFilters>()
+                .Query(details)
+                .Select(d => new { d.Name, ParentName = d.Simple.Name });
+
+            Assert.AreEqual("cf1-s1, cf2-s1", TestUtility.DumpSorted(query.ToList(), d => $"{d.Name}-{d.ParentName}"));
         }
     }
 }

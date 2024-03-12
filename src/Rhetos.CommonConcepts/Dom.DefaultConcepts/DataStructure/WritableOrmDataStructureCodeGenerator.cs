@@ -33,30 +33,30 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <summary>Clear objects and context from any state other than new values to be saved.</summary>
         public static readonly CsTag<DataStructureInfo> ClearContextTag = "WritableOrm ClearContext";
 
-        /// <summary>Inserted code can use enumerables "insertedNew", "updatedNew" and "deletedIds".</summary>
+        /// <summary>Inserted code can use lists "insertedNew", "updatedNew" and "deletedIds".</summary>
         public static readonly CsTag<DataStructureInfo> ArgumentValidationTag = "WritableOrm ArgumentValidation";
 
-        /// <summary>Inserted code can use enumerables "insertedNew", "updatedNew" and "deletedIds".</summary>
+        /// <summary>Inserted code can use lists "insertedNew", "updatedNew" and "deletedIds".</summary>
         public static readonly CsTag<DataStructureInfo> InitializationTag = "WritableOrm Initialization";
 
-        /// <summary>Lists "updated" and "deleted" contain OLD data.
-        /// Enumerables "insertedNew", "updatedNew" and "deletedIds" contain NEW data.
+        /// <summary>Lists "updated" and "deleted" contain the OLD data.
+        /// Lists "insertedNew", "updatedNew" and "deletedIds" contain NEW data.
         /// Sample usage: 1. Verify that locked items are not going to be updated or deleted, 2. Cascade delete.</summary>
         public static readonly CsTag<DataStructureInfo> OldDataLoadedTag = "WritableOrm OldDataLoaded";
 
         /// <summary>Use <see cref="OldDataLoadedTag"/> instead of this tag, unless you need to make additional post-processing.
-        /// Lists "updated" and "deleted" contain OLD data.
-        /// Enumerables "insertedNew", "updatedNew" and "deletedIds" contain NEW data.
+        /// Lists "updated" and "deleted" contain the OLD data.
+        /// Lists "insertedNew", "updatedNew" and "deletedIds" contain NEW data.
         /// Sample usage: 1. Verify that locked items are not going to be updated or deleted, 2. Cascade delete.</summary>
         public static readonly CsTag<DataStructureInfo> ProcessedOldDataTag = "WritableOrm ProcessedOldData";
 
         /// <summary>Insert code here to recompute (insert/update/delete) other entities that depend on the changes items.
-        /// Queries "inserted" and "updated" will return NEW data.
+        /// Lists "inserted" and "updated" contain the NEW data.
         /// Data is already saved to the database (but the SQL transaction has not yet been committed).</summary>
         public static readonly CsTag<DataStructureInfo> OnSaveTag1 = "WritableOrm OnSaveTag1";
 
         /// <summary>Insert code here to verify that invalid items are not going to be inserted or updated.
-        /// Queries "inserted" and "updated" will return NEW data.
+        /// Lists "inserted" and "updated" contain the NEW data.
         /// Data is already saved to the database (but the SQL transaction has not yet been committed).</summary>
         public static readonly CsTag<DataStructureInfo> OnSaveTag2 = "WritableOrm OnSaveTag2";
 
@@ -70,7 +70,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly CsTag<DataStructureInfo> ErrorMetadataTag = "WritableOrm GetErrorMetadata";
 
         /// <summary>The inserted code will be execute after recomputing and validations.
-        /// Queries "inserted" and "updated" will return NEW data.
+        /// Lists "inserted" and "updated" contain the NEW data.
         /// Data is already saved to the database (but the SQL transaction has not yet been committed).</summary>
         public static readonly CsTag<DataStructureInfo> AfterSaveTag = "WritableOrm AfterSave";
 
@@ -103,8 +103,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
             // Using old data, including lazy loading of navigation properties:
 
-            IEnumerable<Common.Queryable.{0}_{1}> deleted = DomHelper.LoadOldDataWithNavigationProperties(deletedIds, this);
-            IEnumerable<Common.Queryable.{0}_{1}> updated = DomHelper.LoadOldDataWithNavigationProperties(updatedNew, this);
+            IEnumerable<{0}.{1}> deleted = DomHelper.LazyLoadData(deletedIds, this);
+            IEnumerable<{0}.{1}> updated = DomHelper.LazyLoadData(updatedNew, this);
 
             " + OldDataLoadedTag.Evaluate(info) + @"
 
@@ -119,8 +119,8 @@ namespace Rhetos.Dom.DefaultConcepts
             }}
 
             deleted = null;
-            updated = this.Query(updatedNew.Select(item => item.ID));
-            IEnumerable<Common.Queryable.{0}_{1}> inserted = this.Query(insertedNew.Select(item => item.ID));
+            updated = updatedNew;
+            IEnumerable<{0}.{1}> inserted = insertedNew;
 
             bool allEffectsCompleted = false;
             try

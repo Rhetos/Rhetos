@@ -55,9 +55,9 @@ namespace Rhetos.Dom.DefaultConcepts
             string optionalFilterSaveFunctionName = !string.IsNullOrWhiteSpace(info.FilterSaveExpression) ? $", _filterSaveComputeForNewItems_{uniqueSuffix}" : "";
             string recomputeMethodName = info.EntityComputedFrom.RecomputeFunctionName();
 
-            return $@"if (inserted.Count() > 0)
+            return $@"if (insertedNew.Count() > 0)
             {{
-                var filter = inserted.Select(item => item.ID).ToArray();
+                var filter = insertedNew.Select(item => item.ID).ToArray();
                 {recomputeMethodName}(filter{optionalFilterSaveFunctionName});
             }}
             ";

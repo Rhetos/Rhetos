@@ -385,6 +385,12 @@ namespace Common
             return (IQueryable<TQueryableEntity>)query;
         }}
 
+        public IQueryable<TQueryableEntity> Query(IEnumerable<TEntity> items)
+        {{
+            var ids = items.Select(item => item.ID).ToList();
+            return this.Query(ids);
+        }}
+
         public override TEntity[] Load()
         {{
             return Query().GenericToSimple<TEntity>().ToArray();

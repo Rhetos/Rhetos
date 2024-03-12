@@ -29,7 +29,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// <summary>
     /// A helper for defining a computation dependency to the referenced entity.
     /// * The ReferencePath can include the 'Base' reference from extended concepts.
-    /// * The ReferencePath can target a Polymorphic. This will generate a ChangesOnChangesItems for each Polymorphic implementation.
+    /// * The ReferencePath can target a Polymorphic. This will generate a ChangesOnChangedItems for each Polymorphic implementation.
     /// When a referenced entity record is saved, all cache records that reference it should be recomputed. Instead of a simple property,
     /// it is possible to specify a path across multiple references, separated by a dot, including the Base and Extension_... navigation properties.
     /// </summary>

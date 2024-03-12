@@ -32,6 +32,10 @@ Changes in Rhetos libraries API:
   * Instead of `SqlUtility.NationalLanguage`, use DatabaseSettings.DatabaseNationalLanguage from dependency injection.
   * For other removed static members, use `ISqlUtility` from dependency injection or `_executionContext.SqlUtility` where the **execution context** is available.
   * `SqlUtility.EmptyNullString` renamed to `ISqlUtility.ReadEmptyNullString`.
+* In **SaveMethod**, collections `inserted`, `updated` and `deleted` now contain the *simple* class items instead of the queryable *navigation* class with lazy loading references.
+  * If the references are required in custom code, you can query the data with `this.Query(insertedNew)`, `this.Query(updatedNew)` and `this.Query(deletedIds)`.
+  * The **ChangesOnChangedItems** code snippet parameter `changedItems` is now the collection of *simple* class instead of the queryable *navigation* class.
+    On earlier Rhetos versions, the reference properties were available, but resulted with exception on usage.
 * **RepositoryUses** concept: The type parameter must be specified as written in C# code with, with the namespace.
   The [assembly qualified name](https://learn.microsoft.com/en-us/dotnet/api/system.type.assemblyqualifiedname?view=net-8.0)
   is no longer supported.
@@ -986,7 +990,7 @@ The changes from this release are not included in versions 4.0.0 - 4.0.1. They a
   The parameter is a reference property name, or a path over references, pointing to the entity that the current computation depends on.
   Note that both computed data structure and the persisted data structure must have the same reference property for this concept to work.
   The path can include the *Base* reference from extended concepts.
-  The path can target a **Polymorphic**. This will generate a **ChangesOnChangesItems** for each Polymorphic implementation.
+  The path can target a **Polymorphic**. This will generate a **ChangesOnChangedItems** for each Polymorphic implementation.
 
 ### Internal improvements
 
