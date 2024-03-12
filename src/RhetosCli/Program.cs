@@ -50,7 +50,9 @@ namespace Rhetos
             }
         }
 
+#pragma warning disable CA1859 // Use concrete types when possible for improved performance
         private readonly ILogProvider _logProvider;
+#pragma warning restore CA1859 // Use concrete types when possible for improved performance
         private readonly bool _msBuildErrorFormat;
 
         private Program(VerbosityLevel verbosity, string[] traceLoggers, bool msBuildErrorFormat)

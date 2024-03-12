@@ -48,7 +48,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public void CheckSemantics(IDslModel existingConcepts)
         {
-            if (!(DependsOn is IWritableOrmDataStructure))
+            if (DependsOn is not IWritableOrmDataStructure)
                 throw new DslConceptSyntaxException(this, "DependsOn data structure must be IWritableOrmDataStructure (" + DependsOn.GetUserDescription() + ").");
         }
 

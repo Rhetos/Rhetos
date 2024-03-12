@@ -39,7 +39,7 @@ namespace Rhetos.Dsl
             }
 
             string errorMessage;
-            if (candidateFiles.Count == 1 && candidateSqlResources.Count == 0)
+            if (candidateFiles.Count == 1 && candidateSqlResources.Length == 0)
             {
                 errorMessage = $"Cannot find the file referenced in DSL script. File does not exist: '{candidateFiles.First()}'";
             }
@@ -56,10 +56,10 @@ namespace Rhetos.Dsl
             return ValueOrError.CreateError(errorMessage);
         }
 
-        private ICollection<string> GetSqlResourceKeys(DslScript dslScript, string relativePathOrResourceName)
+        private string[] GetSqlResourceKeys(DslScript dslScript, string relativePathOrResourceName)
         {
             if (!IsSqlScript(relativePathOrResourceName))
-                return Array.Empty<string>();
+                return [];
 
             // Intentionally interpreting the dslScript Name as a path, although it is not the actual disk path.
             // This allows the behavior of referenced SQL resources similar to the referenced files:
@@ -73,10 +73,10 @@ namespace Rhetos.Dsl
             string dslScriptLogicalLocation = Path.GetDirectoryName(dslScript.Name);
             string fullPath = Path.Combine(dslScriptLogicalLocation, relativePathOrResourceName);
             string resourceKey = fullPath.Replace(@"\", "/"); // Normalizing the path to avoid any differences in resource keys between platforms.
-            return new[] { resourceKey };
+            return [resourceKey];
         }
 
-        private ICollection<string> GetFilePaths(DslScript dslScript, string relativePathOrResourceName)
+        private List<string> GetFilePaths(DslScript dslScript, string relativePathOrResourceName)
         {
             string dslScriptFolder = Path.GetDirectoryName(dslScript.Path);
             string fullPath = Path.Combine(dslScriptFolder,

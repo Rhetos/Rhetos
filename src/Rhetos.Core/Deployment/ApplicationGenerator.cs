@@ -193,7 +193,7 @@ namespace Rhetos.Deployment
 
             foreach (var entry in _buildOptions.AdditionalGeneratorDependencies)
             {
-                var parts = entry.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
+                var parts = entry.Split(':', StringSplitOptions.RemoveEmptyEntries);
                 if (parts.Length != 2)
                     throw new InvalidOperationException($"Invalid entry '{entry}' in {OptionsAttribute.GetConfigurationPath<BuildOptions>()}:{nameof(BuildOptions.AdditionalGeneratorDependencies)} configuration key."
                         + " Expected \"<GeneratorTypeFullName>:<GeneratorDependencyTypeFullName>\" format.");

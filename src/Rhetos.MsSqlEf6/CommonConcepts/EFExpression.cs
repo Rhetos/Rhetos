@@ -142,6 +142,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 return base.VisitMethodCall(node);
             }
 
+#pragma warning disable CA1859 // Use concrete types when possible for improved performance
             Expression CreateOptimizeExpressionForListOfGuid(IList<Guid> guids, Expression value)
             {
                 var concatenatedIds = string.Join(",", guids.Distinct().Select(x => x.ToString()));
@@ -149,6 +150,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
                 return Expression.Call(ContainsIdsMethod, value, idsLambda.Body);
             }
+#pragma warning restore CA1859 // Use concrete types when possible for improved performance
 
             Expression CreateOptimizeExpressionForListOfNullableGuid(IList<Guid?> guids, Expression value)
             {

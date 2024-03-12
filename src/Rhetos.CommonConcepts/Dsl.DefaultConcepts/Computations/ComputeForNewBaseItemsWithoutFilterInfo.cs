@@ -38,7 +38,7 @@ namespace Rhetos.Dsl.DefaultConcepts
         public new IEnumerable<string> DeclareNonparsableProperties()
         {
             return base.DeclareNonparsableProperties()
-                .Concat(new[] { "FilterSaveExpression" });
+                .Concat(["FilterSaveExpression"]);
         }
 
         public new void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)

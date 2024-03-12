@@ -134,7 +134,7 @@ namespace Rhetos.Security
         {
             var sw = Stopwatch.StartNew();
 
-            IList<Claim> requiredClaims = GetRequiredClaims(commandInfos);
+            List<Claim> requiredClaims = GetRequiredClaims(commandInfos);
             _performanceLogger.Write(sw, "Authorize requiredClaims");
 
             var claimsAuthorization = requiredClaims.Zip(GetAuthorizations(requiredClaims), (claim, authorized) => new { claim, authorized });
@@ -160,7 +160,7 @@ namespace Rhetos.Security
             }
         }
 
-        private IList<Claim> GetRequiredClaims(IEnumerable<ICommandInfo> commandInfos)
+        private List<Claim> GetRequiredClaims(IEnumerable<ICommandInfo> commandInfos)
         {
             List<Claim> requiredClaims = new List<Claim>();
             foreach (ICommandInfo commandInfo in commandInfos)

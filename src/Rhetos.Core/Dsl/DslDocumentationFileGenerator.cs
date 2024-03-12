@@ -70,6 +70,7 @@ namespace Rhetos.Dsl
 
         public IEnumerable<string> Dependencies => null;
 
+
         private ConceptDocumentation GetConceptDocumentation(Type type, XDocument documentation)
         {
             try
@@ -92,6 +93,8 @@ namespace Rhetos.Dsl
             }
         }
 
+        private static readonly char[] eolSeparator = ['\r', '\n'];
+
         private static string GetValue(XElement typeInfo, string descendantName)
         {
             var element = typeInfo?.Descendants(XName.Get(descendantName)).SingleOrDefault();
@@ -104,7 +107,7 @@ namespace Rhetos.Dsl
             string value = typeInfo?.Descendants(XName.Get(descendantName)).SingleOrDefault()?.Value?.Trim();
 
             string text = string.Join(" ", result
-                .SelectMany(part => part.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
+                .SelectMany(part => part.Split(eolSeparator, StringSplitOptions.RemoveEmptyEntries))
                 .Select(part => part.Trim())
                 .Where(part => !string.IsNullOrEmpty(part)));
             return string.IsNullOrWhiteSpace(text) ? null : text;

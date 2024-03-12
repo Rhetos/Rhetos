@@ -53,20 +53,20 @@ namespace Rhetos.Host.AspNet.Dashboard.RhetosDashboardSnippets
                     stringBuilder.AppendLine($"        <tr><td>{package.Id}</td><td style=\"text-align: right\">{package.Version}</td></tr>");
                 }
 
-                var rendered = string.Format(_html, stringBuilder);
+                string rendered = string.Format(null, _html, stringBuilder);
                 return rendered;
             }
             else
                 return $"<p>You are not authorized for action '{ShowInstalledPackagesClaim.Right}' on resource '{ShowInstalledPackagesClaim.Resource}'.</p>";
         }
 
-        private const string _html =
+        private static readonly CompositeFormat _html = CompositeFormat.Parse(
 @"    <table>
       <thead>
       </thead>
       <tbody>
 {0}      </tbody>
     </table>
-";
+");
     }
 }

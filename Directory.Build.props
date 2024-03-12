@@ -8,6 +8,7 @@
     <InformationalVersion>6.0.0-dev</InformationalVersion>
     <!-- The warning CA1014 is a project level warning that is not tied to a specific file so it can not be suppressed in .editorconfig -->
     <NoWarn>CA1014</NoWarn>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
   </PropertyGroup>

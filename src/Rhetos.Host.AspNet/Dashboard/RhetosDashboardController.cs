@@ -43,12 +43,12 @@ namespace Rhetos.Host.AspNet.Dashboard
                 stringBuilder.AppendLine(snippet.RenderHtml().TrimEnd());
                 stringBuilder.AppendLine();
             }
-            
-            var rendered = string.Format(_html, stringBuilder);
+
+            string rendered = string.Format(null, _html, stringBuilder);
             return Content(rendered, "text/html; charset=utf-8");
         }
 
-        private const string _html =
+        private static readonly CompositeFormat _html = CompositeFormat.Parse(
 @"<!DOCTYPE html>
 <html>
   <head>
@@ -60,6 +60,6 @@ namespace Rhetos.Host.AspNet.Dashboard
     
 {0}  </body>
 </html>
-";
+");
     }
 }

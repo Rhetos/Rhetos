@@ -179,7 +179,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 return "(" + string.Join(", ", parameters.Zip(_argumentTypes, (p, at) => $"{at} {p.Identifier.Text}")) + (_additionalParameters ?? "") + ")";
         }
 
-        private string BuildMethodBody(SyntaxNode body, string insertCode)
+        private string BuildMethodBody(CSharpSyntaxNode body, string insertCode)
         {
             if (body is BlockSyntax block)
             {

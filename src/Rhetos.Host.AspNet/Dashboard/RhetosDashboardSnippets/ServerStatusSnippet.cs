@@ -20,6 +20,7 @@
 using Microsoft.AspNetCore.Http;
 using Rhetos.Utilities;
 using System;
+using System.Text;
 
 namespace Rhetos.Host.AspNet.Dashboard.RhetosDashboardSnippets
 {
@@ -40,7 +41,7 @@ namespace Rhetos.Host.AspNet.Dashboard.RhetosDashboardSnippets
 
         public string RenderHtml()
         {
-            var rendered = string.Format(_html,
+            string rendered = string.Format(null, _html,
                 DateTime.Now,
                 System.Diagnostics.Process.GetCurrentProcess().StartTime,
                 Environment.Is64BitProcess,
@@ -63,7 +64,7 @@ namespace Rhetos.Host.AspNet.Dashboard.RhetosDashboardSnippets
             }
         }
 
-        private const string _html =
+        private static readonly CompositeFormat _html = CompositeFormat.Parse(
 @"    <table>
       <thead></thead>
       <tbody>
@@ -93,6 +94,6 @@ namespace Rhetos.Host.AspNet.Dashboard.RhetosDashboardSnippets
       </tr>
       </tbody>
     </table>
-";
+");
     }
 }

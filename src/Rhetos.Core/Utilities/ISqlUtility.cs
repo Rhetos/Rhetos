@@ -43,7 +43,7 @@ namespace Rhetos.Utilities
         /// <summary>
         /// Created database connection and initializes it with used information and settings.
         /// </summary>
-        DbConnection CreateConnection(string connectionString, IUserInfo _userInfo);
+        DbConnection CreateConnection(string connectionString, IUserInfo userInfo);
 
         /// <summary>
         /// Checks the exception for database errors and attempts to transform it to a RhetosException.

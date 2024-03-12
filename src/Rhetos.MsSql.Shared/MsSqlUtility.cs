@@ -99,7 +99,7 @@ namespace Rhetos.Utilities
         /// <returns>
         /// Returns null is the user is not recognized.
         /// </returns>
-        private static DbCommand CreateUserContextInfoCommand(IUserInfo userInfo)
+        private static SqlCommand CreateUserContextInfoCommand(IUserInfo userInfo)
         {
             string userInfoText = SqlUtility.UserContextInfoText(userInfo);
             byte[] encodedUserInfo = userInfoText.Take(128).Select(c => (byte)(c < 256 ? c : '?')).ToArray();
@@ -215,7 +215,7 @@ namespace Rhetos.Utilities
             //=========================
             // Detect PRIMARY KEY constraint:
 
-            if (sqlException.Number == 2627 && sqlException.Message.StartsWith("Violation of PRIMARY KEY constraint"))
+            if (sqlException.Number == 2627 && sqlException.Message.StartsWith("Violation of PRIMARY KEY constraint", StringComparison.Ordinal))
             {
                 Regex messageParser = new Regex(@"^Violation of PRIMARY KEY constraint '(.+)'\. Cannot insert duplicate key in object '(.+)'\.( The duplicate key value is \((.+)\)\.)?");
                 var parts = messageParser.Match(sqlException.Message).Groups;
@@ -289,7 +289,7 @@ namespace Rhetos.Utilities
             return name;
         }
 
-        private static readonly string[] _referenceConstraintTypes = new string[] { "REFERENCE", "SAME TABLE REFERENCE", "FOREIGN KEY", "COLUMN FOREIGN KEY" };
+        private static readonly string[] _referenceConstraintTypes = ["REFERENCE", "SAME TABLE REFERENCE", "FOREIGN KEY", "COLUMN FOREIGN KEY"];
 
         public DbException ExtractSqlException(Exception exception)
         {

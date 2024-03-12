@@ -93,7 +93,7 @@ namespace Rhetos.Dsl
             var alternativeInitializationGeneratedReferences = InitializeAlternativeInitializationConcepts(parsedConcepts);
 
             var swFirstAdd = Stopwatch.StartNew();
-            dslContainer.AddNewConceptsAndReplaceReferences([CreateInitializationConcept()]);
+            dslContainer.AddNewConceptsAndReplaceReferences([new InitializationConcept { RhetosVersion = SystemUtility.GetRhetosVersion() }]);
             dslContainer.SortDerivationsAfterBaseConcepts(parsedConcepts);
             dslContainer.AddNewConceptsAndReplaceReferences(parsedConcepts);
             dslContainer.AddNewConceptsAndReplaceReferences(alternativeInitializationGeneratedReferences);
@@ -109,14 +109,6 @@ namespace Rhetos.Dsl
 
             _logger.Info(() => $"Application model has {dslContainer.Concepts.Count()} statements.");
             return dslContainer;
-        }
-
-        private static IConceptInfo CreateInitializationConcept()
-        {
-            return new InitializationConcept
-            {
-                RhetosVersion = SystemUtility.GetRhetosVersion()
-            };
         }
 
         private List<IConceptInfo> InitializeAlternativeInitializationConcepts(IEnumerable<IConceptInfo> parsedConcepts)
@@ -295,7 +287,7 @@ namespace Rhetos.Dsl
                 .ToList();
         }
 
-        private decimal GetOrderOrDefault(IDictionary<string, decimal> recommendedMacroOrder, string key, decimal defaultValue)
+        private decimal GetOrderOrDefault(Dictionary<string, decimal> recommendedMacroOrder, string key, decimal defaultValue)
         {
             const int databaseLengthLimit = 256;
             key = key.Limit(databaseLengthLimit);
