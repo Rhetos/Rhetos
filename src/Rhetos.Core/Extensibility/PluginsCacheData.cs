@@ -24,7 +24,7 @@ using System.Linq;
 
 namespace Rhetos.Extensibility
 {
-    internal class CachedFileData : IEquatable<CachedFileData>
+    internal sealed class CachedFileData : IEquatable<CachedFileData>
     {
         public string ModifiedTime { get; set; }
         public List<string> TypesWithExports { get; set; } = new List<string>();
@@ -40,7 +40,7 @@ namespace Rhetos.Extensibility
             => HashCode.Combine(ModifiedTime);
     }
 
-    internal class PluginsCacheData
+    internal sealed class PluginsCacheData
     {
         public Dictionary<string, CachedFileData> Assemblies { get; set; } = new Dictionary<string, CachedFileData>();
     }

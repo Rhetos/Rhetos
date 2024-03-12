@@ -310,7 +310,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 .ToList();
         }
 
-        private class AutoCodeGroup<TEntity> where TEntity : IEntity
+        private sealed class AutoCodeGroup<TEntity> where TEntity : IEntity
         {
             public string GroupValue;
             public string Prefix;

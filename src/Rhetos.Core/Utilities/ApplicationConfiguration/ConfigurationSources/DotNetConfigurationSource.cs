@@ -25,7 +25,7 @@ namespace Rhetos.Utilities.ApplicationConfiguration.ConfigurationSources
     /// <summary>
     /// Used internally to handle multiple scenarios of System.Configuration configuration sources
     /// </summary>
-    class DotNetConfigurationSource : IConfigurationSource
+    sealed class DotNetConfigurationSource : IConfigurationSource
     {
         private readonly IList<KeyValuePair<string, string>> appSettings;
         private readonly IEnumerable<ConnectionStringSettings> connectionStrings;

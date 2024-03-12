@@ -26,7 +26,7 @@ namespace Rhetos.Configuration.Autofac.Modules
     /// <summary>
     /// Common components for application runtime and dbupdate command.
     /// </summary>
-    internal class DatabaseRuntimeModule : Module
+    internal sealed class DatabaseRuntimeModule : Module
     {
         protected override void Load(ContainerBuilder builder)
         {

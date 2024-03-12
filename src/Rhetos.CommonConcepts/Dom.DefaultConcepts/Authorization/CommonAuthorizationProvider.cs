@@ -85,7 +85,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 .ToList();
         }
 
-        private class Permission
+        private sealed class Permission
         {
             public Guid? PrincipalID { get; set; }
             public Guid? RoleID { get; set; }

@@ -128,7 +128,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 _claimsLogger.Trace(() => title + " " + string.Join(", ", group.Select(claim => claim.ClaimResource + "." + claim.ClaimRight)) + ".");
         }
 
-        internal class ClaimComparer : IComparer<ICommonClaim>
+        internal sealed class ClaimComparer : IComparer<ICommonClaim>
         {
             public int Compare(ICommonClaim x, ICommonClaim y)
             {

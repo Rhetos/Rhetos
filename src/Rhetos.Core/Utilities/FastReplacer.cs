@@ -54,7 +54,7 @@ namespace Rhetos.Utilities
 
         private readonly Dictionary<string, FastReplacerSnippet> RootSnippetByFile = new Dictionary<string, FastReplacerSnippet>();
 
-        private class TokenOccurrence
+        private sealed class TokenOccurrence
         {
             public FastReplacerSnippet Snippet;
             public int Start; // Position of a token in the snippet.

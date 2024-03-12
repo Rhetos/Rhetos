@@ -24,9 +24,9 @@ using System.Text;
 
 namespace Rhetos.Utilities
 {
-    internal class FastReplacerSnippet
+    internal sealed class FastReplacerSnippet
     {
-        private class InnerSnippet
+        private sealed class InnerSnippet
         {
             public FastReplacerSnippet Snippet;
             public int Start; // Position of the snippet in parent snippet's Text.

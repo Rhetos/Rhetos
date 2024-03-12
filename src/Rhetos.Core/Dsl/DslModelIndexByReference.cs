@@ -35,7 +35,7 @@ namespace Rhetos.Dsl
         /// <summary>
         /// Keys are: 1. Referenced concept key, 2. Returned concept type, 3. Reference property name.
         /// </summary>
-        private class ConceptsIndex : Dictionary<string, Dictionary<Type, Dictionary<string, List<IConceptInfo>>>>
+        private sealed class ConceptsIndex : Dictionary<string, Dictionary<Type, Dictionary<string, List<IConceptInfo>>>>
         {
             // TODO: A better dictionary key would be: 1. value tuple (concept key, property name), 2. concept type. It has 1 level less, and allows simpler Get method for multiple concept types.
             public void Add(string referencedConceptKey, Type conceptType, string referenceName, IConceptInfo concept)
@@ -100,7 +100,7 @@ namespace Rhetos.Dsl
         /// including the supertype itself (if registered).
         /// The supertype may be an interface or a class, except the <see cref="Object"/> type.
         /// </summary>
-        private class Subtypes : MultiDictionary<Type, Type>
+        private sealed class Subtypes : MultiDictionary<Type, Type>
         {
             private readonly HashSet<Type> _typesAdded = new HashSet<Type>();
 

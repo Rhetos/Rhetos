@@ -82,7 +82,7 @@ namespace Rhetos.Persistence
             _performanceLogger.Write(sw, "GenerateMapping");
         }
 
-        private class InitialSnippet : IConceptCodeGenerator
+        private sealed class InitialSnippet : IConceptCodeGenerator
         {
             public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
             {

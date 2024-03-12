@@ -73,7 +73,7 @@ namespace Rhetos.Deployment
         /// Removing folder and file paths that were available at build-time, to avoid accidentally using them at run-time.
         /// This includes <see cref="InstalledPackage.Folder"/> and <see cref="ContentFile.PhysicalPath"/>.
         /// </summary>
-        private class RemoveBuildTimePathsOnSerialization : DefaultContractResolver
+        private sealed class RemoveBuildTimePathsOnSerialization : DefaultContractResolver
         {
             protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
             {

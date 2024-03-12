@@ -129,7 +129,7 @@ namespace Rhetos.Dsl
 
         private const int MacroIterationLimit = 200;
 
-        private class MacroEvaluator
+        private sealed class MacroEvaluator
         {
             public string Name;
             public Func<IConceptInfo, IDslModel, IEnumerable<IConceptInfo>> Evaluate;
@@ -137,7 +137,7 @@ namespace Rhetos.Dsl
             public bool ImplementsDerivations;
         }
 
-        private class CreatedTypesInIteration
+        private sealed class CreatedTypesInIteration
         {
             public int Iteration;
             public string Macro;

@@ -28,7 +28,7 @@ using System.Text;
 
 namespace Rhetos.Dom.DefaultConcepts.Persistence
 {
-    class EfMappingViewsHash : IEfMappingViewsHash
+    sealed class EfMappingViewsHash : IEfMappingViewsHash
     {
         private readonly IDslModel _dslModel;
         private readonly ConceptMetadata _conceptMetadata;

@@ -46,7 +46,7 @@ namespace Rhetos.Dsl
         private readonly List<IDslModelIndex> _dslModelIndexes;
         private readonly Dictionary<Type, IDslModelIndex> _dslModelIndexesByType;
 
-        private class ConceptDescription
+        private sealed class ConceptDescription
         {
             public readonly IConceptInfo Concept;
             public readonly string Key;
@@ -60,7 +60,7 @@ namespace Rhetos.Dsl
             }
         }
 
-        private class UnresolvedReference
+        private sealed class UnresolvedReference
         {
             public readonly ConceptDescription Dependant;
             /// <summary>A member property on the Dependant concept that references another concept.</summary>

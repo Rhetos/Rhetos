@@ -79,7 +79,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         static readonly MethodInfo EnumerableOfNullableGuidContainsMethod = typeof(Enumerable).GetMethods().Single(m => m.Name == "Contains" && m.GetParameters().Length == 2).MakeGenericMethod(typeof(Guid?));
 
-        private class ReplaceContainsVisitor : ExpressionVisitor
+        private sealed class ReplaceContainsVisitor : ExpressionVisitor
         {
             static readonly MethodInfo ContainsIdsMethod = typeof(EFExpression).GetMethod(
                 nameof(ContainsIds),

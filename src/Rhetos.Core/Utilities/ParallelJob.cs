@@ -28,7 +28,7 @@ namespace Rhetos.Utilities
 {
     public class ParallelJob
     {
-        private class JobTask
+        private sealed class JobTask
         {
             public string Id { get; }
             public Action Action { get; }

@@ -45,7 +45,7 @@ namespace Rhetos.Utilities
             _filesUtility = new FilesUtility(logProvider);
         }
 
-        private class CopyFile { public string File; public string Target; }
+        private sealed class CopyFile { public string File; public string Target; }
 
         private readonly MultiDictionary<string, CopyFile> _filesByDestination = new MultiDictionary<string, CopyFile>();
 

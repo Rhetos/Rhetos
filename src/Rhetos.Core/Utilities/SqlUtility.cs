@@ -72,7 +72,7 @@ namespace Rhetos.Utilities
             return result;
         }
 
-        private class ReconstructedUserInfo : IUserInfo
+        private sealed class ReconstructedUserInfo : IUserInfo
         {
             public bool IsUserRecognized { get; set; }
             public string UserName { get; set; }

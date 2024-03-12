@@ -99,7 +99,7 @@ namespace Rhetos.Dom.DefaultConcepts
             _performanceLogger.Write(sw, () => "Save metadata.");
         }
 
-        private class SameRecord : IComparer<IKeepSynchronizedMetadata>
+        private sealed class SameRecord : IComparer<IKeepSynchronizedMetadata>
         {
             public int Compare(IKeepSynchronizedMetadata x, IKeepSynchronizedMetadata y)
             {

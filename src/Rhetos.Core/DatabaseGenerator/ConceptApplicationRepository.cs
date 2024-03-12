@@ -121,7 +121,7 @@ namespace Rhetos.DatabaseGenerator
                     invalidDependentId.First()));
         }
 
-        private class DependencyGuids
+        private sealed class DependencyGuids
         {
             public Guid Dependent;
             public Guid DependsOn;

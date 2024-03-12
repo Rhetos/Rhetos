@@ -197,7 +197,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private delegate Func<IEnumerable<TEntityInterface>> ReadingOption();
 
-        private class ReadingOptions : List<ReadingOption>
+        private sealed class ReadingOptions : List<ReadingOption>
         {
             public Func<IEnumerable<TEntityInterface>> FirstOptionOrNull()
             {
