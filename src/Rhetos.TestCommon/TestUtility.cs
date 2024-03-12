@@ -117,7 +117,7 @@ namespace Rhetos.TestCommon
             {
                 Console.Write("[AssertNotContains] Looking for pattern '" + pattern + "'.");
 
-                if (text.ToLower().Contains(pattern.ToLower()))
+                if (text.Contains(pattern, StringComparison.CurrentCultureIgnoreCase))
                 {
                     Console.WriteLine(" Found.");
                     Assert.Fail("Text should not contain pattern '" + pattern + "'. " + message ?? "");
@@ -134,7 +134,7 @@ namespace Rhetos.TestCommon
         {
             Console.WriteLine("[AssertNotContains] Not expecting pattern '" + pattern + "' in text '" + text + "'.");
 
-            if (text.ToLower().Contains(pattern.ToLower()))
+            if (text.Contains(pattern, StringComparison.CurrentCultureIgnoreCase))
                 Assert.Fail("Text should not contain pattern '" + pattern + "'. " + message ?? "");
         }
 

@@ -96,7 +96,7 @@ namespace Rhetos.DatabaseGenerator
                     var report = dependenciesByStatus.Select(group =>
                     {
                         var dependencies = string.Join(", ", group.Select(dependency => dependency.GetConceptApplicationKey()));
-                        return $"It depends on {group.Key.ToString().ToLower()} concepts: {dependencies}.";
+                        return $"It depends on {group.Key.ToString().ToLowerInvariant()} concepts: {dependencies}.";
                     });
                     return string.Join(" ", report);
                 });

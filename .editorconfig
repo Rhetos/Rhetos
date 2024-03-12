@@ -116,3 +116,6 @@ dotnet_diagnostic.CA2100.severity = suggestion
 # Testing shows that there is no performance benefits. There is even a slight degradation with the char.
 # CA1847: Use char literal for a single character lookup
 dotnet_diagnostic.CA1847.severity = suggestion
+
+# CA1308: Normalize strings to uppercase
+dotnet_diagnostic.CA1308.severity = suggestion

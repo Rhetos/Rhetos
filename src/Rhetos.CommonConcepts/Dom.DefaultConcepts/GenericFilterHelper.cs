@@ -187,7 +187,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 }
 
                 Expression expression;
-                switch (filter.Operation.ToLower())
+                switch (filter.Operation.ToLowerInvariant())
                 {
                     case "equals":
                     case "equal":

@@ -58,7 +58,7 @@ namespace Rhetos.Dom.DefaultConcepts
         {
             var source = info.Source;
             var target = info.RowPermissionsFilters.DataStructure;
-            string parameterName = string.Concat(target.Name.Substring(0, 1).ToLower(), target.Name.AsSpan(1), "Item");
+            string parameterName = string.Concat(target.Name.Substring(0, 1).ToLowerInvariant(), target.Name.AsSpan(1), "Item");
 
             return
             $@"{{

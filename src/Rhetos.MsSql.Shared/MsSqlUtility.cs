@@ -383,7 +383,7 @@ namespace Rhetos.Utilities
 
         public string GuidToString(Guid? guid)
         {
-            return guid.HasValue ? guid.Value.ToString().ToUpper() : null;
+            return guid.HasValue ? guid.Value.ToString().ToUpperInvariant() : null;
         }
 
         public string QuoteDateTime(DateTime? dateTime)

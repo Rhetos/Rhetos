@@ -58,7 +58,7 @@ namespace Rhetos.Deployment
 
         private static string ComputeOrderWithinPackage(string path)
         {
-            return CsUtility.GetNaturalSortString(path).Replace(@"\", @" \").Replace(@"/", @" /").ToLower();
+            return CsUtility.GetNaturalSortString(path).Replace(@"\", @" \").Replace(@"/", @" /").ToUpperInvariant();
         }
 
         /// <summary>

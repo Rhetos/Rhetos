@@ -21,6 +21,7 @@ using Rhetos.Dsl;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Security;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
@@ -99,7 +100,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
         protected void ValidateClaims(IList<Claim> newClaims)
         {
-            var duplicates = newClaims.GroupBy(claim => claim.FullName.ToLower())
+            var duplicates = newClaims.GroupBy(claim => claim.FullName, StringComparer.OrdinalIgnoreCase)
                 .Where(group => group.Count() > 1)
                 .FirstOrDefault();
             if (duplicates != null)
