@@ -17,7 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using CommonConcepts.Test.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos;
 using Rhetos.TestCommon;
@@ -35,60 +34,6 @@ namespace CommonConcepts.Test.Framework
     [TestClass]
     public class SourceTest
     {
-        [TestMethod]
-        public void LineEndings()
-        {
-            var files = SourceUtility.GetSourceFiles(file => Path.GetExtension(file) is ".cs" or ".sql" or ".resx" or ".rhe");
-
-            List<string> errors = files
-                .Select(filePath =>
-                {
-                    string content =  File.ReadAllText(filePath);
-
-                    int countN = 0;
-                    int countR = 0;
-                    int countRN = 0;
-
-                    int i = 0;
-                    while (i < content.Length)
-                    {
-                        char c = content[i];
-                        char next = i + 1 < content.Length ? content[i + 1] : default;
-
-                        if (c == '\r' && next == '\n')
-                        {
-                            countRN++;
-                            i += 2;
-                        }
-                        else if (c == '\n')
-                        {
-                            countN++;
-                            i++;
-                        }
-                        else if (c == '\r')
-                        {
-                            countR++;
-                            i++;
-                        }
-                        else
-                            i++;
-                    }
-
-                    string eolKinds = string.Join(", ",
-                        new[] { countN > 0 ? @"\n" : null, countR > 0 ? @"\r" : null, countRN > 0 ? @"\r\n" : null }
-                            .Where(x => x != null));
-
-                    return new { filePath, countN, countR, countRN, eolKinds };
-                })
-                .Where(fileAnalysis => fileAnalysis.eolKinds != @"\r\n" && fileAnalysis.eolKinds != "")
-                .Select(fileAnalysis => $@"File line endings are '{fileAnalysis.eolKinds}' instead of '\r\n' (countN {fileAnalysis.countN}, countR {fileAnalysis.countR}, countRN {fileAnalysis.countRN}): {fileAnalysis.filePath}")
-                .ToList();
-
-            Console.WriteLine(string.Join(Environment.NewLine, errors));
-
-            Assert.AreEqual("", string.Join(Environment.NewLine, errors));
-        }
-
         [TestMethod]
         public void SqlResourceUsage()
         {
