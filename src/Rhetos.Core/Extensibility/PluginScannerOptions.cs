@@ -39,20 +39,26 @@ namespace Rhetos.Extensibility
 
         private static readonly IEnumerable<string> _predefinedIgnoreAssemblyFiles = new[]
         {
+			// Including all Rhetos libraries that do not contain "Export" attribute for plugin registration.
             "Autofac.*",
+            "Azure.*",
+            "Castle.*",
             "EntityFramework.*",
             "Microsoft.*",
-            "NuGet.*",
-            "System.*",
             "Newtonsoft.Json.dll",
-            "NLog.dll",
+            "NLog.*",
+            "NuGet.*",
             "Oracle.ManagedDataAccess.dll", // Keeping this to avoid slowing down legacy apps.
-            "rhetos.dll",
             "Rhetos.Core.dll",
             "Rhetos.Core.DslParser.dll",
             "Rhetos.Core.Integration.dll",
+            "rhetos.dll",
+            "rhetos.exe",
+            "Rhetos.Host.AspNet.dll",
             "Rhetos.TestCommon.dll",
             "RhetosVSIntegration.dll",
+            "sni.dll",
+            "System.*",
         };
     }
 }

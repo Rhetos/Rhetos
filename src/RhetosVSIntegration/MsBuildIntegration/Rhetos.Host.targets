@@ -59,8 +59,6 @@
   <Namespace>Rhetos.Processing.DefaultCommands</Namespace>
   <Namespace>Rhetos.Security</Namespace>
   <Namespace>Rhetos.Utilities</Namespace>
-  <Namespace>System.DirectoryServices</Namespace>
-  <Namespace>System.Runtime.Serialization.Json</Namespace>
   $(_RhetosHostAppLinqPadNamespaces)
   <IncludeAspNet>true</IncludeAspNet>
   <RuntimeVersion>8.0</RuntimeVersion>

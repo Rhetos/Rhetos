@@ -86,7 +86,7 @@ namespace Rhetos.Dom.DefaultConcepts
             return
                 $@"{OverrideRecomputeTag(info)}
                 {{
-                    var filteredNew = filterLoadKeepSynchronizedOnChangedItems{uniqueName}(inserted.Concat(updated));
+                    {filterType} filteredNew = filterLoadKeepSynchronizedOnChangedItems{uniqueName}(inserted.Concat(updated));
                     {filterType} optimizedFilter;
                     if (KeepSynchronizedHelper.OptimizeFiltersUnion(filteredNew, filterKeepSynchronizedOnChangedItems{uniqueName}Old, out optimizedFilter))
                         _domRepository.{recomputeMethodName}(optimizedFilter);
