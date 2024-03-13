@@ -43,10 +43,10 @@ namespace Rhetos.EfCore.ModelBuilding
         {
             var property = (PropertyInfo)conceptInfo;
 
-            if (property.DataStructure is not IOrmDataStructure)
+            if (!DataStructureModelCodeGenerator.IsSupported(property.DataStructure))
                 return;
 
-            string propertyModel = GetPropertyModel(property);
+            string propertyModel = GetPropertyModel(property, _databaseSettings);
 
             if (propertyModel == null)
                 return;
@@ -56,22 +56,26 @@ namespace Rhetos.EfCore.ModelBuilding
                 DataStructureModelCodeGenerator.ModelBuilderTag, property.DataStructure);
         }
 
-        public bool IsSupported(PropertyInfo property) => GetPropertyModel(property) != null;
+        public static bool IsSupported(PropertyInfo property) =>
+            DataStructureModelCodeGenerator.IsSupported(property.DataStructure)
+            && GetPropertyModel(property, _emptyDatabaseSettings) != null;
 
-        private string GetPropertyModel(PropertyInfo property) =>
+        private static readonly CommonConceptsDatabaseSettings _emptyDatabaseSettings = new();
+
+        private static string GetPropertyModel(PropertyInfo property, CommonConceptsDatabaseSettings databaseSettings) =>
             property switch
             {
-                DecimalPropertyInfo => ".HasPrecision(28, 10).HasColumnType(\"decimal(20, 10)\");",
-                MoneyPropertyInfo => $".HasPrecision({_databaseSettings.MoneyPrecision}, {_databaseSettings.MoneyScale}).HasColumnType(\"money\");",
-                ShortStringPropertyInfo => ".HasColumnType(\"nvarchar(max)\");", // No need to cause issues in EF if some view returns more then 256 characters or some query parameter exceeds the limit.
-                LongStringPropertyInfo => ".HasColumnType(\"nvarchar(max)\");",
-                BinaryPropertyInfo => ".HasColumnType(\"varbinary(max)\");",
-                BoolPropertyInfo => ".HasColumnType(\"bit\");",
-                IntegerPropertyInfo => ".HasColumnType(\"int\");",
-                GuidPropertyInfo => ".HasColumnType(\"uniqueidentifier\");",
-                DateTimePropertyInfo => _databaseSettings.UseLegacyMsSqlDateTime ? ".HasColumnType(\"datetime\");"
-                    : $".HasPrecision({_databaseSettings.DateTimePrecision}).HasColumnType(\"datetime2({_databaseSettings.DateTimePrecision})\");",
-                DatePropertyInfo => ".HasColumnType(\"date\");",
+                DecimalPropertyInfo => ".HasPrecision(28, 10).HasColumnType(\"decimal(20, 10)\")",
+                MoneyPropertyInfo => $".HasPrecision({databaseSettings.MoneyPrecision}, {databaseSettings.MoneyScale}).HasColumnType(\"money\")",
+                ShortStringPropertyInfo => ".HasColumnType(\"nvarchar(max)\")", // No need to cause issues in EF if some view returns more then 256 characters or some query parameter exceeds the limit.
+                LongStringPropertyInfo => ".HasColumnType(\"nvarchar(max)\")",
+                BinaryPropertyInfo => ".HasColumnType(\"varbinary(max)\")",
+                BoolPropertyInfo => ".HasColumnType(\"bit\")",
+                IntegerPropertyInfo => ".HasColumnType(\"int\")",
+                GuidPropertyInfo => ".HasColumnType(\"uniqueidentifier\")",
+                DateTimePropertyInfo => databaseSettings.UseLegacyMsSqlDateTime ? ".HasColumnType(\"datetime\")"
+                    : $".HasPrecision({databaseSettings.DateTimePrecision}).HasColumnType(\"datetime2({databaseSettings.DateTimePrecision})\")",
+                DatePropertyInfo => ".HasColumnType(\"date\")",
                 _ => null
             };
     }

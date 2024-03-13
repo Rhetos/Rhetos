@@ -35,6 +35,7 @@ namespace Rhetos.EfCore.ModelBuilding
 
             if (info.Base is IOrmDataStructure && info.Extension is IOrmDataStructure)
             {
+                // "IsRequired(false)" below means that the *extension* is optional; the base entity may be entered without the extension begin entered.
                 string code =
                 $@"
                 entity.HasOne(e => e.{info.ExtensionPropertyName()}).WithOne(e => e.Base).HasForeignKey<Common.Queryable.{info.Base.Module.Name}_{info.Base.Name}>(e => e.ID).IsRequired(false);";

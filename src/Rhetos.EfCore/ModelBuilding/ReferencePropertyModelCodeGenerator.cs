@@ -54,5 +54,9 @@ namespace Rhetos.EfCore.ModelBuilding
                 }
             }
         }
+
+        public static bool IsSupported(PropertyInfo property) =>
+            property is ReferencePropertyInfo r
+            && DataStructureModelCodeGenerator.IsSupported(r.DataStructure);
     }
 }

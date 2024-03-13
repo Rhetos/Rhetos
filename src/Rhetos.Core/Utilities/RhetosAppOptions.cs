@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
 
@@ -75,6 +76,22 @@ namespace Rhetos.Utilities
         [AbsolutePathOption]
         public string CacheFolder { get => _cacheFolder ?? GetDirectory(RhetosHostFolder, "."); set => _cacheFolder = value; } // AssetsFolder is not useful for runtime cache during development, because it is deleted on each build.
 
+        /// <summary>
+        /// Enabled by default.
+        /// It removes additional null check when generating SQL query from LINQ query.
+        /// This results with simpler SQL queries and may improve database performance,
+        /// but increases the difference between the code execution in C# and code execution in SQL.
+        /// <para>
+        /// For example, if the option is enabled, the LINQ query "<c>Where(book => book.Code == book.Title)</c>"
+        /// will result with the SQL query "<c>WHERE book.Code = book.Title</c>".
+        /// If the option is disabled, the Entity Framework might generate SQL query
+        /// "<c>WHERE book.Code = book.Title OR (book.Code IS NULL AND book.Title IS NULL)</c>",
+        /// which would additionally return the books with Code and Title NULL
+        /// (same as if the LINQ query was executed on an array of books instead of in the database),
+        /// but it might have worse performance in some cases where the queries are too complex
+        /// or cannot use indexes efficiently because of the "OR" operation.
+        /// </para>
+        /// </summary>
         public bool EntityFrameworkUseDatabaseNullSemantics { get; set; } = true;
 
         public double AuthorizationCacheExpirationSeconds { get; set; } = 30;

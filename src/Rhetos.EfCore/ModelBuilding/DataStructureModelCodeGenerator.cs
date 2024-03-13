@@ -42,7 +42,7 @@ namespace Rhetos.EfCore.ModelBuilding
         {
             var info = (DataStructureInfo)conceptInfo;
 
-            if (info is IOrmDataStructure)
+            if (IsSupported(info))
             {
                 string code =
             $@"modelBuilder.Entity<Common.Queryable.{info.Module.Name}_{info.Name}>(entity => {{
@@ -53,6 +53,11 @@ namespace Rhetos.EfCore.ModelBuilding
 
                 codeBuilder.InsertCode(code, DbContextCodeGenerator.EntityFrameworkContextOnModelCreatingTag);
             }
+        }
+
+        public static bool IsSupported(DataStructureInfo info)
+        {
+            return info is IOrmDataStructure;
         }
     }
 }
