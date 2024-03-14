@@ -115,6 +115,9 @@ Migrating a Rhetos app from EF6 to EF Core (optional):
     * For older SQL Servers, configure the EF options with `.SetRhetosDbContextOptions` as described in
       [Contains in LINQ queries may stop working on older SQL Server versions](https://learn.microsoft.com/en-us/ef/core/what-is-new/ef-core-8.0/breaking-changes#contains-in-linq-queries-may-stop-working-on-older-sql-server-versions)
   * In EF6, when saving a decimal number with more then 10 digits to database, the excess digits are simply *cut off*. In EF Core, the number is *rounded* to 10 decimal places.
+  * In dynamically-constructed queries, the `Contains` method does not support Expression.Constant argument. Use PropertyExpression or FieldExpression instead,
+    see [Dynamically-constructed queries](https://learn.microsoft.com/en-us/ef/core/performance/advanced-performance-topics#dynamically-constructed-queries).
+  * The `Cast` method on LINQ query may result with ArgumentException. For example on `repository.Common.Role.Query().Select(r => r.ID).Cast<Guid?>().ToList()`, instead of `Cast<Guid?>()`, convet the value directly in select with `Select(item => (Guid?)item.ID)`, or with additional `.Select(id => (Guid?)id)`.
 
 ### Internal improvements
 
