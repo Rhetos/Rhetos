@@ -50,11 +50,5 @@ namespace Rhetos.Dom.DefaultConcepts
         /// the corresponding member variables instead of the arguments.
         /// </summary>
         public bool ComposableFilterByOptimizeRepositoryAndContextUsage { get; set; } = true;
-
-        /// <summary>
-        /// This options is only applicable to EF Core, the EF6 provider for Rhetos always uses lazy loading.
-        /// If enabled on EF Core, the NuGet package "Microsoft.EntityFrameworkCore.Proxies" must be installed.
-        /// </summary>
-        public bool EntityFrameworkCoreUseLazyLoading { get; set; } = false;
     }
 }

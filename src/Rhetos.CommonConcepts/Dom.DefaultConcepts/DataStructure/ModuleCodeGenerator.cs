@@ -34,7 +34,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public static readonly CsTag<ModuleInfo> NamespaceMembersTag = "Body";
         public static readonly CsTag<ModuleInfo> RepositoryMembersTag = "RepositoryMembers";
         public static readonly CsTag<ModuleInfo> HelperNamespaceMembersTag = "HelperNamespaceMembers";
-        public static readonly CsTag<ModuleInfo> CommonQueryableMemebersTag = "CommonQueryableMemebers";
+        public static readonly CsTag<ModuleInfo> CommonQueryableMembersTag = "CommonQueryableMembers";
         private readonly CommonConceptsOptions _commonConceptsOptions;
 
         public ModuleCodeGenerator(CommonConceptsOptions commonConceptsOptions)
@@ -61,7 +61,7 @@ namespace Common.Queryable
 {{
     {DomInitializationCodeGenerator.DisableWarnings(_commonConceptsOptions)}{DomInitializationCodeGenerator.StandardNamespacesSnippet}
 
-    {CommonQueryableMemebersTag.Evaluate(info)}{DomInitializationCodeGenerator.RestoreWarnings(_commonConceptsOptions)}
+    {CommonQueryableMembersTag.Evaluate(info)}{DomInitializationCodeGenerator.RestoreWarnings(_commonConceptsOptions)}
 }}
 ", $"{Path.Combine(GeneratedSourceDirectories.Model.ToString(), info.Name + GeneratedSourceDirectories.Model)}");
 
@@ -106,6 +106,7 @@ namespace {info.Name}.Repositories
         public const string RegisteredInterfaceImplementationNameTag = "/*RegisteredInterfaceImplementationName*/";
         public const string ApplyFiltersOnClientReadTag = "/*ApplyFiltersOnClientRead*/";
         public const string CommonNamespaceMembersTag = "/*CommonNamespaceMembers*/";
+        public const string InfrastructureNamespaceMembersTag = "/*InfrastructureNamespaceMembers*/";
         public const string CommonInfrastructureMembersTag = "/*CommonInfrastructureMembers*/";
         public const string DataStructuresReadParameterTypesTag = "/*DataStructuresReadParameterTypes*/";
 

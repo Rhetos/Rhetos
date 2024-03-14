@@ -75,11 +75,13 @@ Migrating a Rhetos app from EF6 to EF Core (optional):
 
 * Disclaimer: It is recommended to keep EF6 in old Rhetos apps for backward compatiblity. Use EF Core in new apps.
 * Migrate from EF6 to EF Core: In the existing projects that reference the NuGet package `Rhetos.CommonConcepts`, add the NuGet package `Rhetos.MsSql` instead of `Rhetos.MsSqlEf6`.
-* Lazy loading is disabled by default on EF Core. To enable it in a Rhetos app, set the option `CommonConcepts:EntityFrameworkCoreUseLazyLoading` to `true` in rhetos-build.settings.json,
-  and add the NuGet package "Microsoft.EntityFrameworkCore.Proxies".
-  * If migrating an existing app from EF6 to EF Core, enable lazy loading for backward compatibility.
-  * For new apps, it is recommended to avoid lazy loading. See [Beware of lazy loading](https://learn.microsoft.com/en-us/ef/core/performance/efficient-querying#beware-of-lazy-loading)
-    in EF Core documentation.
+* Lazy loading is disabled by default on EF Core.
+  If migrating an existing app from EF6 to EF Core, enable lazy loading for backward compatibility.
+  For new apps, it is recommended to avoid lazy loading.
+  See [Beware of lazy loading](https://learn.microsoft.com/en-us/ef/core/performance/efficient-querying#beware-of-lazy-loading) in EF Core documentation.
+  * To enable lazy loading when migrating a Rhetos app, add the NuGet package "Microsoft.EntityFrameworkCore.Proxies",
+    and add after `AddRhetosHost()` the following code: `.SetRhetosDbContextOptions(optionsBuilder => optionsBuilder.UseLazyLoadingProxies())`.
+    Note that if SetRhetosDbContextOptions is called multiple times, only the last configuration will be used.
 * Breaking changes in libraries API:
   * System.Data.SqlClient library is replaced with newer Microsoft.Data.SqlClient.
     * In C# code, replace namespace `System.Data.SqlClient` with `Microsoft.Data.SqlClient`.
@@ -103,8 +105,16 @@ Migrating a Rhetos app from EF6 to EF Core (optional):
   * In LINQ queries and in generic filters (FilterCriteria), operations `equals` and `notequals` with a variable parameter containing null value will return different results then EF6.
     * For example `string n = null; books.Where(b => b.Title == n)` will return all books with title null (`WHERE b.Title IS NULL`). In EF6 this query generated the SQL `WHERE b.Title = @param` which never returns records.
     * Both EF6 and EF Core behave the same with literal null values, such as `books.Where(b => b.Title == null)` returning books with title null.
+  * In EF6 LINQ query, when reading data from a database view, if the view returns multiple records with the same ID value, EF would return only one record and ignore others.
+    In EF Core LINQ query on Rhetos, by default all records are returned, even if there are duplicate ID values.
+    * If needed, this can be configured by adding after `AddRhetosHost()` the following code:
+      `.SetRhetosDbContextOptions(optionsBuilder => optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTrackingWithIdentityResolution))`.
+      Note that if SetRhetosDbContextOptions is called multiple times, only the last configuration will be used.
   * In EF6 LINQ query, `.ToString()` method returns the expected SQL query. In EF Core use `.ToQueryString()` instead.
-  * If EF6, when saving a decimal number with more then 10 digits to database, the excess digits are simply *cut off*. In EF Core, the number is *rounded* to 10 decimal places.
+  * EF Core LINQ query with `Contains` method generates an optimized SQL code that is not supported on SQL Server 2014 and older version.
+    * For older SQL Servers, configure the EF options with `.SetRhetosDbContextOptions` as described in
+      [Contains in LINQ queries may stop working on older SQL Server versions](https://learn.microsoft.com/en-us/ef/core/what-is-new/ef-core-8.0/breaking-changes#contains-in-linq-queries-may-stop-working-on-older-sql-server-versions)
+  * In EF6, when saving a decimal number with more then 10 digits to database, the excess digits are simply *cut off*. In EF Core, the number is *rounded* to 10 decimal places.
 
 ### Internal improvements
 

@@ -77,7 +77,7 @@ namespace Rhetos.Dom.DefaultConcepts
     }}
 
     ";
-                codeBuilder.InsertCode(queryableClass, ModuleCodeGenerator.CommonQueryableMemebersTag, info.Module);
+                codeBuilder.InsertCode(queryableClass, ModuleCodeGenerator.CommonQueryableMembersTag, info.Module);
 
                 string snippetToSimpleObjectsConversion = $@"/// <summary>Converts the objects with navigation properties to simple objects with primitive properties.</summary>
         public static IQueryable<{module}.{entity}> ToSimple(this IQueryable<Common.Queryable.{module}_{entity}> query)

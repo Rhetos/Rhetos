@@ -35,13 +35,17 @@ namespace Rhetos.MsSql
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             codeBuilder.InsertCode(
-            $@"optionsBuilder.UseSqlServer(context.Resolve<Rhetos.Persistence.IPersistenceTransaction>().Connection, sqlServerOptions =>
+                $@"optionsBuilder.UseSqlServer(context.Resolve<Rhetos.Persistence.IPersistenceTransaction>().Connection, sqlServerOptions =>
                 {{
                     sqlServerOptions.UseRelationalNulls(context.Resolve<RhetosAppOptions>().EntityFrameworkUseDatabaseNullSemantics);
                     {EntityFrameworkContextSqlServerOptionsTag}
+                    configureSqlServerOptions?.Invoke(sqlServerOptions);
                 }});
                 ",
-                DbContextCodeGenerator.EntityFrameworkContextOptionsTag);
+                DbContextCodeGenerator.EntityFrameworkContextOptionsBuilderTag);
+
+            codeBuilder.InsertCode(",\r\n            Action<Microsoft.EntityFrameworkCore.Infrastructure.SqlServerDbContextOptionsBuilder> configureSqlServerOptions = null", DbContextCodeGenerator.EntityFrameworkContextOptionsParameterDeclarationTag);
+            codeBuilder.InsertCode(", configureSqlServerOptions", DbContextCodeGenerator.EntityFrameworkContextOptionsParameterCallTag);
         }
     }
 }

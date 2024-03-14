@@ -269,6 +269,8 @@ namespace Common
             base.Load(builder);
         }}
     }}
+
+    {ModuleCodeGenerator.InfrastructureNamespaceMembersTag}{RestoreWarnings(_commonConceptsOptions)}
 }}
 ";
 
@@ -470,7 +472,7 @@ namespace Common
         }}
     }}
 
-    {PersistenceStorageMappingsTag}
+    {PersistenceStorageMappingsTag}{RestoreWarnings(_commonConceptsOptions)}
 }}
 ";
     }
