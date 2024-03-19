@@ -9,7 +9,7 @@
     <Import_RootNamespace>Rhetos.MsSql.Shared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)AutofacModuleConfigurationMsSql.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AutofacModuleConfigurationMsSqlShared.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MsSqlExecuter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MsSqlUtility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SqlResources\CommonConceptsBuildSqlResourcesPlugin.cs" />
