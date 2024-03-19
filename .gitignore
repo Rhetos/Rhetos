@@ -377,3 +377,4 @@ FodyWeavers.xsd
 /CommonConcepts/CommonConcepts.TestApp/rhetos-app.local.settings.json
 /test/CommonConcepts.TestApp/local.settings.json
 /test/TestAppDirectMsSqlEfCore/DslScriptsCommonConcepts
+/test/TestAppDirectPostgreSql/DslScriptsCommonConcepts

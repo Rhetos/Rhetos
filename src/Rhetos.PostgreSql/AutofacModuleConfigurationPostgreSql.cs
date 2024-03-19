@@ -38,7 +38,7 @@ namespace Rhetos.PostgreSql
 
             if (stage.IsBuildTime)
             {
-                builder.RegisterType<CommonConceptsBuildSqlResourcesPlugin>().As<ISqlResourcesPlugin>().SingleInstance();
+                builder.RegisterType<CommonConceptsSqlResourcesPlugin>().As<ISqlResourcesPlugin>().SingleInstance();
             }
 
             if (stage.IsDatabaseUpdate)

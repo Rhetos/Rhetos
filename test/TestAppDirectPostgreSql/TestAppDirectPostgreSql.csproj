@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="local.settings.json" />
+    <None Remove="rhetos-build.settings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="local.settings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="rhetos-build.settings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Rhetos.PostgreSql\Rhetos.PostgreSql.csproj" />
+    <ProjectReference Include="..\..\src\RhetosCli\RhetosCli.csproj" />
+    <ProjectReference Include="..\..\src\RhetosVSIntegration\RhetosVSIntegration.csproj" />
+  </ItemGroup>
+
+  <Import Project="..\..\src\RhetosVSIntegration\MsBuildIntegration\Rhetos.MsBuild.props" />
+  <Import Project="..\..\src\RhetosVSIntegration\MsBuildIntegration\Rhetos.Host.props" />
+  <Import Project="..\..\src\Rhetos.PostgreSql\Rhetos.PostgreSql.props" />
+  <Import Project="..\..\src\RhetosVSIntegration\MsBuildIntegration\Rhetos.MsBuild.targets" />
+  <Import Project="..\..\src\RhetosVSIntegration\MsBuildIntegration\Rhetos.Host.targets" />
+
+  <!--Override Rhetos.MsBuild.props paths because this project does not use a NuGet dependency for Rhetos.MsBuild.-->
+  <PropertyGroup>
+    <RhetosCliExecutablePath>..\..\src\RhetosCli\bin\$(Configuration)\net8.0\rhetos.exe</RhetosCliExecutablePath>
+    <RhetosCliAssemblyPath>..\..\src\RhetosCli\bin\$(Configuration)\net8.0\rhetos.dll</RhetosCliAssemblyPath>
+    <RhetosVSIntegrationPath>..\bin\$(Configuration)\netstandard2.0\RhetosVSIntegration.dll</RhetosVSIntegrationPath>
+  </PropertyGroup>
+
+  <Target Name="CopyDslScripts" BeforeTargets="ResolveRhetosBuildItems">
+    <ItemGroup>
+      <FilesToCopy Include="..\..\src\Rhetos.CommonConcepts\DslScripts\**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(FilesToCopy)" DestinationFiles="@(FilesToCopy->'DslScriptsCommonConcepts\%(RecursiveDir)\%(Filename)%(Extension)')" />
+  </Target>
+
+</Project>

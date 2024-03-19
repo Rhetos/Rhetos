@@ -18,6 +18,7 @@
 */
 
 using Npgsql;
+using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Utilities;
 using System.Data.Common;
 using System.Reflection;
@@ -36,8 +37,9 @@ namespace Rhetos.PostgreSql
             _localizer = localizer;
 
             if (databaseSettings.DatabaseLanguage != DatabaseLanguage)
-                throw new FrameworkException($"Unsupported database language '{databaseSettings.DatabaseLanguage}'." +
-                    $" Assembly '{GetType().Assembly.GetName()}' expects database language '{DatabaseLanguage}'.");
+                throw new FrameworkException($"Unsupported database language '{databaseSettings.DatabaseLanguage}'."
+                    + $" Assembly '{GetType().Assembly.GetName().Name}' expects database language '{DatabaseLanguage}'."
+                    + $" Configure {ConfigurationProvider.GetKey((DatabaseSettings o) => o.DatabaseLanguage)} in build settings.");
         }
 
         public string ProviderName => typeof(NpgsqlConnection).Namespace;

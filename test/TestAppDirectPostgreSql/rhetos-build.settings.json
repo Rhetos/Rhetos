@@ -1,0 +1,7 @@
+﻿{
+  "Rhetos": {
+    "Build": {
+      "DatabaseLanguage": "PostgreSql"
+    }
+  }
+}
