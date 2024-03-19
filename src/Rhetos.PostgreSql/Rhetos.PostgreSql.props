@@ -1,0 +1,10 @@
+<Project>
+  <ItemGroup>
+    <RhetosLinqPadReference Include="runtimes\win\lib\net8.0\System.Runtime.Caching.dll" />
+    <RhetosLinqPadNamespace Include="Microsoft.EntityFrameworkCore" />
+  </ItemGroup>
+  <PropertyGroup>
+    <RhetosLinqPadShowSqlExample>claims.ToQueryString().Dump("Common.Claims SQL query")%3B
+        </RhetosLinqPadShowSqlExample>
+  </PropertyGroup>
+</Project>

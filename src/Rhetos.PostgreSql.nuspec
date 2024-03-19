@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Rhetos.PostgreSql</id>
+    <version>6.0.0-dev</version>
+    <authors>Omega software</authors>
+    <owners>Omega software</owners>
+    <license type="expression">AGPL-3.0-only</license>
+    <projectUrl>https://github.com/rhetos/rhetos</projectUrl>
+    <description>PostgreSQL provider for Rhetos and CommonConcepts, with EF Core support.</description>
+    <copyright>Copyright Omega software 2024</copyright>
+    <tags>Rhetos</tags>
+    <dependencies>
+      <group targetFramework="net8.0">
+        <dependency id="Npgsql.EntityFrameworkCore.PostgreSQL" version="8.0.2" />
+        <dependency id="Rhetos" version="[6.0.0-dev,6.1.0)" />
+        <dependency id="Rhetos.CommonConcepts" version="[6.0.0-dev,6.1.0)" />
+        <dependency id="Rhetos.EfCore" version="[6.0.0-dev,6.1.0)" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="Rhetos.PostgreSql\Rhetos.PostgreSql.props" target="build" />
+    <file src="Rhetos.PostgreSql\bin\Debug\net8.0\Rhetos.PostgreSql.dll" target="lib\net8.0" />
+    <file src="Rhetos.PostgreSql\bin\Debug\net8.0\Rhetos.PostgreSql.xml" target="lib\net8.0" />
+  </files>
+</package>

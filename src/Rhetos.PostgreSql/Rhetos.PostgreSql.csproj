@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <DebugType>Embedded</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Rhetos.Core\Rhetos.Core.csproj" />
+    <ProjectReference Include="..\Rhetos.EfCore\Rhetos.EfCore.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="SqlResources\Rhetos.Core.CreateDatabase.PostgreSql.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="SqlResources\Rhetos.Core.CreateDatabase.PostgreSql.sql" />
+  </ItemGroup>
+
+</Project>
