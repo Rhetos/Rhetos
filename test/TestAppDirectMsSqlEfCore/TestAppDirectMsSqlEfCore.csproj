@@ -7,15 +7,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Rhetos.MsSql\Rhetos.MsSql.csproj" />
-    <ProjectReference Include="..\..\src\RhetosCli\RhetosCli.csproj" />
-    <ProjectReference Include="..\..\src\RhetosVSIntegration\RhetosVSIntegration.csproj" />
+    <None Remove="local.settings.json" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="local.settings.json">
+    <Content Include="local.settings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Rhetos.MsSql\Rhetos.MsSql.csproj" />
+    <ProjectReference Include="..\..\src\RhetosCli\RhetosCli.csproj" />
+    <ProjectReference Include="..\..\src\RhetosVSIntegration\RhetosVSIntegration.csproj" />
   </ItemGroup>
 
   <Import Project="..\..\src\RhetosVSIntegration\MsBuildIntegration\Rhetos.MsBuild.props" />
