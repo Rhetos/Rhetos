@@ -75,6 +75,7 @@ namespace Rhetos.PostgreSql
             Add("HINT", pgException.Hint);
             Add("ROUTINE", pgException.Routine);
             Add("LINE", pgException.Line);
+            report.Append('.');
 
             return report.ToString();
         }
@@ -83,7 +84,7 @@ namespace Rhetos.PostgreSql
         {
             using var command = _persistenceTransaction.Connection.CreateCommand();
             command.Transaction = _persistenceTransaction.Transaction;
-            command.CommandText = "SELECT @@TRANCOUNT";
+            command.CommandText = "SELECT @TRANCOUNT";
             return (int)command.ExecuteScalar();
         }
 
@@ -95,14 +96,14 @@ namespace Rhetos.PostgreSql
 
             const string dbLockPrefix = "DbLock ";
 
-            string timeoutParameter = wait ? "" : ", @LockTimeout = '0'";
+            string timeoutParameter = wait ? "" : ", LockTimeout = '0'";
 
             var sql = new StringBuilder();
-            sql.AppendLine("DECLARE @lockResult int;");
+            sql.AppendLine("DECLARE lockResult int;");
             foreach (var key in keys)
             {
-                sql.AppendLine($"EXEC @lockResult = sp_getapplock {_sqlUtility.QuoteText(key.SqlName)}, 'Exclusive'{timeoutParameter};");
-                sql.AppendLine($"IF @lockResult < 0 BEGIN; RAISERROR({_sqlUtility.QuoteText(dbLockPrefix + key.FullName)}, 16, 10); RETURN; END;");
+                sql.AppendLine($"EXEC lockResult = sp_getapplock {_sqlUtility.QuoteText(key.SqlName)}, 'Exclusive'{timeoutParameter};");
+                sql.AppendLine($"IF lockResult < 0 BEGIN; RAISERROR({_sqlUtility.QuoteText(dbLockPrefix + key.FullName)}, 16, 10); RETURN; END;");
             }
 
             try
@@ -150,7 +151,7 @@ namespace Rhetos.PostgreSql
                 return;
 
             var sql = new StringBuilder();
-            sql.AppendLine("DECLARE @lockResult int;");
+            sql.AppendLine("DECLARE lockResult int;");
             foreach (var key in keys)
                 sql.AppendLine($@"EXEC sp_releaseapplock {_sqlUtility.QuoteText(key.SqlName)};");
 

@@ -62,9 +62,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestAppDirectMsSqlEfCore", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.MsSqlEf6.Test", "test\Rhetos.MsSqlEf6.Test\Rhetos.MsSqlEf6.Test.csproj", "{AA3B9670-BB1A-4836-AD6D-64F19055D65D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhetos.PostgreSql", "src\Rhetos.PostgreSql\Rhetos.PostgreSql.csproj", "{BBDC29D7-CFCA-4B49-BE7E-CE693C03D1F5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhetos.PostgreSql", "src\Rhetos.PostgreSql\Rhetos.PostgreSql.csproj", "{BBDC29D7-CFCA-4B49-BE7E-CE693C03D1F5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestAppDirectPostgreSql", "test\TestAppDirectPostgreSql\TestAppDirectPostgreSql.csproj", "{76BFA663-C1CB-4E46-A9D8-635AEB3A8C23}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestAppDirectPostgreSql", "test\TestAppDirectPostgreSql\TestAppDirectPostgreSql.csproj", "{76BFA663-C1CB-4E46-A9D8-635AEB3A8C23}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F5A9BDEF-AD33-4498-90CD-998556DBC279} = {F5A9BDEF-AD33-4498-90CD-998556DBC279}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

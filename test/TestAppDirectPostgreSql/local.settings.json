@@ -1,5 +1,5 @@
 {
   "ConnectionStrings": {
-    "RhetosConnectionString": "Data Source=localhost;Initial Catalog=Rhetos6TestAppDirectPostgreSqlEfCore;Integrated Security=true;TrustServerCertificate=true"
+    "RhetosConnectionString": "Host=localhost;Database=rhetos6testappdirectpostgresql;Username=postgres"
   }
 }

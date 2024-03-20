@@ -670,7 +670,7 @@ AS
     
         IF @ColumnType <> @ExistingMigrationColumnType
         BEGIN
-            PRINT 'Automatically changing data-migration column type from ' + @ExistingMigrationColumnType + ' to ' + @ColumnType + ' for column ' + @SchemaName + '.' + @TableName + '.'  + @ColumnName+ '.'
+            PRINT 'Automatically changing data-migration column type from ' + @ExistingMigrationColumnType + ' to ' + @ColumnType + ' for column ' + @MigrationSchemaName + '.' + @TableName + '.'  + @ColumnName+ '.'
             EXEC ('ALTER TABLE [' + @MigrationSchemaName + '].[' + @TableName + '] ALTER COLUMN [' + @ColumnName + '] ' + @ColumnType);
             SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RETURN @Error END
         END

@@ -94,20 +94,19 @@ namespace Rhetos.PostgreSql
         }
 
         /// <summary>
-        /// Creates an SQL command that sets context_info connection variable to contain data about the user.
-        /// The context_info variable can be used in SQL server to extract user info in certain situations such as logging trigger.
+        /// Creates an SQL command that sets connection session variable to contain data about the user.
+        /// The variable can be used in database to extract user info in certain situations such as logging trigger.
         /// </summary>
         /// <returns>
-        /// Returns null is the user is not recognized.
+        /// If the user is not recognized, the variable contains in empty userinfo with the Rhetos prefix.
         /// </returns>
         private static NpgsqlCommand CreateUserContextInfoCommand(IUserInfo userInfo)
         {
             string userInfoText = SqlUtility.UserContextInfoText(userInfo);
-            byte[] encodedUserInfo = userInfoText.Take(128).Select(c => (byte)(c < 256 ? c : '?')).ToArray();
-
-            // Using SQL query parameter, instead of a literal, to reduce load on the SQL Server execution plan cache.
-            var command = new NpgsqlCommand("SET CONTEXT_INFO @userInfo");
-            command.Parameters.AddWithValue("@userInfo", encodedUserInfo);
+            var command = new NpgsqlCommand("SELECT set_config('rhetos.userinfo', $1, false)")
+            {
+                Parameters = { new() { Value = userInfoText } },
+            };
             return command;
         }
 
@@ -294,7 +293,7 @@ namespace Rhetos.PostgreSql
 
         public static string LimitIdentifierLength(string name)
         {
-            const int MaxLength = 128;
+            const int MaxLength = 63;
             if (name.Length > MaxLength)
             {
                 var hashErasedPart = CsUtility.GetStableHashCode(name.Substring(MaxLength - 9)).ToString("X").PadLeft(8, '0');
@@ -441,7 +440,7 @@ namespace Rhetos.PostgreSql
         public DateTime GetDatabaseTimeUncached(ISqlExecuter sqlExecuter)
         {
             DateTime databaseTime = DateTime.MinValue;
-            sqlExecuter.ExecuteReader("SELECT SYSDATETIME()",
+            sqlExecuter.ExecuteReader("SELECT LOCALTIMESTAMP",
                 reader => databaseTime = reader.GetDateTime(0));
             if (databaseTime == DateTime.MinValue)
                 throw new FrameworkException("Cannot read database server time.");
@@ -467,23 +466,16 @@ namespace Rhetos.PostgreSql
             // Testing if any command can be executed.
             // Also testing if the application's account is 'dbo'. The application should have full access to database to create the database on deployment,
             // but also to access the data. User permissions are handled by the Rhetos app.
-            bool isDbo = false;
+            bool hasBasicRights = false;
             using (var connection = new NpgsqlConnection(connectionString))
-            using (var command = new NpgsqlCommand("SELECT IS_MEMBER('db_owner')", connection))
+            using (var command = new NpgsqlCommand("SELECT has_database_privilege(current_database(), 'CREATE')", connection))
             {
                 connection.Open();
-                using (var reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        if (!reader.IsDBNull(0) && (int)reader[0] == 1)
-                            isDbo = true;
-                    }
-                }
+                hasBasicRights = (bool)command.ExecuteScalar();
             }
 
-            if (!isDbo)
-                throw new FrameworkException("Current user does not have db_owner role for the database.");
+            if (!hasBasicRights)
+                throw new FrameworkException("Current user does not have permissions to create database objects.");
         }
 
         public string SqlConnectionInfo(string connectionString)

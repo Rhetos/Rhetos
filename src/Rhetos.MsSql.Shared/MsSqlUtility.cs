@@ -97,7 +97,7 @@ namespace Rhetos.Utilities
         /// The context_info variable can be used in SQL server to extract user info in certain situations such as logging trigger.
         /// </summary>
         /// <returns>
-        /// Returns null is the user is not recognized.
+        /// If the user is not recognized, the variable contains in empty userinfo with the Rhetos prefix.
         /// </returns>
         private static SqlCommand CreateUserContextInfoCommand(IUserInfo userInfo)
         {

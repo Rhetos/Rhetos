@@ -127,7 +127,7 @@
     <value>ALTER TABLE {0} DROP CONSTRAINT {1};</value>
   </data>
   <data name="EntityDatabaseDefinition_Create" xml:space="preserve">
-    <value>CREATE TABLE {0}.{1} (ID UNIQUEIDENTIFIER NOT NULL CONSTRAINT {2} PRIMARY KEY NONCLUSTERED CONSTRAINT {3} DEFAULT (NEWID()));
+    <value>CREATE TABLE {0}.{1} (ID uuid NOT NULL CONSTRAINT {2} PRIMARY KEY NONCLUSTERED CONSTRAINT {3} DEFAULT gen_random_uuid());
 EXEC Rhetos.DataMigrationApply '{0}', '{1}', 'ID';</value>
   </data>
   <data name="EntityDatabaseDefinition_Remove" xml:space="preserve">
@@ -140,15 +140,15 @@ FOR UPDATE, DELETE, INSERT
 AS
 BEGIN
 SET NOCOUNT ON
-IF NOT EXISTS (SELECT TOP 1 1 FROM inserted UNION ALL SELECT TOP 1 1 FROM deleted) RETURN
+IF NOT EXISTS (SELECT 1 FROM inserted) AND NOT EXISTS (SELECT 1 FROM deleted) RETURN
 
 CREATE TABLE #log
 (
-    ID uniqueidentifier NOT NULL,
-    Action nvarchar(256),
-    TableName nvarchar(256),
-    ItemId uniqueidentifier,
-    Description nvarchar(max){7}
+    ID uuid NOT NULL,
+    Action varchar(256),
+    TableName varchar(256),
+    ItemId uuid,
+    Description text{7}
 );
 
 INSERT INTO
@@ -161,7 +161,7 @@ INSERT INTO
         Description{8}
     )
 SELECT
-    ID = newid(),
+    ID = gen_random_uuid(),
     Action = CASE
         WHEN inserted.ID IS NOT NULL AND deleted.ID IS NULL THEN 'Insert'
         WHEN inserted.ID IS NULL AND deleted.ID IS NOT NULL THEN 'Delete'
@@ -235,12 +235,12 @@ AS
 IF NOT EXISTS(SELECT * FROM inserted) RETURN;
 SET NOCOUNT ON;
 
-DECLARE @dummy INT
+DECLARE dummy INT
 
 UPDATE
     source
 SET
-    @dummy = 0{11}
+    dummy = 0{11}
 FROM
     {3} source
     INNER JOIN inserted ON inserted.ID = source.ID
@@ -314,7 +314,7 @@ DROP VIEW {0}.{1};</value>
 			</value>
   </data>
   <data name="PropertyLoggingDefinition_TextValue" xml:space="preserve">
-    <value>CONVERT(NVARCHAR(MAX), deleted.{0}, 126)</value>
+    <value>CONVERT(text, deleted.{0}, 126)</value>
   </data>
   <data name="PropertyLoggingDefinition_TextValue_ShortString" xml:space="preserve">
     <value>deleted.{0}</value>
@@ -335,7 +335,7 @@ DROP VIEW {0}.{1};</value>
     <value>FK_{0}_{1}_{2}ID</value>
   </data>
   <data name="ReferencePropertyDatabaseDefinition_DataType" xml:space="preserve">
-    <value>UNIQUEIDENTIFIER</value>
+    <value>uuid</value>
   </data>
   <data name="SqlDefaultPropertyDatabaseDefinition_Create" xml:space="preserve">
     <value>ALTER TABLE {0}.{1} ADD CONSTRAINT {3} DEFAULT ({4}) FOR {2};</value>
@@ -416,28 +416,28 @@ AS
     <value>DATE</value>
   </data>
   <data name="DateTimePropertyDatabaseDefinition_DataType_Legacy" xml:space="preserve">
-    <value>DATETIME</value>
+    <value>timestamp(3)</value>
   </data>
   <data name="DateTimePropertyDatabaseDefinition_DataType" xml:space="preserve">
-    <value>DATETIME2({0})</value>
+    <value>timestamp({0})</value>
   </data>
   <data name="DecimalPropertyDatabaseDefinition_DataType" xml:space="preserve">
     <value>DECIMAL(28,10)</value>
   </data>
   <data name="GuidPropertyDatabaseDefinition_DataType" xml:space="preserve">
-    <value>UNIQUEIDENTIFIER</value>
+    <value>uuid</value>
   </data>
   <data name="IntegerPropertyDatabaseDefinition_DataType" xml:space="preserve">
     <value>INTEGER</value>
   </data>
   <data name="LongStringPropertyDatabaseDefinition_DataType" xml:space="preserve">
-    <value>NVARCHAR(MAX)</value>
+    <value>text</value>
   </data>
   <data name="MoneyPropertyDatabaseDefinition_DataType" xml:space="preserve">
     <value>MONEY</value>
   </data>
   <data name="ShortStringPropertyDatabaseDefinition_DataType" xml:space="preserve">
-    <value>NVARCHAR({0})</value>
+    <value>varchar({0})</value>
   </data>
   <data name="MoneyPropertyDatabaseDefinition_CheckConstraintName" xml:space="preserve">
     <value>CK_{0}_{1}_money</value>
@@ -471,7 +471,7 @@ ALTER TABLE {0}.{1} DROP COLUMN [{2}]
     {0} = {1}.{2}</value>
   </data>
   <data name="PropertyLoggingDefinition_TextValue_Binary" xml:space="preserve">
-    <value>CONVERT(NVARCHAR(MAX), deleted.{0}, 1)</value>
+    <value>CONVERT(text, deleted.{0}, 1)</value>
   </data>
   <data name="EntityDatabaseDefinition_DefaultConstraintName" xml:space="preserve">
     <value>DF_{1}_ID</value>
@@ -487,8 +487,8 @@ ALTER TABLE {0}.{1} DROP COLUMN [{2}]
   </data>
   <data name="LoggingRelatedItemDatabaseDefinition_TempColumnDefinition" xml:space="preserve">
     <value>,
-    {0} uniqueidentifier,
-    {1} uniqueidentifier</value>
+    {0} uuid,
+    {1} uuid</value>
   </data>
   <data name="LoggingRelatedItemDatabaseDefinition_TempColumnList" xml:space="preserve">
     <value>,
@@ -504,7 +504,7 @@ ALTER TABLE {0}.{1} DROP COLUMN [{2}]
     <value>INSERT INTO
     Common.LogRelatedItem (ID, LogID, TableName, ItemId, Relation)
 SELECT
-    ID = NEWID(),
+    ID = gen_random_uuid(),
     LogID = ID,
     TableName = '{2}',
     ItemId = {0},
@@ -517,7 +517,7 @@ WHERE
 INSERT INTO
     Common.LogRelatedItem (ID, LogID, TableName, ItemId, Relation)
 SELECT
-    ID = NEWID(),
+    ID = gen_random_uuid(),
     LogID = ID,
     TableName = '{2}',
     ItemId = {1},

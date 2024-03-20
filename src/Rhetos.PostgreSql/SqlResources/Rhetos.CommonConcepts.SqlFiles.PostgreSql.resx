@@ -117,6 +117,94 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="TestAppDirectPostgreSql/DslScriptsCommonConcepts/SQL/AutoCodeCacheGetNext body.sql" xml:space="preserve">
+    <value>IF grouping IS NULL SET grouping = '';
+
+IF quantity &lt; 1
+	BEGIN RAISERROR('Invalid argument: quantity (%d). The value must be 1 or greater. ', 16, 10, quantity); RETURN 1; END
+
+DECLARE newCode INT;
+
+UPDATE
+	acc
+SET
+	minDigits = MinDigits = CASE WHEN minDigits &gt; acc.MinDigits THEN minDigits ELSE acc.MinDigits END,
+	newCode = LastCode = acc.LastCode + quantity
+FROM
+	Common.AutoCodeCache acc WITH (ROWLOCK, UPDLOCK, SERIALIZABLE, INDEX(IX_AutoCodeCache_Entity_Property_Grouping_Prefix))
+WHERE
+	acc.Entity = entity
+	AND acc.Property = property
+	AND acc.Grouping = grouping
+	AND acc.Prefix = prefix;
+
+IF @ROWCOUNT = 0
+BEGIN
+	SET minDigits = ISNULL(minDigits, 0);
+	SET newCode = quantity;
+
+	INSERT INTO
+		Common.AutoCodeCache WITH (ROWLOCK, UPDLOCK)
+		(ID, Entity, Property, Grouping, Prefix, MinDigits, LastCode)
+	VALUES
+		(gen_random_uuid(), entity, property, grouping, prefix, minDigits, newCode);
+END
+
+SELECT MinDigits = minDigits, NewCode = newCode;</value>
+  </data>
+  <data name="TestAppDirectPostgreSql/DslScriptsCommonConcepts/SQL/AutoCodeCacheGetNext param.sql" xml:space="preserve">
+    <value>entity varchar(256),
+property varchar(256),
+grouping varchar(256),
+prefix varchar(256),
+minDigits INT,
+quantity INT -- Number of generated codes (i.e., the number of inserted items). Must be 1 or greater. For quantity greater than 1, newCode will contain the last generated codes. The generated codes are from newCode-quantity+1 to newCode.</value>
+  </data>
+  <data name="TestAppDirectPostgreSql/DslScriptsCommonConcepts/SQL/AutoCodeCacheUpdate body.sql" xml:space="preserve">
+    <value>IF grouping IS NULL SET grouping = '';
+
+UPDATE
+	acc
+SET
+	MinDigits = CASE WHEN providedCode &gt; acc.LastCode THEN minDigits ELSE acc.MinDigits END,
+	LastCode = CASE WHEN providedCode &gt; acc.LastCode THEN providedCode ELSE acc.LastCode END
+FROM
+	Common.AutoCodeCache acc WITH (ROWLOCK, UPDLOCK, INDEX(IX_AutoCodeCache_Entity_Property_Grouping_Prefix))
+WHERE
+	acc.Entity = entity
+	AND acc.Property = property
+	AND acc.Grouping = grouping
+	AND acc.Prefix = prefix;
+
+IF @ROWCOUNT = 0
+BEGIN
+	INSERT INTO
+		Common.AutoCodeCache WITH (ROWLOCK, UPDLOCK)
+		(ID, Entity, Property, Grouping, Prefix, MinDigits, LastCode)
+	VALUES
+		(gen_random_uuid(), entity, property, grouping, prefix, minDigits, providedCode);
+END</value>
+  </data>
+  <data name="TestAppDirectPostgreSql/DslScriptsCommonConcepts/SQL/AutoCodeCacheUpdate param.sql" xml:space="preserve">
+    <value>entity varchar(256),
+property varchar(256),
+grouping varchar(256),
+prefix varchar(256),
+minDigits INT,
+providedCode INT -- Update the existing cache with the new code value, explicitly provided instead of generated. Either quantity or providedCode must be set.</value>
+  </data>
+  <data name="TestAppDirectPostgreSql/DslScriptsCommonConcepts/SQL/Log.ContextInfo default.sql" xml:space="preserve">
+    <value>SELECT current_setting('rhetos.userinfo')</value>
+  </data>
+  <data name="TestAppDirectPostgreSql/DslScriptsCommonConcepts/SQL/Log.Created default.sql" xml:space="preserve">
+    <value>LOCALTIMESTAMP(3)</value>
+  </data>
+  <data name="TestAppDirectPostgreSql/DslScriptsCommonConcepts/SQL/Log.UserName default.sql" xml:space="preserve">
+    <value>current_user</value>
+  </data>
+  <data name="TestAppDirectPostgreSql/DslScriptsCommonConcepts/SQL/Log.Workstation default.sql" xml:space="preserve">
+    <value>CONCAT_WS(':', inet_client_addr(), inet_client_port())</value>
+  </data>
   <data name="TestAppDirectPostgreSql/DslScriptsCommonConcepts/SQL/LogReader.sql" xml:space="preserve">
     <value>SELECT
     ID,
@@ -145,5 +233,43 @@ FROM
     Common.LogRelatedItem WITH (NOLOCK)
 
 /*Common.LogRelatedItemReader AdditionalSource*/</value>
+  </data>
+  <data name="TestAppDirectPostgreSql/DslScriptsCommonConcepts/SQL/RelatedEvents.sql" xml:space="preserve">
+    <value>SELECT
+    ID = lri.ID,
+    Created = l.Created,
+    UserName = l.UserName,
+    Workstation = l.Workstation,
+    ContextInfo = l.ContextInfo,
+    Action = l.Action,
+    TableName = l.TableName,
+    ItemId = l.ItemId,
+    Description = l.Description,
+    LogID = l.ID,
+    lri.Relation,
+    lri.TableName AS RelatedToTable,
+    lri.ItemId AS RelatedToItem
+FROM
+    Common.LogRelatedItemReader lri
+    INNER JOIN Common.LogReader l ON l.ID = lri.LogID
+
+UNION ALL
+
+SELECT
+    ID = l.ID,
+    Created = l.Created,
+    UserName = l.UserName,
+    Workstation = l.Workstation,
+    ContextInfo = l.ContextInfo,
+    Action = l.Action,
+    TableName = l.TableName,
+    ItemId = l.ItemId,
+    Description = l.Description,
+    LogID = l.ID,
+    N'' AS Relation,
+    l.TableName AS RelatedToTable,
+    l.ItemId AS RelatedToItem
+FROM
+    Common.LogReader l</value>
   </data>
 </root>
