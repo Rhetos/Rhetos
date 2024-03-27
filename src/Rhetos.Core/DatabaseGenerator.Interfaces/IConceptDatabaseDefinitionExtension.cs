@@ -24,7 +24,7 @@ using Rhetos.Dsl;
 
 namespace Rhetos.DatabaseGenerator
 {
-    [Obsolete("Use IConceptDatabaseGenerator interface instead of IConceptDatabaseDefinitionExtension.")]
+    [Obsolete("Use IConceptDatabaseGenerator<T> interface instead of IConceptDatabaseDefinitionExtension.")]
     public interface IConceptDatabaseDefinitionExtension : IConceptDatabaseDefinition
     {
         /// <summary>

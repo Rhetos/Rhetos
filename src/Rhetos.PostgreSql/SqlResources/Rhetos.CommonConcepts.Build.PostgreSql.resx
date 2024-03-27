@@ -127,11 +127,11 @@
     <value>ALTER TABLE {0} DROP CONSTRAINT {1};</value>
   </data>
   <data name="EntityDatabaseDefinition_Create" xml:space="preserve">
-    <value>CREATE TABLE {0}.{1} (ID uuid NOT NULL CONSTRAINT {2} PRIMARY KEY NONCLUSTERED CONSTRAINT {3} DEFAULT gen_random_uuid());
-EXEC Rhetos.DataMigrationApply '{0}', '{1}', 'ID';</value>
+    <value>CREATE TABLE {0}.{1} (ID uuid NOT NULL CONSTRAINT {2} PRIMARY KEY CONSTRAINT {3} DEFAULT gen_random_uuid());
+CALL Rhetos.DataMigrationApply('{0}', '{1}', 'ID');</value>
   </data>
   <data name="EntityDatabaseDefinition_Remove" xml:space="preserve">
-    <value>EXEC Rhetos.DataMigrationUse '{0}', '{1}', 'ID', NULL;
+    <value>CALL Rhetos.DataMigrationUse('{0}', '{1}', 'ID', NULL);
 DROP TABLE {0}.{1};</value>
   </data>
   <data name="EntityLoggingDefinition_Create" xml:space="preserve">
@@ -171,7 +171,7 @@ SELECT
     ItemId = COALESCE(inserted.ID, deleted.ID),
     Description = CASE WHEN inserted.ID IS NOT NULL AND deleted.ID IS NULL
         THEN ''	--When inserting, Description is not available (there is no previous state)
-        ELSE N'&lt;PREVIOUS'
+        ELSE '&lt;PREVIOUS'
 			{6}
             + ' /&gt;'
     END{9}
@@ -238,13 +238,14 @@ SET NOCOUNT ON;
 DECLARE dummy INT
 
 UPDATE
-    source
+    {3} source
 SET
     dummy = 0{11}
 FROM
-    {3} source
-    INNER JOIN inserted ON inserted.ID = source.ID
-{12};
+    inserted
+{12}
+WHERE
+    inserted.ID = source.ID;
 
 {2}
 
@@ -304,6 +305,9 @@ DROP VIEW {0}.{1};</value>
   </data>
   <data name="ModuleDatabaseDefinition_Remove" xml:space="preserve">
     <value>DROP SCHEMA {0}</value>
+  </data>
+  <data name="ModuleAuthorization_Create" xml:space="preserve">
+    <value>ALTER SCHEMA {0} OWNER TO pg_database_owner</value>
   </data>
   <data name="PropertyLoggingDefinition_GenericPropertyLogging" xml:space="preserve">
     <value>+ CASE WHEN inserted.{0} &lt;&gt; deleted.{0}
@@ -407,13 +411,13 @@ AS
     <value>DROP VIEW {0}.{1}</value>
   </data>
   <data name="BinaryPropertyDatabaseDefinition_DataType" xml:space="preserve">
-    <value>VARBINARY(MAX)</value>
+    <value>bytea</value>
   </data>
   <data name="BoolPropertyDatabaseDefinition_DataType" xml:space="preserve">
-    <value>BIT</value>
+    <value>boolean</value>
   </data>
   <data name="DatePropertyDatabaseDefinition_DataType" xml:space="preserve">
-    <value>DATE</value>
+    <value>date</value>
   </data>
   <data name="DateTimePropertyDatabaseDefinition_DataType_Legacy" xml:space="preserve">
     <value>timestamp(3)</value>
@@ -422,44 +426,35 @@ AS
     <value>timestamp({0})</value>
   </data>
   <data name="DecimalPropertyDatabaseDefinition_DataType" xml:space="preserve">
-    <value>DECIMAL(28,10)</value>
+    <value>numeric(28,10)</value>
   </data>
   <data name="GuidPropertyDatabaseDefinition_DataType" xml:space="preserve">
     <value>uuid</value>
   </data>
   <data name="IntegerPropertyDatabaseDefinition_DataType" xml:space="preserve">
-    <value>INTEGER</value>
+    <value>integer</value>
   </data>
   <data name="LongStringPropertyDatabaseDefinition_DataType" xml:space="preserve">
     <value>text</value>
   </data>
   <data name="MoneyPropertyDatabaseDefinition_DataType" xml:space="preserve">
-    <value>MONEY</value>
+    <value>money</value>
   </data>
   <data name="ShortStringPropertyDatabaseDefinition_DataType" xml:space="preserve">
     <value>varchar({0})</value>
   </data>
-  <data name="MoneyPropertyDatabaseDefinition_CheckConstraintName" xml:space="preserve">
-    <value>CK_{0}_{1}_money</value>
-  </data>
-  <data name="MoneyPropertyDatabaseDefinition_CreateCheckConstraint" xml:space="preserve">
-    <value>CONSTRAINT {0} CHECK({1} IS NULL OR {1} = ROUND({1}, 2))</value>
-  </data>
-  <data name="MoneyPropertyDatabaseDefinition_RemoveCheckConstraint" xml:space="preserve">
-    <value>ALTER TABLE {0}.{1} DROP CONSTRAINT {2};</value>
-  </data>
   <data name="PropertyDatabaseDefinition_AddColumn" xml:space="preserve">
     <value>
 ALTER TABLE {0}.{1} ADD {2} {3} {4} {5} {6};
-EXEC Rhetos.DataMigrationApply '{0}', '{1}', '{2}';
+CALL Rhetos.DataMigrationApply('{0}', '{1}', '{2}');
 {7}
     </value>
   </data>
   <data name="PropertyDatabaseDefinition_RemoveColumn" xml:space="preserve">
     <value>
 {3}
-EXEC Rhetos.DataMigrationUse '{0}', '{1}', '{2}', NULL;
-ALTER TABLE {0}.{1} DROP COLUMN [{2}]
+CALL Rhetos.DataMigrationUse('{0}', '{1}', '{2}', NULL);
+ALTER TABLE {0}.{1} DROP COLUMN [{2}];
     </value>
   </data>
   <data name="LegacyPropertySimpleDatabaseDefinition_ExtendTriggerSelectForUpdate" xml:space="preserve">
@@ -534,7 +529,7 @@ WHERE
     <value>
 {5}
 UPDATE {0}.{1} SET {2} = {4} WHERE {2} IS NULL;
-ALTER TABLE {0}.{1} ALTER COLUMN {2} {3} NOT NULL;
+ALTER TABLE {0}.{1} ALTER COLUMN {2} SET NOT NULL;
     </value>
   </data>
 </root>

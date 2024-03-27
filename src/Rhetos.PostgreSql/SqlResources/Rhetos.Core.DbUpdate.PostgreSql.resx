@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="RhetosCore_ConceptApplicationRepository_Delete" xml:space="preserve">
-    <value>DELETE FROM Rhetos.AppliedConcept WHERE ID={0}</value>
+    <value>DELETE FROM Rhetos.AppliedConcept WHERE ID={0};</value>
   </data>
   <data name="RhetosCore_ConceptApplicationRepository_DeleteAll" xml:space="preserve">
     <value>DELETE FROM Rhetos.AppliedConceptDependsOn;
@@ -126,7 +126,7 @@ DELETE FROM Rhetos.AppliedConcept;</value>
   </data>
   <data name="RhetosCore_ConceptApplicationRepository_Insert" xml:space="preserve">
     <value>INSERT INTO Rhetos.AppliedConcept (ID, InfoType, ConceptInfoKey, ImplementationType, CreateQuery, RemoveQuery)
-VALUES ({0}, {1}, {2}, {3}, {4}, {5})</value>
+VALUES ({0}, {1}, {2}, {3}, {4}, {5});</value>
   </data>
   <data name="RhetosCore_ConceptApplicationRepository_Update" xml:space="preserve">
     <value>UPDATE Rhetos.AppliedConcept
@@ -136,12 +136,12 @@ SET
   ImplementationType = {3},
   CreateQuery = {4},
   RemoveQuery = {5}
-WHERE ID = {0}</value>
+WHERE ID = {0};</value>
   </data>
   <data name="RhetosCore_ConceptApplicationRepository_InsertDependency" xml:space="preserve">
-    <value>INSERT INTO Rhetos.AppliedConceptDependsOn (DependentID, DependsOnID) VALUES ({0}, {1})</value>
+    <value>INSERT INTO Rhetos.AppliedConceptDependsOn (DependentID, DependsOnID) VALUES ({0}, {1});</value>
   </data>
   <data name="RhetosCore_ConceptApplicationRepository_DeleteDependency" xml:space="preserve">
-    <value>DELETE FROM Rhetos.AppliedConceptDependsOn WHERE DependentID = {0} AND DependsOnID = {1}</value>
+    <value>DELETE FROM Rhetos.AppliedConceptDependsOn WHERE DependentID = {0} AND DependsOnID = {1};</value>
   </data>
 </root>

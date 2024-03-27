@@ -305,6 +305,9 @@ DROP VIEW {0}.{1};</value>
   <data name="ModuleDatabaseDefinition_Remove" xml:space="preserve">
     <value>DROP SCHEMA {0}</value>
   </data>
+  <data name="ModuleAuthorization_Create" xml:space="preserve">
+    <value>ALTER AUTHORIZATION ON SCHEMA::{0} TO dbo</value>
+  </data>
   <data name="PropertyLoggingDefinition_GenericPropertyLogging" xml:space="preserve">
     <value>+ CASE WHEN inserted.{0} &lt;&gt; deleted.{0}
                     OR inserted.{0} IS NULL AND deleted.{0} IS NOT NULL

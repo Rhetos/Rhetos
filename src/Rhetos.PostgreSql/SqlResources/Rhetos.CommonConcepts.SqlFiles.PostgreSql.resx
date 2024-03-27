@@ -126,12 +126,10 @@ IF quantity &lt; 1
 DECLARE newCode INT;
 
 UPDATE
-	acc
+	Common.AutoCodeCache acc WITH (ROWLOCK, UPDLOCK, SERIALIZABLE, INDEX(IX_AutoCodeCache_Entity_Property_Grouping_Prefix))
 SET
 	minDigits = MinDigits = CASE WHEN minDigits &gt; acc.MinDigits THEN minDigits ELSE acc.MinDigits END,
 	newCode = LastCode = acc.LastCode + quantity
-FROM
-	Common.AutoCodeCache acc WITH (ROWLOCK, UPDLOCK, SERIALIZABLE, INDEX(IX_AutoCodeCache_Entity_Property_Grouping_Prefix))
 WHERE
 	acc.Entity = entity
 	AND acc.Property = property
@@ -164,12 +162,10 @@ quantity INT -- Number of generated codes (i.e., the number of inserted items). 
     <value>IF grouping IS NULL SET grouping = '';
 
 UPDATE
-	acc
+	Common.AutoCodeCache acc WITH (ROWLOCK, UPDLOCK, INDEX(IX_AutoCodeCache_Entity_Property_Grouping_Prefix))
 SET
 	MinDigits = CASE WHEN providedCode &gt; acc.LastCode THEN minDigits ELSE acc.MinDigits END,
 	LastCode = CASE WHEN providedCode &gt; acc.LastCode THEN providedCode ELSE acc.LastCode END
-FROM
-	Common.AutoCodeCache acc WITH (ROWLOCK, UPDLOCK, INDEX(IX_AutoCodeCache_Entity_Property_Grouping_Prefix))
 WHERE
 	acc.Entity = entity
 	AND acc.Property = property
@@ -217,7 +213,7 @@ providedCode INT -- Update the existing cache with the new code value, explicitl
     ItemId,
     Description
 FROM
-    Common.Log WITH (NOLOCK)
+    Common.Log FOR KEY SHARE SKIP LOCKED
 
 /*Common.LogReader AdditionalSource*/
 </value>
@@ -230,22 +226,22 @@ FROM
     ItemId,
     Relation
 FROM
-    Common.LogRelatedItem WITH (NOLOCK)
+    Common.LogRelatedItem FOR KEY SHARE SKIP LOCKED
 
 /*Common.LogRelatedItemReader AdditionalSource*/</value>
   </data>
   <data name="TestAppDirectPostgreSql/DslScriptsCommonConcepts/SQL/RelatedEvents.sql" xml:space="preserve">
     <value>SELECT
-    ID = lri.ID,
-    Created = l.Created,
-    UserName = l.UserName,
-    Workstation = l.Workstation,
-    ContextInfo = l.ContextInfo,
-    Action = l.Action,
-    TableName = l.TableName,
-    ItemId = l.ItemId,
-    Description = l.Description,
-    LogID = l.ID,
+    lri.ID AS ID,
+    l.Created AS Created,
+    l.UserName AS UserName,
+    l.Workstation AS Workstation,
+    l.ContextInfo AS ContextInfo,
+    l.Action AS Action,
+    l.TableName AS TableName,
+    l.ItemId AS ItemId,
+    l.Description AS Description,
+    l.ID AS LogID,
     lri.Relation,
     lri.TableName AS RelatedToTable,
     lri.ItemId AS RelatedToItem
@@ -256,17 +252,17 @@ FROM
 UNION ALL
 
 SELECT
-    ID = l.ID,
-    Created = l.Created,
-    UserName = l.UserName,
-    Workstation = l.Workstation,
-    ContextInfo = l.ContextInfo,
-    Action = l.Action,
-    TableName = l.TableName,
-    ItemId = l.ItemId,
-    Description = l.Description,
-    LogID = l.ID,
-    N'' AS Relation,
+    l.ID AS ID,
+    l.Created AS Created,
+    l.UserName AS UserName,
+    l.Workstation AS Workstation,
+    l.ContextInfo AS ContextInfo,
+    l.Action AS Action,
+    l.TableName AS TableName,
+    l.ItemId AS ItemId,
+    l.Description AS Description,
+    l.ID AS LogID,
+    '' AS Relation,
     l.TableName AS RelatedToTable,
     l.ItemId AS RelatedToItem
 FROM

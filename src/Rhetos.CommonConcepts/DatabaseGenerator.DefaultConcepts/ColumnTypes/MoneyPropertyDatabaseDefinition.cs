@@ -36,24 +36,27 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 
         public void GenerateCode(MoneyPropertyInfo info, ISqlCodeBuilder sql)
         {
+            if (info.DataStructure is not EntityInfo)
+                return;
+
+            if (sql.Resources.TryGet("MoneyPropertyDatabaseDefinition_CheckConstraintName") == null)
+                return;
+
             string constraintName = sql.Utility.Identifier(sql.Resources.Format("MoneyPropertyDatabaseDefinition_CheckConstraintName",
                 info.DataStructure.Name,
                 info.Name));
 
-            if (info.DataStructure is EntityInfo)
-            {
-                sql.Utility.Identifier(info.Name);
+            sql.Utility.Identifier(info.Name);
 
-                sql.CreateDatabaseStructure(PropertyDatabaseDefinition.AddColumn(sql.Utility, sql.Resources, _conceptMetadata, info,
-                    sql.Resources.Format("MoneyPropertyDatabaseDefinition_CreateCheckConstraint", constraintName, sql.Utility.Identifier(info.Name))));
+            sql.CreateDatabaseStructure(PropertyDatabaseDefinition.AddColumn(sql.Utility, sql.Resources, _conceptMetadata, info,
+                sql.Resources.Format("MoneyPropertyDatabaseDefinition_CreateCheckConstraint", constraintName, sql.Utility.Identifier(info.Name))));
 
-                sql.RemoveDatabaseStructure(sql.Resources.Format("MoneyPropertyDatabaseDefinition_RemoveCheckConstraint",
-                        sql.Utility.Identifier(info.DataStructure.Module.Name),
-                        sql.Utility.Identifier(info.DataStructure.Name),
-                        constraintName)
-                    + Environment.NewLine
-                    + PropertyDatabaseDefinition.RemoveColumn(sql.Utility, sql.Resources, _conceptMetadata, info));
-            }
+            sql.RemoveDatabaseStructure(sql.Resources.Format("MoneyPropertyDatabaseDefinition_RemoveCheckConstraint",
+                    sql.Utility.Identifier(info.DataStructure.Module.Name),
+                    sql.Utility.Identifier(info.DataStructure.Name),
+                    constraintName)
+                + Environment.NewLine
+                + PropertyDatabaseDefinition.RemoveColumn(sql.Utility, sql.Resources, _conceptMetadata, info));
         }
     }
 }

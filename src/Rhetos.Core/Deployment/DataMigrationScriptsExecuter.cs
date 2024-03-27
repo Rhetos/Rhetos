@@ -145,7 +145,8 @@ namespace Rhetos.Deployment
 
         private IEnumerable<SqlBatchScript> RemoveScriptAndMetadata(DataMigrationScript script)
         {
-            string removeMetadata = $"UPDATE Rhetos.DataMigrationScript SET Active = 0 WHERE Tag = {_sqlUtility.QuoteText(script.Tag)};";
+			// String parameter '0' instead of int 0 support more different db providers.
+            string removeMetadata = $"UPDATE Rhetos.DataMigrationScript SET Active = '0' WHERE Tag = {_sqlUtility.QuoteText(script.Tag)};";
 
             if (!string.IsNullOrEmpty(script.Down))
                 yield return new SqlBatchScript { Sql = script.Down, IsBatch = true, Name = script.Path };
@@ -155,8 +156,8 @@ namespace Rhetos.Deployment
         private IEnumerable<SqlBatchScript> AddScriptAndMetadata(DataMigrationScript script)
         {
             string addMetadata = string.Format(
-                "DELETE FROM Rhetos.DataMigrationScript WHERE Active = 0 AND Tag = {0};\r\n"
-                + "INSERT INTO Rhetos.DataMigrationScript (Tag, Path, Content, Down, Active) VALUES ({0}, {1}, {2}, {3}, 1);",
+                "DELETE FROM Rhetos.DataMigrationScript WHERE Active = '0' AND Tag = {0};\r\n"
+                + "INSERT INTO Rhetos.DataMigrationScript (Tag, Path, Content, Down, Active) VALUES ({0}, {1}, {2}, {3}, '1');",
                 _sqlUtility.QuoteText(script.Tag),
                 _sqlUtility.QuoteText(script.Path),
                 _sqlUtility.QuoteText(script.Content),
@@ -222,7 +223,7 @@ namespace Rhetos.Deployment
             var scripts = new List<DataMigrationScript>();
             _sqlExecuter.ExecuteReader(
                 // PersistenceTransactionOptions.UseDatabaseTransaction is disable on dbupdate.
-                "SELECT Tag, Path, Content, Down FROM Rhetos.DataMigrationScript WHERE Active = 1 ORDER BY OrderExecuted",
+                "SELECT Tag, Path, Content, Down FROM Rhetos.DataMigrationScript WHERE Active = '1' ORDER BY OrderExecuted",
                 reader => scripts.Add(new DataMigrationScript
                 {
                     Tag = reader.GetString(0),

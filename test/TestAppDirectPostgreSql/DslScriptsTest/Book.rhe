@@ -49,7 +49,7 @@
     SqlQueryable BookDescription
         "SELECT
             b.ID,
-            Description = b.Title + ISNULL(', ' + p.Name, '')
+            b.Title || COALESCE(', ' || p.Name, '') AS Description
         FROM
             Bookstore.Book b
             LEFT JOIN Bookstore.Person p ON p.ID = b.AuthorID"

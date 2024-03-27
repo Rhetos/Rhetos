@@ -202,11 +202,11 @@ namespace Rhetos.Deployment
         public readonly string TableName;
         public readonly string ColumnName;
 
-        public ColumnInfo(string schemaName, string tableName, string columName)
+        public ColumnInfo(string schemaName, string tableName, string columnName)
         {
             SchemaName = schemaName;
             TableName = tableName;
-            ColumnName = columName;
+            ColumnName = columnName;
 
             Key = SchemaName + "." + TableName + "." + ColumnName;
             KeyTable = SchemaName + "." + TableName;

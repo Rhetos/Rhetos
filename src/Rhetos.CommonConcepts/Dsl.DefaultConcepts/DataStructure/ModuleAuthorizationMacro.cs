@@ -22,17 +22,23 @@ using System.ComponentModel.Composition;
 
 namespace Rhetos.Dsl.DefaultConcepts
 {
-    /// <summary>
-    /// NOTE:
+    /// <remarks>
     /// This class applies 'dbo' authorization to database schema by creating a separate ALTER AUTHORIZATION query,
     /// instead of adding the AUTHORIZATION option to the CREATE SCHEMA query, in order to avoid dropping
     /// and recreating all database objects on deployment when upgrading existing applications.
     /// The upgrade could be handled efficiently by a data-migration script that alters the scheme authorization
     /// and Rhetos.AppliedConcepts, but it wouldn't support optimized downgrade to a previous version of CommonConcepts package.
-    /// </summary>
+    /// </remarks>
     [Export(typeof(IConceptMacro))]
     public class ModuleAuthorizationMacro : IConceptMacro<ModuleInfo>
     {
+        private readonly ISqlResources _sqlResources;
+
+        public ModuleAuthorizationMacro(ISqlResources sqlResources)
+        {
+            _sqlResources = sqlResources;
+        }
+
         public IEnumerable<IConceptInfo> CreateNewConcepts(ModuleInfo conceptInfo, IDslModel existingConcepts)
         {
             return new[]
@@ -41,7 +47,7 @@ namespace Rhetos.Dsl.DefaultConcepts
                 {
                     Module = conceptInfo,
                     Name = "SchemaAuthorization",
-                    CreateSql = $"ALTER AUTHORIZATION ON SCHEMA::{conceptInfo.Name} TO dbo",
+                    CreateSql = _sqlResources.Format("ModuleAuthorization_Create", conceptInfo.Name),
                     RemoveSql = ""
                 }
             };

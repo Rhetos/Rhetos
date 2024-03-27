@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS Rhetos.AppliedConcept
     ID uuid NOT NULL CONSTRAINT PK_AppliedConcept PRIMARY KEY,
     InfoType text NOT NULL,
     ImplementationType text NOT NULL,
-    LastModified timestamp(3) NOT NULL CONSTRAINT DF_AppliedConcept_LastModified DEFAULT (LOCALTIMESTAMP(3)),
+    LastModified timestamp(3) NOT NULL CONSTRAINT DF_AppliedConcept_LastModified DEFAULT LOCALTIMESTAMP(3),
     AppliedBy varchar(256) NULL CONSTRAINT DF_AppliedConcept_AppliedBy DEFAULT current_user,
     Client varchar(256) NULL CONSTRAINT DF_AppliedConcept_Client DEFAULT CONCAT_WS(':', inet_client_addr(), inet_client_port()),
     Server varchar(256) NULL CONSTRAINT DF_AppliedConcept_Server DEFAULT inet_server_addr(),
@@ -23,16 +23,16 @@ CREATE TABLE IF NOT EXISTS Rhetos.AppliedConcept
 
 CREATE TABLE IF NOT EXISTS Rhetos.DataMigrationScript
 (
-    ID uuid NOT NULL CONSTRAINT PK_DataMigrationScript PRIMARY KEY CONSTRAINT DF_DataMigrationScript_ID DEFAULT (gen_random_uuid()),
+    ID uuid NOT NULL CONSTRAINT PK_DataMigrationScript PRIMARY KEY CONSTRAINT DF_DataMigrationScript_ID DEFAULT gen_random_uuid(),
     Tag varchar(256) NOT NULL,
     Path varchar(256) NOT NULL,
     Content text NOT NULL,
-    DateExecuted timestamp(3) NOT NULL CONSTRAINT DF_DataMigrationScript_LastModified DEFAULT (LOCALTIMESTAMP(3)),
+    DateExecuted timestamp(3) NOT NULL CONSTRAINT DF_DataMigrationScript_LastModified DEFAULT LOCALTIMESTAMP(3),
     ExecutedBy varchar(256) NULL CONSTRAINT DF_DataMigrationScript_AppliedBy DEFAULT current_user,
     Client varchar(256) NULL CONSTRAINT DF_DataMigrationScript_Client DEFAULT CONCAT_WS(':', inet_client_addr(), inet_client_port()),
     Server varchar(256) NULL CONSTRAINT DF_DataMigrationScript_Server DEFAULT inet_server_addr(),
     OrderExecuted serial NOT NULL,
-    Active bit NOT NULL,
+    Active boolean NOT NULL,
     Down text
 );
 
@@ -65,18 +65,13 @@ CREATE OR REPLACE PROCEDURE Rhetos.DataMigrationApply
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    MigrationSchemaName varchar := '_' || SchemaName;
+    MigrationSchemaName varchar := '_' || lower(SchemaName);
     ColumnType varchar;
     ExistingMigrationColumnType varchar;
 BEGIN
-    -- Basic validation
-    IF quote_ident(lower(SchemaName)) <> lower(SchemaName) THEN
-        RAISE EXCEPTION 'Invalid character in SchemaName "%"', SchemaName;
-    ELSIF quote_ident(lower(TableName)) <> lower(TableName) THEN
-        RAISE EXCEPTION 'Invalid character in TableName "%"', TableName;
-    ELSIF quote_ident(lower(ColumnName)) <> lower(ColumnName) THEN
-        RAISE EXCEPTION 'Invalid character in ColumnName "%"', ColumnName;
-    END IF;
+    SchemaName := lower(SchemaName);
+    TableName := lower(TableName);
+    ColumnName := lower(ColumnName);
 
     -- Get column types
     ColumnType := Rhetos.GetColumnType(SchemaName, TableName, ColumnName);
@@ -87,33 +82,33 @@ BEGIN
         RAISE NOTICE 'Column %.%.% does not exist. It will be safely ignored.', SchemaName, TableName, ColumnName;
     ELSIF ExistingMigrationColumnType IS NULL THEN
         RAISE NOTICE 'Data-migration column %.%.% does not exist. It will be safely ignored.', MigrationSchemaName, TableName, ColumnName;
-    ELSIF lower(ColumnName) = 'id' THEN
+    ELSIF ColumnName = 'id' THEN
         EXECUTE format('
-            DELETE FROM %s.%s
-            WHERE ID NOT IN (SELECT ID FROM %s.%s)', SchemaName, TableName, MigrationSchemaName, TableName);
+            DELETE FROM %I.%I
+            WHERE ID NOT IN (SELECT ID FROM %I.%I)', SchemaName, TableName, MigrationSchemaName, TableName);
         
         EXECUTE format('
-            INSERT INTO %s.%s (ID)
+            INSERT INTO %I.%I (ID)
             SELECT ID
-            FROM %s.%s
-            WHERE ID NOT IN (SELECT ID FROM %s.%s)', SchemaName, TableName, MigrationSchemaName, TableName, SchemaName, TableName);
+            FROM %I.%I
+            WHERE ID NOT IN (SELECT ID FROM %I.%I)', SchemaName, TableName, MigrationSchemaName, TableName, SchemaName, TableName);
     ELSE
         -- Non-ID column logic
         IF ColumnType <> ExistingMigrationColumnType THEN
             RAISE NOTICE 'Automatically changing data-migration column type from % to % for column %.%.%', ExistingMigrationColumnType, ColumnType, SchemaName, TableName, ColumnName;
-            EXECUTE format('ALTER TABLE %s.%s ALTER COLUMN %s TYPE %s', MigrationSchemaName, TableName, ColumnName, ColumnType);
+            EXECUTE format('ALTER TABLE %I.%I ALTER COLUMN %I TYPE %s USING %I::%s', MigrationSchemaName, TableName, ColumnName, ColumnType, ColumnName, ColumnType);
         END IF;
 
         EXECUTE format('
             UPDATE
-                %s.%s original
+                %I.%I original
             SET
-                %s = migration.%s
+                %I = migration.%I
             FROM
-                %s.%s migration
+                %I.%I migration
             WHERE
                 migration.ID = original.ID
-                AND original.%s IS DISTINCT FROM migration.%s', SchemaName, TableName, ColumnName, ColumnName, MigrationSchemaName, TableName, ColumnName, ColumnName);
+                AND original.%I IS DISTINCT FROM migration.%I', SchemaName, TableName, ColumnName, ColumnName, MigrationSchemaName, TableName, ColumnName, ColumnName);
     END IF;
 END;
 $$;
@@ -164,25 +159,23 @@ CREATE OR REPLACE PROCEDURE Rhetos.DataMigrationApplyMultiple
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    MigrationSchemaName varchar := '_' || SchemaName;
+    MigrationSchemaName varchar := '_' || lower(SchemaName);
     sqlDelete text;
     sqlUpdate text;
     sqlInsert text;
     columnInfo RECORD;
 BEGIN
 
-    IF quote_ident(lower(SchemaName)) <> lower(SchemaName) THEN
-        RAISE EXCEPTION 'Invalid character in SchemaName "%"', SchemaName;
-    ELSIF quote_ident(lower(TableName)) <> lower(TableName) THEN
-        RAISE EXCEPTION 'Invalid character in TableName "%"', TableName;
-    END IF;
-    
+    SchemaName := lower(SchemaName);
+    TableName := lower(TableName);
+    ColumnNames := lower(ColumnNames);
+
     -- Rhetos.DataMigrationApplyMultiple will not automatically change the column type (unlike Rhetos.DataMigrationApply).
     -- That is good enough for use in data migration scripts, but cannot be used in DatabaseGenerator plugins.
     
-    IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = lower(SchemaName) AND table_name = lower(TableName) AND table_type = 'BASE TABLE') THEN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = SchemaName AND table_name = TableName AND table_type = 'BASE TABLE') THEN
         RAISE NOTICE 'Nothing to migrate. Table "%"."%" does not exist. It is expected to be created later during this upgrade.', SchemaName, TableName;
-    ELSIF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = lower(MigrationSchemaName) AND table_name = lower(TableName)) THEN
+    ELSIF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = MigrationSchemaName AND table_name = TableName) THEN
         RAISE NOTICE 'Nothing to migrate. Data-migration table "%"."%" is not prepared. Execute "Rhetos.DataMigrationUse" to prepare the migration table.', MigrationSchemaName, TableName;
     ELSE
         -- Parse column names:
@@ -194,9 +187,9 @@ BEGIN
         SELECT
             name,
             CASE
-                WHEN lower(name) NOT IN (SELECT column_name FROM information_schema.columns WHERE table_schema = lower(SchemaName) AND table_name = lower(TableName))
+                WHEN name NOT IN (SELECT column_name FROM information_schema.columns WHERE table_schema = SchemaName AND table_name = TableName)
                     THEN SchemaName
-                WHEN lower(name) NOT IN (SELECT column_name FROM information_schema.columns WHERE table_schema = lower(MigrationSchemaName) AND table_name = lower(TableName))
+                WHEN name NOT IN (SELECT column_name FROM information_schema.columns WHERE table_schema = MigrationSchemaName AND table_name = TableName)
                     THEN MigrationSchemaName
             END
         FROM
@@ -208,12 +201,6 @@ BEGIN
 
         -- Remove columns that are not prepared for migration:
 
-        FOR columnInfo IN SELECT columnName, missingInSchema FROM columns LOOP
-            IF quote_ident(lower(columnInfo.columnName)) <> lower(columnInfo.columnName) THEN
-                RAISE EXCEPTION 'Invalid character in column name "%"', columnInfo.columnName;
-            END IF;
-        END LOOP;
-
         FOR columnInfo IN SELECT columnName, missingInSchema FROM columns WHERE missingInSchema IS NOT NULL LOOP
             RAISE NOTICE 'Column %.%.% does not exist. It will be safely ignored.', columnInfo.missingInSchema, TableName, columnInfo.columnName;
         END LOOP;
@@ -224,20 +211,20 @@ BEGIN
 
         -- Migrate data:
 
-        sqlDelete := format('DELETE FROM %s.%s WHERE ID NOT IN (SELECT ID FROM %s.%s)', SchemaName, TableName, MigrationSchemaName, TableName);
+        sqlDelete := format('DELETE FROM %I.%I WHERE ID NOT IN (SELECT ID FROM %I.%I)', SchemaName, TableName, MigrationSchemaName, TableName);
         --TODO: REMOVE DEBUG INFO.
         RAISE NOTICE '%', sqlDelete;
         EXECUTE sqlDelete;
 
         IF EXISTS (SELECT 1 FROM columns) THEN
-            sqlUpdate := format('UPDATE %s.%s original SET ', SchemaName, TableName);
+            sqlUpdate := format('UPDATE %I.%I original SET ', SchemaName, TableName);
             FOR columnInfo IN SELECT columnName FROM columns LOOP
-                sqlUpdate := sqlUpdate || format('%s = migration.%s, ', columnInfo.columnName, columnInfo.columnName);
+                sqlUpdate := sqlUpdate || format('%I = migration.%I, ', columnInfo.columnName, columnInfo.columnName);
             END LOOP;
             sqlUpdate := rtrim(sqlUpdate, ', ');
-            sqlUpdate := sqlUpdate || format(' FROM %s.%s migration WHERE original.ID = migration.ID AND (', MigrationSchemaName, TableName);
+            sqlUpdate := sqlUpdate || format(' FROM %I.%I migration WHERE original.ID = migration.ID AND (', MigrationSchemaName, TableName);
             FOR columnInfo IN SELECT columnName FROM columns LOOP
-                sqlUpdate := sqlUpdate || format('original.%1$s IS DISTINCT FROM migration.%1$s OR ',
+                sqlUpdate := sqlUpdate || format('original.%1$I IS DISTINCT FROM migration.%1$I OR ',
                     columnInfo.columnName);
             END LOOP;
             sqlUpdate := rtrim(sqlUpdate, ' OR ') || ')';
@@ -246,15 +233,15 @@ BEGIN
             EXECUTE sqlUpdate;
         END IF;
 
-        sqlInsert := format('INSERT INTO %s.%s (ID', SchemaName, TableName);
+        sqlInsert := format('INSERT INTO %I.%I (ID', SchemaName, TableName);
         FOR columnInfo IN SELECT columnName FROM columns LOOP
-            sqlInsert := sqlInsert || ', ' || columnInfo.columnName;
+            sqlInsert := sqlInsert || ', ' || quote_ident(columnInfo.columnName);
         END LOOP;
         sqlInsert := sqlInsert || ') SELECT ID';
         FOR columnInfo IN SELECT columnName FROM columns LOOP
-            sqlInsert := sqlInsert || ', ' || columnInfo.columnName;
+            sqlInsert := sqlInsert || ', ' || quote_ident(columnInfo.columnName);
         END LOOP;
-        sqlInsert := sqlInsert || format(' FROM %s.%s WHERE ID NOT IN (SELECT ID FROM %s.%s)', MigrationSchemaName, TableName, SchemaName, TableName);
+        sqlInsert := sqlInsert || format(' FROM %I.%I WHERE ID NOT IN (SELECT ID FROM %I.%I)', MigrationSchemaName, TableName, SchemaName, TableName);
         --TODO: REMOVE DEBUG INFO.
         RAISE NOTICE '%', sqlInsert;
         EXECUTE sqlInsert;
@@ -311,14 +298,8 @@ BEGIN
     OriginalSchemaName := lower(OriginalSchemaName);
     TableName := lower(TableName);
 
-    IF quote_ident(OriginalSchemaName) <> OriginalSchemaName THEN
-        RAISE EXCEPTION 'Invalid character in OriginalSchemaName "%"', OriginalSchemaName;
-    ELSIF quote_ident(TableName) <> TableName THEN
-        RAISE EXCEPTION 'Invalid character in TableName "%"', TableName;
-    END IF;
-
     IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = OriginalSchemaName AND TABLE_NAME = TableName AND COLUMN_NAME = 'id')
-       AND EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '_' || OriginalSchemaName AND TABLE_NAME = TableName AND COLUMN_NAME = 'id')
+       AND EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = MigrationSchemaName AND TABLE_NAME = TableName AND COLUMN_NAME = 'id')
        AND NOT EXISTS(SELECT * FROM Rhetos.DataMigrationFreshRows f WHERE f.OriginalSchemaName = $1 AND f.TableName = $2)
     THEN
         
@@ -381,7 +362,7 @@ WHERE orig.ID = mig.ID;
         IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = OriginalSchemaName AND TABLE_NAME = TableName AND COLUMN_NAME = 'id') THEN
             RAISE NOTICE 'DataMigrationInitializeRows skipped - Original table ID does not exist.';
         END IF;
-        IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '_' || OriginalSchemaName AND TABLE_NAME = TableName AND COLUMN_NAME = 'id') THEN
+        IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = MigrationSchemaName AND TABLE_NAME = TableName AND COLUMN_NAME = 'id') THEN
             RAISE NOTICE 'DataMigrationInitializeRows skipped - Migration table ID does not exist.';
         END IF;
         IF EXISTS(SELECT * FROM Rhetos.DataMigrationFreshRows f WHERE f.OriginalSchemaName = $1 AND f.TableName = $2) THEN
@@ -409,13 +390,7 @@ BEGIN
     TableName := lower(TableName);
     ColumnName := lower(ColumnName);
 
-    IF quote_ident(SchemaName) <> SchemaName THEN
-        RAISE EXCEPTION 'Invalid character in SchemaName "%"', SchemaName;
-    ELSIF quote_ident(TableName) <> TableName THEN
-        RAISE EXCEPTION 'Invalid character in TableName "%"', TableName;
-    ELSIF quote_ident(ColumnName) <> ColumnName THEN
-        RAISE EXCEPTION 'Invalid character in ColumnName "%"', ColumnName;
-    ELSIF NOT (ColumnType ~ '^[\w,() ]+$') THEN
+    IF NOT (ColumnType ~ '^[\w,() ]+$') THEN
         RAISE EXCEPTION 'Invalid character in ColumnType "%"', ColumnType;
     END IF;
 
@@ -453,7 +428,7 @@ BEGIN
     ELSE
     
         IF ColumnType IS NULL AND OriginalType IS NULL THEN
-            RAISE EXCEPTION 'The ColumnType parameter must be provided when calling DataMigrationUse. There is no column %s.%s.%s.', SchemaName, TableName, ColumnName;
+            RAISE EXCEPTION 'The ColumnType parameter must be provided when calling DataMigrationUse. There is no column %.%.%.', SchemaName, TableName, ColumnName;
         END IF;
 
         RAISE NOTICE 'DEBUG: CALL Rhetos.DataMigrationUse ID before %', ColumnName;

@@ -69,23 +69,24 @@ namespace Rhetos.PostgreSql
 
             // See PostgresException.GetMessage() for the standard message format. It contains SqlState, MessageText, Position, Detail.
             // Instead of the standard Message that uses NewLine, here we try to put all in a single line, to improve integration with Visual Studio.
-            Add(pgException.SqlState, pgException.MessageText ?? pgException.Message);
+            Add(pgException.Severity + " " + pgException.SqlState, pgException.MessageText ?? pgException.Message);
             Add("POSITION", pgException.Position == 0 ? null : pgException.Position.ToString());
             Add("DETAIL", pgException.Detail);
             Add("HINT", pgException.Hint);
-            Add("ROUTINE", pgException.Routine);
-            Add("LINE", pgException.Line);
             report.Append('.');
 
             return report.ToString();
         }
 
+        /// <summary>
+        /// HACK: PostgreSQL does not have the transaction count, but Rhetos.PostgreSql uses the existing interface to check for transaction ID instead.
+        /// </summary>
         public int GetTransactionCount()
         {
             using var command = _persistenceTransaction.Connection.CreateCommand();
             command.Transaction = _persistenceTransaction.Transaction;
-            command.CommandText = "SELECT @TRANCOUNT";
-            return (int)command.ExecuteScalar();
+            command.CommandText = "select pg_current_xact_id()";
+            return (int)(ulong)command.ExecuteScalar();
         }
 
         public void GetDbLock(IEnumerable<string> resources, bool wait = true)

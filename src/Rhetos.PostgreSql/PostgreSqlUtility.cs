@@ -18,7 +18,6 @@
 */
 
 using Npgsql;
-using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Utilities;
 using System.Data.Common;
 using System.Reflection;
@@ -337,13 +336,13 @@ namespace Rhetos.PostgreSql
         public string QuoteText(string value)
         {
             return value != null
-                ? "N'" + value.Replace("'", "''") + "'"
+                ? "'" + value.Replace("'", "''") + "'"
                 : "NULL";
         }
 
         public string QuoteIdentifier(string sqlIdentifier)
         {
-            return "[" + sqlIdentifier.Replace("]", "]]") + "]";
+            return "\"" + sqlIdentifier.Replace("\"", "\"\"") + "\"";
         }
 
         public string GetShortName(string fullObjectName)
@@ -418,7 +417,7 @@ namespace Rhetos.PostgreSql
 
         public string BoolToString(bool? b)
         {
-            return b switch { null => null, true => "1", false => "0" };
+            return b switch { null => null, true => "true", false => "false" };
         }
 
         /// <summary>

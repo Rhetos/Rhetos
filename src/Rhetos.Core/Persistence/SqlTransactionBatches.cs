@@ -126,7 +126,8 @@ namespace Rhetos.Utilities
                 var scriptsWithName = sqlBatch.Scripts
                     .Select(script => string.IsNullOrEmpty(script.Name)
                         ? script.Sql
-                        : "--Name: " + script.Name.Replace("\r", " ").Replace("\n", " ") + "\r\n" + script.Sql);
+                        : "--Name: " + script.Name.Replace("\r", " ").Replace("\n", " ").Trim() + "\r\n" + script.Sql)
+                    .ToList();
 
                 Execute(
                     (ISqlExecuter sqlExecuter) => sqlExecuter.ExecuteSql(scriptsWithName, initializeProgress, reportProgress),
@@ -144,8 +145,11 @@ namespace Rhetos.Utilities
                 using (var scope = CreateUnitOfWorkScope(useTransaction))
                 {
                     var scopeSqlExecuter = scope.Resolve<ISqlExecuter>();
+                    // HACK: PostgreSQL does not have the transaction count, but Rhetos.PostgreSql uses the existing interface to check for transaction ID instead,
+                    // for the same purpose of checking if the transaction have been closed or reopened by an SQL script, or other undetected errors.
+                    var tranId = scopeSqlExecuter.GetTransactionCount();
                     sqlExecuterAction.Invoke(scopeSqlExecuter);
-                    CheckTransactionCount(scopeSqlExecuter, useTransaction ? 1 : 0, errorContext);
+                    CheckTransactionId(scopeSqlExecuter, tranId, errorContext);
                     scope.CommitAndClose();
                 }
             }
@@ -167,13 +171,13 @@ namespace Rhetos.Utilities
             });
         }
 
-        private void CheckTransactionCount(ISqlExecuter scopeSqlExecuter, int expectedTranCount, IList<SqlBatchScript> errorContext)
+        private void CheckTransactionId(ISqlExecuter scopeSqlExecuter, int expectedTranId, IList<SqlBatchScript> errorContext)
         {
-            var tranCount = scopeSqlExecuter.GetTransactionCount();
-            if (tranCount != expectedTranCount)
+            var tranId = scopeSqlExecuter.GetTransactionCount(); // HACK: PostgreSQL does not have the transaction count, but Rhetos.PostgreSql uses the existing interface to check for transaction ID instead.
+            if (tranId != expectedTranId)
             {
                 string msg = "Database transaction state has been unexpectedly modified in SQL commands."
-                    + $" Transaction count is {tranCount}, expected value is {expectedTranCount}.";
+                    + $" Transaction ID is {tranId}, expected value is {expectedTranId}.";
 
                 if (errorContext != null)
                 {
