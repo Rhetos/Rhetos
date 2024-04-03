@@ -36,11 +36,12 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
-            return new IConceptInfo[]
-            {
+            return
+            [
                 new SystemRequiredInfo { Property = Property },
                 CreateUniqueConstraint(),
-            };
+                new RepositoryUsesInfo { DataStructure = Property.DataStructure, PropertyName = "_sqlResources", PropertyType = typeof(ISqlResources).ToString() }
+            ];
         }
 
         virtual protected IConceptInfo CreateUniqueConstraint()

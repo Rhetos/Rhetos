@@ -198,6 +198,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public static void UpdateCodesWithCache<TEntity>(
             ISqlExecuter sqlExecuter,
             ISqlUtility sqlUtility,
+            ISqlResources sqlResources,
             string entityName,
             string propertyName,
             IList<AutoCodeItem<TEntity, string>> autoCodeItems,
@@ -214,7 +215,7 @@ namespace Rhetos.Dom.DefaultConcepts
             {
                 if (autoCodeGroup.MaxProvidedCode != null)
                 {
-                    string sql = string.Format("EXEC Common.AutoCodeCacheUpdate {0}, {1}, {2}, {3}, {4}, {5}",
+                    string sql = sqlResources.Format("AutoCodeCacheUpdate_call",
                         sqlUtility.QuoteText(entityName),
                         sqlUtility.QuoteText(propertyName),
                         sqlUtility.QuoteText(autoCodeGroup.GroupValue),
@@ -227,7 +228,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
                 if (autoCodeGroup.ItemsToGenerateCode.Count > 0)
                 {
-                    string sql = string.Format("EXEC Common.AutoCodeCacheGetNext {0}, {1}, {2}, {3}, {4}, {5}",
+                    string sql = sqlResources.Format("AutoCodeCacheGetNext_call",
                         sqlUtility.QuoteText(entityName),
                         sqlUtility.QuoteText(propertyName),
                         sqlUtility.QuoteText(autoCodeGroup.GroupValue),
@@ -235,15 +236,15 @@ namespace Rhetos.Dom.DefaultConcepts
                         autoCodeGroup.MinDigits,
                         autoCodeGroup.ItemsToGenerateCode.Count);
 
-                    int minDigits = 1;
-                    int lastCode = autoCodeGroup.ItemsToGenerateCode.Count;
+                    int? minDigits = null;
+                    int? lastGeneratedCode = null;
                     sqlExecuter.ExecuteReader(sql, reader =>
                     {
                         minDigits = reader.GetInt32(0);
-                        lastCode = reader.GetInt32(1);
+                        lastGeneratedCode = reader.GetInt32(1);
                     });
 
-                    SetNewCodes(autoCodeGroup, lastCode, minDigits, setCode);
+                    SetNewCodes(autoCodeGroup, lastGeneratedCode.Value, Math.Max(minDigits.Value, autoCodeGroup.MinDigits), setCode);
                 }
             }
         }

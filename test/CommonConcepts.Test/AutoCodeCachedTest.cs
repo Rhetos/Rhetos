@@ -22,6 +22,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Dom.DefaultConcepts;
+using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
@@ -34,6 +35,61 @@ namespace CommonConcepts.Test
     [TestClass]
     public class AutoCodeCachedTest
     {
+        [TestMethod]
+        public void AutoCodeCacheGetNext()
+        {
+            using var scope = TestScope.Create();
+            var sqlExecuter = scope.Resolve<ISqlExecuter>();
+            var sqlResources = scope.Resolve<ISqlResources>();
+
+            string CallGetNext(int minDigits, int quantity)
+            {
+                string sql = sqlResources.Format("AutoCodeCacheGetNext_call",
+                    "TestEntity", "TestProperty", "TestGroup", "TestPrefix" + Guid.NewGuid().ToString(),
+                    minDigits, quantity);
+
+                List<(int minDigits, int lastCode)> result = [];
+
+                sqlExecuter.ExecuteReader(sql, reader =>
+                    result.Add((minDigits: reader.GetInt32(0), lastCode: reader.GetInt32(1))));
+
+                return TestUtility.DumpSorted(result);
+            }
+
+            Assert.AreEqual("minDigits: 3, lastCode: 10", CallGetNext(3, 10));
+            Assert.AreEqual("minDigits: 3, lastCode: 20", CallGetNext(2, 10));
+            Assert.AreEqual("minDigits: 4, lastCode: 30", CallGetNext(4, 10));
+        }
+
+        [TestMethod]
+        public void AutoCodeCacheUpdate()
+        {
+            using var scope = TestScope.Create();
+            var sqlExecuter = scope.Resolve<ISqlExecuter>();
+            var sqlResources = scope.Resolve<ISqlResources>();
+
+            string CallGetUpdate(int minDigits, int providedCode)
+            {
+                string testPrefix = "TestPrefix" + Guid.NewGuid().ToString();
+                string sql = sqlResources.Format("AutoCodeCacheUpdate_call",
+                    "TestEntity", "TestProperty", "TestGroup", testPrefix,
+                    minDigits, providedCode);
+
+                sqlExecuter.ExecuteSql(sql);
+
+                List<(int minDigits, int lastCode)> result = [];
+
+                sqlExecuter.ExecuteReaderInterpolated($"SELECT MinDigits, LastCode FROM Common.AutoCodeCache where Prefix = {testPrefix}",
+                    reader => result.Add((minDigits: reader.GetInt32(0), lastCode: reader.GetInt32(1))));
+
+                return TestUtility.DumpSorted(result);
+            }
+
+            Assert.AreEqual("minDigits: 3, lastCode: 102", CallGetUpdate(3, 102));
+            Assert.AreEqual("minDigits: 3, lastCode: 102", CallGetUpdate(4, 101));
+            Assert.AreEqual("minDigits: 5, lastCode: 103", CallGetUpdate(5, 103));
+        }
+
         private static void DeleteOldData(IUnitOfWorkScope scope)
         {
             scope.Resolve<ISqlExecuter>().ExecuteSql(new[]

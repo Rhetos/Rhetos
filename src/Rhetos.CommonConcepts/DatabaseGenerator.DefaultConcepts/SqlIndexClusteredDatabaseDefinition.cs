@@ -17,44 +17,41 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using Rhetos.Utilities;
 using Rhetos.Compiler;
-using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
-using Rhetos.Extensibility;
+using Rhetos.Utilities;
+using System.ComponentModel.Composition;
 
 namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
-#pragma warning disable CS0618 // Type or member is obsolete
-    [Export(typeof(IConceptDatabaseDefinition))]
-    [ExportMetadata(MefProvider.Implements, typeof(SqlIndexClusteredInfo))]
-    public class SqlIndexClusteredDatabaseDefinition : IConceptDatabaseDefinitionExtension
-#pragma warning restore CS0618 // Type or member is obsolete
+    [Export(typeof(IConceptDatabaseGenerator))]
+    public class SqlIndexClusteredDatabaseDefinition : IConceptDatabaseGenerator<SqlIndexClusteredInfo>
     {
-        public string CreateDatabaseStructure(IConceptInfo conceptInfo)
+        public void GenerateCode(SqlIndexClusteredInfo info, ISqlCodeBuilder sql)
         {
-            return null;
-        }
+            if (!info.SqlIndex.SqlImplementation())
+                return;
 
-        public string RemoveDatabaseStructure(IConceptInfo conceptInfo)
-        {
-            return null;
-        }
+            string clusteredOptionSnippet = sql.Resources.TryGet("SqlIndexClusteredDatabaseDefinition_Options1");
+            if (!string.IsNullOrEmpty(clusteredOptionSnippet))
+                sql.CodeBuilder.InsertCode("CLUSTERED ", SqlIndexMultipleDatabaseDefinition.Options1Tag, info.SqlIndex);
 
-        public void ExtendDatabaseStructure(IConceptInfo conceptInfo, ICodeBuilder codeBuilder, out IEnumerable<Tuple<IConceptInfo, IConceptInfo>> createdDependencies)
-        {
-            var info = (SqlIndexClusteredInfo)conceptInfo;
+            string clusteredStatementSnippet = sql.Resources.TryGet("SqlIndexClusteredDatabaseDefinition_Create");
+            if (!string.IsNullOrEmpty(clusteredStatementSnippet))
+            {
+                string constraintName = new SqlIndexMultipleDatabaseDefinition(sql.Resources, sql.Utility)
+                    .ConstraintName(info.SqlIndex);
 
-            if (info.SqlIndex.SqlImplementation())
-                codeBuilder.InsertCode("CLUSTERED ", SqlIndexMultipleDatabaseDefinition.Options1Tag, info.SqlIndex);
+                sql.CreateDatabaseStructure(sql.Resources.Format("SqlIndexClusteredDatabaseDefinition_Create",
+                    sql.Utility.Identifier(info.SqlIndex.DataStructure.Module.Name),
+                    sql.Utility.Identifier(info.SqlIndex.DataStructure.Name),
+                    constraintName));
 
-            createdDependencies = null;
+                sql.RemoveDatabaseStructure(sql.Resources.Format("SqlIndexClusteredDatabaseDefinition_Remove",
+                    sql.Utility.Identifier(info.SqlIndex.DataStructure.Module.Name),
+                    sql.Utility.Identifier(info.SqlIndex.DataStructure.Name),
+                    constraintName));
+            }
         }
     }
 }

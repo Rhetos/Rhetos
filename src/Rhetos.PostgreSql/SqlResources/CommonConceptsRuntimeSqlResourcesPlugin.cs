@@ -19,17 +19,15 @@
 
 using Rhetos.SqlResources;
 using Rhetos.Utilities;
-using System.Collections.Generic;
-using System.IO;
 
 namespace Rhetos.PostgreSql.SqlResources
 {
-    public class CommonConceptsSqlResourcesPlugin : ISqlResourcesPlugin
+    public class CommonConceptsRuntimeSqlResourcesPlugin : ISqlResourcesPlugin
     {
 
         private readonly string _databaseLanguage;
 
-        public CommonConceptsSqlResourcesPlugin(DatabaseSettings databaseSettings)
+        public CommonConceptsRuntimeSqlResourcesPlugin(DatabaseSettings databaseSettings)
         {
             _databaseLanguage = databaseSettings.DatabaseLanguage;
         }
@@ -39,12 +37,7 @@ namespace Rhetos.PostgreSql.SqlResources
             if (!_databaseLanguage.StartsWith(PostgreSqlUtility.DatabaseLanguage))
                 return null;
 
-            var result = ResourcesUtility.ReadEmbeddedResx(Path.Combine("SqlResources", "Rhetos.CommonConcepts.Build.PostgreSql.resx"), GetType().Assembly, true);
-
-            foreach (var keyValue in ResourcesUtility.ReadEmbeddedResx(Path.Combine("SqlResources", "Rhetos.CommonConcepts.SqlFiles.PostgreSql.resx"), GetType().Assembly, true))
-                result[keyValue.Key] = keyValue.Value;
-
-            return result;
+            return ResourcesUtility.ReadEmbeddedResx(Path.Combine("SqlResources", "Rhetos.CommonConcepts.Runtime.PostgreSql.resx"), GetType().Assembly, true);
         }
     }
 }

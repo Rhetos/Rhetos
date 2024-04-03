@@ -359,6 +359,12 @@ CREATE FUNCTION {0}.{1} ({2})
   <data name="SqlFunctionDatabaseDefinition_Remove" xml:space="preserve">
     <value>DROP FUNCTION {0}.{1}</value>
   </data>
+  <data name="SqlIndexClusteredDatabaseDefinition_Create" xml:space="preserve">
+    <value>ALTER TABLE {0}.{1} CLUSTER ON {2}</value>
+  </data>
+  <data name="SqlIndexClusteredDatabaseDefinition_Remove" xml:space="preserve">
+    <value>ALTER TABLE {0}.{1} SET WITHOUT CLUSTER</value>
+  </data>
   <data name="SqlIndexMultipleDatabaseDefinition_Create" xml:space="preserve">
     <value>CREATE {4} {5} INDEX {0} ON {1}.{2} ({3}) {6}</value>
   </data>
@@ -369,9 +375,8 @@ CREATE FUNCTION {0}.{1} ({2})
     <value>IX_{0}_{1}</value>
   </data>
   <data name="SqlProcedureDatabaseDefinition_Create" xml:space="preserve">
-    <value>CREATE PROCEDURE {0}.{1}
-{2}
-AS
+    <value>CREATE PROCEDURE {0}.{1} ({2}
+)
 {3}
 </value>
   </data>

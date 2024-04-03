@@ -117,77 +117,106 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="TestAppDirectPostgreSql/DslScriptsCommonConcepts/SQL/AutoCodeCacheGetNext body.sql" xml:space="preserve">
-    <value>IF grouping IS NULL SET grouping = '';
-
-IF quantity &lt; 1
-	BEGIN RAISERROR('Invalid argument: quantity (%d). The value must be 1 or greater. ', 16, 10, quantity); RETURN 1; END
-
-DECLARE newCode INT;
-
-UPDATE
-	Common.AutoCodeCache acc WITH (ROWLOCK, UPDLOCK, SERIALIZABLE, INDEX(IX_AutoCodeCache_Entity_Property_Grouping_Prefix))
-SET
-	minDigits = MinDigits = CASE WHEN minDigits &gt; acc.MinDigits THEN minDigits ELSE acc.MinDigits END,
-	newCode = LastCode = acc.LastCode + quantity
-WHERE
-	acc.Entity = entity
-	AND acc.Property = property
-	AND acc.Grouping = grouping
-	AND acc.Prefix = prefix;
-
-IF @ROWCOUNT = 0
+  <data name="TestAppDirectPostgreSql/DslScriptsCommonConcepts/SQL/AutoCodeCacheGetNext create.sql" xml:space="preserve">
+    <value>CREATE OR REPLACE FUNCTION Common.AutoCodeCacheGetNext (
+    p_entity varchar(256),
+    p_property varchar(256),
+    p_grouping varchar(256),
+    p_prefix varchar(256),
+    p_minDigits int,
+    -- p_quantity is the number of code to be generated (i.e., the number of inserted items). Must be 1 or greater.
+    -- For quantity greater than 1, newCode will contain the last generated codes.
+    -- The generated codes are from newCode-quantity+1 to newCode.
+    p_quantity int 
+)
+RETURNS TABLE (MinDigits int, NewCode int)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_lastMinDigits INT;
+    v_lastNewCode INT;
 BEGIN
-	SET minDigits = ISNULL(minDigits, 0);
-	SET newCode = quantity;
+    IF p_grouping IS NULL THEN
+        p_grouping := '';
+    END IF;
 
-	INSERT INTO
-		Common.AutoCodeCache WITH (ROWLOCK, UPDLOCK)
-		(ID, Entity, Property, Grouping, Prefix, MinDigits, LastCode)
-	VALUES
-		(gen_random_uuid(), entity, property, grouping, prefix, minDigits, newCode);
+    IF p_quantity &lt; 1 THEN
+        RAISE EXCEPTION 'Invalid argument: p_quantity (%). The value must be 1 or greater. ', p_quantity;
+    END IF;
+
+    UPDATE
+        Common.AutoCodeCache acc
+    SET
+        MinDigits = GREATEST(p_minDigits, acc.MinDigits),
+        LastCode = acc.LastCode + p_quantity
+    WHERE
+        acc.Entity = p_entity
+        AND acc.Property = p_property
+        AND acc.Grouping = p_grouping
+        AND acc.Prefix = p_prefix
+    RETURNING
+        acc.MinDigits, acc.LastCode INTO v_lastMinDigits, v_lastNewCode;
+
+    IF NOT FOUND THEN
+        v_lastMinDigits := COALESCE(p_minDigits, 0);
+        v_lastNewCode := p_quantity;
+
+        INSERT INTO
+            Common.AutoCodeCache
+            (ID, Entity, Property, Grouping, Prefix, MinDigits, LastCode)
+        VALUES
+            (gen_random_uuid(), p_entity, p_property, p_grouping, p_prefix, v_lastMinDigits, v_lastNewCode);
+    END IF;
+
+    RETURN QUERY SELECT v_lastMinDigits AS MinDigits, v_lastNewCode AS NewCode;
+END;
+$$</value>
+  </data>
+  <data name="TestAppDirectPostgreSql/DslScriptsCommonConcepts/SQL/AutoCodeCacheGetNext remove.sql" xml:space="preserve">
+    <value>DROP FUNCTION Common.AutoCodeCacheGetNext</value>
+  </data>
+  <data name="TestAppDirectPostgreSql/DslScriptsCommonConcepts/SQL/AutoCodeCacheUpdate create.sql" xml:space="preserve">
+    <value>CREATE OR REPLACE FUNCTION Common.AutoCodeCacheUpdate(
+    p_entity varchar(256),
+    p_property varchar(256),
+    p_grouping varchar(256),
+    p_prefix varchar(256),
+    p_minDigits INT,
+    -- Updates the existing cache with the new 'p_providedCode' value, explicitly provided instead of generated.
+    p_providedCode INT
+)
+RETURNS void
+LANGUAGE plpgsql
+AS $$
+BEGIN
+
+    IF p_grouping IS NULL THEN
+        p_grouping := '';
+    END IF;
+
+    UPDATE
+        Common.AutoCodeCache acc
+    SET
+        MinDigits = CASE WHEN p_providedCode &gt; acc.LastCode THEN p_minDigits ELSE acc.MinDigits END,
+        LastCode = CASE WHEN p_providedCode &gt; acc.LastCode THEN p_providedCode ELSE acc.LastCode END
+    WHERE
+        acc.Entity = p_entity
+        AND acc.Property = p_property
+        AND acc.Grouping = p_grouping
+        AND acc.Prefix = p_prefix;
+
+    IF NOT FOUND THEN
+        INSERT INTO
+            Common.AutoCodeCache
+            (ID, Entity, Property, Grouping, Prefix, MinDigits, LastCode)
+        VALUES
+            (gen_random_uuid(), p_entity, p_property, p_grouping, p_prefix, p_minDigits, p_providedCode);
+    END IF;
 END
-
-SELECT MinDigits = minDigits, NewCode = newCode;</value>
+$$</value>
   </data>
-  <data name="TestAppDirectPostgreSql/DslScriptsCommonConcepts/SQL/AutoCodeCacheGetNext param.sql" xml:space="preserve">
-    <value>entity varchar(256),
-property varchar(256),
-grouping varchar(256),
-prefix varchar(256),
-minDigits INT,
-quantity INT -- Number of generated codes (i.e., the number of inserted items). Must be 1 or greater. For quantity greater than 1, newCode will contain the last generated codes. The generated codes are from newCode-quantity+1 to newCode.</value>
-  </data>
-  <data name="TestAppDirectPostgreSql/DslScriptsCommonConcepts/SQL/AutoCodeCacheUpdate body.sql" xml:space="preserve">
-    <value>IF grouping IS NULL SET grouping = '';
-
-UPDATE
-	Common.AutoCodeCache acc WITH (ROWLOCK, UPDLOCK, INDEX(IX_AutoCodeCache_Entity_Property_Grouping_Prefix))
-SET
-	MinDigits = CASE WHEN providedCode &gt; acc.LastCode THEN minDigits ELSE acc.MinDigits END,
-	LastCode = CASE WHEN providedCode &gt; acc.LastCode THEN providedCode ELSE acc.LastCode END
-WHERE
-	acc.Entity = entity
-	AND acc.Property = property
-	AND acc.Grouping = grouping
-	AND acc.Prefix = prefix;
-
-IF @ROWCOUNT = 0
-BEGIN
-	INSERT INTO
-		Common.AutoCodeCache WITH (ROWLOCK, UPDLOCK)
-		(ID, Entity, Property, Grouping, Prefix, MinDigits, LastCode)
-	VALUES
-		(gen_random_uuid(), entity, property, grouping, prefix, minDigits, providedCode);
-END</value>
-  </data>
-  <data name="TestAppDirectPostgreSql/DslScriptsCommonConcepts/SQL/AutoCodeCacheUpdate param.sql" xml:space="preserve">
-    <value>entity varchar(256),
-property varchar(256),
-grouping varchar(256),
-prefix varchar(256),
-minDigits INT,
-providedCode INT -- Update the existing cache with the new code value, explicitly provided instead of generated. Either quantity or providedCode must be set.</value>
+  <data name="TestAppDirectPostgreSql/DslScriptsCommonConcepts/SQL/AutoCodeCacheUpdate remove.sql" xml:space="preserve">
+    <value>DROP FUNCTION Common.AutoCodeCacheUpdate</value>
   </data>
   <data name="TestAppDirectPostgreSql/DslScriptsCommonConcepts/SQL/Log.ContextInfo default.sql" xml:space="preserve">
     <value>SELECT current_setting('rhetos.userinfo')</value>

@@ -12,10 +12,14 @@
     <Compile Include="$(MSBuildThisFileDirectory)AutofacModuleConfigurationMsSqlShared.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MsSqlExecuter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MsSqlUtility.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SqlResources\CommonConceptsRuntimeSqlResourcesPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SqlResources\CommonConceptsBuildSqlResourcesPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SqlResources\CoreDbUpdateSqlResourcesPlugin.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)SqlResources\Rhetos.CommonConcepts.Runtime.MsSql.resx">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)SqlResources\Rhetos.CommonConcepts.Build.MsSql.resx">
       <SubType>Designer</SubType>
     </EmbeddedResource>
