@@ -35,6 +35,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 #pragma warning restore CS0618 // Type or member is obsolete
     {
         public static readonly SqlTag<EntityLoggingInfo> LogPropertyTag = "LogProperty";
+        public static readonly SqlTag<EntityLoggingInfo> LogPropertyDeletedTag = "LogPropertyDeleted";
         public static readonly SqlTag<EntityLoggingInfo> TempColumnDefinitionTag = "TempColumnDefinition";
         public static readonly SqlTag<EntityLoggingInfo> TempColumnListTag = "TempColumnList";
         public static readonly SqlTag<EntityLoggingInfo> TempColumnSelectTag = "TempColumnSelect";
@@ -79,18 +80,19 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             var info = (EntityLoggingInfo)conceptInfo;
 
             return _sqlResources.Format("EntityLoggingDefinition_Create",
-                _sqlUtility.Identifier(info.Entity.Module.Name),
-                _sqlUtility.Identifier(info.Entity.Name),
-                GetTriggerNameInsert(info),
-                GetTriggerNameUpdate(info),
-                GetTriggerNameDelete(info),
-                SqlUtility.ScriptSplitterTag,
-                LogPropertyTag.Evaluate(info),
-                TempColumnDefinitionTag.Evaluate(info),
-                TempColumnListTag.Evaluate(info),
-                TempColumnSelectTag.Evaluate(info),
-                TempFromTag.Evaluate(info),
-                AfterInsertLogTag.Evaluate(info));
+                _sqlUtility.Identifier(info.Entity.Module.Name), // {0}
+                _sqlUtility.Identifier(info.Entity.Name), // {1}
+                GetTriggerNameInsert(info), // {2}
+                GetTriggerNameUpdate(info), // {3}
+                GetTriggerNameDelete(info), // {4}
+                SqlUtility.ScriptSplitterTag, // {5}
+                LogPropertyTag.Evaluate(info), // {6}
+                TempColumnDefinitionTag.Evaluate(info), // {7}
+                TempColumnListTag.Evaluate(info), // {8}
+                TempColumnSelectTag.Evaluate(info), // {9}
+                TempFromTag.Evaluate(info), // {10}
+                AfterInsertLogTag.Evaluate(info), // {11}
+                LogPropertyDeletedTag.Evaluate(info)); // {12}
         }
 
         public string RemoveDatabaseStructure(IConceptInfo conceptInfo)
@@ -99,6 +101,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 
             return _sqlResources.Format("EntityLoggingDefinition_Remove",
                 _sqlUtility.Identifier(info.Entity.Module.Name),
+                _sqlUtility.Identifier(info.Entity.Name),
                 GetTriggerNameInsert(info),
                 GetTriggerNameUpdate(info),
                 GetTriggerNameDelete(info));

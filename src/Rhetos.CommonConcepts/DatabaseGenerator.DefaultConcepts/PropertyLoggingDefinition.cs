@@ -71,7 +71,13 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
                     propertyToString),
                 EntityLoggingDefinition.LogPropertyTag, info.EntityLogging);
 
-            createdDependencies = new[] { Tuple.Create<IConceptInfo, IConceptInfo>(info.Property, info.EntityLogging) }; // Entity's property (table column) must be created before entity's logging trigger is created.
+            string propertyDeletedLoggingSql = Sql.TryFormat("PropertyLoggingDefinition_GenericPropertyDeletedLogging", column, propertyToString);
+            if (propertyDeletedLoggingSql != null)
+                codeBuilder.InsertCode(
+                    propertyDeletedLoggingSql,
+                    EntityLoggingDefinition.LogPropertyDeletedTag, info.EntityLogging);
+
+            createdDependencies = [Tuple.Create<IConceptInfo, IConceptInfo>(info.Property, info.EntityLogging)]; // Entity's property (table column) must be created before entity's logging trigger is created.
         }
 
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)

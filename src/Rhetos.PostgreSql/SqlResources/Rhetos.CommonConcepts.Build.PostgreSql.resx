@@ -135,14 +135,13 @@ CALL Rhetos.DataMigrationApply('{0}', '{1}', 'ID');</value>
 DROP TABLE {0}.{1};</value>
   </data>
   <data name="EntityLoggingDefinition_Create" xml:space="preserve">
-    <value>CREATE TRIGGER {0}.{2} ON {0}.{1}
-FOR UPDATE, DELETE, INSERT
-AS
+    <value>CREATE FUNCTION {0}.{1}_Logging()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
 BEGIN
-SET NOCOUNT ON
-IF NOT EXISTS (SELECT 1 FROM inserted) AND NOT EXISTS (SELECT 1 FROM deleted) RETURN
 
-CREATE TABLE #log
+CREATE TEMPORARY TABLE IF NOT EXISTS temp_log
 (
     ID uuid NOT NULL,
     Action varchar(256),
@@ -151,48 +150,77 @@ CREATE TABLE #log
     Description text{7}
 );
 
-INSERT INTO
-    #log
-    (
-        ID,
-        Action,
-        TableName,
-        ItemId,
-        Description{8}
-    )
-SELECT
-    ID = gen_random_uuid(),
-    Action = CASE
-        WHEN inserted.ID IS NOT NULL AND deleted.ID IS NULL THEN 'Insert'
-        WHEN inserted.ID IS NULL AND deleted.ID IS NOT NULL THEN 'Delete'
-        ELSE 'Update'
-    END,
-    TableName = '{0}.{1}',
-    ItemId = COALESCE(inserted.ID, deleted.ID),
-    Description = CASE WHEN inserted.ID IS NOT NULL AND deleted.ID IS NULL
-        THEN ''	--When inserting, Description is not available (there is no previous state)
-        ELSE '&lt;PREVIOUS'
-			{6}
-            + ' /&gt;'
-    END{9}
-FROM
-    inserted
-    FULL OUTER JOIN deleted ON inserted.ID = deleted.ID
-    {10}
+IF (TG_OP = 'DELETE') THEN
+    INSERT INTO temp_log (ID, Action, TableName, ItemId, Description{8})
+        SELECT gen_random_uuid(), 'Delete', '{0}.{1}', deleted.ID,
+            xmlserialize(CONTENT xmlelement(NAME "PREVIOUS",
+                xmlforest(null AS null_ignored{12})) AS text){9}
+        FROM deleted
+            LEFT JOIN (SELECT * FROM deleted WHERE 1=0) AS inserted{10} ON deleted.ID = inserted.ID;
 
-INSERT INTO Common.Log (ID, Action, TableName, ItemId, Description)
+ELSIF (TG_OP = 'UPDATE') THEN
+    INSERT INTO temp_log (ID, Action, TableName, ItemId, Description{8})
+        SELECT gen_random_uuid(), 'Update', '{0}.{1}', deleted.ID,
+            xmlserialize(CONTENT xmlelement(NAME "PREVIOUS",
+                xmlforest(null AS null_ignored{6}
+                    )) AS text){9}
+        FROM inserted
+            FULL OUTER JOIN deleted ON inserted.ID = deleted.ID{10};
+
+ELSIF (TG_OP = 'INSERT') THEN
+    INSERT INTO temp_log (ID, Action, TableName, ItemId, Description{8})
+        SELECT gen_random_uuid(), 'Insert', '{0}.{1}', inserted.ID, null{9}
+        FROM inserted
+            LEFT JOIN (SELECT * FROM inserted WHERE 1=0) AS deleted{10} ON deleted.ID = inserted.ID;
+
+ELSE
+    RAISE EXCEPTION 'Logging trigger on {0}.{1}: Unexpected operation type "%".', TG_OP;
+
+END IF;
+
+INSERT INTO {0}.Log (ID, Action, TableName, ItemId, Description)
 SELECT ID, Action, TableName, ItemId, Description
-FROM #log;
+FROM temp_log;
 
 {11}
-DROP TABLE #log;
-END</value>
+DROP TABLE temp_log;
+
+RETURN NULL;
+END
+$$;
+
+CREATE TRIGGER {2}
+    AFTER INSERT ON {0}.{1}
+    REFERENCING NEW TABLE AS inserted
+    FOR EACH STATEMENT
+    EXECUTE FUNCTION {0}.{1}_Logging();
+
+CREATE TRIGGER {3}
+    AFTER UPDATE ON {0}.{1}
+    REFERENCING OLD TABLE AS deleted NEW TABLE AS inserted
+    FOR EACH STATEMENT
+    EXECUTE FUNCTION {0}.{1}_Logging();
+
+CREATE TRIGGER {4}
+    AFTER DELETE ON {0}.{1}
+    REFERENCING OLD TABLE AS deleted
+    FOR EACH STATEMENT
+    EXECUTE FUNCTION {0}.{1}_Logging();</value>
   </data>
   <data name="EntityLoggingDefinition_Remove" xml:space="preserve">
-    <value>DROP TRIGGER {0}.{1};</value>
+    <value>DROP TRIGGER {2} ON {0}.{1};
+DROP TRIGGER {3} ON {0}.{1};
+DROP TRIGGER {4} ON {0}.{1};
+DROP FUNCTION {0}.{1}_Logging;</value>
   </data>
   <data name="EntityLoggingDefinition_TriggerNameInsert" xml:space="preserve">
-    <value>trg_{1}_Logging</value>
+    <value>trg_{1}_logging_insert</value>
+  </data>
+  <data name="EntityLoggingDefinition_TriggerNameDelete" xml:space="preserve">
+    <value>trg_{1}_logging_update</value>
+  </data>
+  <data name="EntityLoggingDefinition_TriggerNameUpdate" xml:space="preserve">
+    <value>trg_{1}_logging_delete</value>
   </data>
   <data name="LegacyEntityWithAutoCreatedViewDatabaseDefinition_InsertTriggerName" xml:space="preserve">
     <value>trg_{0}_LegacyInsert</value>
@@ -310,20 +338,13 @@ DROP VIEW {0}.{1};</value>
     <value>ALTER SCHEMA {0} OWNER TO pg_database_owner</value>
   </data>
   <data name="PropertyLoggingDefinition_GenericPropertyLogging" xml:space="preserve">
-    <value>+ CASE WHEN inserted.{0} &lt;&gt; deleted.{0}
-                    OR inserted.{0} IS NULL AND deleted.{0} IS NOT NULL
-                    OR inserted.{0} IS NOT NULL AND deleted.{0} IS NULL
-                THEN ' {0}="' + REPLACE(REPLACE(REPLACE(REPLACE(ISNULL({1}, ''), '&amp;', '&amp;amp;'), '&lt;', '&amp;lt;'), '&gt;', '&amp;gt;'), '"', '&amp;quot;') + '"'
-                ELSE '' END
-			</value>
+    <value>,
+                    CASE WHEN inserted.{0} IS DISTINCT FROM deleted.{0} THEN deleted.{0} END AS {0}</value>
+  </data>
+  <data name="PropertyLoggingDefinition_GenericPropertyDeletedLogging" xml:space="preserve">
+    <value>, deleted.{0}</value>
   </data>
   <data name="PropertyLoggingDefinition_TextValue" xml:space="preserve">
-    <value>CONVERT(text, deleted.{0}, 126)</value>
-  </data>
-  <data name="PropertyLoggingDefinition_TextValue_ShortString" xml:space="preserve">
-    <value>deleted.{0}</value>
-  </data>
-  <data name="PropertyLoggingDefinition_TextValue_LongString" xml:space="preserve">
     <value>deleted.{0}</value>
   </data>
   <data name="ReferenceCascadeDeleteDatabaseDefinition_ExtendForeignKey" xml:space="preserve">
@@ -470,20 +491,11 @@ ALTER TABLE {0}.{1} DROP COLUMN [{2}];
     <value>,
     {0} = {1}.{2}</value>
   </data>
-  <data name="PropertyLoggingDefinition_TextValue_Binary" xml:space="preserve">
-    <value>CONVERT(text, deleted.{0}, 1)</value>
-  </data>
   <data name="EntityDatabaseDefinition_DefaultConstraintName" xml:space="preserve">
     <value>DF_{1}_ID</value>
   </data>
   <data name="EntityDatabaseDefinition_PrimaryKeyConstraintName" xml:space="preserve">
     <value>PK_{1}</value>
-  </data>
-  <data name="EntityLoggingDefinition_TriggerNameDelete" xml:space="preserve">
-    <value>trg_{1}_Logging</value>
-  </data>
-  <data name="EntityLoggingDefinition_TriggerNameUpdate" xml:space="preserve">
-    <value>trg_{1}_Logging</value>
   </data>
   <data name="LoggingRelatedItemDatabaseDefinition_TempColumnDefinition" xml:space="preserve">
     <value>,
@@ -510,7 +522,7 @@ SELECT
     ItemId = {0},
     Relation = {4}
 FROM
-    #log
+    temp_log
 WHERE
     {0} IS NOT NULL;
 
@@ -523,7 +535,7 @@ SELECT
     ItemId = {1},
     Relation = {4}
 FROM
-    #log
+    temp_log
 WHERE
     {1} IS NOT NULL
     AND ({1} &lt;&gt; {0} OR {0} IS NULL);

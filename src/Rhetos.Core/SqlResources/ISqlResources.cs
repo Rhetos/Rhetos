@@ -29,11 +29,14 @@ namespace Rhetos
     {
         /// <summary>
         /// Returns the SQL code snippets from resource files, based on the selected database language in <see cref="DatabaseSettings.DatabaseLanguage"/>.
-        /// Return <see langword="null"/> if there is no resource with the given <paramref name="key"/>.
+        /// Returns <see langword="null"/> if there is no resource with the given <paramref name="key"/>.
         /// </summary>
         string TryGet(string key);
     }
 
+    /// <summary>
+    /// Helper methods for <see cref="ISqlResources"/> usage.
+    /// </summary>
     public static class SqlResourcesExtensions
     {
         /// <summary>
@@ -49,5 +52,18 @@ namespace Rhetos
         /// </summary>
         public static string Format(this ISqlResources sqlResources, string key, params object[] args)
             => string.Format(CultureInfo.InvariantCulture, sqlResources.Get(key), args);
+
+        /// <summary>
+        /// Returns the SQL code snippets from resource files, based on the selected database language in <see cref="DatabaseSettings.DatabaseLanguage"/>.
+        /// Returns <see langword="null"/> if there is no resource with the given <paramref name="key"/>.
+        /// </summary>
+        public static string TryFormat(this ISqlResources sqlResources, string key, params object[] args)
+        {
+            string formatting = sqlResources.TryGet(key);
+            if (formatting != null)
+                return string.Format(CultureInfo.InvariantCulture, formatting, args);
+            else
+                return null;
+        }
     }
 }

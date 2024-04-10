@@ -189,9 +189,15 @@ DROP TABLE #log;
 END</value>
   </data>
   <data name="EntityLoggingDefinition_Remove" xml:space="preserve">
-    <value>DROP TRIGGER {0}.{1};</value>
+    <value>DROP TRIGGER {0}.{2};</value>
   </data>
   <data name="EntityLoggingDefinition_TriggerNameInsert" xml:space="preserve">
+    <value>trg_{1}_Logging</value>
+  </data>
+  <data name="EntityLoggingDefinition_TriggerNameDelete" xml:space="preserve">
+    <value>trg_{1}_Logging</value>
+  </data>
+  <data name="EntityLoggingDefinition_TriggerNameUpdate" xml:space="preserve">
     <value>trg_{1}_Logging</value>
   </data>
   <data name="LegacyEntityWithAutoCreatedViewDatabaseDefinition_InsertTriggerName" xml:space="preserve">
@@ -484,12 +490,6 @@ ALTER TABLE {0}.{1} DROP COLUMN [{2}]
   </data>
   <data name="EntityDatabaseDefinition_PrimaryKeyConstraintName" xml:space="preserve">
     <value>PK_{1}</value>
-  </data>
-  <data name="EntityLoggingDefinition_TriggerNameDelete" xml:space="preserve">
-    <value>trg_{1}_Logging</value>
-  </data>
-  <data name="EntityLoggingDefinition_TriggerNameUpdate" xml:space="preserve">
-    <value>trg_{1}_Logging</value>
   </data>
   <data name="LoggingRelatedItemDatabaseDefinition_TempColumnDefinition" xml:space="preserve">
     <value>,
