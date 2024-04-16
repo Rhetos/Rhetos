@@ -32,10 +32,12 @@ namespace Rhetos.EfCore.ModelBuilding
     {
         public static readonly CsTag<DataStructureInfo> ModelBuilderTag = "ModelBuilder";
         private readonly ConceptMetadata _conceptMetadata;
+        private readonly ISqlUtility _sqlUtility;
 
-        public DataStructureModelCodeGenerator(ConceptMetadata conceptMetadata)
+        public DataStructureModelCodeGenerator(ConceptMetadata conceptMetadata, ISqlUtility sqlUtility)
         {
             _conceptMetadata = conceptMetadata;
+            _sqlUtility = sqlUtility;
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
@@ -44,9 +46,17 @@ namespace Rhetos.EfCore.ModelBuilding
 
             if (IsSupported(info))
             {
+                string tableName = CsUtility.QuotedString(_sqlUtility.Identifier(_conceptMetadata.GetOrmDatabaseObject(info)));
+                string schemaName = CsUtility.QuotedString(_sqlUtility.Identifier(_conceptMetadata.GetOrmSchema(info)));
+
+                string pkColumnName = _sqlUtility.Identifier("ID");
+                string specifyPKColumnName = pkColumnName != "ID"
+                    ? $"\r\n                entity.Property(e => e.ID).HasColumnName({CsUtility.QuotedString(pkColumnName)});"
+                    : "";
+
                 string code =
             $@"modelBuilder.Entity<Common.Queryable.{info.Module.Name}_{info.Name}>(entity => {{
-                entity.ToTable({CsUtility.QuotedString(_conceptMetadata.GetOrmDatabaseObject(info))}, schema: {CsUtility.QuotedString(_conceptMetadata.GetOrmSchema(info))});{ModelBuilderTag.Evaluate(info)}
+                entity.ToTable({tableName}, {schemaName});{specifyPKColumnName}{ModelBuilderTag.Evaluate(info)}
             }});
 
             ";

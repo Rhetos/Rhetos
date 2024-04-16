@@ -21,6 +21,7 @@ using Rhetos.Compiler;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
+using Rhetos.Utilities;
 using System.ComponentModel.Composition;
 
 namespace Rhetos.EfCore.ModelBuilding
@@ -30,6 +31,16 @@ namespace Rhetos.EfCore.ModelBuilding
     public class ReferencePropertyModelCodeGenerator : IConceptCodeGenerator
     {
         public static readonly CsTag<ReferencePropertyInfo> ModelWithManyTag = "ModelWithMany";
+        public static readonly CsTag<ReferencePropertyInfo> ReferencePropertyOptionsTag = "ModelReferenceOptions";
+
+        private readonly ConceptMetadata _conceptMetadata;
+        private readonly ISqlUtility _sqlUtility;
+
+        public ReferencePropertyModelCodeGenerator(ConceptMetadata conceptMetadata, ISqlUtility sqlUtility)
+        {
+            _conceptMetadata = conceptMetadata;
+            _sqlUtility = sqlUtility;
+        }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
@@ -37,19 +48,17 @@ namespace Rhetos.EfCore.ModelBuilding
 
             if (info.DataStructure is IOrmDataStructure)
             {
+                var guidProperty = new GuidPropertyInfo { DataStructure = info.DataStructure, Name = info.Name + "ID" };
+                var guidGenerator = new PropertyModelCodeGenerator(null, _conceptMetadata, _sqlUtility);
+                guidGenerator.GenerateCode(guidProperty, codeBuilder);
+
                 if (info.Referenced is IOrmDataStructure)
                 {
                     codeBuilder.InsertCode(
                         $"\r\n                entity.HasOne(e => e.{info.Name})" +
                         $".WithMany({ModelWithManyTag.Evaluate(info)})" +
-                        $".HasForeignKey(e => e.{info.Name}ID)" +
-                        $"{PropertyModelCodeGenerator.ModelOptionsTag.Evaluate(info)};",
-                        DataStructureModelCodeGenerator.ModelBuilderTag, info.DataStructure);
-                }
-                else
-                {
-                    codeBuilder.InsertCode(
-                        $"\r\n                entity.Property(e => e.{info.Name}ID).HasColumnType(\"uniqueidentifier\"){PropertyModelCodeGenerator.ModelOptionsTag.Evaluate(info)};",
+                        $".HasForeignKey(e => e.{guidProperty.Name})" +
+                        $"{ReferencePropertyOptionsTag.Evaluate(info)};",
                         DataStructureModelCodeGenerator.ModelBuilderTag, info.DataStructure);
                 }
             }

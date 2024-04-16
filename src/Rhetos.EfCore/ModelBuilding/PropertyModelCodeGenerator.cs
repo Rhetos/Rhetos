@@ -18,10 +18,12 @@
 */
 
 using Rhetos.Compiler;
+using Rhetos.DatabaseGenerator.DefaultConcepts;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Dsl;
 using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.Extensibility;
+using Rhetos.Utilities;
 using System.ComponentModel.Composition;
 
 namespace Rhetos.EfCore.ModelBuilding
@@ -33,49 +35,53 @@ namespace Rhetos.EfCore.ModelBuilding
         public static readonly CsTag<PropertyInfo> ModelOptionsTag = "ModelOptions";
 
         private readonly CommonConceptsDatabaseSettings _databaseSettings;
+        private readonly ConceptMetadata _conceptMetadata;
+        private readonly ISqlUtility _sqlUtility;
 
-        public PropertyModelCodeGenerator(CommonConceptsDatabaseSettings databaseSettings)
+        public PropertyModelCodeGenerator(CommonConceptsDatabaseSettings databaseSettings, ConceptMetadata conceptMetadata, ISqlUtility sqlUtility)
         {
             _databaseSettings = databaseSettings;
+            _conceptMetadata = conceptMetadata;
+            _sqlUtility = sqlUtility;
         }
 
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
             var property = (PropertyInfo)conceptInfo;
 
-            if (!DataStructureModelCodeGenerator.IsSupported(property.DataStructure))
+            if (!IsSupported(property))
                 return;
 
-            string propertyModel = GetPropertyModel(property, _databaseSettings);
-
-            if (propertyModel == null)
-                return;
+            string columnName = _sqlUtility.Identifier(_conceptMetadata.GetColumnName(property));
+            string specifyColumnName = columnName != property.Name ? $".HasColumnName({CsUtility.QuotedString(columnName)})" : "";
+            string columnType = _conceptMetadata.GetColumnType(property);
+            string propertyModel = GetPropertyModel(property, _databaseSettings, columnType);
 
             codeBuilder.InsertCode(
-                $"\r\n                entity.Property(e => e.{property.Name}){propertyModel}{ModelOptionsTag.Evaluate(property)};",
+                $"\r\n                entity.Property(e => e.{property.Name}){specifyColumnName}{propertyModel}{ModelOptionsTag.Evaluate(property)};",
                 DataStructureModelCodeGenerator.ModelBuilderTag, property.DataStructure);
         }
 
         public static bool IsSupported(PropertyInfo property) =>
             DataStructureModelCodeGenerator.IsSupported(property.DataStructure)
-            && GetPropertyModel(property, _emptyDatabaseSettings) != null;
+            && GetPropertyModel(property, _emptyDatabaseSettings, "") != null;
 
         private static readonly CommonConceptsDatabaseSettings _emptyDatabaseSettings = new();
 
-        private static string GetPropertyModel(PropertyInfo property, CommonConceptsDatabaseSettings databaseSettings) =>
+        private static string GetPropertyModel(PropertyInfo property, CommonConceptsDatabaseSettings databaseSettings, string columnType) =>
             property switch
             {
-                DecimalPropertyInfo => ".HasPrecision(28, 10).HasColumnType(\"decimal(20, 10)\")",
-                MoneyPropertyInfo => $".HasPrecision({databaseSettings.MoneyPrecision}, {databaseSettings.MoneyScale}).HasColumnType(\"money\")",
-                ShortStringPropertyInfo => ".HasColumnType(\"nvarchar(max)\")", // No need to cause issues in EF if some view returns more then 256 characters or some query parameter exceeds the limit.
-                LongStringPropertyInfo => ".HasColumnType(\"nvarchar(max)\")",
-                BinaryPropertyInfo => ".HasColumnType(\"varbinary(max)\")",
-                BoolPropertyInfo => ".HasColumnType(\"bit\")",
-                IntegerPropertyInfo => ".HasColumnType(\"int\")",
-                GuidPropertyInfo => ".HasColumnType(\"uniqueidentifier\")",
-                DateTimePropertyInfo => databaseSettings.UseLegacyMsSqlDateTime ? ".HasColumnType(\"datetime\")"
-                    : $".HasPrecision({databaseSettings.DateTimePrecision}).HasColumnType(\"datetime2({databaseSettings.DateTimePrecision})\")",
-                DatePropertyInfo => ".HasColumnType(\"date\")",
+                DecimalPropertyInfo => $".HasPrecision(28, 10).HasColumnType(\"{columnType}\")",
+                MoneyPropertyInfo => $".HasPrecision({databaseSettings.MoneyPrecision}, {databaseSettings.MoneyScale}).HasColumnType(\"{columnType}\")",
+                ShortStringPropertyInfo => $".HasColumnType(\"{columnType}\")",
+                LongStringPropertyInfo => $".HasColumnType(\"{columnType}\")",
+                BinaryPropertyInfo => $".HasColumnType(\"{columnType}\")",
+                BoolPropertyInfo => $".HasColumnType(\"{columnType}\")",
+                IntegerPropertyInfo => $".HasColumnType(\"{columnType}\")",
+                GuidPropertyInfo => $".HasColumnType(\"{columnType}\")",
+                DateTimePropertyInfo => databaseSettings.UseLegacyMsSqlDateTime ? $".HasColumnType(\"{columnType}\")"
+                    : $".HasPrecision({databaseSettings.DateTimePrecision}).HasColumnType(\"{columnType}\")",
+                DatePropertyInfo => $".HasColumnType(\"{columnType}\")",
                 _ => null
             };
     }
