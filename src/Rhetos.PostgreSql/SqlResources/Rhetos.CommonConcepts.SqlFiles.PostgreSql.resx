@@ -219,7 +219,7 @@ $$</value>
     <value>DROP FUNCTION Common.AutoCodeCacheUpdate</value>
   </data>
   <data name="TestAppDirectPostgreSql/DslScriptsCommonConcepts/SQL/Log.ContextInfo default.sql" xml:space="preserve">
-    <value>SELECT current_setting('rhetos.userinfo')</value>
+    <value>current_setting('rhetos.userinfo', true)</value>
   </data>
   <data name="TestAppDirectPostgreSql/DslScriptsCommonConcepts/SQL/Log.Created default.sql" xml:space="preserve">
     <value>LOCALTIMESTAMP(3)</value>

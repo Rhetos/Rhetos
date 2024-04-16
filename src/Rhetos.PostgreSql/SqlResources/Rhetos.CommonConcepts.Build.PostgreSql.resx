@@ -363,10 +363,10 @@ DROP VIEW {0}.{1};</value>
     <value>uuid</value>
   </data>
   <data name="SqlDefaultPropertyDatabaseDefinition_Create" xml:space="preserve">
-    <value>ALTER TABLE {0}.{1} ADD CONSTRAINT {3} DEFAULT ({4}) FOR {2};</value>
+    <value>ALTER TABLE {0}.{1} ALTER {2} SET DEFAULT {4}</value>
   </data>
   <data name="SqlDefaultPropertyDatabaseDefinition_Remove" xml:space="preserve">
-    <value>ALTER TABLE {0}.{1} DROP CONSTRAINT {3};</value>
+    <value>ALTER TABLE {0}.{1} ALTER {2} DROP DEFAULT</value>
   </data>
   <data name="SqlDefaultPropertyDatabaseDefinition_ConstraintName" xml:space="preserve">
     <value>DF_{0}_{1}</value>
