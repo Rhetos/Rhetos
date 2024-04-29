@@ -21,7 +21,9 @@ using Rhetos.Persistence;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data.Common;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 
@@ -35,26 +37,29 @@ namespace Rhetos.Dom.DefaultConcepts
 		private readonly IPersistenceTransaction _persistenceTransaction;
 		private readonly IPersistenceStorageObjectMappings _persistenceMappingConfiguration;
         private readonly DatabaseOptions _databaseOptions;
+        private readonly CommonConceptsRuntimeOptions _commonConceptsRuntimeOptions;
 
         public SqlCommandBatch(
 			IPersistenceTransaction persistenceTransaction,
 			IPersistenceStorageObjectMappings persistenceMappingConfiguration,
-			DatabaseOptions databaseOptions)
+			DatabaseOptions databaseOptions,
+			CommonConceptsRuntimeOptions commonConceptsRuntimeOptions)
 		{
 			_persistenceTransaction = persistenceTransaction;
 			_persistenceMappingConfiguration = persistenceMappingConfiguration;
             _databaseOptions = databaseOptions;
+            _commonConceptsRuntimeOptions = commonConceptsRuntimeOptions;
         }
 
-		public int Execute(IList<PersistenceStorageCommand> commands)
+		public int Execute(PersistenceStorageCommandType commandType, Type entityType, IReadOnlyCollection<IEntity> entities)
 		{
-			if (commands.Count == 0)
+			if (entities.Count == 0)
 				return 0;
 
 			var commandParameters = new List<DbParameter>();
 			var commandTextBuilder = new StringBuilder();
-			foreach (var command in commands)
-				AppendCommand(command, commandParameters, commandTextBuilder);
+
+			AppendSqlCommands(commandType, entityType, entities, commandParameters, commandTextBuilder);
 
 			using (var dbCommand = _persistenceTransaction.Connection.CreateCommand())
 			{
@@ -67,28 +72,58 @@ namespace Rhetos.Dom.DefaultConcepts
 			}
 		}
 
-		private void AppendCommand(PersistenceStorageCommand command, List<DbParameter> commandParameters, StringBuilder commandTextBuilder)
-		{
-			if (command.CommandType == PersistenceStorageCommandType.Insert)
-			{
-				AppendInsertCommand(commandParameters, commandTextBuilder, command.Entity, _persistenceMappingConfiguration.GetMapping(command.EntityType));
-			}
-			if (command.CommandType == PersistenceStorageCommandType.Update)
-			{
-				AppendUpdateCommand(commandParameters, commandTextBuilder, command.Entity, _persistenceMappingConfiguration.GetMapping(command.EntityType));
-			}
-			if (command.CommandType == PersistenceStorageCommandType.Delete)
-			{
-				AppendDeleteCommand(commandTextBuilder, command.Entity, _persistenceMappingConfiguration.GetMapping(command.EntityType));
-			}
-		}
+        private void AppendSqlCommands(PersistenceStorageCommandType commandType, Type entityType, IReadOnlyCollection<IEntity> entities, List<DbParameter> commandParameters, StringBuilder commandTextBuilder)
+        {
+            if (commandType == PersistenceStorageCommandType.Insert)
+            {
+				foreach (var entity in entities)
+					AppendInsertCommand(commandParameters, commandTextBuilder, entity, _persistenceMappingConfiguration.GetMapping(entityType), entity == entities.First(), entity == entities.Last());
+            }
+            else if (commandType == PersistenceStorageCommandType.Update)
+            {
+                foreach (var entity in entities)
+                    AppendUpdateCommand(commandParameters, commandTextBuilder, entity, _persistenceMappingConfiguration.GetMapping(entityType));
+            }
+            else if (commandType == PersistenceStorageCommandType.Delete)
+            {
+                foreach (var entity in entities)
+                    AppendDeleteCommand(commandParameters, commandTextBuilder, entity, _persistenceMappingConfiguration.GetMapping(entityType), entity == entities.First(), entity == entities.Last());
+            }
+            else
+                throw new ArgumentException($"Unexpected command type '{commandType}'.");
+        }
 
-		private void AppendInsertCommand(List<DbParameter> commandParameters, StringBuilder commandTextBuilder, IEntity entity, IPersistenceStorageObjectMapper mapper)
+		private void AppendInsertCommand(List<DbParameter> commandParameters, StringBuilder commandTextBuilder, IEntity entity, IPersistenceStorageObjectMapper mapper, bool isFirst, bool isLast)
 		{
 			var parameters = mapper.GetParameters(entity);
 			InitializeAndAppendParameters(commandParameters, parameters);
-			AppendInsertCommandTextForType(parameters, mapper.GetTableName(), commandTextBuilder);
-		}
+
+			if (_commonConceptsRuntimeOptions.LegacySqlCommandBatchSeparatedQueries)
+			{
+				AppendInsertPartColumns(parameters, mapper.GetTableName(), commandTextBuilder);
+				AppendInsertPartValues(parameters, commandTextBuilder);
+                commandTextBuilder.Append(';');
+            }
+			else
+			{
+                // Grouping multiple records into a single query "INSERT INTO .. VALUES (1..), (2..), (3..), ..;"
+                // resulted with 30x performance improvements on when inserting 10000 records into a test table
+                // (MS SQL, Common.Role, with Logging and 2 cascade-delete details),
+                // with CommonConceptsRuntimeOptions.SaveSqlCommandBatchSize set to 20,
+                // compared to a query for each record "INSERT INTO .. VALUES (1..); INSERT INTO .. VALUES (2..); INSERT INTO .. (VALUES 3..); ..."
+                // when CommonConceptsRuntimeOptions.LegacySeparatedInsertsSqlCommandBatch is set to true.
+
+                if (isFirst)
+					AppendInsertPartColumns(parameters, mapper.GetTableName(), commandTextBuilder);
+				else
+					commandTextBuilder.Append(',');
+
+                AppendInsertPartValues(parameters, commandTextBuilder);
+
+                if (isLast)
+                    commandTextBuilder.Append(';');
+            }
+        }
 
 		private void InitializeAndAppendParameters(List<DbParameter> commandParameters, PersistenceStorageObjectParameter[] parameters)
 		{
@@ -111,32 +146,60 @@ namespace Rhetos.Dom.DefaultConcepts
 				AppendEmptyUpdateCommandTextForType(parameters, mapper.GetTableName(), commandTextBuilder);
 		}
 
-		private void AppendDeleteCommand(StringBuilder commandTextBuilder, IEntity entity, IPersistenceStorageObjectMapper mapper)
+		private void AppendDeleteCommand(List<DbParameter> commandParameters, StringBuilder commandTextBuilder, IEntity entity, IPersistenceStorageObjectMapper mapper, bool isFirst, bool isLast)
 		{
-			var entityName = mapper.GetTableName();
-			commandTextBuilder.Append($@"DELETE FROM {entityName} WHERE ID = '{entity.ID}';");
+            var parameter = new PersistenceStorageObjectParameter("ID", new SqlParameter("", System.Data.SqlDbType.UniqueIdentifier) { Value = entity.ID });
+            InitializeAndAppendParameters(commandParameters, new[] { parameter });
+            var entityName = mapper.GetTableName();
+
+            if (_commonConceptsRuntimeOptions.LegacySqlCommandBatchSeparatedQueries || (isFirst == true && isLast == true))
+			{
+                // Sending a parameter instead of the GUID constant may improve DB performance because of execution plan reuse,
+                // but on the test that deletes 10000 records from a test table (MS SQL, Common.Role, with Logging and 2 cascade-delete details),
+                // literal value performed more then 2x faster.
+                // For more records with "WHERE ID IN", parametrized values were faster.
+
+                commandTextBuilder.Append($@"DELETE FROM {entityName} WHERE ID = {parameter.DbParameter};");
+            }
+			else
+			{
+                if (isFirst)
+					commandTextBuilder.Append($"DELETE FROM {entityName} WHERE ID IN (");
+				else
+                    commandTextBuilder.Append(", ");
+
+                commandTextBuilder.Append(parameter.DbParameter);
+
+                if (isLast)
+                    commandTextBuilder.Append($");");
+            }
 		}
 
-		private void AppendInsertCommandTextForType(PersistenceStorageObjectParameter[] parameters, string tableFullName, StringBuilder commandTextBuilder)
-		{
-			commandTextBuilder.Append("INSERT INTO " + tableFullName + " (");
-			foreach (var keyValue in parameters)
-			{
-				commandTextBuilder.Append(keyValue.PropertyName + ", ");
-			}
-			commandTextBuilder.Length -= 2;
+        private void AppendInsertPartColumns(PersistenceStorageObjectParameter[] parameters, string tableFullName, StringBuilder commandTextBuilder)
+        {
+            commandTextBuilder.Append("INSERT INTO " + tableFullName + " (");
+            foreach (var keyValue in parameters)
+            {
+                commandTextBuilder.Append(keyValue.PropertyName + ", ");
+            }
+            commandTextBuilder.Length -= 2;
 
-			commandTextBuilder.Append(") VALUES (");
+            commandTextBuilder.Append(") VALUES ");
+        }
 
-			foreach (var keyValue in parameters)
-			{
-				commandTextBuilder.Append(keyValue.DbParameter.ParameterName + ", ");
-			}
-			commandTextBuilder.Length -= 2;
-			commandTextBuilder.Append(");");
-		}
+        private void AppendInsertPartValues(PersistenceStorageObjectParameter[] parameters, StringBuilder commandTextBuilder)
+        {
+            commandTextBuilder.Append('(');
 
-		private void AppendUpdateCommandTextForType(PersistenceStorageObjectParameter[] parameters, string tableFullName, StringBuilder commandTextBuilder)
+            foreach (var keyValue in parameters)
+            {
+                commandTextBuilder.Append(keyValue.DbParameter.ParameterName + ", ");
+            }
+            commandTextBuilder.Length -= 2;
+            commandTextBuilder.Append(')');
+        }
+
+        private void AppendUpdateCommandTextForType(PersistenceStorageObjectParameter[] parameters, string tableFullName, StringBuilder commandTextBuilder)
 		{
 			commandTextBuilder.Append("UPDATE " + tableFullName + " SET ");
 			foreach (var keyValue in parameters)

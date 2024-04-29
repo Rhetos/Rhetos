@@ -18,6 +18,7 @@
 */
 
 using System.Collections.Generic;
+using System;
 
 namespace Rhetos.Dom.DefaultConcepts
 {
@@ -26,6 +27,6 @@ namespace Rhetos.Dom.DefaultConcepts
     /// </summary>
     public interface IPersistenceStorageCommandBatch
     {
-        int Execute(IList<PersistenceStorageCommand> commands);
+        int Execute(PersistenceStorageCommandType commandType, Type entityType, IReadOnlyCollection<IEntity> entities);
     }
 }

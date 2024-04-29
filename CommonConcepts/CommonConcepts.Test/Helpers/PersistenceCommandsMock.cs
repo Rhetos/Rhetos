@@ -18,18 +18,31 @@
 */
 
 using Rhetos.Dom.DefaultConcepts;
+using System;
 using System.Collections.Generic;
 
 namespace CommonConcepts.Test
 {
     public class PersistenceCommandsMock : IPersistenceStorageCommandBatch
     {
-        public List<IList<PersistenceStorageCommand>> CommandBatchesLog { get; set; } = new List<IList<PersistenceStorageCommand>>();
+        private readonly IPersistenceStorageCommandBatch _baseCommandExecuter;
 
-        public int Execute(IList<PersistenceStorageCommand> commands)
+        public Log CommandsLog { get; }
+
+        public PersistenceCommandsMock(IPersistenceStorageCommandBatch baseCommandExecuter, Log persistenceCommandsLog)
         {
-            CommandBatchesLog.Add(commands);
-            return commands.Count;
+            _baseCommandExecuter = baseCommandExecuter;
+            CommandsLog = persistenceCommandsLog;
+        }
+
+        public int Execute(PersistenceStorageCommandType commandType, Type entityType, IReadOnlyCollection<IEntity> entities)
+        {
+            CommandsLog.Add((commandType, entityType, entities));
+            return _baseCommandExecuter?.Execute(commandType, entityType, entities) ?? 0;
+        }
+
+        public class Log : List<(PersistenceStorageCommandType commandType, Type entityType, IReadOnlyCollection<IEntity> entities)>
+        {
         }
     }
 }

@@ -57,29 +57,30 @@ namespace Rhetos.Dom.DefaultConcepts
             var entityType = typeof(TEntity);
             for (int batchStart = 0; batchStart < entities.Count; batchStart += _options.SaveSqlCommandBatchSize)
             {
-                var commands = entities.Skip(batchStart).Take(_options.SaveSqlCommandBatchSize)
-                    .Select(e => new PersistenceStorageCommand { CommandType = commandType, Entity = e, EntityType = entityType })
-                    .ToList();
-                var numberOfAffectedRows = _persistenceCommandBatch.Execute(commands);
-                CheckRowCount(numberOfAffectedRows, commands, commandType, entityType);
+                var batchEntities = entities.Skip(batchStart).Take(_options.SaveSqlCommandBatchSize).ToList();
+
+                var numberOfAffectedRows = _persistenceCommandBatch.Execute(commandType, entityType, batchEntities);
+
+                CheckRowCount(numberOfAffectedRows, commandType, entityType, batchEntities);
             }
         }
 
-        private void CheckRowCount(int numberOfAffectedRows, List<PersistenceStorageCommand> commands, PersistenceStorageCommandType commandType, Type entityType)
+        private void CheckRowCount(int numberOfAffectedRows, PersistenceStorageCommandType commandType, Type entityType, IReadOnlyCollection<IEntity> entities)
         {
-            if (numberOfAffectedRows < commands.Count && (commandType == PersistenceStorageCommandType.Delete || commandType == PersistenceStorageCommandType.Update))
+            int entityCount = entities.Count;
+            if (numberOfAffectedRows < entityCount && (commandType == PersistenceStorageCommandType.Delete || commandType == PersistenceStorageCommandType.Update))
             {
                 string message = commandType == PersistenceStorageCommandType.Update
                     ? "Updating a record that does not exist in database."
                     : "Deleting a record that does not exist in database.";
 
-                if (commands.Count == 1) // If there are multiple records, there is no information on which record is missing.
-                    message += " ID=" + commands.Single().Entity.ID.ToString();
+                if (entityCount == 1) // If there are multiple records, there is no information on which record is missing.
+                    message += " ID=" + entities.Single().ID.ToString();
 
                 throw new NonexistentRecordException(message);
             }
-            else if (numberOfAffectedRows != commands.Count)
-                throw new FrameworkException($"Unexpected number of rows affected on insert of '{entityType}'. Row count {numberOfAffectedRows}, expected {commands.Count}.");
+            else if (numberOfAffectedRows != entityCount)
+                throw new FrameworkException($"Unexpected number of rows affected on insert of '{entityType}'. Row count {numberOfAffectedRows}, expected {entityCount}.");
         }
 
         private List<TEntity> GetSorted<TEntity>(IEnumerable<TEntity> entities, bool reverse = false) where TEntity : IEntity

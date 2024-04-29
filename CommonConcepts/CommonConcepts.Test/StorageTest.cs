@@ -183,45 +183,21 @@ namespace CommonConcepts.Test
             using (var scope = TestScope.Create())
             {
                 var context = scope.Resolve<Common.ExecutionContext>();
-
-                var entityID = Guid.NewGuid();
-
-                context.PersistenceStorage.Insert(new List<TestStorage.EntityWithNoProperty> { new TestStorage.EntityWithNoProperty { ID = entityID } });
-
                 var sqlCommandBatch = scope.Resolve<IPersistenceStorageCommandBatch>();
 
-                int rowCount1 = sqlCommandBatch
-                    .Execute(new[]
-                    {
-                        new PersistenceStorageCommand
-                        {
-                            CommandType = PersistenceStorageCommandType.Update,
-                            Entity = new TestStorage.EntityWithNoProperty { ID = entityID },
-                            EntityType = typeof(TestStorage.EntityWithNoProperty)
-                        }
-                    });
-                Assert.AreEqual(1, rowCount1, "Event though update is not required, it should be executed for consistency, to verify if the record exists.");
+                Assert.AreEqual(0,
+                    sqlCommandBatch.Execute(PersistenceStorageCommandType.Update, typeof(TestStorage.EntityWithNoProperty), Array.Empty<TestStorage.EntityWithNoProperty>()),
+                    "Event though update is not required, it should be executed for consistency, to verify if the record exists.");
 
-                int rowCount2 = sqlCommandBatch
-                    .Execute(new[]
-                    {
-                        new PersistenceStorageCommand
-                        {
-                            CommandType = PersistenceStorageCommandType.Insert,
-                            Entity = new TestStorage.Simple { ID = Guid.NewGuid() },
-                            EntityType = typeof(TestStorage.Simple)
-                        },
-                        new PersistenceStorageCommand
-                        {
-                            CommandType = PersistenceStorageCommandType.Update,
-                            Entity = new TestStorage.EntityWithNoProperty { ID = entityID },
-                            EntityType = typeof(TestStorage.EntityWithNoProperty)
-                        }
-                    });
-                Assert.AreEqual(2, rowCount2, "Multiple updates.");
+                var entitiesNP = new[] { new TestStorage.EntityWithNoProperty { ID = Guid.NewGuid() }, new TestStorage.EntityWithNoProperty { ID = Guid.NewGuid() } };
+                context.PersistenceStorage.Insert(entitiesNP);
 
-                // Event if update is not needed, repository.Update() should not throw an exception.
-                context.Repository.TestStorage.EntityWithNoProperty.Update(new TestStorage.EntityWithNoProperty { ID = entityID });
+                Assert.AreEqual(2,
+                    sqlCommandBatch.Execute(PersistenceStorageCommandType.Update, typeof(TestStorage.EntityWithNoProperty), entitiesNP),
+                    "Event though update is not required, it should be executed for consistency, to verify if the record exists.");
+
+                // Even if update is not needed because there are no non-key properties, repository.Update() should *not* throw an exception.
+                context.Repository.TestStorage.EntityWithNoProperty.Update(entitiesNP);
             }
         }
 
@@ -539,11 +515,11 @@ namespace CommonConcepts.Test
         [TestMethod]
         public void BatchNumberCountTest()
         {
-            var commandBatchesLog = new PersistenceCommandsDecorator.Log();
+            var commandBatchesLog = new PersistenceCommandsMock.Log();
 
             using (var scope = TestScope.Create(builder =>
                 {
-                    builder.RegisterDecorator<PersistenceCommandsDecorator, IPersistenceStorageCommandBatch>();
+                    builder.RegisterDecorator<PersistenceCommandsMock, IPersistenceStorageCommandBatch>();
                     builder.RegisterInstance(commandBatchesLog);
                     builder.RegisterInstance(new CommonConceptsRuntimeOptions { SaveSqlCommandBatchSize = 3 });
                 }
@@ -555,57 +531,38 @@ namespace CommonConcepts.Test
                 {
                     var entities = GenerateSimpleEntities(2);
                     commandBatchesLog.Clear();
-                    persistenceStorage.Insert(entities[0], entities[1]);
+                    persistenceStorage.Insert(entities);
 
-                    Assert.AreEqual("2", TestUtility.Dump(commandBatchesLog, batch => batch.Count));
+                    Assert.AreEqual("2", TestUtility.Dump(commandBatchesLog, batch => batch.entities.Count));
                     AssertItemsExists(context.Repository, entities);
                 }
 
                 {
                     var entities = GenerateSimpleEntities(3);
                     commandBatchesLog.Clear();
-                    persistenceStorage.Insert(entities[0], entities[1], entities[2]);
+                    persistenceStorage.Insert(entities);
 
-                    Assert.AreEqual("3", TestUtility.Dump(commandBatchesLog, batch => batch.Count));
+                    Assert.AreEqual("3", TestUtility.Dump(commandBatchesLog, batch => batch.entities.Count));
                     AssertItemsExists(context.Repository, entities);
                 }
 
                 {
                     var entities = GenerateSimpleEntities(4);
                     commandBatchesLog.Clear();
-                    persistenceStorage.Insert(entities[0], entities[1], entities[2], entities[3]);
+                    persistenceStorage.Insert(entities);
 
-                    Assert.AreEqual("3, 1", TestUtility.Dump(commandBatchesLog, batch => batch.Count));
+                    Assert.AreEqual("3, 1", TestUtility.Dump(commandBatchesLog, batch => batch.entities.Count));
                     AssertItemsExists(context.Repository, entities);
-                }
-                {
-                    var entities = GenerateSimpleEntities(1);
+                    Assert.AreEqual(4, context.Repository.TestStorage.Simple.Query(entities.Select(e => e.ID)).Count());
 
-                    var commandBatch = scope.Resolve<IPersistenceStorageCommandBatch>();
-                    int rowCount = commandBatch.Execute(new[]
-                    {
-                        new PersistenceStorageCommand
-                        {
-                            CommandType = PersistenceStorageCommandType.Insert,
-                            Entity = entities[0],
-                            EntityType = typeof(TestStorage.Simple)
-                        },
-                        new PersistenceStorageCommand
-                        {
-                            CommandType = PersistenceStorageCommandType.Update,
-                            Entity = entities[0],
-                            EntityType = typeof(TestStorage.Simple)
-                        },
-                        new PersistenceStorageCommand
-                        {
-                            CommandType = PersistenceStorageCommandType.Update,
-                            Entity = entities[0],
-                            EntityType = typeof(TestStorage.Simple)
-                        },
-                    });
-
-                    Assert.AreEqual(3, rowCount);
+                    persistenceStorage.Update(entities);
+                    Assert.AreEqual("3, 1, 3, 1", TestUtility.Dump(commandBatchesLog, batch => batch.entities.Count));
                     AssertItemsExists(context.Repository, entities);
+                    Assert.AreEqual(4, context.Repository.TestStorage.Simple.Query(entities.Select(e => e.ID)).Count());
+
+                    persistenceStorage.Delete(entities);
+                    Assert.AreEqual("3, 1, 3, 1, 3, 1", TestUtility.Dump(commandBatchesLog, batch => batch.entities.Count));
+                    Assert.AreEqual(0, context.Repository.TestStorage.Simple.Query(entities.Select(e => e.ID)).Count());
                 }
             }
         }
@@ -712,10 +669,15 @@ namespace CommonConcepts.Test
             // Sorting of updated and deleted record works only with the information provided in the given records.
             // It will not load fresh records from database to analyze the dependencies.
 
-            var commandsMock = new PersistenceCommandsMock();
+            var commandBatchesLog = new PersistenceCommandsMock.Log();
 
-            using (var scope = TestScope.Create(
-                builder => builder.RegisterInstance<IPersistenceStorageCommandBatch>(commandsMock)))
+            using (var scope = TestScope.Create(builder =>
+            {
+                builder.RegisterDecorator<PersistenceCommandsMock, IPersistenceStorageCommandBatch>();
+                builder.RegisterInstance(commandBatchesLog);
+                builder.RegisterInstance(new CommonConceptsRuntimeOptions { SaveSqlCommandBatchSize = 3 });
+            }
+            ))
             {
                 var persistenceStorage = scope.Resolve<IPersistenceStorage>();
 
@@ -750,12 +712,12 @@ namespace CommonConcepts.Test
                             ParentID = !string.IsNullOrEmpty(r.ParentName) ? (Guid?)records[r.ParentName].ID : null
                         }).ToList();
 
-                    commandsMock.CommandBatchesLog.Clear();
+                    commandBatchesLog.Clear();
 
                     persistenceStorage.Insert(entities);
 
-                    var saved = commandsMock.CommandBatchesLog
-                        .SelectMany(batch => batch.Select(command => ((TestStorage.SelfReferencing)command.Entity).Name));
+                    var saved = commandBatchesLog
+                        .SelectMany(batch => batch.entities.Select(e => ((TestStorage.SelfReferencing)e).Name));
 
                     Assert.AreEqual(test.ExpectedOrder, TestUtility.Dump(saved));
                 }
