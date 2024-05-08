@@ -1,5 +1,35 @@
 ﻿# Rhetos release notes
 
+## 5.5.0 (TO BE RELEASED)
+
+### New features
+
+* New concept **UniqueWhereNotNull**, for creating a unique constraint that disregards NULL values.
+  Example: `ShortString Name { UniqueWhereNotNull; }`.
+* New concept **Where**, for extending the **Unique** concept to create a [filtered index](https://learn.microsoft.com/en-us/sql/t-sql/statements/create-index-transact-sql?view=sql-server-ver16#where-filter_predicate) (issue #177).
+  Example: `ShortString Name { Unique { Where "Name IS NOT NULL"; Where "Name > 'N'"; } }`
+* New concept **Include**, for extending **SqlIndexMultiple** to create a [covering index](https://learn.microsoft.com/en-us/sql/relational-databases/indexes/create-indexes-with-included-columns?view=sql-server-ver16).
+  Example: `SqlIndexMultiple 'Name Title' { Include 'Description ID'; }`
+* New concept **Options**, for extending **SqlIndexMultiple** with custom SQL options.
+  Example: `SqlIndexMultiple 'Name Title' { Options "WHERE Name IS NOT NULL"; }`
+* New helper methods for custom database locks: `ISqlExecuter.GetDbLock` and `ISqlExecuter.ReleaseDbLock`. GetDbLock calls `sp_getapplock` with improved error handling. It can be used to prevent db deadlocks on parallel requests.
+
+### Internal improvements
+
+* Optimization: Grouping multiple insert and delete SQL commands into a single command with multiple values. For backward compatibility with existing custom triggers, this feature is disabled by default. **Enable** it by setting option `CommonConcepts:SqlCommandBatchSeparateQueries` to `false`.
+* Optimization: Generating EF mapping view cache on app startup, if not already generated on initial dbupdate (common on environments with multiple web servers).
+* Bugfix: The data migration scripts do not update data when only the letter case is changed (issue #459).
+* Bugfix: SqlDataReader left open after an exception. In practice it should not affect the Rhetos apps, since the SQL transaction should not be used in the same scope after the SQL exception occurred, but there might be some edge cases where it might cause additional exception or prolonged database locks.
+* Bugfix: Updating multiple records with circular references causes an exception.
+* Bugfix: Logging on entity with LinkedItems fails on dbupdate with SqlException.
+* Bugfix: On authorization error, while UserMessage is localized, the SystemMessage should not be localized.
+* Localized entity names in UserException for foreign key constraint errors.
+* New RhetosAppOptions property RhetosAppAssemblyFileName.
+* Embedding PDBs into DLLs to simplify debugging. Removed NuGet symbols packages.
+* Updated Oracle.ManagedDataAccess.Core from 3.21.50 to 3.21.120.
+* Updated Newtonsoft.Json from 13.0.1 to 13.0.3.
+* Updated System.Data.SqlClient from 4.8.5 to 4.8.6.
+
 ## 5.4.0 (2023-03-16)
 
 ### New features
