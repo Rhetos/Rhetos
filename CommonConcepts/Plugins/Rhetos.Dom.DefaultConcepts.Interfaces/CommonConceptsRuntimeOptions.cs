@@ -39,7 +39,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// In both cases, the number of records in a batch is limited by <see cref="SaveSqlCommandBatchSize"/>.
         /// This option may influence the insert and delete triggers on the table: when true, the triggers will always receive a single record.
         /// </summary>
-        public bool LegacySqlCommandBatchSeparatedQueries { get; set; } = true;
+        public bool SqlCommandBatchSeparateQueries { get; set; } = true;
 
         /// <summary>
         /// If set to false, the application will throw exception if the decimal scale of the value being written is more than 2.

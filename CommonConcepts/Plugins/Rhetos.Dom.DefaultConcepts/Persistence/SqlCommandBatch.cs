@@ -98,7 +98,7 @@ namespace Rhetos.Dom.DefaultConcepts
 			var parameters = mapper.GetParameters(entity);
 			InitializeAndAppendParameters(commandParameters, parameters);
 
-			if (_commonConceptsRuntimeOptions.LegacySqlCommandBatchSeparatedQueries)
+			if (_commonConceptsRuntimeOptions.SqlCommandBatchSeparateQueries)
 			{
 				AppendInsertPartColumns(parameters, mapper.GetTableName(), commandTextBuilder);
 				AppendInsertPartValues(parameters, commandTextBuilder);
@@ -152,7 +152,7 @@ namespace Rhetos.Dom.DefaultConcepts
             InitializeAndAppendParameters(commandParameters, new[] { parameter });
             var entityName = mapper.GetTableName();
 
-            if (_commonConceptsRuntimeOptions.LegacySqlCommandBatchSeparatedQueries || (isFirst == true && isLast == true))
+            if (_commonConceptsRuntimeOptions.SqlCommandBatchSeparateQueries || (isFirst == true && isLast == true))
 			{
                 // Sending a parameter instead of the GUID constant may improve DB performance because of execution plan reuse,
                 // but on the test that deletes 10000 records from a test table (MS SQL, Common.Role, with Logging and 2 cascade-delete details),
