@@ -37,7 +37,9 @@ namespace CommonConcepts.Test
             _log = log;
         }
 
-        public int GetTransactionCount() => 1;
+        public int GetTransactionInitialState() => 1;
+
+        public string CheckTransactionState(int initialState) => null;
 
         public void ExecuteReader(string command, Action<DbDataReader> action)
         {

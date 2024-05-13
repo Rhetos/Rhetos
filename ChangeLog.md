@@ -52,6 +52,7 @@ Changes in Rhetos libraries API:
   * Replace `.Get<ICsPropertyType<PropertyInfo>>` with `.Get<ICsPropertyType>`.
   * Replace `.Get<IDatabaseColumnName<PropertyInfo>>` with `.Get<IDatabaseColumnName>`.
   * Replace `.Get<IDatabaseColumnType<PropertyInfo>>` with `.Get<IDatabaseColumnType>`.
+* The method `ISqlExecuter.GetTransactionCount` is replaced with `GetTransactionInitialState` and `CheckTransactionState`.
 * The AutoCodeHelper.UpdateCodesWithoutCache method has new parameter "ISqlUtility".
   * Replace `AutoCodeHelper.UpdateCodesWithoutCache(_executionContext.SqlExecuter, ...` with `AutoCodeHelper.UpdateCodesWithoutCache(_executionContext.SqlExecuter, _executionContext.SqlUtility, ...`.
 * The **Rhetos.TestCommon** package has updated MSTest.TestFramework referece from v2.1.0 to v3.2.2.

@@ -35,11 +35,11 @@ namespace Rhetos.Utilities
         /// <remarks>
         /// This method:
         /// <list type="number">
-        /// <item>Splits the scripts by the SQL batch delimiter ("GO", for Microsoft SQL Server). See <see cref="SqlUtility.SplitBatches(string)"/>.</item>
-        /// <item>Detects and applies the transaction usage tag. See <see cref="SqlUtility.NoTransactionTag"/> and <see cref="SqlUtility.ScriptSupportsTransaction(string)"/>.</item>
+        /// <item>Splits the scripts by the SQL batch delimiter ("GO", for Microsoft SQL Server). See <see cref="SqlUtility.SplitBatches"/>.</item>
+        /// <item>Detects and applies the transaction usage tag. See <see cref="SqlUtility.NoTransactionTag"/> and <see cref="SqlUtility.ScriptSupportsTransaction"/>.</item>
         /// <item>Reports progress (Info level) after each minute.</item>
         /// <item>Prefixes each SQL script with a comment containing the script's name, for better diagnostics.</item>
-        /// <item>Checks if transaction is in correct state after executed SQL commands, see <see cref="ISqlExecuter.GetTransactionCount"/>.</item>
+        /// <item>Checks if transaction is in correct state after executed SQL commands, see <see cref="ISqlExecuter.CheckTransactionState"/>.</item>
         /// </list>
         /// </remarks>
         void Execute(IEnumerable<SqlBatchScript> sqlScripts);

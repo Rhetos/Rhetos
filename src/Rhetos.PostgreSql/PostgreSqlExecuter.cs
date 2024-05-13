@@ -79,14 +79,27 @@ namespace Rhetos.PostgreSql
         }
 
         /// <summary>
-        /// HACK: PostgreSQL does not have the transaction count, but Rhetos.PostgreSql uses the existing interface to check for transaction ID instead.
+        /// Returns the transaction ID.
         /// </summary>
-        public int GetTransactionCount()
+        public int GetTransactionInitialState()
         {
             using var command = _persistenceTransaction.Connection.CreateCommand();
             command.Transaction = _persistenceTransaction.Transaction;
             command.CommandText = "select pg_current_xact_id()";
             return (int)(ulong)command.ExecuteScalar();
+        }
+
+        /// <summary>
+        /// Checks the transaction ID after executing a critical SQL code, for the purpose of checking if the transaction have been closed or reopened by an SQL script, or other undetected errors.
+        /// </summary>
+        public string CheckTransactionState(int initialState)
+        {
+            var tranId = GetTransactionInitialState();
+            if (tranId != initialState)
+                return "Database transaction state has been unexpectedly modified in the SQL commands."
+                    + $" Transaction ID is {tranId}, expected value is {initialState}.";
+            else
+                return null;
         }
 
         public void GetDbLock(IEnumerable<string> resources, bool wait = true)

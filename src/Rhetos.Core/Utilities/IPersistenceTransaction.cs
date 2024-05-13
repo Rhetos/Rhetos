@@ -82,7 +82,7 @@ namespace Rhetos.Persistence
         DbConnection Connection { get; }
 
         /// <summary>
-        /// Returns null if the <see cref="Connection"/> is not used yet.
+        /// Returns null if the <see cref="Connection"/> is not used yet, or the transaction is suppressed with <see cref="PersistenceTransactionOptions.UseDatabaseTransaction"/>.
         /// Do not close or modify this transaction directly.
         /// See the <see cref="Connection"/> property for more details.
         /// </summary>

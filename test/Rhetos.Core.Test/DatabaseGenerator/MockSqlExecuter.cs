@@ -65,7 +65,9 @@ namespace Rhetos.DatabaseGenerator.Test
             _mockSqlExecuterReport = mockSqlExecuterReport;
         }
 
-        public int GetTransactionCount() => _persistenceTransactionOptions.UseDatabaseTransaction ? 1 : 0;
+        public int GetTransactionInitialState() => _persistenceTransactionOptions.UseDatabaseTransaction ? 1 : 0;
+
+        public string CheckTransactionState(int initialState) => null;
 
         public void ExecuteReaderRaw(string query, object[] parameters, Action<DbDataReader> read)
         {

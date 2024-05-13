@@ -145,11 +145,9 @@ namespace Rhetos.Utilities
                 using (var scope = CreateUnitOfWorkScope(useTransaction))
                 {
                     var scopeSqlExecuter = scope.Resolve<ISqlExecuter>();
-                    // HACK: PostgreSQL does not have the transaction count, but Rhetos.PostgreSql uses the existing interface to check for transaction ID instead,
-                    // for the same purpose of checking if the transaction have been closed or reopened by an SQL script, or other undetected errors.
-                    var tranId = scopeSqlExecuter.GetTransactionCount();
+                    var initialTransactionState = scopeSqlExecuter.GetTransactionInitialState();
                     sqlExecuterAction.Invoke(scopeSqlExecuter);
-                    CheckTransactionId(scopeSqlExecuter, tranId, errorContext);
+                    CheckTransactionState(scopeSqlExecuter, initialTransactionState, errorContext);
                     scope.CommitAndClose();
                 }
             }
@@ -171,19 +169,16 @@ namespace Rhetos.Utilities
             });
         }
 
-        private void CheckTransactionId(ISqlExecuter scopeSqlExecuter, int expectedTranId, IList<SqlBatchScript> errorContext)
+        private void CheckTransactionState(ISqlExecuter scopeSqlExecuter, int initialTransactionState, IList<SqlBatchScript> errorContext)
         {
-            var tranId = scopeSqlExecuter.GetTransactionCount(); // HACK: PostgreSQL does not have the transaction count, but Rhetos.PostgreSql uses the existing interface to check for transaction ID instead.
-            if (tranId != expectedTranId)
+            string error = scopeSqlExecuter.CheckTransactionState(initialTransactionState);
+            if (error != null)
             {
-                string msg = "Database transaction state has been unexpectedly modified in SQL commands."
-                    + $" Transaction ID is {tranId}, expected value is {expectedTranId}.";
-
                 if (errorContext != null)
                 {
-                    var log = new StringBuilder(msg);
-                    msg += " See error log for more information.";
+                    error += " See error log for more information.";
 
+                    var log = new StringBuilder(error);
                     log.AppendLine($" Executed {errorContext.Count} commands:");
                     for (int i = 0; i < Math.Min(errorContext.Count, _options.ErrorReportCommandsLimit); i++)
                     {
@@ -193,10 +188,10 @@ namespace Rhetos.Utilities
                     if (errorContext.Count > _options.ErrorReportCommandsLimit)
                         log.AppendLine($"... (total {errorContext.Count} scripts)");
 
-                    _logger.Error(() => log.ToString());
+                    _logger.Error(log.ToString);
                 }
 
-                throw new FrameworkException(msg);
+                throw new FrameworkException(error);
             }
         }
 

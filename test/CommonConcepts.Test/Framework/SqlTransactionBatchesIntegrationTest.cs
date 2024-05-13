@@ -53,17 +53,17 @@ namespace CommonConcepts.Test.Framework
 
                 TestUtility.ShouldFail<FrameworkException>(
                     () => stb.Execute(scripts),
-                    "FrameworkException: Database transaction state has been unexpectedly modified in SQL commands."
-                        + " Transaction count is 2, expected value is 1."
-                        + " See error log for more information.");
+                    "FrameworkException: Database transaction state has been unexpectedly modified in the SQL commands.",
+                    "Transaction count is 2, expected value is 1.",
+                    "See error log for more information.");
 
                 string logReport = string.Join(Environment.NewLine, log);
 
                 TestUtility.AssertContains(logReport, new[]
                 {
-                    "Database transaction state has been unexpectedly modified in SQL commands."
-                        + " Transaction count is 2, expected value is 1."
-                        + " Executed 3 commands:",
+                    "Database transaction state has been unexpectedly modified in the SQL commands.",
+                    "Transaction count is 2, expected value is 1.",
+                    "Executed 3 commands:",
                     "0: print '1'",
                     "1: begin tran",
                     "2: C:\\script2.sql",
@@ -88,17 +88,17 @@ namespace CommonConcepts.Test.Framework
 
                 TestUtility.ShouldFail<FrameworkException>(
                     () => stb.Execute(scripts),
-                    "FrameworkException: Database transaction state has been unexpectedly modified in SQL commands."
-                        + " Transaction count is 0, expected value is 1."
-                        + " See error log for more information.");
+                    "FrameworkException: Database transaction state has been unexpectedly modified in the SQL commands.",
+                    "Transaction count is 0, expected value is 1.",
+                    "See error log for more information.");
 
                 string logReport = string.Join(Environment.NewLine, log);
 
                 TestUtility.AssertContains(logReport, new[]
                 {
-                    "Database transaction state has been unexpectedly modified in SQL commands."
-                        + " Transaction count is 0, expected value is 1."
-                        + " Executed 3 commands:",
+                    "Database transaction state has been unexpectedly modified in the SQL commands.",
+                    "Transaction count is 0, expected value is 1.",
+                    "Executed 3 commands:",
                     "0: print '1'",
                     "1: rollback",
                     "2: C:\\script2.sql",

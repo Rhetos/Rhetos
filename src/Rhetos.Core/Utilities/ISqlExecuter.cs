@@ -95,18 +95,24 @@ namespace Rhetos.Utilities
         Task ExecuteReaderRawAsync(string query, object[] parameters, Action<DbDataReader> read, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Returns open transaction count for the current SQL connection.
+        /// Returns an internal information on the expected transaction state.
+        /// It is used for checking the if the transaction is in the expected state after executing the SQL commands,
+        /// to avoid silent bugs in critical cases (for example, on database update).
+        /// It should be called before executing the SQL commands, and checked after with <see cref="CheckTransactionState(int)"/>.
         /// </summary>
-        /// <remarks>
-        /// The result can differ from expected value,
-        /// for example if the transaction has already been committed or rolled back
-        /// without and error returned to the application.
-        /// Verifying transaction count is specially useful to detect a case when another database transaction
-        /// was created by SQL script or stored procedure, and left unclosed because of some a bug in the script;
-        /// it might cause silent bugs and corrupted data when the application's commit
-        /// would only reduce transaction count, but not actually commit the transaction.
-        /// </remarks>
-        int GetTransactionCount();
+        int GetTransactionInitialState();
+
+        /// <summary>
+        /// Checks if the transaction is in the expected state after executing the SQL commands,
+        /// to avoid silent bugs in critical cases (for example, on database update).
+        /// </summary>
+        /// <param name="initialState">
+        /// Provided by <see cref="GetTransactionInitialState"/> call *before* executing the SQL commands.
+        /// </param>
+        /// <returns>
+        /// Returns the error message, or <see langword="null"/> if there is no error.
+        /// </returns>
+        string CheckTransactionState(int initialState);
 
         /// <summary>
         /// Creates a custom lock in database. It blocks other parallel connections from creating a lock with the same resource name.

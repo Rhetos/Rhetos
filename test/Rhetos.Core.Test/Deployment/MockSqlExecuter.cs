@@ -126,7 +126,9 @@ namespace Rhetos.Deployment.Test
             throw new NotImplementedException();
         }
 
-        public int GetTransactionCount() => 1;
+        public int GetTransactionInitialState() => 1;
+
+        public string CheckTransactionState(int initialState) => null;
 
         public void GetDbLock(IEnumerable<string> resources, bool wait = true)
         {

@@ -72,12 +72,42 @@ namespace Rhetos.Persistence
             return errorMetadata + e.Message;
         }
 
-        public int GetTransactionCount()
+        /// <summary>
+        /// Returns the expected transaction count.
+        /// </summary>
+        public int GetTransactionInitialState()
+        {
+            var connection = _persistenceTransaction.Connection;
+            if (connection == null)
+                throw new InvalidOperationException("Database connection not available.");
+
+            // If the Transaction is not initially set, this means that this class is expected to execute queries without transaction.
+            return _persistenceTransaction.Transaction != null ? 1 : 0;
+        }
+
+        /// <summary>
+        /// Checks the open transaction count for the current SQL connection.
+        /// The result can differ from expected value if the transaction has already been committed or rolled back
+        /// without and error returned to the application.
+        /// Verifying transaction count is useful to detect a case when another database transaction
+        /// was created by SQL script or stored procedure, and left unclosed because of some a bug in the script;
+        /// it might cause silent bugs and corrupted data when the application's commit
+        /// would only reduce transaction count, but not actually commit the transaction.
+        /// </summary>
+        /// <param name="initialState">
+        /// Expected transaction count.
+        /// </param>
+        public string CheckTransactionState(int initialState)
         {
             using var command = _persistenceTransaction.Connection.CreateCommand();
             command.Transaction = _persistenceTransaction.Transaction;
             command.CommandText = "SELECT @@TRANCOUNT";
-            return (int)command.ExecuteScalar();
+            int tranCount = (int)command.ExecuteScalar();
+            if (tranCount != initialState)
+                return "Database transaction state has been unexpectedly modified in the SQL commands."
+                    + $" Transaction count is {tranCount}, expected value is {initialState}.";
+            else
+                return null;
         }
 
         public void GetDbLock(IEnumerable<string> resources, bool wait = true)
