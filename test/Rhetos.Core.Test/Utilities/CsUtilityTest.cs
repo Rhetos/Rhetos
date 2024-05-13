@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Xml.Linq;
 
 namespace Rhetos.Utilities.Test
 {
@@ -562,6 +563,26 @@ Dictionary`2<List`1<InnerClass[]>, InnerClass>";
             TestUtility.ShouldFail<ArgumentException>(
                 () => _ = CsUtility.Cast<C2>(o, "some object"),
                 "Unexpected object type. The provided 'some object' is a 'Rhetos.Utilities.Test.CsUtilityTest+C1' instead of 'Rhetos.Utilities.Test.CsUtilityTest+C2'.");
+        }
+
+        [TestMethod]
+        public void GroupItemsKeepOrderingTest()
+        {
+            var tests = new (int[] Input, string ExpectedOutput)[]
+            {
+                // The inputs are grouped by the last digit.
+                 ([ 11, 21, 31 ], "(11, 21, 31)"),
+                 ([ 11, 22, 33 ], "(11), (22), (33)"),
+                 ([ 11, 21, 32, 42, 53, 63 ], "(11, 21), (32, 42), (53, 63)"),
+                 ([ ], ""),
+            };
+
+            foreach (var test in tests)
+            {
+                var output = CsUtility.GroupItemsKeepOrdering(test.Input, e => e % 10);
+                string report = string.Join(", ", output.Select(group => "(" + string.Join(", ", group.Items) + ")"));
+                Assert.AreEqual(test.ExpectedOutput, report);
+            }
         }
     }
 }
