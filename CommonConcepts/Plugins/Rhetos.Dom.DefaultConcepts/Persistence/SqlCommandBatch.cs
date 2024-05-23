@@ -111,7 +111,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 // (MS SQL, Common.Role, with Logging and 2 cascade-delete details),
                 // with CommonConceptsRuntimeOptions.SaveSqlCommandBatchSize set to 20,
                 // compared to a query for each record "INSERT INTO .. VALUES (1..); INSERT INTO .. VALUES (2..); INSERT INTO .. (VALUES 3..); ..."
-                // when CommonConceptsRuntimeOptions.LegacySeparatedInsertsSqlCommandBatch is set to true.
+                // when CommonConceptsRuntimeOptions.SqlCommandBatchSeparateQueries is set to true.
 
                 if (isFirst)
 					AppendInsertPartColumns(parameters, mapper.GetTableName(), commandTextBuilder);
