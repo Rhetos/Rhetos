@@ -23,6 +23,7 @@
 * Bugfix: Updating multiple records with circular references causes an exception.
 * Bugfix: Logging on entity with LinkedItems fails on dbupdate with SqlException.
 * Bugfix: On authorization error, while UserMessage is localized, the SystemMessage should not be localized.
+* When using `--short-transactions` Rhetos CLI switch, the executed data-migration scripts will not be deactivated if database update fails. This is an optimization that simplifies db debugging process.
 * Localized entity names in UserException for foreign key constraint errors.
 * New RhetosAppOptions property RhetosAppAssemblyFileName.
 * Embedding PDBs into DLLs to simplify debugging. Removed NuGet symbols packages.
