@@ -35,6 +35,9 @@ namespace Rhetos.Utilities
         /// the data-migration scripts that were executed in the current dbupdate command will be executed again
         /// the next time.
         /// This feature was always enabled before Rhetos v5.
+        /// <para>
+        /// This feature is disabled by default if the <see cref="ShortTransactions"/> CLI switch is enabled.
+        /// </para>
         /// </summary>
         /// <remarks>
         /// This feature prevents data corruption in rare cases when the migration data is obsolete, but not yet applied to the main table.
