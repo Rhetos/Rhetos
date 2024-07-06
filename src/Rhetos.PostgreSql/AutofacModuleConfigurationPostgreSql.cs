@@ -39,6 +39,7 @@ namespace Rhetos.PostgreSql
             if (stage.IsBuildTime)
             {
                 builder.RegisterType<CommonConceptsBuildSqlResourcesPlugin>().As<ISqlResourcesPlugin>().SingleInstance();
+                builder.RegisterType<PostgreSqlResourcesPlugin>().As<ISqlResourcesPlugin>().SingleInstance();
             }
 
             if (stage.IsDatabaseUpdate)
@@ -51,13 +52,14 @@ namespace Rhetos.PostgreSql
                 builder.RegisterType<PostgreSqlExecuter>().As<ISqlExecuter>().InstancePerLifetimeScope();
             }
 
-            // SqlClientFactory.Instance is null at this point (Autofac Module Load), is expected to get initialized later.
-            builder.Register<DbProviderFactory>(context => NpgsqlFactory.Instance).SingleInstance();
-
-            if (stage.IsBuildTime)
+            if (stage.IsRuntime)
             {
-                builder.RegisterType<PostgreSqlResourcesPlugin>().As<ISqlResourcesPlugin>().SingleInstance();
+                builder.RegisterType<CommonConceptsRuntimeSqlResourcesPlugin>().As<ISqlResourcesPlugin>().SingleInstance();
             }
+
+            // SqlClientFactory.Instance is null at this point (at Autofac Module Load), but is expected to get initialized later.
+            // That is why it is registered with lambda expression, instead of with RegisterInstance.
+            builder.Register<DbProviderFactory>(context => NpgsqlFactory.Instance).SingleInstance();
 
             base.Load(builder);
         }

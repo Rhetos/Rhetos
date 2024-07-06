@@ -20,7 +20,7 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="Rhetos.PostgreSql\Rhetos.PostgreSql.props" target="build" />
+    <file src="Rhetos.PostgreSql\Rhetos.PostgreSql.props" target="buildTransitive" />
     <file src="Rhetos.PostgreSql\bin\Debug\net8.0\Rhetos.PostgreSql.dll" target="lib\net8.0" />
     <file src="Rhetos.PostgreSql\bin\Debug\net8.0\Rhetos.PostgreSql.xml" target="lib\net8.0" />
   </files>

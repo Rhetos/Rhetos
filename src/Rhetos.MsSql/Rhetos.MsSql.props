@@ -6,6 +6,7 @@
     <RhetosLinqPadNamespace Include="Microsoft.EntityFrameworkCore" />
   </ItemGroup>
   <PropertyGroup>
+    <DefineConstants>$(DefineConstants);RHETOS_MSSQL</DefineConstants>
     <RhetosLinqPadShowSqlExample>claims.ToQueryString().Dump("Common.Claims SQL query")%3B
         </RhetosLinqPadShowSqlExample>
   </PropertyGroup>

@@ -602,7 +602,7 @@ SELECT [c].[ID]
 FROM [TestGenericFilter].[Child] AS [c]
 WHERE [c].[ParentID] IN (
     SELECT [a].[value]
-    FROM OPENJSON(@__array_0) WITH ([value] uniqueidentifier '$') AS [a]
+    FROM OPENJSON(@__array_0) WITH ([value] UNIQUEIDENTIFIER '$') AS [a]
 )";
             using (var scope = TestScope.Create())
             {

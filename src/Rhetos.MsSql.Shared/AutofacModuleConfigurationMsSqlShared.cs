@@ -50,6 +50,11 @@ namespace Rhetos.MsSql
                 builder.RegisterType<MsSqlExecuter>().As<ISqlExecuter>().InstancePerLifetimeScope();
             }
 
+            if (stage.IsRuntime)
+            {
+                builder.RegisterType<CommonConceptsRuntimeSqlResourcesPlugin>().As<ISqlResourcesPlugin>().SingleInstance();
+            }
+
             base.Load(builder);
         }
     }

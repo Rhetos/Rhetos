@@ -71,7 +71,7 @@ namespace CommonConcepts.Test.Framework
             var unusedKeys = resourceKeys.ToHashSet();
             var usedKeys = new HashSet<string>();
 
-            string iSqlResourcesMethodCall = @"(sql|resources)\.(TryGet|Get|Format)\(";
+            string iSqlResourcesMethodCall = @"(sql|resources)\.(Get|TryGet|Format|TryFormat)\(";
             string iSqlResourcesParameter = @"\bsqlResource:";
             string iSqlResourcesOptions = $"(({iSqlResourcesMethodCall})|({iSqlResourcesParameter}))";
             var iSqlResourcesUsageRegex = new Regex(iSqlResourcesOptions + @"\s*""(?<key>.+?)""", RegexOptions.IgnoreCase);
@@ -102,6 +102,12 @@ namespace CommonConcepts.Test.Framework
                 unusedKeys.Remove($"StorageMappingDbType_{propertyType}");
 
             var usedUndefinedKeys = usedKeys.Except(resourceKeys).ToList();
+
+#if RHETOS_EF6 || RHETOS_MSSQL
+            usedUndefinedKeys.Remove("SqlIndexClusteredDatabaseDefinition_Create"); // MS SQL does not have a separate command for clustered index.
+            usedUndefinedKeys.Remove("SqlIndexClusteredDatabaseDefinition_Remove");
+            usedUndefinedKeys.Remove("PropertyLoggingDefinition_GenericPropertyDeletedLogging"); // MS SQL does not use LogPropertyDeleted tag in the logging trigger.
+#endif
 
             // The logging concepts dynamically generate resource keys based on property type.
             unusedKeys.RemoveWhere(key => key.StartsWith("PropertyLoggingDefinition_TextValue_"));

@@ -17,12 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using CommonConcepts.Test.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos;
-using Rhetos.Configuration.Autofac;
 using Rhetos.Dom.DefaultConcepts;
-using Rhetos.Dsl.DefaultConcepts;
 using Rhetos.TestCommon;
 using Rhetos.Utilities;
 using System;
@@ -41,24 +38,31 @@ namespace CommonConcepts.Test
             using var scope = TestScope.Create();
             var sqlExecuter = scope.Resolve<ISqlExecuter>();
             var sqlResources = scope.Resolve<ISqlResources>();
+            var sqlUtility = scope.Resolve<ISqlUtility>();
+
+            string testPrefix = "TestPrefix" + Guid.NewGuid().ToString();
 
             string CallGetNext(int minDigits, int quantity)
             {
                 string sql = sqlResources.Format("AutoCodeCacheGetNext_call",
-                    "TestEntity", "TestProperty", "TestGroup", "TestPrefix" + Guid.NewGuid().ToString(),
-                    minDigits, quantity);
+                    sqlUtility.QuoteText("TestEntity"),
+                    sqlUtility.QuoteText("TestProperty"),
+                    sqlUtility.QuoteText("TestGroup"),
+                    sqlUtility.QuoteText(testPrefix),
+                    minDigits,
+                    quantity);
 
-                List<(int minDigits, int lastCode)> result = [];
+                List<object> result = [];
 
                 sqlExecuter.ExecuteReader(sql, reader =>
-                    result.Add((minDigits: reader.GetInt32(0), lastCode: reader.GetInt32(1))));
+                    result.Add(new { MinDigits = reader.GetInt32(0), LastCode = reader.GetInt32(1) }));
 
                 return TestUtility.DumpSorted(result);
             }
 
-            Assert.AreEqual("minDigits: 3, lastCode: 10", CallGetNext(3, 10));
-            Assert.AreEqual("minDigits: 3, lastCode: 20", CallGetNext(2, 10));
-            Assert.AreEqual("minDigits: 4, lastCode: 30", CallGetNext(4, 10));
+            Assert.AreEqual("{ MinDigits = 3, LastCode = 10 }", CallGetNext(3, 10));
+            Assert.AreEqual("{ MinDigits = 3, LastCode = 20 }", CallGetNext(2, 10));
+            Assert.AreEqual("{ MinDigits = 4, LastCode = 30 }", CallGetNext(4, 10));
         }
 
         [TestMethod]
@@ -67,33 +71,39 @@ namespace CommonConcepts.Test
             using var scope = TestScope.Create();
             var sqlExecuter = scope.Resolve<ISqlExecuter>();
             var sqlResources = scope.Resolve<ISqlResources>();
+            var sqlUtility = scope.Resolve<ISqlUtility>();
+
+            string testPrefix = "TestPrefix" + Guid.NewGuid().ToString();
 
             string CallGetUpdate(int minDigits, int providedCode)
             {
-                string testPrefix = "TestPrefix" + Guid.NewGuid().ToString();
                 string sql = sqlResources.Format("AutoCodeCacheUpdate_call",
-                    "TestEntity", "TestProperty", "TestGroup", testPrefix,
-                    minDigits, providedCode);
+                    sqlUtility.QuoteText("TestEntity"),
+                    sqlUtility.QuoteText("TestProperty"),
+                    sqlUtility.QuoteText("TestGroup"),
+                    sqlUtility.QuoteText(testPrefix),
+                    minDigits,
+                    providedCode);
 
                 sqlExecuter.ExecuteSql(sql);
 
-                List<(int minDigits, int lastCode)> result = [];
+                List<object> result = [];
 
                 sqlExecuter.ExecuteReaderInterpolated($"SELECT MinDigits, LastCode FROM Common.AutoCodeCache where Prefix = {testPrefix}",
-                    reader => result.Add((minDigits: reader.GetInt32(0), lastCode: reader.GetInt32(1))));
+                    reader => result.Add(new { MinDigits = reader.GetInt32(0), LastCode = reader.GetInt32(1) }));
 
                 return TestUtility.DumpSorted(result);
             }
 
-            Assert.AreEqual("minDigits: 3, lastCode: 102", CallGetUpdate(3, 102));
-            Assert.AreEqual("minDigits: 3, lastCode: 102", CallGetUpdate(4, 101));
-            Assert.AreEqual("minDigits: 5, lastCode: 103", CallGetUpdate(5, 103));
+            Assert.AreEqual("{ MinDigits = 3, LastCode = 102 }", CallGetUpdate(3, 102));
+            Assert.AreEqual("{ MinDigits = 3, LastCode = 102 }", CallGetUpdate(4, 101));
+            Assert.AreEqual("{ MinDigits = 5, LastCode = 103 }", CallGetUpdate(5, 103));
         }
 
         private static void DeleteOldData(IUnitOfWorkScope scope)
         {
-            scope.Resolve<ISqlExecuter>().ExecuteSql(new[]
-                {
+            scope.Resolve<ISqlExecuter>().ExecuteSql(
+                [
                     @"DELETE FROM Common.AutoCodeCache WHERE Entity LIKE 'TestAutoCodeCached.%';
                     DELETE FROM TestAutoCodeCached.ReferenceGroup;
                     DELETE FROM TestAutoCodeCached.ShortReferenceGroup;
@@ -103,7 +113,7 @@ namespace CommonConcepts.Test
                     DELETE FROM TestAutoCodeCached.Simple;
                     DELETE FROM TestAutoCodeCached.DoubleAutoCode;
                     DELETE FROM TestAutoCodeCached.DoubleAutoCodeWithGroup;"
-                });
+                ]);
         }
 
         private static void TestSimple(Common.DomRepository repository, string format, string expectedCode)

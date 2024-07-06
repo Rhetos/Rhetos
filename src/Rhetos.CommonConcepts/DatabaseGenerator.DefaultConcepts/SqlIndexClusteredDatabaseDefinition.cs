@@ -32,10 +32,13 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
             if (!info.SqlIndex.SqlImplementation())
                 return;
 
+            // There are two approaches in this method:
+            // Approach 1: MS SQL adds "CLUSTERED" option to the standard index create query.
             string clusteredOptionSnippet = sql.Resources.TryGet("SqlIndexClusteredDatabaseDefinition_Options1");
             if (!string.IsNullOrEmpty(clusteredOptionSnippet))
                 sql.CodeBuilder.InsertCode("CLUSTERED ", SqlIndexMultipleDatabaseDefinition.Options1Tag, info.SqlIndex);
 
+            // Approach 2: PostgreSQL marks an index for CLUSTER after creating it.
             string clusteredStatementSnippet = sql.Resources.TryGet("SqlIndexClusteredDatabaseDefinition_Create");
             if (!string.IsNullOrEmpty(clusteredStatementSnippet))
             {

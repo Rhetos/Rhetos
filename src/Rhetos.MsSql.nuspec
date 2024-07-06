@@ -21,7 +21,7 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="Rhetos.MsSql\Rhetos.MsSql.props" target="build" />
+    <file src="Rhetos.MsSql\Rhetos.MsSql.props" target="buildTransitive" />
     <file src="Rhetos.MsSql\bin\Debug\net8.0\Rhetos.MsSql.dll" target="lib\net8.0" />
     <file src="Rhetos.MsSql\bin\Debug\net8.0\Rhetos.MsSql.xml" target="lib\net8.0" />
   </files>
