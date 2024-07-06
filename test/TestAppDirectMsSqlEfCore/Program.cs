@@ -18,6 +18,7 @@
 */
 
 using Autofac;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Rhetos;
@@ -44,3 +45,9 @@ IHost host = builder.Build();
 
 var rhetosAppOptions = host.Services.GetService<IRhetosComponent<RhetosAppOptions>>()?.Value;
 Console.WriteLine($"Running Rhetos app '{rhetosAppOptions?.RhetosAppAssemblyFileName}'.");
+
+Console.WriteLine("Executing test query:");
+var repository = host.Services.GetService<IRhetosComponent<Common.DomRepository>>().Value;
+var claims = repository.Common.Claim.Query().Take(5).Select(c => c.ClaimResource + "/" + c.ClaimRight);
+Console.WriteLine(claims.ToQueryString());
+Console.WriteLine(string.Join(Environment.NewLine, claims));
