@@ -7,12 +7,12 @@
       <highlight-row condition="level == LogLevel.Info" foregroundColor="NoChange" backgroundColor="NoChange"/>
       <highlight-row condition="level == LogLevel.Trace" foregroundColor="DarkGray" backgroundColor="NoChange"/>
     </target>
-    <target name="MainLog" xsi:type="File" fileName="${basedir}Logs\RhetosCli.log" encoding="utf-8" archiveFileName="${basedir}Logs\Archives\RhetosCli {#####}.zip" enableArchiveFileCompression="true" archiveAboveSize="2000000" archiveNumbering="DateAndSequence" />
+    <target name="MainLog" xsi:type="File" fileName="${basedir}Logs\RhetosCli${gdc:item=rhetos-log-suffix}.log" encoding="utf-8" archiveFileName="${basedir}Logs\Archives\RhetosCli${gdc:item=rhetos-log-suffix} {#####}.zip" enableArchiveFileCompression="true" archiveAboveSize="2000000" archiveNumbering="DateAndSequence" />
     <target name="PerformanceLog" xsi:type="AsyncWrapper" overflowAction="Block">
-      <target name="PerformanceLogBase" xsi:type="File" fileName="${basedir}Logs\RhetosCliPerformance.log" encoding="utf-8" deleteOldFileOnStartup="true"/>
+      <target name="PerformanceLogBase" xsi:type="File" fileName="${basedir}Logs\RhetosCliPerformance${gdc:item=rhetos-log-suffix}.log" encoding="utf-8" deleteOldFileOnStartup="true"/>
     </target>
     <target name="TraceLog" xsi:type="AsyncWrapper" overflowAction="Block">
-      <target name="TraceLogBase" xsi:type="File" fileName="${basedir}Logs\RhetosCliTrace.log" encoding="utf-8" deleteOldFileOnStartup="true"/>
+      <target name="TraceLogBase" xsi:type="File" fileName="${basedir}Logs\RhetosCliTrace${gdc:item=rhetos-log-suffix}.log" encoding="utf-8" deleteOldFileOnStartup="true"/>
     </target>
   </targets>
   <rules>

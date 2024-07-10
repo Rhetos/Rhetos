@@ -113,6 +113,8 @@ namespace Rhetos
             };
             buildCommand.SetHandler((DirectoryInfo projectRootFolder, bool msbuildFormat, VerbosityLevel verbosity, string[] trace, bool startPaused) =>
                 {
+                    string rhetosLogSuffix = "-" + (projectRootFolder?.Name ?? "");
+                    NLog.GlobalDiagnosticsContext.Set("rhetos-log-suffix", rhetosLogSuffix);
                     StartPausedIfEnabled(startPaused);
                     var program = new Program(verbosity, trace, msbuildFormat);
                     return program.SafeExecuteCommand(() => program.Build(projectRootFolder.FullName), "Build");
@@ -230,6 +232,8 @@ namespace Rhetos
             var build = new ApplicationBuild(configuration, _logProvider, projectAssets.Assemblies, projectAssets.InstalledPackages);
             build.ReportLegacyPluginsFolders();
             build.GenerateApplication();
+
+
         }
 
         private void DbUpdate(string startupAssembly, bool shortTransactions, bool skipRecompute)
