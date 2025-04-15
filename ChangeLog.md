@@ -4,19 +4,23 @@
 
 ### New features
 
-* New concept **UniqueWhereNotNull**, for creating a unique constraint that disregards NULL values.
-  Example: `ShortString Name { UniqueWhereNotNull; }`.
-* New concept **Where**, for extending the **Unique** concept to create a [filtered index](https://learn.microsoft.com/en-us/sql/t-sql/statements/create-index-transact-sql?view=sql-server-ver16#where-filter_predicate) (issue #177).
-  Example: `ShortString Name { Unique { Where "Name IS NOT NULL"; Where "Name > 'N'"; } }`
-* New concept **Include**, for extending **SqlIndexMultiple** to create a [covering index](https://learn.microsoft.com/en-us/sql/relational-databases/indexes/create-indexes-with-included-columns?view=sql-server-ver16).
-  Example: `SqlIndexMultiple 'Name Title' { Include 'Description ID'; }`
-* New concept **Options**, for extending **SqlIndexMultiple** with custom SQL options.
-  Example: `SqlIndexMultiple 'Name Title' { Options "WHERE Name IS NOT NULL"; }`
-* New helper methods for custom database locks: `ISqlExecuter.GetDbLock` and `ISqlExecuter.ReleaseDbLock`. GetDbLock calls `sp_getapplock` with improved error handling. It can be used to prevent db deadlocks on parallel requests.
+* New concepts for configuring database indexes:
+  * **UniqueWhereNotNull** concept, for creating a unique constraint that disregards NULL values.
+    Example: `ShortString Name { UniqueWhereNotNull; }`.
+  * **Where** concept, for extending the **Unique** concept to create a [filtered index](https://learn.microsoft.com/en-us/sql/t-sql/statements/create-index-transact-sql?view=sql-server-ver16#where-filter_predicate) (issue #177).
+    Example: `ShortString Name { Unique { Where "Name IS NOT NULL"; Where "Name > 'N'"; } }`
+  * **Include** concept, for extending **SqlIndexMultiple** to create a [covering index](https://learn.microsoft.com/en-us/sql/relational-databases/indexes/create-indexes-with-included-columns?view=sql-server-ver16).
+    Example: `SqlIndexMultiple 'Name Title' { Include 'Description ID'; }`
+  * **Options** concept, for extending **SqlIndexMultiple** with custom SQL options.
+    Example: `SqlIndexMultiple 'Name Title' { Options "WHERE Name IS NOT NULL"; }`
+* New helper methods for custom database locks: `ISqlExecuter.GetDbLock` and `ISqlExecuter.ReleaseDbLock`.
+  GetDbLock calls `sp_getapplock` with improved error handling. It can be used to improve data consistency and prevent db deadlocks on parallel requests.
 
 ### Internal improvements
 
-* Optimization: Grouping multiple insert and delete SQL commands into a single command with multiple values. For backward compatibility with existing custom triggers, this feature is disabled by default. **Enable** it by setting option `CommonConcepts:SqlCommandBatchSeparateQueries` to `false`.
+* Optimization: Grouping multiple insert and delete SQL commands into a single command with multiple values.
+  For backward compatibility with existing custom triggers, this feature is disabled by default.
+  **Enable** it by setting option `CommonConcepts:SqlCommandBatchSeparateQueries` to `false`.
 * Optimization: Generating EF mapping view cache on app startup, if not already generated on initial dbupdate (common on environments with multiple web servers).
 * Bugfix: The data migration scripts do not update data when only the letter case is changed (issue #459).
 * Bugfix: SqlDataReader left open after an exception. In practice it should not affect the Rhetos apps, since the SQL transaction should not be used in the same scope after the SQL exception occurred, but there might be some edge cases where it might cause additional exception or prolonged database locks.

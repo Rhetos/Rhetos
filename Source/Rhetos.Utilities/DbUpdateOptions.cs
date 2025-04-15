@@ -31,12 +31,12 @@ namespace Rhetos.Utilities
         public bool SkipRecompute { get; set; } = false;
 
         /// <summary>
-        /// If database update fails (modifying database structure based on new DSL model),
+        /// If dbupdate fails when modifying database structure based on new DSL model,
         /// the data-migration scripts that were executed in the current dbupdate command will be executed again
         /// the next time.
         /// This feature was always enabled before Rhetos v5.
         /// <para>
-        /// This feature is disabled by default if the <see cref="ShortTransactions"/> CLI switch is enabled.
+        /// This feature will be disabled (option setting ignored) if the <see cref="ShortTransactions"/> is enabled.
         /// </para>
         /// </summary>
         /// <remarks>
