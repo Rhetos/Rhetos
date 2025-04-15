@@ -43,22 +43,22 @@ namespace Rhetos.Dsl.DefaultConcepts
             return new[] { nameof(Name), nameof(ProcedureArguments), nameof(ProcedureSource) };
         }
 
-        private static readonly Regex createPartRegex = new Regex(@"^\s*CREATE\s*(OR\s*ALTER)?\s*PROCEDURE", RegexOptions.IgnoreCase);
-        private static readonly Regex namePartRegex = new Regex(@"^\s*(\[?(?<module>\w+)\]?\s*\.\s*)?\[?(?<name>\w+)\]?", RegexOptions.IgnoreCase);
-        private static readonly Regex parametersPartRegex = new Regex(@"^(?<params>(.*\n)*?)\s*AS\s*?\n", RegexOptions.IgnoreCase);
+        private static readonly Regex createPartRegex = new Regex(@"^[\s\n]*CREATE\s*(OR\s*ALTER)?\s*PROCEDURE\b", RegexOptions.IgnoreCase);
+        private static readonly Regex namePartRegex = new Regex(@"^[\s\n]*(\[?(?<module>\w+)\]?\s*\.\s*)?\[?(?<name>\w+)\]?", RegexOptions.IgnoreCase);
+        private static readonly Regex parametersPartRegex = new Regex(@"^(?<params>(.|\n)*?)\s*\bAS\b\s*?\n", RegexOptions.IgnoreCase);
         private static readonly Regex goStatementRegex = new Regex(@"\n\s*GO\s*\n", RegexOptions.IgnoreCase);
 
         public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
         {
             Match createPart = createPartRegex.Match(FullProcedureSource);
             if (!createPart.Success)
-                throw new DslSyntaxException(this, $"The SqlProcedure script must start with \"CREATE PROCEDURE\" or \"CREATE OR ALTER PROCEDURE\". Module '{Module}', SqlProcedure: {FullProcedureSource.Limit(50)}.");
+                throw new DslSyntaxException(this, $"The SqlProcedure script must start with \"CREATE PROCEDURE\" or \"CREATE OR ALTER PROCEDURE\". Module '{Module}', SqlProcedure: {FullProcedureSource.Limit(50, "...")}.");
 
             string rest = FullProcedureSource.Substring(createPart.Index + createPart.Length);
 
             Match namePart = namePartRegex.Match(rest);
             if (!namePart.Success)
-                throw new DslSyntaxException(this, "Cannot detect procedure name in the SQL script. Make sure its syntax is correct. Do not use comments before the procedure name.");
+                throw new DslSyntaxException(this, $"Cannot detect procedure name in the SQL script. Make sure its syntax is correct. Do not use comments before the procedure name. Rest: {rest.Limit(50, "...")}.");
             string moduleName = namePart.Groups["module"].Value;
             Name = namePart.Groups["name"].Value;
             if (string.IsNullOrWhiteSpace(moduleName))
@@ -70,7 +70,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             Match parametersPart = parametersPartRegex.Match(rest);
             if (!parametersPart.Success)
-                throw new DslSyntaxException(this, $"Cannot detect beginning of the code block in procedure '{Module.Name}.{Name}'. Make sure the script contains \"AS\" in its own line.");
+                throw new DslSyntaxException(this, $"Cannot detect beginning of the code block in procedure '{Module.Name}.{Name}'. Make sure the script contains \"AS\" in its own line. Rest: {rest.Limit(50, "...")}.");
             ProcedureArguments = parametersPart.Groups["params"].Value.Trim();
 
             rest = rest.Substring(parametersPart.Index + parametersPart.Length);

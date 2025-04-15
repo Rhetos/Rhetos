@@ -15,6 +15,9 @@
     Example: `SqlIndexMultiple 'Name Title' { Options "WHERE Name IS NOT NULL"; }`
 * New helper methods for custom database locks: `ISqlExecuter.GetDbLock` and `ISqlExecuter.ReleaseDbLock`.
   GetDbLock calls `sp_getapplock` with improved error handling. It can be used to improve data consistency and prevent db deadlocks on parallel requests.
+* New overload of **SqlFunction** concept with a complete `CREATE` statement.
+  Instead of separately specifying the function's name, arguments and body with three parameters, you can specify the function with a single SQL script, starting with "CREATE OR ALTER FUNCTION".
+  This simplifies the development process by developing the function in a separate SQL script with SSMS or a similar tool, and directly referencing the SQL script from a DSL script.
 
 ### Internal improvements
 
