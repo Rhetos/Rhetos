@@ -86,7 +86,7 @@ namespace Rhetos.Deployment
             {
                 try
                 {
-                    if (_options.RepeatDataMigrationsAfterFailedUpdate)
+                    if (_options.RepeatDataMigrationsAfterFailedUpdate && !_options.ShortTransactions)
                         _dataMigrationScriptsExecuter.Undo(dataMigrationReport.CreatedScripts);
                 }
                 catch (Exception cleanupException)

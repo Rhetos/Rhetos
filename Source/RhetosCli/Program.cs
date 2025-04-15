@@ -208,8 +208,6 @@ namespace Rhetos
                         configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((ConfigurationProviderOptions o) => o.LegacyKeysWarning), true);
                         configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((LoggingOptions o) => o.DelayedLogTimout), 60.0);
                         configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((LoggingOptions o) => o.MsBuildErrorFormat), _msBuildErrorFormat);
-                        if (shortTransactions)
-                            configurationBuilder.AddKeyValue(ConfigurationProvider.GetKey((DbUpdateOptions o) => o.RepeatDataMigrationsAfterFailedUpdate), false);
 
                         // Standard configuration files can override the default settings:
                         configurationBuilder.AddJsonFile(DbUpdateOptions.ConfigurationFileName, optional: true);
