@@ -60,14 +60,14 @@ namespace Rhetos.Compiler
                 else
                 {
                     Log("Updating", filePath, EventType.Trace);
-                    WriteFile(content, filePath);
+                    WriteFile(filePath, content);
                 }
             }
             else
             {
                 Log("Creating", filePath, EventType.Info);
                 _filesUtility.SafeCreateDirectory(Path.GetDirectoryName(filePath));
-                WriteFile(content, filePath);
+                WriteFile(filePath, content);
             }
         }
 
@@ -81,28 +81,9 @@ namespace Rhetos.Compiler
             throw new FrameworkException($"Multiple code generators are writing the same file '{filePath}'.{oldFileInfo}");
         }
 
-        private static void WriteFile(string content, string filePath)
+        private void WriteFile(string filePath, string content)
         {
-            // Remove read-only attribute to allow write.
-            FileAttributes? attributes = File.Exists(filePath) ? File.GetAttributes(filePath) : null;
-            if (attributes != null && (attributes.Value & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
-                File.SetAttributes(filePath, attributes.Value & ~FileAttributes.ReadOnly);
-
-            // This method tries to keep and update an existing file instead of deleting it and creating a new one,
-            // in order to lessen the effect to any file monitoring service such as Visual Studio.
-            // The previous version of this method, that always created new source files, caused instability in Visual Studio while the generated project was open.
-            using (var fs = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite))
-            {
-                using (var sw = new StreamWriter(fs, Encoding.UTF8))
-                {
-                    sw.Write(content);
-                    fs.SetLength(fs.Position); // Truncates rest of the file, if the previous file version was larger.
-                }
-            }
-
-            // The generated files are marked as read-only, as a hint that they are not indended to be manually edited.
-            attributes ??= File.GetAttributes(filePath);
-            File.SetAttributes(filePath, attributes.Value | FileAttributes.ReadOnly);
+            _filesUtility.WriteAllText(filePath, content, readonlyFile: true);
         }
 
         public void CleanUp()

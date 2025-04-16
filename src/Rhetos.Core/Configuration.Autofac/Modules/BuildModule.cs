@@ -51,6 +51,7 @@ namespace Rhetos.Configuration.Autofac.Modules
             builder.RegisterType<InstalledPackagesGenerator>().As<IGenerator>();
 
             builder.RegisterType<ApplicationGenerator>();
+            builder.RegisterType<AdditionalSourceFilesListing>();
             pluginRegistration.FindAndRegisterPlugins<IGenerator>();
 
             base.Load(builder);
@@ -88,7 +89,7 @@ namespace Rhetos.Configuration.Autofac.Modules
             pluginRegistration.FindAndRegisterPlugins<IConceptMetadataExtension>();
             builder.RegisterType<DiskDslScriptLoader>().As<IDslScriptsProvider>().SingleInstance();
             builder.RegisterType<Tokenizer>().As<ITokenizer>();
-            builder.RegisterType<ExternalTextReader>().As<IExternalTextReader>();
+            builder.RegisterType<ExternalTextReader>().As<IExternalTextReader>().SingleInstance();
             builder.RegisterType<DslParser>().As<IDslParser>();
             builder.RegisterType<DslModelFile>().As<IDslModelFile>().SingleInstance();
             builder.RegisterType<DslSyntaxFromPlugins>();

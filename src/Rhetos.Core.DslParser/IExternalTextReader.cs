@@ -18,11 +18,18 @@
 */
 
 using Rhetos.Utilities;
+using System.Collections.Generic;
 
 namespace Rhetos.Dsl
 {
     public interface IExternalTextReader
     {
         ValueOrError<string> Read(DslScript dslScript, string relativePathOrResourceName);
+
+        /// <summary>
+        /// Returns the list of files that have been read by the <see cref="IExternalTextReader"/>.
+        /// These are the additional source files with the external code snippets (for example a SQL scripts), that were referenced from the .rhe scripts.
+        /// </summary>
+        IReadOnlyCollection<string> ExternalFiles { get; }
     }
 }

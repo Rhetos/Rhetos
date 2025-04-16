@@ -3,6 +3,9 @@
 
     <Target Name="ResolveRhetosBuildItems" BeforeTargets="ResolveRhetosProjectAssets;CollectUpToDateCheckInputDesignTime">
         <Message Text="ResolveRhetosBuildItems" />
+        <ReadLinesFromFile File="$(BaseIntermediateOutputPath)Rhetos\Rhetos.ExternalSourceItems">
+            <Output TaskParameter="Lines" ItemName="RhetosExternalSourceItems" />
+        </ReadLinesFromFile>
         <ItemGroup>
             <RhetosBuild Include="**\*.rhe" />
             <RhetosBuild Include="**\DataMigration\**\*" />
@@ -11,7 +14,7 @@
             <RhetosBuildSettings Include="$(RhetosBuildSettingsFile)" Condition="Exists('$(RhetosBuildSettingsFile)')" />
         </ItemGroup>
         <ItemGroup>
-            <UpToDateCheckInput Include="@(RhetosBuild);@(RhetosBuildSettings)" Set="RhetosBuild"/>
+            <UpToDateCheckInput Include="@(RhetosBuild);@(RhetosBuildSettings);@(RhetosExternalSourceItems)" Set="RhetosBuild"/>
         </ItemGroup>
     </Target>
 
@@ -33,10 +36,13 @@
             <RhetosInput Include="$(RhetosBuildItemsFile)" />
             <RhetosInput Include="$(BaseIntermediateOutputPath)project.assets.json" />
             <RhetosInput Include="@(RhetosBuildSettings)" />
+            <RhetosInput Include="@(RhetosBuild)" />
+            <RhetosInput Include="@(ReferencePath)" />
+            <RhetosInput Include="@(RhetosExternalSourceItems)" />
         </ItemGroup>
     </Target>
 
-    <Target Name="BuildRhetosApp" DependsOnTargets="ResolveRhetosProjectAssets;ResolveBuildRhetosAppTargetInput" BeforeTargets="BeforeCompile" Condition="'$(RhetosBuild)'=='True' AND '$(DesignTimeBuild)'!='true' AND '$(BuildingProject)'=='true'" Inputs="@(RhetosInput);@(RhetosBuild);@(ReferencePath)" Outputs="@(RhetosOutput)">
+    <Target Name="BuildRhetosApp" DependsOnTargets="ResolveRhetosProjectAssets;ResolveBuildRhetosAppTargetInput" BeforeTargets="BeforeCompile" Condition="'$(RhetosBuild)'=='True' AND '$(DesignTimeBuild)'!='true' AND '$(BuildingProject)'=='true'" Inputs="@(RhetosInput)" Outputs="@(RhetosOutput)">
         <Message Text="BuildRhetosApp" />
         <Delete Files="$(RhetosBuildCompleteFile)" />
         <PropertyGroup>

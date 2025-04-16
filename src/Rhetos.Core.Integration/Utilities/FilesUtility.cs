@@ -207,6 +207,77 @@ namespace Rhetos.Utilities
             return text;
         }
 
+        /// <summary>
+        /// Writes the text file with UTF-8 encoding.
+        /// This method writes the file in the way to minimize the burden on the source file monitoring services such as Visual Studio.
+        /// </summary>
+        /// <param name="readonlyFile">Creates the file with the read-only attribute. Allows overwriting the existing read-only file.</param>
+        public void WriteAllText(string path, string content, bool writeOnlyIfModified = false, bool readonlyFile = false)
+        {
+            bool newFile;
+            if (writeOnlyIfModified)
+            {
+                if (File.Exists(path))
+                {
+                    if (File.ReadAllText(path, Encoding.UTF8).Equals(content, StringComparison.Ordinal))
+                    {
+                        _logger.Trace(() => $"WriteAllText: Unchanged '{path}'.");
+                        return;
+                    }
+                    else
+                    {
+                        _logger.Trace(() => $"WriteAllText: Updating '{path}'.");
+                        newFile = false;
+                    }
+                }
+                else
+                {
+                    _logger.Trace(() => $"WriteAllText: Creating '{path}'.");
+                    newFile = true;
+                }
+            }
+            else
+            {
+                _logger.Trace(() => $"WriteAllText: Writing '{path}'.");
+                newFile = true;
+            }
+
+            if (newFile)
+                SafeCreateDirectory(Path.GetDirectoryName(path));
+            WriteAllText(path, content, readonlyFile);
+        }
+
+        private void WriteAllText(string path, string content, bool readonlyFile)
+        {
+            FileAttributes? attributes = null;
+            if (readonlyFile)
+            {
+                // Remove read-only attribute to allow write.
+                attributes = File.Exists(path) ? File.GetAttributes(path) : null;
+                if (attributes != null && (attributes.Value & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
+                    File.SetAttributes(path, attributes.Value & ~FileAttributes.ReadOnly);
+            }
+
+            // This method tries to keep and update an existing file instead of deleting it and creating a new one,
+            // in order to lessen the effect to any file monitoring service such as Visual Studio.
+            // The previous version of this method, that always created new source files, caused instability in Visual Studio while the generated project was open.
+            using (var fs = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite))
+            {
+                using (var sw = new StreamWriter(fs, Encoding.UTF8))
+                {
+                    sw.Write(content);
+                    fs.SetLength(fs.Position); // Truncates rest of the file, if the previous file version was larger.
+                }
+            }
+
+            if (readonlyFile)
+            {
+                // The generated files are marked as read-only, as a hint that they are not indended to be manually edited.
+                attributes ??= File.GetAttributes(path);
+                File.SetAttributes(path, attributes.Value | FileAttributes.ReadOnly);
+            }
+        }
+
         public static string RelativeToAbsolutePath(string baseFolder, string path)
         {
             if (path == null)

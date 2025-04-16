@@ -17,7 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
@@ -31,6 +30,7 @@ namespace Rhetos.Dsl
         private readonly FilesUtility _filesUtility;
         private readonly ISqlResources _sqlResources;
         private readonly DslSyntax _dslSyntax;
+        private readonly HashSet<string> _externalFiles = [];
 
         public ExternalTextReader(FilesUtility filesUtility, ISqlResources sqlResources, DslSyntax dslSyntax)
         {
@@ -38,6 +38,8 @@ namespace Rhetos.Dsl
             _sqlResources = sqlResources;
             _dslSyntax = dslSyntax;
         }
+
+        public IReadOnlyCollection<string> ExternalFiles => _externalFiles;
 
         public ValueOrError<string> Read(DslScript dslScript, string relativePathOrResourceName)
         {
@@ -54,7 +56,10 @@ namespace Rhetos.Dsl
             foreach (var filePath in candidateFiles)
             {
                 if (File.Exists(filePath))
+                {
+                    _externalFiles.Add(filePath);
                     return _filesUtility.ReadAllText(filePath);
+                }
             }
 
             string errorMessage;

@@ -20,6 +20,7 @@
 using Autofac;
 using Rhetos.Configuration.Autofac.Modules;
 using Rhetos.Deployment;
+using Rhetos.Dsl;
 using Rhetos.Extensibility;
 using Rhetos.Logging;
 using Rhetos.Utilities;
@@ -85,6 +86,8 @@ namespace Rhetos
                         + " For example, for SQL Server support add 'Rhetos.MsSql' NuGet package, or 'Rhetos.MsSqlEf6' for legacy apps.");
 
                 container.Resolve<ApplicationGenerator>().ExecuteGenerators();
+
+                container.Resolve<AdditionalSourceFilesListing>().WriteList();
             }
         }
 
