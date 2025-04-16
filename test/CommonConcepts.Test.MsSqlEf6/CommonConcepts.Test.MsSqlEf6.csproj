@@ -1,9 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);..\..\dist</RestoreAdditionalProjectSources>
+    <RootNamespace>CommonConcepts.Test</RootNamespace>
   </PropertyGroup>
   
   <ItemGroup>
@@ -18,7 +19,9 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\CommonConcepts.TestApp\CommonConcepts.TestApp.csproj" />
+    <ProjectReference Include="..\CommonConcepts.TestApp.MsSqlEf6\CommonConcepts.TestApp.MsSqlEf6.csproj" />
   </ItemGroup>
+  
+  <Import Project="..\CommonConcepts.Test.Shared\CommonConcepts.Test.Shared.projitems" Label="Shared" />
 
 </Project>

@@ -1,14 +1,5 @@
 {
   "profiles": {
-    "build CommonConcepts.TestApp": {
-      "commandName": "Project",
-      "commandLineArgs": "build \"..\\..\\..\\..\\..\\test\\CommonConcepts.TestApp\""
-    },
-    "dbupdate CommonConcepts.TestApp": {
-      "commandName": "Executable",
-      "executablePath": "dotnet",
-      "commandLineArgs": "exec --runtimeconfig \"..\\..\\..\\..\\..\\test\\CommonConcepts.TestApp\\bin\\Debug\\net8.0\\CommonConcepts.TestApp.runtimeconfig.json\" --depsfile \"..\\..\\..\\..\\..\\test\\CommonConcepts.TestApp\\bin\\Debug\\net8.0\\CommonConcepts.TestApp.deps.json\" \"rhetos.dll\" --msbuild-format dbupdate ..\\..\\..\\..\\..\\test\\CommonConcepts.TestApp\\bin\\Debug\\net8.0\\CommonConcepts.TestApp.dll --execute-command-in-current-process"
-    },
     "build TestAppDirectMsSqlEfCore": {
       "commandName": "Project",
       "commandLineArgs": "build \"..\\..\\..\\..\\..\\test\\TestAppDirectMsSqlEfCore\""
@@ -26,6 +17,33 @@
       "commandName": "Executable",
       "executablePath": "dotnet",
       "commandLineArgs": "exec --runtimeconfig \"..\\..\\..\\..\\..\\test\\TestAppDirectPostgreSql\\bin\\Debug\\net8.0\\TestAppDirectPostgreSql.runtimeconfig.json\" --depsfile \"..\\..\\..\\..\\..\\test\\TestAppDirectPostgreSql\\bin\\Debug\\net8.0\\TestAppDirectPostgreSql.deps.json\" \"rhetos.dll\" --msbuild-format dbupdate ..\\..\\..\\..\\..\\test\\TestAppDirectPostgreSql\\bin\\Debug\\net8.0\\TestAppDirectPostgreSql.dll --execute-command-in-current-process"
+    },
+    "build CommonConcepts.TestApp.MsSql": {
+      "commandName": "Project",
+      "commandLineArgs": "build \"..\\..\\..\\..\\..\\test\\CommonConcepts.TestApp.MsSql\""
+    },
+    "dbupdate CommonConcepts.TestApp.MsSql": {
+      "commandName": "Executable",
+      "executablePath": "dotnet",
+      "commandLineArgs": "exec --runtimeconfig \"..\\..\\..\\..\\..\\test\\CommonConcepts.TestApp.MsSql\\bin\\Debug\\net8.0\\CommonConcepts.TestApp.MsSql.runtimeconfig.json\" --depsfile \"..\\..\\..\\..\\..\\test\\CommonConcepts.TestApp.MsSql\\bin\\Debug\\net8.0\\CommonConcepts.TestApp.MsSql.deps.json\" \"rhetos.dll\" --msbuild-format dbupdate ..\\..\\..\\..\\..\\test\\CommonConcepts.TestApp.MsSql\\bin\\Debug\\net8.0\\CommonConcepts.TestApp.MsSql.dll --execute-command-in-current-process"
+    },
+    "build CommonConcepts.TestApp.MsSqlEf6": {
+      "commandName": "Project",
+      "commandLineArgs": "build \"..\\..\\..\\..\\..\\test\\CommonConcepts.TestApp.MsSqlEf6\""
+    },
+    "dbupdate CommonConcepts.TestApp.MsSqlEf6": {
+      "commandName": "Executable",
+      "executablePath": "dotnet",
+      "commandLineArgs": "exec --runtimeconfig \"..\\..\\..\\..\\..\\test\\CommonConcepts.TestApp.MsSqlEf6\\bin\\Debug\\net8.0\\CommonConcepts.TestApp.MsSqlEf6.runtimeconfig.json\" --depsfile \"..\\..\\..\\..\\..\\test\\CommonConcepts.TestApp.MsSqlEf6\\bin\\Debug\\net8.0\\CommonConcepts.TestApp.MsSqlEf6.deps.json\" \"rhetos.dll\" --msbuild-format dbupdate ..\\..\\..\\..\\..\\test\\CommonConcepts.TestApp.MsSqlEf6\\bin\\Debug\\net8.0\\CommonConcepts.TestApp.MsSqlEf6.dll --execute-command-in-current-process"
+    },
+    "build CommonConcepts.TestApp.PostgreSql": {
+      "commandName": "Project",
+      "commandLineArgs": "build \"..\\..\\..\\..\\..\\test\\CommonConcepts.TestApp.PostgreSql\""
+    },
+    "dbupdate CommonConcepts.TestApp.PostgreSql": {
+      "commandName": "Executable",
+      "executablePath": "dotnet",
+      "commandLineArgs": "exec --runtimeconfig \"..\\..\\..\\..\\..\\test\\CommonConcepts.TestApp.PostgreSql\\bin\\Debug\\net8.0\\CommonConcepts.TestApp.PostgreSql.runtimeconfig.json\" --depsfile \"..\\..\\..\\..\\..\\test\\CommonConcepts.TestApp.PostgreSql\\bin\\Debug\\net8.0\\CommonConcepts.TestApp.PostgreSql.deps.json\" \"rhetos.dll\" --msbuild-format dbupdate ..\\..\\..\\..\\..\\test\\CommonConcepts.TestApp.PostgreSql\\bin\\Debug\\net8.0\\CommonConcepts.TestApp.PostgreSql.dll --execute-command-in-current-process"
     }
   }
 }

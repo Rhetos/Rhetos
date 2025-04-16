@@ -31,7 +31,7 @@ namespace Rhetos.Dom.DefaultConcepts
         /// For backward compatibility, on SQL Server the DateTime properties will generate 'datetime' columns in database, instead of 'datetime2'.
         /// The datetime2 column type is recommended for all new applications.
         /// Note that the legacy datetime column type has a rounding error with comparison operators on Entity Framework,
-        /// see unit test DateTimeConsistencyTest() in CommonConcepts.Test.
+        /// see unit test DateTimeConsistencyTest() in CommonConcepts.Test.Shared.
         /// </summary>
         public bool UseLegacyMsSqlDateTime { get; set; } = false;
 

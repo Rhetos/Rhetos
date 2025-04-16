@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>ecdebff1-49e9-439d-877b-6f041aa90d3e</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>CommonConcepts.TestApp.Shared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- The RhetosBuild items are based on source from Rhetos.MSBuild.targets. -->
+    <RhetosBuild Include="$(MSBuildThisFileDirectory)**\*.rhe" />
+    <RhetosBuild Include="$(MSBuildThisFileDirectory)**\DataMigration\**\*" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Visual Studio automatically adds this items. This enables the .rhe script to be visible in the Solution Explorer tab. -->
+    <None Include="$(MSBuildThisFileDirectory)DataMigration\2.11\Renamed Simple_Search.sql" />
+    <None Include="$(MSBuildThisFileDirectory)DslScripts\Action.rhe" />
+    <None Include="$(MSBuildThisFileDirectory)DslScripts\Advanced.rhe" />
+    <None Include="$(MSBuildThisFileDirectory)DslScripts\Computations.rhe" />
+    <None Include="$(MSBuildThisFileDirectory)DslScripts\DataStructure.rhe" />
+    <None Include="$(MSBuildThisFileDirectory)DslScripts\DefaultValueTest.rhe" />
+    <None Include="$(MSBuildThisFileDirectory)DslScripts\Entity.rhe" />
+    <None Include="$(MSBuildThisFileDirectory)DslScripts\Extension.rhe" />
+    <None Include="$(MSBuildThisFileDirectory)DslScripts\FullTextSearchTest.rhe" />
+    <None Include="$(MSBuildThisFileDirectory)DslScripts\HardcodedEntity.rhe" />
+    <None Include="$(MSBuildThisFileDirectory)DslScripts\PessimisticLocking.rhe" />
+    <None Include="$(MSBuildThisFileDirectory)DslScripts\Polymorphic.rhe" />
+    <None Include="$(MSBuildThisFileDirectory)DslScripts\PolymorphicDemo.rhe" />
+    <None Include="$(MSBuildThisFileDirectory)DslScripts\Reading.rhe" />
+    <None Include="$(MSBuildThisFileDirectory)DslScripts\RowPermissions.rhe" />
+    <None Include="$(MSBuildThisFileDirectory)DslScripts\RowPermissionsDemo.rhe" />
+    <None Include="$(MSBuildThisFileDirectory)DslScripts\ServerCommands.rhe" />
+    <None Include="$(MSBuildThisFileDirectory)DslScripts\SimpleBusinessLogic.rhe" />
+    <None Include="$(MSBuildThisFileDirectory)DslScripts\SpecialDescription.txt" />
+    <None Include="$(MSBuildThisFileDirectory)DslScripts\SqlWorkarounds.rhe" />
+    <None Include="$(MSBuildThisFileDirectory)DslScripts\Storage.rhe" />
+    <None Include="$(MSBuildThisFileDirectory)DslScripts\Validations.rhe" />
+    <None Include="$(MSBuildThisFileDirectory)Readme.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)DslScripts\Action.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DslScripts\Reading.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DslScripts\SqlWorkarounds.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Program.cs" />
+  </ItemGroup>
+</Project>

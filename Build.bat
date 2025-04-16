@@ -8,7 +8,8 @@ SET Prerelease=auto
 REM Updating the build version.
 PowerShell -ExecutionPolicy ByPass .\tools\Build\ChangeVersion.ps1 %Version% %Prerelease% || GOTO Error0
 
-dotnet build "Rhetos.sln" --configuration %Config% || GOTO Error1
+REM Disabled RhetosDeploy, to allow building the TestAppDirect* projects without an active database connection.
+dotnet build "Rhetos.sln" --configuration %Config% /p:RhetosDeploy=false || GOTO Error1
 PowerShell -ExecutionPolicy ByPass .\CreateInstallationPackage.ps1 || GOTO Error1
 
 REM Restoring the build version back to "dev" (internal development build), to avoid spamming git history with timestamped prerelease versions.

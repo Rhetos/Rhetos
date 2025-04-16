@@ -6,6 +6,7 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D3CC17A8-D557-44D9-8D3D-3D425ED09838}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		.gitignore = .gitignore
 		Build.bat = Build.bat
 		ChangeLog.md = ChangeLog.md
 		Directory.Build.props = Directory.Build.props

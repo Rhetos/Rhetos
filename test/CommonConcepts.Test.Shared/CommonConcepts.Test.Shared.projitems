@@ -1,0 +1,107 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>0922deb1-e95e-4894-90c6-dff57633d325</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>CommonConcepts.Test.Shared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)ActionTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AllowSaveValidationsTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AuditablePropertiesTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AuthorizationCachingTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AuthorizationProviderTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AutoCodeCachedTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AutoCodeTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BasicReadingMethodsTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BinaryTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BrowseTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CloningTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ComputationsUtilityTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ComputedFromSelfExtensionTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ComputedFromTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ComputedTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CreatedByTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CustomClaimTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DatabaseExtensionsTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataMigrationTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataStructureExtendsTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DataStructureTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DeactivatableTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DefaultValueTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DenyUserEditTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DomRepositoryConceptsTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DslDocumentationFileTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DslSyntaxFileTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DslUtilityIntegrationTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)EFOptimizationTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)EntityHistoryTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)EntityTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)FilterTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Framework\BaseSqlExecuterTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Framework\InstalledPackagesTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Framework\MsSqlExecuterIntegrationTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Framework\SourceTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Framework\SqlTransactionBatchesIntegrationTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Framework\SqlUtilityTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)FullTextSearchTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GenericFilterTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HardcodedEntityTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\ConcurrencyUtility.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\DateTimeHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\EntityFrameworkExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\PersistenceCommandsDecorator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\PersistenceCommandsMock.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\PrincipalHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\SqlExecuterMonitor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\TestScope.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\TestScopeContainerBuilderExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HierarchyTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)InvalidDataTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LazyLoadTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LegacyEntityTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LockItemsTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LockPropertyTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LoggingTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MaxLengthTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MaxValueTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MinLengthTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MinValueTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ModuleRepositioryTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MoneyRoundingTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MultipleValidationsTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PartialRepositoryTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PersistedAllPropertiesTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PersistedDataStructureTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PersistenceTransactionTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PessimisticLockingTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PolymorphicTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ProcessingEngineTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)QueryableExtensionTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)QueryableRepositoryTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RangeTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ReadCommandTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ReferenceTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RegExMatchTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ReportTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RequiredPropertyTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RhetosRuntimeTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RhetosTestContainerTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RowPermissionsDemo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RowPermissionsRulesTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RowPermissionsTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SqlExecuterTransactionTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SqlIndexTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SqlQueryableTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SqlWorkaroundsTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)StorageTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SystemRequiredTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UniqueTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UnitOfWorkFactoryTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UnitOfWorkScopeTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UserRequiredPropertyTest.cs" />
+  </ItemGroup>
+</Project>

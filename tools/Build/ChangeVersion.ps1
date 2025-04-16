@@ -49,8 +49,8 @@ RegexReplace 'Directory.Build.props' '([\n^]\s*\<AssemblyVersion\>).*(\<\/Assemb
 RegexReplace 'Directory.Build.props' '([\n^]\s*\<FileVersion\>).*(\<\/FileVersion\>\s*)' ('${1}' + $version + '${2}')
 
 # CommonConcepts test projects have generic references with a star suffix ("-dev*") to support any version currently being built (a prerelease with automatic versioning or a final release).
-RegexReplace 'CommonConcepts.Test.csproj' '([\n^]\s*\<PackageReference Include=\"Rhetos.*?\" Version=\").*?(\")' ('${1}' + $version + '-dev*${2}')
-RegexReplace 'CommonConcepts.TestApp.csproj' '([\n^]\s*\<PackageReference Include=\"Rhetos.*?\" Version=\").*?(\")' ('${1}' + $version + '-dev*${2}')
+RegexReplace 'CommonConcepts.Test.*.csproj' '([\n^]\s*\<PackageReference Include=\"Rhetos.*?\" Version=\").*?(\")' ('${1}' + $version + '-dev*${2}')
+RegexReplace 'CommonConcepts.TestApp.*.csproj' '([\n^]\s*\<PackageReference Include=\"Rhetos.*?\" Version=\").*?(\")' ('${1}' + $version + '-dev*${2}')
 
 # CommonConcepts is developed together with Rhetos framework, so it is expected to match the release version. Difference in patch version (Build) is allowed here.
 If ($Version.Build -gt 0)

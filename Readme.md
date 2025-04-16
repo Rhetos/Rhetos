@@ -51,22 +51,29 @@ You don't need to build it from source in order to use it in your application.
 To build the source, run `Clean.bat` and `Build.bat`.
 The build output files are NuGet packages in the `dist` subfolder.
 
-### Testing
+### Development and Testing
 
-Initial setup (required for integration tests):
+When Rhetos.sln is opened and built in Visual Studio, there are some "smoke test" projects (TestAppDirect*) that require a database connection.
+Additionally, running integration tests in test projects also requires database connections.
 
-* Create an empty database (for example, "Rhetos" database on "localhost" SQL Server instance).
-* Create a local setting file `test\CommonConcepts.TestApp\local.settings.json` with the following content,
-   and modify the connection string to match your server instance and database:
+Initial setup (required for development and integration tests):
+
+* Create three empty MS SQL Server databases (for example, "RhetosEFCore", "RhetosEF6" and "Rhetos6TestAppDirectMsSqlEfCore" on localhost SQL Server instance).
+* Create two empty PostgreSQL database (if needed, use `test\TestAppDirectPostgreSql\setup postgresql db.bat` that initializes the databases in a PostgreSQL container).
+* Create the five local setting files `local.settings.json` in the folders
+  `test\TestAppDirectMsSqlEfCore`, `test\TestAppDirectPostgreSql`,
+  `test\CommonConcepts.TestApp.MsSql`, `test\CommonConcepts.TestApp.MsSqlEf6` and `test\CommonConcepts.TestApp.PostgreSql`,
+  with the following content, and modify the connection strings to match your database server instances and databases accordingly:
     ```json
     {
       "ConnectionStrings": {
-        "RhetosConnectionString": "Data Source=ENTER_SQL_SERVER_NAME;Initial Catalog=ENTER_RHETOS_DATABASE_NAME;Integrated Security=true;"
+        "RhetosConnectionString": "Data Source=ENTER_SQL_SERVER_NAME;Initial Catalog=ENTER_RHETOS_DATABASE_NAME;Integrated Security=true;TrustServerCertificate=true"
+        //For PosgreSQL// "RhetosConnectionString": "Host=localhost;Database=ENTER_RHETOS_DATABASE_NAME;Username=postgres"
       }
     }
     ```
 
-To execute the unit tests and the integration tests, run `Test.bat`.
+To execute the unit tests and the integration tests after build, run `Test.bat`.
 
 ### Visual Studio Solutions
 

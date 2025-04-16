@@ -28,27 +28,27 @@ using System.Linq;
 namespace CommonConcepts.Test
 {
     [TestClass]
-    public class DslSyntaxFileTest
+    public class DslDocumentationFileTest
     {
         [TestMethod]
-        public void LoadDslSyntaxFile()
+        public void LoadDslDocumentationFile()
         {
             using (var scope = TestScope.Create(builder =>
             {
-                builder.RegisterType<DslSyntaxFile>();
-                builder.RegisterInstance(new RhetosBuildEnvironment { CacheFolder = @"..\..\..\..\CommonConcepts.TestApp\obj\Rhetos" });
+                builder.RegisterType<DslDocumentationFile>();
+                builder.RegisterInstance(new RhetosBuildEnvironment { CacheFolder = $@"..\..\..\..\{TestAppSettings.TestAppName}\obj\Rhetos" });
             }))
             {
-                var dslSyntaxFile = scope.Resolve<DslSyntaxFile>();
-                var dslSyntax = dslSyntaxFile.Load();
+                var dslDocumentationFile = scope.Resolve<DslDocumentationFile>();
+                var dslDocumentation = dslDocumentationFile.Load();
 
-                var conceptTypesInDslModel = scope.Resolve<IDslModel>().Concepts.Select(c => c.GetType()).Distinct().Count();
+                int conceptTypesInDslModel = scope.Resolve<IDslModel>().Concepts.Select(c => c.GetType()).Distinct().Count();
 
-                Assert.AreNotEqual(0, dslSyntax.ConceptTypes.Count, "dslSyntax.ConceptTypes");
+                Assert.AreNotEqual(0, dslDocumentation.Concepts.Count, "dslDocumentation.Concepts");
                 Assert.AreNotEqual(0, conceptTypesInDslModel, "conceptTypesInDslModel");
                 Assert.IsTrue(
-                    dslSyntax.ConceptTypes.Count >= conceptTypesInDslModel,
-                    $"dslSyntax.ConceptTypes {dslSyntax.ConceptTypes.Count}, conceptTypesInDslModel {conceptTypesInDslModel}");
+                    dslDocumentation.Concepts.Count >= conceptTypesInDslModel,
+                    $"dslDocumentation.Concepts {dslDocumentation.Concepts.Count}, conceptTypesInDslModel {conceptTypesInDslModel}");
             }
         }
     }

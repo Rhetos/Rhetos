@@ -34,28 +34,23 @@ namespace CommonConcepts.TestApp
             Console.WriteLine("This is a placeholder application for unit testing. Its features are executed by unit tests.");
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureServices(ConfigureRhetos);
-
-        /// <summary>
-        /// Provides basic runtime infrastructure for Rhetos framework: configuration settings and system components registration.
-        /// </summary>
-        private static void ConfigureRhetos(HostBuilderContext hostContext, IServiceCollection services)
+        public static IHostBuilder CreateHostBuilder(string[] args)
         {
-            services.AddRhetosHost(ConfigureRhetosHostBuilder);
-        }
+            IHostBuilder builder = Host.CreateDefaultBuilder(args);
 
-        private static void ConfigureRhetosHostBuilder(IServiceProvider serviceProvider, IRhetosHostBuilder rhetosHostBuilder)
-        {
-            rhetosHostBuilder
-                .ConfigureRhetosAppDefaults()
-                .ConfigureConfiguration(configurationBuilder => configurationBuilder
-                    .AddJsonFile("local.settings.json"))
-                .ConfigureContainer(builder =>
-                {
-                    builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();
-                });
+            builder.ConfigureServices(services => services.AddRhetosHost((IServiceProvider serviceProvider, IRhetosHostBuilder rhetosHostBuilder) =>
+            {
+                rhetosHostBuilder
+                    .ConfigureRhetosAppDefaults()
+                    .ConfigureConfiguration(configurationBuilder => configurationBuilder
+                        .AddJsonFile("local.settings.json"))
+                    .ConfigureContainer(builder =>
+                    {
+                        builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();
+                    });
+            }));
+
+            return builder;
         }
     }
 }

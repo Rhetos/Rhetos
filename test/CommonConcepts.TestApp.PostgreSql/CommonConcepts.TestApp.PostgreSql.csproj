@@ -3,9 +3,9 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
-	<IsPackable>false</IsPackable>
-	<RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);..\..\dist</RestoreAdditionalProjectSources>
-	<RootNamespace>CommonConcepts.Test</RootNamespace>
+	  <IsPackable>false</IsPackable>
+	  <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);..\..\dist</RestoreAdditionalProjectSources>
+	  <RootNamespace>CommonConcepts.Test</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,7 +13,7 @@
     <PackageReference Include="Rhetos.MSBuild" Version="6.0.0-dev*" />
     <PackageReference Include="Rhetos" Version="6.0.0-dev*" />
     <PackageReference Include="Rhetos.CommonConcepts" Version="6.0.0-dev*" />
-    <PackageReference Include="Rhetos.MsSqlEf6" Version="6.0.0-dev*" />
+    <PackageReference Include="Rhetos.PostgreSql" Version="6.0.0-dev*" />
   </ItemGroup>
 
   <ItemGroup>
@@ -21,5 +21,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
+  <Import Project="..\CommonConcepts.TestApp.Shared\CommonConcepts.TestApp.Shared.projitems" Label="Shared" />
 
 </Project>

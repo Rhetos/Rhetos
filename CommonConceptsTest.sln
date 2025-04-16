@@ -1,16 +1,29 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30011.22
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.35004.147
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommonConcepts.Test", "test\CommonConcepts.Test\CommonConcepts.Test.csproj", "{39B7E880-2538-47DF-A185-FD0A08289DE7}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7A934AD3-AD97-4CEA-8DC9-BC88C7A02933}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		Readme.md = Readme.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommonConcepts.TestApp", "test\CommonConcepts.TestApp\CommonConcepts.TestApp.csproj", "{C43CD994-2C14-4E7E-8B47-D12C5F1FC396}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "CommonConcepts.TestApp.Shared", "test\CommonConcepts.TestApp.Shared\CommonConcepts.TestApp.Shared.shproj", "{ECDEBFF1-49E9-439D-877B-6F041AA90D3E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommonConcepts.TestApp.MsSql", "test\CommonConcepts.TestApp.MsSql\CommonConcepts.TestApp.MsSql.csproj", "{C076A5CF-9CD5-466B-88C8-2C5852965BDF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommonConcepts.TestApp.MsSqlEf6", "test\CommonConcepts.TestApp.MsSqlEf6\CommonConcepts.TestApp.MsSqlEf6.csproj", "{79F1878D-1035-4074-82EB-B0ACA4885E7A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommonConcepts.TestApp.PostgreSql", "test\CommonConcepts.TestApp.PostgreSql\CommonConcepts.TestApp.PostgreSql.csproj", "{F71937C4-1AF2-4040-A3A7-4DD6E3E40263}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "CommonConcepts.Test.Shared", "test\CommonConcepts.Test.Shared\CommonConcepts.Test.Shared.shproj", "{0922DEB1-E95E-4894-90C6-DFF57633D325}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommonConcepts.Test.MsSqlEf6", "test\CommonConcepts.Test.MsSqlEf6\CommonConcepts.Test.MsSqlEf6.csproj", "{903225B8-B58A-4B9A-81B4-1940D878E983}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommonConcepts.Test.MsSql", "test\CommonConcepts.Test.MsSql\CommonConcepts.Test.MsSql.csproj", "{66F70B48-601B-43AF-948C-03140476C16E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommonConcepts.Test.PostgreSql", "test\CommonConcepts.Test.PostgreSql\CommonConcepts.Test.PostgreSql.csproj", "{A8D98412-723C-4331-ADF7-56DF0E29EA3F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,19 +31,45 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{39B7E880-2538-47DF-A185-FD0A08289DE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{39B7E880-2538-47DF-A185-FD0A08289DE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{39B7E880-2538-47DF-A185-FD0A08289DE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{39B7E880-2538-47DF-A185-FD0A08289DE7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C43CD994-2C14-4E7E-8B47-D12C5F1FC396}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C43CD994-2C14-4E7E-8B47-D12C5F1FC396}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C43CD994-2C14-4E7E-8B47-D12C5F1FC396}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C43CD994-2C14-4E7E-8B47-D12C5F1FC396}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C076A5CF-9CD5-466B-88C8-2C5852965BDF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C076A5CF-9CD5-466B-88C8-2C5852965BDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C076A5CF-9CD5-466B-88C8-2C5852965BDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C076A5CF-9CD5-466B-88C8-2C5852965BDF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{79F1878D-1035-4074-82EB-B0ACA4885E7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79F1878D-1035-4074-82EB-B0ACA4885E7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79F1878D-1035-4074-82EB-B0ACA4885E7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79F1878D-1035-4074-82EB-B0ACA4885E7A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F71937C4-1AF2-4040-A3A7-4DD6E3E40263}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F71937C4-1AF2-4040-A3A7-4DD6E3E40263}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F71937C4-1AF2-4040-A3A7-4DD6E3E40263}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F71937C4-1AF2-4040-A3A7-4DD6E3E40263}.Release|Any CPU.Build.0 = Release|Any CPU
+		{903225B8-B58A-4B9A-81B4-1940D878E983}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{903225B8-B58A-4B9A-81B4-1940D878E983}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{903225B8-B58A-4B9A-81B4-1940D878E983}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{903225B8-B58A-4B9A-81B4-1940D878E983}.Release|Any CPU.Build.0 = Release|Any CPU
+		{66F70B48-601B-43AF-948C-03140476C16E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66F70B48-601B-43AF-948C-03140476C16E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66F70B48-601B-43AF-948C-03140476C16E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66F70B48-601B-43AF-948C-03140476C16E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A8D98412-723C-4331-ADF7-56DF0E29EA3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8D98412-723C-4331-ADF7-56DF0E29EA3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A8D98412-723C-4331-ADF7-56DF0E29EA3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A8D98412-723C-4331-ADF7-56DF0E29EA3F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {98C8550D-EB7E-461F-809C-D35A006D4680}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		test\CommonConcepts.Test.Shared\CommonConcepts.Test.Shared.projitems*{0922deb1-e95e-4894-90c6-dff57633d325}*SharedItemsImports = 13
+		test\CommonConcepts.Test.Shared\CommonConcepts.Test.Shared.projitems*{66f70b48-601b-43af-948c-03140476c16e}*SharedItemsImports = 5
+		test\CommonConcepts.TestApp.Shared\CommonConcepts.TestApp.Shared.projitems*{79f1878d-1035-4074-82eb-b0aca4885e7a}*SharedItemsImports = 5
+		test\CommonConcepts.Test.Shared\CommonConcepts.Test.Shared.projitems*{903225b8-b58a-4b9a-81b4-1940d878e983}*SharedItemsImports = 5
+		test\CommonConcepts.Test.Shared\CommonConcepts.Test.Shared.projitems*{a8d98412-723c-4331-adf7-56df0e29ea3f}*SharedItemsImports = 5
+		test\CommonConcepts.TestApp.Shared\CommonConcepts.TestApp.Shared.projitems*{c076a5cf-9cd5-466b-88c8-2c5852965bdf}*SharedItemsImports = 5
+		test\CommonConcepts.TestApp.Shared\CommonConcepts.TestApp.Shared.projitems*{ecdebff1-49e9-439d-877b-6f041aa90d3e}*SharedItemsImports = 13
+		test\CommonConcepts.TestApp.Shared\CommonConcepts.TestApp.Shared.projitems*{f71937c4-1af2-4040-a3a7-4dd6e3e40263}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal

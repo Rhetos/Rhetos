@@ -1,0 +1,18 @@
+﻿{
+  "Rhetos": {
+    // Using subpackages to get the shared DSL and DataMigration scripts into the TestApp, because Rhetos DiskDslScriptLoader
+    // will not load it's own project's DSL scripts that are not within the project's folder.
+    // These files are also included as RhetosBuild ItemGroup in CommonConcepts.TestApp.Shared.projitems,
+    // in order to be discovered by Rhetos build for this subpackage.
+    "Subpackages": [
+      {
+        "Name": "TestAppShared",
+        "Folder": "..\\CommonConcepts.TestApp.Shared",
+        "Dependencies": []
+      }
+    ],
+    "Build": {
+      "DatabaseLanguage": "PostgreSql"
+    }
+  }
+}
