@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 /*
-This source is downloadad from https://github.com/dotnet/runtime/blob/v6.0.3/src/libraries/Microsoft.Extensions.HostFactoryResolver/src/HostFactoryResolver.cs
+This source is downloaded from https://github.com/dotnet/runtime/blob/v6.0.3/src/libraries/Microsoft.Extensions.HostFactoryResolver/src/HostFactoryResolver.cs
 It is intended to be distributed as source and shared between ASP.NET and EF.
 The source is written for TargetFramework "netstandard2.0".
 It is used in Rhetos to support both "CreateHostBuilder" model and "minimal hosting model" (new from .NET 6).

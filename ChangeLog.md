@@ -55,13 +55,11 @@ Changes in Rhetos libraries API:
 * The method `ISqlExecuter.GetTransactionCount` is replaced with `GetTransactionInitialState` and `CheckTransactionState`.
 * The AutoCodeHelper.UpdateCodesWithoutCache method has new parameter "ISqlUtility".
   * Replace `AutoCodeHelper.UpdateCodesWithoutCache(_executionContext.SqlExecuter, ...` with `AutoCodeHelper.UpdateCodesWithoutCache(_executionContext.SqlExecuter, _executionContext.SqlUtility, ...`.
-* The **Rhetos.TestCommon** package has updated MSTest.TestFramework referece from v2.1.0 to v3.2.2.
+* The **Rhetos.TestCommon** package has updated MSTest.TestFramework reference from v2.1.0 to v3.2.2.
   * Any test projects that reference the "Rhetos.TestCommon" package, should be updated to the latest version of the MSTest.* packages (v3.2.2 or higher).
   * There is a breaking change in MSTest v3: If a unit test uses an external file from disk, it should look for the file
     in `AppDomain.CurrentDomain.BaseDirectory` directory instead of the current directory.
 * Corrected type in extension methods: IsLessThen to IsLessThan, IsGreaterThen to IsGreaterThan.
-* The legacy configuration option `CommonConcepts:DynamicTypeResolution` is no longer supported. DynamicTypeResolution is always disabled.
-    * In FilterCriteria, filter names should be constructed by Type.ToString(), instead of Type.FullName or Type.AssemblyQualifiedName.
 * Some EF6-specific features moved from Rhetos.CommonConcepts to Rhetos.MsSqlEf6.
     * If a custom code generator class uses one of `DomInitializationCodeGenerator.EntityFramework*` tags,
       instead of it use the same tag from `EntityFrameworkContextCodeGenerator` class and add an attribute
@@ -71,10 +69,12 @@ Changes in behavior:
 
 * Configuration setting key "Rhetos:DatabaseOracle:NationalLanguage" has changed to "Rhetos:Build:DatabaseNationalLanguage".
 * Bugfix: **Computed** concept is no longer reported as queryable in DslUtility.IsQueryable, since it does not generate a queryable repository.
+* The legacy configuration option `CommonConcepts:DynamicTypeResolution` is no longer supported. DynamicTypeResolution is always disabled.
+    * In FilterCriteria, filter names should be constructed by Type.ToString(), instead of Type.FullName or Type.AssemblyQualifiedName.
 
 Migrating a Rhetos app from EF6 to EF Core (optional):
 
-* Disclaimer: It is recommended to keep EF6 in old Rhetos apps for backward compatiblity. Use EF Core in new apps.
+* Disclaimer: It is recommended to keep EF6 in old Rhetos apps for backward compatibility. Use EF Core in new apps.
 * Migrate from EF6 to EF Core: In the existing projects that reference the NuGet package `Rhetos.CommonConcepts`, add the NuGet package `Rhetos.MsSql` instead of `Rhetos.MsSqlEf6`.
 * Lazy loading is disabled by default on EF Core.
   If migrating an existing app from EF6 to EF Core, enable lazy loading for backward compatibility.
@@ -91,7 +91,7 @@ Migrating a Rhetos app from EF6 to EF Core (optional):
         * In a local development environment, if you use encryption with a self-signed certificate on the server,
           you can specify `TrustServerCertificate=true` in the connection string.
           If you need to turn off encryption, you can specify `Encrypt=false` instead.
-  * Most EF6 types where in namespace `System.Data.Entity`, while EF Core uses namespace `Microsoft.EntityFrameworkCore`.
+  * Most EF6 types were in namespace `System.Data.Entity`, while EF Core uses namespace `Microsoft.EntityFrameworkCore`.
   * Removed Guid comparison extension methods GuidIsGreaterThan, GuidIsGreaterThanOrEqual, GuidIsLessThan, GuidIsLessThanOrEqual. They are supported by standard operators `>` and `<`.
   * Removed the 'FullTextSearch' extension method for Entity Framework LINQ queries. Use `EF.Functions.Contains` instead.
   * The EF6 method `EntityFrameworkContext.Database.SqlQuery` method is different in EF Core:
@@ -102,11 +102,11 @@ Migrating a Rhetos app from EF6 to EF Core (optional):
       or Dapper to load data from a custom SQL query.
 * Breaking changes in behavior:
   * Converting boolean to string in EF LINQ query will result with strings `0` and `1` instead of `false` and `true`.
-    This can affect LINQ queries such as `query.Select(book => book.Title + " " book.Active)`, where bool Active is converted to a string in the generated database SQL query.
+    This can affect LINQ queries such as `query.Select(book => book.Title + " " + book.Active)`, where bool Active is converted to a string in the generated database SQL query.
   * In LINQ queries and in generic filters (FilterCriteria), operations `equals` and `notequals` with a variable parameter containing null value will return different results then EF6.
     * For example `string n = null; books.Where(b => b.Title == n)` will return all books with title null (`WHERE b.Title IS NULL`). In EF6 this query generated the SQL `WHERE b.Title = @param` which never returns records.
     * Both EF6 and EF Core behave the same with literal null values, such as `books.Where(b => b.Title == null)` returning books with title null.
-  * In EF6 LINQ query, when reading data from a database view, if the view returns multiple records with the same ID value, EF would return only one record and ignore others.
+  * In EF6 LINQ query, when reading data from a database view with `.Query().ToList()`, if the view returns multiple records with the same ID value, EF would return only one record and ignore others.
     In EF Core LINQ query on Rhetos, by default all records are returned, even if there are duplicate ID values.
     * If needed, this can be configured by adding after `AddRhetosHost()` the following code:
       `.SetRhetosDbContextOptions(optionsBuilder => optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTrackingWithIdentityResolution))`.
@@ -127,11 +127,11 @@ Migrating a Rhetos app from EF6 to EF Core (optional):
 * New interface for database generator plugins: `IConceptDatabaseGenerator`.
   Old interfaces `IConceptDatabaseDefinition` and `IConceptDatabaseDefinitionExtension` are still available
   for backward compatibility, but they are marked as obsolete.
+* Embedding PDBs into DLLs to simplify debugging. Removed NuGet symbols packages.
 * New interface for implementing new database providers for Rhetos apps: `ISqlResourcesPlugin`.
 * DSL scripts can reference internal SQL resources besides the existing external files.
-  This will allow development of plugins that provide the support for a specific SQL language without implementing the specific language in the base DSL package.
-* Embedding PDBs into DLLs to simplify debugging. Removed NuGet symbols packages.
-* The generated LINQPad script now references different libraries based on the referenced Rhetos NuGet packages.
+  This will allow development of plugins to provide the support for a specific SQL language without implementing the specific language in the base DSL package.
+* The generated LINQPad script now automatically references different libraries based on the referenced Rhetos NuGet packages.
 * Rhetos plugin packages can extend the generated LINQPad script references with RhetosLinqPadReference and RhetosLinqPadNamespace ItemGroup.
 
 ## 5.4.0 (2023-03-16)
@@ -267,8 +267,8 @@ Changes in behavior:
    * See [Adding Rhetos dashboard](https://github.com/Rhetos/Rhetos.Samples.AspNet/blob/master/README.md#adding-rhetos-dashboard)
 3. Configuration files "rhetos-app.settings.json" and "rhetos-app.local.settings.json" are no longer automatically loaded.
    Removed RhetosAppEnvironment class and AddRhetosAppEnvironment method.
-   * If you want to use the same configuration files from Rhetos v4, load them in your application in Startup.ConfigureRhetosHostBuilder method:
-     `rhetosHostBuilder.ConfigureConfiguration(builder => builder.AddJsonFile("rhetos-app.settings.json").AddJsonFile("rhetos-app.local.settings.json"))`
+   * If you want to use the same configuration files from Rhetos v4, load them in your Program.cs or Startup.cs after `ConfigureRhetosAppDefaults()`:
+     `.ConfigureConfiguration(builder => builder.AddJsonFile("rhetos-app.settings.json").AddJsonFile("rhetos-app.local.settings.json"))`
 4. Run-time configuration no longer depends on "rhetos-app.settings.json" file (from Rhetos v4).
     * Rhetos:App:AssetsFolder and Rhetos:App:RhetosRuntimePath settings may be removed from this file, they are no longer used.
     * Migrate the remaining settings to standard appsettings.json file, and delete the old file.

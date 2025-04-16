@@ -142,7 +142,7 @@ namespace Rhetos
                 .Union(new List<string> { Path.GetFullPath(Path.Combine(_projectRootFolder, library.Path)) })
                 .FirstOrDefault(x => Directory.Exists(x));
             if (packageFolder == null)
-                throw new FrameworkException($"Could not locate the folder for package '{library.Name}'.");
+                throw new FrameworkException($"Could not locate the folder for library package '{library.Name}'.");
             return packageFolder;
         }
 
@@ -151,7 +151,7 @@ namespace Rhetos
             var library = _lockFile.GetLibrary(targetLibrary.Name, targetLibrary.Version);
             var csprojFile = Path.GetFullPath(Path.Combine(_projectRootFolder, library.Path));
             if (!File.Exists(csprojFile))
-                throw new FrameworkException($"Could not locate the folder for package '{library.Name}'.");
+                throw new FrameworkException($"Could not locate the folder for project package '{library.Name}'.");
             return Path.GetDirectoryName(csprojFile);
         }
     }
