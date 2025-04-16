@@ -1,6 +1,6 @@
 ﻿# Rhetos release notes
 
-## 5.5.0 (TO BE RELEASED)
+## 5.5.0 (2025-04-16)
 
 ### New features
 
