@@ -15,7 +15,7 @@
       <group targetFramework="net8.0">
         <dependency id="Rhetos" version="[6.0.0-dev,6.1.0)" />
         <dependency id="Microsoft.CodeAnalysis.CSharp" version="4.9.2" />
-        <dependency id="Microsoft.Extensions.Caching.Memory" version="8.0.0" />
+        <dependency id="Microsoft.Extensions.Caching.Memory" version="8.0.1" />
       </group>
     </dependencies>
   </metadata>
