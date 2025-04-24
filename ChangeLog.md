@@ -123,6 +123,7 @@ Migrating a Rhetos app from EF6 to EF Core (optional):
 ### Internal improvements
 
 * SQL index concepts **Clustered** and **Where** can be used on all variants of **SqlIndex** and **Unique** concepts.
+* Bugfix: Changes in .sql files during development sometimes didn't trigger Rhetos build.
 * Added **rhetos.exe** command-line switch `--start-paused`, to allow attaching a debugger on build or dbupdate. This is a replacement for the `[debug]` option, since System.CommandLine no longer supports it.
 * New interface for database generator plugins: `IConceptDatabaseGenerator`.
   Old interfaces `IConceptDatabaseDefinition` and `IConceptDatabaseDefinitionExtension` are still available
@@ -134,6 +135,7 @@ Migrating a Rhetos app from EF6 to EF Core (optional):
 * The generated LINQPad script now automatically references different libraries based on the referenced Rhetos NuGet packages.
 * Rhetos plugin packages can extend the generated LINQPad script references with RhetosLinqPadReference and RhetosLinqPadNamespace ItemGroup.
 * Subpackage option AddProjectNameToPackageId can be disabled.
+* NLog log files for Rhetos build are split by the application name. This helps with parallel build processes that use the same version of rhetos.exe from the .nuget/packages folder.
 
 ## 5.4.0 (2023-03-16)
 
