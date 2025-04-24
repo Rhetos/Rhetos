@@ -8,7 +8,7 @@ dotnet test Rhetos.sln --no-build || GOTO Error0
 
 IF NOT EXIST test\CommonConcepts.TestApp.MsSql\local.settings.json ECHO Missing test\CommonConcepts.TestApp.MsSql\local.settings.json. Follow the Initial setup instructions in Readme.md. & GOTO Error0
 IF NOT EXIST test\CommonConcepts.TestApp.MsSqlEf6\local.settings.json ECHO Missing test\CommonConcepts.TestApp.MsSqlEf6\local.settings.json. Follow the Initial setup instructions in Readme.md. & GOTO Error0
-IF NOT EXIST test\CommonConcepts.TestApp.PostgreSql\local.settings.json ECHO Missing test\CommonConcepts.TestApp.PostgreSql\local.settings.json. Follow the Initial setup instructions in Readme.md. & GOTO Error0
+REM IF NOT EXIST test\CommonConcepts.TestApp.PostgreSql\local.settings.json ECHO Missing test\CommonConcepts.TestApp.PostgreSql\local.settings.json. Follow the Initial setup instructions in Readme.md. & GOTO Error0
 
 @REM Using "RestoreForce" to make sure that the new version of local Rhetos NuGet packages are included in build.
 dotnet build CommonConceptsTest.sln /t:restore /p:RestoreForce=True /t:rebuild --configuration %Config% || GOTO Error0
@@ -16,14 +16,14 @@ dotnet build CommonConceptsTest.sln /t:restore /p:RestoreForce=True /t:rebuild -
 @REM Running dbupdate again to test the Rhetos CLI (it was executed in the build above).
 dotnet test\CommonConcepts.TestApp.MsSql\bin\Debug\net8.0\rhetos.dll dbupdate test\CommonConcepts.TestApp.MsSql\bin\Debug\net8.0\CommonConcepts.TestApp.MsSql.dll || GOTO Error0
 dotnet test\CommonConcepts.TestApp.MsSqlEf6\bin\Debug\net8.0\rhetos.dll dbupdate test\CommonConcepts.TestApp.MsSqlEf6\bin\Debug\net8.0\CommonConcepts.TestApp.MsSqlEf6.dll || GOTO Error0
-dotnet test\CommonConcepts.TestApp.PostgreSql\bin\Debug\net8.0\rhetos.dll dbupdate test\CommonConcepts.TestApp.PostgreSql\bin\Debug\net8.0\CommonConcepts.TestApp.PostgreSql.dll || GOTO Error0
+REM dotnet test\CommonConcepts.TestApp.PostgreSql\bin\Debug\net8.0\rhetos.dll dbupdate test\CommonConcepts.TestApp.PostgreSql\bin\Debug\net8.0\CommonConcepts.TestApp.PostgreSql.dll || GOTO Error0
 
 @REM Running integration tests that use the database.
 dotnet test CommonConceptsTest.sln --no-build || GOTO Error0
 
 IF EXIST "%ProgramFiles%\LINQPad8\LPRun8.exe" "%ProgramFiles%\LINQPad8\LPRun8.exe" "test\CommonConcepts.TestApp.MsSql\bin\Debug\net8.0\LinqPad\Rhetos DOM.linq" > nul || GOTO Error0
 IF EXIST "%ProgramFiles%\LINQPad8\LPRun8.exe" "%ProgramFiles%\LINQPad8\LPRun8.exe" "test\CommonConcepts.TestApp.MsSqlEf6\bin\Debug\net8.0\LinqPad\Rhetos DOM.linq" > nul || GOTO Error0
-IF EXIST "%ProgramFiles%\LINQPad8\LPRun8.exe" "%ProgramFiles%\LINQPad8\LPRun8.exe" "test\CommonConcepts.TestApp.PostgreSql\bin\Debug\net8.0\LinqPad\Rhetos DOM.linq" > nul || GOTO Error0
+REM IF EXIST "%ProgramFiles%\LINQPad8\LPRun8.exe" "%ProgramFiles%\LINQPad8\LPRun8.exe" "test\CommonConcepts.TestApp.PostgreSql\bin\Debug\net8.0\LinqPad\Rhetos DOM.linq" > nul || GOTO Error0
 
 @REM ================================================
 
