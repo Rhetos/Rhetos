@@ -81,7 +81,7 @@ namespace Rhetos
             foreach (var targetLibrary in targetLibraries)
             {
                 var packageFolder = GetFolderForLibrary(targetLibrary);
-                var dependencies = targetLibrary.Dependencies.Select(x => new PackageRequest { Id = x.Id, VersionsRange = x.VersionRange.OriginalString });
+                var dependencies = targetLibrary.Dependencies.Select(x => new PackageRequest { Id = x.Id, VersionsRange = x.VersionRange.OriginalString }).ToList();
                 var library = _lockFile.GetLibrary(targetLibrary.Name, targetLibrary.Version);
                 var contentFiles = library.Files.Select(x => new ContentFile { PhysicalPath = Path.Combine(packageFolder, PathUtility.GetPathWithDirectorySeparator(x)), InPackagePath = PathUtility.GetPathWithDirectorySeparator(x) }).ToList();
                 installedPackages.Add(new InstalledPackage(library.Name, library.Version.Version.ToString(), dependencies, packageFolder, contentFiles));
@@ -95,7 +95,7 @@ namespace Rhetos
         private InstalledPackage GetProjectAsInstalledPackage()
         {
             var contentFiles = _projectContentFiles.Select(f => new ContentFile { PhysicalPath = f, InPackagePath = FilesUtility.AbsoluteToRelativePath(_projectRootFolder, f) }).ToList();
-            var dependencies = _lockFile.PackageSpec.TargetFrameworks.Single(x => x.FrameworkName == _targetFramework).Dependencies.Select(x => new PackageRequest { Id = x.Name, VersionsRange = x.LibraryRange.VersionRange.OriginalString });
+            var dependencies = _lockFile.PackageSpec.TargetFrameworks.Single(x => x.FrameworkName == _targetFramework).Dependencies.Select(x => new PackageRequest { Id = x.Name, VersionsRange = x.LibraryRange.VersionRange.OriginalString }).ToList();
             return new InstalledPackage(ProjectName, "", dependencies, _projectRootFolder, contentFiles);
         }
 

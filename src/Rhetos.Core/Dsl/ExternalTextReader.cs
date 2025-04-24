@@ -70,7 +70,7 @@ namespace Rhetos.Dsl
                     .ToList();
 
                 errorMessage = "Cannot find the file or resource referenced in DSL script. None of the following exists:"
-                    + string.Join(", ", candidatesInfo.Select(candidate => Environment.NewLine + candidate));
+                    + string.Join(", ", candidatesInfo.Select((candidate, x) => $"{Environment.NewLine}{x+1}. {candidate}"));
             }
             return ValueOrError.CreateError(errorMessage);
         }

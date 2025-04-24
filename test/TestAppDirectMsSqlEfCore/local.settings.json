@@ -1,5 +1,0 @@
-{
-  "ConnectionStrings": {
-    "RhetosConnectionString": "Data Source=localhost;Initial Catalog=Rhetos6TestAppDirectMsSqlEfCore;Integrated Security=true;TrustServerCertificate=true"
-  }
-}

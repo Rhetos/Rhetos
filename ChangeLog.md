@@ -133,6 +133,7 @@ Migrating a Rhetos app from EF6 to EF Core (optional):
   This will allow development of plugins to provide the support for a specific SQL language without implementing the specific language in the base DSL package.
 * The generated LINQPad script now automatically references different libraries based on the referenced Rhetos NuGet packages.
 * Rhetos plugin packages can extend the generated LINQPad script references with RhetosLinqPadReference and RhetosLinqPadNamespace ItemGroup.
+* Subpackage option AddProjectNameToPackageId can be disabled.
 
 ## 5.4.0 (2023-03-16)
 

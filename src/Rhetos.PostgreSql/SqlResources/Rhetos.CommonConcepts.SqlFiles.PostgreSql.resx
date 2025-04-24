@@ -117,7 +117,7 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="TestAppDirectPostgreSql/DslScriptsCommonConcepts/SQL/AutoCodeCacheGetNext create.sql" xml:space="preserve">
+  <data name="Rhetos.CommonConcepts/SQL/AutoCodeCacheGetNext create.sql" xml:space="preserve">
     <value>CREATE OR REPLACE FUNCTION Common.AutoCodeCacheGetNext (
     p_entity varchar(256),
     p_property varchar(256),
@@ -172,10 +172,10 @@ BEGIN
 END;
 $$</value>
   </data>
-  <data name="TestAppDirectPostgreSql/DslScriptsCommonConcepts/SQL/AutoCodeCacheGetNext remove.sql" xml:space="preserve">
+  <data name="Rhetos.CommonConcepts/SQL/AutoCodeCacheGetNext remove.sql" xml:space="preserve">
     <value>DROP FUNCTION Common.AutoCodeCacheGetNext</value>
   </data>
-  <data name="TestAppDirectPostgreSql/DslScriptsCommonConcepts/SQL/AutoCodeCacheUpdate create.sql" xml:space="preserve">
+  <data name="Rhetos.CommonConcepts/SQL/AutoCodeCacheUpdate create.sql" xml:space="preserve">
     <value>CREATE OR REPLACE FUNCTION Common.AutoCodeCacheUpdate(
     p_entity varchar(256),
     p_property varchar(256),
@@ -215,22 +215,22 @@ BEGIN
 END
 $$</value>
   </data>
-  <data name="TestAppDirectPostgreSql/DslScriptsCommonConcepts/SQL/AutoCodeCacheUpdate remove.sql" xml:space="preserve">
+  <data name="Rhetos.CommonConcepts/SQL/AutoCodeCacheUpdate remove.sql" xml:space="preserve">
     <value>DROP FUNCTION Common.AutoCodeCacheUpdate</value>
   </data>
-  <data name="TestAppDirectPostgreSql/DslScriptsCommonConcepts/SQL/Log.ContextInfo default.sql" xml:space="preserve">
+  <data name="Rhetos.CommonConcepts/SQL/Log.ContextInfo default.sql" xml:space="preserve">
     <value>current_setting('rhetos.userinfo', true)</value>
   </data>
-  <data name="TestAppDirectPostgreSql/DslScriptsCommonConcepts/SQL/Log.Created default.sql" xml:space="preserve">
+  <data name="Rhetos.CommonConcepts/SQL/Log.Created default.sql" xml:space="preserve">
     <value>LOCALTIMESTAMP(3)</value>
   </data>
-  <data name="TestAppDirectPostgreSql/DslScriptsCommonConcepts/SQL/Log.UserName default.sql" xml:space="preserve">
+  <data name="Rhetos.CommonConcepts/SQL/Log.UserName default.sql" xml:space="preserve">
     <value>current_user</value>
   </data>
-  <data name="TestAppDirectPostgreSql/DslScriptsCommonConcepts/SQL/Log.Workstation default.sql" xml:space="preserve">
+  <data name="Rhetos.CommonConcepts/SQL/Log.Workstation default.sql" xml:space="preserve">
     <value>CONCAT_WS(':', inet_client_addr(), inet_client_port())</value>
   </data>
-  <data name="TestAppDirectPostgreSql/DslScriptsCommonConcepts/SQL/LogReader.sql" xml:space="preserve">
+  <data name="Rhetos.CommonConcepts/SQL/LogReader.sql" xml:space="preserve">
     <value>SELECT
     ID,
     Created,
@@ -247,7 +247,7 @@ FROM
 /*Common.LogReader AdditionalSource*/
 </value>
   </data>
-  <data name="TestAppDirectPostgreSql/DslScriptsCommonConcepts/SQL/LogRelatedItemReader.sql" xml:space="preserve">
+  <data name="Rhetos.CommonConcepts/SQL/LogRelatedItemReader.sql" xml:space="preserve">
     <value>SELECT
     ID,
     LogID,
@@ -259,7 +259,7 @@ FROM
 
 /*Common.LogRelatedItemReader AdditionalSource*/</value>
   </data>
-  <data name="TestAppDirectPostgreSql/DslScriptsCommonConcepts/SQL/RelatedEvents.sql" xml:space="preserve">
+  <data name="Rhetos.CommonConcepts/SQL/RelatedEvents.sql" xml:space="preserve">
     <value>SELECT
     lri.ID AS ID,
     l.Created AS Created,

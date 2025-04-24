@@ -23,6 +23,7 @@ using Rhetos.Logging;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -79,24 +80,97 @@ namespace Rhetos
         {
             if (subpackagesOptions.Subpackages == null || !subpackagesOptions.Subpackages.Any())
                 return;
+            var projectPackage = packages.Where(p => p.Folder.StartsWith(_projectRootFolder, StringComparison.OrdinalIgnoreCase)).Single();
 
             // Make sure that the created subpackages are ordered by their dependencies.
-            var subpackagesNames = subpackagesOptions.Subpackages.Select(p => p.Name).ToList();
-            var dependencies = subpackagesOptions.Subpackages.Where(p => p.Dependencies != null).SelectMany(p => p.Dependencies.Select(d => Tuple.Create(d, p.Name))).ToList();
-            Graph.TopologicalSort(subpackagesNames, dependencies);
-            var subpackagesSorted = subpackagesOptions.Subpackages.ToList(); // Clone.
-            Graph.SortByGivenOrder(subpackagesSorted, subpackagesNames, p => p.Name);
+            List<SubpackageInfo> subpackagesSorted = GetSubpackagesInfoSorted(projectPackage, subpackagesOptions);
 
             // Extract files from the main project into the subpackages.
-            var projectPackage = packages.Where(p => p.Folder.StartsWith(_projectRootFolder, StringComparison.OrdinalIgnoreCase)).Single();
-            var createdPackages = subpackagesSorted.Select(subpackage => projectPackage.ExtractSubpackage(subpackage)).ToList();
+            var createdPackages = subpackagesSorted.Select(subpackage => ExtractSubpackage(projectPackage, subpackage)).ToList();
             foreach (var createdPackage in createdPackages)
                 _logger.Trace(() => $"Project files moved to virtual subpackage '{createdPackage.Id}':{string.Concat(createdPackage.ContentFiles.Select(f => $"{Environment.NewLine}  {f.InPackagePath}"))}");
-            projectPackage.AddDependencies(createdPackages);
+            AddDependencies(projectPackage, createdPackages);
 
             // Add the subpackages before the main project, because any other remaining files in the main project are assumed to depend on the subpackages
             // (as if the subpackages were implemented in separate libraries, referenced by the main project).
             packages.InsertRange(packages.IndexOf(projectPackage), createdPackages);
+        }
+
+        [DebuggerDisplay("{ID}")]
+        private class SubpackageInfo
+        {
+            public string ID;
+            public string Name;
+            public string Folder;
+            public List<SubpackageInfo> Dependencies;
+        }
+
+        private List<SubpackageInfo> GetSubpackagesInfoSorted(InstalledPackage projectPackage, SubpackagesOptions subpackagesOptions)
+        {
+            var subpackagesByName = subpackagesOptions.Subpackages
+                .Select(p => new
+                {
+                    Subpackage = p,
+                    SubpackageInfo = new SubpackageInfo { ID = p.GetPackageId(projectPackage.Id), Name = p.Name, Folder = p.Folder, Dependencies = [] }
+                })
+                .ToDictionary(p => p.Subpackage.Name);
+            foreach (var p in subpackagesByName.Values)
+                if (p.Subpackage.Dependencies != null)
+                    foreach (string d in p.Subpackage.Dependencies)
+                        if (subpackagesByName.TryGetValue(d, out var dp))
+                            p.SubpackageInfo.Dependencies.Add(dp.SubpackageInfo);
+                        else
+                            _logger.Warning($"Subpackage '{p.Subpackage.Name}' dependency '{d}' not found in the list of subpackages.");
+
+            var subpackagesInfo = subpackagesByName.Values.Select(p => p.SubpackageInfo).ToList();
+            var allDependencies = subpackagesInfo.SelectMany(p => p.Dependencies.Select(d => Tuple.Create(d, p))).ToList();
+            Graph.TopologicalSort(subpackagesInfo, allDependencies);
+            return subpackagesInfo;
+        }
+
+        private const string DslScriptsSubfolder = "DslScripts";
+        private static readonly string DslScriptsSubfolderPrefix = DslScriptsSubfolder + Path.DirectorySeparatorChar;
+
+        /// <summary>
+        /// Extracts all files from a given subfolder into a new (virtual) package, and removes them from the current package.
+        /// </summary>
+        private InstalledPackage ExtractSubpackage(InstalledPackage projectPackage, SubpackageInfo subpackage)
+        {
+            string subpackageFolder = Path.GetFullPath(Path.Combine(projectPackage.Folder, subpackage.Folder));
+            if (subpackageFolder.Last() != Path.DirectorySeparatorChar)
+                subpackageFolder += Path.DirectorySeparatorChar; // Makes sure to avoid selecting files from a subfolder which Name begins with the wanted subfolder name.
+
+            var subpackageDependencies = projectPackage.Dependencies.Concat(subpackage.Dependencies.Select(dependency => new PackageRequest { Id = dependency.ID, VersionsRange = "" })).ToList();
+            var subpackageFiles = projectPackage.ContentFiles.Where(f => f.PhysicalPath.StartsWith(subpackageFolder, StringComparison.OrdinalIgnoreCase)).ToList();
+            var virtualPackage = new InstalledPackage(subpackage.ID, "", subpackageDependencies, subpackageFolder, subpackageFiles);
+
+            projectPackage.ContentFiles.RemoveAll(subpackageFiles.Contains);
+
+            foreach (var file in virtualPackage.ContentFiles)
+            {
+                // Files in the new packages should have paths relative to the package's folder, instead of the project's root folder.
+                if (file.InPackagePath.Length <= subpackage.Folder.Length
+                    || (file.InPackagePath[subpackage.Folder.Length] != Path.DirectorySeparatorChar
+                    && file.InPackagePath[subpackage.Folder.Length] != Path.AltDirectorySeparatorChar))
+                    throw new FrameworkException($"Unexpected InPackagePath of a file '{file.InPackagePath}'." +
+                        $" It should start with the subpackage Folder name '{subpackage.Folder}' followed by a directory separator.");
+                file.InPackagePath = file.InPackagePath.Substring(subpackage.Folder.Length + 1);
+
+                // DSL scripts in the referenced packages need to be in the DslScripts folder, to match the behavior of DiskDslScriptLoader.LoadPackageScripts.
+                if (Path.GetExtension(file.InPackagePath).Equals(".rhe", StringComparison.OrdinalIgnoreCase))
+                    if (!file.InPackagePath.StartsWith(DslScriptsSubfolderPrefix, StringComparison.OrdinalIgnoreCase))
+                        file.InPackagePath = Path.Combine(DslScriptsSubfolder, file.InPackagePath);
+            }
+
+            if (!virtualPackage.ContentFiles.Any() && !Directory.Exists(subpackageFolder))
+                throw new ArgumentException($"Subpackage '{subpackage.Name}' directory '{subpackageFolder}' does not exist. Review the Rhetos build settings.");
+
+            return virtualPackage;
+        }
+
+        private void AddDependencies(InstalledPackage projectPackage, List<InstalledPackage> createdPackages)
+        {
+            projectPackage.Dependencies.AddRange(createdPackages.Select(p => new PackageRequest { Id = p.Id, VersionsRange = "" }));
         }
 
         public void Save(RhetosBuildEnvironment rhetosBuildEnvironment, RhetosProjectAssets rhetosProjectAssets)

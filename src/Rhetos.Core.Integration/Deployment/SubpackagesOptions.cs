@@ -17,8 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.Collections.Generic;
-
 namespace Rhetos.Deployment
 {
     /// <summary>
@@ -36,9 +34,20 @@ namespace Rhetos.Deployment
     public class Subpackage
     {
         /// <summary>
-        /// The full package name (package ID) will be constructed by adding project name prefix to the package name: "{projectName}.{subpackage.Name}"
+        /// The full package name (package ID) may be different from its <see cref="Name"/>. See <see cref="GetPackageId"/>.
         /// </summary>
         public string Name { get; set; }
+
+        /// <summary>
+        /// See <see cref="GetPackageId"/>.
+        /// </summary>
+        public bool AddProjectNameToPackageId { get; set; } = true;
+
+        /// <summary>
+        /// The full package name (package ID) is be constructed by adding project name to the subpackage name: "{projectName}.{subpackage.Name}", if <see cref="AddProjectNameToPackageId"/> is enabled.
+        /// Otherwise, the package ID is same as <see cref="Name"/>.
+        /// </summary>
+        public string GetPackageId(string projectName) => AddProjectNameToPackageId ? $"{projectName}.{Name}" : Name;
 
         /// <summary>
         /// Subfolder path relative to the .csproj file.

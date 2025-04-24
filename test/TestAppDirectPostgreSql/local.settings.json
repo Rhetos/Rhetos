@@ -1,5 +1,0 @@
-{
-  "ConnectionStrings": {
-    "RhetosConnectionString": "Host=localhost;Database=rhetos6testappdirectpostgresql;Username=postgres"
-  }
-}

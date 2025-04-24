@@ -45,6 +45,7 @@ IHost host = builder.Build();
 
 var rhetosAppOptions = host.Services.GetService<IRhetosComponent<RhetosAppOptions>>()?.Value;
 Console.WriteLine($"Running Rhetos app '{rhetosAppOptions?.RhetosAppAssemblyFileName}'.");
+Console.WriteLine($"Generated classes in assembly '{typeof(Bookstore.Book).Assembly.GetName().Name}'.");
 
 Console.WriteLine("Executing test query:");
 var repository = host.Services.GetService<IRhetosComponent<Common.DomRepository>>().Value;

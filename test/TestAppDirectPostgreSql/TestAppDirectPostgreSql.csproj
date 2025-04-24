@@ -7,11 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="local.settings.json" />
-    <None Remove="rhetos-build.settings.json" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Include="local.settings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -37,11 +32,9 @@
     <RhetosVSIntegrationPath>..\bin\$(Configuration)\netstandard2.0\RhetosVSIntegration.dll</RhetosVSIntegrationPath>
   </PropertyGroup>
 
-  <Target Name="CopyDslScripts" BeforeTargets="ResolveRhetosBuildItems">
-    <ItemGroup>
-      <FilesToCopy Include="..\..\src\Rhetos.CommonConcepts\DslScripts\**\*" />
-    </ItemGroup>
-    <Copy SourceFiles="@(FilesToCopy)" DestinationFiles="@(FilesToCopy->'DslScriptsCommonConcepts\%(RecursiveDir)\%(Filename)%(Extension)')" />
-  </Target>
+  <ItemGroup>
+    <RhetosBuild Include="..\..\src\Rhetos.CommonConcepts\DslScripts\**\*" />
+    <RhetosBuild Include="..\..\src\Rhetos.CommonConcepts\DataMigration\**\*" />
+  </ItemGroup>
 
 </Project>
