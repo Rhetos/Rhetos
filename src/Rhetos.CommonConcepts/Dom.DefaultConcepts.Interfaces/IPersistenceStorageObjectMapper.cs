@@ -32,7 +32,7 @@ namespace Rhetos.Dom.DefaultConcepts
 		string GetTableName();
 	}
 
-    public struct PersistenceStorageObjectParameter
+    public class PersistenceStorageObjectParameter
     {
         public string PropertyName { get; }
 

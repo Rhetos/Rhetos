@@ -118,7 +118,7 @@ namespace Rhetos.Utilities
         /// Creates a custom lock in database. It blocks other parallel connections from creating a lock with the same resource name.
         /// This is often use to reduce deadlocks is database when parallel users (or even parallel web requests from one user)
         /// execute complex data modifications.
-        /// The lock is automatically closed when the SQL transaction is committed or rolled back (e.g. when the web request return the response).
+        /// The lock is automatically released when the SQL transaction is committed or rolled back (e.g. when the web request returns the response).
         /// Note that the issues with parallelism in Microsoft database may depend on READ_COMMITTED_SNAPSHOT setting.
         /// </summary>
         /// <param name="resources">Custom string that represents a unique lock identifier. It is case insensitive.
@@ -129,6 +129,8 @@ namespace Rhetos.Utilities
 
         /// <summary>
         /// Releases a custom lock in database, created by <see cref="GetDbLock"/>.
+        /// Usually there is <b>no need to call this method</b>, because the lock is automatically released
+        /// when the SQL transaction ends (e.g. when the web request returns the response).
         /// </summary>
         void ReleaseDbLock(IEnumerable<string> resources);
     }

@@ -47,6 +47,7 @@ namespace Rhetos.CommonConcepts.Test
                 ("m", "   CREATE\t\r\n\tPROCEDURE\t   m . p \r\n\r\n  \tAS  \r\n\r\nSELECT 1\r\n\t  \r\n", "m", "p", "", "SELECT 1"),
                 ("m", "CREATE PROCEDURE m.p\r\n@OwnerID uniqueidentifier\r\n\r\nAS\r\nSELECT 1", "m", "p", "@OwnerID uniqueidentifier", "SELECT 1"),
                 ("m", "CREATE PROCEDURE m.p\r\n(@OwnerID\r\nuniqueidentifier, @ItemID uniqueidentifier)\r\n\r\nAS\r\nSELECT 1", "m", "p", "(@OwnerID\r\nuniqueidentifier, @ItemID uniqueidentifier)", "SELECT 1"),
+                ("m", "CREATE PROCEDURE m.p\r\n(@OwnerID uniqueidentifier, @ItemID uniqueidentifier)\r\n\r\nAS\r\nSELECT 1", "m", "p", "(@OwnerID uniqueidentifier, @ItemID uniqueidentifier)", "SELECT 1"),
             };
 
             foreach ((string module, string fullProcedureSource, string expectedModule, string expectedName, string expectedParams, string expectedBody) in tests)

@@ -34,15 +34,23 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 #pragma warning restore CS0618 // Type or member is obsolete
     {
         /// <summary>
-        /// Options inserted between CREATE and INDEX, before Options1Tag.
+        /// Options inserted between CREATE and INDEX keywords, before Options1Tag.
         /// </summary>
         public static readonly SqlTag<SqlIndexMultipleInfo> Options0Tag = "Options0";
         /// <summary>
-        /// Options inserted between CREATE and INDEX, after Options0Tag.
+        /// Options inserted between CREATE and INDEX keywords, after Options0Tag.
         /// </summary>
         public static readonly SqlTag<SqlIndexMultipleInfo> Options1Tag = "Options1";
         /// <summary>
-        /// Options inserted at the end of the CREATE INDEX query.
+        /// Add the INCLUDE columns (nonkey) to the index, before Options2Tag.
+        /// </summary>
+        public static readonly SqlTag<SqlIndexMultipleInfo> IncludeTag = new SqlTag<SqlIndexMultipleInfo>("Include", TagType.Appendable, "INCLUDE ({0}) ");
+        /// <summary>
+        /// Add the WHERE filter to the index, before Options2Tag.
+        /// </summary>
+        public static readonly SqlTag<SqlIndexMultipleInfo> WhereTag = new SqlTag<SqlIndexMultipleInfo>("Where", TagType.Appendable, "WHERE ({0}) ", "AND ({0}) ");
+        /// <summary>
+        /// Options inserted after the list of columns, and after INCLUDE and WHERE (or instead of).
         /// </summary>
         public static readonly SqlTag<SqlIndexMultipleInfo> Options2Tag = "Options2";
         /// <summary>
@@ -80,6 +88,8 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
                     ColumnsTag.Evaluate(info),
                     Options0Tag.Evaluate(info),
                     Options1Tag.Evaluate(info),
+                    IncludeTag.Evaluate(info),
+                    WhereTag.Evaluate(info),
                     Options2Tag.Evaluate(info));
             return null;
         }

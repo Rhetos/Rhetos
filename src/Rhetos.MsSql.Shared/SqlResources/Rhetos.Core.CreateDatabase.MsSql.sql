@@ -180,13 +180,15 @@ AS
 	END
 	ELSE
 	BEGIN
-    
+
 		IF @ColumnType <> @ExistingMigrationColumnType
         BEGIN
             PRINT 'Automatically changing data-migration column type from ' + @ExistingMigrationColumnType + ' to ' + @ColumnType + ' for column ' + @SchemaName + '.' + @TableName + '.'  + @ColumnName+ '.'
             EXEC ('ALTER TABLE [' + @MigrationSchemaName + '].[' + @TableName + '] ALTER COLUMN [' + @ColumnName + '] ' + @ColumnType);
             SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RETURN @Error END
         END
+
+        DECLARE @collate nvarchar(256) = CASE WHEN @ColumnType LIKE 'nvarchar%' THEN ' COLLATE Latin1_General_BIN' ELSE '' END;
 	
         EXEC ('
             UPDATE
@@ -197,7 +199,7 @@ AS
                 [' + @SchemaName + '].[' + @TableName + '] original
                 INNER JOIN [' + @MigrationSchemaName + '].[' + @TableName + '] migration ON migration.ID = original.ID
             WHERE
-                original.[' + @ColumnName + '] <> migration.[' + @ColumnName + ']
+                original.[' + @ColumnName + ']' + @collate + ' <> migration.[' + @ColumnName + ']' + @collate + '
                 OR original.[' + @ColumnName + '] IS NULL AND migration.[' + @ColumnName + '] IS NOT NULL
                 OR original.[' + @ColumnName + '] IS NOT NULL AND migration.[' + @ColumnName + '] IS NULL');
 		SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RETURN @Error END
@@ -275,7 +277,9 @@ AS
     DECLARE @MigrationSchemaName NVARCHAR(256)
     SET @MigrationSchemaName = '_' + @SchemaName
     
-    -- Rhetos.DataMigrationApplyMultiple will not automatically change the column type (unlike Rhetos.DataMigrationApply). That is good enough for use in data migration scripts, but cannot be used in DatabaseGenerator plugins.
+    -- Rhetos.DataMigrationApplyMultiple will not automatically change the migration column type (unlike Rhetos.DataMigrationApply).
+    -- That is good enough for use in data migration scripts, because the developer can alter the column if needed,
+    -- but cannot be used in DatabaseGenerator plugins for automatic column backup/restore (Rhetos.DataMigrationApply).
     
     IF NOT EXISTS (SELECT TOP 1 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = @SchemaName AND TABLE_NAME = @TableName AND TABLE_TYPE = 'BASE TABLE')
         PRINT 'Nothing to migrate. Table "' + @SchemaName + '.' + @TableName + '"" does not exist. It is expected to be created later during this upgrade.'
@@ -290,34 +294,34 @@ AS
         SET @ColumnNames = '<c>' + REPLACE(@ColumnNames, ',', '</c><c>') + '</c>'
         DECLARE @x XML
         SET @x = @ColumnNames
-        DECLARE @columns TABLE (name NVARCHAR(256))
-        INSERT INTO @columns SELECT RTRIM(LTRIM(x.col.value('.', 'nvarchar(256)'))) FROM @x.nodes('/c') AS x(col)
+        DECLARE @columns TABLE (name NVARCHAR(256), migrationType NVARCHAR(256), originalType NVARCHAR(256), collateSql NVARCHAR(256))
+        INSERT INTO @columns (name) SELECT RTRIM(LTRIM(x.col.value('.', 'nvarchar(256)'))) FROM @x.nodes('/c') AS x(col)
         IF NOT EXISTS (SELECT TOP 1 1 FROM @columns WHERE name = 'ID')
         BEGIN ROLLBACK TRANSACTION @TranName RAISERROR('Column "ID" must be listed in @ColumnNames.', 16, 10) RETURN 50000 END
+
+        UPDATE
+            c
+        SET
+            originalType = (SELECT DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = @SchemaName AND TABLE_NAME = @TableName AND COLUMN_NAME = c.name),
+            migrationType = (SELECT DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = @MigrationSchemaName AND TABLE_NAME = @TableName AND COLUMN_NAME = c.name)
+        FROM
+            @columns c;
         
         -- Remove columns that are not prepared for migration:
-        
-        DECLARE @killList TABLE (columnName NVARCHAR(256))
-        
-        INSERT INTO @killList SELECT name FROM @columns WHERE name NOT IN (SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = @SchemaName AND TABLE_NAME = @TableName)
-        IF EXISTS (SELECT TOP 1 1 FROM @killList)
+
+        IF EXISTS (SELECT TOP 1 1 FROM @columns WHERE originalType IS NULL OR migrationType IS NULL)
         BEGIN
-            SELECT 'Column ' + @SchemaName + '.' + @TableName + '.' + columnName + ' does not exist. It will be safely ignored.' FROM @killList
-            DELETE FROM @columns WHERE name IN (SELECT columnName FROM @killList)
-            DELETE FROM @killList
-        END
-        
-        INSERT INTO @killList SELECT name FROM @columns WHERE name NOT IN (SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = @MigrationSchemaName AND TABLE_NAME = @TableName)
-        IF EXISTS (SELECT TOP 1 1 FROM @killList)
-        BEGIN
-            SELECT 'Data-migration column ' + @MigrationSchemaName + '.' + @TableName + '.' + columnName + ' does not exist. It will be safely ignored.' FROM @killList
-            DELETE FROM @columns WHERE name IN (SELECT columnName FROM @killList)
-            DELETE FROM @killList
+            SELECT CASE WHEN originalType IS NULL THEN 'Column ' + @SchemaName ELSE 'Data-migration column ' + @MigrationSchemaName END + '.' + @TableName + '.' + name + ' does not exist. It will be safely ignored.'
+                FROM @columns WHERE originalType IS NULL OR migrationType IS NULL;
+            DELETE
+                FROM @columns WHERE originalType IS NULL OR migrationType IS NULL;
         END
         
         -- Migrate data:
         
         DELETE FROM @columns WHERE name = 'ID'
+
+        UPDATE @columns SET collateSql = CASE WHEN migrationType = 'nvarchar' AND originalType = 'nvarchar' THEN ' COLLATE Latin1_General_BIN' ELSE '' END;
         
         DECLARE @sqlDelete VARCHAR(MAX)
         DECLARE @sqlUpdate VARCHAR(MAX)
@@ -342,7 +346,9 @@ AS
                     [' + name + '] = migration.[' + name + ']',
                 @columns2sql = @columns2sql + '
                     ' + CASE WHEN @columns2sql <> '' THEN 'OR ' ELSE '' END
-                    + '(original.[' + name + '] <> migration.[' + name + '] OR original.[' + name + '] IS NULL AND migration.[' + name + '] IS NOT NULL OR original.[' + name + '] IS NOT NULL AND migration.[' + name + '] IS NULL)'
+                    + '(original.[' + name + ']' + collateSql + ' <> migration.[' + name + ']' + collateSql + '
+                    OR original.[' + name + '] IS NULL AND migration.[' + name + '] IS NOT NULL 
+                    OR original.[' + name + '] IS NOT NULL AND migration.[' + name + '] IS NULL)'
             FROM
                 @columns
             SET @Error = @@ERROR IF @Error > 0 BEGIN ROLLBACK TRANSACTION @TranName RETURN @Error END

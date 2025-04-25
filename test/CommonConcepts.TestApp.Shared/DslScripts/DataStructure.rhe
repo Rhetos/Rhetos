@@ -233,6 +233,22 @@ Module TestTypes
     }
 }
 
+Module TestIndex
+{
+	Entity IndexIncludeDependencies
+    {
+        Integer I;
+		// Testing if the SQL dependencies are automatically detected and the columns are created before the index.
+		// If the dbupdate succeeds, the test has passed.
+        SqlIndexMultiple I { Include 'P RID'; }
+        Reference P;
+        Reference R;
+    }
+    
+    Entity P;
+    Entity R;
+}
+
 Module TestUnique
 {
 	Entity R
@@ -281,6 +297,26 @@ Module TestUnique
     {
         Reference TestReference TestUnique.R { UniqueWhereNotNull; }
     }
+
+	Entity UniqueWithMultipleWhere
+	{
+		ShortString Name { Unique { Where "Name IS NOT NULL"; Where "Name > 'N'"; } }
+	}
+
+	Entity IncludeEntity
+	{
+		ShortString Name;
+		ShortString Title;
+		Reference Description TestEntity.Large;
+		SqlIndexMultiple 'Name Title' {Include 'Description ID';}
+	}
+
+	Entity OptionsEntity
+	{
+		ShortString Name;
+		ShortString Title;
+		SqlIndexMultiple 'Name Title' { Options 'WHERE Name IS NOT NULL'; }
+	}
 }
 
 Module TestCloning

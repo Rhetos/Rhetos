@@ -61,16 +61,16 @@ Changes in Rhetos libraries API:
     in `AppDomain.CurrentDomain.BaseDirectory` directory instead of the current directory.
 * Corrected type in extension methods: IsLessThen to IsLessThan, IsGreaterThen to IsGreaterThan.
 * Some EF6-specific features moved from Rhetos.CommonConcepts to Rhetos.MsSqlEf6.
-    * If a custom code generator class uses one of `DomInitializationCodeGenerator.EntityFramework*` tags,
-      instead of it use the same tag from `EntityFrameworkContextCodeGenerator` class and add an attribute
-      `[ExportMetadata(MefProvider.DependsOn, typeof(EntityFrameworkContextCodeGenerator))]`.
+  * If a custom code generator class uses one of `DomInitializationCodeGenerator.EntityFramework*` tags,
+    instead of it use the same tag from `EntityFrameworkContextCodeGenerator` class and add an attribute
+    `[ExportMetadata(MefProvider.DependsOn, typeof(EntityFrameworkContextCodeGenerator))]`.
 
 Changes in behavior:
 
 * Configuration setting key "Rhetos:DatabaseOracle:NationalLanguage" has changed to "Rhetos:Build:DatabaseNationalLanguage".
 * Bugfix: **Computed** concept is no longer reported as queryable in DslUtility.IsQueryable, since it does not generate a queryable repository.
 * The legacy configuration option `CommonConcepts:DynamicTypeResolution` is no longer supported. DynamicTypeResolution is always disabled.
-    * In FilterCriteria, filter names should be constructed by Type.ToString(), instead of Type.FullName or Type.AssemblyQualifiedName.
+  * In FilterCriteria, filter names should be constructed by Type.ToString(), instead of Type.FullName or Type.AssemblyQualifiedName.
 
 Migrating a Rhetos app from EF6 to EF Core (optional):
 
@@ -88,9 +88,9 @@ Migrating a Rhetos app from EF6 to EF Core (optional):
     * In C# code, replace namespace `System.Data.SqlClient` with `Microsoft.Data.SqlClient`.
     * Microsoft.Data.SqlClient handles the **database connection string** differently:
       `Encrypt` defaults to `true` and the driver will always validate the server certificate based on `TrustServerCertificate`.
-        * In a local development environment, if you use encryption with a self-signed certificate on the server,
-          you can specify `TrustServerCertificate=true` in the connection string.
-          If you need to turn off encryption, you can specify `Encrypt=false` instead.
+      * In a local development environment, if you use encryption with a self-signed certificate on the server,
+        you can specify `TrustServerCertificate=true` in the connection string.
+        If you need to turn off encryption, you can specify `Encrypt=false` instead.
   * Most EF6 types were in namespace `System.Data.Entity`, while EF Core uses namespace `Microsoft.EntityFrameworkCore`.
   * Removed Guid comparison extension methods GuidIsGreaterThan, GuidIsGreaterThanOrEqual, GuidIsLessThan, GuidIsLessThanOrEqual. They are supported by standard operators `>` and `<`.
   * Removed the 'FullTextSearch' extension method for Entity Framework LINQ queries. Use `EF.Functions.Contains` instead.
@@ -136,6 +136,44 @@ Migrating a Rhetos app from EF6 to EF Core (optional):
 * Rhetos plugin packages can extend the generated LINQPad script references with RhetosLinqPadReference and RhetosLinqPadNamespace ItemGroup.
 * Subpackage option AddProjectNameToPackageId can be disabled.
 * NLog log files for Rhetos build are split by the application name. This helps with parallel build processes that use the same version of rhetos.exe from the .nuget/packages folder.
+
+## 5.5.0 (2025-04-16)
+
+### New features
+
+* New concepts for configuring database indexes:
+  * **UniqueWhereNotNull** concept, for creating a unique constraint that disregards NULL values.
+    Example: `ShortString Name { UniqueWhereNotNull; }`.
+  * **Where** concept, for extending the **Unique** concept to create a [filtered index](https://learn.microsoft.com/en-us/sql/t-sql/statements/create-index-transact-sql?view=sql-server-ver16#where-filter_predicate) (issue #177).
+    Example: `ShortString Name { Unique { Where "Name IS NOT NULL"; Where "Name > 'N'"; } }`
+  * **Include** concept, for extending **SqlIndexMultiple** to create a [covering index](https://learn.microsoft.com/en-us/sql/relational-databases/indexes/create-indexes-with-included-columns?view=sql-server-ver16).
+    Example: `SqlIndexMultiple 'Name Title' { Include 'Description ID'; }`
+  * **Options** concept, for extending **SqlIndexMultiple** with custom SQL options.
+    Example: `SqlIndexMultiple 'Name Title' { Options "WHERE Name IS NOT NULL"; }`
+* New helper methods for custom database locks: `ISqlExecuter.GetDbLock` and `ISqlExecuter.ReleaseDbLock`.
+  GetDbLock calls `sp_getapplock` with improved error handling. It can be used to improve data consistency and prevent db deadlocks on parallel requests.
+* New overload of **SqlFunction** concept with a complete `CREATE` statement.
+  Instead of separately specifying the function's name, arguments and body with three parameters, you can specify the function with a single SQL script, starting with "CREATE OR ALTER FUNCTION".
+  This simplifies the development process by developing the function in a separate SQL script with SSMS or a similar tool, and directly referencing the SQL script from a DSL script.
+
+### Internal improvements
+
+* Optimization: Grouping multiple insert and delete SQL commands into a single command with multiple values.
+  For backward compatibility with existing custom triggers, this feature is disabled by default.
+  **Enable** it by setting option `CommonConcepts:SqlCommandBatchSeparateQueries` to `false`.
+* Optimization: Generating EF mapping view cache on app startup, if not already generated on initial dbupdate (common on environments with multiple web servers).
+* Bugfix: The data migration scripts do not update data when only the letter case is changed (issue #459).
+* Bugfix: SqlDataReader left open after an exception. In practice it should not affect the Rhetos apps, since the SQL transaction should not be used in the same scope after the SQL exception occurred, but there might be some edge cases where it might cause additional exception or prolonged database locks.
+* Bugfix: Updating multiple records with circular references causes an exception.
+* Bugfix: Logging on entity with LinkedItems fails on dbupdate with SqlException.
+* Bugfix: On authorization error, while UserMessage is localized, the SystemMessage should not be localized.
+* When using `--short-transactions` Rhetos CLI switch, the executed data-migration scripts will not be deactivated if database update fails. This is an optimization that simplifies db debugging process.
+* Localized entity names in UserException for foreign key constraint errors.
+* New RhetosAppOptions property RhetosAppAssemblyFileName.
+* Embedding PDBs into DLLs to simplify debugging. Removed NuGet symbols packages.
+* Updated Oracle.ManagedDataAccess.Core from 3.21.50 to 3.21.120.
+* Updated Newtonsoft.Json from 13.0.1 to 13.0.3.
+* Updated System.Data.SqlClient from 4.8.5 to 4.8.6.
 
 ## 5.4.0 (2023-03-16)
 
