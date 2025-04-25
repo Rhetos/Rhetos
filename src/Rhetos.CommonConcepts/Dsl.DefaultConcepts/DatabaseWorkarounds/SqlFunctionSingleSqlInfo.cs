@@ -52,25 +52,25 @@ namespace Rhetos.Dsl.DefaultConcepts
         {
             Match createPart = createPartRegex.Match(FullFunctionSource);
             if (!createPart.Success)
-                throw new DslSyntaxException(this, $"The SqlFunction script must start with \"CREATE FUNCTION\" or \"CREATE OR ALTER FUNCTION\". Module '{Module}', SqlFunction: {FullFunctionSource.Limit(50, "...")}.");
+                throw new DslConceptSyntaxException(this, $"The SqlFunction script must start with \"CREATE FUNCTION\" or \"CREATE OR ALTER FUNCTION\". Module '{Module}', SqlFunction: {FullFunctionSource.Limit(50, "...")}.");
 
             string rest = FullFunctionSource.Substring(createPart.Index + createPart.Length);
 
             Match namePart = namePartRegex.Match(rest);
             if (!namePart.Success)
-                throw new DslSyntaxException(this, $"Cannot detect function name in the SQL script. Make sure its syntax is correct. Do not use comments before the function name. Rest: {rest.Limit(50, "...")}.");
+                throw new DslConceptSyntaxException(this, $"Cannot detect function name in the SQL script. Make sure its syntax is correct. Do not use comments before the function name. Rest: {rest.Limit(50, "...")}.");
             string moduleName = namePart.Groups["module"].Value;
             Name = namePart.Groups["name"].Value;
             if (string.IsNullOrWhiteSpace(moduleName))
-                throw new DslSyntaxException(this, $"SqlFunction '{Name}' should be named with schema '{Module.Name}.{Name}', to match the DSL module where the SqlFunction is placed.");
+                throw new DslConceptSyntaxException(this, $"SqlFunction '{Name}' should be named with schema '{Module.Name}.{Name}', to match the DSL module where the SqlFunction is placed.");
             if (!string.Equals(moduleName, Module.Name, StringComparison.OrdinalIgnoreCase))
-                throw new DslSyntaxException(this, $"SqlFunction '{moduleName}.{Name}' should have schema '{Module.Name}' instead of '{moduleName}', to match the DSL module where the SqlFunction is placed.");
+                throw new DslConceptSyntaxException(this, $"SqlFunction '{moduleName}.{Name}' should have schema '{Module.Name}' instead of '{moduleName}', to match the DSL module where the SqlFunction is placed.");
 
             rest = rest.Substring(namePart.Index + namePart.Length);
 
             Match parametersPart = parametersPartRegex.Match(rest);
             if (!parametersPart.Success)
-                throw new DslSyntaxException(this, $"Cannot detect beginning of the parameters and code block in function '{Module.Name}.{Name}'. Make sure the SQL script has a valid syntax. Rest: {rest.Limit(50, "...")}.");
+                throw new DslConceptSyntaxException(this, $"Cannot detect beginning of the parameters and code block in function '{Module.Name}.{Name}'. Make sure the SQL script has a valid syntax. Rest: {rest.Limit(50, "...")}.");
             Arguments = parametersPart.Groups["params"].Value;
             string returns = parametersPart.Groups["returns"].Value.Trim(); // This is parametrized to match the letter case.
 
@@ -78,7 +78,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
             Source = (returns + rest).TrimStart('\r', '\n').TrimEnd();
             if (goStatementRegex.IsMatch(Source))
-                throw new DslSyntaxException(this, $"Please remove \"GO\" statement from the SQL script, or use SqlObject instead of SqlFunction.");
+                throw new DslConceptSyntaxException(this, $"Please remove \"GO\" statement from the SQL script, or use SqlObject instead of SqlFunction.");
 
             createdConcepts = null;
         }

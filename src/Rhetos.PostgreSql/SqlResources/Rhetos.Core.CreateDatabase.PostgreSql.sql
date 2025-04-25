@@ -170,8 +170,9 @@ BEGIN
     TableName := lower(TableName);
     ColumnNames := lower(ColumnNames);
 
-    -- Rhetos.DataMigrationApplyMultiple will not automatically change the column type (unlike Rhetos.DataMigrationApply).
-    -- That is good enough for use in data migration scripts, but cannot be used in DatabaseGenerator plugins.
+    -- Rhetos.DataMigrationApplyMultiple will not automatically change the migration column type (unlike Rhetos.DataMigrationApply).
+    -- That is good enough for use in data migration scripts, because the developer can alter the column if needed,
+    -- but cannot be used in DatabaseGenerator plugins for automatic column backup/restore (Rhetos.DataMigrationApply).
     
     IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = SchemaName AND table_name = TableName AND table_type = 'BASE TABLE') THEN
         RAISE NOTICE 'Nothing to migrate. Table "%"."%" does not exist. It is expected to be created later during this upgrade.', SchemaName, TableName;

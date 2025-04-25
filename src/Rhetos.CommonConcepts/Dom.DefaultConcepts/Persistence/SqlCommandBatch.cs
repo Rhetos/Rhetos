@@ -21,9 +21,7 @@ using Rhetos.Persistence;
 using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 
@@ -148,8 +146,8 @@ namespace Rhetos.Dom.DefaultConcepts
 
 		private void AppendDeleteCommand(List<DbParameter> commandParameters, StringBuilder commandTextBuilder, IEntity entity, IPersistenceStorageObjectMapper mapper, bool isFirst, bool isLast)
 		{
-            var parameter = new PersistenceStorageObjectParameter("ID", new SqlParameter("", System.Data.SqlDbType.UniqueIdentifier) { Value = entity.ID });
-            InitializeAndAppendParameters(commandParameters, new[] { parameter });
+            var parameter = mapper.GetParameters(entity).Single(p => p.PropertyName == "ID");
+            InitializeAndAppendParameters(commandParameters, [parameter]);
             var entityName = mapper.GetTableName();
 
             if (_commonConceptsRuntimeOptions.SqlCommandBatchSeparateQueries || (isFirst == true && isLast == true))

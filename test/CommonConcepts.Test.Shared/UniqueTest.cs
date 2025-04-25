@@ -323,7 +323,7 @@ namespace CommonConcepts.Test
                 var item2 = new TestUnique.UniqueWhereNotNullEntityReference { ID = Guid.NewGuid(), TestReferenceID = r2.ID };
                 var item3 = new TestUnique.UniqueWhereNotNullEntityReference { ID = Guid.NewGuid(), TestReferenceID = r1.ID };
 
-                var ids = new[] { item1.ID, item2.ID, item3.ID};
+                var ids = new[] { item1.ID, item2.ID, item3.ID };
 
                 repository.TestUnique.UniqueWhereNotNullEntityReference.Insert(item1);
                 Assert.AreEqual(1, repository.TestUnique.UniqueWhereNotNullEntityReference.Load(ids).Length);
@@ -332,6 +332,8 @@ namespace CommonConcepts.Test
                 Assert.AreEqual(2, repository.TestUnique.UniqueWhereNotNullEntityReference.Load(ids).Length);
 
                 TestUtility.ShouldFail<UserException>(() => repository.TestUnique.UniqueWhereNotNullEntityReference.Insert(item3), "It is not allowed to enter a duplicate record.");
+            }
+        }
 
         [TestMethod]
         public void TestUniqueWithMultipleWhere()

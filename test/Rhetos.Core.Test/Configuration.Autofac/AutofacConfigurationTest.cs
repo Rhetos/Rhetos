@@ -168,7 +168,8 @@ namespace Rhetos.Configuration.Autofac.Test
         }
 
         const string _expectedRegistrationsBuild =
-@"Activator = ApplicationGenerator (ReflectionActivator), Services = [Rhetos.Deployment.ApplicationGenerator], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
+@"Activator = AdditionalSourceFilesListing (ReflectionActivator), Services = [Rhetos.AdditionalSourceFilesListing], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
+Activator = ApplicationGenerator (ReflectionActivator), Services = [Rhetos.Deployment.ApplicationGenerator], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = BuildOptions (DelegateActivator), Services = [Rhetos.Utilities.BuildOptions], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = CodeBuilder (ReflectionActivator), Services = [Rhetos.Compiler.ICodeBuilder], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = CodeGenerator (ReflectionActivator), Services = [Rhetos.Compiler.ICodeGenerator], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
@@ -197,7 +198,7 @@ Activator = DslSyntax (DelegateActivator), Services = [Rhetos.Dsl.DslSyntax], Li
 Activator = DslSyntaxFile (ReflectionActivator), Services = [Rhetos.Dsl.DslSyntaxFile], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = DslSyntaxFileGenerator (ReflectionActivator), Services = [Rhetos.Extensibility.IGenerator], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = DslSyntaxFromPlugins (ReflectionActivator), Services = [Rhetos.Dsl.DslSyntaxFromPlugins], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
-Activator = ExternalTextReader (ReflectionActivator), Services = [Rhetos.Dsl.IExternalTextReader], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
+Activator = ExternalTextReader (ReflectionActivator), Services = [Rhetos.Dsl.IExternalTextReader], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = FilesUtility (ReflectionActivator), Services = [Rhetos.Utilities.FilesUtility], Lifetime = Autofac.Core.Lifetime.RootScopeLifetime, Sharing = Shared, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = InitialDomCodeGenerator (ReflectionActivator), Services = [Rhetos.Dom.InitialDomCodeGenerator], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
 Activator = InitializationConcept (ReflectionActivator), Services = [Rhetos.Dsl.IConceptInfo], Lifetime = Autofac.Core.Lifetime.CurrentScopeLifetime, Sharing = None, Ownership = OwnedByLifetimeScope, Pipeline = Autofac.Core.Pipeline.ResolvePipeline
