@@ -8,6 +8,7 @@
     <license type="expression">AGPL-3.0-only</license>
     <projectUrl>https://github.com/rhetos/rhetos</projectUrl>
     <description>Part of Rhetos DSL framework libraries for syntax analysis of DSL scripts.</description>
+    <readme>docs\Readme.md</readme>
     <copyright>Copyright Omega software 2013</copyright>
     <tags>Rhetos</tags>
     <dependencies>
@@ -19,6 +20,8 @@
     </dependencies>
   </metadata>
   <files>
+
+    <file src="Rhetos.Core.DslParser\Readme.md" target="docs" />
 
     <!-- The following libraries are netstandard2.1, to support a wider range of custom DSL syntax editors and plugins,
     that might be developed by using the libraries from this NuGet package. -->

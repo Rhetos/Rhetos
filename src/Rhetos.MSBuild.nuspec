@@ -8,6 +8,7 @@
     <license type="expression">AGPL-3.0-only</license>
     <projectUrl>https://github.com/rhetos/rhetos</projectUrl>
     <description>MSBuild integration with Rhetos CLI, for Rhetos DSL framework.</description>
+    <readme>docs\Readme.md</readme>
     <copyright>Copyright Omega software 2013</copyright>
     <tags>Rhetos</tags>
     <dependencies>
@@ -15,6 +16,8 @@
     </dependencies>
   </metadata>
   <files>
+    <file src="RhetosVSIntegration\MsBuildIntegrationBuild\Readme.md" target="docs" />
+    
     <!-- Rhetos 'build' needs to be on net8 or higher, so that is can load plugins from net8 libraries. -->
     <file src="RhetosCli\bin\Debug\net8.0\*.dll" target="tools" />
     <file src="RhetosCli\bin\Debug\net8.0\rhetos.exe" target="tools" />
@@ -22,8 +25,8 @@
     <file src="RhetosCli\bin\Debug\net8.0\rhetos.deps.json" target="tools" />
     <file src="RhetosCli\bin\Debug\net8.0\rhetos.runtimeconfig.json" target="tools" />
 
-    <file src="RhetosVSIntegration\MsBuildIntegration\Rhetos.MSBuild.targets" target="build" />
-    <file src="RhetosVSIntegration\MsBuildIntegration\Rhetos.MSBuild.props" target="build" />
+    <file src="RhetosVSIntegration\MsBuildIntegrationBuild\Rhetos.MSBuild.targets" target="build" />
+    <file src="RhetosVSIntegration\MsBuildIntegrationBuild\Rhetos.MSBuild.props" target="build" />
 
     <file src="RhetosVSIntegration\bin\Debug\netstandard2.0\*.dll" target="build" />
     <file src="RhetosVSIntegration\bin\Debug\netstandard2.0\*.json" target="build" />

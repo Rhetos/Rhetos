@@ -8,6 +8,7 @@
     <license type="expression">AGPL-3.0-only</license>
     <projectUrl>https://github.com/rhetos/rhetos</projectUrl>
     <description>Utility classes for unit testing. Part of Rhetos development platform.</description>
+    <readme>docs\Readme.md</readme>
     <copyright>Copyright Omega software 2013</copyright>
     <tags>Rhetos</tags>
     <dependencies>
@@ -18,6 +19,7 @@
     </dependencies>
   </metadata>
   <files>
+    <file src="Rhetos.TestCommon\Readme.md" target="docs" />
     <file src="Rhetos.TestCommon\bin\Debug\net8.0\Rhetos.TestCommon.dll" target="lib\net8.0" />
     <file src="Rhetos.TestCommon\bin\Debug\net8.0\Rhetos.TestCommon.xml" target="lib\net8.0" />
   </files>

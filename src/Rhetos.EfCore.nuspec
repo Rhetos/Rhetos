@@ -8,6 +8,7 @@
     <license type="expression">AGPL-3.0-only</license>
     <projectUrl>https://github.com/rhetos/rhetos</projectUrl>
     <description>EF Core support for Rhetos DSL framework.</description>
+    <readme>docs\Readme.md</readme>
     <copyright>Copyright Omega software 2013</copyright>
     <tags>Rhetos</tags>
     <dependencies>
@@ -17,6 +18,7 @@
     </dependencies>
   </metadata>
   <files>
+    <file src="Rhetos.EfCore\Readme.md" target="docs" />
     <file src="Rhetos.EfCore\bin\Debug\net8.0\Rhetos.EfCore.dll" target="lib\net8.0" />
     <file src="Rhetos.EfCore\bin\Debug\net8.0\Rhetos.EfCore.xml" target="lib\net8.0" />
   </files>

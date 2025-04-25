@@ -8,6 +8,7 @@
     <license type="expression">AGPL-3.0-only</license>
     <projectUrl>https://github.com/rhetos/rhetos</projectUrl>
     <description>Rhetos extensions for ASP.NET Core host applications.</description>
+    <readme>docs\Readme.md</readme>
     <copyright>Copyright Omega software 2013</copyright>
     <tags>Rhetos</tags>
     <dependencies>
@@ -22,6 +23,7 @@
     </frameworkReferences>
   </metadata>
   <files>
+    <file src="Rhetos.Host.AspNet\Readme.md" target="docs" />
     <file src="Rhetos.Host.AspNet\bin\Debug\net8.0\Rhetos.Host.AspNet.dll" target="lib\net8.0" />
     <file src="Rhetos.Host.AspNet\bin\Debug\net8.0\Rhetos.Host.AspNet.xml" target="lib\net8.0" />
   </files>

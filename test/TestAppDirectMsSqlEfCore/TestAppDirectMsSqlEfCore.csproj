@@ -19,11 +19,11 @@
     <ProjectReference Include="..\..\src\RhetosVSIntegration\RhetosVSIntegration.csproj" />
   </ItemGroup>
 
-  <Import Project="..\..\src\RhetosVSIntegration\MsBuildIntegration\Rhetos.MsBuild.props" />
-  <Import Project="..\..\src\RhetosVSIntegration\MsBuildIntegration\Rhetos.Host.props" />
+  <Import Project="..\..\src\RhetosVSIntegration\MsBuildIntegrationBuild\Rhetos.MsBuild.props" />
+  <Import Project="..\..\src\RhetosVSIntegration\MsBuildIntegrationDbUpdate\Rhetos.Host.props" />
   <Import Project="..\..\src\Rhetos.MsSql\Rhetos.MsSql.props" />
-  <Import Project="..\..\src\RhetosVSIntegration\MsBuildIntegration\Rhetos.MsBuild.targets" />
-  <Import Project="..\..\src\RhetosVSIntegration\MsBuildIntegration\Rhetos.Host.targets" />
+  <Import Project="..\..\src\RhetosVSIntegration\MsBuildIntegrationBuild\Rhetos.MsBuild.targets" />
+  <Import Project="..\..\src\RhetosVSIntegration\MsBuildIntegrationDbUpdate\Rhetos.Host.targets" />
   
   <!--Override Rhetos.MsBuild.props paths because this project does not use a NuGet dependency for Rhetos.MsBuild.-->
   <PropertyGroup>

@@ -8,6 +8,7 @@
     <license type="expression">AGPL-3.0-only</license>
     <projectUrl>https://github.com/rhetos/rhetos</projectUrl>
     <description>Microsoft SQL Server provider for Rhetos and CommonConcepts, with EF Core support.</description>
+    <readme>docs\Readme.md</readme>
     <copyright>Copyright Omega software 2013</copyright>
     <tags>Rhetos</tags>
     <dependencies>
@@ -21,6 +22,7 @@
     </dependencies>
   </metadata>
   <files>
+    <file src="Rhetos.MsSql\Readme.md" target="docs" />
     <file src="Rhetos.MsSql\Rhetos.MsSql.props" target="buildTransitive" />
     <file src="Rhetos.MsSql\bin\Debug\net8.0\Rhetos.MsSql.dll" target="lib\net8.0" />
     <file src="Rhetos.MsSql\bin\Debug\net8.0\Rhetos.MsSql.xml" target="lib\net8.0" />

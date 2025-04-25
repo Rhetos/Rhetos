@@ -9,6 +9,7 @@
     <projectUrl>https://github.com/rhetos/rhetos</projectUrl>
     <description>CommonConcepts is a DSL plugin package for Rhetos development platform.
       It provides an implementation of domain-specific programming language for business applications.</description>
+    <readme>docs\Readme.md</readme>
     <copyright>Copyright Omega software 2015</copyright>
     <tags>Rhetos plugin</tags>
     <dependencies>
@@ -20,7 +21,7 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="Rhetos.CommonConcepts\Readme.md" target="" />
+    <file src="Rhetos.CommonConcepts\Readme.md" target="docs" />
     <file src="Rhetos.CommonConcepts\DataMigration\**\*" target="DataMigration" />
     <file src="Rhetos.CommonConcepts\DslScripts\**\*" target="DslScripts" />
     <file src="Rhetos.CommonConcepts\bin\Debug\net8.0\Rhetos.CommonConcepts.dll" target="lib\net8.0" />

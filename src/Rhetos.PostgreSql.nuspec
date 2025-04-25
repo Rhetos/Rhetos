@@ -8,6 +8,7 @@
     <license type="expression">AGPL-3.0-only</license>
     <projectUrl>https://github.com/rhetos/rhetos</projectUrl>
     <description>PostgreSQL provider for Rhetos and CommonConcepts, with EF Core support.</description>
+    <readme>docs\Readme.md</readme>
     <copyright>Copyright Omega software 2024</copyright>
     <tags>Rhetos</tags>
     <dependencies>
@@ -20,6 +21,7 @@
     </dependencies>
   </metadata>
   <files>
+    <file src="Rhetos.PostgreSql\Readme.md" target="docs" />
     <file src="Rhetos.PostgreSql\Rhetos.PostgreSql.props" target="buildTransitive" />
     <file src="Rhetos.PostgreSql\bin\Debug\net8.0\Rhetos.PostgreSql.dll" target="lib\net8.0" />
     <file src="Rhetos.PostgreSql\bin\Debug\net8.0\Rhetos.PostgreSql.xml" target="lib\net8.0" />
