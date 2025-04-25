@@ -72,23 +72,23 @@ namespace Rhetos.Dom.DefaultConcepts
 
         private void AppendSqlCommands(PersistenceStorageCommandType commandType, Type entityType, IReadOnlyCollection<IEntity> entities, List<DbParameter> commandParameters, StringBuilder commandTextBuilder)
         {
-            if (commandType == PersistenceStorageCommandType.Insert)
-            {
-				foreach (var entity in entities)
-					AppendInsertCommand(commandParameters, commandTextBuilder, entity, _persistenceMappingConfiguration.GetMapping(entityType), entity == entities.First(), entity == entities.Last());
-            }
-            else if (commandType == PersistenceStorageCommandType.Update)
-            {
-                foreach (var entity in entities)
+			int i = 0;
+			foreach (var entity in entities)
+			{
+				bool isFirst = i == 0;
+				bool isLast = i == entities.Count - 1;
+
+                if (commandType == PersistenceStorageCommandType.Insert)
+                    AppendInsertCommand(commandParameters, commandTextBuilder, entity, _persistenceMappingConfiguration.GetMapping(entityType), isFirst, isLast);
+                else if (commandType == PersistenceStorageCommandType.Update)
                     AppendUpdateCommand(commandParameters, commandTextBuilder, entity, _persistenceMappingConfiguration.GetMapping(entityType));
-            }
-            else if (commandType == PersistenceStorageCommandType.Delete)
-            {
-                foreach (var entity in entities)
-                    AppendDeleteCommand(commandParameters, commandTextBuilder, entity, _persistenceMappingConfiguration.GetMapping(entityType), entity == entities.First(), entity == entities.Last());
-            }
-            else
-                throw new ArgumentException($"Unexpected command type '{commandType}'.");
+                else if (commandType == PersistenceStorageCommandType.Delete)
+                    AppendDeleteCommand(commandParameters, commandTextBuilder, entity, _persistenceMappingConfiguration.GetMapping(entityType), isFirst, isLast);
+                else
+                    throw new ArgumentException($"Unexpected command type '{commandType}'.");
+
+                i++;
+			}
         }
 
 		private void AppendInsertCommand(List<DbParameter> commandParameters, StringBuilder commandTextBuilder, IEntity entity, IPersistenceStorageObjectMapper mapper, bool isFirst, bool isLast)
@@ -98,6 +98,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
 			if (_commonConceptsRuntimeOptions.SqlCommandBatchSeparateQueries)
 			{
+				// Legacy implementation, slower.
 				AppendInsertPartColumns(parameters, mapper.GetTableName(), commandTextBuilder);
 				AppendInsertPartValues(parameters, commandTextBuilder);
                 commandTextBuilder.Append(';');

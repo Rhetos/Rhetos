@@ -71,6 +71,8 @@ Changes in behavior:
 * Bugfix: **Computed** concept is no longer reported as queryable in DslUtility.IsQueryable, since it does not generate a queryable repository.
 * The legacy configuration option `CommonConcepts:DynamicTypeResolution` is no longer supported. DynamicTypeResolution is always disabled.
   * In FilterCriteria, filter names should be constructed by Type.ToString(), instead of Type.FullName or Type.AssemblyQualifiedName.
+* When inserting or deleting multiple records, the SQL commands are grouped into a single query by default, for better performance.
+  * If the existing app has a custom trigger that does not support multiple records, set the option `CommonConcepts:SqlCommandBatchSeparateQueries` to `true`.
 
 Migrating a Rhetos app from EF6 to EF Core (optional):
 
