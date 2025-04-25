@@ -29,14 +29,18 @@ namespace Rhetos.Utilities
     public class FilesUtility
     {
         private readonly ILogger _logger;
-        private static readonly StringComparison _pathComparisonType = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-            ? StringComparison.OrdinalIgnoreCase
-            : StringComparison.Ordinal;
 
         public FilesUtility(ILogProvider logProvider)
         {
             _logger = logProvider.GetLogger(GetType().Name);
         }
+
+        private static readonly StringComparison _pathComparison = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        private static readonly StringComparer _pathComparer = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+
+        public StringComparison PathComparison => _pathComparison;
+
+        public StringComparer PathComparer => _pathComparer;
 
         private void Retry(Action action, Func<string> actionName)
         {
@@ -294,7 +298,7 @@ namespace Rhetos.Utilities
 
             int common = 0;
             while (common < baseParts.Length && common < targetParts.Length
-                && string.Equals(baseParts[common], targetParts[common], _pathComparisonType))
+                && string.Equals(baseParts[common], targetParts[common], _pathComparison))
                 common++;
 
             if (common == 0)
@@ -332,13 +336,13 @@ namespace Rhetos.Utilities
             return string.Equals(
                 Path.GetFullPath(Path.Combine(path1, ".")),
                 Path.GetFullPath(Path.Combine(path2, ".")),
-                _pathComparisonType);
+                _pathComparison);
         }
 
         public static bool IsInsideDirectory(string child, string parent)
         {
             return Path.GetFullPath(Path.Combine(child, "."))
-                .StartsWith(Path.GetFullPath(Path.Combine(parent, ".")), _pathComparisonType);
+                .StartsWith(Path.GetFullPath(Path.Combine(parent, ".")), _pathComparison);
         }
     }
 }

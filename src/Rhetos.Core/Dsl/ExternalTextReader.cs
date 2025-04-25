@@ -19,6 +19,7 @@
 
 using Rhetos.Utilities;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -30,16 +31,17 @@ namespace Rhetos.Dsl
         private readonly FilesUtility _filesUtility;
         private readonly ISqlResources _sqlResources;
         private readonly DslSyntax _dslSyntax;
-        private readonly HashSet<string> _externalFiles = [];
+        private readonly ConcurrentDictionary<string, byte> _externalFiles;
 
         public ExternalTextReader(FilesUtility filesUtility, ISqlResources sqlResources, DslSyntax dslSyntax)
         {
             _filesUtility = filesUtility;
             _sqlResources = sqlResources;
             _dslSyntax = dslSyntax;
+            _externalFiles = new(filesUtility.PathComparer);
         }
 
-        public IReadOnlyCollection<string> ExternalFiles => _externalFiles;
+        public IReadOnlyCollection<string> ExternalFiles => _externalFiles.Keys.ToList();
 
         public ValueOrError<string> Read(DslScript dslScript, string relativePathOrResourceName)
         {
@@ -57,7 +59,7 @@ namespace Rhetos.Dsl
             {
                 if (File.Exists(filePath))
                 {
-                    _externalFiles.Add(filePath);
+                    _externalFiles[filePath] = 0;
                     return _filesUtility.ReadAllText(filePath);
                 }
             }
