@@ -28,7 +28,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("Options")]
-    public class OptionsInfo : IConceptInfo
+    public class SqlIndexOptionsInfo : IConceptInfo
     {
         [ConceptKey]
         public SqlIndexMultipleInfo SqlIndex { get; set; }

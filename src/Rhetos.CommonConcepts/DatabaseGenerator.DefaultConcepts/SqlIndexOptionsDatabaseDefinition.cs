@@ -29,8 +29,8 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 {
 #pragma warning disable CS0618 // Type or member is obsolete IConceptDatabaseDefinition
     [Export(typeof(IConceptDatabaseDefinition))]
-    [ExportMetadata(MefProvider.Implements, typeof(OptionsInfo))]
-    public class OptionsDatabaseInfo : IConceptDatabaseDefinitionExtension
+    [ExportMetadata(MefProvider.Implements, typeof(SqlIndexOptionsInfo))]
+    public class SqlIndexOptionsDatabaseDefinition : IConceptDatabaseDefinitionExtension
 #pragma warning restore CS0618 // Type or member is obsolete IConceptDatabaseDefinition
     {
         public string CreateDatabaseStructure(IConceptInfo conceptInfo)
@@ -45,7 +45,7 @@ namespace Rhetos.DatabaseGenerator.DefaultConcepts
 
         public void ExtendDatabaseStructure(IConceptInfo conceptInfo, ICodeBuilder codeBuilder, out IEnumerable<Tuple<IConceptInfo, IConceptInfo>> createdDependencies)
         {
-            var info = (OptionsInfo)conceptInfo;
+            var info = (SqlIndexOptionsInfo)conceptInfo;
             createdDependencies = null;
 
             if (info.SqlIndex.SqlImplementation())

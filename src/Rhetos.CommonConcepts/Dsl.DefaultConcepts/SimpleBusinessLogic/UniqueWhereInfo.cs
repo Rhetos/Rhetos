@@ -32,6 +32,7 @@ namespace Rhetos.Dsl.DefaultConcepts
     public class UniqueWhereInfo : SqlIndexWhereInfo, IAlternativeInitializationConcept
     {
         public UniquePropertyInfo Unique { get; set; }
+
         public string UniqueSqlFilter { get; set; }
 
         public IEnumerable<string> DeclareNonparsableProperties()
