@@ -64,6 +64,7 @@ Changes in Rhetos libraries API:
   * If a custom code generator class uses one of `DomInitializationCodeGenerator.EntityFramework*` tags,
     instead of it use the same tag from `EntityFrameworkContextCodeGenerator` class and add an attribute
     `[ExportMetadata(MefProvider.DependsOn, typeof(EntityFrameworkContextCodeGenerator))]`.
+* Removed obsolete EntityComputedFromCodeGenerator.RecomputeFunctionName. Use EntityComputedFromInfo.RecomputeFunctionName instead.
 
 Changes in behavior:
 

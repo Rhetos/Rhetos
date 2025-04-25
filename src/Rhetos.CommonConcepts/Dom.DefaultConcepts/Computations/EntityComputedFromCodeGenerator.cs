@@ -90,8 +90,5 @@ namespace Rhetos.Dom.DefaultConcepts
         ";
             codeBuilder.InsertCode(repositoryMethods, RepositoryHelper.RepositoryMembers, info.Target);
         }
-
-        [Obsolete("Use EntityComputedFromInfo.RecomputeFunctionName() instead.")]
-        public static string RecomputeFunctionName(EntityComputedFromInfo info) => info.RecomputeFunctionName();
     }
 }
