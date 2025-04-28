@@ -34,15 +34,18 @@ namespace Rhetos.Processing.DefaultCommands
         private readonly ILogger _logger;
         private readonly ServerCommandsUtility _serverCommandsUtility;
         private readonly ApplyFiltersOnClientRead _applyFiltersOnClientRead;
+        private readonly CommonConceptsRuntimeOptions _options;
 
         public ReadCommand(
             ILogProvider logProvider,
             ServerCommandsUtility serverCommandsUtility,
-            ApplyFiltersOnClientRead applyFiltersOnClientRead)
+            ApplyFiltersOnClientRead applyFiltersOnClientRead,
+            CommonConceptsRuntimeOptions options)
         {
             _logger = logProvider.GetLogger(GetType().Name);
             _serverCommandsUtility = serverCommandsUtility;
             _applyFiltersOnClientRead = applyFiltersOnClientRead;
+            _options = options;
         }
 
         public ReadCommandResult Execute(ReadCommandInfo readInfo)
@@ -84,43 +87,49 @@ namespace Rhetos.Processing.DefaultCommands
                     "Invalid ExecuteReadCommand arguments: The given ReadCommandInfo ('{0}') does not match the GenericRepository ('{1}').",
                     commandInfo.DataSource, genericRepository.EntityName));
 
-            AutoApplyFilters(commandInfo);
+            if (_options.ReadCommandSimpleProperty)
+            {
+                var notSimpleProperty = commandInfo.Filters?.FirstOrDefault(p => !string.IsNullOrWhiteSpace(p.Property) && CsUtility.GetIdentifierError(p.Property) != null);
+                if (notSimpleProperty != null && _options.ReadCommandSimpleProperty)
+                    throw new ClientException($"Invalid ReadCommand argument: Only simple properties are supported in generic property filter. ('{notSimpleProperty.Property}')");
+            }
 
-            ReadCommandResult result;
+            AutoApplyFilters(commandInfo);
 
             var specificMethod = genericRepository.Reflection.RepositoryReadCommandMethod;
             if (specificMethod != null)
-                result = (ReadCommandResult)specificMethod.InvokeEx(genericRepository.EntityRepository, commandInfo);
+                return (ReadCommandResult)specificMethod.InvokeEx(genericRepository.EntityRepository, commandInfo);
             else
+                return GenericRepositoryRead(genericRepository, commandInfo);
+        }
+
+        private static ReadCommandResult GenericRepositoryRead(GenericRepository<IEntity> genericRepository, ReadCommandInfo commandInfo)
+        {
+            bool pagingIsUsed = commandInfo.Top > 0 || commandInfo.Skip > 0;
+
+            object filter = commandInfo.Filters != null && commandInfo.Filters.Length != 0 ? (object)commandInfo.Filters : new FilterAll();
+            IEnumerable<IEntity> filtered = genericRepository.Read(filter, filter.GetType(), preferQuery: pagingIsUsed || !commandInfo.ReadRecords);
+
+            IEntity[] resultRecords = null;
+            int? totalCount = null;
+
+            if (commandInfo.ReadRecords)
             {
-                bool pagingIsUsed = commandInfo.Top > 0 || commandInfo.Skip > 0;
-
-                object filter = commandInfo.Filters != null && commandInfo.Filters.Length != 0 ? (object)commandInfo.Filters : new FilterAll();
-                IEnumerable<IEntity> filtered = genericRepository.Read(filter, filter.GetType(), preferQuery: pagingIsUsed || !commandInfo.ReadRecords);
-
-                IEntity[] resultRecords = null;
-                int? totalCount = null;
-
-                if (commandInfo.ReadRecords)
-                {
-                    var sortedAndPaginated = GenericFilterHelper.SortAndPaginate(genericRepository.Reflection.AsQueryable(filtered), commandInfo);
-                    resultRecords = (IEntity[])genericRepository.Reflection.ToArrayOfEntity(sortedAndPaginated);
-                }
-
-                if (commandInfo.ReadTotalCount)
-                    if (pagingIsUsed)
-                        totalCount = SmartCount(filtered);
-                    else
-                        totalCount = resultRecords != null ? resultRecords.Length : SmartCount(filtered);
-
-                result = new ReadCommandResult
-                {
-                    Records = resultRecords,
-                    TotalCount = totalCount
-                };
+                var sortedAndPaginated = GenericFilterHelper.SortAndPaginate(genericRepository.Reflection.AsQueryable(filtered), commandInfo);
+                resultRecords = (IEntity[])genericRepository.Reflection.ToArrayOfEntity(sortedAndPaginated);
             }
 
-            return result;
+            if (commandInfo.ReadTotalCount)
+                if (pagingIsUsed)
+                    totalCount = SmartCount(filtered);
+                else
+                    totalCount = resultRecords != null ? resultRecords.Length : SmartCount(filtered);
+
+            return new ReadCommandResult
+            {
+                Records = resultRecords,
+                TotalCount = totalCount
+            };
         }
 
         private void AutoApplyFilters(ReadCommandInfo commandInfo)

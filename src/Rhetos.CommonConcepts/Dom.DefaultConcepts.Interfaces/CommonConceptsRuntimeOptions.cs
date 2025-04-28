@@ -46,5 +46,10 @@ namespace Rhetos.Dom.DefaultConcepts
         /// For backward compatibility, setting this to true will automatically round the value before writing to the database.
         /// </summary>
         public bool AutoRoundMoney { get; set; } = false;
+
+        /// <summary>
+        /// If true, read command checks that valid property filter should contain a simple property correctly formated.
+        /// </summary>
+        public bool ReadCommandSimpleProperty { get; set; } = true;
     }
 }

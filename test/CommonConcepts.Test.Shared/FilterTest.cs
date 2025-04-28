@@ -368,18 +368,13 @@ namespace CommonConcepts.Test
                 repository.TestFilter.CombinedFilters.Insert(new[] { s1, s2 });
 
                 // Containing "ece" and referenced object name contains "es"
-                var filteredByContainsWithGenericFilter = ExecuteCommand(new ReadCommandInfo
-                {
-                    DataSource = "TestFilter.CombinedFilters",
-                    Filters = new[]
+                var filteredByContainsWithGenericFilter = repository.TestFilter.CombinedFilters.Load(
+                    new[]
                     {
                         new FilterCriteria(new TestFilter.ComposableFilterByContains { Pattern = "ece" }),
                         new FilterCriteria("Simple.Name", "Contains", "es")
-                    },
-                    ReadRecords = true,
-                    ReadTotalCount = true
-                }, scope);
-                Assert.AreEqual(1, filteredByContainsWithGenericFilter.Records.Length);
+                    });
+                Assert.AreEqual(1, filteredByContainsWithGenericFilter.Count());
             }
         }
 
@@ -396,15 +391,29 @@ namespace CommonConcepts.Test
                 });
         }
 
+        private static string ReportFilteredBrowseWithRepository(IUnitOfWorkScope scope, params object[] filters)
+        {
+            var repository = scope.Resolve<Common.DomRepository>();
+            FilterCriteria[] genericFilters = ToFilterCriteria(filters);
+            return TestUtility.DumpSorted(
+                repository.TestFilter.ComposableFilterBrowse.Load(genericFilters),
+                x => x.Name + " " + (x.DebugInfoSimpleName ?? "null"));
+        }
+
         ReadCommandInfo ReadCommandWithFilters(params object[] filters)
         {
             return new ReadCommandInfo
             {
-                Filters = filters.Select(f => f is FilterCriteria ? f : new FilterCriteria(f))
-                    .Cast<FilterCriteria>().ToArray(),
+                Filters = ToFilterCriteria(filters),
                 ReadRecords = true,
                 ReadTotalCount = true
             };
+        }
+
+        private static FilterCriteria[] ToFilterCriteria(object[] filters)
+        {
+            return filters.Select(f => f is FilterCriteria ? f : new FilterCriteria(f))
+                                .Cast<FilterCriteria>().ToArray();
         }
 
         [TestMethod]
@@ -424,32 +433,32 @@ namespace CommonConcepts.Test
                 var childNull = new TestFilter.CombinedFilters { Name = "CN", SimpleID = null };
                 repository.TestFilter.CombinedFilters.Insert(new[] { childA, childB, childNull });
 
-                Assert.AreEqual("CA PA", ReportFilteredBrowse(scope, ReadCommandWithFilters(
-                    new TestFilter.SimpleNameA())));
+                Assert.AreEqual("CA PA", ReportFilteredBrowseWithRepository(scope,
+                    new TestFilter.SimpleNameA()));
 
-                Assert.AreEqual("CA PA", ReportFilteredBrowse(scope, ReadCommandWithFilters(
-                    new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "a" })));
+                Assert.AreEqual("CA PA", ReportFilteredBrowseWithRepository(scope,
+                    new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "a" }));
 
-                Assert.AreEqual("CA PA", ReportFilteredBrowse(scope, ReadCommandWithFilters(
+                Assert.AreEqual("CA PA", ReportFilteredBrowseWithRepository(scope,
                     new TestFilter.SimpleNameA(),
-                    new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "a" })));
+                    new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "a" }));
 
-                Assert.AreEqual("CN null", ReportFilteredBrowse(scope, ReadCommandWithFilters(
-                    new FilterCriteria { Property = "Name", Operation = "Contains", Value = "n" })));
+                Assert.AreEqual("CN null", ReportFilteredBrowseWithRepository(scope,
+                    new FilterCriteria { Property = "Name", Operation = "Contains", Value = "n" }));
 
-                Assert.AreEqual("CN null", ReportFilteredBrowse(scope, ReadCommandWithFilters(
-                    new TestFilter.NameN())));
+                Assert.AreEqual("CN null", ReportFilteredBrowseWithRepository(scope,
+                    new TestFilter.NameN()));
 
-                Assert.AreEqual("", ReportFilteredBrowse(scope, ReadCommandWithFilters(
+                Assert.AreEqual("", ReportFilteredBrowseWithRepository(scope,
                     new TestFilter.NameN(),
-                    new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "p" })));
+                    new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "p" }));
 
-                Assert.AreEqual("", ReportFilteredBrowse(scope, ReadCommandWithFilters(
+                Assert.AreEqual("", ReportFilteredBrowseWithRepository(scope,
                     new TestFilter.NameN(),
-                    new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "p" })));
+                    new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "p" }));
 
-                Assert.AreEqual("CA PA", ReportFilteredBrowse(scope, ReadCommandWithFilters(
-                    new TestFilter.ComposableFilterBrowseLoader { Pattern = "a" })));
+                Assert.AreEqual("CA PA", ReportFilteredBrowseWithRepository(scope,
+                    new TestFilter.ComposableFilterBrowseLoader { Pattern = "a" }));
             }
         }
 
@@ -470,16 +479,28 @@ namespace CommonConcepts.Test
                 var childNull = new TestFilter.CombinedFilters { Name = "CN", SimpleID = null };
                 repository.TestFilter.CombinedFilters.Insert(new[] { childA, childB, childNull });
 
-                Assert.AreEqual("CA PA", ReportFilteredBrowse(scope, ReadCommandWithFilters(
+                Assert.AreEqual("CA PA", ReportFilteredBrowseWithRepository(scope,
                     new TestFilter.ComposableFilterBrowseLoader { Pattern = "a" },
-                    new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "p" })));
+                    new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "p" }));
 
                 // This test just documents the current behavior, this is not an intended feature.
                 // NullReferenceException because "Simple.Name" FilterCriteria is executed in C# instead of the database.
                 TestUtility.ShouldFail<NullReferenceException>(() =>
-                    ReportFilteredBrowse(scope, ReadCommandWithFilters(
+                    ReportFilteredBrowseWithRepository(scope,
                         new TestFilter.ComposableFilterBrowseLoader { Pattern = "c" },
-                        new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "p" })));
+                        new FilterCriteria { Property = "Simple.Name", Operation = "Contains", Value = "p" }));
+            }
+        }
+
+        [TestMethod]
+        public void NotSimpleProperty()
+        {
+            using (var scope = TestScope.Create())
+            {
+                TestUtility.ShouldFail<ClientException>(() =>
+                    ReportFilteredBrowse(scope, ReadCommandWithFilters(
+                        new FilterCriteria { Property = "Simple.ID", Operation = "equals", Value = null })),
+                    "simple properties");
             }
         }
 
