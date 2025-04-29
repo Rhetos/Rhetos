@@ -19,6 +19,7 @@
 
 using Rhetos.Compiler;
 using Rhetos.DatabaseGenerator;
+using Rhetos.DatabaseGenerator.DefaultConcepts;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Utilities;
 using System;
@@ -61,16 +62,13 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         protected ISqlUtility SqlUtility { get; private set; }
 
-        public EntityHistoryMacro(CommonConceptsDatabaseSettings databaseSettings, ISqlUtility sqlUtility)
+        public EntityHistoryMacro(ConceptMetadata conceptMetadata, ISqlUtility sqlUtility)
         {
             this.SqlUtility = sqlUtility;
 
-            // TODO: we inject DatabaseSetttings here, but correct solution would be to inject ConceptMetadata and use ConceptMetadata.GetColumnType to fetch SQL type of the column
-            // we can't do that because of circular reference problem between projects and IDatabaseColumnType is not available
-            // needs to be refactored after we rearrange/merge projects and remove circular dependency in question
-            _dateTimeSqlColumnType = databaseSettings.UseLegacyMsSqlDateTime
-                ? "DATETIME"
-                : $"DATETIME2({databaseSettings.DateTimePrecision})";
+            conceptMetadata.GetColumnType(new DateTimePropertyInfo());
+
+            _dateTimeSqlColumnType = conceptMetadata.GetColumnType(new DateTimePropertyInfo());
         }
 
         public IEnumerable<IConceptInfo> CreateNewConcepts(EntityHistoryInfo conceptInfo, IDslModel existingConcepts)
