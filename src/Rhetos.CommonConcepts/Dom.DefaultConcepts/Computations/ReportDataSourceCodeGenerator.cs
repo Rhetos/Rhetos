@@ -41,7 +41,7 @@ namespace Rhetos.Dom.DefaultConcepts
             string reportDataSnippet = $@"
 	        {{
                 var dataSourceRepositiory = _domRepository.{info.DataSource.FullName};
-                var data = dataSourceRepositiory.Load(parameter);
+                var data = dataSourceRepositiory.Load(parameter).ToArray();
                 var order = {CsUtility.QuotedString(info.Order)};
 	            reportData.Add(order, data);
             }}

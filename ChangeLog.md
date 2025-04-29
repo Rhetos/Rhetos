@@ -141,6 +141,7 @@ Migrating a Rhetos app from EF6 to EF Core (optional):
 * Rhetos plugin packages can extend the generated LINQPad script references with RhetosLinqPadReference and RhetosLinqPadNamespace ItemGroup.
 * Subpackage option AddProjectNameToPackageId can be disabled.
 * NLog log files for Rhetos build are split by the application name. This helps with parallel build processes that use the same version of rhetos.exe from the .nuget/packages folder.
+* ReportData DataSources can now be implemented with any loader or filter method, instead of just FilterBy concept.
 
 ## 5.5.0 (2025-04-16)
 

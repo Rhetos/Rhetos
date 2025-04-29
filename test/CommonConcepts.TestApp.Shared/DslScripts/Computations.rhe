@@ -504,8 +504,8 @@ Module TestReport
         DataSources 'Document, Part2, TestReport.Part1';
     }
 
-    FilterBy Part1.'TestReport.MultipleSourcesReport' '(repository, parameter) =>
-        repository.TestReport.Part1.Query()
+    Load Part1.'TestReport.MultipleSourcesReport' 'parameter =>
+        _domRepository.TestReport.Part1.Query()
             .Where(s1 => s1.Name.StartsWith(parameter.Part1Prefix))
             .OrderByDescending(s1 => s1.Name).ToArray()';
     FilterByLinkedItems Document.'TestReport.MultipleSourcesReport' TestReport.Part1.Parent;
