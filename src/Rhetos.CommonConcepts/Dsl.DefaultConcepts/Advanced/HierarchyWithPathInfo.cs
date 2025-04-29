@@ -57,7 +57,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
                     {6}
 
-                    var hierarchyIndexes = Rhetos.Dom.DefaultConcepts.HierarchyInfo.Compute(hierarchyItems, {5});
+                    var hierarchyIndexes = Rhetos.Dom.DefaultConcepts.HierarchyIndexes.Compute(hierarchyItems, {5});
                     return hierarchyIndexes.Select(hi => new {0}.Compute{1}{2}Hierarchy
                     {{
                         ID = hi.ID,

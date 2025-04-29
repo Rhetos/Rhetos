@@ -31,18 +31,24 @@ namespace Rhetos.Dsl.DefaultConcepts
     /// </summary>
     [Export(typeof(IConceptInfo))]
     [ConceptKeyword("SingleRoot")]
-    public class HierarchySingleRootInfo : IMacroConcept
+    public class HierarchySingleRootInfo : IAlternativeInitializationConcept, IMacroConcept
     {
         [ConceptKey]
         public HierarchyInfo Hierarchy { get; set; }
 
+        public DataStructureInfo Dependency_Computation { get; set; }
+
+        public IEnumerable<string> DeclareNonparsableProperties() => [ nameof(Dependency_Computation) ];
+
+        public void InitializeNonparsableProperties(out IEnumerable<IConceptInfo> createdConcepts)
+        {
+            Dependency_Computation = Hierarchy.GetComputedDataStructure();
+            createdConcepts = null;
+        }
+
         public IEnumerable<IConceptInfo> CreateNewConcepts()
         {
-            return new[] {new HierarchySingleRootInternalInfo 
-            { 
-                Hierarchy = Hierarchy,
-                DependsOnComputation = Hierarchy.GetComputedDataStructure()
-            } };
+            yield return new DataStructureLocalizerInfo { DataStructure = Hierarchy.DataStructure };
         }
     }
 }

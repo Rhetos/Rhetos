@@ -68,7 +68,7 @@ namespace Rhetos.Dsl.DefaultConcepts
 
         /// <summary>
         /// Creates a clone of the given source property and puts it in the given destination data structure.
-        /// The clone should not have active behavior (HierarchyInfo and SimpleReferencePropertyInfo becomes a simple ReferencePropertyInfo, for example).
+        /// The clone should not have active behavior (<see cref="HierarchyInfo"/> and <see cref="SimpleReferencePropertyInfo"/> becomes a simple <see cref="ReferencePropertyInfo"/>, for example).
         /// </summary>
         public static PropertyInfo CreatePassiveClone(PropertyInfo source, DataStructureInfo destination)
         {

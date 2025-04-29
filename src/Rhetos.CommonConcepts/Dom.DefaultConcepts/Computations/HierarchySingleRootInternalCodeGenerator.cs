@@ -26,16 +26,16 @@ using System.ComponentModel.Composition;
 namespace Rhetos.Dom.DefaultConcepts
 {
     [Export(typeof(IConceptCodeGenerator))]
-    [ExportMetadata(MefProvider.Implements, typeof(HierarchySingleRootInternalInfo))]
+    [ExportMetadata(MefProvider.Implements, typeof(HierarchySingleRootInfo))]
     public class HierarchySingleRootInternalCodeGenerator : IConceptCodeGenerator
     {
         public void GenerateCode(IConceptInfo conceptInfo, ICodeBuilder codeBuilder)
         {
-            var info = (HierarchySingleRootInternalInfo)conceptInfo;
-            codeBuilder.InsertCode(CheckInvalidItemsSnippet(info), Dsl.DefaultConcepts.HierarchyInfo.BeforeRecomputeTag, info.Hierarchy);
+            var info = (HierarchySingleRootInfo)conceptInfo;
+            codeBuilder.InsertCode(CheckInvalidItemsSnippet(info), HierarchyInfo.BeforeRecomputeTag, info.Hierarchy);
         }
 
-        private static string CheckInvalidItemsSnippet(HierarchySingleRootInternalInfo info)
+        private static string CheckInvalidItemsSnippet(HierarchySingleRootInfo info)
         {
             return string.Format(@"if (hierarchyItems.Count(item => item.ParentID == null) > 1)
                         throw new Rhetos.UserException(

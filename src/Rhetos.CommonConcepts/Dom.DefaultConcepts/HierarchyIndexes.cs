@@ -32,7 +32,7 @@ namespace Rhetos.Dom.DefaultConcepts
         public HierarchyCircularReferenceException(string message, Exception inner) : base(message, inner) { }
     }
 
-    public class HierarchyInfo // TODO: Rename to HierarchyIndexes
+    public class HierarchyIndexes
     {
         public Guid ID;
         public int LeftIndex;
@@ -43,10 +43,10 @@ namespace Rhetos.Dom.DefaultConcepts
         /// <summary>
         /// If pathSeparator argument is null, the Path property will not be computed.
         /// </summary>
-        public static HierarchyInfo[] Compute(HierarchyItem[] items, string pathSeparator)
+        public static HierarchyIndexes[] Compute(HierarchyItem[] items, string pathSeparator)
         {
             if (items.Length == 0)
-                return Array.Empty<HierarchyInfo>();
+                return Array.Empty<HierarchyIndexes>();
 
             var roots = items.Where(item => !item.ParentID.HasValue).ToArray();
             if (roots.Length == 0)
@@ -56,7 +56,7 @@ namespace Rhetos.Dom.DefaultConcepts
                 .GroupBy(item => item.ParentID.Value)
                 .ToDictionary(group => group.Key, group => group.ToArray());
 
-            var result = items.Select(item => new HierarchyInfo { ID = item.ID }).ToArray();
+            var result = items.Select(item => new HierarchyIndexes { ID = item.ID }).ToArray();
             var index = 1;
             foreach (var root in roots)
                 FillIndexes(root, 0, ref index, null, children, result.ToDictionary(i => i.ID), pathSeparator);
@@ -64,7 +64,7 @@ namespace Rhetos.Dom.DefaultConcepts
         }
 
         private static void FillIndexes(HierarchyItem currentItem, int level, ref int index, string parentPath,
-            IDictionary<Guid, HierarchyItem[]> children, IDictionary<Guid, HierarchyInfo> infos, string pathSeparator)
+            IDictionary<Guid, HierarchyItem[]> children, IDictionary<Guid, HierarchyIndexes> infos, string pathSeparator)
         {
             var currentInfo = infos[currentItem.ID];
             if (currentInfo.LeftIndex != 0)
