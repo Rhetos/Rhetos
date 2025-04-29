@@ -7,7 +7,7 @@ SETLOCAL
 SET MSBUILDDISABLENODEREUSE=1
 
 @REM Running unit test that don't use the database. Using "no-build" option as optimization, because Test.bat should always be executed after Build.bat.
-dotnet test Rhetos.sln --no-build || GOTO Error0
+dotnet test Rhetos.sln --no-build || GOTO ErrorTestRhetos
 
 IF NOT EXIST test\CommonConcepts.TestApp.MsSql\local.settings.json ECHO Missing test\CommonConcepts.TestApp.MsSql\local.settings.json. Follow the Initial setup instructions in Readme.md. & GOTO Error0
 IF NOT EXIST test\CommonConcepts.TestApp.MsSqlEf6\local.settings.json ECHO Missing test\CommonConcepts.TestApp.MsSqlEf6\local.settings.json. Follow the Initial setup instructions in Readme.md. & GOTO Error0
@@ -22,7 +22,7 @@ dotnet test\CommonConcepts.TestApp.MsSqlEf6\bin\Debug\net8.0\rhetos.dll dbupdate
 REM dotnet test\CommonConcepts.TestApp.PostgreSql\bin\Debug\net8.0\rhetos.dll dbupdate test\CommonConcepts.TestApp.PostgreSql\bin\Debug\net8.0\CommonConcepts.TestApp.PostgreSql.dll || GOTO Error0
 
 @REM Running integration tests that use the database.
-dotnet test CommonConceptsTest.sln --no-build || GOTO Error0
+dotnet test CommonConceptsTest.sln --no-build || GOTO ErrorTestCommonConcepts
 
 IF EXIST "%ProgramFiles%\LINQPad8\LPRun8.exe" "%ProgramFiles%\LINQPad8\LPRun8.exe" "test\CommonConcepts.TestApp.MsSql\bin\Debug\net8.0\LinqPad\Rhetos DOM.linq" > nul || GOTO Error0
 IF EXIST "%ProgramFiles%\LINQPad8\LPRun8.exe" "%ProgramFiles%\LINQPad8\LPRun8.exe" "test\CommonConcepts.TestApp.MsSqlEf6\bin\Debug\net8.0\LinqPad\Rhetos DOM.linq" > nul || GOTO Error0
@@ -33,6 +33,16 @@ REM IF EXIST "%ProgramFiles%\LINQPad8\LPRun8.exe" "%ProgramFiles%\LINQPad8\LPRun
 @ECHO.
 @ECHO %~nx0 SUCCESSFULLY COMPLETED.
 @EXIT /B 0
+
+:ErrorTestRhetos
+@ECHO.
+@ECHO %~nx0 FAILED while testing Rhetos.sln.
+@EXIT /B 1
+
+:ErrorTestCommonConcepts
+@ECHO.
+@ECHO %~nx0 FAILED while testing CommonConceptsTest.sln.
+@EXIT /B 1
 
 :Error0
 @ECHO.
