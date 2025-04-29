@@ -1,7 +1,7 @@
 <Project>
   <ItemGroup>
     <RhetosLinqPadReference Include="runtimes\win\lib\net8.0\Microsoft.Data.SqlClient.dll" />
-    <RhetosLinqPadReference Include="runtimes\win\lib\net8.0\System.Runtime.Caching.dll" />
+    <RhetosLinqPadReference Include="runtimes\win\lib\net8.0\System.Security.Cryptography.Pkcs.dll" />
     <RhetosLinqPadReference Include="runtimes\win-x64\native\Microsoft.Data.SqlClient.SNI.dll" />
     <RhetosLinqPadNamespace Include="Microsoft.EntityFrameworkCore" />
   </ItemGroup>

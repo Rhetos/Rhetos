@@ -6,9 +6,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EntityFramework" Version="6.4.4" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
+    <PackageReference Include="EntityFramework" Version="6.5.1" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.9.0" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <!--CS0618 (obsolete type) is disabled because System.Data.SqlClient has many obsolete classes, instructing to use Microsoft.Data.SqlClient instead.-->
+    <NoWarn>$(NoWarn);CS0618</NoWarn>
+  </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Rhetos.CommonConcepts\Rhetos.CommonConcepts.csproj" />

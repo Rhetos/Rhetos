@@ -2,7 +2,7 @@
   <ItemGroup>
     <RhetosLinqPadReference Include="EntityFramework.dll" />
     <RhetosLinqPadReference Include="EntityFramework.SqlServer.dll" />
-    <RhetosLinqPadReference Include="runtimes\win\lib\netcoreapp2.1\System.Data.SqlClient.dll" />
+    <RhetosLinqPadReference Include="runtimes\win\lib\net8.0\System.Data.SqlClient.dll" />
     <RhetosLinqPadReference Include="runtimes\win-x64\native\sni.dll" />
     <RhetosLinqPadNamespace Include="System.Data.Entity" />
   </ItemGroup>

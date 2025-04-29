@@ -14,7 +14,7 @@
     <PackageReference Include="Rhetos" Version="6.0.0-dev*" />
     <PackageReference Include="Rhetos.CommonConcepts" Version="6.0.0-dev*" />
     <PackageReference Include="Rhetos.MsSql" Version="6.0.0-dev*" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="8.0.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="8.0.15" />
   </ItemGroup>
 
   <ItemGroup>

@@ -13,7 +13,7 @@
     <tags>Rhetos</tags>
     <dependencies>
       <group targetFramework="net8.0">
-        <dependency id="Npgsql.EntityFrameworkCore.PostgreSQL" version="8.0.2" />
+        <dependency id="Npgsql.EntityFrameworkCore.PostgreSQL" version="8.0.11" />
         <dependency id="Rhetos" version="[6.0.0-dev,6.1.0)" />
         <dependency id="Rhetos.CommonConcepts" version="[6.0.0-dev,6.1.0)" />
         <dependency id="Rhetos.EfCore" version="[6.0.0-dev,6.1.0)" />
