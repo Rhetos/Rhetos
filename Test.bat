@@ -3,6 +3,9 @@ SETLOCAL
 @SET Config=%1%
 @IF [%1] == [] SET Config=Debug
 
+@REM "MSBuild node reuse" leaves the msbuild processes running after build, but they keep locked our custom build task in RhetosVSIntegration.dll, which prevents later build of Rhetos.sln.
+SET MSBUILDDISABLENODEREUSE=1
+
 @REM Running unit test that don't use the database. Using "no-build" option as optimization, because Test.bat should always be executed after Build.bat.
 dotnet test Rhetos.sln --no-build || GOTO Error0
 

@@ -5,6 +5,10 @@ SET Prerelease=auto
 @SET Config=%1%
 @IF [%1] == [] SET Config=Debug
 
+@REM "MSBuild node reuse" leaves the msbuild processes running after build, but they keep locked our custom build task in RhetosVSIntegration.dll, which prevents later build of Rhetos.sln.
+@REM RhetosVSIntegration.dll is usually used from a NuGet package, but in Rhetos.sln it is used directly in test\TestAppDirectMsSqlEfCore\TestAppDirectMsSqlEfCore.csproj.
+SET MSBUILDDISABLENODEREUSE=1
+
 REM Updating the build version.
 PowerShell -ExecutionPolicy ByPass .\tools\Build\ChangeVersion.ps1 %Version% %Prerelease% || GOTO Error0
 
