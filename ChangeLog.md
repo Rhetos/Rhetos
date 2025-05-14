@@ -30,7 +30,7 @@ Changes in Rhetos libraries API:
   * Instead of `SqlUtility.SqlCommandTimeout`, use DatabaseOptions.SqlCommandTimeout from dependency injection.
   * Instead of `SqlUtility.DatabaseLanguage`, use DatabaseSettings.DatabaseLanguage from dependency injection.
   * Instead of `SqlUtility.NationalLanguage`, use DatabaseSettings.DatabaseNationalLanguage from dependency injection.
-  * For other removed static members, use `ISqlUtility` from dependency injection or `_executionContext.SqlUtility` where the **execution context** is available.
+  * For other removed static members, use `ISqlUtility` from dependency injection or `_executionContext.SqlUtility` where the **execution context** is available. Moved members: ProviderName, Identifier, QuoteText, QuoteIdentifier, GetSchemaName, GetShortName, GetFullName, ReadGuid, ReadInt, StringToGuid, QuoteGuid, GuidToString, QuoteDateTime, DateTimeToString, QuoteBool, BoolToString, SqlConnectionInfo, GetDatabaseTime. The Initialize method is no longer used.
   * `SqlUtility.EmptyNullString` renamed to `ISqlUtility.ReadEmptyNullString`.
 * In **SaveMethod**, collections `inserted`, `updated` and `deleted` now contain the *simple* class items instead of the queryable *navigation* class with lazy loading references.
   * If the references are required in custom code, you can query the data with `this.Query(insertedNew)`, `this.Query(updatedNew)` and `this.Query(deletedIds)`.
@@ -59,7 +59,7 @@ Changes in Rhetos libraries API:
   * Any test projects that reference the "Rhetos.TestCommon" package, should be updated to the latest version of the MSTest.* packages (v3.2.2 or higher).
   * There is a breaking change in MSTest v3: If a unit test uses an external file from disk, it should look for the file
     in `AppDomain.CurrentDomain.BaseDirectory` directory instead of the current directory.
-* Corrected type in extension methods: IsLessThen to IsLessThan, IsGreaterThen to IsGreaterThan.
+* Corrected typos in extension methods: IsLessThen to IsLessThan, IsGreaterThen to IsGreaterThan.
 * Some EF6-specific features moved from Rhetos.CommonConcepts to Rhetos.MsSqlEf6.
   * If a custom code generator class uses one of `DomInitializationCodeGenerator.EntityFramework*` tags,
     instead of it use the same tag from `EntityFrameworkContextCodeGenerator` class and add an attribute
