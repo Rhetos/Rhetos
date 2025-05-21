@@ -69,7 +69,7 @@ namespace Rhetos.DatabaseGenerator.Test
 
         public Guid StringToGuid(string guid) => throw new NotImplementedException();
 
-        public string TrySetApplicationName(string connectionString) => throw new NotImplementedException();
+        public string SetApplicationName(string connectionString, string applicationName) => throw new NotImplementedException();
 
         public void ValidateDbConnection(string connectionString) => throw new NotImplementedException();
     }

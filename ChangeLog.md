@@ -32,6 +32,7 @@ Changes in Rhetos libraries API:
   * Instead of `SqlUtility.NationalLanguage`, use DatabaseSettings.DatabaseNationalLanguage from dependency injection.
   * For other removed static members, use `ISqlUtility` from dependency injection or `_executionContext.SqlUtility` where the **execution context** is available. Moved members: ProviderName, Identifier, QuoteText, QuoteIdentifier, GetSchemaName, GetShortName, GetFullName, ReadGuid, ReadInt, StringToGuid, QuoteGuid, GuidToString, QuoteDateTime, DateTimeToString, QuoteBool, BoolToString, SqlConnectionInfo, GetDatabaseTime. The Initialize method is no longer used.
   * `SqlUtility.EmptyNullString` renamed to `ISqlUtility.ReadEmptyNullString`.
+  * `SqlUtility.TrySetApplicationName` renamed to `ISqlUtility.SetApplicationName`.
 * In **SaveMethod**, collections `inserted`, `updated` and `deleted` now contain the *simple* class items instead of the queryable *navigation* class with lazy loading references.
   * If the references are required in custom code, you can query the data with `this.Query(insertedNew)`, `this.Query(updatedNew)` and `this.Query(deletedIds)`.
   * The **ChangesOnChangedItems** code snippet parameter `changedItems` is now the collection of *simple* class instead of the queryable *navigation* class.
@@ -76,6 +77,8 @@ Changes in behavior:
   * For existing apps, disable option CommonConcepts:ReadCommandSimpleProperty if needed.
 * When inserting or deleting multiple records, the SQL commands are grouped into a single query by default, for better performance.
   * If the existing app has a custom trigger that does not support multiple records, set the option `CommonConcepts:SqlCommandBatchSeparateQueries` to `true`.
+* Rhetos overrides the application name in database connection string, even if the application name has already been specified in the original connection string.
+  * If the existing app requires a custom application name, set the option `Rhetos:Database:SetApplicationName` to `false`.
 
 Migrating a Rhetos app from EF6 to EF Core (optional):
 

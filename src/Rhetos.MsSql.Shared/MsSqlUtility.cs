@@ -43,26 +43,20 @@ namespace Rhetos.Utilities
 
         public string ProviderName => typeof(SqlConnection).Namespace;
 
-        public string TrySetApplicationName(string connectionString)
+        public string SetApplicationName(string connectionString, string applicationName)
         {
             if (string.IsNullOrEmpty(connectionString))
+                return connectionString;
+            if (string.IsNullOrEmpty(applicationName))
                 return connectionString;
 
             try
             {
-                var dbConnectionStringBuilder = new DbConnectionStringBuilder();
-                dbConnectionStringBuilder.ConnectionString = connectionString;
-                if (dbConnectionStringBuilder.ContainsKey("Application Name") || dbConnectionStringBuilder.ContainsKey("app"))
-                    return connectionString;
-
-                string hostAppName = Assembly.GetEntryAssembly()?.GetName()?.Name;
-                if (string.IsNullOrEmpty(hostAppName))
-                    return connectionString;
-
-                dbConnectionStringBuilder["Application Name"] = hostAppName;
-                return dbConnectionStringBuilder.ToString();
+                var connectionStringBuilder = new SqlConnectionStringBuilder(connectionString);
+                connectionStringBuilder.ApplicationName = applicationName;
+                return connectionStringBuilder.ToString();
             }
-#pragma warning disable CA1031 // Do not catch general exception types. This is just an optional information in connection string. It should not fail if the connection string format is not recognized.
+#pragma warning disable CA1031 // Do not catch general exception types. This is just an optional information in connection string. It should not fail if the connection string format is not recognized, the error will be reported later when opening the connection.
             catch
 #pragma warning restore CA1031 // Do not catch general exception types
             {

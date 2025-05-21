@@ -38,7 +38,10 @@ namespace Rhetos.Utilities
     {
         string ProviderName { get; }
 
-        string TrySetApplicationName(string connectionString);
+        /// <summary>
+        /// Sets the application name parameter value in the connection string.
+        /// </summary>
+        string SetApplicationName(string connectionString, string applicationName);
 
         /// <summary>
         /// Created database connection and initializes it with used information and settings.

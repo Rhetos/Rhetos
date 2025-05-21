@@ -17,10 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Reflection;
 
 namespace Rhetos.Utilities
 {
@@ -52,7 +49,10 @@ namespace Rhetos.Utilities
 
             var dbOptions = configuration.GetOptions<DatabaseOptions>();
             if (dbOptions.SetApplicationName)
-                connectionString = sqlUtility.TrySetApplicationName(connectionString);
+            {
+                string hostAppName = Assembly.GetEntryAssembly()?.GetName()?.Name ?? "Rhetos";
+                connectionString = sqlUtility.SetApplicationName(connectionString, hostAppName);
+            }
 
             _value = connectionString;
         }
