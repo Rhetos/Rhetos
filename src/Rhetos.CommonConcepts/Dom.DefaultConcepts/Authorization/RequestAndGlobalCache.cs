@@ -22,14 +22,14 @@ using Rhetos.Logging;
 using Rhetos.Persistence;
 using Rhetos.Utilities;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Rhetos.Dom.DefaultConcepts.Authorization
 {
     /// <summary>
     /// The current request's cached data (<see cref="_currentRequestCache"/>)
-    /// will be inserted into the global cache (<see cref="_globalCache"/>)
+    /// will be inserted into the global cache (<see cref="_globalCaches"/>)
     /// if the current transaction is committed to the database.
     /// </summary>
     public class RequestAndGlobalCache
@@ -37,18 +37,22 @@ namespace Rhetos.Dom.DefaultConcepts.Authorization
         private readonly ILogger _logger;
         private readonly RhetosAppOptions _rhetosAppOptions;
         private readonly IPersistenceTransaction _persistenceTransaction;
+
         private readonly Dictionary<string, object> _currentRequestCache = new();
-        private static readonly MemoryCache _globalCache = new MemoryCache(new MemoryCacheOptions());
+        private static readonly ConcurrentDictionary<string, MemoryCache> _globalCaches = new();
         private bool _registeredToUpdateGlobalCache;
+        private readonly Lazy<MemoryCache> _tenantCache; // If the application is connecting to multiple databases (for example in a multi-tenant solution), this cache is related to the current context.
 
         public RequestAndGlobalCache(
             ILogProvider logProvider,
             RhetosAppOptions rhetosAppOptions,
-            IPersistenceTransaction persistenceTransaction)
+            IPersistenceTransaction persistenceTransaction,
+            ConnectionString connectionString)
         {
             _logger = logProvider.GetLogger(GetType().Name);
             _rhetosAppOptions = rhetosAppOptions;
             _persistenceTransaction = persistenceTransaction;
+            _tenantCache = new(() => _globalCaches.GetOrAdd(connectionString, _ => new MemoryCache(new MemoryCacheOptions())), isThreadSafe: false); // Ne need for thread safety overhead, this class is instanced in the context of a single web request.
         }
 
         /// <returns>
@@ -59,7 +63,7 @@ namespace Rhetos.Dom.DefaultConcepts.Authorization
             if (_currentRequestCache.TryGetValue(key, out object currentRequestValue) && currentRequestValue != null)
                 yield return (T)currentRequestValue;
 
-            object globalValue = _globalCache.Get(key);
+            object globalValue = _tenantCache.Value.Get(key);
             if (globalValue != null)
                 yield return (T)globalValue;
         }
@@ -78,7 +82,7 @@ namespace Rhetos.Dom.DefaultConcepts.Authorization
             if (!immutable && _currentRequestCache.TryGetValue(key, out object currentRequestValue))
                 return (T)currentRequestValue;
 
-            object globalValue = _globalCache.Get(key);
+            object globalValue = _tenantCache.Value.Get(key);
             return (T)globalValue;
         }
 
@@ -89,7 +93,7 @@ namespace Rhetos.Dom.DefaultConcepts.Authorization
         {
             if (immutable)
             {
-                _globalCache.Set(key, value, DateTimeOffset.Now.AddYears(1));
+                _tenantCache.Value.Set(key, value, DateTimeOffset.Now.AddYears(1));
             }
             else
             {
@@ -132,14 +136,14 @@ namespace Rhetos.Dom.DefaultConcepts.Authorization
         private void UpdateGlobalCacheAfterCommit()
         {
             foreach (var item in _currentRequestCache)
-                _globalCache.Set(item.Key, item.Value, DateTimeOffset.Now.AddSeconds(_rhetosAppOptions.AuthorizationCacheExpirationSeconds));
+                _tenantCache.Value.Set(item.Key, item.Value, DateTimeOffset.Now.AddSeconds(_rhetosAppOptions.AuthorizationCacheExpirationSeconds));
             _currentRequestCache.Clear();
         }
 
         public void RemoveFromBothCaches(string key)
         {
             _currentRequestCache.Remove(key);
-            _globalCache.Remove(key);
+            _tenantCache.Value.Remove(key);
         }
 
         /// <summary>
@@ -147,7 +151,8 @@ namespace Rhetos.Dom.DefaultConcepts.Authorization
         /// </summary>
         public static void ClearGlobalCacheAll()
         {
-            _globalCache.Clear();
+            foreach (var cache in _globalCaches.Values)
+                cache.Clear();
         }
     }
 }

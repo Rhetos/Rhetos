@@ -248,7 +248,7 @@ namespace Rhetos.CommonConcepts.Test
                     new RequestAndGlobalCache(
                         context.ConsoleLogProvider,
                         new RhetosAppOptions() { AuthorizationCacheExpirationSeconds = authorizationCacheExpirationSeconds },
-                        context.PersistenceTransaction));
+                        context.PersistenceTransaction, new ConnectionString("")));
             }
             else
                 context.AuthorizationDataCache = null;
