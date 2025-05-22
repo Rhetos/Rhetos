@@ -1,0 +1,15 @@
+﻿{
+  "Rhetos": {
+    // Using subpackages to get the DSL and DataMigration scripts from CommonConcepts directly on build, without creating and installing the CommonConcepts NuGet package.
+    // These files are also included as RhetosBuild ItemGroup in this project's csproj file.
+    "Subpackages": [
+      {
+        "Name": "Rhetos.CommonConcepts",
+        // AddProjectNameToPackageId is disabled to allow database language resources from 'Rhetos.CommonConcepts.SqlFiles.PostgreSql.resx' to match the exact package name 'Rhetos.CommonConcepts'.
+        "AddProjectNameToPackageId": false,
+        "Folder": "..\\..\\src\\Rhetos.CommonConcepts\\DslScripts",
+        "Dependencies": []
+      }
+    ]
+  }
+}

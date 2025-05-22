@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="local.settings.json" Condition="Exists('local.settings.json')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="rhetos-build.settings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Rhetos.MsSqlEf6\Rhetos.MsSqlEf6.csproj" />
+    <ProjectReference Include="..\..\src\RhetosCli\RhetosCli.csproj" />
+    <ProjectReference Include="..\..\src\RhetosVSIntegration\RhetosVSIntegration.csproj" />
+  </ItemGroup>
+
+  <Import Project="..\..\src\RhetosVSIntegration\MsBuildIntegrationBuild\Rhetos.MsBuild.props" />
+  <Import Project="..\..\src\RhetosVSIntegration\MsBuildIntegrationDbUpdate\Rhetos.Host.props" />
+  <Import Project="..\..\src\Rhetos.MsSqlEf6\Rhetos.MsSqlEf6.props" />
+  <Import Project="..\..\src\RhetosVSIntegration\MsBuildIntegrationBuild\Rhetos.MsBuild.targets" />
+  <Import Project="..\..\src\RhetosVSIntegration\MsBuildIntegrationDbUpdate\Rhetos.Host.targets" />
+  
+  <!--Override Rhetos.MsBuild.props paths because this project does not use a NuGet dependency for Rhetos.MsBuild.-->
+  <PropertyGroup>
+    <RhetosCliExecutablePath>..\..\src\RhetosCli\bin\$(Configuration)\net8.0\rhetos.exe</RhetosCliExecutablePath>
+    <RhetosCliAssemblyPath>..\..\src\RhetosCli\bin\$(Configuration)\net8.0\rhetos.dll</RhetosCliAssemblyPath>
+    <RhetosVSIntegrationPath>..\bin\$(Configuration)\netstandard2.0\RhetosVSIntegration.dll</RhetosVSIntegrationPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <RhetosBuild Include="..\..\src\Rhetos.CommonConcepts\DslScripts\**\*" />
+    <RhetosBuild Include="..\..\src\Rhetos.CommonConcepts\DataMigration\**\*" />
+  </ItemGroup>
+
+</Project>

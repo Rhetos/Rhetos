@@ -1,0 +1,69 @@
+﻿Module Bookstore
+{
+    AutodetectSqlDependencies;
+
+    Entity Book
+    {
+        ShortString Code { AutoCode; }
+        ShortString Title { Required; }
+        Integer NumberOfPages;
+        Reference Author Bookstore.Person;
+    }
+
+    Entity Person
+    {
+        ShortString Name;
+    }
+
+    Entity Comment
+    {
+        Reference Book { Detail; }
+        LongString Text;
+    }
+
+    Entity ChildrensBook
+    {
+        Extends Bookstore.Book;
+        Integer AgeFrom;
+        Integer AgeTo;
+        IntegerRange AgeFrom AgeTo;
+    }
+
+    Entity ForeignBook
+    {
+        Extends Bookstore.Book;
+        ShortString OriginalLanguage;
+        Reference Translator Bookstore.Person;
+    }
+
+    Browse BookGrid Bookstore.Book
+    {
+        Take Code;
+        Take Title;
+        Take 'Author.Name';
+        Take Author;
+        Take TranslatorName 'Extension_ForeignBook.Translator.Name';
+        Take Description 'Extension_BookDescription.Description';
+    }
+
+    SqlQueryable BookDescription <BookDescription.sql>
+    {
+        Extends Bookstore.Book;
+        LongString Description;
+    }
+
+    Computed ComputeBookRating 'repository =>
+        {
+            var allBooksIds = repository.Bookstore.Book.Query().Select(b => b.ID).ToArray();
+            return this.Load(allBooksIds).ToArray();
+        }'
+    {
+        Extends Bookstore.Book;
+        Decimal Rating;
+
+        FilterBy 'IEnumerable<Guid>' '(repository, bookIds) =>
+            _domRepository.Bookstore.Book.Load(bookIds)
+                .Select(book => new ComputeBookRating { ID = book.ID, Rating = book.Title?.Length ?? 0 })
+                .ToArray()';
+    }
+}
