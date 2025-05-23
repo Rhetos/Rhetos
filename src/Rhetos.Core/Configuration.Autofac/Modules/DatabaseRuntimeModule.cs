@@ -30,7 +30,7 @@ namespace Rhetos.Configuration.Autofac.Modules
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterType<ConnectionString>().SingleInstance();
+            builder.RegisterType<ConnectionString>().SingleInstance().PreserveExistingDefaults();
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<DatabaseOptions>()).SingleInstance().PreserveExistingDefaults();
 
             builder.Register(context => context.Resolve<IConfiguration>().GetOptions<SqlTransactionBatchesOptions>()).InstancePerLifetimeScope();

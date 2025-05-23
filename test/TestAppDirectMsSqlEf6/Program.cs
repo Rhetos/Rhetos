@@ -25,14 +25,15 @@ using Rhetos.Security;
 using Rhetos.Utilities;
 
 IHostBuilder builder = Host.CreateDefaultBuilder(args);
-builder.ConfigureServices(services =>
+builder.ConfigureServices((context, services) =>
 {
     services.AddRhetosHost((IServiceProvider serviceProvider, IRhetosHostBuilder rhetosHostBuilder) =>
     {
         rhetosHostBuilder
             .ConfigureRhetosAppDefaults()
             .ConfigureConfiguration(configurationBuilder => configurationBuilder
-                .AddJsonFile("local.settings.json"))
+                .AddJsonFile("local.settings.json")
+                .MapNetCoreConfiguration(context.Configuration))
             .ConfigureContainer(builder =>
             {
                 builder.RegisterType<ProcessUserInfo>().As<IUserInfo>();

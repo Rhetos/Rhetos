@@ -93,7 +93,7 @@ namespace Rhetos.Deployment
             // DbUpdate overrides default runtime components with OverrideContainerConfiguration,
             // because it does not require full runtime context.
             // Instead it registers only basic CoreModule and part of the runtime from DbUpdateModule.
-            // AddPluginModules allows custom override of DbUpdate components if needed.
+            // AddRhetosPluginModules allows custom override of DbUpdate components if needed.
             builder.OverrideContainerConfiguration((configuration, containerBuilder, configureActions) =>
             {
                 // Custom configuration from "configureActions" parameter is intentionally ignored.
