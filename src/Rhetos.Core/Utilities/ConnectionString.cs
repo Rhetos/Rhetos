@@ -43,18 +43,12 @@ namespace Rhetos.Utilities
 
         private readonly string _value;
 
+        /// <summary>
+        /// Reads the connection string from configuration and updates the application name (optional).
+        /// </summary>
         public ConnectionString(IConfiguration configuration, ISqlUtility sqlUtility)
         {
-            var connectionString = configuration.GetValue<string>(ConnectionStringConfigurationKey);
-
-            var dbOptions = configuration.GetOptions<DatabaseOptions>();
-            if (dbOptions.SetApplicationName)
-            {
-                string hostAppName = Assembly.GetEntryAssembly()?.GetName()?.Name ?? "Rhetos";
-                connectionString = sqlUtility.SetApplicationName(connectionString, hostAppName);
-            }
-
-            _value = connectionString;
+            _value = CreateConnectionString(configuration, sqlUtility);
         }
 
         /// <summary>
@@ -63,6 +57,23 @@ namespace Rhetos.Utilities
         public ConnectionString(string connectionString)
         {
             _value = connectionString;
+        }
+
+        /// <summary>
+        /// Helper for constructing Rhetos connection strings.
+        /// </summary>
+        public static string CreateConnectionString(IConfiguration configuration, ISqlUtility sqlUtility, string connectionStringConfigurationKey = null, string appName = null)
+        {
+            var connectionString = configuration.GetValue<string>(connectionStringConfigurationKey ?? ConnectionStringConfigurationKey);
+
+            var dbOptions = configuration.GetOptions<DatabaseOptions>();
+            if (dbOptions.SetApplicationName)
+            {
+                string hostAppName = appName ?? Assembly.GetEntryAssembly()?.GetName()?.Name ?? "Rhetos";
+                connectionString = sqlUtility.SetApplicationName(connectionString, hostAppName);
+            }
+
+            return connectionString;
         }
 
         public override string ToString()

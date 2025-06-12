@@ -21,6 +21,7 @@ using Autofac;
 using Rhetos.Dom.DefaultConcepts;
 using Rhetos.Dom.DefaultConcepts.Persistence;
 using Rhetos.Extensibility;
+using Rhetos.MsSqlEf6.CommonConcepts;
 using Rhetos.MsSqlEf6.SqlResources;
 using Rhetos.Persistence;
 using Rhetos.SqlResources;
@@ -69,6 +70,7 @@ namespace Rhetos.MsSqlEf6
                 // CommonConcepts:
                 builder.RegisterType<EntityFrameworkMetadata>().SingleInstance();
                 builder.RegisterType<MetadataWorkspaceFileProvider>().As<IMetadataWorkspaceFileProvider>().SingleInstance();
+                builder.RegisterType<Ef6InitializationConnectionString>().SingleInstance().PreserveExistingDefaults();
                 builder.RegisterType<EfMappingViewsHash>().As<IEfMappingViewsHash>();
                 builder.RegisterType<Ef6OrmUtility>().As<IOrmUtility>().SingleInstance();
             }

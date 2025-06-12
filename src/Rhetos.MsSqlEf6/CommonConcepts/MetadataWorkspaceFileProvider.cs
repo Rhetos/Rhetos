@@ -17,28 +17,28 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using Rhetos.Logging;
+using Rhetos.MsSqlEf6.CommonConcepts;
+using Rhetos.Persistence;
+using Rhetos.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Core.Metadata.Edm;
 using System.Data.Entity.Infrastructure;
-using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-using Rhetos.Logging;
-using Rhetos.Persistence;
-using Rhetos.Utilities;
 
 namespace Rhetos.Dom.DefaultConcepts.Persistence
 {
     public class MetadataWorkspaceFileProvider : IMetadataWorkspaceFileProvider
     {
         private readonly RhetosAppOptions _rhetosAppOptions;
-        private readonly ConnectionString _connectionString;
+        private readonly Ef6InitializationConnectionString _initializationConnectionString;
         private readonly ILogger _performanceLogger;
         private readonly ILogger _logger;
         private readonly Lazy<MetadataWorkspace> _loadedMetadata;
@@ -49,13 +49,13 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
         public MetadataWorkspaceFileProvider(
             RhetosAppOptions rhetosAppOptions,
             ILogProvider logProvider,
-            ConnectionString connectionString,
+            Ef6InitializationConnectionString ef6InitializationConnectionString,
 #pragma warning disable CA1801 // Review unused parameters. DbCofiguration is injected here in order to globally initialize EntityFrameworkConfiguration before doing any operations on EF objects.
             DbConfiguration dbConfiguration)
 #pragma warning restore CA1801 // Review unused parameters
         {
             _rhetosAppOptions = rhetosAppOptions;
-            _connectionString = connectionString;
+            _initializationConnectionString = ef6InitializationConnectionString;
             _performanceLogger = logProvider.GetLogger("Performance." + GetType().Name);
             _logger = logProvider.GetLogger(nameof(MetadataWorkspaceFileProvider));
 
@@ -115,10 +115,11 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
         private string GetDatabaseManifestToken()
         {
             _logger.Trace("Resolving ProviderManifestToken.");
-            if (string.IsNullOrEmpty(_connectionString))
+            var connectionString = _initializationConnectionString.ConnectionString;
+            if (string.IsNullOrEmpty(connectionString))
                 throw new FrameworkException("Connection string is not provided.");
 
-            using (var connection = new SqlConnection(_connectionString))
+            using (var connection = new SqlConnection(connectionString))
             {
                 return new DefaultManifestTokenResolver().ResolveManifestToken(connection);
             }

@@ -9,6 +9,15 @@
       "executablePath": "dotnet",
       "commandLineArgs": "exec --runtimeconfig \"..\\..\\..\\..\\..\\test\\TestAppDirectMsSqlEfCore\\bin\\Debug\\net8.0\\TestAppDirectMsSqlEfCore.runtimeconfig.json\" --depsfile \"..\\..\\..\\..\\..\\test\\TestAppDirectMsSqlEfCore\\bin\\Debug\\net8.0\\TestAppDirectMsSqlEfCore.deps.json\" \"rhetos.dll\" --msbuild-format dbupdate ..\\..\\..\\..\\..\\test\\TestAppDirectMsSqlEfCore\\bin\\Debug\\net8.0\\TestAppDirectMsSqlEfCore.dll --execute-command-in-current-process"
     },
+    "build TestAppDirectMsSqlEf6": {
+      "commandName": "Project",
+      "commandLineArgs": "build \"..\\..\\..\\..\\..\\test\\TestAppDirectMsSqlEf6\""
+    },
+    "dbupdate TestAppDirectMsSqlEf6": {
+      "commandName": "Executable",
+      "executablePath": "dotnet",
+      "commandLineArgs": "exec --runtimeconfig \"..\\..\\..\\..\\..\\test\\TestAppDirectMsSqlEf6\\bin\\Debug\\net8.0\\TestAppDirectMsSqlEf6.runtimeconfig.json\" --depsfile \"..\\..\\..\\..\\..\\test\\TestAppDirectMsSqlEf6\\bin\\Debug\\net8.0\\TestAppDirectMsSqlEf6.deps.json\" \"rhetos.dll\" --msbuild-format dbupdate ..\\..\\..\\..\\..\\test\\TestAppDirectMsSqlEf6\\bin\\Debug\\net8.0\\TestAppDirectMsSqlEf6.dll --execute-command-in-current-process"
+    },
     "build TestAppDirectPostgreSql": {
       "commandName": "Project",
       "commandLineArgs": "build \"..\\..\\..\\..\\..\\test\\TestAppDirectPostgreSql\""
