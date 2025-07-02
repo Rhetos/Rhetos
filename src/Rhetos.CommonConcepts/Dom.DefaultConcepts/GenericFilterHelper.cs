@@ -484,14 +484,14 @@ namespace Rhetos.Dom.DefaultConcepts
 
             Type itemType = source.GetType().GetInterface("IQueryable`1").GetGenericArguments().Single();
 
-            ParameterExpression parameter = Expression.Parameter(itemType, "posting");
-            Expression property = Expression.Property(parameter, orderByProperty);
-            LambdaExpression propertySelector = Expression.Lambda(property, new[] { parameter });
+            var parameter = Expression.Parameter(itemType, "posting");
+            var property = Expression.Property(parameter, orderByProperty);
+            var propertySelector = Expression.Lambda(property, [parameter]);
 
             MethodInfo orderMethod = firstProperty
                     ? (ascending ? OrderByAscendingMethod : OrderByDescendingMethod)
                     : (ascending ? ThenByAscendingMethod : ThenByDescendingMethod);
-            MethodInfo genericOrderMethod = orderMethod.MakeGenericMethod(new[] { itemType, property.Type });
+            MethodInfo genericOrderMethod = orderMethod.MakeGenericMethod([itemType, property.Type]);
 
             return (IQueryable<T>)genericOrderMethod.InvokeEx(null, source, propertySelector);
         }

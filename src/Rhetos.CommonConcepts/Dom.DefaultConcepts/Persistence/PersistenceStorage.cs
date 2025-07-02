@@ -68,7 +68,7 @@ namespace Rhetos.Dom.DefaultConcepts
             }
         }
 
-        private void CheckRowCount(int numberOfAffectedRows, PersistenceStorageCommandType commandType, Type entityType, IReadOnlyCollection<IEntity> entities)
+        private void CheckRowCount<TEntity>(int numberOfAffectedRows, PersistenceStorageCommandType commandType, Type entityType, List<TEntity> entities) where TEntity : class, IEntity
         {
             int entityCount = entities.Count;
             if (numberOfAffectedRows < entityCount && (commandType == PersistenceStorageCommandType.Delete || commandType == PersistenceStorageCommandType.Update))

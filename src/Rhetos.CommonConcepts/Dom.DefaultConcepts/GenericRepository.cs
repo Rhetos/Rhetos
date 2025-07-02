@@ -694,8 +694,8 @@ namespace Rhetos.Dom.DefaultConcepts
             List<TEntityInterface> newItemsList = newItems.OrderBy(item => item, sameRecord).ToList();
             List<TEntityInterface> oldItemsList = oldItems.OrderBy(item => item, sameRecord).ToList();
 
-            IEnumerator<TEntityInterface> newEnum = newItemsList.GetEnumerator();
-            IEnumerator<TEntityInterface> oldEnum = oldItemsList.GetEnumerator();
+            var newEnum = newItemsList.GetEnumerator();
+            var oldEnum = oldItemsList.GetEnumerator();
 
             try
             {

@@ -50,7 +50,7 @@ namespace Rhetos.Dom.DefaultConcepts.Persistence
             RhetosAppOptions rhetosAppOptions,
             ILogProvider logProvider,
             ConnectionString connectionString,
-#pragma warning disable CA1801 // Review unused parameters. DbCofiguration is injected here in order to globally initialize configuration before doing any operations on EF objects.
+#pragma warning disable CA1801 // Review unused parameters. DbCofiguration is injected here in order to globally initialize EntityFrameworkConfiguration before doing any operations on EF objects.
             DbConfiguration dbConfiguration)
 #pragma warning restore CA1801 // Review unused parameters
         {

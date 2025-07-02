@@ -124,8 +124,8 @@ namespace Rhetos.Dom.DefaultConcepts
                 oldItemsList.Sort(sameRecord);
             }
 
-            IEnumerator<TEntity> newEnum = newItemsList.GetEnumerator();
-            IEnumerator<TEntity> oldEnum = oldItemsList.GetEnumerator();
+            var newEnum = newItemsList.GetEnumerator();
+            var oldEnum = oldItemsList.GetEnumerator();
 
             try
             {
