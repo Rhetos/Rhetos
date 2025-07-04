@@ -58,7 +58,7 @@ Additionally, running integration tests in test projects also requires database 
 
 Initial setup (required for development and integration tests):
 
-* Create four empty MS SQL Server databases (for example, "RhetosEFCore", "RhetosEF6", "Rhetos6TestAppDirectMsSqlEfCore" and "Rhetos6TestAppDirectMsSqlEf6" on localhost SQL Server instance).
+* Create four empty MS SQL Server databases (for example, "Rhetos6EFCore", "Rhetos6EF6", "Rhetos6TestAppDirectMsSqlEfCore" and "Rhetos6TestAppDirectMsSqlEf6" on localhost SQL Server instance).
 * Create two empty PostgreSQL database (if needed, use `test\TestAppDirectPostgreSql\setup postgresql db.bat` that initializes the databases in a PostgreSQL container).
 * Create the corresponding six local setting files `local.settings.json` in the folders
   `test\CommonConcepts.TestApp.MsSql`, `test\CommonConcepts.TestApp.MsSqlEf6`,

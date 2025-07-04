@@ -25,9 +25,11 @@ namespace Rhetos.MsSqlEf6.CommonConcepts
     /// <summary>
     /// This connection string is used for global EF6 initialization (for the provider manifest token in <see cref="MetadataWorkspaceFileProvider"/>).
     /// By default, it returns the standard Rhetos connection string, but in some cases it needs to be customized.
-    /// For example, in a multitenant application, at runtime, the connection string may resolved within the user's web request for the specified tenant, and there might by no global (singleton)
+    /// <para>
+    /// For example, in a multitenant application, at runtime, the connection string may resolved within the user's web request for the specified tenant (scoped), and there might be no global (singleton)
     /// connection string available. In that case, the registration of this class needs to be overridden to allow EF6 initialization to temporarily connect to some given reference database
     /// that has the same technology and version as the tenant's databases. It can be any of the tenant's databases, or some common master database.
+    /// </para>
     /// </summary>
     public class Ef6InitializationConnectionString
     {
