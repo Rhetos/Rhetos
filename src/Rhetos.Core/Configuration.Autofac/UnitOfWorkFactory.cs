@@ -36,6 +36,17 @@ namespace Rhetos
         private WeakReference<ILifetimeScope> _containerReference;
         private Action<ContainerBuilder> _customRegistrations;
 
+        /// <summary>
+        /// Initialization of the unit of work factory is separate from the constructor, to allow the factory
+        /// to have the reference to it's own container.
+        /// </summary>
+        /// <remarks>
+        /// The <see cref="UnitOfWorkFactory"/> does not capture the reference to the <see cref="RhetosHost"/>,
+        /// to allow disposal of the root container. It uses a weak reference instead.
+        /// </remarks>
+        /// <param name="customRegistrations">
+        /// Additional container configuration that will be executed for each new unit of work scope.
+        /// </param>
         public void Initialize(RhetosHost rhetosHost, Action<ContainerBuilder> customRegistrations = null)
         {
             ArgumentNullException.ThrowIfNull(rhetosHost);
@@ -44,10 +55,15 @@ namespace Rhetos
         }
 
         /// <summary>
-        /// Initializes Hangfire's global configuration for background job processing of Rhetos jobs.
+        /// Initialization of the unit of work factory is separate from the constructor, to allow the factory
+        /// to have the reference to it's own container.
         /// </summary>
+        /// <remarks>
+        /// The <see cref="UnitOfWorkFactory"/> does not capture the reference to the <paramref name="container"/>,
+        /// to allow disposal of the container. It uses a weak reference instead.
+        /// </remarks>
         /// <param name="container">
-        /// Provide the Rhetos DI container from the current application.
+        /// Provide the root container or a customized lifetime scope from RhetosHost.
         /// </param>
         /// <param name="customRegistrations">
         /// Additional container configuration that will be executed for each new unit of work scope.

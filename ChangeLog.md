@@ -32,7 +32,6 @@ Changes in Rhetos libraries API:
   * Instead of `SqlUtility.NationalLanguage`, use DatabaseSettings.DatabaseNationalLanguage from dependency injection.
   * For other removed static members, use `ISqlUtility` from dependency injection or `_executionContext.SqlUtility` where the **execution context** is available. Moved members: ProviderName, Identifier, QuoteText, QuoteIdentifier, GetSchemaName, GetShortName, GetFullName, ReadGuid, ReadInt, StringToGuid, QuoteGuid, GuidToString, QuoteDateTime, DateTimeToString, QuoteBool, BoolToString, SqlConnectionInfo, GetDatabaseTime. The Initialize method is no longer used.
   * `SqlUtility.EmptyNullString` renamed to `ISqlUtility.ReadEmptyNullString`.
-  * `SqlUtility.TrySetApplicationName` renamed to `ISqlUtility.SetApplicationName`.
 * In **SaveMethod**, collections `inserted`, `updated` and `deleted` now contain the *simple* class items instead of the queryable *navigation* class with lazy loading references.
   * If the references are required in custom code, you can query the data with `this.Query(insertedNew)`, `this.Query(updatedNew)` and `this.Query(deletedIds)`.
   * The **ChangesOnChangedItems** code snippet parameter `changedItems` is now the collection of *simple* class instead of the queryable *navigation* class.

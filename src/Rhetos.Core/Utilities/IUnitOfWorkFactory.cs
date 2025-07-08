@@ -29,8 +29,6 @@ namespace Rhetos
     /// </summary>
     public interface IUnitOfWorkFactory
     {
-
-#pragma warning disable CS1574 // XML comment has cref attribute that could not be resolved
         /// <summary>
         /// Creates a thread-safe lifetime scope for dependency injection container,
         /// in order to isolate a unit of work in a separate database transaction.
@@ -48,6 +46,5 @@ namespace Rhetos
         /// </para>
         /// </param>
         IUnitOfWorkScope CreateScope(Action<ContainerBuilder> registerScopeComponentsAction = null);
-#pragma warning restore CS1574 // XML comment has cref attribute that could not be resolved
     }
 }
