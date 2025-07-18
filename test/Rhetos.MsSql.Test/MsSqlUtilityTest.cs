@@ -230,7 +230,7 @@ namespace Rhetos.MsSql.Test
                 .AddKeyValue(ConnectionString.ConnectionStringConfigurationKey, initialConnectionString)
                 .Build(AppDomain.CurrentDomain.BaseDirectory);
             ISqlUtility sqlUtility = NewSqlUtility();
-            string rhetosConnectionString = new ConnectionString(configuration, sqlUtility).ToString();
+            string rhetosConnectionString = new ConnectionString(configuration, sqlUtility, configuration.GetOptions<DatabaseOptions>()).ToString();
 
             Assert.AreEqual(
                 "Data Source=DummyServerName;Initial Catalog=DummyDatabaseName;Integrated Security=true;Application Name=testhost",

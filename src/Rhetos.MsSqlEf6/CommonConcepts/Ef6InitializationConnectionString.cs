@@ -35,11 +35,17 @@ namespace Rhetos.MsSqlEf6.CommonConcepts
     {
         public string ConnectionString { get; }
 
+        /// <summary>
+        /// This constructor is used by default from dependency injection.
+        /// </summary>
         public Ef6InitializationConnectionString(ConnectionString connectionString)
             : this(connectionString.ToString())
         {
         }
 
+        /// <summary>
+        /// This constructor is intended to be used when manually setting the connection string.
+        /// </summary>
         public Ef6InitializationConnectionString(string connectionString)
         {
             ConnectionString = connectionString;
