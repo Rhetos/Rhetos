@@ -27,11 +27,6 @@ namespace Rhetos.Utilities
     public class ConnectionString
     {
         /// <summary>
-        /// Default connection string name in application's configuration.
-        /// </summary>
-        public static readonly string RhetosConnectionStringName = "RhetosConnectionString";
-
-        /// <summary>
         /// Default configuration settings key for the connection string.
         /// </summary>
         /// <remarks>
@@ -39,16 +34,17 @@ namespace Rhetos.Utilities
         /// In application code, do not resolve the connection string directly from the application's configuration using this key,
         /// instead use the <see cref="ConnectionString"/> class from dependency injection.
         /// </remarks>
-        public static readonly string ConnectionStringConfigurationKey = "ConnectionStrings:" + RhetosConnectionStringName;
+        public static readonly string ConnectionStringConfigurationKey = "ConnectionStrings:RhetosConnectionString";
 
         private readonly string _value;
 
         /// <summary>
         /// Reads the connection string from configuration and updates the application name (optional).
         /// </summary>
-        public ConnectionString(IConfiguration configuration, ISqlUtility sqlUtility)
+        public ConnectionString(IConfiguration configuration, ISqlUtility sqlUtility, DatabaseOptions databaseOptions)
         {
-            _value = CreateConnectionString(configuration, sqlUtility);
+            var optionsConnectionString = configuration.GetValue<string>(ConnectionStringConfigurationKey);
+            _value = GetConnectionStringWithAppName(optionsConnectionString, sqlUtility, databaseOptions);
         }
 
         /// <summary>
@@ -62,14 +58,11 @@ namespace Rhetos.Utilities
         /// <summary>
         /// Helper for constructing Rhetos connection strings.
         /// </summary>
-        public static string CreateConnectionString(IConfiguration configuration, ISqlUtility sqlUtility, string connectionStringConfigurationKey = null, string appName = null)
+        public static string GetConnectionStringWithAppName(string connectionString, ISqlUtility sqlUtility, DatabaseOptions databaseOptions, string appName = null, string appNameSuffix = null)
         {
-            var connectionString = configuration.GetValue<string>(connectionStringConfigurationKey ?? ConnectionStringConfigurationKey);
-
-            var dbOptions = configuration.GetOptions<DatabaseOptions>();
-            if (dbOptions.SetApplicationName)
+            if (databaseOptions.SetApplicationName)
             {
-                string hostAppName = appName ?? Assembly.GetEntryAssembly()?.GetName()?.Name ?? "Rhetos";
+                string hostAppName = (appName ?? Assembly.GetEntryAssembly()?.GetName()?.Name ?? "Rhetos") + (appNameSuffix ?? "");
                 connectionString = sqlUtility.SetApplicationName(connectionString, hostAppName);
             }
 

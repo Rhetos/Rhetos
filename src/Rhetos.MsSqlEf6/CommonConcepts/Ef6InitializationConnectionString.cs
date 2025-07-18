@@ -33,9 +33,14 @@ namespace Rhetos.MsSqlEf6.CommonConcepts
     /// </summary>
     public class Ef6InitializationConnectionString
     {
-        public ConnectionString ConnectionString { get; }
+        public string ConnectionString { get; }
 
         public Ef6InitializationConnectionString(ConnectionString connectionString)
+            : this(connectionString.ToString())
+        {
+        }
+
+        public Ef6InitializationConnectionString(string connectionString)
         {
             ConnectionString = connectionString;
         }
