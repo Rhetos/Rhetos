@@ -15,7 +15,7 @@
         <RhetosOutput Include="$(RhetosBuildCompleteFile)" />
     </ItemGroup>
     <ItemGroup>
-        <!--UpToDateCheckInput and UpToDateCheckBuilt items are used only by Visual Studio for the FastUpToDateCheck feature that detemines if MSBuild should be called.
+        <!--UpToDateCheckInput and UpToDateCheckBuilt items are used only by Visual Studio for the FastUpToDateCheck feature that determines if MSBuild should be called.
         The timestamps of the files under the same "Set" values are compared when calling FastUpToDateCheck, 
         that means if the RhetosBuildCompleteFile included in UpToDateCheckBuilt items is older than RhetosBuildSettingsFile included in UpToDateCheckInput
         the FastUpToDateCheck will determine that it needs to run MSBuild. -->

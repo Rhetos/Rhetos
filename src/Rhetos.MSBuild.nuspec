@@ -17,18 +17,24 @@
   </metadata>
   <files>
     <file src="RhetosVSIntegration\MsBuildIntegrationBuild\Readme.md" target="docs" />
+
+    <!-- The NuGet "build" folder contains the build targets and ResolveRhetosProjectAssets command implementation in RhetosVSIntegration.dll,
+    that automatically extend the MSBuild build process for Rhetos apps.
+    It is implemented in netstandard2.0 to be allowed to run in MSBuild from Visual Studio that runs on on .NET Framework,
+    see https://learn.microsoft.com/en-us/visualstudio/msbuild/tutorial-custom-task-code-generation?view=vs-2022#create-the-appsettingstronglytyped-project. -->
+    <file src="RhetosVSIntegration\MsBuildIntegrationBuild\Rhetos.MSBuild.targets" target="build" />
+    <file src="RhetosVSIntegration\MsBuildIntegrationBuild\Rhetos.MSBuild.props" target="build" />
+    <file src="RhetosVSIntegration\bin\Debug\netstandard2.0\*.dll" target="build" />
+    <file src="RhetosVSIntegration\bin\Debug\netstandard2.0\*.json" target="build" />
     
-    <!-- Rhetos 'build' needs to be on net8 or higher, so that is can load plugins from net8 libraries. -->
+    <!-- The NuGet "tools" folder contains the Rhetos CLI.
+    The "rhetos build" command is executed from the "tools" folder here (in the user's package cache).
+    Rhetos CLI needs to be on net8 or higher, so that it can load plugins from net8 libraries and lower versions. -->
+    <!-- The "rhetos dbupdate" command is executed from the Rhetos.Host NuGet package (rhetos.dll ends in the app's bin folder). -->
     <file src="RhetosCli\bin\Debug\net8.0\*.dll" target="tools" />
     <file src="RhetosCli\bin\Debug\net8.0\rhetos.exe" target="tools" />
     <file src="RhetosCli\bin\Debug\net8.0\rhetos.exe.nlog" target="tools" />
     <file src="RhetosCli\bin\Debug\net8.0\rhetos.deps.json" target="tools" />
     <file src="RhetosCli\bin\Debug\net8.0\rhetos.runtimeconfig.json" target="tools" />
-
-    <file src="RhetosVSIntegration\MsBuildIntegrationBuild\Rhetos.MSBuild.targets" target="build" />
-    <file src="RhetosVSIntegration\MsBuildIntegrationBuild\Rhetos.MSBuild.props" target="build" />
-
-    <file src="RhetosVSIntegration\bin\Debug\netstandard2.0\*.dll" target="build" />
-    <file src="RhetosVSIntegration\bin\Debug\netstandard2.0\*.json" target="build" />
   </files>
 </package>

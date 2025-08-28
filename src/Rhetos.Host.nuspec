@@ -28,7 +28,8 @@
     <file src="RhetosVSIntegration\MsBuildIntegrationDbUpdate\Rhetos.Host.targets" target="build" />
     <file src="RhetosVSIntegration\MsBuildIntegrationDbUpdate\Rhetos.Host.props" target="build" />
 
-    <!-- Rhetos 'dbupdate' needs to be on net8 or lower, so that it can run in the context of the net8 host applications. -->
+    <!-- The "rhetos dbupdate" command is executed from this package (rhetos.dll ends in the app's bin folder).
+    This version of Rhetos CLI needs to be on net8 or lower, so that it can run in the context of the net8 host applications. -->
     <file src="RhetosCli\bin\Debug\net8.0\rhetos.exe" target="contentFiles/any/net8.0/RhetosTools" />
     <file src="RhetosCli\bin\Debug\net8.0\rhetos.dll" target="contentFiles/any/net8.0/RhetosTools" />
     <file src="RhetosCli\bin\Debug\net8.0\rhetos.runtimeconfig.json" target="contentFiles/any/net8.0/RhetosTools" />
