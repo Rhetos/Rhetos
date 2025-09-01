@@ -1,4 +1,4 @@
-﻿/*
+/*
     Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
@@ -192,21 +192,12 @@ namespace Rhetos.Dsl.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(DslSyntaxException))]
         public void OrganizeConceptsByKey_ErrorIfDuplicatesNotEqual()
         {
-            try
-            {
-                var concepts = new List<IConceptInfo> { new SimpleConceptInfo("aaa", "xxx"), new SimpleConceptInfo("aaa", "bbb") };
-                DslModelFromConcepts(concepts);
-            }
-            catch (Exception ex)
-            {
-                Assert.IsTrue(ex.Message.Contains("aaa"));
-                Assert.IsTrue(ex.Message.Contains("xxx"));
-                Assert.IsTrue(ex.Message.Contains("bbb"));
-                throw;
-            }
+            var concepts = new List<IConceptInfo> { new SimpleConceptInfo("aaa", "xxx"), new SimpleConceptInfo("aaa", "bbb") };
+            TestUtility.ShouldFail<DslSyntaxException>(
+                () => DslModelFromConcepts(concepts),
+                "aaa", "xxx", "bbb");
         }
 
         [TestMethod]
@@ -308,11 +299,12 @@ namespace Rhetos.Dsl.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException), "Name too long.")]
         public void CheckSemanticsTest_Fail()
         {
             List<IConceptInfo> concepts = new List<IConceptInfo>() { new ConceptWithSemanticsValidation { Name = "abcd" } };
-            Assert.IsNotNull(DslModelFromConcepts(concepts));
+            TestUtility.ShouldFail<ArgumentException>(
+                () => DslModelFromConcepts(concepts),
+                "Name too long.");
         }
 
         //===================================================================================
@@ -443,7 +435,6 @@ namespace Rhetos.Dsl.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(DslSyntaxException))]
         public void ExpandMacroConcepts_ErrorOnDuplicateKeyDifferentValue()
         {
             List<IConceptInfo> concepts = new List<IConceptInfo>
@@ -452,17 +443,9 @@ namespace Rhetos.Dsl.Test
                                                   new MacroConceptInfo("b")
                                               };
 
-            try
-            {
-                _ = DslModelFromConcepts(concepts).Select(c => c.GetUserDescription()).ToList();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                Assert.IsTrue(ex.Message.Contains("xxx"));
-                Assert.IsTrue(ex.Message.Contains("b1"));
-                throw;
-            }
+            TestUtility.ShouldFail<DslSyntaxException>(
+                () => _ = DslModelFromConcepts(concepts).Select(c => c.GetUserDescription()).ToList(),
+                "xxx", "b1");
         }
 
         [ConceptKeyword("MULTIPASS1")]

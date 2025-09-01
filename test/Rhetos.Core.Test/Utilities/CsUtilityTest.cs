@@ -1,4 +1,4 @@
-﻿/*
+/*
     Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
@@ -541,7 +541,7 @@ Dictionary`2<List`1<InnerClass[]>, InnerClass>";
         {
             object o = new C2();
             C1 c1 = CsUtility.Cast<C1>(o, "some object");
-            Assert.ReferenceEquals(o, c1);
+            Assert.AreSame(o, c1);
             Assert.AreEqual(typeof(C2).ToString(), c1.GetType().ToString());
         }
 

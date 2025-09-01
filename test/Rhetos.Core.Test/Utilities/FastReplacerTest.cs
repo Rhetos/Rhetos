@@ -1,4 +1,4 @@
-﻿/*
+/*
     Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
@@ -18,6 +18,7 @@
 */
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos.TestCommon;
 using System;
 using System.Diagnostics;
 
@@ -478,7 +479,7 @@ namespace Rhetos.Utilities.Test
         // POSSIBLY UNINTUITIVE BEHAVIOUR
 
         [TestMethod]
-        public void PossiblyUnintuitiveBehaviour_IgnoreTokenIfNotFromSingleText()
+        public void PossiblyUnintuitiveBehavior_IgnoreTokenIfNotFromSingleText()
         {
             // Behavior is different from standard String.Replace function:
             // Token is ignored if it is composed by concatenation of two different strings.
@@ -495,13 +496,13 @@ namespace Rhetos.Utilities.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void PossiblyUnintuitiveBehaviour_NotAComment()
+        public void PossiblyUnintuitiveBehavior_NotAComment()
         {
             // Behavior is different from standard C# or SQL comments:
             // Tokens are recognized even if they are inside a string (token is not always a comment).
             var fr = new FastReplacer("/*", "*/");
-            fr.Append("PRINT 'Token starts with /* sequence'");
+            TestUtility.ShouldFail<ArgumentException>(
+                () => fr.Append("PRINT 'Token starts with /* sequence'"));
         }
     }
 }

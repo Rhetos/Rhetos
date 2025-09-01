@@ -1,4 +1,4 @@
-﻿/*
+/*
     Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
@@ -35,7 +35,7 @@ namespace CommonConcepts.Test
     public class MinLengthTest
     {
         [TestMethod]
-        public void ShouldThowUserExceptionOnInsert()
+        public void ShouldThrowUserExceptionOnInsert()
         {
             using (var scope = TestScope.Create())
             {
@@ -76,7 +76,7 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        public void ShouldThowUserExceptionOnUpdate()
+        public void ShouldThrowUserExceptionOnUpdate()
         {
             using (var scope = TestScope.Create())
             {

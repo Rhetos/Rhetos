@@ -1,4 +1,4 @@
-﻿/*
+/*
     Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
@@ -19,6 +19,8 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Dom;
+using Rhetos.Dsl;
+using Rhetos.TestCommon;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -62,7 +64,7 @@ namespace Rhetos.Utilities.Test
         }
 
         [TestMethod]
-        public void SerializeToXml_NonenglishCharacters()
+        public void SerializeToXml_NonEnglishCharacters()
         {
             var orig = "čćšđžČĆŠĐŽ";
             var copy = SerializeDeserialize<string>(orig);
@@ -142,7 +144,7 @@ namespace Rhetos.Utilities.Test
             public int b { get; set; }
         }
 
-        public class ClassWithMermberWithInterface
+        public class ClassWithMemberWithInterface
         {
             public ITest m;
         }
@@ -157,7 +159,7 @@ namespace Rhetos.Utilities.Test
             public int c;
         }
 
-        public class ClassWithAbstractMermber
+        public class ClassWithAbstractMember
         {
             public AbstractClass x;
         }
@@ -206,22 +208,22 @@ namespace Rhetos.Utilities.Test
         }
 
         [TestMethod]
-        public void SerializeToXml_MermberWithInterface()
+        public void SerializeToXml_MemberWithInterface()
         {
-            var orig = new ClassWithMermberWithInterface { m = new ClassWithInterface { a = 1, b = 2 } };
-            var copy = SerializeDeserialize<ClassWithMermberWithInterface>(orig);
+            var orig = new ClassWithMemberWithInterface { m = new ClassWithInterface { a = 1, b = 2 } };
+            var copy = SerializeDeserialize<ClassWithMemberWithInterface>(orig);
             Assert.AreEqual(orig.m.a, copy.m.a);
             Assert.AreEqual(((ClassWithInterface)orig.m).b, ((ClassWithInterface)copy.m).b);
         }
 
         [TestMethod]
-        public void SerializeToXml_AbstractMermber()
+        public void SerializeToXml_AbstractMember()
         {
-            var orig = new ClassWithAbstractMermber
+            var orig = new ClassWithAbstractMember
             {
                 x = new ConcreteClass { m = new ClassWithInterface { a = 1, b = 2 }, c = 3 }
             };
-            var copy = SerializeDeserialize<ClassWithAbstractMermber>(orig);
+            var copy = SerializeDeserialize<ClassWithAbstractMember>(orig);
             
             Assert.AreEqual(orig.x.m.a, copy.x.m.a);
             Assert.AreEqual(((ClassWithInterface)orig.x.m).b, ((ClassWithInterface)copy.x.m).b);
@@ -229,7 +231,7 @@ namespace Rhetos.Utilities.Test
         }
 
         [TestMethod]
-        public void SerializeToXml_PolimorphismNative()
+        public void SerializeToXml_PolymorphismNative()
         {
             ITest t1 = new ClassWithInterface() { a = 1, b = 11 };
             ITest t2 = new ClassWithInterface() { a = 2, b = 22 };
@@ -314,21 +316,16 @@ namespace Rhetos.Utilities.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(FrameworkException))]
         public void GetValueTest_Exception()
         {
             const string message = "Test {0}";
             const string missingKey = "c";
-            try
-            {
-                var dictionary = new Dictionary<string, string> { { "a", "b" } };
-                dictionary.GetValue(missingKey, message);
-            }
-            catch (Exception ex)
-            {
-                Assert.IsTrue(ex.Message.Contains(string.Format(message, missingKey)));
-                throw;
-            }
+
+            var dictionary = new Dictionary<string, string> { { "a", "b" } };
+
+            TestUtility.ShouldFail<FrameworkException>(
+                () => dictionary.GetValue(missingKey, message),
+                string.Format(message, missingKey));
         }
     }
 }

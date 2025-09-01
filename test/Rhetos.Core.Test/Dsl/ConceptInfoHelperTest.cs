@@ -1,4 +1,4 @@
-﻿/*
+/*
     Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
@@ -184,19 +184,11 @@ namespace Rhetos.Dsl.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(FrameworkException))]
         public void GetFullDescription_DerivationMustNotHaveKey()
         {
-            try
-            {
-                new DerivedWithKeyInfo("a", "b", "c").GetFullDescription();
-            }
-            catch (Exception ex)
-            {
-                Assert.IsTrue(ex.Message.Contains("DerivedWithKeyInfo"));
-                Assert.IsTrue(ex.Message.Contains("Extra"));
-                throw;
-            }
+            TestUtility.ShouldFail<FrameworkException>(
+                () => new DerivedWithKeyInfo("a", "b", "c").GetFullDescription(),
+                "DerivedWithKeyInfo", "Extra");
         }
 
         [TestMethod]

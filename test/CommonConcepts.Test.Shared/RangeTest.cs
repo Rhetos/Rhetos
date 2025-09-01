@@ -1,4 +1,4 @@
-﻿/*
+/*
     Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
@@ -17,16 +17,18 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using CommonConcepts.Test.Helpers;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos;
+using Rhetos.Configuration.Autofac;
+using Rhetos.Dom.DefaultConcepts;
+using Rhetos.TestCommon;
+using Rhetos.Utilities;
 using System;
-using System.Text;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using TestRange;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhetos.Configuration.Autofac;
-using Rhetos.Utilities;
-using Rhetos.Dom.DefaultConcepts;
-using CommonConcepts.Test.Helpers;
 
 namespace CommonConcepts.Test
 {
@@ -34,14 +36,14 @@ namespace CommonConcepts.Test
     public class RangeTest
     {
         [TestMethod]
-        [ExpectedException(typeof(Rhetos.UserException))]
-        public void ShouldThowUserExceptionOnInsert()
+        public void ShouldThrowUserExceptionOnInsert()
         {
             using (var scope = TestScope.Create())
             {
                 var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new SimpleRange { FromValue = 1, ToValue = 0 };
-                repository.TestRange.SimpleRange.Insert(new[] { entity });
+                TestUtility.ShouldFail<UserException>(
+                    () => repository.TestRange.SimpleRange.Insert(new[] { entity }));
             }
         }
         
@@ -74,8 +76,7 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(Rhetos.UserException))]
-        public void ShouldThowUserExceptionOnUpdate()
+        public void ShouldThrowUserExceptionOnUpdate()
         {
             using (var scope = TestScope.Create())
             {
@@ -84,7 +85,8 @@ namespace CommonConcepts.Test
                 repository.TestRange.SimpleRange.Insert(new[] { entity });
 
                 entity.ToValue = 0;
-                repository.TestRange.SimpleRange.Update(new[] { entity });
+                TestUtility.ShouldFail<UserException>(
+                    () => repository.TestRange.SimpleRange.Update(new[] { entity }));
             }
         }
 
@@ -111,8 +113,7 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(Rhetos.UserException))]
-        public void ShouldThowUserExceptionOnUpdateDate()
+        public void ShouldThrowUserExceptionOnUpdateDate()
         {
             using (var scope = TestScope.Create())
             {
@@ -121,7 +122,8 @@ namespace CommonConcepts.Test
                 repository.TestRange.DateRangeWithoutDef.Insert(new[] { entity });
 
                 entity.ToDate = DateTime.Today.AddDays(-2);
-                repository.TestRange.DateRangeWithoutDef.Update(new[] { entity });
+                TestUtility.ShouldFail<UserException>(
+                    () => repository.TestRange.DateRangeWithoutDef.Update(new[] { entity }));
             }
         }
 
@@ -137,8 +139,7 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(Rhetos.UserException))]
-        public void ShouldThowUserExceptionOnUpdateDateTime()
+        public void ShouldThrowUserExceptionOnUpdateDateTime()
         {
             using (var scope = TestScope.Create())
             {
@@ -147,7 +148,8 @@ namespace CommonConcepts.Test
                 repository.TestRange.DateTimeRangeWithoutDef.Insert(new[] { entity });
 
                 entity.ToDate = DateTime.Today.AddDays(-2);
-                repository.TestRange.DateTimeRangeWithoutDef.Update(new[] { entity });
+                TestUtility.ShouldFail<UserException>(
+                    () => repository.TestRange.DateTimeRangeWithoutDef.Update(new[] { entity }));
             }
         }
 
@@ -165,14 +167,14 @@ namespace CommonConcepts.Test
 
 
         [TestMethod]
-        [ExpectedException(typeof(Rhetos.UserException))]
         public void ShouldThrowExceptionIfNotSetRequired()
         {
             using (var scope = TestScope.Create())
             {
                 var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new DateRangeWithRequired { ToDate = DateTime.Today };
-                repository.TestRange.DateRangeWithRequired.Insert(new[] { entity });
+                TestUtility.ShouldFail<UserException>(
+                    () => repository.TestRange.DateRangeWithRequired.Insert(new[] { entity }));
             }
         }
     }

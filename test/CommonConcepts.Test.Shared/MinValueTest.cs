@@ -1,4 +1,4 @@
-﻿/*
+/*
     Copyright (C) 2014 Omega software d.o.o.
 
     This file is part of Rhetos.
@@ -17,15 +17,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
-using TestMinValue;
+using CommonConcepts.Test.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhetos;
 using Rhetos.Configuration.Autofac;
 using Rhetos.Dom.DefaultConcepts;
-using CommonConcepts.Test.Helpers;
+using Rhetos.TestCommon;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using TestMinValue;
 
 namespace CommonConcepts.Test
 {
@@ -33,14 +35,14 @@ namespace CommonConcepts.Test
     public class MinValueTest
     {
         [TestMethod]
-        [ExpectedException(typeof(Rhetos.UserException))]
-        public void ShouldThowUserExceptionOnInsertInteger()
+        public void ShouldThrowUserExceptionOnInsertInteger()
         {
             using (var scope = TestScope.Create())
             {
                 var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new SimpleInteger { Value = 1 };
-                repository.TestMinValue.SimpleInteger.Insert(entity);
+                TestUtility.ShouldFail<UserException>(
+                    () => repository.TestMinValue.SimpleInteger.Insert(entity));
             }
         }
 
@@ -56,8 +58,7 @@ namespace CommonConcepts.Test
         }
         
         [TestMethod]
-        [ExpectedException(typeof(Rhetos.UserException))]
-        public void ShouldThowUserExceptionOnUpdate()
+        public void ShouldThrowUserExceptionOnUpdate()
         {
             using (var scope = TestScope.Create())
             {
@@ -66,19 +67,20 @@ namespace CommonConcepts.Test
                 repository.TestMinValue.SimpleInteger.Insert(entity);
 
                 entity.Value = 1;
-                repository.TestMinValue.SimpleInteger.Update(entity);
+                TestUtility.ShouldFail<UserException>(
+                    () => repository.TestMinValue.SimpleInteger.Update(entity));
             }
         }
 
         [TestMethod]
-        [ExpectedException(typeof(Rhetos.UserException))]
-        public void ShouldThowUserExceptionOnInsertDecimal()
+        public void ShouldThrowUserExceptionOnInsertDecimal()
         {
             using (var scope = TestScope.Create())
             {
                 var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new SimpleDecimal { Value = (decimal)2.33 };
-                repository.TestMinValue.SimpleDecimal.Insert(entity);
+                TestUtility.ShouldFail<UserException>(
+                    () => repository.TestMinValue.SimpleDecimal.Insert(entity));
             }
         }
 
@@ -95,14 +97,14 @@ namespace CommonConcepts.Test
 
 
         [TestMethod]
-        [ExpectedException(typeof(Rhetos.UserException))]
-        public void ShouldThowUserExceptionOnInsertMoney()
+        public void ShouldThrowUserExceptionOnInsertMoney()
         {
             using (var scope = TestScope.Create())
             {
                 var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new SimpleMoney { Value = (decimal)2.33 };
-                repository.TestMinValue.SimpleMoney.Insert(entity);
+                TestUtility.ShouldFail<UserException>(
+                    () => repository.TestMinValue.SimpleMoney.Insert(entity));
             }
         }
 
@@ -118,14 +120,14 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(Rhetos.UserException))]
-        public void ShouldThowUserExceptionOnInsertDate()
+        public void ShouldThrowUserExceptionOnInsertDate()
         {
             using (var scope = TestScope.Create())
             {
                 var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new SimpleDate { Value = new DateTime(2013, 7, 4) };
-                repository.TestMinValue.SimpleDate.Insert(entity);
+                TestUtility.ShouldFail<UserException>(
+                    () => repository.TestMinValue.SimpleDate.Insert(entity));
             }
         }
 
@@ -141,14 +143,14 @@ namespace CommonConcepts.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(Rhetos.UserException))]
-        public void ShouldThowUserExceptionOnInsertDateTime()
+        public void ShouldThrowUserExceptionOnInsertDateTime()
         {
             using (var scope = TestScope.Create())
             {
                 var repository = scope.Resolve<Common.DomRepository>();
                 var entity = new SimpleDateTime { Value = new DateTime(2013, 7, 5, 12, 33, 59) };
-                repository.TestMinValue.SimpleDateTime.Insert(entity);
+                TestUtility.ShouldFail<UserException>(
+                    () => repository.TestMinValue.SimpleDateTime.Insert(entity));
             }
         }
 
