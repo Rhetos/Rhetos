@@ -13,7 +13,7 @@
     <tags>Rhetos</tags>
     <dependencies>
       <group targetFramework="net8.0">
-        <dependency id="Microsoft.EntityFrameworkCore" version="8.0.15" />
+        <dependency id="Microsoft.EntityFrameworkCore" version="8.0.19" />
       </group>
     </dependencies>
   </metadata>

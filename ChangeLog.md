@@ -88,6 +88,11 @@ Changes in behavior:
   * If the existing app has a custom trigger that does not support multiple records, set the option `CommonConcepts:SqlCommandBatchSeparateQueries` to `true`.
 * Rhetos overrides the application name in database connection string, even if the application name has already been specified in the original connection string.
   * If the existing app requires a custom application name, set the option `Rhetos:Database:SetApplicationName` to `false`.
+* There are breaking changes in NLog update from v5 to v6, see [NLog 6.0 - List of major changes](https://nlog-project.org/2025/04/29/nlog-6-0-major-changes.html).
+  * If your application uses NLog options `enableArchiveFileCompression` or `ConcurrentWrites`, for backward compatibility
+    you can add NuGet package NLog.Targets.ConcurrentFile and modify the NLog config or Program.cs to enable this extension
+    (see the [ConcurrentFile Readme](https://www.nuget.org/packages/NLog.Targets.ConcurrentFile#readme-body-tab)).
+    Alternatively, use the new AtomicFile target for better concurrent performance and remove the archive compression.
 
 Migrating a Rhetos app from EF6 to EF Core (optional):
 
@@ -111,6 +116,7 @@ Migrating a Rhetos app from EF6 to EF Core (optional):
 * Subpackage option AddProjectNameToPackageId can be disabled.
 * NLog log files for Rhetos build are split by the application name. This helps with parallel build processes that use the same version of rhetos.exe from the .nuget/packages folder.
 * ReportData DataSources can now be implemented with any loader or filter method, instead of just FilterBy concept.
+* Updated dependencies: NLog 6.0.3, Autofac 8.4.0, System.Data.SqlClient 4.9.0 and other.
 
 ## 5.5.0 (2025-04-16)
 
