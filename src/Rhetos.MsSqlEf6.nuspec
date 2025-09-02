@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>Rhetos.MsSqlEf6</id>
-    <version>6.0.0-dev</version>
+    <version>6.1.0-dev</version>
     <authors>Omega software</authors>
     <owners>Omega software</owners>
     <license type="expression">AGPL-3.0-only</license>
@@ -15,8 +15,8 @@
       <group targetFramework="net8.0">
         <dependency id="EntityFramework" version="6.5.1" />
         <dependency id="System.Data.SqlClient" version="4.9.0" />
-        <dependency id="Rhetos" version="[6.0.0-dev,6.1.0)" />
-        <dependency id="Rhetos.CommonConcepts" version="[6.0.0-dev,6.1.0)" />
+        <dependency id="Rhetos" version="[6.1.0-dev,6.2.0)" />
+        <dependency id="Rhetos.CommonConcepts" version="[6.1.0-dev,6.2.0)" />
       </group>
     </dependencies>
   </metadata>

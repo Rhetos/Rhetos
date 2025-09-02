@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>Rhetos.PostgreSql</id>
-    <version>6.0.0-dev</version>
+    <version>6.1.0-dev</version>
     <authors>Omega software</authors>
     <owners>Omega software</owners>
     <license type="expression">AGPL-3.0-only</license>
@@ -14,9 +14,9 @@
     <dependencies>
       <group targetFramework="net8.0">
         <dependency id="Npgsql.EntityFrameworkCore.PostgreSQL" version="8.0.11" />
-        <dependency id="Rhetos" version="[6.0.0-dev,6.1.0)" />
-        <dependency id="Rhetos.CommonConcepts" version="[6.0.0-dev,6.1.0)" />
-        <dependency id="Rhetos.EfCore" version="[6.0.0-dev,6.1.0)" />
+        <dependency id="Rhetos" version="[6.1.0-dev,6.2.0)" />
+        <dependency id="Rhetos.CommonConcepts" version="[6.1.0-dev,6.2.0)" />
+        <dependency id="Rhetos.EfCore" version="[6.1.0-dev,6.2.0)" />
       </group>
     </dependencies>
   </metadata>

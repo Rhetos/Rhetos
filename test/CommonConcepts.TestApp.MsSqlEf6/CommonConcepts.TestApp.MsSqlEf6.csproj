@@ -9,11 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Rhetos.Host" Version="6.0.0-dev*" />
-    <PackageReference Include="Rhetos.MSBuild" Version="6.0.0-dev*" />
-    <PackageReference Include="Rhetos" Version="6.0.0-dev*" />
-    <PackageReference Include="Rhetos.CommonConcepts" Version="6.0.0-dev*" />
-    <PackageReference Include="Rhetos.MsSqlEf6" Version="6.0.0-dev*" />
+    <PackageReference Include="Rhetos.Host" Version="6.1.0-dev*" />
+    <PackageReference Include="Rhetos.MSBuild" Version="6.1.0-dev*" />
+    <PackageReference Include="Rhetos" Version="6.1.0-dev*" />
+    <PackageReference Include="Rhetos.CommonConcepts" Version="6.1.0-dev*" />
+    <PackageReference Include="Rhetos.MsSqlEf6" Version="6.1.0-dev*" />
   </ItemGroup>
 
   <ItemGroup>
