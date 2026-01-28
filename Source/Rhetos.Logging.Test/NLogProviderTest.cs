@@ -20,6 +20,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhetos.Utilities;
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Rhetos.Logging.Test
@@ -28,15 +29,17 @@ namespace Rhetos.Logging.Test
     public class NLogProviderTest
     {
         [TestMethod]
-        [Timeout(1000)]
         public void GetLoggerTest_Performance()
         {
             NLogProvider logProvider = new NLogProvider(new LoggingOptions());
+            var sw = Stopwatch.StartNew();
             for (int i = 0; i < 100*1000; i++)
             {
                 var logger = logProvider.GetLogger("abc");
                 Assert.IsNotNull(logger);
             }
+            var elapsedMs = sw.ElapsedMilliseconds;
+            Assert.IsTrue(elapsedMs < 1000, $"elapsedMs {elapsedMs}");
         }
 
         [TestMethod]
