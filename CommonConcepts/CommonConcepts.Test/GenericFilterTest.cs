@@ -157,9 +157,9 @@ namespace CommonConcepts.Test
 
         //==================================================================
 
-        private static void FilterName(Common.DomRepository repository, string operation, string value, string expectedCodes)
+        private static void FilterName(Common.DomRepository repository, string operation, object value, string expectedCodes)
         {
-            Console.WriteLine("TEST NAME: " + operation + " " + value);
+            Console.WriteLine($"TEST NAME: {operation} {value}");
             var source = repository.TestGenericFilter.Simple.Query();
             var result = GenericFilterHelperFilter(source, new[] { new FilterCriteria { Property = "Name", Operation = operation, Value = value } });
             Assert.AreEqual(expectedCodes, TestUtility.DumpSorted(result, item => item.Code.ToString()));
@@ -178,38 +178,65 @@ namespace CommonConcepts.Test
                         "INSERT INTO TestGenericFilter.Simple (Code, Name) SELECT 1, 'abc1';",
                         "INSERT INTO TestGenericFilter.Simple (Code, Name) SELECT 2, 'abc2';",
                         "INSERT INTO TestGenericFilter.Simple (Code, Name) SELECT 3, 'def3';",
+                        "INSERT INTO TestGenericFilter.Simple (Code, Name) SELECT 4, 'ef4';",
                     });
 
                 var repository = scope.Resolve<Common.DomRepository>();
                 FilterName(repository, "equals", "abc2", "2");
-                FilterName(repository, "notequals", "abc2", "1, 3");
+                FilterName(repository, "notequals", "abc2", "1, 3, 4");
+
                 FilterName(repository, "less", "abc2", "1");
                 FilterName(repository, "lessequal", "abc2", "1, 2");
                 FilterName(repository, "less", "a", "");
                 FilterName(repository, "lessequal", "a", "");
                 FilterName(repository, "less", "d", "1, 2");
                 FilterName(repository, "lessequal", "d", "1, 2");
-                FilterName(repository, "greater", "abc2", "3");
-                FilterName(repository, "greaterequal", "abc2", "2, 3");
+                FilterName(repository, "greater", "abc2", "3, 4");
+                FilterName(repository, "greaterequal", "abc2", "2, 3, 4");
+
                 FilterName(repository, "startswith", "a", "1, 2");
                 FilterName(repository, "startswith", "abc", "1, 2");
                 FilterName(repository, "startswith", "abc2", "2");
-                FilterName(repository, "startswith", "", "1, 2, 3");
+                FilterName(repository, "startswith", "", "1, 2, 3, 4");
+
                 FilterName(repository, "endswith", "a", "");
                 FilterName(repository, "endswith", "1", "1");
                 FilterName(repository, "endswith", "def3", "3");
-                FilterName(repository, "endswith", "", "1, 2, 3");
+                FilterName(repository, "endswith", "", "1, 2, 3, 4");
+
                 FilterName(repository, "contains", "b", "1, 2");
                 FilterName(repository, "contains", "c2", "2");
                 FilterName(repository, "contains", "abc2", "2");
                 FilterName(repository, "contains", "d", "3");
                 FilterName(repository, "contains", "x", "");
-                FilterName(repository, "contains", "", "1, 2, 3");
-                FilterName(repository, "notcontains", "b", "3");
-                FilterName(repository, "notcontains", "c2", "1, 3");
-                FilterName(repository, "notcontains", "abc2", "1, 3");
-                FilterName(repository, "notcontains", "d", "1, 2");
+                FilterName(repository, "contains", "", "1, 2, 3, 4");
+
+                FilterName(repository, "notcontains", "b", "3, 4");
+                FilterName(repository, "notcontains", "c2", "1, 3, 4");
+                FilterName(repository, "notcontains", "abc2", "1, 3, 4");
+                FilterName(repository, "notcontains", "d", "1, 2, 4");
                 FilterName(repository, "notcontains", "", "");
+
+                FilterName(repository, "containsany", new[] { "ef" }, "3, 4");
+                FilterName(repository, "containsany", new[] { "ef", "3" }, "3, 4");
+                FilterName(repository, "containsany", new[] { "ef", "2" }, "2, 3, 4");
+                FilterName(repository, "containsany", Array.Empty<string>(), "");
+                FilterName(repository, "containsany", new[] { "" }, "1, 2, 3, 4");
+
+                FilterName(repository, "startswithany", new[] { "abc" }, "1, 2");
+                FilterName(repository, "startswithany", new[] { "a" }, "1, 2");
+                FilterName(repository, "startswithany", new[] { "a", "ef" }, "1, 2, 4");
+                FilterName(repository, "startswithany", new[] { "ef", "2" }, "4");
+                FilterName(repository, "startswithany", Array.Empty<string>(), "");
+                FilterName(repository, "startswithany", new[] { "" }, "1, 2, 3, 4");
+
+                FilterName(repository, "endswithany", new[] { "1" }, "1");
+                FilterName(repository, "endswithany", new[] { "1", "3" }, "1, 3");
+                FilterName(repository, "endswithany", new[] { "1", "2", "3", "4" }, "1, 2, 3, 4");
+                FilterName(repository, "endswithany", new[] { "ef" }, "");
+                FilterName(repository, "endswithany", new[] { "ef4" }, "4");
+                FilterName(repository, "endswithany", Array.Empty<string>(), "");
+                FilterName(repository, "endswithany", new[] { "" }, "1, 2, 3, 4");
             }
         }
 

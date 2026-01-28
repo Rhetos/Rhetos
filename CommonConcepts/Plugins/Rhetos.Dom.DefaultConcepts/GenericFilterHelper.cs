@@ -53,6 +53,33 @@ namespace Rhetos.Dom.DefaultConcepts
             _logger = logProvider.GetLogger(GetType().Name);
         }
 
+        /// <summary>Generic property filter operation.</summary>
+        enum Op
+        {
+            Equals /*legacy Equal*/, NotEquals /*legacy NotEqual*/,
+            Greater, GreaterEqual, Less, LessEqual,
+            StartsWith, EndsWith, Contains, NotContains,
+            DateIn, DateNotIn,
+            In, NotIn, ContainsAny, StartsWithAny, EndsWithAny
+        };
+
+        static Op GetFilterOperation(PropertyFilter filter)
+        {
+            if (filter.Operation is null or "")
+                throw new ClientException($"Generic filter operation is not specified on property '{filter.Property}'.");
+
+            // Operations 'equal' and 'notequal' are supported for backward compatibility.
+            if (string.Equals(filter.Operation, "Equal", StringComparison.OrdinalIgnoreCase))
+                filter.Operation = Op.Equals.ToString();
+            if (string.Equals(filter.Operation, "NotEqual", StringComparison.OrdinalIgnoreCase))
+                filter.Operation = Op.NotEquals.ToString();
+
+            var filterOperations = Enum.GetValues<Op>().Where(fo => fo.ToString().Equals(filter.Operation, StringComparison.OrdinalIgnoreCase)).ToList();
+            if (filterOperations.Count == 0)
+                throw new ClientException($"Unsupported generic filter operation '{filter.Operation}'.");
+            return filterOperations.Single();
+        }
+
         //================================================================
         #region Property filters
 
@@ -88,10 +115,10 @@ namespace Rhetos.Dom.DefaultConcepts
 
                 bool propertyIsNullableValueType = memberAccess.Type.IsGenericType && memberAccess.Type.GetGenericTypeDefinition() == typeof(Nullable<>);
                 Type propertyBasicType = propertyIsNullableValueType ? memberAccess.Type.GetGenericArguments().Single() : memberAccess.Type;
+                Op filterOperation = GetFilterOperation(filter);
 
                 ConstantExpression constant;
-                // Operations 'equal' and 'notequal' are supported for backward compatibility.
-                if (new[] { "equals", "equal", "notequals", "notequal", "greater", "greaterequal", "less", "lessequal" }.Contains(filter.Operation, StringComparer.OrdinalIgnoreCase))
+                if (filterOperation is Op.Equals or Op.NotEquals or Op.Greater or Op.GreaterEqual or Op.Less or Op.LessEqual)
                 {
                     // Constant value should be of same type as the member it is compared to.
                     object convertedValue;
@@ -119,16 +146,16 @@ namespace Rhetos.Dom.DefaultConcepts
 
                     constant = Expression.Constant(convertedValue, memberAccess.Type);
                 }
-                else if (new[] { "startswith", "endswith", "contains", "notcontains" }.Contains(filter.Operation, StringComparer.OrdinalIgnoreCase))
+                else if (filterOperation is Op.StartsWith or Op.EndsWith or Op.Contains or Op.NotContains)
                 {
                     // Constant value should be string.
                     constant = Expression.Constant(filter.Value.ToString(), typeof(string));
                 }
-                else if (new[] { "datein", "datenotin" }.Contains(filter.Operation, StringComparer.OrdinalIgnoreCase))
+                else if (filterOperation is Op.DateIn or Op.DateNotIn)
                 {
                     constant = null;
                 }
-                else if (new[] { "in", "notin" }.Contains(filter.Operation, StringComparer.OrdinalIgnoreCase))
+                else if (filterOperation is Op.In or Op.NotIn or Op.ContainsAny or Op.StartsWithAny or Op.EndsWithAny)
                 {
                     if (filter.Value == null)
                         throw new ClientException($"Invalid generic filter parameter for operation '{filter.Operation}' on {propertyBasicType.Name} property '{filter.Property}'."
@@ -176,10 +203,9 @@ namespace Rhetos.Dom.DefaultConcepts
                     throw new ClientException($"Unsupported generic filter operation '{filter.Operation}' on a property.");
 
                 Expression expression;
-                switch (filter.Operation.ToLower())
+                switch (filterOperation)
                 {
-                    case "equals":
-                    case "equal":
+                    case Op.Equals:
                         if (propertyBasicType == typeof(Guid) && constant.Value is Guid constantIdEquals)
                         {
                             // Using a different expression instead of the constant, to force Entity Framework to
@@ -201,8 +227,7 @@ namespace Rhetos.Dom.DefaultConcepts
                         else
                             expression = Expression.Equal(memberAccess, constant);
                         break;
-                    case "notequals":
-                    case "notequal":
+                    case Op.NotEquals:
                         if (propertyBasicType == typeof(Guid) && constant.Value is Guid constantIdNotEquals)
                         {
                             // Using a different expression instead of the constant, to force Entity Framework to
@@ -216,72 +241,81 @@ namespace Rhetos.Dom.DefaultConcepts
                         else
                             expression = Expression.NotEqual(memberAccess, constant);
                         break;
-                    case "greater":
+                    case Op.Greater:
                         if (propertyBasicType == typeof(string))
                             expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("IsGreaterThen"), memberAccess, constant);
                         else if (propertyBasicType == typeof(Guid))
                             expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("GuidIsGreaterThan"), memberAccess, constant);
                         else expression = Expression.GreaterThan(memberAccess, constant);
                         break;
-                    case "greaterequal":
+                    case Op.GreaterEqual:
                         if (propertyBasicType == typeof(string))
                             expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("IsGreaterThenOrEqual"), memberAccess, constant);
                         else if (propertyBasicType == typeof(Guid))
                             expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("GuidIsGreaterThanOrEqual"), memberAccess, constant);
                         else expression = Expression.GreaterThanOrEqual(memberAccess, constant);
                         break;
-                    case "less":
+                    case Op.Less:
                         if (propertyBasicType == typeof(string))
                             expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("IsLessThen"), memberAccess, constant);
                         else if (propertyBasicType == typeof(Guid))
                             expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("GuidIsLessThan"), memberAccess, constant);
                         else expression = Expression.LessThan(memberAccess, constant);
                         break;
-                    case "lessequal":
+                    case Op.LessEqual:
                         if (propertyBasicType == typeof(string))
                             expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("IsLessThenOrEqual"), memberAccess, constant);
                         else if (propertyBasicType == typeof(Guid))
                             expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("GuidIsLessThanOrEqual"), memberAccess, constant);
                         else expression = Expression.LessThanOrEqual(memberAccess, constant);
                         break;
-                    case "startswith":
-                    case "endswith":
+                    case Op.StartsWith:
+                    case Op.EndsWith:
+                    case Op.Contains:
+                    case Op.NotContains:
                         {
-                            Expression stringMember;
-                            if (propertyBasicType == typeof(string))
-                                stringMember = memberAccess;
-                            else
+                            string dbMethodName = filterOperation switch
                             {
-                                var castMethod = typeof(DatabaseExtensionFunctions).GetMethod("CastToString", new[] { memberAccess.Type });
-                                if (castMethod == null)
-                                    throw new FrameworkException("Generic filter operation '" + filter.Operation + "' is not supported on property type '" + propertyBasicType.Name + "'. There is no overload of 'DatabaseExtensionFunctions.CastToString' function for the type.");
-                                stringMember = Expression.Call(castMethod, memberAccess);
-                            }
-                            string dbMethodName = filter.Operation.Equals("startswith", StringComparison.OrdinalIgnoreCase) ? "StartsWithCaseInsensitive" : "EndsWithCaseInsensitive";
-                            expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod(dbMethodName), stringMember, constant);
-                            break;
-                        }
-                    case "contains":
-                    case "notcontains":
-                        {
-                            Expression stringMember;
-                            if (propertyBasicType == typeof(string))
-                                stringMember = memberAccess;
-                            else
-                            {
-                                var castMethod = typeof(DatabaseExtensionFunctions).GetMethod("CastToString", new[] { memberAccess.Type });
-                                if (castMethod == null)
-                                    throw new FrameworkException("Generic filter operation '" + filter.Operation + "' is not supported on property type '" + propertyBasicType.Name + "'. There is no overload of 'DatabaseExtensionFunctions.CastToString' function for the type.");
-                                stringMember = Expression.Call(castMethod, memberAccess);
-                            }
-                            expression = Expression.Call(typeof(DatabaseExtensionFunctions).GetMethod("ContainsCaseInsensitive"), stringMember, constant);
+                                Op.StartsWith => "StartsWithCaseInsensitive",
+                                Op.EndsWith => "EndsWithCaseInsensitive",
+                                _ => "ContainsCaseInsensitive"
+                            };
+                            MethodInfo dbMethod = typeof(DatabaseExtensionFunctions).GetMethod(dbMethodName);
+                            Expression stringMemberAccess = GetStringMemberAccess(memberAccess, propertyBasicType, filter.Operation);
+                            expression = Expression.Call(dbMethod, stringMemberAccess, constant);
 
-                            if (filter.Operation.Equals("notcontains", StringComparison.OrdinalIgnoreCase))
+                            if (filterOperation == Op.NotContains)
                                 expression = Expression.Not(expression);
                             break;
                         }
-                    case "datein":
-                    case "datenotin":
+                    case Op.StartsWithAny:
+                    case Op.EndsWithAny:
+                    case Op.ContainsAny:
+                        {
+                            Type collectionElement = GetElementType(constant.Type);
+                            if (collectionElement != typeof(string))
+                                throw new FrameworkException($"Generic filter operation '{filter.Operation}' is not supported for collection with element type '{collectionElement}'. Expected element type is 'string'.");
+                            var filterValues = constant.Value as IEnumerable<string>
+                                ?? throw new FrameworkException($"Generic filter operation '{filter.Operation}' is not supported for collection with type '{constant.Value?.GetType()}'. Expected a collection of 'string' elements.");
+
+                            string dbMethodName = filterOperation switch
+                            {
+                                Op.StartsWithAny => "StartsWithCaseInsensitive",
+                                Op.EndsWithAny => "EndsWithCaseInsensitive",
+                                _ => "ContainsCaseInsensitive"
+                            };
+                            MethodInfo dbMethod = typeof(DatabaseExtensionFunctions).GetMethod(dbMethodName);
+                            Expression stringMemberAccess = GetStringMemberAccess(memberAccess, propertyBasicType, filter.Operation);
+                            var filterExpressions = filterValues
+                                .Select(filterValue => Expression.Call(dbMethod, stringMemberAccess, Expression.Constant(filterValue, typeof(string))))
+                                .ToList();
+                            if (filterExpressions.Count == 0)
+                                return Expression.Lambda(Expression.Constant(false), parameter); // If no patterns are provided, no items should be returned.
+                            expression = CombineToOrExpressions(filterExpressions);
+                            break;
+                        }
+                    case Op.DateIn:
+                    case Op.DateNotIn:
                         {
                             if (propertyBasicType != typeof(DateTime))
                                 throw new FrameworkException("Generic filter operation '" + filter.Operation
@@ -318,12 +352,12 @@ namespace Rhetos.Dom.DefaultConcepts
                                 Expression.GreaterThanOrEqual(memberAccess, Expression.Constant(date1, typeof(DateTime?))),
                                 Expression.LessThan(memberAccess, Expression.Constant(date2, typeof(DateTime?))));
 
-                            if (filter.Operation.Equals("datenotin", StringComparison.OrdinalIgnoreCase))
+                            if (filterOperation == Op.DateNotIn)
                                 expression = Expression.Not(expression);
                             break;
                         }
-                    case "in":
-                    case "notin":
+                    case Op.In:
+                    case Op.NotIn:
                         {
                             Type collectionElement = GetElementType(constant.Type);
                             Expression convertedMemberAccess = memberAccess.Type != collectionElement
@@ -338,7 +372,7 @@ namespace Rhetos.Dom.DefaultConcepts
 
                             expression = EFExpression.OptimizeContains(Expression.Call(containsMethod, constant, convertedMemberAccess));
 
-                            if (filter.Operation.Equals("notin", StringComparison.OrdinalIgnoreCase))
+                            if (filterOperation == Op.NotIn)
                                 expression = Expression.Not(expression);
                             break;
                         }
@@ -350,6 +384,34 @@ namespace Rhetos.Dom.DefaultConcepts
             }
 
             return Expression.Lambda(resultCondition, parameter);
+        }
+
+        private static Expression CombineToOrExpressions(IEnumerable<MethodCallExpression> filterExpressions)
+        {
+            Expression expression = null;
+            foreach (var fe in filterExpressions)
+                expression = expression == null ? fe : Expression.OrElse(expression, fe);
+            if (expression == null)
+                throw new FrameworkException("Unexpected filter expressions without elements.");
+            return expression;
+        }
+
+        /// <summary>Returns <paramref name="memberAccess"/> if it is a string property, otherwise casts it to string.
+        /// This enables support for generic filter operations such as 'StartsWith' on other property types besides string, for example on integer property.</summary>
+        private static Expression GetStringMemberAccess(Expression memberAccess, Type propertyBasicType, string debugFilterOperation)
+        {
+            Expression stringMember;
+            if (propertyBasicType == typeof(string))
+                stringMember = memberAccess;
+            else
+            {
+                var castMethod = typeof(DatabaseExtensionFunctions).GetMethod("CastToString", new[] { memberAccess.Type });
+                if (castMethod == null)
+                    throw new FrameworkException("Generic filter operation '" + debugFilterOperation + "' is not supported on property type '" + propertyBasicType.Name + "'. There is no overload of 'DatabaseExtensionFunctions.CastToString' function for the type.");
+                stringMember = Expression.Call(castMethod, memberAccess);
+            }
+
+            return stringMember;
         }
 
         private static Type GetElementType(IEnumerable enumerable)
