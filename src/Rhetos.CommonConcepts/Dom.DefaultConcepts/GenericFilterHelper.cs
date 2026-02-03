@@ -170,6 +170,9 @@ namespace Rhetos.Dom.DefaultConcepts
 
                     case Op.In:
                     case Op.NotIn:
+                    case Op.ContainsAny:
+                    case Op.StartsWithAny:
+                    case Op.EndsWithAny:
                         {
                             if (filter.Value == null)
                                 throw new ClientException($"Invalid generic filter parameter for operation '{filter.Operation}' on {propertyBasicType.Name} property '{filter.Property}'."

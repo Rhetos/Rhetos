@@ -120,6 +120,8 @@ Migrating a Rhetos app from EF6 to EF Core (optional):
 
 ## 5.6.0 (2026-02-03)
 
+The changes from this release are not included in release 6.0.0. They are available in 6.1.0.
+
 * New generic property filters: `ContainsAny`, `StartsWithAny`, `EndsWithAny`.
   Each matches records where the property value contains, starts with, or ends with any string from a provided list.
   Also available in [REST API](https://github.com/rhetos/restgenerator#filters).
