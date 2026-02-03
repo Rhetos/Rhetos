@@ -118,6 +118,12 @@ Migrating a Rhetos app from EF6 to EF Core (optional):
 * ReportData DataSources can now be implemented with any loader or filter method, instead of just FilterBy concept.
 * Updated dependencies: NLog 6.0.3, Autofac 8.4.0, System.Data.SqlClient 4.9.0 and other.
 
+## 5.6.0 (2026-02-03)
+
+* New generic property filters: `ContainsAny`, `StartsWithAny`, `EndsWithAny`.
+  Each matches records where the property value contains, starts with, or ends with any string from a provided list.
+  Also available in [REST API](https://github.com/rhetos/restgenerator#filters).
+
 ## 5.5.0 (2025-04-16)
 
 ### New features

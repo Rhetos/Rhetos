@@ -28,8 +28,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
 
 namespace Rhetos.CommonConcepts.Test
 {
@@ -49,10 +47,10 @@ namespace Rhetos.CommonConcepts.Test
         {
             foreach (var ormUtility in new IOrmUtility[] { new Ef6OrmUtility(), new EfCoreOrmUtility() })
             {
-                var items = "a1, A2, a3, A4, b1, B2"
-                .Split(new[] { ", " }, StringSplitOptions.None)
-                .Select(name => new C { Name = name }).ToList();
-                items.Add(new C { Name = null });
+                var items = "<null>, a1, A2, a3, A4, b1, B2"
+                    .Split(',', StringSplitOptions.TrimEntries)
+                    .Select(name => new C { Name = name != "<null>" ? name : null })
+                    .ToList();
 
                 Assert.AreEqual("b1, B2", TestFilterByName(items, "startswith", "b", ormUtility));
                 Assert.AreEqual("b1, B2", TestFilterByName(items, "startswith", "B", ormUtility));
@@ -74,18 +72,81 @@ namespace Rhetos.CommonConcepts.Test
             }
         }
 
+        [TestMethod]
+        public void FilterAny()
+        {
+            foreach (var ormUtility in new IOrmUtility[] { new Ef6OrmUtility(), new EfCoreOrmUtility() })
+            {
+                var items = "<null>, a1, A2, a3, A4, b1, B2"
+                    .Split(',', StringSplitOptions.TrimEntries)
+                    .Select(name => new C { Name = name != "<null>" ? name : null })
+                    .ToList();
+
+                Assert.AreEqual("B2", TestFilterByName(items, "ContainsAny", new[] { "b2" }, ormUtility));
+                Assert.AreEqual("b1, B2", TestFilterByName(items, "ContainsAny", new[] { "b" }, ormUtility));
+                Assert.AreEqual("b1, B2", TestFilterByName(items, "ContainsAny", new[] { "B" }, ormUtility));
+                Assert.AreEqual("a1, A2, a3, A4, b1, B2", TestFilterByName(items, "ContainsAny", new[] { "a", "b" }, ormUtility));
+                Assert.AreEqual("A2, B2", TestFilterByName(items, "ContainsAny", new[] { "2" }, ormUtility));
+                Assert.AreEqual("a1, A2, a3, A4, b1, B2", TestFilterByName(items, "ContainsAny", new[] { "" }, ormUtility));
+                Assert.AreEqual("a1, A2, a3, A4", TestFilterByName(items, "ContainsAny", new string[] { "a", null }, ormUtility));
+                Assert.AreEqual("", TestFilterByName(items, "ContainsAny", Array.Empty<string>(), ormUtility));
+                Assert.AreEqual("Rhetos.ClientException: Invalid generic filter parameter for operation 'ContainsAny' on String property 'Name'. The provided value type is 'System.String', instead of an Array of String.",
+                    TestFilterByName(items, "ContainsAny", "a", ormUtility));
+                Assert.AreEqual("Rhetos.ClientException: Invalid generic filter parameter for operation 'ContainsAny' on String property 'Name'. The provided value type is 'System.Int32', instead of an Array of String.",
+                    TestFilterByName(items, "ContainsAny", 12, ormUtility));
+                Assert.AreEqual("Rhetos.ClientException: Invalid generic filter parameter for operation 'ContainsAny' on String property 'Name'. The provided value is null, instead of an Array.",
+                    TestFilterByName(items, "ContainsAny", null, ormUtility));
+
+                Assert.AreEqual("B2", TestFilterByName(items, "StartsWithAny", new[] { "b2" }, ormUtility));
+                Assert.AreEqual("b1, B2", TestFilterByName(items, "StartsWithAny", new[] { "b" }, ormUtility));
+                Assert.AreEqual("b1, B2", TestFilterByName(items, "StartsWithAny", new[] { "B" }, ormUtility));
+                Assert.AreEqual("a1, A2, a3, A4, b1, B2", TestFilterByName(items, "StartsWithAny", new[] { "a", "b" }, ormUtility));
+                Assert.AreEqual("", TestFilterByName(items, "StartsWithAny", new[] { "2" }, ormUtility));
+                Assert.AreEqual("a1, A2, a3, A4, b1, B2", TestFilterByName(items, "StartsWithAny", new[] { "" }, ormUtility));
+                Assert.AreEqual("a1, A2, a3, A4", TestFilterByName(items, "StartsWithAny", new string[] { "a", null }, ormUtility));
+                Assert.AreEqual("", TestFilterByName(items, "StartsWithAny", Array.Empty<string>(), ormUtility));
+                Assert.AreEqual("Rhetos.ClientException: Invalid generic filter parameter for operation 'StartsWithAny' on String property 'Name'. The provided value type is 'System.String', instead of an Array of String.",
+                    TestFilterByName(items, "StartsWithAny", "a", ormUtility));
+                Assert.AreEqual("Rhetos.ClientException: Invalid generic filter parameter for operation 'StartsWithAny' on String property 'Name'. The provided value type is 'System.Int32', instead of an Array of String.",
+                    TestFilterByName(items, "StartsWithAny", 12, ormUtility));
+                Assert.AreEqual("Rhetos.ClientException: Invalid generic filter parameter for operation 'StartsWithAny' on String property 'Name'. The provided value is null, instead of an Array.",
+                    TestFilterByName(items, "StartsWithAny", null, ormUtility));
+
+                Assert.AreEqual("B2", TestFilterByName(items, "EndsWithAny", new[] { "b2" }, ormUtility));
+                Assert.AreEqual("A2, B2", TestFilterByName(items, "EndsWithAny", new[] { "2" }, ormUtility));
+                Assert.AreEqual("a1, A2, a3, A4, b1, B2", TestFilterByName(items, "EndsWithAny", new[] { "1", "2", "3", "4" }, ormUtility));
+                Assert.AreEqual("", TestFilterByName(items, "EndsWithAny", new[] { "B" }, ormUtility));
+                Assert.AreEqual("a1, A2, a3, A4, b1, B2", TestFilterByName(items, "EndsWithAny", new[] { "" }, ormUtility));
+                Assert.AreEqual("A2, B2", TestFilterByName(items, "EndsWithAny", new string[] { "2", null }, ormUtility));
+                Assert.AreEqual("", TestFilterByName(items, "EndsWithAny", Array.Empty<string>(), ormUtility));
+                Assert.AreEqual("Rhetos.ClientException: Invalid generic filter parameter for operation 'EndsWithAny' on String property 'Name'. The provided value type is 'System.String', instead of an Array of String.",
+                    TestFilterByName(items, "EndsWithAny", "a", ormUtility));
+                Assert.AreEqual("Rhetos.ClientException: Invalid generic filter parameter for operation 'EndsWithAny' on String property 'Name'. The provided value type is 'System.Int32', instead of an Array of String.",
+                    TestFilterByName(items, "EndsWithAny", 12, ormUtility));
+                Assert.AreEqual("Rhetos.ClientException: Invalid generic filter parameter for operation 'EndsWithAny' on String property 'Name'. The provided value is null, instead of an Array.",
+                    TestFilterByName(items, "EndsWithAny", null, ormUtility));
+            }
+        }
+
         private static string TestFilterByName(IEnumerable<C> items, string operation, object value, IOrmUtility ormUtility)
         {
-            var genericFilter = new FilterCriteria("Name", operation, value);
-            Console.WriteLine("genericFilter: " + genericFilter.Property + " " + genericFilter.Operation + " " + genericFilter.Value);
+            try
+            {
+                var genericFilter = new FilterCriteria("Name", operation, value);
+                Console.WriteLine("genericFilter: " + genericFilter.Property + " " + genericFilter.Operation + " " + genericFilter.Value);
 
-            var genericFilterHelper = new GenericFilterHelper(new DataStructureReadParametersStub(), new ConsoleLogProvider(), ormUtility);
-            var filterObject = genericFilterHelper.ToFilterObjects(typeof(C).FullName, new FilterCriteria[] { genericFilter }).Single();
-            Console.WriteLine("filterObject.FilterType: " + filterObject.FilterType.ToString());
-            var filterExpression = genericFilterHelper.ToExpression<C>((IEnumerable<PropertyFilter>)filterObject.Parameter);
+                var genericFilterHelper = new GenericFilterHelper(new DataStructureReadParametersStub(), new ConsoleLogProvider(), ormUtility);
+                var filterObject = genericFilterHelper.ToFilterObjects(typeof(C).FullName, new FilterCriteria[] { genericFilter }).Single();
+                Console.WriteLine("filterObject.FilterType: " + filterObject.FilterType.ToString());
+                var filterExpression = genericFilterHelper.ToExpression<C>((IEnumerable<PropertyFilter>)filterObject.Parameter);
 
-            var filteredItems = items.AsQueryable().Where(filterExpression).ToList();
-            return TestUtility.DumpSorted(filteredItems, item => item.Name ?? "<null>");
+                var filteredItems = items.AsQueryable().Where(filterExpression).ToList();
+                return TestUtility.DumpSorted(filteredItems, item => item.Name ?? "<null>");
+            }
+            catch (Exception e)
+            {
+                return $"{e.GetType()}: {e.Message}";
+            }
         }
 
         [TestMethod]
