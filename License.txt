@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////////////////////////////////////
 
 Rhetos
-http://www.rhetos.org/
+https://github.com/Rhetos/Rhetos
 
 Copyright (c) 2013 Omega software d.o.o.
 

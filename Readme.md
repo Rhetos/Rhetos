@@ -28,7 +28,7 @@ See [Rhetos wiki](https://github.com/Rhetos/Rhetos/wiki) for more information on
 * Principles behind the [Rhetos platform](https://github.com/Rhetos/Rhetos/wiki/What-is-Rhetos)
 * [Prerequisites, Installation and Development Environment](https://github.com/Rhetos/Rhetos/wiki/Development-Environment-Setup)
 
-Visit the project web site at [rhetos.org](http://www.rhetos.org/).
+The project is hosted at <https://github.com/Rhetos/Rhetos>.
 
 ## License
 
