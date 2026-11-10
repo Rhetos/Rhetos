@@ -48,7 +48,7 @@ namespace Rhetos.Dom.DefaultConcepts
             ",
                 CsUtility.QuotedString(info.EntityComputedFrom.Target.GetKeyProperties()),
                 CsUtility.QuotedString(info.EntityComputedFrom.Source.GetKeyProperties()),
-                CsUtility.QuotedString(RemoveCsTags(GetRecomputeContext(info.EntityComputedFrom.Source))));
+                CsUtility.QuotedString(RemoveCsTags(GetRecomputeContext(info.EntityComputedFrom.Source, info.EntityComputedFrom.Target))));
 
             codeBuilder.InsertCode(metadata, KeepSynchronizedRecomputeOnDeployInfrastructureCodeGenerator.AddKeepSynchronizedMetadataTag);
         }
@@ -70,15 +70,31 @@ namespace Rhetos.Dom.DefaultConcepts
         /// then the old persisted data should be recomputed on deployment.
         /// This does not cover all situations when the persisted data should be recomputed
         /// on deployment, but at least handles some obvious ones.
+        ///
+        /// The context includes the source data structure description and the mapping of target properties
+        /// computed from this source. This way, adding or removing a computed property on the target entity
+        /// (without changing the source) is also detected and triggers recompute on deployment (issue #79).
         /// </summary>
-        private string GetRecomputeContext(DataStructureInfo source)
+        private string GetRecomputeContext(DataStructureInfo source, EntityInfo target)
         {
-            if (source is PolymorphicInfo)
-                return string.Join(", ", _dslModel.FindByReference<IsSubtypeOfInfo>(s => s.Supertype, (PolymorphicInfo)source)
+            var sourceContext = source is PolymorphicInfo info
+                ? string.Join(", ", _dslModel.FindByReference<IsSubtypeOfInfo>(s => s.Supertype, info)
                     .Select(GetSubtypeRecomputeContext)
-                    .OrderBy(description => description));
-            else
-                return source.GetFullDescription();
+                    .OrderBy(description => description))
+                : source.GetFullDescription();
+
+            var targetComputedPropertiesContext = GetTargetComputedPropertiesContext(target, source);
+
+            return sourceContext + " | TargetComputedProperties: " + targetComputedPropertiesContext;
+        }
+
+        private string GetTargetComputedPropertiesContext(EntityInfo target, DataStructureInfo source)
+        {
+            var computedProperties = _dslModel.FindByType<PropertyComputedFromInfo>()
+                .Where(pcf => pcf.Target.DataStructure == target && pcf.Source.DataStructure == source)
+                .Select(pcf => pcf.Target.Name + "=" + pcf.Source.Name)
+                .OrderBy(x => x, StringComparer.Ordinal);
+            return string.Join(", ", computedProperties);
         }
 
         private string GetSubtypeRecomputeContext(IsSubtypeOfInfo subtype)
