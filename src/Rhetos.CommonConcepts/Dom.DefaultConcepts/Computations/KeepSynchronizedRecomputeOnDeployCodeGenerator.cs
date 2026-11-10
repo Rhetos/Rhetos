@@ -93,7 +93,7 @@ namespace Rhetos.Dom.DefaultConcepts
             var computedProperties = _dslModel.FindByType<PropertyComputedFromInfo>()
                 .Where(pcf => pcf.Target.DataStructure == target && pcf.Source.DataStructure == source)
                 .Select(pcf => pcf.Target.Name + "=" + pcf.Source.Name)
-                .OrderBy(x => x);
+                .OrderBy(x => x, StringComparer.Ordinal);
             return string.Join(", ", computedProperties);
         }
 

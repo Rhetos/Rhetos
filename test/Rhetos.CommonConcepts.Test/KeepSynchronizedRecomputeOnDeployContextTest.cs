@@ -18,6 +18,7 @@
 */
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -116,7 +117,7 @@ namespace Rhetos.CommonConcepts.Test
                 ("Name2", "Column2"));
 
             Assert.AreNotEqual(contextBefore, contextAfter, "Adding a computed property to the target must change the KeepSynchronized context, so the data is recomputed on deployment (issue #79).");
-            Assert.Contains("TargetComputedProperties: Name=Column1, Name2=Column2", contextAfter);
+            Assert.Contains("TargetComputedProperties: Name2=Column2, Name=Column1", contextAfter);
         }
 
         [TestMethod]
@@ -138,6 +139,36 @@ namespace Rhetos.CommonConcepts.Test
             string context2 = GenerateContext(("Name", "Column1"));
 
             Assert.AreEqual(context1, context2);
+        }
+
+        [TestMethod]
+        public void Mapping_input_order_does_not_change_context()
+        {
+            string context1 = GenerateContext(("Name", "Column1"), ("Name2", "Column2"));
+            string context2 = GenerateContext(("Name2", "Column2"), ("Name", "Column1"));
+
+            Assert.AreEqual(context1, context2);
+        }
+
+        [TestMethod]
+        public void Build_culture_does_not_change_context()
+        {
+            CultureInfo originalCulture = CultureInfo.CurrentCulture;
+            try
+            {
+                CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
+                string contextEn = GenerateContext(("Image", "Column1"), ("idea", "Column2"));
+
+                CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("tr-TR");
+                string contextTr = GenerateContext(("Image", "Column1"), ("idea", "Column2"));
+
+                Assert.AreEqual(contextEn, contextTr, "Build culture must not change the recompute context for identical mappings.");
+                Assert.Contains("TargetComputedProperties: Image=Column1, idea=Column2", contextEn);
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = originalCulture;
+            }
         }
 
         [TestMethod]
